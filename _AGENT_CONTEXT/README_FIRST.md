@@ -49,6 +49,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md` — full-state backup, CAS/DB consistency and portability.
 - `_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md` — source-neutral acquisition/bulk-fill design.
 - `_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md` — MHW physical-slot coverage and marginal selection semantics.
+- `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` — mod retirement, stale live references, same-path identity reuse, and delete/re-import integrity.
 
 ## Critical rule
 
