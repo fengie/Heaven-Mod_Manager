@@ -19,6 +19,34 @@ The next agent must be able to continue without previous chat history.
 
 **Do not break the chain.**
 
+## Support audit checkpoint: share-safe diagnostics / secret handling
+
+A documentation-only independent support audit based on canonical main
+`6ada5a5c4cc83afadfba42bc6af6559540920e3d` is recorded at:
+
+- `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md`
+
+Confirmed highest-priority issue: `SupportBundleService.CreateAsync` copies the
+five newest structured JSONL logs verbatim into a support ZIP, while those log
+streams are known from source to contain absolute local roots/paths and can carry
+structured properties or exception text. Nexus request logging itself correctly
+redacts the API key, and the key file is not copied into the bundle.
+
+Active LR-005 requires export-boundary sanitization for shareable diagnostics,
+with path/credential canary tests. The recommended independent production
+checkpoint is **share-safe support export + canary integration tests only**.
+Do not combine it with Nexus transport, filesystem deployment, database
+transaction, MainWindow architecture, or credential-storage redesign.
+
+This audit changes no production source and does not inherit or modify any
+Windows verification claim. Re-check canonical main and parallel PRs before
+implementing the checkpoint.
+
+The successor must preserve this finding and recursively pass the permanent
+continuity constitution to its successor and the agent after them.
+
+**Do not break the chain.**
+
 
 ## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
 
