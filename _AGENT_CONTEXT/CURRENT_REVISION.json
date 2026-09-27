@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "agent/windows-live-containment-hardening-v3",
+  "workingBranch": "agent/support-import-publication-integrity-audit-20260927",
   "currentVersion": "8.8.0",
   "nextMilestone": "Windows filesystem physical containment",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "windows-live-containment-candidate-awaiting-exact-windows-gate",
+  "status": "support-import-publication-audit-documentation-only-awaiting-integration",
   "verificationAppliesToCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
   "lastClosedVerificationCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
   "lastClosedVerificationRun": "36340312353",
   "candidateSourceCommit": "b671bac33917649ff89e5e3b0866725f7b165232",
-  "verificationScopeNote": "The support-audit integration baseline remains CLOSED at exact commit 5619604e88a27176726ada8518f53d385abc7b0f / hosted Windows Release Gate 36340312353, with evidence persistence 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. A new Windows live-deployment physical-containment candidate now changes production source on branch agent/windows-live-containment-hardening-v3 from canonical handoff base 208a66da89632acf36c065dc3bfead76af8d6bf4. Production source checkpoint b671bac33917649ff89e5e3b0866725f7b165232 adds descendant reparse traversal rejection in DeploymentExecutor before capture/precondition/mutation, immediately before mutation, during rollback/startup recovery, pruning, lock inspection and error enrichment. Focused Windows regression checkpoint 5479c2e2ef6f0c731ccad8d65fcacd558c1428c1 covers Add/Replace/Remove parent-junction escape and startup recovery after a junction is introduced while the app is down. This new source is NOT yet compile/test/function/Windows-gate verified; prior green evidence does not transfer to changed fingerprints. No cache was manually promoted.",
+  "verificationScopeNote": "The support-audit integration baseline remains CLOSED at exact commit 5619604e88a27176726ada8518f53d385abc7b0f / hosted Windows Release Gate 36340312353, with evidence persistence 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. A new Windows live-deployment physical-containment candidate now changes production source on branch agent/windows-live-containment-hardening-v3 from canonical handoff base 208a66da89632acf36c065dc3bfead76af8d6bf4. Production source checkpoint b671bac33917649ff89e5e3b0866725f7b165232 adds descendant reparse traversal rejection in DeploymentExecutor before capture/precondition/mutation, immediately before mutation, during rollback/startup recovery, pruning, lock inspection and error enrichment. Focused Windows regression checkpoint 5479c2e2ef6f0c731ccad8d65fcacd558c1428c1 covers Add/Replace/Remove parent-junction escape and startup recovery after a junction is introduced while the app is down. This new source is NOT yet compile/test/function/Windows-gate verified; prior green evidence does not transfer to changed fingerprints. No cache was manually promoted. This support branch is documentation-only and has been reconciled through canonical main 356fde242046b78e39c7266c57b27e52220141fa. The newly landed production checkpoint changes live DeploymentExecutor reparse containment and focused tests, not ArchiveInspector, ArchiveImportService, SmartInboxService, CatalogService, startup ordering, or the manual import command inspected by this audit. No new runtime verification is claimed for the support branch itself.",
   "lastClosedVerification": {
     "functionInventoryTotal": 610,
     "functionsVerified": 610,
@@ -28,6 +28,9 @@
     "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF"
   },
   "candidateChanges": [
+    "Documentation-only support audit: trace manual archive import, Smart Inbox, CatalogService, and startup ordering to define import publication/catalog visibility semantics.",
+    "Confirmed that recoverable/canceled/crash-interrupted import residue under ModsRoot can be cataloged as a normal mod; manual .importing staging is also catalog-visible on restart.",
+    "Added LR-008 requiring catalog-invisible staging and commit-on-success publication; active parallel PR #15 independently reserves LR-007 for mod-retirement semantics.",
     "Selected exactly one P0 boundary from the integrated Windows filesystem audits: live DeploymentExecutor physical containment. Native ReplaceFileW failure semantics remain a separate later boundary.",
     "Added a descendant-path physical-containment guard that rejects FileAttributes.ReparsePoint before deployment capture/precondition reads.",
     "Repeated containment verification immediately before Add/Replace/Remove mutations and during rollback/startup recovery before inspection and again before restore/delete.",
@@ -64,19 +67,19 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "No production import C#, tests, schema, workflow, or verification-cache state changed in the import-publication support audit.",
+    "The canonical live-deployment reparse-containment checkpoint is preserved unchanged; its implementation/test/verification boundary remains separate from this audit.",
     "No DeploymentPlanner/conflict logic, SQLite transaction ownership, journal schema, CAS model, rollback database protocol, WPF, provider/network, migration, or verification infrastructure is redesigned.",
     "Fail-closed rollback/recovery semantics are preserved; unsafe reparse topology is not guessed through.",
     "LR-001 entry tracing is present on the new production method and changed existing production methods retain their method-entry trace.",
     "LR-004 is implemented only for the live DeploymentExecutor boundary. Recursive scanner/adoption/Smart Inbox traversal remains separate future work.",
     "LR-003 ReplaceFileW failure postconditions remain unresolved and are the recommended next filesystem boundary after this one closes.",
-    "No production executable C# source or tests changed during support-audit integration.",
     "PlannerSnapshotRepository remains closed; no second storage extraction was started.",
     "Support branch continuity snapshots were not allowed to overwrite newer canonical verification/history state.",
     "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
     "ManagerDatabase.GetModsAsync remains in ManagerDatabase.",
     "The planner snapshot extraction preserves the previous two-connection read semantics rather than introducing snapshot/isolation behavior.",
     "DeploymentExecutor prepared-journal, final commit, rollback and every documented write-side atomic boundary are unchanged.",
-    "No production executable C# source changed in this governance checkpoint.",
     "No verification cache was manually promoted; product green evidence remains bound to its existing exact source SHA.",
     "Deployment, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, transaction, and UI/runtime semantics are unchanged.",
     "No production executable source changed in this design checkpoint.",
@@ -85,7 +88,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Do not start a second source boundary. Re-check canonical main, integrate this exact live-containment candidate without overwriting concurrent history, run scripts/Test-AgentHandoff.ps1 plus the full hosted Windows Release Gate, preserve any failed run/root cause, and close only this boundary after exact green evidence. After closure, the recommended next programmer boundary is isolated ReplaceFileW documented failure-postcondition characterization under LR-003.",
+  "nextRequiredAction": "Re-check actual canonical main and active PRs before implementation. Read IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md and LR-008; preserve the already-landed live-deployment reparse-containment checkpoint, PR #15's separate LR-007 mod-retirement semantics, and PR #16's crash-bisector evidence lane. If the import boundary is prioritized, write regression tests for mixed-result Smart Inbox, restart residue, cancellation, retry convergence, and exactly-once publication before implementing one shared catalog-invisible staging/commit-on-success seam. Keep it separate from native replacement, Smart Pack, deployment, and migration work. Recursively propagate the continuity constitution.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -102,7 +105,8 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
@@ -145,5 +149,19 @@
       "tests/MhwModManager.IntegrationTests/HardeningTests.cs"
     ],
     "residualRisk": "Path-based checks reject observed descendant reparse traversal but cannot atomically prevent a topology swap after the final attribute check."
+  },
+  "supportAudit": {
+    "kind": "import-publication-catalog-visibility",
+    "auditBase": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
+    "reconciledMain": "356fde242046b78e39c7266c57b27e52220141fa",
+    "productionSourceChanged": false,
+    "testsChanged": false,
+    "learnedRule": "LR-008",
+    "auditFile": "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md",
+    "parallelNotes": [
+      "PR #15 reserves LR-007 for mod retirement",
+      "PR #16 owns crash-bisector diagnosis evidence",
+      "live-deployment reparse containment is already on canonical main"
+    ]
   }
 }
