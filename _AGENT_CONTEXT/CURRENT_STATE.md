@@ -1,3 +1,37 @@
+# ACTIVE candidate — Windows live deployment physical containment (NOT YET VERIFIED)
+
+Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4` (support integration already hosted-Windows closed).  
+Working branch: `agent/windows-live-containment-hardening-v3`.  
+Production source checkpoint: `b671bac33917649ff89e5e3b0866725f7b165232`.  
+Focused Windows regressions checkpoint: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`.
+
+This candidate addresses exactly one P0 finding: descendant junction/symlink/reparse traversal in the live `DeploymentExecutor` path. Native `ReplaceFileW` failure semantics are intentionally separate.
+
+Implemented behavior:
+
+- existing destination components below configured `gameRoot` are checked for `FileAttributes.ReparsePoint`;
+- containment is checked before capture/precondition reads and again immediately before Add/Replace/Remove;
+- rollback/startup recovery checks before examining bytes and again before restore/delete;
+- empty-directory pruning and lock-inspection paths obey the same rule;
+- Windows tests create real directory junctions and cover Add/Replace/Remove plus a crash/restart topology change.
+
+Expected safety contract:
+
+- a pre-existing parent junction fails before the deployment journal is created and external bytes remain untouched;
+- if a junction is introduced while the app is down after a crash, startup recovery refuses to traverse it, leaves external bytes untouched, and marks the operation `RecoveryRequired`.
+
+Known limitation: this narrows/fails closed on observable path topology but does not make path-based operations handle-atomic. A junction/topology swap after the final attribute check remains a TOCTOU risk and is explicitly preserved as future hardening.
+
+Verification is **open** for this changed production source. The prior hosted gate proves only the support-integration baseline and does not transfer to these fingerprints. No cache was manually promoted.
+
+Do not begin another production boundary before exact Windows closure.
+
+The successor inherits the permanent continuity constitution and LR-001 through LR-006, and must explicitly require its successor to recursively propagate them.
+
+**Do not break the chain.**
+
+---
+
 # Parallel support-agent integration — documentation/continuity checkpoint
 
 Integration base: canonical `main` at `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
