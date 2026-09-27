@@ -109,6 +109,8 @@ Important result: the support branches contributed **documentation/research only
 
 The combined integration is now closed by hosted Windows Release Gate `36340312353` for exact commit `5619604e88a27176726ada8518f53d385abc7b0f`: repository verifier **25/25 PASS**, handoff continuity preflight PASS, release build/publish PASS, ReadyToRun fallback **False**, artifact SHA-256 `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`. Evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
 
+The later follow-up support harvest (PRs #14, #15, #16, #18) is also CLOSED: exact integration commit `027b6d9dc9b049d9e9857e5a0e4d021e31adf443`, hosted Windows Release Gate `36343967045`, evidence/cache persistence `dadbe73a48567b17c9814c483f654be00d1d810f`, verifier **25/25**, functions **612/612**, call sites **6480 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**, release SHA-256 `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`. It was documentation/continuity only; do not treat its audit findings as implemented behavior.
+
 New durable specialized audits cover:
 
 - MainWindow ownership re-audit;

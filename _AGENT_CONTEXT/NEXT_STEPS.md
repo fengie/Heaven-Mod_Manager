@@ -1,5 +1,12 @@
 # Next steps
 
+## Follow-up support integration — CLOSED
+
+Exact documentation/continuity integration commit `027b6d9dc9b049d9e9857e5a0e4d021e31adf443` passed hosted Windows Release Gate `36343967045`: **25/25**, functions **612/612**, call sites **6480 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**, ReadyToRun publish PASS, release SHA-256 `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`. Evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`.
+
+No production source or tests were integrated by this support harvest. The four new audits remain future independently scoped boundaries, not implementation claims. The current highest-value production action is still the CAS integrity checkpoint below.
+
+
 ## Current checkpoint — native ReplaceFileW failure semantics CLOSED
 
 Final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`.  

@@ -28,6 +28,7 @@
     "releaseArtifactSha256": "B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468"
   },
   "candidateChanges": [
+    "Follow-up support integration exact commit 027b6d9dc9b049d9e9857e5a0e4d021e31adf443 passed hosted Windows Release Gate 36343967045; evidence/cache persistence commit dadbe73a48567b17c9814c483f654be00d1d810f; release SHA-256 DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6.",
     "Follow-up support integration: harvested later documentation-only PRs #14, #15, #16, and #18 without merging stale branch-local continuity snapshots.",
     "Added launch-health/game-build revalidation, mod-lifecycle referential integrity, crash-bisector diagnosis evidence, and import-publication/catalog-visibility audits.",
     "Appended LR-007 entity-retirement semantics, LR-008 catalog-invisible import publication, and LR-009 validated-control diagnosis semantics; resolved the parallel crash LR-007 collision by renumbering crash to LR-009.",
@@ -167,7 +168,23 @@
         "LR-008",
         "LR-009"
       ],
-      "verificationStatus": "pending exact hosted Windows Release Gate after canonical integration commit"
+      "verificationStatus": "closed: Windows Release Gate passed 25/25",
+      "integrationCommit": "027b6d9dc9b049d9e9857e5a0e4d021e31adf443",
+      "hostedVerificationRun": "36343967045",
+      "evidenceCommit": "dadbe73a48567b17c9814c483f654be00d1d810f",
+      "releaseArtifactSha256": "DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6",
+      "verification": {
+        "functionInventory": "612/612",
+        "explicitCallSites": "6480 / 0 uncovered",
+        "traceGaps": 0,
+        "parseErrors": 0,
+        "coreTests": "79/79",
+        "automationTests": "20/20",
+        "integrationTests": "79/79",
+        "selfTest": "11/11",
+        "readyToRunFallback": false
+      },
+      "canonicalHeadNote": "The canonical handoff HEAD is the commit containing the final closure state; obtain its exact SHA from main."
     }
   },
   "lastClosedBoundary": {

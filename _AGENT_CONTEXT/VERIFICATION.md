@@ -562,3 +562,27 @@ Commit `be0d786e996a09fece24f5599dab8911af5b31db` persisted promoted caches/evid
 ## Architecture / Explain Why verification boundary
 
 The `agent/architecture-explain-why` candidate changes production source and therefore does **not** inherit the closed v8.8 green state. Its new services, partial view-model files, explainability model/UI, and regression tests must pass the exact Windows Release Gate after integration to `main`. Until that happens, the candidate is intentionally marked unverified.
+
+
+## Follow-up support-audit integration hosted closure — 2026-09-27
+
+Exact source checked: `027b6d9dc9b049d9e9857e5a0e4d021e31adf443`  
+GitHub Actions run: `36343967045`  
+Evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`  
+Environment: Windows X64, .NET SDK 10.0.401
+
+This commit integrated documentation/continuity only. The exact Windows gate nevertheless revalidated the repository and release path:
+
+- repository verification: **25 passed / 0 failed**;
+- handoff continuity preflight: **PASS**;
+- function verification: **612 functions**, **612 known-good**, **0 needs verification**, **0 trace gaps**, **6480 explicit call sites**, **0 uncovered**, **0 parse errors**;
+- Core unit tests: **79/79 PASS**;
+- Automation unit tests: **20/20 PASS**;
+- Integration/fault-injection tests: **79/79 PASS**;
+- automation self-test: **11/11 PASS**;
+- strict whole-solution compile/analyzers: **PASS**;
+- App win-x64 compile/analyzers: **PASS**;
+- self-contained ReadyToRun publish: **PASS**, fallback **False**;
+- release artifact SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
+
+The workflow persisted promoted verification/cache evidence normally. No cache was manually promoted. Any future production-source change starts a new exact verification boundary.

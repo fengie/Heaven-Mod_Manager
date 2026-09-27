@@ -148,3 +148,29 @@ The earlier inventory remains authoritative for its original dispositions. Exact
 5. run the repository's exact hosted Windows Release Gate on the integrated canonical commit before calling this follow-up pass closed.
 
 **Do not break the chain.**
+
+
+### Follow-up canonical closure
+
+The follow-up support integration was fast-forwarded to canonical `main` as exact integration commit:
+
+`027b6d9dc9b049d9e9857e5a0e4d021e31adf443`
+
+Hosted Windows Release Gate `36343967045` verified that exact commit on Windows X64 / .NET SDK 10.0.401:
+
+- repository verification: **25/25 PASS**;
+- agent handoff continuity preflight: **PASS**;
+- production function fingerprints: **612/612** known-good/promoted;
+- explicit call sites: **6480**, uncovered **0**;
+- trace gaps / parse errors: **0 / 0**;
+- Core tests: **79/79 PASS**;
+- Automation tests: **20/20 PASS**;
+- Integration/fault-injection tests: **79/79 PASS**;
+- automation self-test: **11/11 PASS**;
+- strict whole solution and App win-x64 compile/analyzers: **PASS**;
+- self-contained ReadyToRun publish: **PASS**, fallback **False**;
+- release artifact SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
+
+The workflow persisted exact evidence/promoted-cache state in commit `dadbe73a48567b17c9814c483f654be00d1d810f`. The integration commit changed documentation/continuity only; no production C#, tests, verification scripts, workflows, or pre-existing verification-cache semantics were modified by the support harvest itself.
+
+The current canonical handoff commit is the commit containing this closure note; retrieve the exact current SHA from `main`. Support branches were deliberately preserved as historical evidence and were not deleted.

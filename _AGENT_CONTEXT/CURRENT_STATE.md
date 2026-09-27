@@ -28,20 +28,27 @@ Closed behavior:
 
 No new Learned Rule was required because LR-003 already states the governing invariant.
 
-## Follow-up support research integration — assembled from later parallel lanes
+## Follow-up support research integration — CLOSED / hosted Windows verified
 
-After the original support-audit integration closed, later support PRs #14, #15, #16, and #18 produced four additional documentation-only audits. Their audited source paths are unchanged between their fork points and the current pre-integration main `3991b2c1fffcb6e32cb3f0225919900455310fa9`, so the findings remain applicable to current source.
+Exact integration commit: `027b6d9dc9b049d9e9857e5a0e4d021e31adf443`.  
+Hosted Windows Release Gate: `36343967045`.  
+Workflow evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`.
 
-Integrated knowledge:
+This documentation/continuity-only support harvest integrated later PRs #14, #15, #16, and #18 without replaying stale branch-local handoff snapshots. It added launch-health/game-build revalidation, mod-lifecycle referential integrity, crash-bisector diagnosis evidence, and import-publication/catalog-visibility audits; canonical Learned Rules now extend through LR-009.
 
-- launch-health/game-build revalidation semantics and Just Play safety;
-- mod retirement / live semantic reference closure and same-path identity reuse;
-- crash-bisector experimental validity before persistent confirmed blame;
-- catalog-invisible import staging / commit-on-success publication.
+Exact hosted evidence:
 
-Canonical Learned Rules now extend through LR-009: LR-007 entity retirement, LR-008 import publication, LR-009 diagnosis control validation. The combined diagnostic/privacy branch `agent/support-diagnostic-privacy-audit-20260927` is intentionally skipped because its substantive findings are already covered by the canonical diagnostics-privacy and remote-preview trust audits.
+- repository verifier **25/25 PASS**;
+- handoff continuity preflight **PASS**;
+- functions **612/612**; explicit call sites **6480 / 0 uncovered**; trace gaps / parse errors **0 / 0**;
+- Core **79/79**, Automation **20/20**, Integration/fault injection **79/79**, self-test **11/11**;
+- strict whole-solution and App win-x64 compile/analyzers PASS;
+- self-contained ReadyToRun publish PASS, fallback **False**;
+- release ZIP SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
 
-No production C# or tests are part of this follow-up integration. The next production boundary remains the independently scoped CAS-integrity checkpoint below; do not bundle these new audit findings into that work.
+No production C#, tests, verification scripts, workflows, or support-branch implementation code were merged in this follow-up. `agent/support-diagnostic-privacy-audit-20260927` was skipped as redundant with the already-canonical diagnostics-privacy and remote-preview trust audits. Support branches remain preserved.
+
+The next production boundary remains the independently scoped CAS-integrity corrupt-existing-object checkpoint. Do not combine it with launch-health, retirement, diagnosis, import publication, recursive reparse traversal, migration, async, diagnostics, networking, backup, or Smart Pack work.
 
 ## Exact next boundary
 
