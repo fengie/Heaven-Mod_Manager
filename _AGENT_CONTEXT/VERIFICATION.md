@@ -1,3 +1,33 @@
+# Native ReplaceFileW failure-postcondition closure — 2026-09-27
+
+The LR-003 native replacement boundary is **CLOSED and hosted-Windows verified**.
+
+- final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`
+- production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`
+- final Windows Release Gate: `36342205103`
+- final evidence/cache persistence: `689a17ce5dff18bd0bf1201205446edd51ada8b5`
+- runner / SDK: Windows X64 / .NET 10.0.401
+- repository verifier: **25/25 PASS**
+- production function fingerprints: **612/612**
+- explicit call sites: **6480**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **79/79**
+- release build/publish: **PASS**
+- ReadyToRun fallback used: **False**
+- release ZIP SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468`
+
+The implementation adds a narrow injectable `IAtomicReplaceBackend` seam around the Windows `ReplaceFileW` call. Documented partial-name-mutation failures 1176 and 1177 preserve the staged replacement instead of unconditionally deleting it. Deployment recovery remains fail-closed: those fixtures enter `RecoveryRequired` with journal status `Writing` and preserved recovery bytes rather than guessing. Error 1175 leaves the before image recoverable and completes rollback with operation/journal both `RolledBack`.
+
+An earlier exact-source gate `36341827809` also passed for implementation commit `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`; evidence was persisted at `5c62472b1aeb642d6c3da5de1fa62d35e7b76f59`. The final test-only commit added explicit journal-state assertions and earned the fresh gate above.
+
+No local checkout verification was available because the authorized Remote Desktop Commander device was offline. Hosted Windows evidence is authoritative. No verification cache was manually promoted.
+
+No new Learned Rule was needed; LR-003 already captures the durable invariant.
+
+---
+
 # Windows live-containment hosted closure — 2026-09-27
 
 Hosted Windows Release Gate `36341049469` closed exact merge `356fde242046b78e39c7266c57b27e52220141fa`.
