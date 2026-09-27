@@ -28,7 +28,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public ObservableRangeCollection<ModRowViewModel> Mods{get;}=[];
     public ICollectionView ModsView{get;}
     public ObservableRangeCollection<ConflictRow> Conflicts{get;}=[];
-    public ObservableRangeCollection<ProfileSummary> Profiles{get;}=[];
+    public ProfilesPageViewModel ProfilesPage{get;}
+    public ObservableRangeCollection<ProfileSummary> Profiles{get;}
     public ActivityPageViewModel Activity{get;}
     public ObservableRangeCollection<ActivityRow> ActivityRows{get;}
     public CoveragePageViewModel Coverage{get;}
@@ -102,6 +103,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ActivityRows=Activity.Rows;
         Coverage=new CoveragePageViewModel(s.PresentationReads);
         OutfitRows=Coverage.Rows;
+        ProfilesPage=new ProfilesPageViewModel(s.Profiles);
+        Profiles=ProfilesPage.Rows;
         PropertyChanged += (_, args) => MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
         Mods.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
         Conflicts.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
@@ -685,9 +688,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=$"Profile '{SelectedProfile.Name}' staged. live game files are unchanged until Apply safely.";
         });
     }
-
-    [RelayCommand]private async Task RefreshProfiles()=>await RunBusy("profile.refresh","Profiles","Refreshing profile metadata…",true,RefreshProfiles);
-    private async Task RefreshProfiles(CancellationToken ct){var ps=await s.Profiles.ListAsync(ct);await Application.Current.Dispatcher.InvokeAsync(()=>Profiles.ReplaceAll(ps));}
 
     [RelayCommand]
     private async Task SaveProfile()

@@ -76,6 +76,23 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Command=\"{Binding RefreshOutfitsCommand}\"", xaml);
     }
 
+    [Fact]
+    public void ProfilesPageExtractionPreservesExistingBindingSurface()
+    {
+        var root = FindRepositoryRoot();
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var profilesFeature = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Profiles.cs"));
+        var profilesPage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "ProfilesPageViewModel.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("public ProfilesPageViewModel ProfilesPage{get;}", mainViewModel);
+        Assert.Contains("Profiles=ProfilesPage.Rows;", mainViewModel);
+        Assert.Contains("await ProfilesPage.RefreshAsync(ct);", profilesFeature);
+        Assert.Contains("ProfileRepository", profilesPage);
+        Assert.Contains("ItemsSource=\"{Binding Profiles}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
