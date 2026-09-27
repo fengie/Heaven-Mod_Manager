@@ -108,6 +108,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("GameProfileRegistry", gamesPage);
         Assert.Contains("Rows.ReplaceAll(registry.Load());", gamesPage);
         Assert.Contains("GamesPage.Refresh();", gamesFeature);
+        Assert.True(Regex.IsMatch(gamesFeature, @"private async Task ScanInstalledGames\(\)\s*\{\s*using var __mhwTrace = MasterDebugLog\.BeginMethod\(\);", RegexOptions.CultureInvariant));
         Assert.Contains("s.GameRegistry.SetActive(SelectedGame.Id);", gamesFeature);
         Assert.Contains("RestartIntoGame(SelectedGame);", gamesFeature);
         Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);

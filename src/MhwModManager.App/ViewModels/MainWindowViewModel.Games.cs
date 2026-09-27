@@ -12,6 +12,7 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private async Task ScanInstalledGames()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("games.discover","Scanning installed games","Checking Steam, Epic Games Store, and GOG installations…",true,async ct=>
         {
             var added=await Task.Run(()=>s.GameRegistry.DiscoverAndRegisterInstalledGames(),ct);
