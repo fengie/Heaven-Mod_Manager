@@ -1,3 +1,27 @@
+# Smart Pack planner first boundary — candidate, NOT VERIFIED
+
+Production source checkpoint: `ab340ff2d6db8470d37846e68c6bdddcb5844657`  
+Focused tests checkpoint: `231fa62b0df66ef6bfc9f4b0f602f734c2a28891`  
+Branch: `agent/smart-pack-planner-core`  
+Pull request: #13
+
+The pure provider-neutral Smart Pack planner has been implemented and pushed, but **no new green verification claim is made**.
+
+Current evidence:
+
+- source and focused tests are committed on the isolated branch;
+- the production `SmartPackPlanner.Build` body includes the required `MasterDebugLog.BeginMethod()` entry scope under LR-001;
+- PR #13 is mergeable according to GitHub metadata;
+- the connected GitHub surface currently reports no PR-triggered workflow runs and no combined commit statuses for the candidate;
+- therefore compile/analyzer/tests/function verification/Windows Release Gate are still **unknown**, not PASS;
+- no function or stage verification cache was manually promoted.
+
+The existing PlannerSnapshotRepository closure below remains valid only for its exact prior verified inputs. It does not transfer to the new Smart Pack source.
+
+Required closure: re-check canonical main, integrate safely, run `scripts/Test-AgentHandoff.ps1` plus the repository's normal exact verification/hosted Windows Release Gate, preserve any failed attempt/root cause, persist exact evidence, then mark only this Smart Pack core boundary closed. Do not start provider discovery/download/dependency/UI work first.
+
+---
+
 # Verification performed for this source handoff
 
 ## PlannerSnapshotRepository final hosted closure
