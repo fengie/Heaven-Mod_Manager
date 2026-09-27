@@ -1,0 +1,33 @@
+{
+  "formatVersion": 1,
+  "project": "MHW Manual Mod Manager",
+  "canonicalRepository": "fengie/mhw-mods",
+  "canonicalBranch": "main",
+  "currentVersion": "8.8.0",
+  "originalBaselineVersion": "8.7.0",
+  "immediateParentRevision": "v8.8.0 FunctionVerification",
+  "status": "repair-awaiting-final-windows-verification",
+  "verificationAppliesToCommit": "747cc4b3c4103f7ed49846b8f2301699ec7e54c5",
+  "verificationScopeNote": "This SHA identifies the exact source-code state reviewed before the Git-first continuity documentation update. Documentation-only handoff commits after this SHA do not imply that production code was re-verified.",
+  "verification": {
+    "functionInventoryTotal": 602,
+    "functionsVerified": 579,
+    "functionsPending": 23,
+    "linuxStrictReleaseBuild": "passed: 0 warnings / 0 errors",
+    "coreTests": "79/79 passed",
+    "automationTests": "18/18 passed",
+    "integrationTests": "61/61 passed",
+    "selfTest": "11/11 passed",
+    "finalWindowsReleaseVerification": "pending"
+  },
+  "canonicalEvidence": [
+    "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
+    "_AGENT_CONTEXT/VERIFICATION.md",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+  ],
+  "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
+  "nextRequiredAction": "Run Test Everything.bat on Windows for the exact current production source, then Build.bat for Windows publish/release confirmation. Promote pending function fingerprints only through the normal verification gate."
+}

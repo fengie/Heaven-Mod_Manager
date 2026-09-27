@@ -1,6 +1,10 @@
 # NEXT AGENT — START HERE
 
-Read `_AGENT_CONTEXT/README_FIRST.md` and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` **before modifying this project**.
+Read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/README_FIRST.md`, and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` **before modifying this project**.
+
+## Canonical repository state
+
+GitHub repository `fengie/mhw-mods` on `main` is the canonical development state. Inspect recent commits/diffs relevant to the task before editing. Source ZIPs remain useful release/export artifacts, but they are not the primary source of truth.
 
 ## Current repair revision
 
@@ -20,11 +24,13 @@ You are responsible for two deliverables:
 
 Update `_AGENT_CONTEXT/` as you investigate and modify the project. Preserve architecture discoveries, execution/data flows, invariants, decisions and rationale, rejected approaches, regressions/root causes, verification evidence, uncertainties, changed files, debugging knowledge, and next steps.
 
-Before producing the next source zip:
+Before finishing repository work:
 
+- update `_AGENT_CONTEXT/` and `_AGENT_CONTEXT/CURRENT_REVISION.json` with material discoveries and the verification state that applies to the changed source;
 - run `scripts/Test-AgentHandoff.ps1`;
-- preserve `_AGENT_CONTEXT/handoff-manifest.json` and `CONTINUITY_PROTOCOL.md`;
-- use `Build Source Handoff.bat` / `scripts/Build-Source-Handoff.ps1` when possible;
+- preserve `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PROTOCOL.md`, and `AGENTS.md`;
+- commit the context/handoff updates with the code they describe;
+- if producing a source ZIP, use `Build Source Handoff.bat` / `scripts/Build-Source-Handoff.ps1` when possible;
 - explicitly tell the next agent to repeat this continuity practice.
 
 The next agent must be able to continue without access to previous chat history.
@@ -37,4 +43,4 @@ Read `_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log` before touc
 
 ## Latest Windows verification evidence
 
-Read `_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log` as the newest authoritative run. It reached **24 PASS / 1 FAIL**: every compile/analyzer/test/self-test stage passed, and the only failing stage was the function fingerprint scan because four changed functions lacked `MasterDebugLog.BeginMethod()` entry scopes. This packaged revision adds those four scopes only. Because two production files changed to add those scopes, checks whose fingerprints include `MhwModManager.Filesystem` or `MhwModManager.App` must rerun; do not falsely carry their prior green state across the new fingerprints. Exact unaffected cached checks remain checked.
+Read `_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log` as the newest authoritative Windows run. It reached **24 PASS / 1 FAIL**: every compile/analyzer/test/self-test stage passed, and the only failing stage was the function fingerprint scan because four changed functions lacked `MasterDebugLog.BeginMethod()` entry scopes. The later repair revision adds those scopes and additional validated repairs. Because production Filesystem/App inputs changed afterward, affected stages must rerun; do not falsely carry prior green state across changed fingerprints. Exact unaffected cached checks remain checked.

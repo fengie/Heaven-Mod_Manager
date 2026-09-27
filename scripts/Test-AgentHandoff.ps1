@@ -9,6 +9,10 @@ $manifest=Get-Content -Raw -Path $manifestPath | ConvertFrom-Json
 if($manifest.formatVersion -ne 1){throw "Unsupported agent handoff manifest format: $($manifest.formatVersion)"}
 if($manifest.continuityRequired -ne $true){throw 'handoff-manifest.json must keep continuityRequired=true.'}
 if($manifest.propagateToNextAgent -ne $true){throw 'handoff-manifest.json must keep propagateToNextAgent=true.'}
+if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods'){throw "Unexpected canonical repository: $($manifest.canonicalRepository)"}
+if([string]$manifest.canonicalBranch -ne 'main'){throw "Unexpected canonical branch: $($manifest.canonicalBranch)"}
+if([string]$manifest.agentInstructions -ne 'AGENTS.md'){throw 'handoff-manifest.json must point agentInstructions to AGENTS.md.'}
+if([string]$manifest.currentRevisionFile -ne '_AGENT_CONTEXT/CURRENT_REVISION.json'){throw 'handoff-manifest.json must point currentRevisionFile to CURRENT_REVISION.json.'}
 
 $version=(Get-Content -Raw -Path (Join-Path $Root 'VERSION.txt')).Trim()
 if([string]$manifest.currentVersion -ne [string]$version){throw "Agent handoff manifest version '$($manifest.currentVersion)' does not match VERSION.txt '$version'."}
@@ -26,6 +30,19 @@ foreach($relative in ($required | Where-Object {-not [string]::IsNullOrWhiteSpac
 }
 if($missing.Count -gt 0){throw ('Agent handoff is incomplete. Missing: '+($missing -join ', '))}
 
+$revisionPath=Join-Path $Root '_AGENT_CONTEXT\CURRENT_REVISION.json'
+$revision=Get-Content -Raw -Path $revisionPath | ConvertFrom-Json
+if([int]$revision.formatVersion -ne 1){throw "Unsupported CURRENT_REVISION format: $($revision.formatVersion)"}
+if([string]$revision.currentVersion -ne [string]$version){throw "CURRENT_REVISION version '$($revision.currentVersion)' does not match VERSION.txt '$version'."}
+if([string]$revision.canonicalRepository -ne [string]$manifest.canonicalRepository){throw 'CURRENT_REVISION canonicalRepository does not match handoff manifest.'}
+if([string]$revision.canonicalBranch -ne [string]$manifest.canonicalBranch){throw 'CURRENT_REVISION canonicalBranch does not match handoff manifest.'}
+if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
+if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
+
+$agentsPath=Join-Path $Root 'AGENTS.md'
+$agents=Get-Content -Raw -Path $agentsPath
+if($agents -notmatch '(?i)canonical working state'){throw 'AGENTS.md must identify the repository as canonical working state.'}
+if($agents -notmatch '(?i)Do not break the chain'){throw 'AGENTS.md must preserve the continuity invariant.'}
 
 $functionStatusPath=Join-Path $Root '.verification\function-status.json'
 $functionStatus=Get-Content -Raw -Path $functionStatusPath | ConvertFrom-Json

@@ -34,23 +34,25 @@ Use .NET SDK 10.0.401 or newer compatible SDK as enforced by the script/global.j
 
 ## On the next run
 
-The FunctionVerifier and whole solution already compiled successfully in the second Windows run. Re-run `Test Everything.bat` to validate the four newly added entry traces. Expect the function scan to have zero trace/call-site coverage gaps. Exact unaffected stages should show `PASS-CACHED`; stages whose fingerprints include the edited App/Filesystem source must rerun. If everything passes, the function confirmation step should promote all exact current function fingerprints to `verified: true`.
+The FunctionVerifier and whole solution already compiled successfully in the second Windows run. Re-run `Test Everything.bat` to validate the four newly added entry traces and the later repair revision. Expect the function scan to have zero trace/call-site coverage gaps. Exact unaffected stages should show `PASS-CACHED`; stages whose fingerprints include edited App/Filesystem/verification inputs must rerun. If everything passes, the function confirmation step should promote all exact current function fingerprints to `verified: true`.
 
 ## On first complete PASS
 
-Confirm `.verification/function-status.json` has every exact current body at `verified: true` with `verificationBasis: full-release-confirmation`. Package both function and stage caches with the source.
+Confirm `.verification/function-status.json` has every exact current body at `verified: true` with `verificationBasis: full-release-confirmation`. Commit both function and stage caches with the exact source they verify, and update `CURRENT_REVISION.json` to identify that source commit/evidence. Export a source ZIP only if one is useful for release/handoff.
 
 ## Architectural follow-up after v8.8 stabilizes
 
 A sensible next structural project is WPF/application-boundary decomposition: split the very large `MainWindowViewModel` into feature-oriented presentation controllers/viewmodels while leaving transactional deployment/conflict/state logic in backend services. Do this separately from verification hardening.
 
-## Before any future source delivery
+## Before finishing any future repository task
 
 1. Update `_AGENT_CONTEXT/` with everything materially learned in the task.
-2. Update `handoff-manifest.json` if required context/tooling changes.
-3. Run `scripts/Test-AgentHandoff.ps1`.
-4. Prefer `Build Source Handoff.bat` to package the source and emit a per-file hash manifest.
-5. Tell the next agent to repeat these exact continuity steps. **Do not break the chain.**
+2. Update `CURRENT_REVISION.json` when source or verification status changes.
+3. Update `handoff-manifest.json` if required context/tooling changes.
+4. Run `scripts/Test-AgentHandoff.ps1`.
+5. Commit the handoff/context changes with the code they describe.
+6. If a source ZIP is needed, prefer `Build Source Handoff.bat` to package the source and emit a per-file hash manifest.
+7. Tell the next agent to repeat these exact continuity steps. **Do not break the chain.**
 
 ## Recommended architecture sequence after v8.8 is compiler/test-confirmed
 

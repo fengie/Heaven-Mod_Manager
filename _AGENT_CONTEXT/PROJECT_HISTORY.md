@@ -4,12 +4,12 @@
 The manager evolved from an MHW-focused manual mod manager into a heavily hardened transactional tool: SQLite state, CAS, deployment journaling/recovery, conflict/family inference, diagnostics, automation, visual metadata, Nexus integration, and increasingly strict verification. v8.6.27 added visual-source fallback behavior.
 
 ## v8.7.0 — Universal Game Support
-The user supplied this exact version as the previous baseline. It added real `GameProfile` / `GameProfileRegistry` architecture, per-game state/workspace behavior, generic target/scanner semantics, broader store discovery and game-aware services while retaining enhanced MHW semantics. The diff was focused rather than a rewrite.
+The user supplied this exact version as the original baseline for the v8.8 work. It added real `GameProfile` / `GameProfileRegistry` architecture, per-game state/workspace behavior, generic target/scanner semantics, broader store discovery and game-aware services while retaining enhanced MHW semantics. The diff was focused rather than a rewrite.
 
 ## v8.8.0 — Function Verification
-This handoff adds incremental per-function/body verification and runtime nested-call error observation. The principal objective is to let unchanged known-good code remain trusted while forcing changed/new executable bodies back through a fail-closed verification path.
+This revision adds incremental per-function/body verification and runtime nested-call error observation. The principal objective is to let unchanged known-good code remain trusted while forcing changed/new executable bodies back through a fail-closed verification path.
 
-The user explicitly requested that future downloadable source zips continue including `_AGENT_CONTEXT/` (or equivalent) so subsequent coding agents inherit source/architecture/decision/verification context.
+The user explicitly requested durable cross-agent continuity. The project originally carried that context through downloadable source ZIPs; GitHub `fengie/mhw-mods` on `main` is now the canonical state, with source ZIPs retained as optional exports. `_AGENT_CONTEXT/` remains the durable source/architecture/decision/verification memory.
 
 ### v8.8.0 handoff-hardening re-audit
 After the first v8.8 package, the source was reread and the verification/handoff design was tightened without changing the version number: generated build C# exclusion, trusted snapshot self-validation, explicit-interface ID collision protection, explicit call-site coverage reporting, lightweight first-chance observation, and mechanically enforced agent-context propagation/source packaging were added.
@@ -25,4 +25,8 @@ The user's first real Windows verifier run exposed compile/analyzer regressions 
 
 ## v8.8.0 repair audit — 2026-09-27
 
-Read AUDIT-2026-09-27.md. Added generic scan/blob recapture fixes, idle watcher optimization, stricter trace/checklist validation, accurate integration-stage inputs, and complete source packaging. SDK 10.0.401 strict solution build and 158 tests plus 11 self-test checks passed on Linux; Windows release confirmation pending.
+Read `AUDIT-2026-09-27.md`. Added generic scan/blob recapture fixes, idle watcher optimization, stricter trace/checklist validation, accurate integration-stage inputs, and complete source packaging. SDK 10.0.401 strict solution build and 158 tests plus 11 self-test checks passed on Linux; Windows release confirmation pending.
+
+## Git-first continuity transition — 2026-09-27
+
+The full source tree is now stored in GitHub and future agents should treat repository commits/diffs as the authoritative development history. Added `AGENTS.md` and `_AGENT_CONTEXT/CURRENT_REVISION.json` so a fresh agent can establish instructions, revision lineage, verification applicability, and next action before reading historical material. Existing ZIP packaging remains supported as an export/release mechanism.

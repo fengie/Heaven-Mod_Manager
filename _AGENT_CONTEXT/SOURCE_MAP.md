@@ -41,11 +41,14 @@ v8.8 source verifier. Uses the Roslyn assemblies shipped with the pinned SDK ins
 
 ## Continuity tooling
 
+- `AGENTS.md`: root instructions for repository-aware coding agents.
+- `_AGENT_CONTEXT/CURRENT_REVISION.json`: machine-readable current status, lineage, verification summary, and source commit to which evidence applies.
 - `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`: mandatory knowledge-preservation rule that must propagate to future agents.
 - `_AGENT_CONTEXT/handoff-manifest.json`: machine-readable required handoff payload.
 - `scripts/Test-AgentHandoff.ps1`: fail-closed continuity preflight.
-- `scripts/Build-Source-Handoff.ps1` / `Build Source Handoff.bat`: packages a clean source handoff, excludes build outputs, writes `_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json` inside the generated archive, and emits a SHA-256 sidecar.
+- GitHub `fengie/mhw-mods` `main`: canonical development state and authoritative diff/history.
+- `scripts/Build-Source-Handoff.ps1` / `Build Source Handoff.bat`: optional export tooling that packages a clean source handoff, excludes build outputs, writes `_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json` inside the generated archive, and emits a SHA-256 sidecar.
 
 ## Repair regression entrypoints
 
-FunctionVerifierBehaviorTests executes the real verifier against isolated fixtures. MultiGameTests covers generic nativePC mappings and missing-blob recapture. scripts/Test-VerificationCache.ps1 tests actual fingerprint functions and runs in both release entrypoints.
+`FunctionVerifierBehaviorTests` executes the real verifier against isolated fixtures. `MultiGameTests` covers generic nativePC mappings and missing-blob recapture. `scripts/Test-VerificationCache.ps1` tests actual fingerprint functions and runs in both release entrypoints.

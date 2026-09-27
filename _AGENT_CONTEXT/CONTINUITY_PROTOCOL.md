@@ -1,10 +1,19 @@
 # Agent continuity protocol — mandatory
 
-This project is intentionally self-handing-off. Completing code changes is only part of the task. Every agent who modifies this project must preserve the knowledge needed by the next agent **inside the source handoff archive itself**.
+This project is intentionally self-handing-off. Completing code changes is only part of the task. Every agent who modifies this project must preserve the knowledge needed by the next agent **inside the canonical Git repository**.
+
+## Canonical source of truth
+
+GitHub repository `fengie/mhw-mods` on branch `main` is the canonical development state.
+
+- Git commits/diffs are the authoritative change history.
+- `_AGENT_CONTEXT/CURRENT_REVISION.json` records the current handoff status and the exact source commit to which verification evidence applies.
+- Source ZIPs are optional reproducible export/release artifacts. They may contain useful manifests, but they do not supersede the repository.
+- `_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json` describes its packaged ZIP, not the live repository state.
 
 ## Non-negotiable rule
 
-Before delivering a new source zip, update `_AGENT_CONTEXT/` with everything materially learned during the task and preserve this file for the next agent.
+Before finishing repository work, update `_AGENT_CONTEXT/` with everything materially learned during the task, update the current-revision record when source or verification state changes, and commit those handoff changes with the code they describe.
 
 **Do not break the chain.**
 
@@ -14,7 +23,7 @@ The next agent must be able to continue safely without access to prior chat hist
 
 Record, when applicable:
 
-- current version and exact parent/baseline version;
+- current version, original baseline, immediate parent/revision lineage, and relevant Git commit;
 - architecture and dependency direction;
 - ownership of major projects/classes/files;
 - important execution and data flows;
@@ -32,24 +41,27 @@ Record, when applicable:
 - external research that materially affected implementation choices;
 - user requirements that future implementation must preserve.
 
-Do not turn these files into vague summaries. Prefer concrete class/file names, invariants, commands, version numbers, and evidence.
+Do not turn these files into vague summaries. Prefer concrete class/file names, invariants, commands, version numbers, commit SHAs, and evidence.
 
 ## Required update discipline
 
-1. Read `NEXT-AGENT-START-HERE.md` and `_AGENT_CONTEXT/README_FIRST.md` before editing.
-2. Update context files **while working**, not only after the work is complete.
-3. Clearly distinguish:
+1. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, and `_AGENT_CONTEXT/README_FIRST.md` before editing.
+2. Inspect recent Git history/diffs relevant to the task.
+3. Update context files **while working**, not only after the work is complete.
+4. Clearly distinguish:
    - confirmed by build/test/runtime evidence;
    - confirmed by static/source inspection;
    - hypothesis / recommended future work.
-4. Never mark verification state known-good merely because code looks correct.
-5. Before packaging, run `scripts/Test-AgentHandoff.ps1`.
-6. For a source handoff, prefer `Build Source Handoff.bat` / `scripts/Build-Source-Handoff.ps1` so context and verification evidence cannot be accidentally omitted.
-7. Preserve this continuity protocol and explicitly instruct the next agent to follow it again.
+5. Never mark verification state known-good merely because code looks correct.
+6. Keep `CURRENT_REVISION.json` explicit about which source commit the verification evidence applies to. Documentation-only commits need not pretend they re-verified production code.
+7. Before declaring work complete, run `scripts/Test-AgentHandoff.ps1`.
+8. Commit code and its corresponding handoff/context updates together or in an immediately adjacent documented commit so the history remains interpretable.
+9. If producing a source ZIP, prefer `Build Source Handoff.bat` / `scripts/Build-Source-Handoff.ps1` so context and verification evidence cannot be accidentally omitted.
+10. Preserve this continuity protocol and explicitly instruct the next agent to follow it again.
 
 ## Applies beyond coding
 
-If a future task produces a different durable artifact (research package, dataset, spreadsheet, document set, configuration bundle, etc.), adapt the same rule: package the important learned context, assumptions, provenance, decisions, verification status, and next steps with the deliverable, and tell the next agent to continue the practice.
+If a future task produces a different durable artifact (research package, dataset, spreadsheet, document set, configuration bundle, etc.), adapt the same rule: preserve the important learned context, assumptions, provenance, decisions, verification status, and next steps in the canonical workspace, and tell the next agent to continue the practice.
 
 ## Privacy / secrets
 

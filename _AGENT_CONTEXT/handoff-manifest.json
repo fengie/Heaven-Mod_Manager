@@ -4,10 +4,17 @@
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.0",
-  "parentVersion": "8.7.0",
+  "originalBaselineVersion": "8.7.0",
+  "immediateParentRevision": "v8.8.0 FunctionVerification",
+  "canonicalRepository": "fengie/mhw-mods",
+  "canonicalBranch": "main",
+  "agentInstructions": "AGENTS.md",
+  "currentRevisionFile": "_AGENT_CONTEXT/CURRENT_REVISION.json",
   "continuityProtocol": "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
   "startHere": "NEXT-AGENT-START-HERE.md",
   "requiredContextFiles": [
+    "AGENTS.md",
+    "_AGENT_CONTEXT/CURRENT_REVISION.json",
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
     "_AGENT_CONTEXT/CURRENT_STATE.md",
@@ -32,7 +39,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Update the handoff context with everything materially learned, preserve this manifest/protocol, run the handoff preflight, and package the next source deliverable with equivalent or better continuity data. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Update the handoff context and CURRENT_REVISION.json with everything materially learned, preserve this manifest/protocol/AGENTS.md, run the handoff preflight, and commit context with the code it describes. If a source ZIP is exported, preserve equivalent or better continuity data. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
