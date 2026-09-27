@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "planner-snapshot-repository-closed-windows-verified",
+  "status": "support-audit-integration-documentation-only-awaiting-hosted-handoff-verification",
   "verificationAppliesToCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
   "lastClosedVerificationCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
   "lastClosedVerificationRun": "36336190920",
   "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
-  "verificationScopeNote": "PlannerSnapshotRepository boundary CLOSED. Hosted Windows Release Gate 36336190920 verified exact final candidate efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 on Windows X64 / .NET SDK 10.0.401: continuity preflight PASS; all four recursive-continuity negative fixtures rejected; repository verifier 25/25; 610/610 production function fingerprints promoted; 6456 explicit call sites with 0 uncovered; 0 trace gaps and 0 parse errors; Core 79/79; Automation 20/20; Integration/fault injection 72/72; self-test 11/11; App win-x64 compile/analyzers PASS; ReadyToRun restore and self-contained publish PASS. Release SHA-256 226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E. Workflow evidence/cache persistence commit 852f07b9d6ad0457c161df0aa1c8165981d349cf. Failed runs 36335255922 and 36335692754 remain preserved as superseded evidence with their root causes. No second production boundary was started.",
+  "verificationScopeNote": "Production executable source and tests are unchanged by the support-audit integration. The last closed product verification remains PlannerSnapshotRepository at exact commit efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 / hosted Windows Release Gate 36336190920. The integration changes documentation, handoff inputs, docs/MIGRATION.md and the append-only Learned Rules ledger, so the newly integrated repository state itself still requires a fresh hosted Windows Release Gate after canonical push. No cache was manually promoted. Local git status/runtime verification was unavailable because the connected desktop device was offline; canonical GitHub history, branch comparisons and file diffs were inspected.",
   "lastClosedVerification": {
     "functionInventoryTotal": 610,
     "functionsVerified": 610,
@@ -28,6 +28,12 @@
     "releaseArtifactSha256": "226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E"
   },
   "candidateChanges": [
+    "Integrated the parallel support-agent branch inventory and dispositions without blindly merging stale continuity snapshots.",
+    "Added async/lifetime, broad test/performance, Windows filesystem safety, migration recovery, diagnostics privacy, remote preview network trust, verification infrastructure, state backup/portability, multi-source discovery, and MHW semantic coverage audits.",
+    "Appended the independent MainWindow support re-audit to the canonical responsibility and research documents; stop-page-model-splitting remains the current ownership decision.",
+    "Corrected docs/MIGRATION.md to match the current restart protocol and its known recovery limitations.",
+    "Integrated LR-003 native replacement failure semantics, LR-004 physical filesystem containment, LR-005 migration ownership/convergence, and LR-006 diagnostic export-boundary sanitization; resolved the parallel LR-005 numbering collision without discarding either rule.",
+    "Replaced stale next-agent guidance that still instructed a PlannerSnapshotRepository extraction after that boundary had already closed.",
     "Second test-only repair after run 36335692754: canonical-casing filtered test asserts selected mod files, and a separate regression preserves uppercase-first SQLite filter behavior exactly.",
     "Repair after failed run 36335255922: migrate NexusMetadataService and GameBuildMonitor, which were real planner-snapshot callers omitted from the original audit/caller list.",
     "Repair LR-001 verification gaps by adding MasterDebugLog.BeginMethod() entry scopes to changed MainWindow RestoreLastGood and LaunchSafeMode bodies.",
@@ -50,6 +56,9 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "No production executable C# source or tests changed during support-audit integration.",
+    "PlannerSnapshotRepository remains closed; no second storage extraction was started.",
+    "Support branch continuity snapshots were not allowed to overwrite newer canonical verification/history state.",
     "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
     "ManagerDatabase.GetModsAsync remains in ManagerDatabase.",
     "The planner snapshot extraction preserves the previous two-connection read semantics rather than introducing snapshot/isolation behavior.",
@@ -63,17 +72,45 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "PlannerSnapshotRepository is closed. A successor must first re-verify canonical main, inspect current history/context including the deep SQLite transaction audit, and obtain a separately scoped next task before changing production source. Do not automatically begin a second repository extraction, reopen MainWindow page-model splitting, or modify documented transaction owners. Preserve the permanent continuity constitution, obey LR-001/LR-002, add only justified Learned Rules, and explicitly require the successor after you to inherit and recursively propagate the same rules.",
+  "nextRequiredAction": "Read SUPPORT_BRANCH_INTEGRATION_2026-09-27.md, active LR-001 through LR-006, and NEXT_STEPS.md. PlannerSnapshotRepository is closed; do not automatically start another repository extraction or resume MainWindow page-model splitting. Select one separately scoped, independently verifiable boundary. The highest-safety candidate identified independently by the test-gap and Windows-filesystem audits is test-first Windows physical-containment/native-ReplaceFileW characterization. Preserve all documented transaction/recovery invariants and recursively propagate the continuity constitution.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md",
+    "_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md",
+    "_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md",
+    "_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md",
+    "_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md",
+    "_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md",
+    "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md",
+    "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
+    "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
+    "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
-  "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed."
+  "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed.",
+  "supportIntegration": {
+    "baseCommit": "6ada5a5c4cc83afadfba42bc6af6559540920e3d",
+    "inventory": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md",
+    "productionSourceChanged": false,
+    "testsChanged": false,
+    "learnedRulesIntegrated": [
+      "LR-003",
+      "LR-004",
+      "LR-005",
+      "LR-006"
+    ],
+    "skippedBranches": {
+      "agent/support-diagnostic-privacy-audit-20260927": "identical to main; no unique work",
+      "agent/test-gap-performance-audit-20260927": "superseded by agent/test-gap-performance-audit-20260927-v2"
+    },
+    "localVerificationLimitation": "Remote Desktop Commander device offline; no local checkout/git status/runtime execution available."
+  }
 }
