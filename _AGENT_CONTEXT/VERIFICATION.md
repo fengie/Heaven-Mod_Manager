@@ -1,5 +1,25 @@
 # Verification performed for this source handoff
 
+## Profiles read/list page-view-model verification boundary
+
+Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` changes WPF application source after
+the closed Coverage checkpoint.
+
+Implementation scope:
+
+- `ProfilesPageViewModel` owns `ProfileRepository.ListAsync` consumption and
+  profile collection state.
+- `MainWindowViewModel.Profiles` aliases `ProfilesPage.Rows`.
+- refresh command/busy coordination and profile mutations stay shell-owned.
+- a new source-level integration guard checks the seam and unchanged XAML
+  bindings.
+
+No fresh Windows evidence exists for this candidate yet. Applicable closed
+verification remains Coverage run `36327634813` at exact commit
+`e3ed3be730000d1829b02e5d2d29b3f23ca52d94`. Do not promote changed
+fingerprints until a full new Windows Release Gate passes.
+
+
 ## Coverage page-view-model hosted closure
 
 Hosted Windows run `36327634813` closed exact commit `e3ed3be730000d1829b02e5d2d29b3f23ca52d94`

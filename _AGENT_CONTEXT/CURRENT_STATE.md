@@ -1,5 +1,27 @@
 # Current state — v8.8.0
 
+## Profiles read/list page-view-model candidate — awaiting hosted Windows verification
+
+Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` begins the next incremental page-model
+slice after the closed Coverage checkpoint.
+
+- Added `ProfilesPageViewModel` to own `ProfileRepository.ListAsync` and the
+  profile list collection.
+- `MainWindowViewModel.Profiles` aliases `ProfilesPage.Rows`, preserving the
+  existing XAML collection binding.
+- `RefreshProfilesCommand` remains shell-owned and forwards through
+  `RunBusy` to the page model.
+- `SelectedProfile`, profile staging/save/delete mutations, mod staging logic,
+  and global status remain in the shell.
+- Added a source-level integration guard for the seam and preserved
+  `Profiles` / `RefreshProfilesCommand` bindings.
+- No deployment, conflict, database transaction, filesystem safety, FOMOD,
+  enhanced-adapter, XAML layout, or DI-lifetime semantics changed.
+
+This candidate does **not** inherit the Coverage green state. A fresh complete
+Windows Release Gate is required before another extraction.
+
+
 ## Coverage page-view-model slice CLOSED — hosted Windows
 
 The Coverage extraction is fully green.

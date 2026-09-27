@@ -1,5 +1,21 @@
 # NEXT AGENT — START HERE
 
+## Active candidate: Profiles read/list page view model
+
+Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` extracts profile list read/state into
+`ProfilesPageViewModel` while preserving the existing `Profiles` and
+`RefreshProfilesCommand` binding surface.
+
+The page model owns `ProfileRepository.ListAsync` consumption and row collection
+state. `MainWindowViewModel` still owns refresh busy coordination, profile
+staging/save/delete mutations, `SelectedProfile`, mod application logic, and
+global status.
+
+This source is **not verified yet**. The last closed checkpoint remains Coverage
+at commit `e3ed3be730000d1829b02e5d2d29b3f23ca52d94`, run
+`36327634813`. Run the full Windows Release Gate and do not start another
+extraction until Profiles is independently green.
+
 ## Closed checkpoint: Coverage page view model
 
 Hosted Windows Release Gate `36327634813` verified exact commit
