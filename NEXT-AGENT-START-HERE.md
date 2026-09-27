@@ -9,7 +9,7 @@ Before modifying this project:
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
 2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-007);
 5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -74,8 +74,19 @@ Read the full ledger; do not rely only on this summary.
 - LR-004 — lexical containment is not physical filesystem containment.
 - LR-005 — restartable migrations must prove ownership and convergence.
 - LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
+- LR-007 — entity retirement must close live semantic references.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
+
+## Independent support finding: mod retirement lifecycle
+
+Read `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` before any mod deletion/retirement/schema cleanup work.
+
+Confirmed static behavior: successful raw deletion of a mod row does not retire live `conflict_rules`, `resource_providers`, or mod-keyed settings. Local IDs are path-derived, so a later different package at the same source path can reuse the old ID and reactivate those decisions. LR-007 protects this lifecycle invariant.
+
+Keep any future fix isolated: first characterize delete -> same-path re-import behavior, then add one centralized retirement boundary. Do not combine that work with the deep-SQLite D1 move/delete crash protocol, global ID redesign, backup/restore, or broad schema changes.
+
+This support audit is documentation-only and does not change the closed product verification evidence or replace the canonical next-step recommendation.
 
 ## What to do next
 
