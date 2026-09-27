@@ -7,3 +7,4 @@ release/
 State/Next/
 *.db-shm
 *.db-wal
+Mods/
