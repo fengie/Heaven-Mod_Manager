@@ -1,3 +1,21 @@
+# Import publication / catalog visibility support audit — documentation-only
+
+Audit source inspection began from canonical `main` at `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`, was reconciled through the support-integration closure at `208a66da89632acf36c065dc3bfead76af8d6bf4`, and was rechecked after the separate live-deployment reparse-containment checkpoint landed at `356fde242046b78e39c7266c57b27e52220141fa`. That later production change touched `DeploymentExecutor` and focused containment tests, not the import/catalog source bodies audited here.
+
+Durable audit: `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
+
+No production import C#, tests, schema, workflow, or verification cache changed in this support branch. The audit confirms a distinct P1 library-ingestion boundary: Smart Inbox writes unfinished archive/directory imports directly under `ModsRoot`, recoverable failures do not remove the destination, and `CatalogService.RefreshFoldersAsync` later treats every top-level ModsRoot directory as a published mod. A failed item can therefore become a persisted ghost/partial mod either when another Inbox item succeeds and triggers a global refresh or at the next startup, where catalog refresh runs before maintenance. Manual `ArchiveImportService` extracts to `.importing` then renames on success, but that staging directory is still inside `ModsRoot`; failure/cancellation can leave it catalog-visible on restart, and add-only catalog semantics can leave a stale DB row after retry.
+
+Recommended implementation is a separate future checkpoint: regression-first catalog-invisible staging outside `ModsRoot`, then commit-on-success final publication shared by manual import and Smart Inbox. Do not combine it with the now-landed deployment reparse checkpoint, native replacement work, mod retirement, Smart Pack, migration, or deployment redesign.
+
+This branch adds **LR-008** for import publication isolation. Active parallel PR #15 independently reserves **LR-007** for mod-retirement semantics; integration must preserve both rules. PR #16 crash-bisector evidence work is also independent.
+
+This documentation-only support branch has not run a new hosted gate. Preserve the exact verification state recorded by canonical `CURRENT_REVISION.json` / `VERIFICATION.md` for `356fde242046b78e39c7266c57b27e52220141fa` and any later main commits.
+
+The successor must preserve the permanent continuity constitution and explicitly require its successor to pass it to the agent after them. **Do not break the chain.**
+
+---
+
 # ACTIVE candidate — Windows live deployment physical containment (NOT YET VERIFIED)
 
 Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4` (support integration already hosted-Windows closed).  
