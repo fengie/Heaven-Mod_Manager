@@ -35,6 +35,14 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
 
+### Specialized support audits
+
+When changing diagnostics, support-bundle export, telemetry sharing, startup-log sharing, or provider credential handling, also read:
+
+- `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md`
+
+That audit is documentation-only and does not supersede the exact Windows verification state above/below; it defines a future independently verifiable privacy boundary.
+
 ## Critical rule
 
 Do **not** overwrite `.verification/function-status.json` just because source parses. Promotion means the required build/test/self-test pipeline passed. The scripts deliberately preserve the last known-good cache after failures.
