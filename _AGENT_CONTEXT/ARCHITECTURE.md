@@ -53,3 +53,15 @@ Runtime `MasterDebugLog.OperationScope` now tracks first-chance exceptions for t
 ## Diagnostic hot-path rule
 
 Per-function scopes remain the mechanism for associating nested exceptions with callers. `AppDomain.FirstChanceException` is used as an observation signal only; it must not change exception semantics. Full stack logging for every first-chance exception is deliberately disabled by default and can be enabled with `MHW_FIRST_CHANCE_DETAIL=1` for deep diagnostics. This preserves exhaustive observation without forcing heavy file I/O on every handled exception.
+
+
+## Planner snapshot storage boundary — candidate
+
+The first post-audit storage extraction moves planner-input query assembly into read-only `PlannerSnapshotRepository`.
+
+- `ManagerDatabase.GetModsAsync` remains in the database facade.
+- The repository preserves the historical two-connection read behavior rather than adding an encompassing SQLite transaction/snapshot.
+- App composition creates one repository instance and passes it to MainWindow planner workflows plus EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption and Health.
+- DeploymentExecutor and every documented write-side transaction owner are unchanged.
+
+This boundary must pass its own exact Windows Release Gate before another storage seam is started.

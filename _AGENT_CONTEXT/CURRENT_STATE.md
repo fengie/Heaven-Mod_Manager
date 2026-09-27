@@ -1,3 +1,19 @@
+# Current candidate — PlannerSnapshotRepository extraction
+
+Production source commit: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+
+This is the one production boundary authorized by the MainWindow/storage audit. It is **not yet Windows-verified**.
+
+- Added read-only `PlannerSnapshotRepository` in Storage and moved the former `ManagerDatabase.LoadPlannerSnapshotAsync` query assembly into it.
+- `ManagerDatabase.GetModsAsync` remains where it was.
+- Connection semantics are intentionally unchanged: mod state is loaded first through `GetModsAsync`; the remaining planner tables are then read through a second `OpenAsync` connection. No new SQLite transaction/snapshot model was introduced.
+- Full, filtered `fileModIds`, and empty-filter behavior are preserved.
+- MainWindow analysis/restore/safe-mode, EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption, and Health now consume the composed repository.
+- Focused integration coverage compares the extracted repository against the exact pre-extraction query assembly for full/filtered/empty snapshots, compares representative planner output, and covers already-canceled cancellation.
+- DeploymentExecutor and every documented write-side transaction boundary remain untouched.
+- No second storage extraction may begin until a fresh exact Windows Release Gate closes this source boundary.
+
 # Governance checkpoint CLOSED — permanent recursive continuity
 
 A governance-only checkpoint now installs the repository-level continuity constitution requested by the user.

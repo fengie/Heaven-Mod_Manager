@@ -1,5 +1,22 @@
 # Verification performed for this source handoff
 
+## PlannerSnapshotRepository candidate — exact Windows gate required
+
+Production source commit `8e0068bd44cc6735ffa9478067923ad5d9c54506` extracts the read-only planner snapshot query assembly. Regression-test commit `64e666a19ce17c21bc696b46cce9c07bb257a686` adds/strengthens full, filtered, empty-filter, representative planner-output and cancellation coverage.
+
+This source is **not yet verified**. Previous green evidence does not apply to these changed production fingerprints.
+
+Last closed exact repository checkpoint before this source boundary:
+
+- commit: `c9b27b98d280b144ba52ba35167f1fcb594945bd`
+- hosted Windows run: `36334644325`
+- evidence/cache persistence: `bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8`
+- release SHA-256: `0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A`
+
+Required next evidence is a fresh full hosted Windows Release Gate for the final candidate commit, including the handoff validator and recursive-continuity negative fixtures. No cache has been manually promoted for this candidate.
+
+---
+
 ## Recursive-continuity governance checkpoint
 
 This checkpoint changes verification/continuity infrastructure but does **not** change production C#.

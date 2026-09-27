@@ -1,5 +1,22 @@
 # Next steps
 
+## Immediate: verify and close the PlannerSnapshotRepository boundary
+
+Candidate production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+
+Run a fresh full hosted Windows Release Gate for the final candidate commit. Do not reuse the prior green state for changed production source and do not manually promote verification caches.
+
+If the gate fails, repair only this PlannerSnapshotRepository boundary and preserve the failed run/root cause. If it passes, persist exact source SHA, run ID, Windows/SDK, verifier totals, fingerprints/call sites, test totals, analyzer result, publish result and artifact SHA-256 before considering any next source seam.
+
+Do **not** start another repository extraction, another MainWindow split, Generic Host/DI migration, FOMOD, enhanced-game adapter work, or transaction redesign while this boundary is unverified.
+
+The permanent continuity constitution remains recursive: the successor must inherit and preserve it, and must require the agent after them to do the same.
+
+**Do not break the chain.**
+
+---
+
 ## Recursive-continuity governance checkpoint — CLOSED
 
 Exact governance commit `73f1298455ec4c651e211488ececf9803504e60d` passed hosted Windows Release Gate `36333960215` on Windows x64 / .NET SDK 10.0.401. The handoff validator passed, the baseline fixture passed, all four recursive-continuity negative fixtures were rejected, the repository verifier finished 25/25, and the release publish passed. Evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.

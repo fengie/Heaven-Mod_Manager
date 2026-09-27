@@ -20,9 +20,13 @@ The next agent must be able to continue without previous chat history.
 **Do not break the chain.**
 
 
-## Current checkpoint: governance CLOSED; PlannerSnapshotRepository is the only next production boundary
+## Current checkpoint: PlannerSnapshotRepository candidate awaiting exact Windows closure
 
-Governance closure: exact commit `73f1298455ec4c651e211488ececf9803504e60d`, hosted Windows run `36333960215`, evidence/cache commit `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
+PlannerSnapshotRepository production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+This candidate is not green until a fresh full hosted Windows Release Gate passes. Do not begin another source boundary while it is unresolved.
+
+Governance closure remains exact commit `73f1298455ec4c651e211488ececf9803504e60d`, hosted Windows run `36333960215`; the later documentation closure `c9b27b98d280b144ba52ba35167f1fcb594945bd` also passed run `36334644325`.
 
 Canonical architecture design base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
 

@@ -266,3 +266,10 @@ First extraction constraints:
 Implement PlannerSnapshotRepository only, with no behavioral changes. Add focused query/parity tests, keep MainWindow/deployment architecture unchanged, update continuity, push the source checkpoint, and require a fresh full Windows Release Gate before beginning any other production change.
 
 The next agent must re-read AGENTS.md, this document, MAINWINDOW_RESPONSIBILITY_AUDIT.md and the canonical continuity files before editing. Preserve the same source -> evidence -> closure discipline. Do not break the chain.
+
+
+## Implementation status — PlannerSnapshotRepository candidate
+
+Production source commit `8e0068bd44cc6735ffa9478067923ad5d9c54506` implements exactly the recommended first extraction. Focused parity/cancellation coverage is hardened in `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+
+The implementation confirmed the audit assumptions rather than disproving them: `GetModsAsync` still owns its independent read connection; the new repository then uses one separate `OpenAsync` connection for the remaining planner inputs; no write-side transaction owner or DeploymentExecutor path changed. The candidate remains unverified until a fresh exact hosted Windows Release Gate passes.

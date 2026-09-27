@@ -4,7 +4,9 @@
 Domain/policy and game-agnostic planning logic. Important files: `Domain.cs`, `GameProfiles.cs`, `ConflictEngine.cs`, `DeploymentPlanner.cs`, `RuleGraph.cs`, `PathRules.cs`, family/provenance intelligence, texture safety, and `MasterDebugLog.cs`.
 
 ## `src/MhwModManager.Storage`
-SQLite persistence and migration. Important files: `ManagerDatabase.cs`, `Schema.cs`, `ProfileRepository.cs`, `LegacyV7Migrator.cs`.
+SQLite persistence and migration. Important files: `ManagerDatabase.cs`, `PlannerSnapshotRepository.cs`, `PresentationReadRepository.cs`, `Schema.cs`, `ProfileRepository.cs`, `LegacyV7Migrator.cs`.
+
+`PlannerSnapshotRepository` owns the read-only planner input projection. It intentionally calls `ManagerDatabase.GetModsAsync` first and then opens a separate connection through `ManagerDatabase.OpenAsync` for files/rules/resources/manifest/originals, preserving the pre-extraction connection behavior.
 
 ## `src/MhwModManager.Filesystem`
 Physical IO and integrations: `DeploymentExecutor.cs`, `AtomicFileOps.cs`, `BlobStore.cs`, `HashingService.cs`, `ModScanner.cs`, `GameProfileRegistry.cs`, `NexusMetadataService.cs`, visuals/previews, adoption, restart-manager inspection, game-build monitoring.

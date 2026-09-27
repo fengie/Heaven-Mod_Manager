@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "recursive-continuity-governance-closed-planner-snapshot-next",
-  "verificationAppliesToCommit": "73f1298455ec4c651e211488ececf9803504e60d",
-  "lastClosedVerificationCommit": "73f1298455ec4c651e211488ececf9803504e60d",
-  "lastClosedVerificationRun": "36333960215",
-  "candidateSourceCommit": "fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34",
-  "verificationScopeNote": "Recursive-continuity governance is closed by hosted Windows Release Gate 36333960215 on exact governance commit 73f1298455ec4c651e211488ececf9803504e60d: handoff validator PASS, baseline negative-fixture copy PASS, all four recursive-continuity negative fixtures rejected, repository verifier 25/25, 615/615 production fingerprints, 6389 explicit call sites with 0 uncovered, Core 79/79, Automation 20/20, Integration 66/66, self-test 11/11, App win-x64 analyzers PASS, ReadyToRun publish PASS. Evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c changed only verification evidence/cache state. No production C# changed in governance.",
+  "status": "planner-snapshot-repository-candidate-awaiting-exact-windows-gate",
+  "verificationAppliesToCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
+  "lastClosedVerificationCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
+  "lastClosedVerificationRun": "36334644325",
+  "candidateSourceCommit": "8e0068bd44cc6735ffa9478067923ad5d9c54506",
+  "verificationScopeNote": "PlannerSnapshotRepository is implemented in production source commit 8e0068bd44cc6735ffa9478067923ad5d9c54506 with focused parity/cancellation tests hardened in 64e666a19ce17c21bc696b46cce9c07bb257a686. This is a new production verification boundary and is not yet green. The last closed exact repository state is c9b27b98d280b144ba52ba35167f1fcb594945bd, hosted Windows run 36334644325, with evidence/cache persistence bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8. No prior green evidence is being promoted onto the changed production source.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
     "functionsVerified": 615,
@@ -25,9 +25,15 @@
     "automationTests": "20/20 passed",
     "integrationTests": "66/66 passed",
     "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "8A8D78DA53AE81703091683F5BC25D298C7BDEE3FB831098040D91EB2F85AAF4"
+    "releaseArtifactSha256": "0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A"
   },
   "candidateChanges": [
+    "Extracted the existing planner-input query assembly from ManagerDatabase into read-only PlannerSnapshotRepository.",
+    "Preserved the historical connection behavior: GetModsAsync runs first on its own connection, then planner files/rules/resources/manifest/originals are read through a second ManagerDatabase.OpenAsync connection with no encompassing transaction.",
+    "Preserved full snapshot, case-insensitive distinct fileModIds filtering, and empty fileModIds behavior; no query ordering or data semantics were intentionally changed.",
+    "Migrated MainWindow analysis/restore/safe-mode flows plus EffectiveInspectorService, GameUpdateImpactService, LaunchHealthGateService, UnmanagedAdoptionService, and HealthService to the composed PlannerSnapshotRepository.",
+    "Kept ManagerDatabase.GetModsAsync in ManagerDatabase and left DeploymentExecutor and all documented SQLite write transaction owners untouched.",
+    "Added PlannerSnapshotRepositoryTests that compare full, filtered, and empty-filter snapshots against the pre-extraction query assembly, compare representative DeploymentPlanner output, and assert already-canceled tokens remain canceled.",
     "Governance-only checkpoint: install permanent recursive continuity Core Rules so the repository, not chat, carries the obligation indefinitely.",
     "Add _AGENT_CONTEXT/LEARNED_RULES.md as an append-only Active/Superseded rule ledger and seed it with the moved-production-body verification-instrumentation lesson from runs 36330808544 -> 36331057943.",
     "Strengthen scripts/Test-AgentHandoff.ps1 to validate the continuity invariant by concept: canonical start order, learned-rules linkage, chat-independent handoff, Core Rule protection, and successor -> agent-after recursive propagation.",
@@ -40,6 +46,10 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
+    "ManagerDatabase.GetModsAsync remains in ManagerDatabase.",
+    "The planner snapshot extraction preserves the previous two-connection read semantics rather than introducing snapshot/isolation behavior.",
+    "DeploymentExecutor prepared-journal, final commit, rollback and every documented write-side atomic boundary are unchanged.",
     "No production executable C# source changed in this governance checkpoint.",
     "No verification cache was manually promoted; product green evidence remains bound to its existing exact source SHA.",
     "Deployment, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, transaction, and UI/runtime semantics are unchanged.",
@@ -49,7 +59,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Implement exactly one read-only PlannerSnapshotRepository extraction. Preserve current full/filtered/empty fileModIds behavior and the existing two-connection semantics (GetModsAsync first, then remaining planner reads); do not move GetModsAsync or touch DeploymentExecutor. Add focused parity/planner-output tests, then commit/push and obtain a fresh exact Windows Release Gate before any second source boundary.",
+  "nextRequiredAction": "Run a fresh full hosted Windows Release Gate for the final PlannerSnapshotRepository candidate commit. If it fails, diagnose and repair only this boundary; do not begin another extraction. On success persist exact source SHA/run/toolchain/verifier/test/analyzer/publish/artifact evidence, update CURRENT_REVISION/CURRENT_STATE/NEXT_STEPS/VERIFICATION, run the continuity positive and negative checks through the normal harness, and explicitly pass the permanent continuity constitution to the successor.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -58,7 +68,7 @@
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "6bc50de3f07015b63c58ac6bfba3b7bfce9a104c",
+  "closureEvidenceCommit": "bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed."
