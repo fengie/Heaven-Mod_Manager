@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "activity-page-viewmodel-closed-windows-verified",
+  "status": "coverage-page-viewmodel-awaiting-windows-verification",
   "verificationAppliesToCommit": "5eab48f0a2139e3aee96a7c71e4466d2e1168877",
   "lastClosedVerificationCommit": "5eab48f0a2139e3aee96a7c71e4466d2e1168877",
   "lastClosedVerificationRun": "36325994246",
-  "candidateSourceCommit": "e2396c7c91c5d8d88fe229603689539b5cdfb2da",
-  "verificationScopeNote": "The Activity page-view-model slice is closed. Hosted Windows Release Gate run 36325994246 verified exact main commit 5eab48f0a2139e3aee96a7c71e4466d2e1168877; production source last changed at e2396c7c91c5d8d88fe229603689539b5cdfb2da. The verifier passed 25/25 and promoted all 609 production fingerprints. Core 79/79, Automation 20/20, Integration/fault injection 63/63, self-test 11/11, win-x64 analyzer compile and ReadyToRun self-contained publish all passed. Evidence/cache persistence commit f0221e545ab4bf75b989d985dc3e5a90e2faa6fc is documentation/cache-only. Any later production edit starts a new verification boundary.",
+  "candidateSourceCommit": "855f6e5eb4998aa442538636b76f5c644146eb6a",
+  "verificationScopeNote": "The Activity page-view-model slice remains the last closed checkpoint: hosted Windows Release Gate run 36325994246 verified exact commit 5eab48f0a2139e3aee96a7c71e4466d2e1168877 with 609/609 promoted production fingerprints. Coverage extraction changes production source at 855f6e5eb4998aa442538636b76f5c644146eb6a and therefore starts a new verification boundary. It must not inherit the Activity green state until a fresh full Windows Release Gate passes.",
   "lastClosedVerification": {
     "functionInventoryTotal": 609,
     "functionsVerified": 609,
@@ -26,24 +26,23 @@
     "releaseArtifactSha256": "7ED67747DADE8BD3E56D30139BF39886F5E0A293F9CAE9B2887D06D720F589AF"
   },
   "candidateChanges": [
-    "ActivityPageViewModel now owns recent-activity read projection and Activity row state.",
-    "MainWindowViewModel composes ActivityPageViewModel while preserving ActivityRows and RefreshActivityCommand bindings.",
-    "RunBusy/global operation coordination remains in MainWindowViewModel.",
-    "Activity binding seam has a source-level integration regression guard.",
-    "Malformed intermediate connector serialization was corrected before closure; verified source contains normal C# newlines."
+    "CoveragePageViewModel owns semantic coverage reads, OutfitRow mapping, and coverage row collection state.",
+    "MainWindowViewModel composes CoveragePageViewModel while preserving the existing OutfitRows collection binding as an alias to Coverage.Rows.",
+    "RefreshOutfitsCommand, RunBusy, and global StatusText ownership remain in MainWindowViewModel.",
+    "Generic games without semantic coverage return a status message from CoveragePageViewModel to the shell instead of mutating shell-global status directly.",
+    "Added a source-level integration guard for the Coverage extraction and existing OutfitRows/RefreshOutfitsCommand XAML bindings."
   ],
   "invariantsPreserved": [
     "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, or conflict-resolution behavior changed.",
-    "Existing ActivityRows and RefreshActivityCommand binding behavior is preserved.",
-    "SQLite transaction ownership and schema are unchanged.",
+    "Existing OutfitRows and RefreshOutfitsCommand binding behavior is preserved.",
+    "SQLite transaction ownership, schema, and PresentationReadRepository query semantics are unchanged.",
     "FOMOD and enhanced-game adapter redesign remain out of scope."
   ],
-  "nextRequiredAction": "Begin one next low-coupling page-view-model slice only: Coverage. Preserve existing OutfitRows/RefreshOutfitsCommand bindings, keep global StatusText ownership in MainWindowViewModel, and let the page model own coverage reads/mapping/row state. Verify that slice completely before any further extraction.",
+  "nextRequiredAction": "Run the full Windows Release Gate for the Coverage candidate source 855f6e5eb4998aa442538636b76f5c644146eb6a. Fix real failures rather than weakening the gate. Do not begin another extraction until this Coverage boundary is independently green and its exact evidence is persisted.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
-  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "f0221e545ab4bf75b989d985dc3e5a90e2faa6fc"
+  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855"
 }

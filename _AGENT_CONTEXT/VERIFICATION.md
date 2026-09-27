@@ -1,5 +1,25 @@
 # Verification performed for this source handoff
 
+## Coverage page-view-model verification boundary
+
+Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` changes the WPF application source
+after the closed Activity checkpoint.
+
+Implementation scope:
+
+- `CoveragePageViewModel` owns `PresentationReadRepository.GetOutfitCoverageAsync`
+  consumption, `OutfitRow` mapping, and row collection state.
+- `MainWindowViewModel.OutfitRows` aliases `Coverage.Rows`.
+- shell command/busy/status ownership is preserved.
+- a new source-level integration guard checks the seam and unchanged XAML
+  bindings.
+
+No fresh Windows evidence exists for this candidate yet. The applicable closed
+verification remains Activity run `36325994246` at exact commit
+`5eab48f0a2139e3aee96a7c71e4466d2e1168877`. Do not promote changed
+fingerprints until a full new Windows Release Gate passes.
+
+
 ## Activity page-view-model hosted closure
 
 Hosted Windows run `36325994246` closed exact commit `5eab48f0a2139e3aee96a7c71e4466d2e1168877`

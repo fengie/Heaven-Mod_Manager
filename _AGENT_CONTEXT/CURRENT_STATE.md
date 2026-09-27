@@ -1,5 +1,27 @@
 # Current state — v8.8.0
 
+## Coverage page-view-model candidate — awaiting hosted Windows verification
+
+Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` begins the next incremental architecture
+slice after the closed Activity checkpoint.
+
+- Added `CoveragePageViewModel` to own semantic coverage reads, `OutfitRow`
+  mapping, and coverage collection state.
+- `MainWindowViewModel` composes the page model and exposes the same
+  `OutfitRows` collection reference via `Coverage.Rows`.
+- `RefreshOutfitsCommand`, `RunBusy`, and global `StatusText` remain shell
+  responsibilities.
+- For generic games without semantic coverage, the page model clears its rows
+  and returns the existing explanatory status text to the shell.
+- Added a source-level integration guard for the seam and preserved
+  `OutfitRows` / `RefreshOutfitsCommand` XAML bindings.
+- No deployment, conflict, database transaction, filesystem safety, FOMOD, or
+  enhanced-adapter semantics changed.
+
+This candidate does **not** inherit the Activity green state. A fresh complete
+Windows Release Gate is required before another extraction.
+
+
 ## Activity page-view-model slice CLOSED — hosted Windows
 
 The first post-closure architecture slice is fully green.

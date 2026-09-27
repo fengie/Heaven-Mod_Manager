@@ -1,25 +1,34 @@
 # Next steps
 
-## Immediate: Coverage page-view-model slice only
+## Immediate: verify Coverage page-view-model candidate
 
-The Activity slice is closed at exact commit `5eab48f0a2139e3aee96a7c71e4466d2e1168877`, run
-`36325994246`.
+Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` implements the Coverage extraction.
 
-Implement one next responsibility seam:
+Do not begin another architecture slice yet.
 
-1. Add a `CoveragePageViewModel` that owns the coverage read projection,
-   `OutfitRow` mapping, and coverage row collection.
-2. Keep the current `OutfitRows` binding surface by aliasing the page model's
-   row collection from `MainWindowViewModel`.
-3. Keep `RefreshOutfitsCommand`, `RunBusy`, and global `StatusText`
-   coordination in `MainWindowViewModel`.
-4. For generic games with no semantic coverage, let the page model return a
-   status/result to the shell rather than directly owning global status.
-5. Add a binding/seam regression guard.
-6. Push the source + adjacent continuity checkpoint and require a full fresh
-   Windows Release Gate before another page extraction.
+1. Run the full Windows Release Gate against the exact integrated Coverage
+   checkpoint.
+2. Require the continuity preflight, function scan, strict builds/analyzers,
+   Core/Automation/Integration tests, self-test, win-x64 compile, and
+   ReadyToRun publish to pass.
+3. Fix real failures rather than weakening gates or manually promoting caches.
+4. If green, persist the exact verified SHA/run, function inventory, test
+   counts, release SHA-256, and promoted cache evidence.
+5. Update `CURRENT_REVISION.json`, `CURRENT_STATE.md`, `VERIFICATION.md`,
+   and `NEXT-AGENT-START-HERE.md` to mark Coverage CLOSED.
+6. Only then choose one next low-coupling architecture seam.
 
-## Closed evidence
+## Coverage candidate design
+
+- `CoveragePageViewModel` owns coverage reads, `OutfitRow` mapping, and rows.
+- `MainWindowViewModel.OutfitRows` aliases `Coverage.Rows`, preserving XAML.
+- `RefreshOutfitsCommand`, `RunBusy`, and shell-global `StatusText` remain
+  in `MainWindowViewModel`.
+- Generic no-semantic-coverage status is returned to the shell instead of the
+  page model owning global status.
+- A source-level integration guard preserves the binding seam.
+
+## Last closed evidence
 
 - Activity exact verified commit: `5eab48f0a2139e3aee96a7c71e4466d2e1168877`
 - Activity production source: `e2396c7c91c5d8d88fe229603689539b5cdfb2da`
@@ -32,10 +41,10 @@ Implement one next responsibility seam:
 
 ## After Coverage is independently green
 
-Continue one seam at a time. Candidates include other page view models, then
-cohesive `ManagerDatabase` persistence slices that preserve explicit
-transaction ownership, then XAML page extraction. Treat Generic Host / DI
-lifetime migration as a separate later checkpoint.
+Continue one seam at a time. Prefer another low-coupling page-view-model seam
+before moving into cohesive `ManagerDatabase` persistence extraction. Preserve
+explicit transaction ownership. XAML page extraction and Generic Host / DI
+lifetime migration should remain separate later checkpoints.
 
 Do not start FOMOD or broad enhanced-game adapter redesign during these slices.
 

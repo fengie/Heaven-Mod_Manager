@@ -1,5 +1,21 @@
 # NEXT AGENT — START HERE
 
+## Active candidate: Coverage page view model
+
+Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` extracts the Coverage read/state seam
+into `CoveragePageViewModel` while deliberately preserving the existing
+`OutfitRows` and `RefreshOutfitsCommand` binding surface.
+
+The page model now owns semantic coverage reads, `OutfitRow` mapping, and row
+collection state. `MainWindowViewModel` still owns `RefreshOutfitsCommand`,
+`RunBusy`, and global `StatusText`. Generic games return their explanatory
+status from the page model to the shell instead of mutating shell-global state.
+
+This source is **not verified yet**. The last closed checkpoint remains the
+Activity slice at commit `5eab48f0a2139e3aee96a7c71e4466d2e1168877`, run
+`36325994246`. Run the full Windows Release Gate and do not start another page
+extraction until Coverage is independently green.
+
 ## Closed checkpoint: Activity page view model
 
 Activity extraction is closed by hosted run `36325994246` at exact commit
