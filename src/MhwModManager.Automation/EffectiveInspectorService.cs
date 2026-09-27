@@ -3,33 +3,154 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
 
-public sealed class EffectiveInspectorService(ManagerDatabase db)
+public sealed class EffectiveInspectorService(ManagerDatabase db, DeploymentPlanner? planner = null)
 {
     public async Task<EffectiveFileProvider?> ExplainAsync(string path, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var providers = new List<(string id,string name,string sha)>();
-        await using var c = await db.OpenAsync(ct);
-        await using (var cmd = c.CreateCommand())
-        {
-            cmd.CommandText = "SELECT m.id,m.display_name,mf.blob_sha256 FROM mod_files mf JOIN mods m ON m.id=mf.mod_id WHERE mf.path=$p ORDER BY m.priority";
-            cmd.Parameters.AddWithValue("$p", PathRules.Normalize(path));
-            await using var r = await cmd.ExecuteReaderAsync(ct); while(await r.ReadAsync(ct))providers.Add((r.GetString(0),r.GetString(1),r.GetString(2)));
-        }
-        if (providers.Count == 0) return null;
-        await using var manifest = c.CreateCommand(); manifest.CommandText="SELECT provider_mod_id,blob_sha256 FROM deployment_manifest WHERE path=$p"; manifest.Parameters.AddWithValue("$p",PathRules.Normalize(path));
-        await using var mr = await manifest.ExecuteReaderAsync(ct); string? winner=null,sha=null; if(await mr.ReadAsync(ct)){winner=mr.IsDBNull(0)?null:mr.GetString(0);sha=mr.IsDBNull(1)?null:mr.GetString(1);} 
-        var winnerName=providers.FirstOrDefault(x=>StringComparer.OrdinalIgnoreCase.Equals(x.id,winner)).name;
-        return new(PathRules.Normalize(path),winner,winnerName,providers.Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(x.id,winner)).Select(x=>x.id).ToArray(),sha);
+        var normalized = PathRules.Normalize(path);
+        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var mods = snapshot.Mods.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
+        var providers = snapshot.Files
+            .Where(x => PathRules.Comparer.Equals(x.Path, normalized) && mods.ContainsKey(x.ModId))
+            .Select(x => (mod:mods[x.ModId], file:x))
+            .OrderBy(x => x.mod.Priority)
+            .ToArray();
+        if (providers.Length == 0) return null;
+
+        snapshot.CurrentManifest.TryGetValue(normalized, out var manifest);
+        var winner = manifest?.ProviderModId;
+        var winnerName = winner is not null && mods.TryGetValue(winner, out var winnerMod) ? winnerMod.DisplayName : null;
+        return new(
+            normalized,
+            winner,
+            winnerName,
+            providers.Where(x => !StringComparer.OrdinalIgnoreCase.Equals(x.mod.Id, winner)).Select(x => x.mod.Id).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            manifest?.BlobSha256);
+    }
+
+    public async Task<EffectiveDecisionExplanation?> ExplainWhyAsync(string path, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (planner is null) throw new InvalidOperationException("Explain Why requires the application's configured deployment planner.");
+
+        var normalized = PathRules.Normalize(path);
+        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var enabledMods = snapshot.Mods
+            .Where(x => x.Enabled && !x.IsSuperseded)
+            .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
+        var providerFiles = snapshot.Files
+            .Where(x => PathRules.Comparer.Equals(x.Path, normalized) && enabledMods.ContainsKey(x.ModId))
+            .GroupBy(x => x.ModId, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
+            .ToArray();
+        if (providerFiles.Length == 0) return null;
+
+        var plan = await Task.Run(() => planner.Build(snapshot), ct);
+        var decision = plan.Conflicts.FirstOrDefault(x => PathRules.Comparer.Equals(x.Path, normalized));
+        if (decision is null) return null;
+
+        snapshot.CurrentManifest.TryGetValue(normalized, out var applied);
+        var plannedName = decision.WinnerModId is not null && enabledMods.TryGetValue(decision.WinnerModId, out var plannedMod)
+            ? plannedMod.DisplayName
+            : null;
+        var appliedName = applied?.ProviderModId is not null && snapshot.Mods.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, applied.ProviderModId)) is { } appliedMod
+            ? appliedMod.DisplayName
+            : null;
+        var appliedMatchesPlan = !decision.Blocking
+            && decision.WinnerModId is not null
+            && applied?.ProviderModId is not null
+            && StringComparer.OrdinalIgnoreCase.Equals(decision.WinnerModId, applied.ProviderModId);
+
+        var persistentRule = decision.RuleId is null
+            ? null
+            : snapshot.Rules.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, decision.RuleId));
+        var ruleSource = persistentRule?.Explicit == true
+            ? "Explicit human rule"
+            : decision.Inferred
+                ? "Automatic compatibility inference"
+                : decision.Confidence == Confidence.Explicit
+                    ? "Explicit resolver rule"
+                    : "Deterministic resolver";
+
+        var summary = decision.Blocking
+            ? $"No provider is selected for '{normalized}' because the resolver stopped safely: {decision.Explanation}"
+            : $"{plannedName ?? decision.WinnerModId ?? "The selected provider"} wins '{normalized}' because {decision.Explanation}";
+
+        var details = providerFiles
+            .Select(file =>
+            {
+                var mod = enabledMods[file.ModId];
+                return new EffectiveProviderDetail(
+                    mod.Id,
+                    mod.DisplayName,
+                    file.BlobSha256,
+                    mod.Priority,
+                    StringComparer.OrdinalIgnoreCase.Equals(mod.Id, decision.WinnerModId),
+                    StringComparer.OrdinalIgnoreCase.Equals(mod.Id, applied?.ProviderModId),
+                    mod.FamilyId,
+                    mod.FamilyRole,
+                    mod.NexusModId,
+                    mod.NexusFileId,
+                    mod.NexusCategory,
+                    mod.ProvenanceSource,
+                    mod.ProvenanceScore);
+            })
+            .OrderByDescending(x => x.PlannedWinner)
+            .ThenByDescending(x => x.Priority)
+            .ThenBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new(
+            normalized,
+            summary,
+            decision.Blocking,
+            decision.WinnerModId,
+            plannedName,
+            applied?.ProviderModId,
+            appliedName,
+            appliedMatchesPlan,
+            decision.Kind,
+            decision.ReasonCode,
+            decision.Explanation,
+            decision.Confidence,
+            decision.ResolverScore,
+            decision.Evidence ?? string.Empty,
+            decision.RuleId,
+            ruleSource,
+            decision.Inferred,
+            details);
     }
 
     public async Task<IReadOnlyList<AssetHeatmapRow>> HeatmapAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var map = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        await using var c=await db.OpenAsync(ct); await using var cmd=c.CreateCommand();
-        cmd.CommandText="SELECT mf.path,m.display_name FROM mod_files mf JOIN mods m ON m.id=mf.mod_id WHERE m.enabled=1";
-        await using var r=await cmd.ExecuteReaderAsync(ct); while(await r.ReadAsync(ct)){var key=AssetBundles.KeyForPath(r.GetString(0));if(!map.TryGetValue(key,out var set))map[key]=set=new(StringComparer.OrdinalIgnoreCase);set.Add(r.GetString(1));}
-        return map.Where(x=>x.Value.Count>1).Select(x=>new AssetHeatmapRow(x.Key,AssetBundles.DisplayNameForPath(x.Key),x.Value.Count,x.Value.Count>1,x.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray())).OrderByDescending(x=>x.ProviderCount).ThenBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
+        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var enabled = snapshot.Mods.Where(x => x.Enabled).ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
+        var providers = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var paths = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in snapshot.Files)
+        {
+            if (!enabled.TryGetValue(file.ModId, out var mod)) continue;
+            var key = AssetBundles.KeyForPath(file.Path);
+            if (!providers.TryGetValue(key, out var providerSet)) providers[key] = providerSet = new(StringComparer.OrdinalIgnoreCase);
+            if (!paths.TryGetValue(key, out var pathSet)) paths[key] = pathSet = new(StringComparer.OrdinalIgnoreCase);
+            providerSet.Add(mod.DisplayName);
+            pathSet.Add(file.Path);
+        }
+
+        return providers
+            .Where(x => x.Value.Count > 1)
+            .Select(x => new AssetHeatmapRow(
+                x.Key,
+                AssetBundles.DisplayNameForPath(x.Key),
+                x.Value.Count,
+                true,
+                x.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                paths[x.Key].Order(StringComparer.OrdinalIgnoreCase).ToArray()))
+            .OrderByDescending(x => x.ProviderCount)
+            .ThenBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }
