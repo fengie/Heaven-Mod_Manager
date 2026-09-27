@@ -19,7 +19,7 @@ Structured/master logging, health, startup diagnostics, support bundles and tele
 Higher-level workflows: coordinator, crash bisector, last-known-good, update impact/diff, save backup, dependency doctor, duplicate cleanup, trust, issue fallback, category/preset/inbox helpers.
 
 ## `src/MhwModManager.App`
-WPF composition and presentation. `App.xaml.cs` is the composition/bootstrap root. `ViewModels/MainWindowViewModel.cs` is still a large concentration of UI orchestration and should be treated as architectural debt rather than a template to expand indefinitely. `Rows.cs`, `MainWindow.xaml`, profile editor/startup windows and WPF tracing live here.
+WPF composition and presentation. `Assets/MHWModManager.ico` is the canonical application/executable/window icon; `MhwModManager.App.csproj` embeds it and the global `Window` style in `App.xaml` applies it to WPF windows. `App.xaml.cs` is the composition/bootstrap root. `ViewModels/MainWindowViewModel.cs` is still a large concentration of UI orchestration and should be treated as architectural debt rather than a template to expand indefinitely. `Rows.cs`, `MainWindow.xaml`, profile editor/startup windows and WPF tracing live here.
 
 ## `tools/MhwModManager.FunctionVerifier`
 v8.8 source verifier. Uses the Roslyn assemblies shipped with the pinned SDK instead of adding a NuGet package. `Program.cs` owns scanning, fingerprints, trusted-v8.7 comparison, reports, and atomic cache promotion.

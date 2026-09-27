@@ -40,6 +40,7 @@
             <Setter Property="Foreground" Value="{StaticResource Text}"/>
             <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Icon" Value="pack://application:,,,/Assets/MHWModManager.ico"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
             <Setter Property="UseLayoutRounding" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>

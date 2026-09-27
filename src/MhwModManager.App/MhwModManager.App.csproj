@@ -4,6 +4,7 @@
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\MHWModManager.ico</ApplicationIcon>
     <AssemblyName>MHW Mod Manager</AssemblyName>
     <RootNamespace>MhwModManager.App</RootNamespace>
   </PropertyGroup>
@@ -17,5 +18,8 @@
     <ProjectReference Include="../MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj" />
     <ProjectReference Include="../MhwModManager.Automation/MhwModManager.Automation.csproj" />
   </ItemGroup>
-  <ItemGroup><Content Include="../../data/Armor Database.csv"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><Link>data/Armor Database.csv</Link></Content></ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\MHWModManager.ico" />
+    <Content Include="../../data/Armor Database.csv"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><Link>data/Armor Database.csv</Link></Content>
+  </ItemGroup>
 </Project>

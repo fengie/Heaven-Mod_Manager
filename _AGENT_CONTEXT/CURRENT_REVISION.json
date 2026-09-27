@@ -6,9 +6,9 @@
   "currentVersion": "8.8.0",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 FunctionVerification",
-  "status": "repair-awaiting-final-windows-verification",
+  "status": "repair-plus-branding-awaiting-windows-verification",
   "verificationAppliesToCommit": "747cc4b3c4103f7ed49846b8f2301699ec7e54c5",
-  "verificationScopeNote": "This SHA identifies the exact source-code state reviewed before the Git-first continuity documentation update. Documentation-only handoff commits after this SHA do not imply that production code was re-verified.",
+  "verificationScopeNote": "The recorded verification SHA predates the Git-first documentation transition and the later branding integration. The branding change does not modify production C# function bodies, so the 602-function inventory and 579/23 function booleans are not manually changed; App/XAML/project-input build fingerprints must rerun normally.",
   "verification": {
     "functionInventoryTotal": 602,
     "functionsVerified": 579,
@@ -29,5 +29,10 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Run Test Everything.bat on Windows for the exact current production source, then Build.bat for Windows publish/release confirmation. Promote pending function fingerprints only through the normal verification gate."
+  "nextRequiredAction": "Pull the branding commit, run Test Everything.bat on Windows, then Build.bat and RUN BUILT APP.bat. Confirm the window/taskbar icon and the published MHW Mod Manager.exe icon. Let the normal verifier/cache logic decide which App/XAML/project-input stages rerun; do not manually promote booleans.",
+  "pendingRepositoryChangesSinceVerification": [
+    "Added generated MHW Manual Mod Manager application icon at src/MhwModManager.App/Assets/MHWModManager.ico.",
+    "MhwModManager.App.csproj now embeds the icon as the executable ApplicationIcon and WPF Resource.",
+    "App.xaml applies the icon to all WPF Window instances through the global Window style."
+  ]
 }

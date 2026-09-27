@@ -30,3 +30,7 @@ Read `AUDIT-2026-09-27.md`. Added generic scan/blob recapture fixes, idle watche
 ## Git-first continuity transition — 2026-09-27
 
 The full source tree is now stored in GitHub and future agents should treat repository commits/diffs as the authoritative development history. Added `AGENTS.md` and `_AGENT_CONTEXT/CURRENT_REVISION.json` so a fresh agent can establish instructions, revision lineage, verification applicability, and next action before reading historical material. Existing ZIP packaging remains supported as an export/release mechanism.
+
+## Application branding icon — 2026-09-27
+
+Added the generated dragon/mod-card MHW Manual Mod Manager icon at `src/MhwModManager.App/Assets/MHWModManager.ico`. The WPF project now uses it as the Win32 executable icon and embeds it as a WPF resource; the global Window style applies the same icon to application windows. This is a branding/project/XAML change only and does not alter C# function bodies. App/XAML/project-input verification fingerprints must rerun normally on the next Windows gate.
