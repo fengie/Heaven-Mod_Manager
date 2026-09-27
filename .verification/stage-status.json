@@ -1,13 +1,13 @@
 ﻿{
     "formatVersion":  1,
     "sourceVersion":  "8.8.0",
-    "updatedAtUtc":  "2026-09-27T14:29:45.3769436+00:00",
+    "updatedAtUtc":  "2026-09-27T14:57:21.3116406+00:00",
     "stages":  [
                    {
                        "id":  "strict:App",
-                       "fingerprint":  "932eacc6cc529bd7e4bafb79581920d7bcf1861277ad0d2f4ecf2065f96a82c4",
+                       "fingerprint":  "54fcf88bf44e1cad61d3825f26f45925388f99f7ab465f3b1b0df01db508d742",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-09-27T14:29:10.2527000+00:00",
+                       "verifiedAtUtc":  "2026-09-27T14:56:47.4239083+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "App",
                        "evidence":  "Verified by current run with exit code 0."
@@ -77,9 +77,9 @@
                    },
                    {
                        "id":  "strict:IntegrationTests",
-                       "fingerprint":  "a87d3ebef76da19d681173061c0192b0c3e5a9414ff380a02de28c7ea6abbf38",
+                       "fingerprint":  "f7a60c2ca924c3f11230fe309bfd9bf91ad98758585218bc47ef1ef46213e6a7",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-09-27T14:29:06.7971885+00:00",
+                       "verifiedAtUtc":  "2026-09-27T14:56:42.8832105+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "IntegrationTests",
                        "evidence":  "Verified by current run with exit code 0."
@@ -149,9 +149,9 @@
                    },
                    {
                        "id":  "test:Integration + fault injection",
-                       "fingerprint":  "a87d3ebef76da19d681173061c0192b0c3e5a9414ff380a02de28c7ea6abbf38",
+                       "fingerprint":  "f7a60c2ca924c3f11230fe309bfd9bf91ad98758585218bc47ef1ef46213e6a7",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-09-27T14:29:45.3769436+00:00",
+                       "verifiedAtUtc":  "2026-09-27T14:57:21.3108740+00:00",
                        "group":  "Tests",
                        "name":  "Integration + fault injection",
                        "evidence":  "Verified by current run with exit code 0."
