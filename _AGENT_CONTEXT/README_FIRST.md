@@ -33,7 +33,8 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 9. `_AGENT_CONTEXT/SOURCE_MAP.md`
 10. `_AGENT_CONTEXT/VERIFICATION.md`
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
-12. `_AGENT_CONTEXT/NEXT_STEPS.md`
+12. `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — independent CI/verifier/cache/supply-chain audit and future hardening checkpoints.
+13. `_AGENT_CONTEXT/NEXT_STEPS.md`
 
 ## Critical rule
 
