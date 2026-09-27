@@ -28,13 +28,16 @@ Handoff preflight and whitespace checks pass. No manual fingerprint promotions.
 2. DONE — implement and integrate the requested workflow areas.
 3. DONE — Linux validation, fault-injection tests, evidence and continuity notes.
 4. DONE — publish draft PR and verify remote file parity.
-5. IN PROGRESS — observe Windows CI; fix any actual failure and push another checkpoint.
+5. IN PROGRESS — Windows build, all 179 tests, and 11 self-tests passed. Fix the checkout line-ending trace-scan failure, push, and observe the rerun.
 6. PENDING — record final Windows CI outcome in CURRENT_REVISION/VERIFICATION. Native
    WPF interaction and real-game smoke tests remain a separate Windows acceptance step.
 
 Windows run: https://github.com/fengie/mhw-mods/actions/runs/36318260759
-Job `108616978328`: setup and strict Release build passed; backend suites still running
-at this checkpoint. A second push-triggered run also exists (`36318246547`). Query the
+Job `108616978328`: strict build, backend suites, self-test and handoff all passed.
+The final function scan failed on an unchanged legacy raw SQL string: Windows
+autocrlf changed literal token bytes relative to the LF trusted snapshot.
+`.gitattributes` now pins `*.cs` to LF, preserving exact fingerprints without weakening
+the verifier or manually promoting booleans. Await the new Windows run. A second push-triggered run also exists (`36318246547`). Query the
 latest run rather than assuming these statuses remain current.
 
 ## Continuation mechanics
@@ -54,3 +57,5 @@ VSTest path. The integration log deliberately prints failure diagnostics for neg
 verifier fixtures; inspect the final suite summary (zero failures).
 
 **Do not break the chain. Push and update this checkpoint at each meaningful milestone.**
+
+Checkpoint policy commit: `172d22118f2b33feb03b56b6971358195f628aa3`.

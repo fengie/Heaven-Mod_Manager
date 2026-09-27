@@ -1,0 +1,22 @@
+Run: https://github.com/fengie/mhw-mods/actions/runs/36318260759
+2026-09-27T12:14:35.9179404Z Build succeeded.
+2026-09-27T12:14:35.9180789Z     0 Warning(s)
+2026-09-27T12:14:35.9181190Z     0 Error(s)
+2026-09-27T12:14:46.7540292Z    MhwModManager.Tests  Total: 79, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 7.461s
+2026-09-27T12:14:59.7726354Z    MhwModManager.AutomationTests  Total: 39, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14.014s
+2026-09-27T12:15:16.9365655Z    MhwModManager.IntegrationTests  Total: 61, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 16.053s
+2026-09-27T12:15:18.4329016Z PASS: Category classifier
+2026-09-27T12:15:18.4417347Z PASS: Crash bisector
+2026-09-27T12:15:18.9976269Z PASS: SQLite schema
+2026-09-27T12:15:19.3138597Z PASS: Timeline persistence
+2026-09-27T12:15:19.7022553Z PASS: Last-known-good round trip
+2026-09-27T12:15:20.0484760Z PASS: Save snapshot
+2026-09-27T12:15:20.4070089Z PASS: Update diff
+2026-09-27T12:15:20.7490320Z PASS: Duplicate detector
+2026-09-27T12:15:21.1223473Z PASS: Recipe export
+2026-09-27T12:15:21.4692385Z PASS: Effective provider inspector
+2026-09-27T12:15:21.4722230Z PASS: Outfit preset inference
+2026-09-27T12:15:21.9878485Z PASS: Agent handoff continuity preflight. Version=8.8.0; requiredFiles=32
+2026-09-27T12:15:23.2427194Z FUNCTION VERIFICATION: 683 function(s); known-good=552; needs-verification=131; trace-gaps=1; explicit-call-sites=7345; uncovered-call-sites=1; parse-errors=0.
+2026-09-27T12:15:23.2430464Z TRACE GAP: src/MhwModManager.Storage/LegacyV7Migrator.cs::LegacyV7Migrator::method:ResetIncompleteImportAsync(CancellationToken) (src/MhwModManager.Storage/LegacyV7Migrator.cs:89)
+2026-09-27T12:15:23.2439308Z CALL-SITE COVERAGE GAP: src/MhwModManager.Storage/LegacyV7Migrator.cs::LegacyV7Migrator::method:ResetIncompleteImportAsync(CancellationToken) has 1 explicit call site(s) outside known-good/traced coverage.

@@ -1,0 +1,3 @@
+# Raw/verbatim C# string tokens include their line endings. Keep source bytes
+# stable across Windows/Linux checkout so exact function fingerprints agree.
+*.cs text eol=lf

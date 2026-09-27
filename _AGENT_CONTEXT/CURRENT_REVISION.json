@@ -6,7 +6,7 @@
   "currentVersion": "8.8.0",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "GitHub main 91f2b9e9815caab2e4670084022a5c2ab3e45f55",
-  "status": "workflow-expansion-linux-validated-windows-pending",
+  "status": "workflow-expansion-windows-tests-passed-trace-rerun-pending",
   "verificationAppliesToCommit": "02fa1dd5c3e98d319067043598bfdfd32617e65f",
   "verificationScopeNote": "Evidence describes the workflow code commit above. This adjacent metadata commit records its SHA. Linux strict build, backend tests and self-tests passed. Native WPF interaction and Windows release verification are pending. No function verification booleans were manually promoted.",
   "verification": {
@@ -20,7 +20,11 @@
     "selfTest": "11/11 passed",
     "functionTraceScan": "passed: zero trace gaps, uncovered call sites or parse errors",
     "handoffPreflight": "passed",
-    "finalWindowsReleaseVerification": "pending; Windows CI configured; native UI acceptance still required"
+    "finalWindowsReleaseVerification": "pending; Windows CI configured; native UI acceptance still required",
+    "windowsStrictReleaseBuild": "passed: 0 warnings / 0 errors",
+    "windowsBackendTests": "179/179 passed",
+    "windowsSelfTest": "11/11 passed",
+    "windowsFunctionTraceScan": "initial scan failed because Windows autocrlf changed raw-string token fingerprints; *.cs LF checkout policy added; rerun pending"
   },
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/workflow-expansion-validation.log",
@@ -29,7 +33,8 @@
     "_AGENT_CONTEXT/VERIFICATION.md"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Review codex/complete-mod-workflows and its Windows CI result. Run Test Everything.bat and Build.bat on Windows, then test the workflow window and FOMOD chooser in a disposable game workspace. Preserve transactional metadata recovery tests and do not manually promote fingerprints.",
+  "nextRequiredAction": "Observe the latest Windows CI after the *.cs LF checkout policy fix, then record the result. Native WPF acceptance remains pending. Push each meaningful checkpoint with CHECKPOINT.md updated.",
   "pendingRepositoryChangesSinceVerification": [],
-  "featureBranch": "codex/complete-mod-workflows"
+  "featureBranch": "codex/complete-mod-workflows",
+  "windowsEvidenceRun": "https://github.com/fengie/mhw-mods/actions/runs/36318260759"
 }
