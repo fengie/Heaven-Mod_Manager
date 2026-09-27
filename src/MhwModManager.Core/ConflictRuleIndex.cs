@@ -1,6 +1,6 @@
 namespace MhwModManager.Core;
 
-public sealed record OverlayResolution(string WinnerModId, ConflictRule Rule);
+public sealed record OverlayResolution(string WinnerModId, ConflictRule Rule, IReadOnlyList<ConflictRule>? Chain = null);
 
 /// <summary>
 /// Immutable lookup structure for conflict rules. The planner creates one per snapshot so
@@ -94,7 +94,9 @@ public sealed class ConflictRuleIndex
             .OrderByDescending(r => r.Explicit)
             .ThenByDescending(r => r.CreatedUtc)
             .FirstOrDefault();
-        return decidingRule is null ? null : new(root, decidingRule);
+        var chain = overlays.Values.Where(r => r.LeftModId is not null && r.RightModId is not null && candidateIds.Contains(r.LeftModId) && candidateIds.Contains(r.RightModId))
+            .OrderBy(r => r.CreatedUtc).ThenBy(r => r.Id, StringComparer.Ordinal).ToArray();
+        return decidingRule is null ? null : new(root, decidingRule, chain);
     }
 
     /// <summary>Overlay-undominated candidates. Texture priority may choose among these roots.</summary>

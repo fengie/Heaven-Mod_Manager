@@ -1,0 +1,45 @@
+name: Windows workflow verification
+on:
+  pull_request:
+  push:
+    branches: [codex/complete-mod-workflows]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Strict release build
+        shell: pwsh
+        run: |
+          dotnet build MhwModManager.sln -c Release -m:1 -warnaserror
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Backend regression suites
+        shell: pwsh
+        run: |
+          $suites = @(
+            'tests/MhwModManager.Tests/bin/Release/net10.0/MhwModManager.Tests.dll',
+            'tests/MhwModManager.AutomationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.AutomationTests.dll',
+            'tests/MhwModManager.IntegrationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.IntegrationTests.dll'
+          )
+          foreach ($suite in $suites) {
+            dotnet $suite -noLogo -noColor -maxThreads 2
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Self-test and handoff
+        shell: pwsh
+        run: |
+          dotnet tools/MhwModManager.SelfTest/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.SelfTest.dll "$env:RUNNER_TEMP/workflow-selftest"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./scripts/Test-AgentHandoff.ps1
+      - name: Function trace scan (no promotion)
+        shell: pwsh
+        run: |
+          dotnet tools/MhwModManager.FunctionVerifier/bin/Release/net10.0/MhwModManager.FunctionVerifier.dll --root "$pwd" --mode scan --report "$env:RUNNER_TEMP/workflow-scan.json"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

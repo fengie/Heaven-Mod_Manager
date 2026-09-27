@@ -1,3 +1,7 @@
+## Workflow expansion (2026-09-27)
+
+The current working branch adds the twelve requested workflow areas; see `WORKFLOW_IMPLEMENTATION.md` and `../docs/WORKFLOWS.md`. The original repair evidence below is historical. New functions remain unpromoted until the normal verification pipeline confirms their fingerprints.
+
 # Current state — v8.8.0
 
 ## Latest state: 2026-09-27 repair audit

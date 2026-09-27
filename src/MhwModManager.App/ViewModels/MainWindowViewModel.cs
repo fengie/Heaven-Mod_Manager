@@ -936,9 +936,23 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var dest=UniqueDirectory(Path.Combine(s.Paths.ModsRoot,name));
             var temp=dest+".importing";
             if(Directory.Exists(temp))Directory.Delete(temp,true);
-            await s.Archive.ExtractSafelyAsync(dlg.FileName,temp,ct);
-            await Task.Run(()=>NormalizeWrapper(temp),ct);
-            Directory.Move(temp,dest);
+            try
+            {
+                await s.Archive.ExtractSafelyAsync(dlg.FileName,temp,ct);
+                await Task.Run(()=>NormalizeWrapper(temp),ct);
+                if(FomodInstallerService.HasInstaller(temp))
+                {
+                    var installer=new FomodInstallerService(temp);
+                    var savedJson=await s.Database.GetSettingAsync("fomod.selection."+installer.ConfigSha256,ct);
+                    var saved=savedJson is null?null:System.Text.Json.JsonSerializer.Deserialize<FomodSelection>(savedJson);
+                    var chooser=new FomodInstallerWindow(installer,s.Paths.Game,saved?.SelectedOptions){Owner=Application.Current.MainWindow};
+                    if(chooser.ShowDialog()!=true){StatusText="Installer cancelled; no package imported.";return;}
+                    await installer.InstallAsync(chooser.SelectedOptions,s.Paths.Game,dest,ct);
+                    await s.Database.SetSettingAsync("fomod.selection."+installer.ConfigSha256,System.Text.Json.JsonSerializer.Serialize(installer.Remember(chooser.SelectedOptions)),ct);
+                }
+                else Directory.Move(temp,dest);
+            }
+            finally { if(Directory.Exists(temp))Directory.Delete(temp,true); }
             await s.Catalog.RefreshFoldersAsync(ct);
             await metadataGate.WaitAsync(ct);
             try{await s.Nexus.RefreshAsync(ct);}
@@ -1008,7 +1022,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task AutoDiagnoseCrash()=>await RunBusy("automation.bisect","Automatic crash diagnosis","Bisecting changed mods or persisted issue suspects against a safe baseline. The game may launch several times and surviving probes will be closed automatically…",false,async ct=>
+    private async Task AutoDiagnoseCrash()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await RunBusy("automation.bisect","Automatic crash diagnosis","Bisecting changed mods or persisted issue suspects against a safe baseline. The game may launch several times and surviving probes will be closed automatically…",false,async ct=>
     {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet. Launch successfully once before using automatic bisect.");
         var current=await s.Database.GetModsAsync(ct);
@@ -1034,15 +1051,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var result=await s.Bisector.RunAsync(suspects,async (subset,token)=>await ProbeCrashSubsetAsync(known,currentState,subset,token),ct);
             StatusText=result.Isolated?$"Crash bisector isolated: {string.Join(", ",result.Suspects)} after {result.Probes} probe(s).":result.Message;
             await s.Timeline.RecordAsync("diagnosis.bisect",result.Isolated?AutomationSeverity.Warning:AutomationSeverity.Info,StatusText,new{result.Suspects,result.Probes},ct);
-            if(result.Isolated)await s.Issues.MarkBisectResultAsync(result.Suspects,ct:ct);
+            if(result.Isolated && result.Suspects.Count == 1)await s.Issues.MarkBisectResultAsync(result.Suspects,ct:ct);
             await RefreshIssueSuspects(ct);
         }
         finally
         {
-            await ApplyStateDirectAsync(currentState,"Restore setup after crash diagnosis",ct);
+            await ApplyStateDirectAsync(currentState,"Restore setup after crash diagnosis",CancellationToken.None);
             await ReloadMods(ct);await RefreshAnalysis(ct);
         }
     });
+    }
 
     private async Task<bool> ProbeCrashSubsetAsync(LastKnownGoodState known,Dictionary<string,(bool enabled,int priority)> current,IReadOnlySet<string> subset,CancellationToken ct)
     {
@@ -1052,10 +1070,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await ApplyStateDirectAsync(stage,"Crash diagnosis probe",ct);
         var exe=s.Paths.ExecutablePath;
         using var process=ProcessDebug.Start(new ProcessStartInfo(exe){WorkingDirectory=s.Paths.GameRoot,UseShellExecute=true}, "game-crash-probe");
-        var delay=Task.Delay(TimeSpan.FromSeconds(12),ct);var exit=process.WaitForExitAsync(ct);var completed=await Task.WhenAny(delay,exit);
-        if(completed==exit)return true;
-        try{process.Kill(true);await process.WaitForExitAsync(ct);}catch(InvalidOperationException){}
-        return false;
+        try
+        {
+            var delay=Task.Delay(TimeSpan.FromSeconds(12),ct);var exit=process.WaitForExitAsync(ct);
+            var completed=await Task.WhenAny(delay,exit);ct.ThrowIfCancellationRequested();
+            if(completed==exit){await exit;return true;}
+            return false;
+        }
+        finally
+        {
+            try{if(!process.HasExited){process.Kill(true);await process.WaitForExitAsync(CancellationToken.None);}}
+            catch(InvalidOperationException){}
+        }
     }
 
     private async Task ApplyStateDirectAsync(Dictionary<string,(bool enabled,int priority)> state,string description,CancellationToken ct)

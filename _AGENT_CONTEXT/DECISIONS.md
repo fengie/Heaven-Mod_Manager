@@ -1,3 +1,7 @@
+## 2026-09-27 workflow decisions
+
+Use the deployment planner as the single source of winner decisions. Imported profiles never directly enable live files. Family restoration is a separate explicit action. Persist migration metadata in the same SQLite commit as manifest/enabled state; journal before/after rows so Undo and recovery restore relationships as well as payloads. FOMOD must fail closed on unsupported dependencies or ambiguous equal-priority copies. Do not mark a multi-mod minimal combination as individually confirmed culprits. Keep adapters compiled/explicitly registered rather than auto-loading untrusted DLLs.
+
 # Architecture / implementation decisions
 
 ## 1. Do not wrap every call site in ad-hoc try/catch

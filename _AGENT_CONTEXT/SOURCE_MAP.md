@@ -1,3 +1,16 @@
+## Workflow expansion
+
+- `Core/WorkflowAnalysis.cs`: planner-backed file/provider evidence and profile comparison.
+- `Core/GameAdapters.cs`: compiled adapter SDK and registry.
+- `Storage/DeploymentMetadata.cs`: optimistic metadata row images, inverse edits, and operation journal.
+- `Storage/ProfileRepository.cs`: flat/inherited profile resolution and delta persistence.
+- `Automation/CollectionRecipeService.cs`: recipe export, match preview, profile import, explicit family restoration.
+- `Automation/RulesEditorService.cs`, `UpdateMigrationService.cs`, `FomodInstallerService.cs`: rule editing, transactional migration, choice installer.
+- `App/WorkflowWindow.xaml` and code-behind; `FomodInstallerWindow.cs`; `ViewModels/MainWindowViewModel.Workflows.cs`: user workflows.
+- `tests/MhwModManager.AutomationTests/WorkflowTests.cs`: matching, hierarchy, installer, migration fault injection and SDK tests.
+
+Paths above are relative to `src/` except tests.
+
 # Source map
 
 ## `src/MhwModManager.Core`

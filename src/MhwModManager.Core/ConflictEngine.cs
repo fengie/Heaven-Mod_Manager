@@ -8,7 +8,8 @@ public sealed class ConflictEngine
 
     public ConflictEngine(GameProfile? game = null)
     {
-        richMhwSemantics = game is null || game.IsMonsterHunterWorld;
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        richMhwSemantics = GameAdapters.Resolve(game).SupportsMhwConflictSemantics;
     }
     /// <summary>Compatibility overload used by focused unit tests and external callers.</summary>
     public ConflictDecision Decide(
@@ -85,6 +86,13 @@ public sealed class ConflictEngine
         if (orderedOverlay is not null)
         {
             var inferred = !orderedOverlay.Rule.Explicit;
+            var chainEvidence = string.Join("\n", (orderedOverlay.Chain ?? [orderedOverlay.Rule]).Select(r =>
+            {
+                var loser = StringComparer.OrdinalIgnoreCase.Equals(r.LeftModId, r.WinnerModId) ? r.RightModId : r.LeftModId;
+                var loserName = loser is not null && enabledMods.TryGetValue(loser, out var lm) ? lm.DisplayName : loser;
+                var winnerName = r.WinnerModId is not null && enabledMods.TryGetValue(r.WinnerModId, out var wm) ? wm.DisplayName : r.WinnerModId;
+                return $"{(r.Explicit ? "Manual rule" : "Inferred relationship")}: {loserName} → {winnerName}. {r.Reason} {r.Evidence}";
+            }));
             return new(path,
                 inferred ? ConflictKind.ModFamilyOption : ConflictKind.UserOverlayRule,
                 false,
@@ -95,7 +103,7 @@ public sealed class ConflictEngine
                 orderedOverlay.Rule.Id,
                 inferred,
                 inferred ? (orderedOverlay.Rule.ResolverScore>0?orderedOverlay.Rule.ResolverScore:94) : 100,
-                inferred ? (orderedOverlay.Rule.Evidence??"High-confidence base/optional/patch precedence chain.") : "Explicit human overlay precedence rule.");
+                chainEvidence);
         }
 
         // Hard invariant: packages that have already been proven to belong to the same logical

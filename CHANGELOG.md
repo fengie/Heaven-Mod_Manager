@@ -1,3 +1,14 @@
+## Unreleased — workflow expansion
+
+- Portable recipe matching/import and explicit family restoration.
+- Planner-backed effective filesystem, decision evidence, profile differences, and relationship view.
+- Central rules editor, inherited profiles, and observable stability history.
+- FOMOD choice installation with remembered selections and Inbox hold.
+- Transactional update migration including metadata rollback and Undo.
+- Crash interaction minimization and cancellation-safe probe cleanup.
+- Compiled game adapter SDK; conservative generic fallback.
+- Windows CI and regression coverage for migration crash boundaries and installer safety.
+
 # v8.8.0 — Function verification cache and call-error hardening
 
 ## Repair audit — 2026-09-27

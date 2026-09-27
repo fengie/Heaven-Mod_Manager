@@ -59,7 +59,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // High-confidence base/option/patch relationships become transient overlay rules. They are
         // recomputed from indexed source files every plan, so stale auto rules are never persisted.
         // Explicit user rules always win and suppress inference for that pair.
-        var autoRules = game is null || game.IsMonsterHunterWorld
+        var autoRules = GameAdapters.Resolve(game).SupportsMhwConflictSemantics
             ? AutoCompatibility.GenerateOverlayRules(enabled, pairStats, snapshot.Rules)
             : Array.Empty<ConflictRule>();
         var effectiveRules = snapshot.Rules.Concat(autoRules).ToArray();
@@ -88,6 +88,12 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 desired[path] = chosen;
             }
         }
+
+        // Incompatibility is a mod relationship even when the packages touch disjoint files.
+        foreach (var rule in snapshot.Rules.Where(r => r.Kind == RuleKind.Incompatible && r.Scope == RuleScope.ModPair &&
+                     r.LeftModId is not null && r.RightModId is not null && enabled.ContainsKey(r.LeftModId) && enabled.ContainsKey(r.RightModId)))
+            if (!decisions.Any(d => d.RuleId == rule.Id))
+                decisions.Add(new("<mods:" + rule.Id + ">", ConflictKind.Incompatible, true, null, "explicit-incompatible", rule.Reason, Confidence.Explicit, rule.Id));
 
         if (decisions.Any(x => x.Blocking))
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], decisions, ["Resolve the compacted blocking choices before deployment. Auto-composed overlays and shared textures require no action."]);

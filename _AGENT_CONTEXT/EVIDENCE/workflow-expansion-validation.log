@@ -1,0 +1,129 @@
+=== BUILD ===
+  MhwModManager.Core -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Core/bin/Release/net10.0/MhwModManager.Core.dll
+  MhwModManager.Storage -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Storage/bin/Release/net10.0/MhwModManager.Storage.dll
+  MhwModManager.Filesystem -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Filesystem/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Filesystem.dll
+  MhwModManager.Mhw -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Mhw/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Mhw.dll
+  MhwModManager.Diagnostics -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Diagnostics/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Diagnostics.dll
+  MhwModManager.Automation -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Automation/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Automation.dll
+  MhwModManager.App -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.App/bin/Release/net10.0-windows10.0.19041.0/MHW Mod Manager.dll
+  MhwModManager.Tests -> /workspace/scratch/bcf29506d2df/mhw-mods/tests/MhwModManager.Tests/bin/Release/net10.0/MhwModManager.Tests.dll
+  MhwModManager.FunctionVerifier -> /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/bin/Release/net10.0/MhwModManager.FunctionVerifier.dll
+  MhwModManager.IntegrationTests -> /workspace/scratch/bcf29506d2df/mhw-mods/tests/MhwModManager.IntegrationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.IntegrationTests.dll
+  MhwModManager.Benchmarks -> /workspace/scratch/bcf29506d2df/mhw-mods/benchmarks/MhwModManager.Benchmarks/bin/Release/net10.0/MhwModManager.Benchmarks.dll
+  MhwModManager.AutomationTests -> /workspace/scratch/bcf29506d2df/mhw-mods/tests/MhwModManager.AutomationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.AutomationTests.dll
+  MhwModManager.SelfTest -> /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.SelfTest/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.SelfTest.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.98
+
+=== CORE ===
+  Discovering: MhwModManager.Tests
+  Discovered:  MhwModManager.Tests
+  Starting:    MhwModManager.Tests
+  Finished:    MhwModManager.Tests (ID = '008f6c10672b7b0fd2c4243b551fcbbc0b55520841b5d279facbd1a4e322dcf3')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.Tests  Total: 79, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4.058s
+
+=== AUTOMATION ===
+  Discovering: MhwModManager.AutomationTests
+  Discovered:  MhwModManager.AutomationTests
+  Starting:    MhwModManager.AutomationTests
+  Finished:    MhwModManager.AutomationTests (ID = '8e27730e9bf8921bc9316724afd0bbc3a27b687af8e26c482c694f8dd1d279bb')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.AutomationTests  Total: 39, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1.056s
+
+=== INTEGRATION ===
+  Discovering: MhwModManager.IntegrationTests
+  Discovered:  MhwModManager.IntegrationTests
+  Starting:    MhwModManager.IntegrationTests
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=3.
+PARSE ERROR: src/Fixture.cs:1: ) expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 2 function(s); known-good=0; needs-verification=2; trace-gaps=2; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=1.
+PARSE ERROR: Duplicate function ID generated for current source: src/Fixture.cs::C::method:Run()
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+System.IO.InvalidDataException: Trusted source snapshot is missing: /tmp/mhw-verifier-09079c6c45c54be98f4e62e27016ffaf/.verification/trusted-v8.7.0-src.zip
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 433
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+System.IO.InvalidDataException: Trusted source snapshot contains a duplicate file: src/Fixture.cs
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 468
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/mhw-mods/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+  Finished:    MhwModManager.IntegrationTests (ID = '1c57a51079b7b0a84fa7ca5b406367cda29d9c86b4d29744212a5c670c2a5a8b')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.IntegrationTests  Total: 61, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1.146s
+
+=== SELFTEST ===
+PASS: Category classifier
+PASS: Crash bisector
+PASS: SQLite schema
+PASS: Timeline persistence
+PASS: Last-known-good round trip
+PASS: Save snapshot
+PASS: Update diff
+PASS: Duplicate detector
+PASS: Recipe export
+PASS: Effective provider inspector
+PASS: Outfit preset inference
+SELFTEST REPORT: /workspace/scratch/bcf29506d2df/workflow-selftest/selftest-20260927-080941.md
+SELFTEST JSON: /workspace/scratch/bcf29506d2df/workflow-selftest/selftest-20260927-080941.json
+
+=== FUNCTION SCAN ===
+683 functions; known-good=562; needs-verification=121; trace-gaps=0; uncovered-call-sites=0; parse-errors=0.
+No fingerprint promotion performed.
+
+=== HANDOFF ===
+PASS: Agent handoff continuity preflight. Version=8.8.0
+
+=== FINAL WPF BINDING CROSS-BUILD ===
+  MhwModManager.Core -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Core/bin/Release/net10.0/MhwModManager.Core.dll
+  MhwModManager.Storage -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Storage/bin/Release/net10.0/MhwModManager.Storage.dll
+  MhwModManager.Filesystem -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Filesystem/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Filesystem.dll
+  MhwModManager.Mhw -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Mhw/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Mhw.dll
+  MhwModManager.Diagnostics -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Diagnostics/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Diagnostics.dll
+  MhwModManager.Automation -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.Automation/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Automation.dll
+  MhwModManager.App -> /workspace/scratch/bcf29506d2df/mhw-mods/src/MhwModManager.App/bin/Release/net10.0-windows10.0.19041.0/MHW Mod Manager.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.88

@@ -34,6 +34,12 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
                     await archive.ExtractSafelyAsync(entry, destination, ct); NormalizeWrapper(destination);
                 }
+                if (FomodInstallerService.HasInstaller(destination))
+                {
+                    Directory.Delete(destination, true);
+                    results.Add(new(entry, null, false, AutomationCategory.Unknown, "Installer choices required. Use Import archive and select this Inbox archive; source left untouched."));
+                    continue;
+                }
                 var category = categories.Classify(Directory.EnumerateFiles(destination, "*", SearchOption.AllDirectories).Select(x => Path.GetRelativePath(destination, x)));
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");

@@ -1,3 +1,7 @@
+## Workflow expansion boundaries
+
+Native WPF rendering/input remains unverified in this Linux workspace. FOMOD external game/plugin/manager dependencies are explicitly unsupported and block import; cross-version installer option IDs are not guessed. Recipe matching uses local Nexus identity and captured hashes; acquisition remains through authors. Recipe family restoration is explicit and refuses existing local groups. Profiles inherit enabled/priority state and use global rules. See `../docs/WORKFLOWS.md` for the complete boundaries.
+
 # Known issues / limitations
 
 1. **Windows release confirmation is still required for the repaired source.** The two preserved historical Windows runs reached 13 PASS / 12 FAIL, then 24 PASS / 1 FAIL. The four trace gaps from the second run were already fixed in the supplied ZIP. The current repair revision builds cleanly and passes 158 tests plus 11 self-test checks on Linux, but WPF interaction, Windows locks, and publishing were not exercised here. See `AUDIT-2026-09-27.md`.

@@ -1,3 +1,7 @@
+## Workflow expansion
+
+Dashboard → **Loadouts, rules & diagnostics** opens recipe import, effective-file explanations, rules, inherited profiles and comparison, relationship visualization, update migration, and stability history. Archive import now presents supported FOMOD choices. See [Workflow guide](docs/WORKFLOWS.md) and [Game adapter SDK](docs/GAME-ADAPTER-SDK.md). Native Windows UI acceptance remains required before release.
+
 # v8.8.0 Universal Mod Manager
 
 ## Repair revision — 2026-09-27

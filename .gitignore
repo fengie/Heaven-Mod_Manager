@@ -8,3 +8,6 @@ State/Next/
 *.db-shm
 *.db-wal
 Mods/
+
+# WPF markup compiler temporary projects
+*_wpftmp.csproj

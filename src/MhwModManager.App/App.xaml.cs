@@ -100,7 +100,7 @@ public sealed partial class App:Application, IDisposable
             var categories=startup.Run("services.auto-category",()=>new AutoCategoryService(db,paths.Game,startup));
             var dependencies=startup.Run("services.dependency-doctor",()=>new DependencyDoctorService(db,paths.GameRoot,paths.Game));
             var duplicates=startup.Run("services.duplicate-cleanup",()=>new DuplicateCleanupService(db,paths.ModsArchiveRoot));
-            var recipe=startup.Run("services.collection-recipes",()=>new CollectionRecipeService(db));
+            var recipe=startup.Run("services.collection-recipes",()=>new CollectionRecipeService(db,paths.Game));
             var trust=startup.Run("services.mod-trust",()=>new ModTrustService(db));
             var issues=startup.Run("services.mod-issue-fallback",()=>new ModIssueFallbackService(db,timeline,trust));
             var updateDiff=startup.Run("services.update-diff",()=>new UpdateDiffService(db));

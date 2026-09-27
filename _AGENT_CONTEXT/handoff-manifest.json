@@ -30,7 +30,10 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
     "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
+    "_AGENT_CONTEXT/WORKFLOW_IMPLEMENTATION.md",
+    "docs/WORKFLOWS.md",
+    "docs/GAME-ADAPTER-SDK.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",

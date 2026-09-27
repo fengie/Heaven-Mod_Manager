@@ -1,3 +1,7 @@
+## Current branch validation
+
+Review the workflow PR and Windows CI result. On Windows, run `Test Everything.bat`, then `Build.bat`, then `& ".\RUN BUILT APP.bat"` in PowerShell. Exercise Dashboard → Loadouts, rules & diagnostics and the FOMOD archive chooser with a disposable game workspace. Check profile staging, recipe mismatches, rule graph direction, update Undo, and keyboard/scroll behavior. Do not deploy experimental mods to the user’s live game for UI testing.
+
 # Next steps
 
 ## Current repair revision

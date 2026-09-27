@@ -36,6 +36,18 @@ public sealed class DeploymentExecutor(
         string? parentOperationId=null,
         CancellationToken ct=default)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await ApplyWithMetadataAsync(plan,description,[],targetModState,parentOperationId,ct);
+    }
+
+    public async Task<OperationResult> ApplyWithMetadataAsync(
+        DeploymentPlan plan,
+        string description,
+        IReadOnlyList<MetadataRowChange> metadataChanges,
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? targetModState=null,
+        string? parentOperationId=null,
+        CancellationToken ct=default)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"planId={plan.Id}; changes={plan.Changes.Count}; description={description}");
         if(plan.IsBlocked)return new(false,"Deployment is blocked by unresolved conflicts.",plan.Id,null,FailureCategory.UserActionRequired);
 
@@ -97,7 +109,7 @@ public sealed class DeploymentExecutor(
             // Manifest, ownership, enabled state, and the COMMITTED marker cross one SQLite
             // transaction boundary. If the process dies during this transaction SQLite rolls it
             // back and recovery sees StateCommitting, so it restores the filesystem before-image.
-            await CommitAfterStateAsync(plan.Id,prepared,afterState,targetModState is not null,ct);
+            await CommitAfterStateAsync(plan.Id,prepared,afterState,targetModState is not null,metadataChanges,ct);
             Inject("after-db-commit",0);
             Inject("before-cleanup",0);
 
@@ -165,7 +177,9 @@ public sealed class DeploymentExecutor(
         }
         var state=beforeJson is null?null:DeserializeState(beforeJson);
         var plan=new DeploymentPlan(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,inverse,[],[$"Undo committed operation {id}"]);
-        return await ApplyAsync(plan,$"Undo {id}",state,id,ct);
+        await using var metadataConnection=await db.OpenAsync(ct);
+        var inverseMetadata=DeploymentMetadata.Invert(await DeploymentMetadata.LoadAsync(metadataConnection,null,id,ct));
+        return await ApplyWithMetadataAsync(plan,$"Undo {id}",inverseMetadata,state,id,ct);
     }
 
     public async Task RecoverIncompleteAsync(CancellationToken ct=default)
@@ -291,7 +305,7 @@ public sealed class DeploymentExecutor(
         },ct);
     }
 
-    private async Task CommitAfterStateAsync(string operationId,List<DeploymentChange> prepared,Dictionary<string,(bool enabled,int priority)> afterState,bool updateModState,CancellationToken ct)
+    private async Task CommitAfterStateAsync(string operationId,List<DeploymentChange> prepared,Dictionary<string,(bool enabled,int priority)> afterState,bool updateModState,IReadOnlyList<MetadataRowChange>? metadataChanges,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await db.InTransactionAsync<object?>(async(c,tx,token)=>
@@ -321,6 +335,7 @@ public sealed class DeploymentExecutor(
                 foreach(var(id,state) in afterState){pe.Value=state.enabled?1:0;pp.Value=state.priority;pu.Value=now;pi.Value=id;await update.ExecuteNonQueryAsync(token);}
             }
 
+            if(metadataChanges is {Count: > 0})await DeploymentMetadata.CommitAsync(c,tx,operationId,metadataChanges,token);
             await ExecuteTxAsync(c,tx,"UPDATE operations SET state='Committed',committed_at=$u WHERE id=$id",new Dictionary<string,object?>{{"$u",DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture)},{"$id",operationId}},token);
             return null;
         },ct);
@@ -375,6 +390,8 @@ public sealed class DeploymentExecutor(
                 var now=DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
                 foreach(var(id,state) in restoredState){pe.Value=state.enabled?1:0;pp.Value=state.priority;pu.Value=now;pi.Value=id;await update.ExecuteNonQueryAsync(token);}
             }
+            var committedMetadata=await DeploymentMetadata.LoadAsync(c,tx,operationId,token);
+            if(committedMetadata.Count>0)await DeploymentMetadata.ApplyAsync(c,tx,DeploymentMetadata.Invert(committedMetadata),true,token);
             await ExecuteTxAsync(c,tx,"UPDATE operations SET state='RolledBack',committed_at=$u WHERE id=$id",new Dictionary<string,object?>{{"$u",DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture)},{"$id",operationId}},token);
             return null;
         },ct);

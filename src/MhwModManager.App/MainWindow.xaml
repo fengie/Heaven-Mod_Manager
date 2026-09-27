@@ -160,6 +160,7 @@
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Auto-diagnose startup crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Safe duplicate cleanup" Command="{Binding SmartCleanupCommand}"/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export collection recipe" Command="{Binding ExportRecipeCommand}"/>
+                            <Button Content="Loadouts, rules &amp; diagnostics" Command="{Binding OpenWorkflowsCommand}" Margin="6,0,0,0"/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview staged changes (dry run)" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Inspect normal overlaps" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
                                     <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply staged changes" Command="{Binding ApplyCommand}"/>

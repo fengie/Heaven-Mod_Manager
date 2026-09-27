@@ -1,3 +1,7 @@
+## Workflow expansion validation (2026-09-27)
+
+Strict Linux-hosted .NET 10.0.401 Release cross-build: zero warnings/errors. Core 79, Automation 39, Integration 61 all pass (179 total); self-test 11/11. Function scan: 683 total, 562 known-good, 121 pending, zero trace/parse/call-site coverage gaps. No functions were manually promoted. Evidence is in `EVIDENCE/workflow-expansion-validation.log` and `EVIDENCE/workflow-expansion-function-scan.json`. Native WPF acceptance remains required; Windows CI is configured separately.
+
 # Verification performed for this source handoff
 
 ## Latest executed checks — 2026-09-27 repair revision

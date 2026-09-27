@@ -1,3 +1,5 @@
+**Workflow expansion:** Read `WORKFLOW_IMPLEMENTATION.md` and `../docs/WORKFLOWS.md` for the new feature branch. Its evidence and Windows UI limitations supersede the older repair-only status below.
+
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
 **Latest revision:** the 2026-09-27 repair audit is in `AUDIT-2026-09-27.md`.

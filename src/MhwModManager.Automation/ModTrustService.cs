@@ -40,4 +40,19 @@ public sealed class ModTrustService(ManagerDatabase db)
         await using var r = await cmd.ExecuteReaderAsync(ct); if (!await r.ReadAsync(ct)) return null;
         return new(modId, r.GetInt32(0), r.GetInt32(1), r.GetInt32(2), r.IsDBNull(3)?null:DateTimeOffset.Parse(r.GetString(3),CultureInfo.InvariantCulture), r.IsDBNull(4)?null:DateTimeOffset.Parse(r.GetString(4),CultureInfo.InvariantCulture));
     }
+    public async Task<IReadOnlyDictionary<string, TrustSnapshot>> GetAllAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var result = new Dictionary<string, TrustSnapshot>(StringComparer.OrdinalIgnoreCase);
+        await using var c = await db.OpenAsync(ct); await using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT mod_id,successful_launches,failed_launches,rollback_count,last_success_at,last_failure_at FROM mod_trust";
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct))
+        {
+            var id = r.GetString(0);
+            result[id] = new(id, r.GetInt32(1), r.GetInt32(2), r.GetInt32(3), r.IsDBNull(4) ? null : DateTimeOffset.Parse(r.GetString(4), CultureInfo.InvariantCulture), r.IsDBNull(5) ? null : DateTimeOffset.Parse(r.GetString(5), CultureInfo.InvariantCulture));
+        }
+        return result;
+    }
+
 }

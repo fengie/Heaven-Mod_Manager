@@ -5,7 +5,7 @@
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
-      "fingerprint": "5f6828ce818852e8d132c21b48772e3c6a8fe5c46277d5b9590fb831408b8abb",
+      "fingerprint": "a4227bf99128f1d5d5e64e0fc685d6aa7cde5e3e1a6bcf80fb378542951fe259",
       "verified": false,
       "verifiedAtUtc": null,
       "verificationBasis": "changed-or-new"
@@ -79,6 +79,27 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.App/FomodInstallerWindow.cs::FomodInstallerWindow::ctor:FomodInstallerWindow(FomodInstallerService,GameProfile,IEnumerable\u003Cstring\u003E?)",
+      "fingerprint": "ed737e31d0af3c864345fd697a756221a2ff269ed3a5b42eb082b7e90869b681",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/FomodInstallerWindow.cs::FomodInstallerWindow::method:RenderChoices()",
+      "fingerprint": "dee02e29dd174b29a19912769d7d793645c2f469680efc765450ad3ce2c877b7",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/FomodInstallerWindow.cs::FomodInstallerWindow::method:InstallClicked(object,RoutedEventArgs)",
+      "fingerprint": "85b4f9661bfd47b4f0af3cf94288d0160517bc5ed9e0a95dc55ab39bb0c9b6ef",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.App/GameProfileEditorWindow.cs::GameProfileEditorWindow::ctor:GameProfileEditorWindow(GameProfile)",
@@ -775,10 +796,10 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ImportArchive()",
-      "fingerprint": "158765057252b3e92b4ff0461d6a3eebe41f872e5886344b5b4bbab851f43be1",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "4c320c2a6231ce53d41a6cc66b45dd5c5ccc6641f6bc6dedd1fd00ffdfb569e7",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:LaunchModded()",
@@ -817,17 +838,17 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:AutoDiagnoseCrash()",
-      "fingerprint": "fa13826f9f338a554ed5962a23b5804dae7df3e8f881c19f624215d3cd3b3b90",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "dc0a23e92d438afbb8de1c8fca6e448fb9ab1ac7716fa00347cbdbdf711fd13c",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ProbeCrashSubsetAsync(LastKnownGoodState,Dictionary\u003Cstring,(boolenabled,intpriority)\u003E,IReadOnlySet\u003Cstring\u003E,CancellationToken)",
-      "fingerprint": "58e12e25bfaf077a6fe2027d3adb0302740e49026999d2fd320626e25445c601",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "863c31a5847354187efe90dab549fb8fd87f3e2123f3c36cd4a18c67b32ad6ea",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ApplyStateDirectAsync(Dictionary\u003Cstring,(boolenabled,intpriority)\u003E,string,CancellationToken)",
@@ -891,6 +912,13 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs::MainWindowViewModel::method:OpenWorkflows()",
+      "fingerprint": "2061d5c769dd24769775166cfb23511255009d15bf7b8c3785548540c73c41f2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.App/ViewModels/ObservableRangeCollection.cs::ObservableRangeCollection::method:ReplaceAll(IEnumerable\u003CT\u003E)",
@@ -1215,6 +1243,202 @@
       "verificationBasis": "exact-function-cache"
     },
     {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::ctor:WorkflowWindow(AppServices,Dictionary\u003Cstring,(boolenabled,intpriority)\u003E)",
+      "fingerprint": "76169e0183dd3e951d0843b0b13f867ff83b36054a75d7ede9099645cf80e79b",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:OnClosing(object?,CancelEventArgs)",
+      "fingerprint": "9a0820ea813c0404b21c5050f0ead11ccb44d0b5a9b1c346e3759004f4f1afac",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:RunAsync(Func\u003CTask\u003E)",
+      "fingerprint": "7338677338c262e2de576b37a13c18608f79cd3017e0dd6d42457695e833bf38",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:RefreshAsync()",
+      "fingerprint": "f7c2de4a93bd53d11cab72a67f58e0dbd7b3c9e6cbdd54a8d2c2fa787889e665",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:RefreshClick(object,RoutedEventArgs)",
+      "fingerprint": "28c64460a66a85c2eb30056c573f8abe96bef8a770b3a89ed53d03b703b1fc67",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:FilterChanged(object,TextChangedEventArgs)",
+      "fingerprint": "0d06db8579748467a9faeb4d7f690f66df40adde892ab6d9d7ae0a09f2d0b53d",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:FilterFiles()",
+      "fingerprint": "1e0e3fa953d9f3702ca295f328e6afdb7bfebb7efcb484e25488f54d7b46d503",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:BuildFolders()",
+      "fingerprint": "a20ba6bce15c700a1db54d849bdae277c8f454a3c43752524afa0fe476ba098b",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:FolderSelected(object,RoutedPropertyChangedEventArgs\u003Cobject\u003E)",
+      "fingerprint": "e7f086643c12359d5f62c2f63ae542b9ba0a23cc78b0f05326847d4064ff87c2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:FileSelected(object,SelectionChangedEventArgs)",
+      "fingerprint": "d7f3a432f7f4a1e3e552d51c5654051a9cb4ae7fbc646287cdcb35fd27afd57c",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:OpenRecipe(object,RoutedEventArgs)",
+      "fingerprint": "a484cf71499295ebc6c8a189cc95ec020446b296b845dbe687a6c0b7454e7744",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:ExportRecipe(object,RoutedEventArgs)",
+      "fingerprint": "764b79d1f6f67c56b03478a077e7cbcbdeafd20cfef06b34a1daddfe466247c9",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:ImportRecipe(object,RoutedEventArgs)",
+      "fingerprint": "c67535576db6d3c8b1b5751c3626f2f8c8b1c4c3f09eaeb96baadddf61ac5b33",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:RestoreRecipeFamilies(object,RoutedEventArgs)",
+      "fingerprint": "871f77755399abedaae99bbbb121416cef94824f2a5ea6229400cb0ff5bd9fc3",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:EnsureNewProfileNameAsync(string)",
+      "fingerprint": "11cf1f2b61fb64a932dff94e62a4135e366c234c36db2032163726aa197b5aba",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:ClearParent(object,RoutedEventArgs)",
+      "fingerprint": "ac050c1e2350f9944f4ac758ebec3c99e8e10e9f36378260840dee5f5a5a922c",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:SaveProfile(object,RoutedEventArgs)",
+      "fingerprint": "83dfe3d4c0c3334e06832adac46e2a5c7914e91e9190d5875a6c1a28c189bf60",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:CompareProfiles(object,RoutedEventArgs)",
+      "fingerprint": "b0c3ef860fb0e42a827a95dc0aa1c2cbb0d29d4de9e0b4195b9d0bff712b6674",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:StageProfile(object,RoutedEventArgs)",
+      "fingerprint": "b0d69c64a4ab4ba287906d72a0a62b94627fde8d33e69aeeb983390a18fec57e",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:RuleSelected(object,SelectionChangedEventArgs)",
+      "fingerprint": "3bac9cd8e45020fb771b164ae7eb37171ab1d8222ffa85cfcfbf93d29f1c21a2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:NewRule(object,RoutedEventArgs)",
+      "fingerprint": "46ded9f61f88bafac1ec644750f5b79a7c89a44364f9a685528c6eabcc2f528d",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:SaveRule(object,RoutedEventArgs)",
+      "fingerprint": "86769470a0cb8441ad05dcddb703748a3c9c91d37298603901cc36005152c225",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:DeleteRule(object,RoutedEventArgs)",
+      "fingerprint": "3bd2e8803c204d277b32bbb3d1725700594ce0cb2922ea17249256e2e0cdcd27",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:ClearProvider(object,RoutedEventArgs)",
+      "fingerprint": "5fd750c927c82cc3ece89657ca35634e05fceb5e1c7dc3a73db7028d0aa1fa66",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:GraphClick(object,RoutedEventArgs)",
+      "fingerprint": "aa6d7aca472d3d700476375b6b55b340acbe0aaaa74bb82d068085617c4d22de",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:DrawEdge(Point,Point,Brush,string)",
+      "fingerprint": "6e30e4256a68df74f9a95d8165c4ca9ca79e677505883f47ee1ab533d7b23805",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:PreviewUpgrade(object,RoutedEventArgs)",
+      "fingerprint": "8baaf69e6442eb4e7e2ed3d1dbe37589a088ebcff6e605476a6896037e205e30",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.App/WorkflowWindow.xaml.cs::WorkflowWindow::method:Upgrade(object,RoutedEventArgs)",
+      "fingerprint": "df1f2081ed33d984ebf5999bacef93cccf9748f83294213d1a1cbedaf949dd8d",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
       "id": "src/MhwModManager.App/WpfMasterTraceListener.cs::WpfMasterTraceListener::method:Write(string?)",
       "fingerprint": "acf0f78386349b4e726a7fca327aff5e1e251ef334c9f83ef34fc722457ee4f3",
       "verified": true,
@@ -1363,17 +1587,45 @@
     },
     {
       "id": "src/MhwModManager.Automation/CollectionRecipeService.cs::CollectionRecipeService::method:ExportAsync(string,CancellationToken)",
-      "fingerprint": "4fe70a8ae283720ca3b80e4e715d639da55ca3d110488a092d8f55791cb994dc",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "79ef1b7cd10e05a74bdb956af3e3eddbee19c55710d61d7cf5d82cd39b4af8a9",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/CollectionRecipeService.cs::CollectionRecipeService::method:PreviewAsync(string,CancellationToken)",
+      "fingerprint": "9d3d2c25bc217e3d18b0d349c4bc45dd68777aa6ae726410237500d750f9afed",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/CollectionRecipeService.cs::CollectionRecipeService::method:ImportAsync(string,string,CancellationToken)",
+      "fingerprint": "4cdd7ea61bfa50c2f29d9a2b802bb7fbcbef3f8ddcada8329675162cf8149796",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/CollectionRecipeService.cs::CollectionRecipeService::method:RestoreFamiliesAsync(string,CancellationToken)",
+      "fingerprint": "2b14a8770d563dd1aad5dca439870541601e70137a722e68704076ffc0d1f6a4",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Automation/CrashBisectorEngine.cs::CrashBisectorEngine::method:RunAsync(IReadOnlyList\u003Cstring\u003E,Func\u003CIReadOnlySet\u003Cstring\u003E,CancellationToken,Task\u003Cbool\u003E\u003E,CancellationToken)",
-      "fingerprint": "d5730942a721ad4185f2302387fdfc8dd54e4db169ad10f52192338af7e05134",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "39ef0d078183c9f4805ad772467aefe42fb32ee7221196875b1a73ecb536185b",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/CrashBisectorEngine.cs::CrashBisectorEngine::local:method:RunAsync(IReadOnlyList\u003Cstring\u003E,Func\u003CIReadOnlySet\u003Cstring\u003E,CancellationToken,Task\u003Cbool\u003E\u003E,CancellationToken)\u003EProbe(IReadOnlyList\u003Cstring\u003E)",
+      "fingerprint": "e55f1e01a5201f8e5e8e9e8b490ea171152090425e734dbf731801e8aa2c2bb9",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Automation/DependencyDoctorService.cs::DependencyDoctorService::method:ScanAsync(CancellationToken)",
@@ -1430,6 +1682,104 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::ctor:FomodInstallerService(string)",
+      "fingerprint": "f640207102acc815e93fb19fa6da74643d22fd858dea967ee854f3168a49748a",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:HasInstaller(string)",
+      "fingerprint": "dc709844582906d7facaf1bc3e32bf2d6eb91ff56c90c678d80237b2483b620e",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Describe(IReadOnlySet\u003Cstring\u003E)",
+      "fingerprint": "21fe5961a42dceb431c3a1734adbcb9634d74f2a257db4ac2e3b59ffc2d49a60",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Plan(IReadOnlySet\u003Cstring\u003E,GameProfile)",
+      "fingerprint": "2b843fbd9adc7c54599e81da1f33eb24d4a3a3384820f7e1005431bb0f39cba1",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:InstallAsync(IReadOnlySet\u003Cstring\u003E,GameProfile,string,CancellationToken)",
+      "fingerprint": "27c7f8b197469a082f13bbc33e81be98d70d86cfdbcfa3462cc0f565ce55a5ce",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Remember(IReadOnlySet\u003Cstring\u003E)",
+      "fingerprint": "c89595fba2c8ca45577687ac30c972b9db266cfed4c3f3ee80d744ee3cc4d762",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:PluginType(XElement,Dictionary\u003Cstring,string\u003E)",
+      "fingerprint": "3354d24071a939fec4ce63c884573d67b285c0e059efb7fff21010a49c12863a",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Evaluate(XElement?,Dictionary\u003Cstring,string\u003E)",
+      "fingerprint": "59fd9df04914987fa4b97b7c32f3a69f549e199a72a333ab732a0cf2fb3cecdf",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Ordered(XElement?,string)",
+      "fingerprint": "2e9522bcd8b1ef3ddb07cae1d95cdbed47666080d5badc9ee59f8a9f471d1d78",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Bool(XElement,string)",
+      "fingerprint": "db2222eca29b464164624c6317c1a691b34a4c42cb63a795cd45fb552aaf6071",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:Required(XElement,string)",
+      "fingerprint": "8d848a419b1c2171949ba556190498fe3ff3dce4d269551245dce5674c758792",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:EnumeratePayload(string)",
+      "fingerprint": "34999254a041660982a621b6cd87648229813d93cddc8011a663ac16e9a9ee7a",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:SafePath(string,string)",
+      "fingerprint": "ae24fabebbb908d55ad978504286e1020335c111e5a05a533626206801ec30f2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/FomodInstallerService.cs::FomodInstallerService::method:EnsureNoLinks(string,string)",
+      "fingerprint": "47b6be552ec02415cd4b119ffa219e738eac0276c947aa3d41f3cab27d48685b",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Automation/GameUpdateImpactService.cs::GameUpdateImpactService::method:BuildAsync(bool,CancellationToken)",
@@ -1579,6 +1929,13 @@
       "verificationBasis": "exact-function-cache"
     },
     {
+      "id": "src/MhwModManager.Automation/ModTrustService.cs::ModTrustService::method:GetAllAsync(CancellationToken)",
+      "fingerprint": "adf7e368ebd12a3c2d35d3ad89f60e0135e193ea84ebe44603ae39c114297b6c",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
       "id": "src/MhwModManager.Automation/OutfitPresetService.cs::OutfitPresetService::method:Build(LogicalModFamily)",
       "fingerprint": "bb32ededcabad916102dadfcf5a33c1b391d3d5d94168e283801e8ebe581b829",
       "verified": true,
@@ -1591,6 +1948,27 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.Automation/RulesEditorService.cs::RulesEditorService::method:SaveAsync(ConflictRule,CancellationToken)",
+      "fingerprint": "f33f2f52deb2f1541d8e633d309578a672317ce610cd3caae467848c24373fc4",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/RulesEditorService.cs::RulesEditorService::method:RemoveAsync(string,CancellationToken)",
+      "fingerprint": "6b7f68eca63f8cdfeab119c92410dc7b0aad6ba3c8086762feff0401385c0007",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/RulesEditorService.cs::RulesEditorService::method:SaveProviderAsync(string,string?,CancellationToken)",
+      "fingerprint": "887ee85ec6e2762dffa6f601900809ac363db3684ff5546dafcb445efd44d347",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Automation/SaveBackupService.cs::SaveBackupService::method:CreateAsync(string,CancellationToken)",
@@ -1636,10 +2014,10 @@
     },
     {
       "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:ProcessAsync(CancellationToken)",
-      "fingerprint": "c91360eee1097b0d4392d7c18b3ddc98cbeac2e1e376b272f865d7b731aa7bc2",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "13a228ad06c3054c5beac1a3d8bc87bd61aa4db2f57b309fa85397f69fdb4a82",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:MoveToProcessed(string)",
@@ -1682,6 +2060,20 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.Automation/UpdateMigrationService.cs::UpdateMigrationService::method:PreviewAsync(string,string,CancellationToken)",
+      "fingerprint": "ee52cb16a6f5b86844fd0ca98ad91fa1c96a3e9407524344fd80cae2356c8d7d",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Automation/UpdateMigrationService.cs::UpdateMigrationService::method:UpgradeAsync(string,string,CancellationToken)",
+      "fingerprint": "5f70ff894bb5e9c2715d3a7a427ac25654b7f027805944e4f6079ffa1efa6299",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/AssetBundles.cs::AssetBundles::method:KeyForPath(string)",
@@ -1867,10 +2259,10 @@
     },
     {
       "id": "src/MhwModManager.Core/ConflictEngine.cs::ConflictEngine::ctor:ConflictEngine(GameProfile?)",
-      "fingerprint": "245abbafa61f85f050f845ee1f2df6e7a9ddc705321d776d47f8d279bc01b38a",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "914124c07e11b69c637be83e4590e73f6e4f83af742d08c1974005ed46077b88",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/ConflictEngine.cs::ConflictEngine::method:Decide(string,IReadOnlyList\u003CProviderCandidate\u003E,IReadOnlyList\u003CConflictRule\u003E,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003C(string,string),PairStats\u003E)",
@@ -1888,10 +2280,10 @@
     },
     {
       "id": "src/MhwModManager.Core/ConflictEngine.cs::ConflictEngine::method:Decide(string,IReadOnlyList\u003CProviderCandidate\u003E,ConflictRuleIndex,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003C(string,string),PairStats\u003E,IReadOnlyDictionary\u003Cstring,ModDescriptor\u003E,IReadOnlyDictionary\u003Cstring,ModContentStats\u003E)",
-      "fingerprint": "45db1def41ce02da18f6cc3246bbc8b1c2dc4dcea01f8347be91efc5a7d2855c",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "f4ab5bda7e9a23691e612adae2735b38305ce81cf16782e1c83e87c6291b4b99",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/ConflictEngine.cs::ConflictEngine::method:TryResolveSameFamily(string,IReadOnlyList\u003CProviderCandidate\u003E,HashSet\u003Cstring\u003E,IReadOnlyDictionary\u003C(string,string),PairStats\u003E,IReadOnlyDictionary\u003Cstring,ModDescriptor\u003E,IReadOnlyDictionary\u003Cstring,ModContentStats\u003E,out ConflictDecision)",
@@ -1937,10 +2329,10 @@
     },
     {
       "id": "src/MhwModManager.Core/ConflictRuleIndex.cs::ConflictRuleIndex::method:FindFullyOrderedOverlayWinner(IReadOnlySet\u003Cstring\u003E)",
-      "fingerprint": "e6f567cf0ccfa1addacb0896664e2e1a5f16852301c99faef90ba5b3ec9ffdb4",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "e5cc02f7fbd726916242f710d9e21cabc9624cdf12b9f8f8ed36ba48d658b626",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/ConflictRuleIndex.cs::ConflictRuleIndex::method:GetOverlayRoots(IReadOnlySet\u003Cstring\u003E)",
@@ -1965,10 +2357,10 @@
     },
     {
       "id": "src/MhwModManager.Core/DeploymentPlanner.cs::DeploymentPlanner::method:Build(PlannerSnapshot)",
-      "fingerprint": "cf16c0c94c5b0208556395017b8e394c427e80c49727ebe5e2142d28d765dc3c",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "7de97a75eaa0fdeffc26857a85b5dbc6ad0d021381a1e50599090536b61965c2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/Domain.cs::PairStats::property:SmallerOverlapRatio:get",
@@ -2004,6 +2396,97 @@
       "verified": true,
       "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
       "verificationBasis": "exact-function-cache"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:Discover(IEnumerable\u003Cstring\u003E)",
+      "fingerprint": "dd6f5ccaf8a7d260e403d0ae388632908e5de983b76c21845fad6ae79c834c79",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:Executable(GameProfile)",
+      "fingerprint": "345cdb2233363b25756796839f0b93fefec6861e0b2341297a819a47e46a2f8a",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:ModRoots(GameProfile)",
+      "fingerprint": "c817b77904e210b6ea017d92fc29a7dac2b11146efbc1ddf64de70548bc84c9e",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:SavePaths(GameProfile)",
+      "fingerprint": "0a75ab72da6b9191d46d358b579360f01ef6b52438ff9aa81f2e66aeafca0176",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:NexusDomain(GameProfile)",
+      "fingerprint": "460522f3069aefd2b80b35c894d00d137fd2b7483df2468da714b5b31e181fe2",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:ParseAsset(string)",
+      "fingerprint": "8aaa58e481a7be680c415116e86b56fcc8085ed17191deb4e027e9f156075fab",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:Category(string)",
+      "fingerprint": "fa9cbdfd37190687e0afec44e0c8e0dc89f3835fa74b76979ed97e286d83347b",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:Dependencies(GameProfile)",
+      "fingerprint": "96593859e7f7feef5f405c6c32b0be59c65e7b45ed1bcff748a57d38cb960178",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::FolderGameAdapter::method:Validate(GameProfile)",
+      "fingerprint": "345c58ba0430d66ee895ab869e867dc163f767dc97e49ed631b7e0689a3bb2ed",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::MonsterHunterWorldAdapter::method:Discover(IEnumerable\u003Cstring\u003E)",
+      "fingerprint": "9e18e2097439ac75aa68e80c4e0bbc3a9c105a0c974055603ce44b7154c64674",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::MonsterHunterWorldAdapter::method:ParseAsset(string)",
+      "fingerprint": "7a9f84fff056d0b97f8524ae416efdd8794571fed2e22ee33b31c5bf4ccb5066",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::GameAdapters::method:Register(IGameAdapter)",
+      "fingerprint": "97816a2ad2cb799087c05b9e8fd911abdaec01f582e47959f8795ab427f8e752",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/GameAdapters.cs::GameAdapters::method:Resolve(GameProfile?)",
+      "fingerprint": "97fdf64dbe6debb09a6288da47ffa832c598fa8adb98e28c589bbfddef7fd25a",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Core/GameProfiles.cs::GameProfile::property:ExecutablePath:get",
@@ -2629,6 +3112,27 @@
       "verificationBasis": "exact-function-cache"
     },
     {
+      "id": "src/MhwModManager.Core/WorkflowAnalysis.cs::WorkflowAnalysis::method:Explore(PlannerSnapshot,DeploymentPlanner)",
+      "fingerprint": "58dbd31bbe2d11347452d3046ddb0547da560fac6724456a7b1168197ef0405d",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/WorkflowAnalysis.cs::WorkflowAnalysis::method:WithState(PlannerSnapshot,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E)",
+      "fingerprint": "573f2fbd2cd1b2799f7c36b9ea6eed1c01fb2173b7439a892e3243ab901a7d81",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Core/WorkflowAnalysis.cs::WorkflowAnalysis::method:Compare(PlannerSnapshot,DeploymentPlanner,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E)",
+      "fingerprint": "d75d334455719dad3dc16b8b38b2a6d2c1f9449b709a9a838254f899ece057ca",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
       "id": "src/MhwModManager.Diagnostics/AppLogging.cs::AppLogging::method:Create(string)",
       "fingerprint": "9bcd4ba1af803810a78cb9ed6360a4d95f92bee2052a704964f4f635d58affb0",
       "verified": false,
@@ -3001,17 +3505,24 @@
     },
     {
       "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:ApplyAsync(DeploymentPlan,string,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E?,string?,CancellationToken)",
-      "fingerprint": "485d3e07b99ee6973cf041c08f4cefaf5c24e7423b1012b79b72ed9a7431e53b",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "1ede562c89d9953e01b969613386650f87381f62fb120047f53b41c42bac5918",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:ApplyWithMetadataAsync(DeploymentPlan,string,IReadOnlyList\u003CMetadataRowChange\u003E,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E?,string?,CancellationToken)",
+      "fingerprint": "f2d005c402446d9f8cd26136d62c4b79df8613f78d9a24632f09b1aa8165f1a3",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:UndoLastAsync(CancellationToken)",
-      "fingerprint": "3c02d01cbbbf7e446faac8f365c0292ef99b478b1c3ae5697a68d339d23e7647",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "accbc3f7bb2ae9a7a736a0a02fef6d7913c810a8f38d63f91f19a8d4a5276f21",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:RecoverIncompleteAsync(CancellationToken)",
@@ -3056,18 +3567,18 @@
       "verificationBasis": "exact-function-cache"
     },
     {
-      "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:CommitAfterStateAsync(string,List\u003CDeploymentChange\u003E,Dictionary\u003Cstring,(boolenabled,intpriority)\u003E,bool,CancellationToken)",
-      "fingerprint": "5d08df41a0fd0443815714073b15a263c93ed2eb7e4c842f706df1d5bdd23d85",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:CommitAfterStateAsync(string,List\u003CDeploymentChange\u003E,Dictionary\u003Cstring,(boolenabled,intpriority)\u003E,bool,IReadOnlyList\u003CMetadataRowChange\u003E?,CancellationToken)",
+      "fingerprint": "06e1c63cf6ed4aae3ab93d7bb7e070040ce1e82328092ad414b1978ca7f4d9e7",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:RollbackAsync(string,CancellationToken)",
-      "fingerprint": "19131280637ad6620004cd46562db6e6f1e34bbb612eb2bf2c4581c67180c634",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "a52c8e3aea7fbebf217188410637c53f76ebbc12d56777f3f2e7d483f31855e0",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Filesystem/DeploymentExecutor.cs::DeploymentExecutor::method:RestoreJournalRowAsync(JournalRow,CancellationToken)",
@@ -3826,6 +4337,48 @@
       "verificationBasis": "exact-function-cache"
     },
     {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:ReadRowsAsync(ManagerDatabase,string,CancellationToken)",
+      "fingerprint": "5083ec5c62dbd23b0c1ab9eeb24ea979b7d131952196556c461e35cdaa8cb1ec",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:ApplyAsync(SqliteConnection,SqliteTransaction,IReadOnlyList\u003CMetadataRowChange\u003E,bool,CancellationToken)",
+      "fingerprint": "2e5f3f24a353e96fa1673537e478438c97d4d6e2c0cc328e37e1428eb8240dbb",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:Same(Dictionary\u003Cstring,string?\u003E?,Dictionary\u003Cstring,string?\u003E?)",
+      "fingerprint": "0c2b312d295f441d0512f445f6d150528c7bbfdae19c6d686394d83264384ef9",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:Invert(IReadOnlyList\u003CMetadataRowChange\u003E)",
+      "fingerprint": "2ccc5b1ddb3e68c177e819a86ca8f6128cc2428124dc40cad68e93a2e02eb532",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:LoadAsync(SqliteConnection,SqliteTransaction?,string,CancellationToken)",
+      "fingerprint": "7673b871acfa94c60d93a67d2d324e2c267e6f9cf39cd49b12855adae0693702",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/DeploymentMetadata.cs::DeploymentMetadata::method:CommitAsync(SqliteConnection,SqliteTransaction,string,IReadOnlyList\u003CMetadataRowChange\u003E,CancellationToken)",
+      "fingerprint": "3d031c9ec757b861cfd5dc1dc53c60a6e65ae1884d7dd1d09b08ce13aa19f5a6",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
       "id": "src/MhwModManager.Storage/LegacyV7Migrator.cs::LegacyV7Migrator::property:ModsRoot:get",
       "fingerprint": "df5516955b71b9f58be6cff53d736f57d2c8aa0cd87f4ee5313b1d7ce8bcb73a",
       "verified": true,
@@ -4198,24 +4751,38 @@
     },
     {
       "id": "src/MhwModManager.Storage/ProfileRepository.cs::ProfileRepository::method:LoadAsync(string,CancellationToken)",
-      "fingerprint": "4d9002da4727c27962d3b84eebcb916292adc0485d565de2d7a1adb81c29d05c",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "b7cff280c4defa680aeab2e9d92c50eb02af22af8bf892d831d3547435fb9aa7",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/ProfileRepository.cs::ProfileRepository::method:ResolveAsync(SqliteConnection,SqliteTransaction,string,HashSet\u003Cstring\u003E,CancellationToken)",
+      "fingerprint": "b19109e0f2846ffd3330d344db820c7804390a34fd47908c2289e8745daacb47",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Storage/ProfileRepository.cs::ProfileRepository::method:ListAsync(CancellationToken)",
-      "fingerprint": "fb5739b6072d2d543cd313e639aae19a654a93d781957828a09fb335f049b77a",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "4b3e60f9b4a147a5ab9378d6f3351a44a39b1317c5c804251d81b86684db2670",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     },
     {
       "id": "src/MhwModManager.Storage/ProfileRepository.cs::ProfileRepository::method:SaveCurrentAsync(string,CancellationToken)",
-      "fingerprint": "054d38d4aefec3dccdacc1db94233548235376f3cc73147df6529efa319c21e6",
-      "verified": true,
-      "verifiedAtUtc": "2026-09-27T09:31:25.9888755+00:00",
-      "verificationBasis": "exact-function-cache"
+      "fingerprint": "85968e76422757e2d1b7e13552c06c699622c6eaad88f690b27d4669f021fc93",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
+    },
+    {
+      "id": "src/MhwModManager.Storage/ProfileRepository.cs::ProfileRepository::method:SaveAsync(string,IReadOnlyDictionary\u003Cstring,(boolenabled,intpriority)\u003E,string?,CancellationToken)",
+      "fingerprint": "43b5364c2c60b32a7c4f5a3c8d770ee0943b75f4b578510076073a739eca4715",
+      "verified": false,
+      "verifiedAtUtc": null,
+      "verificationBasis": "changed-or-new"
     }
   ]
 }

@@ -99,8 +99,10 @@ CREATE TABLE IF NOT EXISTS mod_families(id TEXT PRIMARY KEY,name TEXT NOT NULL,c
 CREATE TABLE IF NOT EXISTS mod_family_members(family_id TEXT NOT NULL REFERENCES mod_families(id) ON DELETE CASCADE,mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,role TEXT NOT NULL,choice_group TEXT NULL,PRIMARY KEY(family_id,mod_id));
 CREATE TABLE IF NOT EXISTS profiles(id TEXT PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,legacy_json TEXT NULL);
 CREATE TABLE IF NOT EXISTS profile_mods(profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,enabled INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(profile_id,mod_id));
+CREATE TABLE IF NOT EXISTS profile_parents(profile_id TEXT PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,parent_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,CHECK(profile_id <> parent_id));
 CREATE TABLE IF NOT EXISTS profile_rules(profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,rule_id TEXT NOT NULL REFERENCES conflict_rules(id) ON DELETE CASCADE,PRIMARY KEY(profile_id,rule_id));
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY,state TEXT NOT NULL,description TEXT NOT NULL,started_at TEXT NOT NULL,committed_at TEXT NULL,error TEXT NULL,state_before_json TEXT NULL,state_after_json TEXT NULL,parent_operation_id TEXT NULL);
+CREATE TABLE IF NOT EXISTS operation_metadata(operation_id TEXT PRIMARY KEY REFERENCES operations(id) ON DELETE CASCADE,changes_json TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS ix_operations_state_started ON operations(state,started_at);
 CREATE TABLE IF NOT EXISTS operation_journal(operation_id TEXT NOT NULL REFERENCES operations(id) ON DELETE CASCADE,seq INTEGER NOT NULL,path TEXT NOT NULL COLLATE NOCASE,change_kind TEXT NOT NULL,before_sha256 TEXT NULL,after_sha256 TEXT NULL,provider_before TEXT NULL,provider_after TEXT NULL,status TEXT NOT NULL,error TEXT NULL,PRIMARY KEY(operation_id,seq));
 CREATE INDEX IF NOT EXISTS ix_journal_status ON operation_journal(operation_id,status);
