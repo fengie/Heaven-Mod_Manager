@@ -1,3 +1,13 @@
+# Parallel support candidate — import publication isolation
+
+A separate documentation-only support audit records a P1 import-publication boundary in `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
+
+The live-deployment reparse-containment checkpoint has now landed on canonical main; do not reopen or fold it into this import boundary. When import publication is prioritized, begin with regressions for mixed success/failure, cancellation, restart/process-death residue, retry convergence, and exactly-once successful publication. The intended production seam is catalog-invisible staging outside `ModsRoot` plus a commit-on-success final move shared by manual archive import and Smart Inbox. Do not combine it with mod retirement (PR #15), Smart Pack, native replacement, CAS work, migration, or deployment redesign.
+
+This support branch adds LR-008. PR #15 independently reserves LR-007; preserve both.
+
+---
+
 # Next steps
 
 ## ACTIVE — verify and close Windows live-containment only
