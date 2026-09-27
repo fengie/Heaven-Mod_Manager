@@ -109,3 +109,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** audit branch `agent/support-8-diagnostics-privacy-audit-20260927`, based on canonical main `6ada5a5c4cc83afadfba42bc6af6559540920e3d`; documentation-only, no runtime gate claimed.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-007 — automated diagnosis must validate its control before persisting blame
+
+- **Rule ID:** LR-007
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Automated crash bisection, fault isolation, and persistent culprit/issue confirmation
+- **Rule:** A diagnostic bisection or fault-isolation workflow must not persist high-confidence culprit state until it has proven that its current control/baseline does not reproduce the failure and that the full candidate condition does reproduce under the same relevant environment and provenance. Ambiguous, noisy, stale-provenance, or non-reproducible probe outcomes must remain inconclusive rather than becoming confirmed blame.
+- **Trigger / evidence:** At canonical main `5619604e88a27176726ada8518f53d385abc7b0f`, `CrashBisectorEngine.RunAsync` begins halving immediately. `MainWindowViewModel.AutoDiagnoseCrash` does not first probe the last-known-good control or the full suspect set, while `ProbeCrashSubsetAsync` treats any process exit inside 12 seconds as reproduction. A currently-bad baseline can therefore make every tested half appear to reproduce until one arbitrary mod remains, after which `ModIssueFallbackService.MarkBisectResultAsync` persists that mod at score 99 with `confirmed=true`.
+- **Rationale:** Bisection only has causal meaning when its control and positive condition are currently valid. Because confirmed diagnosis is intentionally durable and survives later normal launch success, experiment validity must be proven before confidence is persisted.
+- **Enforcement:** Add explicit baseline-control and full-candidate preflight tests before narrowing; represent ambiguous/noisy outcomes as inconclusive; test stale environment/provenance and flaky probes; gate score-99/confirmed persistence on validated reproduction evidence. Reuse the canonical game-build freshness mechanism rather than creating a competing one inside diagnosis.
+- **Relevant audit:** `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md`
+- **Supersedes:** none
+- **Superseded by:** none
+
