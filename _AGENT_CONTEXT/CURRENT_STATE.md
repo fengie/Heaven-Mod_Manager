@@ -1,3 +1,17 @@
+# Legacy migration recovery support audit — documentation only
+
+Durable audit: `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md`.
+
+The support lane corrected `docs/MIGRATION.md` to match current source behavior and found no dedicated migration references across the current 21 C# test files. Highest-value future risks are retry livelock on corrupt pre-existing CAS objects, swallowed cleanup failure with overconfident user messaging, destructive reset authorized by completion-marker absence alone, lack of a whole-migration owner/lease, and semantic references that can be silently skipped before completion.
+
+No production source or verification cache changed. The PlannerSnapshotRepository boundary below remains closed and exact.
+
+First future migration checkpoint: test-only characterization/fault coverage before protocol redesign.
+
+**Do not break the chain.**
+
+---
+
 # PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
 
 Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
