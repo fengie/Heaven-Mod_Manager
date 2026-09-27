@@ -422,6 +422,14 @@ After closure, add a read benchmark for 200/500/1000 mods and 50k/150k/500k `mod
 
 Each production fix remains its own source -> focused regression -> continuity -> hosted Windows evidence -> closure cycle. Do not bundle unrelated safety fixes because this audit found them together.
 
+## Parallel integration note
+
+After this audit branch was based, canonical `main` gained a separate deep SQLite atomicity audit:
+- `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md`
+- follow-up linkage in `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
+
+Those parallel findings are complementary and more specialized for SQLite statement/transaction details. When integrating this branch, preserve the deep SQLite audit and use it as the more specific authority where its transaction findings overlap the high-level database recommendations here. Do not overwrite or flatten either audit.
+
 ## Database transaction audit cross-check
 
 The existing `STORAGE_TRANSACTION_BOUNDARY_AUDIT.md` correctly identifies transaction owners that must not be fragmented:
