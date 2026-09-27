@@ -3,39 +3,39 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "agent/windows-live-containment-hardening-v3",
+  "workingBranch": "main",
   "currentVersion": "8.8.0",
-  "nextMilestone": "Windows filesystem physical containment",
+  "nextMilestone": "Windows native replacement failure characterization",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "windows-live-containment-candidate-awaiting-exact-windows-gate",
-  "verificationAppliesToCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
-  "lastClosedVerificationCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
-  "lastClosedVerificationRun": "36340312353",
+  "status": "windows-live-containment-closed-hosted-windows-verified",
+  "verificationAppliesToCommit": "356fde242046b78e39c7266c57b27e52220141fa",
+  "lastClosedVerificationCommit": "356fde242046b78e39c7266c57b27e52220141fa",
+  "lastClosedVerificationRun": "36341049469",
   "candidateSourceCommit": "b671bac33917649ff89e5e3b0866725f7b165232",
-  "verificationScopeNote": "The support-audit integration baseline remains CLOSED at exact commit 5619604e88a27176726ada8518f53d385abc7b0f / hosted Windows Release Gate 36340312353, with evidence persistence 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. A new Windows live-deployment physical-containment candidate now changes production source on branch agent/windows-live-containment-hardening-v3 from canonical handoff base 208a66da89632acf36c065dc3bfead76af8d6bf4. Production source checkpoint b671bac33917649ff89e5e3b0866725f7b165232 adds descendant reparse traversal rejection in DeploymentExecutor before capture/precondition/mutation, immediately before mutation, during rollback/startup recovery, pruning, lock inspection and error enrichment. Focused Windows regression checkpoint 5479c2e2ef6f0c731ccad8d65fcacd558c1428c1 covers Add/Replace/Remove parent-junction escape and startup recovery after a junction is introduced while the app is down. This new source is NOT yet compile/test/function/Windows-gate verified; prior green evidence does not transfer to changed fingerprints. No cache was manually promoted.",
+  "verificationScopeNote": "Windows live DeploymentExecutor physical-containment boundary CLOSED. Hosted Windows Release Gate 36341049469 verified exact merge 356fde242046b78e39c7266c57b27e52220141fa on Windows X64 / .NET SDK 10.0.401. Repository verifier passed 25/25; 611/611 production function fingerprints were promoted; explicit call sites 6478 with 0 uncovered; trace gaps 0; parse errors 0; Core 79/79; Automation 20/20; Integration/fault injection 76/76 including the new real-junction Add/Replace/Remove and restart-recovery regressions; automation self-test 11/11; strict Filesystem/App and whole-solution analyzers/builds PASS; win-x64 ReadyToRun restore and self-contained publish PASS. Release SHA-256 F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D. Workflow evidence/cache persistence commit dc7eb83c94427479c59413c77935050dadf051ff. No cache was manually promoted. The residual path-topology swap TOCTOU after the final attribute check remains explicitly documented.",
   "lastClosedVerification": {
-    "functionInventoryTotal": 610,
-    "functionsVerified": 610,
+    "functionInventoryTotal": 611,
+    "functionsVerified": 611,
     "functionsPending": 0,
     "windowsGate": "passed: 25/25",
-    "explicitCallSites": 6456,
+    "explicitCallSites": 6478,
     "uncoveredCallSites": 0,
-    "coreTests": "79/79 passed/cached exact fingerprint",
-    "automationTests": "20/20 passed/cached exact fingerprint",
-    "integrationTests": "72/72 passed",
-    "selfTest": "11/11 passed/cached exact fingerprint",
-    "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF"
+    "coreTests": "79/79 passed",
+    "automationTests": "20/20 passed",
+    "integrationTests": "76/76 passed",
+    "selfTest": "11/11 passed",
+    "releaseArtifactSha256": "F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D"
   },
   "candidateChanges": [
-    "Selected exactly one P0 boundary from the integrated Windows filesystem audits: live DeploymentExecutor physical containment. Native ReplaceFileW failure semantics remain a separate later boundary.",
-    "Added a descendant-path physical-containment guard that rejects FileAttributes.ReparsePoint before deployment capture/precondition reads.",
-    "Repeated containment verification immediately before Add/Replace/Remove mutations and during rollback/startup recovery before inspection and again before restore/delete.",
-    "Applied the same containment invariant to empty-directory pruning, Restart Manager lock inspection, and lock-owner error enrichment.",
-    "Added Windows junction regressions for Add, Replace, Remove, and crash/restart recovery with an externally redirected parent path.",
-    "Tests assert external bytes are unchanged; pre-existing junction attempts create no operation row; unsafe startup recovery transitions the existing operation to RecoveryRequired rather than writing through the junction.",
-    "Configured gameRoot remains the trust anchor; descendant reparse components are rejected. Root-alias policy is intentionally unchanged.",
-    "Residual TOCTOU remains between final attribute validation and path-based filesystem operation; this checkpoint is fail-closed for observed topology, not a claim of handle-level atomic containment.",
+    "CLOSED: live DeploymentExecutor descendant reparse/junction containment verified on Windows.",
+    "Deployment preparation and preconditions reject existing descendant reparse components before capture/hash/file inspection.",
+    "Add/Replace/Remove re-check physical containment immediately before mutation.",
+    "Rollback/startup recovery rejects unsafe reparse topology before inspecting or restoring/deleting bytes; unsafe restart recovery transitions to RecoveryRequired.",
+    "Empty-directory pruning and Restart Manager lock paths obey the same containment invariant.",
+    "Windows integration coverage now proves parent-junction Add/Replace/Remove cannot mutate the redirected external target and startup recovery cannot follow a junction introduced while the app was down.",
+    "Configured gameRoot remains the explicit trust anchor; descendant reparse components are rejected.",
+    "Residual TOCTOU between the final path-attribute check and path-based mutation is documented; this checkpoint does not claim handle/file-ID atomic containment.",
     "Integrated the parallel support-agent branch inventory and dispositions without blindly merging stale continuity snapshots.",
     "Added async/lifetime, broad test/performance, Windows filesystem safety, migration recovery, diagnostics privacy, remote preview network trust, verification infrastructure, state backup/portability, multi-source discovery, and MHW semantic coverage audits.",
     "Appended the independent MainWindow support re-audit to the canonical responsibility and research documents; stop-page-model-splitting remains the current ownership decision.",
@@ -64,11 +64,11 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
-    "No DeploymentPlanner/conflict logic, SQLite transaction ownership, journal schema, CAS model, rollback database protocol, WPF, provider/network, migration, or verification infrastructure is redesigned.",
-    "Fail-closed rollback/recovery semantics are preserved; unsafe reparse topology is not guessed through.",
-    "LR-001 entry tracing is present on the new production method and changed existing production methods retain their method-entry trace.",
-    "LR-004 is implemented only for the live DeploymentExecutor boundary. Recursive scanner/adoption/Smart Inbox traversal remains separate future work.",
-    "LR-003 ReplaceFileW failure postconditions remain unresolved and are the recommended next filesystem boundary after this one closes.",
+    "DeploymentPlanner/conflict behavior, SQLite transaction ownership, journal schema, CAS model, WPF, migration, provider/network behavior, and verification infrastructure were not redesigned.",
+    "Fail-closed rollback/recovery semantics remain intact.",
+    "LR-001 instrumentation and exact-input verification remain enforced.",
+    "LR-004 is now concretely enforced for live DeploymentExecutor paths; recursive scanner/adoption/Smart Inbox traversal remains separate.",
+    "LR-003 ReplaceFileW failure postconditions remain intentionally open as the next recommended source boundary.",
     "No production executable C# source or tests changed during support-audit integration.",
     "PlannerSnapshotRepository remains closed; no second storage extraction was started.",
     "Support branch continuity snapshots were not allowed to overwrite newer canonical verification/history state.",
@@ -85,7 +85,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Do not start a second source boundary. Re-check canonical main, integrate this exact live-containment candidate without overwriting concurrent history, run scripts/Test-AgentHandoff.ps1 plus the full hosted Windows Release Gate, preserve any failed run/root cause, and close only this boundary after exact green evidence. After closure, the recommended next programmer boundary is isolated ReplaceFileW documented failure-postcondition characterization under LR-003.",
+  "nextRequiredAction": "The live-containment boundary is closed. Re-check canonical main and continuity before further source edits. The highest-priority next independently verifiable programmer boundary is native ReplaceFileW failure-postcondition characterization under LR-003: introduce only the narrow seam needed to reproduce/document 1175/1176/1177 filesystem postconditions, assert destination/replacement recovery bytes plus operation/journal state, and do not combine it with CAS, recursive scanner/adoption/Inbox, migration, async, diagnostics, networking, backup, or Smart Pack work. Preserve and recursively propagate the continuity constitution.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -105,7 +105,7 @@
     "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
+  "closureEvidenceCommit": "dc7eb83c94427479c59413c77935050dadf051ff",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed.",
@@ -131,19 +131,21 @@
     "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF",
     "verificationStatus": "closed: Windows Release Gate passed 25/25"
   },
-  "activeCandidate": {
+  "lastClosedBoundary": {
     "boundary": "Windows live DeploymentExecutor physical containment",
-    "canonicalHandoffBase": "208a66da89632acf36c065dc3bfead76af8d6bf4",
-    "branch": "agent/windows-live-containment-hardening-v3",
-    "productionSourceCommit": "b671bac33917649ff89e5e3b0866725f7b165232",
-    "focusedTestsCommit": "5479c2e2ef6f0c731ccad8d65fcacd558c1428c1",
-    "verified": false,
-    "productionFiles": [
-      "src/MhwModManager.Filesystem/DeploymentExecutor.cs"
-    ],
-    "testFiles": [
-      "tests/MhwModManager.IntegrationTests/HardeningTests.cs"
-    ],
-    "residualRisk": "Path-based checks reject observed descendant reparse traversal but cannot atomically prevent a topology swap after the final attribute check."
+    "verifiedCommit": "356fde242046b78e39c7266c57b27e52220141fa",
+    "hostedVerificationRun": "36341049469",
+    "evidenceCommit": "dc7eb83c94427479c59413c77935050dadf051ff",
+    "releaseArtifactSha256": "F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D",
+    "verificationStatus": "closed: Windows Release Gate passed 25/25",
+    "functionInventory": "611/611",
+    "explicitCallSites": "6478 / 0 uncovered",
+    "tests": {
+      "core": "79/79",
+      "automation": "20/20",
+      "integration": "76/76",
+      "selfTest": "11/11"
+    },
+    "residualRisk": "Path-based containment cannot atomically prevent a topology swap after the final reparse-attribute check."
   }
 }
