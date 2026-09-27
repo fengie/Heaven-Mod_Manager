@@ -47,7 +47,11 @@
     "IssueSuspects remains shell/cross-feature state because refresh projects persisted suspects into ModRowViewModel badges, ModsView, issue labels and header counters while crash/launch/bisect workflows mutate the same data.",
     "Mods/ModsView, conflicts, overlaps, selected state, staging/apply/undo, Nexus/import, profile mutations, launch/crash diagnosis, health/support and global busy/status were classified by ownership/coupling in MAINWINDOW_RESPONSIBILITY_AUDIT.md.",
     "Mapped ManagerDatabase methods, raw callers, existing repositories and service-owned SQLite transactions in STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.",
-    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
+    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved.",
+    "Documentation-only Windows filesystem safety support checkpoint: added _AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md based on canonical main 6ada5a5c4cc83afadfba42bc6af6559540920e3d.",
+    "The filesystem audit maps live deployment, rollback/recovery, CAS, recursive scanning/adoption/inbox import, archive extraction, legacy hardlinks, DOS device-name edges, and long-path behavior against Windows filesystem semantics.",
+    "Highest-priority future regression boundary: prove live deployment Add/Replace/Remove/rollback/recovery cannot traverse a parent junction/symbolic-link/reparse component outside the configured game root before changing production containment code.",
+    "No production C# or verification cache changed in the Windows filesystem safety audit."
   ],
   "invariantsPreserved": [
     "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
@@ -61,15 +65,20 @@
     "DeploymentExecutor prepared-journal, final commit and rollback shared-transaction boundaries remain untouched.",
     "ReplaceModFiles, ChainManualFamily, ProfileRepository.SaveCurrent, adoption, trust, issue, supersession, revalidation and enabled/priority batch atomicity remain untouched.",
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
-    "No verification cache was manually promoted."
+    "No verification cache was manually promoted.",
+    "PlannerSnapshotRepository remains closed at exact hosted Windows evidence; this audit does not reopen or alter that boundary.",
+    "Deployment transaction ownership, journal protocol, byte-state rollback/recovery behavior, CAS implementation, and path behavior are unchanged because this checkpoint is documentation-only.",
+    "No Windows runtime exploit, test pass, or release-gate result is claimed from static inspection."
   ],
-  "nextRequiredAction": "PlannerSnapshotRepository is closed. A successor must first re-verify canonical main, inspect current history/context including the deep SQLite transaction audit, and obtain a separately scoped next task before changing production source. Do not automatically begin a second repository extraction, reopen MainWindow page-model splitting, or modify documented transaction owners. Preserve the permanent continuity constitution, obey LR-001/LR-002, add only justified Learned Rules, and explicitly require the successor after you to inherit and recursively propagate the same rules.",
+  "nextRequiredAction": "PlannerSnapshotRepository is closed. The separately scoped Windows filesystem safety audit is documentation-only. If a successor takes the next safety checkpoint, start with Windows-only test fixtures proving deployment Add/Replace/Remove/rollback/recovery reject a parent reparse/junction that resolves outside the game root; do not change broad production filesystem semantics before those tests define the containment contract. Keep that checkpoint independent, preserve all SQLite/deployment transaction owners and byte-state recovery behavior, run a fresh exact hosted Windows Release Gate for any production-source change, and recursively propagate continuity.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md",
+    "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
