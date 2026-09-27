@@ -8,7 +8,7 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "architecture-explain-why-candidate-awaiting-windows-verification",
+  "status": "architecture-explain-why-integrated-awaiting-windows-verification",
   "lastClosedVerificationCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationRun": "36321128433",
   "candidateSourceCommit": "4f08a409c6a4d3083fa0886bd2c8b05829e48aac",
@@ -39,10 +39,11 @@
     "SQLite deployment transaction boundaries remain unchanged; the new repository is read-only.",
     "FOMOD and enhanced-game adapter redesign were not started."
   ],
-  "nextRequiredAction": "Fast-forward the candidate to main only after handoff context is complete, then let the Windows Release Gate run. Fix real failures rather than weakening the gate. If green, persist exact run/SHA evidence and only then consider deeper page-view-model/database repository decomposition.",
+  "nextRequiredAction": "Run the Windows Release Gate for this integrated main revision. Fix real failures rather than weakening the gate. If green, persist the exact verification SHA/run/test counts/function inventory/release artifact hash, then continue only with the next incremental architecture slice.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
-  ]
+  ],
+  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855"
 }
