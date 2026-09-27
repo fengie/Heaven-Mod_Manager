@@ -43,3 +43,12 @@ The project now contains `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PRO
 ## 11. Repair revision keeps exact checked evidence
 
 Keep version 8.8.0/common build props unchanged. Preserve the six unaffected Windows stage hashes; mark only exact unchanged functions checked. Linux builds/tests are evidence, not Windows release promotion. Use executable verifier/cache regressions instead of only source-text assertions.
+
+## 2026-09-27 post-v8.8 architecture decisions
+
+1. **Do not combine WPF lifetime/DI framework migration with the first architecture split.** Keep the existing explicit composition root for now; extract cohesive responsibilities first. Reconsider Generic Host/DI after page/service boundaries are stable.
+2. **Treat the first database refactor as a boundary migration, not a transaction rewrite.** Read-only presentation projections moved to `PresentationReadRepository`; deployment write/transaction infrastructure stays in `ManagerDatabase` until each write domain can be moved without changing atomicity.
+3. **Explain Why must never become a second resolver.** It replays the configured `DeploymentPlanner` and presents the exact `ConflictDecision`, manifest state, provider metadata and evidence already produced by the engine.
+4. **Split the giant WPF class incrementally while preserving bindings.** Activity, Coverage, Import and Overlap/Explain orchestration moved to partial feature files as a low-risk seam. Independent page view models remain the next structural step, not a prerequisite for shipping Explain Why.
+5. **No FOMOD or enhanced-adapter expansion in this milestone.** Architecture coherence and verification take priority.
+
