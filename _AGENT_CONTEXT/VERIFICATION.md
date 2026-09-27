@@ -1,5 +1,42 @@
 # Verification performed for this source handoff
 
+## PlannerSnapshotRepository final hosted closure
+
+Hosted Windows Release Gate `36336190920` closed exact final commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
+
+- runner: **Windows / X64**
+- .NET SDK: **10.0.401**
+- handoff continuity preflight: **PASS**
+- recursive-continuity negative fixtures: **4/4 rejected as intended**
+- repository verifier: **25/25 PASS**
+- production function inventory: **610**
+- production fingerprints promoted: **610/610**
+- explicit call sites: **6456**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **72/72**
+- automation self-test: **11/11**
+- App win-x64 compile/analyzers: **PASS**
+- win-x64 ReadyToRun restore: **PASS**
+- self-contained ReadyToRun publish: **PASS**
+- release ZIP SHA-256: `226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E`
+- hosted evidence artifact ID: **10938050233**
+- workflow evidence/cache persistence commit: `852f07b9d6ad0457c161df0aa1c8165981d349cf`
+
+The workflow promoted verification state through the normal verifier/build path; no cache was manually promoted.
+
+The exact read-only architecture behavior verified here is the PlannerSnapshotRepository extraction with the historical two-connection planner-read semantics intact. `ManagerDatabase.GetModsAsync` and all protected write-side transaction boundaries remain unchanged.
+
+### Superseded failed attempts preserved
+
+- Run `36335255922` on `161b5fcba88470b7d941a3831624bdbf071ff668`: 12/25. Root causes were two missed planner-snapshot callers and two missing LR-001 entry traces. Release and persistence were skipped.
+- Run `36335692754` on `0e561f3c059475ad443a79ac4a27dd68264a7bdb`: 24/25. Compile/verifier/Automation/self-test were clean; the sole failure was one incorrect new filtered-parity assertion. Release and persistence were skipped.
+
+Both failures informed durable regression coverage/rules and were not hidden.
+
+---
+
 ## PlannerSnapshotRepository candidate — exact Windows gate required
 
 Production source commit `8e0068bd44cc6735ffa9478067923ad5d9c54506` extracts the read-only planner snapshot query assembly. Regression-test commit `64e666a19ce17c21bc696b46cce9c07bb257a686` adds/strengthens full, filtered, empty-filter, representative planner-output and cancellation coverage.

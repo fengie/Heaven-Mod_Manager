@@ -20,50 +20,23 @@ The next agent must be able to continue without previous chat history.
 **Do not break the chain.**
 
 
-## Current checkpoint: PlannerSnapshotRepository candidate awaiting exact Windows closure
+## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
 
-PlannerSnapshotRepository initial source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
-Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
-Repair source after failed run `36335255922`: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
-Second run `36335692754` reached 24/25; its only failure was a new test expectation around preserved filter casing semantics. The final test-only repair is in the current commit.
-The first hosted run exposed two missed callers and two LR-001 trace gaps; the second reached 24/25 with all production checks clean and exposed only the test assumption. Both failed runs are preserved as superseded evidence. This candidate is not green until a fresh full hosted Windows Release Gate passes. Do not begin another source boundary while it is unresolved.
+Exact verified final commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
+Hosted Windows Release Gate: `36336190920`.
+Evidence/cache persistence commit: `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
 
-Governance closure remains exact commit `73f1298455ec4c651e211488ececf9803504e60d`, hosted Windows run `36333960215`; the later documentation closure `c9b27b98d280b144ba52ba35167f1fcb594945bd` also passed run `36334644325`.
+Final exact evidence: verifier **25/25**, fingerprints **610/610**, explicit call sites **6456 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **72/72**, self-test **11/11**, App win-x64 analyzers PASS, ReadyToRun publish PASS, release SHA-256 `226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E`.
 
-Canonical architecture design base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
+The completed boundary is read-only `PlannerSnapshotRepository`. It preserves the historical two-connection planner read behavior, leaves `ManagerDatabase.GetModsAsync` in place, preserves filtered/empty/cancellation/planner-output semantics (including the existing first-casing SQLite filter nuance), and does not alter `DeploymentExecutor` or any documented write-side SQLite transaction owner.
 
-No production source changed in this checkpoint. The current decision is
-**Path B: stop splitting MainWindowViewModel**.
+Failed runs `36335255922` and `36335692754` are intentional historical evidence; read `_AGENT_CONTEXT/VERIFICATION.md` for root causes.
 
-Before editing, read:
+Do not reopen MainWindow page-model splitting or begin a second repository extraction merely because this seam is closed. First inherit the full canonical read order, inspect current main/history, read the storage/deep SQLite audits, and confirm a separately scoped next task.
 
-- `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md`
-- `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
-- `_AGENT_CONTEXT/NEXT_STEPS.md`
-
-The audit found no remaining page-model seam with lower coupling than the
-alternatives. Mods/ModsView, Conflicts, IssueSuspects and Overlaps share
-staged/effective/diagnosis state; import/Nexus/profile mutation/launch/crash/
-health flows are application workflows; RunBusy/status/lifetime remain shell
-responsibilities.
-
-The exact next production boundary is **PlannerSnapshotRepository only**:
-move the existing read-only `LoadPlannerSnapshotAsync` query assembly out of
-ManagerDatabase, preserve current behavior and connection semantics, add
-focused parity/planner tests, then run a fresh full Windows Release Gate.
-Do not move `GetModsAsync` in the same checkpoint and do not touch
-DeploymentExecutor transaction ownership.
-
-The closed green production baseline is still exact commit
-`106a4569b572473394aa075bcfa5d9c03f2fe44d`, run `36331057943`, because
-this audit changed documentation only.
-
-Preserve one source boundary at a time, exact SHA-bound evidence, and the
-continuity protocol. Update the audits if implementation reveals a material
-coupling assumption that was wrong.
+Before finishing your own future work, you must update durable handoff state and explicitly require your **successor** to inherit, preserve, and recursively propagate the permanent continuity constitution; that successor must pass the same obligation to the **agent after them**.
 
 **Do not break the chain.**
-
 
 ---
 

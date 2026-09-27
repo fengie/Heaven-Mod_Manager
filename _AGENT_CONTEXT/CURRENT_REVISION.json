@@ -8,24 +8,24 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "planner-snapshot-repository-test-parity-repaired-awaiting-exact-windows-gate",
-  "verificationAppliesToCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
-  "lastClosedVerificationCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
-  "lastClosedVerificationRun": "36334644325",
+  "status": "planner-snapshot-repository-closed-windows-verified",
+  "verificationAppliesToCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
+  "lastClosedVerificationCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
+  "lastClosedVerificationRun": "36336190920",
   "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
-  "verificationScopeNote": "PlannerSnapshotRepository production repair remains source commit 528401925b1d09b3d65c9652de8e4f2024e3677f. Second hosted attempt 36335692754 on exact candidate 0e561f3c059475ad443a79ac4a27dd68264a7bdb reached 24/25: function scan clean (610 functions; 594 known-good; 16 needing verification; 0 trace gaps; 6456 explicit call sites; 0 uncovered; 0 parse errors), relaxed/strict whole-solution compile and analyzers PASS, Automation 20/20 PASS, self-test 11/11 PASS, Integration 70/71 with exactly one failure in the new filtered parity test. Both the pre-extraction helper and repository returned 0 files for ['B','b','missing']; the test incorrectly asserted 2. Preserved legacy semantics are: case-insensitive Distinct keeps the first representative's casing, then SQLite IN uses default case-sensitive text equality. The final test-only repair uses canonical stored casing for the normal filtered-result case and adds a separate uppercase-first legacy-parity regression. Release/publish and verification-state persistence were skipped for run 36335692754.",
+  "verificationScopeNote": "PlannerSnapshotRepository boundary CLOSED. Hosted Windows Release Gate 36336190920 verified exact final candidate efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 on Windows X64 / .NET SDK 10.0.401: continuity preflight PASS; all four recursive-continuity negative fixtures rejected; repository verifier 25/25; 610/610 production function fingerprints promoted; 6456 explicit call sites with 0 uncovered; 0 trace gaps and 0 parse errors; Core 79/79; Automation 20/20; Integration/fault injection 72/72; self-test 11/11; App win-x64 compile/analyzers PASS; ReadyToRun restore and self-contained publish PASS. Release SHA-256 226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E. Workflow evidence/cache persistence commit 852f07b9d6ad0457c161df0aa1c8165981d349cf. Failed runs 36335255922 and 36335692754 remain preserved as superseded evidence with their root causes. No second production boundary was started.",
   "lastClosedVerification": {
-    "functionInventoryTotal": 615,
-    "functionsVerified": 615,
+    "functionInventoryTotal": 610,
+    "functionsVerified": 610,
     "functionsPending": 0,
     "windowsGate": "passed: 25/25",
-    "explicitCallSites": 6389,
+    "explicitCallSites": 6456,
     "uncoveredCallSites": 0,
     "coreTests": "79/79 passed",
     "automationTests": "20/20 passed",
-    "integrationTests": "66/66 passed",
+    "integrationTests": "72/72 passed",
     "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A"
+    "releaseArtifactSha256": "226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E"
   },
   "candidateChanges": [
     "Second test-only repair after run 36335692754: canonical-casing filtered test asserts selected mod files, and a separate regression preserves uppercase-first SQLite filter behavior exactly.",
@@ -63,7 +63,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run a fresh full hosted Windows Release Gate on the exact final PlannerSnapshotRepository candidate. Preserve failed/superseded runs 36335255922 and 36335692754. Production source needs no further change for the second failure. Do not begin another extraction. On success persist exact evidence and close only this boundary; the successor must inherit and recursively propagate the continuity constitution.",
+  "nextRequiredAction": "PlannerSnapshotRepository is closed. A successor must first re-verify canonical main, inspect current history/context including the deep SQLite transaction audit, and obtain a separately scoped next task before changing production source. Do not automatically begin a second repository extraction, reopen MainWindow page-model splitting, or modify documented transaction owners. Preserve the permanent continuity constitution, obey LR-001/LR-002, add only justified Learned Rules, and explicitly require the successor after you to inherit and recursively propagate the same rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -72,7 +72,7 @@
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8",
+  "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed."

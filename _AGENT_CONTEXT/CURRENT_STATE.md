@@ -1,22 +1,46 @@
-# Current candidate — PlannerSnapshotRepository extraction REPAIRED after first hosted failure
+# PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
 
-Initial extraction source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
-Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
-Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
-Final test-only filter-parity repair: this commit.
+Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
+Last production repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+Hosted Windows Release Gate: `36336190920`.
+Workflow evidence/cache persistence: `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
 
-Hosted runs `36335255922` and `36335692754` are preserved as superseded evidence. Run `36335255922` on exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` failed first. The exact root causes were two LR-001 trace gaps (`RestoreLastGood`, `LaunchSafeMode`) and two missed callers (`NexusMetadataService`, `GameBuildMonitor`) that still referenced the removed ManagerDatabase method. Release/publish was skipped and no verification state was persisted. The first repair changes only this boundary. Run `36335692754` then reached **24/25** with clean function verification, clean compile/analyzers, Automation **20/20**, self-test **11/11**, and Integration **70/71**. Its only failure was a wrong extra assertion in the new filtered parity test; production and the copied legacy query agreed exactly. The final test-only repair now covers both a canonical-casing filtered result and the preserved uppercase-first SQLite behavior.
+Final evidence:
 
-This is the one production boundary authorized by the MainWindow/storage audit. It is **not yet Windows-verified**.
+- Windows X64 / .NET SDK 10.0.401;
+- continuity preflight PASS and all four recursive-continuity negative fixtures rejected;
+- repository verifier **25/25**;
+- production fingerprints **610/610** promoted;
+- explicit call sites **6456**, uncovered **0**, trace gaps **0**, parse errors **0**;
+- Core **79/79**;
+- Automation **20/20**;
+- Integration/fault injection **72/72**;
+- self-test **11/11**;
+- App win-x64 compile/analyzers PASS;
+- ReadyToRun restore and self-contained publish PASS;
+- release ZIP SHA-256: `226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E`.
 
-- Added read-only `PlannerSnapshotRepository` in Storage and moved the former `ManagerDatabase.LoadPlannerSnapshotAsync` query assembly into it.
-- `ManagerDatabase.GetModsAsync` remains where it was.
-- Connection semantics are intentionally unchanged: mod state is loaded first through `GetModsAsync`; the remaining planner tables are then read through a second `OpenAsync` connection. No new SQLite transaction/snapshot model was introduced.
-- Full, filtered `fileModIds`, and empty-filter behavior are preserved.
-- MainWindow analysis/restore/safe-mode, EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption, and Health now consume the composed repository.
-- Focused integration coverage compares the extracted repository against the exact pre-extraction query assembly for full/filtered/empty snapshots, compares representative planner output, and covers already-canceled cancellation.
-- DeploymentExecutor and every documented write-side transaction boundary remain untouched.
-- No second storage extraction may begin until a fresh exact Windows Release Gate closes this source boundary.
+The extraction remains exactly the intended read-only boundary:
+
+- `PlannerSnapshotRepository` owns planner-input query assembly;
+- `ManagerDatabase.GetModsAsync` remains in `ManagerDatabase`;
+- mod state is still read first through its own connection, then files/rules/resources/manifest/originals through a second `OpenAsync` connection;
+- full, filtered, empty-filter, cancellation, and representative planner-output parity are regression-covered;
+- the legacy first-casing SQLite filter behavior is deliberately preserved rather than redesigned;
+- `DeploymentExecutor` and all documented write-side SQLite transaction owners were untouched.
+
+Historical failed attempts remain useful evidence:
+
+- `36335255922`: two LR-001 trace gaps plus two missed callers (`NexusMetadataService`, `GameBuildMonitor`); compiler-backed closure produced LR-002.
+- `36335692754`: **24/25**; production checks were clean and the only failure was an incorrect new test expectation about preserved filter casing behavior.
+
+No second production boundary was started.
+
+The next agent must inherit the permanent continuity constitution, obey active Learned Rules, preserve exact verification and transaction invariants, and explicitly require its successor to pass the same rule system onward again.
+
+**Do not break the chain.**
+
+---
 
 # Governance checkpoint CLOSED — permanent recursive continuity
 

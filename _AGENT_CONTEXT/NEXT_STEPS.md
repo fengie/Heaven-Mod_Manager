@@ -1,21 +1,24 @@
 # Next steps
 
-## Immediate: verify and close the PlannerSnapshotRepository boundary
+## PlannerSnapshotRepository boundary — CLOSED
 
-Initial production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
-Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
-Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
-Final test-only filter-parity repair: this commit.
+Exact verified commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
+Hosted Windows Release Gate: `36336190920`.
+Evidence/cache persistence: `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
 
-First hosted attempt `36335255922` on `161b5fcba88470b7d941a3831624bdbf071ff668` is failed/superseded evidence: two missing entry traces and two missed planner-snapshot callers caused verification/compile failures. Second hosted attempt `36335692754` on `0e561f3c059475ad443a79ac4a27dd68264a7bdb` is also failed/superseded evidence: all production verification/compile checks were clean and the only failure was the new filtered test's incorrect extra expectation. Run a fresh full gate on the final test-parity-repaired exact commit.
+This requested source boundary is complete. Do **not** immediately start a second storage extraction or use remaining context to broaden scope.
 
-Run a fresh full hosted Windows Release Gate for the final candidate commit. Do not reuse the prior green state for changed production source and do not manually promote verification caches.
+### Exact next action for a successor
 
-If the gate fails, repair only this PlannerSnapshotRepository boundary and preserve the failed run/root cause. If it passes, persist exact source SHA, run ID, Windows/SDK, verifier totals, fingerprints/call sites, test totals, analyzer result, publish result and artifact SHA-256 before considering any next source seam.
+1. verify actual canonical `main` and inspect recent history/diffs;
+2. inherit `CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` (including LR-001 and LR-002);
+3. read the current storage/deep SQLite audits and the rest of `README_FIRST.md`;
+4. treat PlannerSnapshotRepository as closed exact evidence, not as permission to decompose ManagerDatabase broadly;
+5. obtain/confirm a separately scoped next production boundary before editing;
+6. preserve all documented transaction owners, and do not reopen MainWindow page-model splitting merely because the shell is large;
+7. before that future task ends, update durable handoff state and explicitly require the next successor to preserve and recursively propagate the same continuity constitution.
 
-Do **not** start another repository extraction, another MainWindow split, Generic Host/DI migration, FOMOD, enhanced-game adapter work, or transaction redesign while this boundary is unverified.
-
-The permanent continuity constitution remains recursive: the successor must inherit and preserve it, and must require the agent after them to do the same.
+Historical failed runs `36335255922` and `36335692754` remain documented in `VERIFICATION.md`; do not erase them.
 
 **Do not break the chain.**
 

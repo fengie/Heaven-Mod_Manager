@@ -55,7 +55,7 @@ Runtime `MasterDebugLog.OperationScope` now tracks first-chance exceptions for t
 Per-function scopes remain the mechanism for associating nested exceptions with callers. `AppDomain.FirstChanceException` is used as an observation signal only; it must not change exception semantics. Full stack logging for every first-chance exception is deliberately disabled by default and can be enabled with `MHW_FIRST_CHANCE_DETAIL=1` for deep diagnostics. This preserves exhaustive observation without forcing heavy file I/O on every handled exception.
 
 
-## Planner snapshot storage boundary — candidate
+## Planner snapshot storage boundary — CLOSED
 
 The first post-audit storage extraction moves planner-input query assembly into read-only `PlannerSnapshotRepository`.
 
@@ -64,4 +64,4 @@ The first post-audit storage extraction moves planner-input query assembly into 
 - App composition creates one repository instance and passes it to MainWindow planner workflows plus EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption and Health.
 - DeploymentExecutor and every documented write-side transaction owner are unchanged.
 
-This boundary must pass its own exact Windows Release Gate before another storage seam is started.
+Hosted Windows Release Gate `36336190920` verified exact final commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`; this boundary is closed. Any future storage seam is a separate production boundary and must be independently scoped and verified.
