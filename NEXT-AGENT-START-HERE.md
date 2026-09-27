@@ -19,26 +19,35 @@ Before finishing, update durable repository handoff state and explicitly require
 
 **Do not break the chain.**
 
-## ACTIVE checkpoint: Windows live DeploymentExecutor physical containment
+## CLOSED checkpoint: Windows live DeploymentExecutor physical containment
 
-Current candidate:
+This boundary is complete and hosted-Windows verified.
 
-- canonical hosted-closed handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`
-- branch: `agent/windows-live-containment-hardening-v3`
-- production source: `b671bac33917649ff89e5e3b0866725f7b165232`
-- focused Windows tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`
-- status: **NOT YET GREEN**
+- exact verified merge: `356fde242046b78e39c7266c57b27e52220141fa`
+- Windows Release Gate: `36341049469`
+- evidence/cache persistence: `dc7eb83c94427479c59413c77935050dadf051ff`
+- verifier: **25/25 PASS**
+- functions: **611/611**
+- explicit call sites: **6478 / 0 uncovered**
+- Core **79/79**, Automation **20/20**, Integration **76/76**, self-test **11/11**
+- ReadyToRun self-contained publish: PASS
+- release SHA-256: `F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D`
 
-Read `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`, `CURRENT_STATE.md`, and `VERIFICATION.md`.
+The manager now fails closed on descendant reparse/junction traversal in live deployment preparation/preconditions, immediate Add/Replace/Remove mutation, rollback/startup recovery, pruning, and lock inspection. Focused Windows tests use real junctions.
 
-Do not start `ReplaceFileW`, CAS, recursive scanner/adoption/Inbox, migration, async, diagnostics, networking, backup, or Smart Pack work first. Re-check canonical main, integrate this candidate safely, run the handoff validator and exact full Windows Release Gate, preserve/repair any failure, and close only this boundary.
+Do not reopen this boundary to solve unrelated filesystem findings. The path-based guard has one explicitly documented residual risk: a topology swap after the final attribute check is still a TOCTOU window; no handle/file-ID atomicity is claimed.
 
-After closure, the next recommended programming boundary is isolated `ReplaceFileW` failure-postcondition characterization under LR-003.
+## Exact next programmer boundary
 
-You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, explicitly require your successor to inherit, preserve, and recursively propagate the same rules to the agent after them.
+The next highest-value independently verifiable step is **native `ReplaceFileW` failure-postcondition characterization** under LR-003.
+
+Before modifying source, inspect actual canonical `main`, current continuity, `AtomicFileOps.ReplaceFromAsync`, `DeploymentExecutor` recovery, and the `ReplaceFileW` section of `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`.
+
+Keep that checkpoint narrow: introduce only the seam necessary to reproduce/document 1175/1176/1177 postconditions, assert actual destination/replacement recovery bytes and operation/journal state, and preserve fail-closed `RecoveryRequired`. Do not mix CAS, recursive scans, migration, async, diagnostics, networking, backup, or Smart Pack work into it.
+
+You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
-
 
 ## Current canonical product checkpoint
 
