@@ -6,19 +6,21 @@
   "currentVersion": "8.8.0",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 FunctionVerification",
-  "status": "repair-plus-branding-awaiting-windows-verification",
-  "verificationAppliesToCommit": "747cc4b3c4103f7ed49846b8f2301699ec7e54c5",
-  "verificationScopeNote": "The recorded verification SHA predates the Git-first documentation transition and the later branding integration. The branding change does not modify production C# function bodies, so the 602-function inventory and 579/23 function booleans are not manually changed; App/XAML/project-input build fingerprints must rerun normally.",
+  "status": "v8.8.0-windows-verified-architecture-milestone-ready",
+  "verificationAppliesToCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
+  "verificationScopeNote": "GitHub Actions run 36321128433 verified commit 5f6789af499fcc1afe6cb5d38244927bb02335fb on Windows x64 with .NET SDK 10.0.401. The subsequent be0d786e996a09fece24f5599dab8911af5b31db commit only persisted promoted verification caches and hosted evidence; it did not change production source.",
   "verification": {
     "functionInventoryTotal": 602,
-    "functionsVerified": 579,
-    "functionsPending": 23,
-    "linuxStrictReleaseBuild": "passed: 0 warnings / 0 errors",
+    "functionsVerified": 602,
+    "functionsPending": 0,
+    "windowsGate": "passed: 25/25",
     "coreTests": "79/79 passed",
     "automationTests": "18/18 passed",
     "integrationTests": "61/61 passed",
     "selfTest": "11/11 passed",
-    "finalWindowsReleaseVerification": "pending"
+    "functionFingerprintPromotion": "passed",
+    "winX64Publish": "passed",
+    "releaseArtifactSha256": "4C70E6BB4F97E46CDA91E2C196DF695E5FA9452EE0C93F2797C880BA9A0A1294"
   },
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
@@ -26,13 +28,12 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Pull the branding commit, run Test Everything.bat on Windows, then Build.bat and RUN BUILT APP.bat. Confirm the window/taskbar icon and the published MHW Mod Manager.exe icon. Let the normal verifier/cache logic decide which App/XAML/project-input stages rerun; do not manually promote booleans.",
+  "nextRequiredAction": "Begin the post-v8.8 architecture milestone: incrementally extract WPF/application responsibilities and read-side persistence boundaries, then add Explain Why/effective-filesystem inspection. Preserve deployment, journal, CAS, rollback, path-safety, and verification invariants. Run the exact Windows gate for source changes before calling the milestone green.",
   "pendingRepositoryChangesSinceVerification": [
-    "Added generated MHW Manual Mod Manager application icon at src/MhwModManager.App/Assets/MHWModManager.ico.",
-    "MhwModManager.App.csproj now embeds the icon as the executable ApplicationIcon and WPF Resource.",
-    "App.xaml applies the icon to all WPF Window instances through the global Window style."
+    "be0d786e996a09fece24f5599dab8911af5b31db persisted the promoted function/stage caches and hosted Windows closure evidence only; production source is unchanged from the verified SHA."
   ]
 }
