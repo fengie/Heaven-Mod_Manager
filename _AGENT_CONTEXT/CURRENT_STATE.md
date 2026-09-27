@@ -1,3 +1,19 @@
+# Windows filesystem safety support audit — documentation only
+
+Audit branch base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
+
+Durable audit: `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`.
+
+No production C# or verification cache changed. The closed PlannerSnapshotRepository evidence below remains exact and untouched.
+
+The audit found P0/P1 risks that require Windows regression fixtures before production changes: live deployment physical containment across parent reparse points, recursive source/live traversal through reparse points, CAS object trust, and documented `ReplaceFileW` failure postconditions. It adds LR-004: lexical containment is not physical filesystem containment.
+
+The recommended first future checkpoint is test-focused: prove Add/Replace/Remove/rollback/recovery cannot affect an external target through a parent junction. Preserve all existing deployment journal/transaction and fail-closed byte-state recovery invariants.
+
+**Do not break the chain.**
+
+---
+
 # PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
 
 Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
