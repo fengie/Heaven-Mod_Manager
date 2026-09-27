@@ -1,3 +1,38 @@
+# ACTIVE candidate — provider-neutral Smart Pack planner core (NOT YET VERIFIED)
+
+Branch: `agent/smart-pack-planner-core`  
+PR: #13  
+Last production source checkpoint: `ab340ff2d6db8470d37846e68c6bdddcb5844657`  
+Focused tests checkpoint: `231fa62b0df66ef6bfc9f4b0f602f734c2a28891`
+
+The separately scoped Smart Auto-Fill work has completed its architecture/reuse audit and implemented exactly one first source boundary:
+
+- pure `MhwModManager.Core.SmartPackPlanner`;
+- normalized provider-neutral candidate/request/result models;
+- hard compatibility/confidence and hard-requirement rejection before preference;
+- strict ordered author/tag/category/rating/recency/popularity preferences;
+- normalized-popularity fallback;
+- logical-mod mirror suppression;
+- indexed normalized hard-conflict edges;
+- installed logical-mod and occupied-target protection;
+- deterministic matching over upstream-proven safe targets, including safe augmenting reassignment;
+- actual selected/rejected decision explanations;
+- focused tests for the requested first-slice semantics.
+
+No network, provider credential, download, scraping, dependency resolver, schema/persistence change, archive/path retarget transformation, WPF redesign, deployment mutation or live-tree write was added.
+
+Detailed architecture/reuse findings are in `_AGENT_CONTEXT/SMART_PACK_PLANNER_AUDIT.md`.
+
+**Verification is intentionally open.** The connected GitHub surface exposes no PR-triggered run/status for PR #13, and the only connected Windows Desktop Commander device is offline. Therefore no compile/analyzer/test/function-promotion/Windows-gate PASS is claimed. Existing PlannerSnapshotRepository green evidence remains bound only to its exact older verified source.
+
+Do not start a second Smart Auto-Fill seam. The exact next action is to re-check canonical main/concurrent work, run the handoff validator and normal exact repository/hosted Windows verification for this candidate, repair/preserve any failure evidence, and close only this boundary after green evidence exists.
+
+The successor inherits the permanent continuity constitution and must explicitly require its successor to preserve and recursively propagate it again.
+
+**Do not break the chain.**
+
+---
+
 # PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
 
 Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
