@@ -1,0 +1,64 @@
+name: Windows Release Gate
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-release:
+    name: Verify and publish on Windows
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Record runner provenance
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path BuildLogs | Out-Null
+          @(
+            "github_sha=$env:GITHUB_SHA"
+            "github_ref=$env:GITHUB_REF"
+            "runner_os=$env:RUNNER_OS"
+            "runner_arch=$env:RUNNER_ARCH"
+            "dotnet_sdk=$(& dotnet --version)"
+            "powershell_5=$(& powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString()')"
+          ) | Set-Content -Path BuildLogs\ci-windows-provenance.txt -Encoding UTF8
+
+      - name: Run exact repository verification gate
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Verify-Release.ps1"
+
+      - name: Run exact release build and publish gate
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Build-Release.ps1"
+
+      - name: Preserve verification, build, and promoted-cache evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-release-evidence-${{ github.sha }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            BuildLogs/**
+            artifacts/**
+            release/**
+            .verification/function-status.json
+            .verification/stage-status.json
+            MHW-DEBUG-ALL.log

@@ -96,3 +96,18 @@ This run produced **24 PASS / 1 FAIL**. Important confirmed results on the pre-c
 - full automation self-test: PASS for all listed checks.
 
 The only failure was the function fingerprint scan. It found 602 functions, 582 known-good and 20 changed/new bodies, with exactly four required entry-trace gaps and 69 uncovered explicit call sites. This packaged revision adds entry traces to precisely those four functions. The next Windows run is expected to rerun stages invalidated by those two edited production files and should be considered authoritative for final function-cache promotion.
+
+
+## Hosted Windows release-closure gate
+
+A repository-native Windows closure path is now defined in
+`.github/workflows/windows-release-gate.yml`. It deliberately invokes the existing
+`scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` under Windows
+PowerShell with the pinned .NET SDK 10.0.401 rather than creating a weaker parallel
+test policy. The workflow records the exact Git SHA/runner/toolchain, preserves
+BuildLogs, release artifacts, the master log, and the verifier caches (including
+hidden `.verification` state) as a GitHub Actions artifact.
+
+Adding the workflow is verification infrastructure, **not** verification evidence.
+Only a completed green Windows run for the exact source SHA may close v8.8 or be
+used to persist promoted function/stage booleans in the canonical repository.
