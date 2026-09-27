@@ -450,3 +450,31 @@ Support Agent 1 completed an independent static cross-check of SQLite write owne
 The deployment journal/final-commit/rollback transactions were independently confirmed. Four non-deployment consistency defects/gaps were documented for later isolated checkpoints: duplicate cleanup move-before-delete recovery, trust-vs-launch-history split persistence, snapshot-prune DB/payload drift, and legacy migration run-status closure. No production source was changed by this support audit, and no local/hosted Windows execution is claimed for it.
 
 Any successor working on these findings must preserve the permanent recursive continuity constitution and explicitly pass that requirement to its successor. Do not break the chain.
+
+
+## Independent support audit — mod lifecycle / referential integrity
+
+A documentation-only support audit based on canonical main
+`a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1` is preserved at:
+
+- `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md`
+
+The audit distinguishes successful entity-retirement semantics from the deep
+SQLite audit's move/delete crash atomicity. The confirmed lifecycle gap is that
+a successful `mods` row deletion does not retire planner-active
+`conflict_rules`, `resource_providers`, or mod-keyed settings. Because local
+mod IDs are derived from the absolute source path, a different package later
+created at the same path can reuse the ID and silently reactivate old resolver
+or UI/metadata state.
+
+LR-007 records the durable rule: deleting a durable entity must close all live
+semantic references, not only declared FK children, while historical evidence
+is preserved by an explicit retention contract.
+
+Recommended future boundary: characterization tests plus one centralized
+mod-retirement transaction. Keep it separate from D1 filesystem/DB crash
+recovery, global mod-ID redesign, backup/restore, Smart Pack work, and broad
+schema refactoring.
+
+No production C#, test code, schema, verification cache, or closed product
+verification evidence changed in this support audit.
