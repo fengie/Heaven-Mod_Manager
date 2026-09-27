@@ -368,3 +368,12 @@ The source-handoff packager was also corrected to exclude `SOURCE_HANDOFF_MANIFE
 The user ran the corrected v8.8.0 verifier again on Windows/.NET 10.0.401. Result: **24 passed / 1 failed**. The relaxed whole solution and strict whole solution both compiled with **0 warnings / 0 errors**; Automation tests passed **18/18**; Integration + fault-injection passed **43/43**; the full automation self-test passed every listed check. The sole failure was the function fingerprint scan: 602 functions total, 582 known-good, 20 changed/new, with exactly four trace gaps (`GameProfileEditorWindow.AddField`, `GameProfileRegistry.DiscoverSteam`, `DiscoverEpic`, `DiscoverGog`). Those four gaps accounted for all 69 uncovered explicit call sites.
 
 This packaged revision adds only `MasterDebugLog.BeginMethod()` entry scopes to those four functions. No functional game/deployment behavior was intentionally changed. Since `GameProfileEditorWindow.cs` and `GameProfileRegistry.cs` changed, stage-cache entries whose dependency fingerprints include App/Filesystem are intentionally invalidated on the next run. Exact unaffected green evidence remains cached; `strict:FunctionVerifier` is now also pre-checked from the second run because the verifier project itself is unchanged by this patch.
+
+
+## Independent SQLite transaction audit support finding
+
+Support Agent 1 completed an independent static cross-check of SQLite write ownership and filesystem/DB atomicity. Durable findings are in `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md`; the canonical storage audit links it. Audit document commit: `5fd7f41f6229474907aa751fd410bcf32dbe2d50`; link commit: `d6cd98c5fb85207530ce433443e32eab7f5a50b5`.
+
+The deployment journal/final-commit/rollback transactions were independently confirmed. Four non-deployment consistency defects/gaps were documented for later isolated checkpoints: duplicate cleanup move-before-delete recovery, trust-vs-launch-history split persistence, snapshot-prune DB/payload drift, and legacy migration run-status closure. No production source was changed by this support audit, and no local/hosted Windows execution is claimed for it.
+
+Any successor working on these findings must preserve the permanent recursive continuity constitution and explicitly pass that requirement to its successor. Do not break the chain.
