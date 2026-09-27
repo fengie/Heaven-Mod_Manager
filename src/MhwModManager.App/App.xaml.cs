@@ -86,6 +86,7 @@ public sealed partial class App:Application, IDisposable
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
             var health=startup.Run("services.health",()=>new HealthService(db,hash,blobs,executor.Destination,paths.Game));
             var profiles=startup.Run("services.profiles",()=>new ProfileRepository(db));
+            var presentationReads=startup.Run("services.presentation-reads",()=>new PresentationReadRepository(db));
             var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
             var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
             var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
@@ -104,9 +105,10 @@ public sealed partial class App:Application, IDisposable
             var trust=startup.Run("services.mod-trust",()=>new ModTrustService(db));
             var issues=startup.Run("services.mod-issue-fallback",()=>new ModIssueFallbackService(db,timeline,trust));
             var updateDiff=startup.Run("services.update-diff",()=>new UpdateDiffService(db));
-            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(db));
+            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(db,planner));
             var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
             var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(db));
+            var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
             var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(db,health,adoption,dependencies,planner,paths.Game));
             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
@@ -120,8 +122,8 @@ public sealed partial class App:Application, IDisposable
                     new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
             };
 
-            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,inbox,launchGate,automation,bisector));
+            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
+                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
             var migration=paths.Game.IsMonsterHunterWorld
@@ -250,6 +252,7 @@ public sealed record AppServices(
     HealthService Health,
     SupportBundleService Support,
     ProfileRepository Profiles,
+    PresentationReadRepository PresentationReads,
     LegacyV7Migrator Migrator,
     ArchiveInspector Archive,
     FileChangeHintService ChangeHints,
@@ -271,6 +274,7 @@ public sealed record AppServices(
     EffectiveInspectorService Inspector,
     OutfitPresetService Presets,
     GameUpdateImpactService GameImpact,
+    ArchiveImportService Importer,
     SmartInboxService Inbox,
     LaunchHealthGateService LaunchGate,
     AutomationCoordinator Automation,
