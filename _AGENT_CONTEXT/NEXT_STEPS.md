@@ -1,5 +1,27 @@
 # Next steps
 
+## Legacy v7→v8 migration recovery audit — documentation checkpoint
+
+Durable audit: `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md`.
+
+This support lane changes no production C# and does not alter the closed PlannerSnapshotRepository evidence.
+
+The migration audit found no dedicated migration tests in the current C# test suite. Highest-value future work is therefore **characterization/fault coverage before protocol redesign**.
+
+First recommended checkpoint:
+
+1. add focused `LegacyV7MigratorTests` for no-state skip, valid minimal migration, completion-marker skip, malformed schema, missing/corrupt blob, exact enabled order, semantic rule/profile/resource import, ordinary failure + retry, and cancellation;
+2. add a corrupt pre-existing CAS retry fixture proving migration does not livelock forever on the same bad hash-named file;
+3. do not yet combine this with generic CAS redesign, app single-instance UX, SQLite repository decomposition, or Windows reparse work.
+
+Subsequent independent checkpoints should cover truthful cleanup failure reporting, exactly-one migration ownership, completion-marker/run-status reconciliation, semantic-fidelity validation, destructive-reset ownership, and unique backup/report identity.
+
+Preserve `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` as the SQLite authority and PR #7's filesystem/CAS audit as the filesystem authority if integrated.
+
+**Do not break the chain.**
+
+---
+
 ## PlannerSnapshotRepository boundary — CLOSED
 
 Exact verified commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
