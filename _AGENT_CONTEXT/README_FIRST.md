@@ -1,9 +1,10 @@
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
-**Latest revision:** the 2026-09-27 repair audit is in `AUDIT-2026-09-27.md`.
-Read it after the continuity protocol. Historical toolchain limitations below do
-not describe the latest verified source state; Linux build/tests have real evidence,
-while Windows release confirmation still must run.
+**Latest closed production boundary:** PlannerSnapshotRepository is hosted-Windows verified at
+`efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, run `36336190920`.
+The current support checkpoint is the documentation-only Windows filesystem safety audit in
+`WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`. Historical toolchain limitations below do not describe
+the latest verified source state.
 
 GitHub repository `fengie/mhw-mods` on `main` is now the canonical development
 state. The project originally advanced from the user-supplied
@@ -34,6 +35,8 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 10. `_AGENT_CONTEXT/VERIFICATION.md`
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
+13. `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` — specialized write-side atomicity/failure-window audit.
+14. `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md` — physical-containment, reparse, native replace, CAS and recursive-traversal safety audit.
 
 ## Critical rule
 
