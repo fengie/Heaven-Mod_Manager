@@ -5,34 +5,31 @@
   "canonicalBranch": "main",
   "currentVersion": "8.8.0",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.0 FunctionVerification",
-  "status": "repair-plus-branding-awaiting-windows-verification",
-  "verificationAppliesToCommit": "747cc4b3c4103f7ed49846b8f2301699ec7e54c5",
-  "verificationScopeNote": "The recorded verification SHA predates the Git-first documentation transition and the later branding integration. The branding change does not modify production C# function bodies, so the 602-function inventory and 579/23 function booleans are not manually changed; App/XAML/project-input build fingerprints must rerun normally.",
+  "immediateParentRevision": "GitHub main 91f2b9e9815caab2e4670084022a5c2ab3e45f55",
+  "status": "workflow-expansion-linux-validated-windows-pending",
+  "verificationAppliesToCommit": "02fa1dd5c3e98d319067043598bfdfd32617e65f",
+  "verificationScopeNote": "Evidence describes the workflow code commit above. This adjacent metadata commit records its SHA. Linux strict build, backend tests and self-tests passed. Native WPF interaction and Windows release verification are pending. No function verification booleans were manually promoted.",
   "verification": {
-    "functionInventoryTotal": 602,
-    "functionsVerified": 579,
-    "functionsPending": 23,
+    "functionInventoryTotal": 683,
+    "functionsVerified": 562,
+    "functionsPending": 121,
     "linuxStrictReleaseBuild": "passed: 0 warnings / 0 errors",
     "coreTests": "79/79 passed",
-    "automationTests": "18/18 passed",
+    "automationTests": "39/39 passed",
     "integrationTests": "61/61 passed",
     "selfTest": "11/11 passed",
-    "finalWindowsReleaseVerification": "pending"
+    "functionTraceScan": "passed: zero trace gaps, uncovered call sites or parse errors",
+    "handoffPreflight": "passed",
+    "finalWindowsReleaseVerification": "pending; Windows CI configured; native UI acceptance still required"
   },
   "canonicalEvidence": [
-    "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
-    "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+    "_AGENT_CONTEXT/EVIDENCE/workflow-expansion-validation.log",
+    "_AGENT_CONTEXT/EVIDENCE/workflow-expansion-function-scan.json",
+    "_AGENT_CONTEXT/WORKFLOW_IMPLEMENTATION.md",
+    "_AGENT_CONTEXT/VERIFICATION.md"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Pull the branding commit, run Test Everything.bat on Windows, then Build.bat and RUN BUILT APP.bat. Confirm the window/taskbar icon and the published MHW Mod Manager.exe icon. Let the normal verifier/cache logic decide which App/XAML/project-input stages rerun; do not manually promote booleans.",
-  "pendingRepositoryChangesSinceVerification": [
-    "Added generated MHW Manual Mod Manager application icon at src/MhwModManager.App/Assets/MHWModManager.ico.",
-    "MhwModManager.App.csproj now embeds the icon as the executable ApplicationIcon and WPF Resource.",
-    "App.xaml applies the icon to all WPF Window instances through the global Window style."
-  ]
+  "nextRequiredAction": "Review codex/complete-mod-workflows and its Windows CI result. Run Test Everything.bat and Build.bat on Windows, then test the workflow window and FOMOD chooser in a disposable game workspace. Preserve transactional metadata recovery tests and do not manually promote fingerprints.",
+  "pendingRepositoryChangesSinceVerification": [],
+  "featureBranch": "codex/complete-mod-workflows"
 }
