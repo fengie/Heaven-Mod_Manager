@@ -1,27 +1,25 @@
-# Implementation checkpoint — live DeploymentExecutor physical containment candidate
+# Closed implementation checkpoint — live DeploymentExecutor physical containment
 
-This audit's first source checkpoint is implemented on `agent/windows-live-containment-hardening-v3` from hosted-closed canonical handoff `208a66da89632acf36c065dc3bfead76af8d6bf4`.
+The first production checkpoint from this audit is **CLOSED and hosted-Windows verified**.
 
-Production source: `b671bac33917649ff89e5e3b0866725f7b165232`.  
-Focused Windows tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`.
+- exact verified merge: `356fde242046b78e39c7266c57b27e52220141fa`
+- hosted Windows Release Gate: `36341049469`
+- evidence/cache persistence: `dc7eb83c94427479c59413c77935050dadf051ff`
+- repository verification: **25/25**
+- functions: **611/611**
+- explicit call sites: **6478 / 0 uncovered**
+- integration/fault injection: **76/76**
+- ReadyToRun publish: PASS
+- release SHA-256: `F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D`
 
-Scope is deliberately limited to **live DeploymentExecutor descendant-reparse containment**:
+The closed scope is descendant-reparse containment for live `DeploymentExecutor` paths: preparation/preconditions, immediate mutation, rollback/startup recovery, pruning, and lock-related path inspection. Real Windows junction tests cover Add/Replace/Remove and restart recovery.
 
-- reject existing `FileAttributes.ReparsePoint` components beneath trusted `gameRoot`;
-- check before capture/precondition reads and immediately before mutation;
-- apply the rule during rollback/startup recovery before inspection and before restore/delete;
-- protect pruning and lock-related path consumers;
-- exercise real parent junction escapes for Add/Replace/Remove and restart recovery.
+The configured game root is still the trust anchor. Descendant reparse points fail closed. The remaining topology-swap TOCTOU after the final path check is documented rather than hidden.
 
-The configured game root itself is the trust anchor; descendant reparse components are rejected. This checkpoint does not change user-selected root alias policy.
-
-This is not a handle/file-ID race-proof design: a topology swap after the last attribute check remains a TOCTOU limitation.
-
-Still open from this audit: `ReplaceFileW` 1175/1176/1177 failure semantics, CAS corruption/reparse trust, recursive ModScanner/adoption/Smart Inbox traversal, and remaining path-edge cases.
-
-Verification is open; see `VERIFICATION.md`.
+The next recommended checkpoint from this audit is the separately scoped **`ReplaceFileW` failure-postcondition characterization** under LR-003. CAS trust and recursive source/adoption/Inbox traversal remain later independent boundaries.
 
 ---
+
 
 # Windows filesystem safety deep audit — 2026-09-27
 
