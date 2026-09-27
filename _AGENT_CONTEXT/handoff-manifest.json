@@ -45,7 +45,8 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -54,7 +55,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md (LR-001 through LR-006), the SUPPORT_BRANCH_INTEGRATION inventory, and the remaining README_FIRST order. PlannerSnapshotRepository is closed; do not reopen it, continue page-model splitting, or begin a broad ManagerDatabase rewrite automatically. Select one separately scoped, independently verifiable next boundary. The highest-safety candidate identified by multiple support audits is test-first Windows filesystem physical-containment/native-replacement hardening, but re-check current main before acting. Preserve Core Rules, exact verification/transaction/filesystem invariants, update durable handoff/context, run the handoff validator plus recursive-continuity negative fixtures, and explicitly require your successor to recursively pass the same obligation to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status when a checkout is available, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md (LR-001 through LR-007), the SUPPORT_BRANCH_INTEGRATION inventory, and the remaining README_FIRST order. PlannerSnapshotRepository is closed; do not reopen it, continue page-model splitting, or begin a broad ManagerDatabase rewrite automatically. Select one separately scoped, independently verifiable next boundary. The canonical recommendation remains test-first Windows filesystem physical-containment/native-replacement hardening unless newer main changes that decision. For mod deletion/retirement work, read MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md and preserve LR-007: close every live semantic reference separately from historical evidence and current deployment state. Preserve Core Rules, exact verification/transaction/filesystem invariants, update durable handoff/context, run the handoff validator plus recursive-continuity negative fixtures when execution access is available, and explicitly require your successor to recursively pass the same obligation to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
