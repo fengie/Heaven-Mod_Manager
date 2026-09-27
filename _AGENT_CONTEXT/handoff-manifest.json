@@ -33,7 +33,8 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
-    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md"
+    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
+    "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -42,7 +43,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order. Preserve Core Rules and exact verification/safety invariants. Keep one independently verifiable source boundary at a time. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. The next production boundary remains PlannerSnapshotRepository only unless canonical source disproves the audit. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status when a working tree exists, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order. Preserve Core Rules and exact verification/safety invariants. PlannerSnapshotRepository is closed; confirm a separately scoped next production boundary rather than reopening it automatically. For diagnostics/support-export/credential work, read DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md and preserve LR-005's export-boundary sanitization/canary-test rule. Keep one independently verifiable source boundary at a time. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures when execution access is available. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
