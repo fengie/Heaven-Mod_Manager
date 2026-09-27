@@ -93,6 +93,29 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
     }
 
+    [Fact]
+    public void GamesPageExtractionPreservesListBindingAndShellLifecycle()
+    {
+        var root = FindRepositoryRoot();
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var gamesFeature = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Games.cs"));
+        var gamesPage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "GamesPageViewModel.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("public GamesPageViewModel GamesPage{get;}", mainViewModel);
+        Assert.Contains("Games=GamesPage.Rows;", mainViewModel);
+        Assert.Contains("GamesPage.Refresh();", mainViewModel);
+        Assert.Contains("GameProfileRegistry", gamesPage);
+        Assert.Contains("Rows.ReplaceAll(registry.Load());", gamesPage);
+        Assert.Contains("GamesPage.Refresh();", gamesFeature);
+        Assert.Contains("s.GameRegistry.SetActive(SelectedGame.Id);", gamesFeature);
+        Assert.Contains("RestartIntoGame(SelectedGame);", gamesFeature);
+        Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);
+        Assert.Contains("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
+        Assert.Contains("Command=\"{Binding SwitchGameCommand}\"", xaml);
+        Assert.Contains("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

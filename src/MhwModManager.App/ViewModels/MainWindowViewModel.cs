@@ -36,7 +36,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public ObservableRangeCollection<OutfitRow> OutfitRows{get;}
     public ObservableRangeCollection<ModIssueRow> IssueSuspects{get;}=[];
     public ObservableRangeCollection<AssetOverlapRow> OverlapRows{get;}=[];
-    public ObservableRangeCollection<GameProfile> Games{get;}=[];
+    public GamesPageViewModel GamesPage{get;}
+    public ObservableRangeCollection<GameProfile> Games{get;}
 
     [ObservableProperty]private string searchText="";
     [ObservableProperty]private string modViewMode="All";
@@ -105,6 +106,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OutfitRows=Coverage.Rows;
         ProfilesPage=new ProfilesPageViewModel(s.Profiles);
         Profiles=ProfilesPage.Rows;
+        GamesPage=new GamesPageViewModel(s.GameRegistry);
+        Games=GamesPage.Rows;
         PropertyChanged += (_, args) => MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
         Mods.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
         Conflicts.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
@@ -115,7 +118,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OverlapRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"OverlapRows change={args.Action}; count={OverlapRows.Count}");
         ModsView=CollectionViewSource.GetDefaultView(Mods);
         ModsView.Filter=FilterMod;
-        Games.ReplaceAll(s.GameRegistry.Load());
+        GamesPage.Refresh();
         SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
     }
 
@@ -774,62 +777,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(!result.Success)throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
         await ReloadMods(ct);await RefreshAnalysis(ct);await RefreshActivity(ct);StatusText=result.Message;
     });
-
-    [RelayCommand]
-    private async Task ScanInstalledGames()
-    {
-        await RunBusy("games.discover","Scanning installed games","Checking Steam, Epic Games Store, and GOG installations…",true,async ct=>
-        {
-            var added=await Task.Run(()=>s.GameRegistry.DiscoverAndRegisterInstalledGames(),ct);
-            await Application.Current.Dispatcher.InvokeAsync(()=>
-            {
-                Games.ReplaceAll(s.GameRegistry.Load());
-                SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
-            });
-            StatusText=added.Count==0?"No new supported Windows game installations were found. You can always use + Game to pick any executable.":$"Added {added.Count} game profile(s). Select one and press Switch.";
-        });
-    }
-
-    [RelayCommand]
-    private void AddGame()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(StagedCount>0&&MessageBox.Show("You have staged changes that are not applied. Add/switch games anyway?","Staged changes",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
-        var dialog=new OpenFileDialog{Title="Select a game executable",Filter="Windows games (*.exe)|*.exe",CheckFileExists=true,Multiselect=false};
-        if(dialog.ShowDialog()!=true)return;
-        var profile=s.GameRegistry.AddGenericFromExecutable(dialog.FileName);
-        RestartIntoGame(profile);
-    }
-
-    [RelayCommand]
-    private void SwitchGame()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(SelectedGame is null||SelectedGame.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase))return;
-        if(StagedCount>0&&MessageBox.Show("Switching games discards this screen's staged state. Continue?","Switch game",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
-        s.GameRegistry.SetActive(SelectedGame.Id);
-        RestartIntoGame(SelectedGame);
-    }
-
-    [RelayCommand]
-    private void ConfigureGame()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var window=new MhwModManager.App.GameProfileEditorWindow(s.Paths.Game){Owner=Application.Current.MainWindow};
-        if(window.ShowDialog()!=true||window.Result is null)return;
-        s.GameRegistry.Upsert(window.Result);
-        s.GameRegistry.SetActive(window.Result.Id);
-        RestartIntoGame(window.Result);
-    }
-
-    private static void RestartIntoGame(GameProfile profile)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"game={profile.Id}");
-        var exe=Environment.ProcessPath;
-        if(string.IsNullOrWhiteSpace(exe))throw new InvalidOperationException("Could not determine the manager executable for restart.");
-        ProcessDebug.Start(new ProcessStartInfo(exe){UseShellExecute=true,WorkingDirectory=AppContext.BaseDirectory},"switch-game-restart");
-        Application.Current.Shutdown();
-    }
 
     [RelayCommand]
     private async Task LaunchModded()
