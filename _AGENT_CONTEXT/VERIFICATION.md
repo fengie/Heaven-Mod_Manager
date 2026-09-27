@@ -111,3 +111,23 @@ hidden `.verification` state) as a GitHub Actions artifact.
 Adding the workflow is verification infrastructure, **not** verification evidence.
 Only a completed green Windows run for the exact source SHA may close v8.8 or be
 used to persist promoted function/stage booleans in the canonical repository.
+
+
+## First hosted Windows closure run — exact remaining trace gap
+
+GitHub Actions run `36320489729` executed the exact repository verifier on Windows
+for commit `c95e88669c3fc2d5627fee8d7821cac8cdd0b05d` with SDK 10.0.401.
+The run again produced **24 PASS / 1 FAIL**. Every strict project build and the
+strict whole-solution build completed with 0 warnings / 0 errors; Core tests were
+79/79, Automation tests 18/18, Integration/fault-injection tests 61/61, and all
+11 automation self-tests passed.
+
+The sole failure was the function fingerprint scan: 602 functions,
+569 known-good, 33 requiring current verification, with exactly one entry-trace
+gap and one uncovered explicit call site:
+`LegacyV7Migrator.ResetIncompleteImportAsync(CancellationToken)`.
+
+This revision converts that expression-bodied helper to a block body with the
+required `MasterDebugLog.BeginMethod()` scope and makes no migration-semantic
+change. The hosted Windows gate must rerun; only a green exact-source run may
+promote the affected fingerprints or close v8.8.

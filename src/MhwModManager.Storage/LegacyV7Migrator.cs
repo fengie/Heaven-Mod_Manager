@@ -86,12 +86,16 @@ public sealed class LegacyV7Migrator(ManagerDatabase db,string toolRoot,string n
     private async Task<bool> IsMigrationCompleteAsync(CancellationToken ct){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var c=await db.OpenAsync(ct);await using var cmd=c.CreateCommand();cmd.CommandText="SELECT value FROM schema_info WHERE key='legacy_migration_complete'";return await cmd.ExecuteScalarAsync(ct) is string value && !string.IsNullOrWhiteSpace(value);}
-    private Task ResetIncompleteImportAsync(CancellationToken ct)=>db.ExecuteAsync("""
+    private Task ResetIncompleteImportAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return db.ExecuteAsync("""
 DELETE FROM operation_journal; DELETE FROM operations; DELETE FROM profile_rules; DELETE FROM profile_mods; DELETE FROM profiles;
 DELETE FROM mod_family_members; DELETE FROM mod_families; DELETE FROM deployment_manifest; DELETE FROM original_files;
 DELETE FROM conflict_rules; DELETE FROM resource_providers; DELETE FROM external_changes; DELETE FROM mod_files; DELETE FROM mods; DELETE FROM blobs;
 DELETE FROM schema_info WHERE key='legacy_migration_complete';
 """,null,ct);
+    }
 
     private async Task InsertRule(ConflictRule r,CancellationToken ct)
     {
