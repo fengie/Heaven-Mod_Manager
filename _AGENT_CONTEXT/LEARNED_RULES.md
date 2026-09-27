@@ -43,3 +43,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** repair `528401925b1d09b3d65c9652de8e4f2024e3677f`; failed run `36335255922`
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-004 — lexical containment is not physical filesystem containment
+
+- **Rule ID:** LR-004
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Windows filesystem mutation, recursive traversal, import/adoption, rollback, and recovery
+- **Rule:** Do not treat `Path.GetFullPath`, `Path.GetRelativePath`, normalized managed keys, or string-prefix root checks as proof that a Windows filesystem object is physically contained by the trusted root. Before a safety-sensitive mutation or recursive import/read, explicitly account for reparse-point traversal and preserve a testable physical-containment invariant.
+- **Trigger / evidence:** The Windows filesystem safety audit found that live deployment validates logical keys but performs path-based Add/Replace/Remove/rollback/recovery without the parent reparse checks already present in ArchiveInspector. It also found `SearchOption.AllDirectories` in ModScanner, unmanaged adoption, and Smart Inbox direct-directory copy; Microsoft/.NET documents that recursive enumeration includes reparse points and can loop through link cycles.
+- **Rationale:** A junction or symbolic link in a parent component can keep the lexical pathname under the configured root while redirecting the actual read/write to another physical location. Byte hashes and transaction journals do not restore containment if the pathname itself resolves somewhere else.
+- **Enforcement:** New or changed filesystem code must identify its trusted root, define whether reparse points are supported, add Windows tests for parent-junction escape/cycles where relevant, and keep containment validation as close as practical to the operation that depends on it. Do not weaken existing fail-closed rollback/recovery semantics to bypass a containment failure.
+- **Primary references:** Microsoft reparse/symbolic-link documentation and .NET recursive-enumeration documentation cited in `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`.
+- **Relevant audit:** `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`
+- **Supersedes:** none
+- **Superseded by:** none
+
