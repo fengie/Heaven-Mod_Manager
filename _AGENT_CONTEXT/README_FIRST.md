@@ -34,6 +34,7 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 10. `_AGENT_CONTEXT/VERIFICATION.md`
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
+13. `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` — assertion-backed safety/test/performance gaps and independent future checkpoints.
 
 ## Critical rule
 
