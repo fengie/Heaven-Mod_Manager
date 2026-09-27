@@ -13,7 +13,7 @@
   "lastClosedVerificationCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
   "lastClosedVerificationRun": "36336190920",
   "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
-  "verificationScopeNote": "Production executable source and tests are unchanged by the support-audit integration. The last closed product verification remains PlannerSnapshotRepository at exact commit efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 / hosted Windows Release Gate 36336190920. The integration changes documentation, handoff inputs, docs/MIGRATION.md and the append-only Learned Rules ledger, so the newly integrated repository state itself still requires a fresh hosted Windows Release Gate after canonical push. No cache was manually promoted. Local git status/runtime verification was unavailable because the connected desktop device was offline; canonical GitHub history, branch comparisons and file diffs were inspected.",
+  "verificationScopeNote": "Production executable source and tests are unchanged by the support-audit integration. The last closed product verification remains PlannerSnapshotRepository at exact commit efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 / hosted Windows Release Gate 36336190920. The integration changes documentation, handoff inputs, docs/MIGRATION.md and the append-only Learned Rules ledger, so the newly integrated repository state itself still requires a fresh hosted Windows Release Gate after canonical push. No cache was manually promoted. Local git status/runtime verification was unavailable because the connected desktop device was offline; canonical GitHub history, branch comparisons and file diffs were inspected. The mod-lifecycle support audit on the current branch is documentation/continuity only and adds no new production verification claim.",
   "lastClosedVerification": {
     "functionInventoryTotal": 610,
     "functionsVerified": 610,
@@ -28,6 +28,7 @@
     "releaseArtifactSha256": "226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E"
   },
   "candidateChanges": [
+    "Documentation-only support audit: successful mod retirement can leave live conflict_rules/resource_providers/mod-keyed settings behind; path-derived local IDs can be reused by a later package at the same source path, reactivating stale semantic state. Added MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md and LR-007. No production source/test/schema/cache changed.",
     "Integrated the parallel support-agent branch inventory and dispositions without blindly merging stale continuity snapshots.",
     "Added async/lifetime, broad test/performance, Windows filesystem safety, migration recovery, diagnostics privacy, remote preview network trust, verification infrastructure, state backup/portability, multi-source discovery, and MHW semantic coverage audits.",
     "Appended the independent MainWindow support re-audit to the canonical responsibility and research documents; stop-page-model-splitting remains the current ownership decision.",
@@ -89,7 +90,8 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
