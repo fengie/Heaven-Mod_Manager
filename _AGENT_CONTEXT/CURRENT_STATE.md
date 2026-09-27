@@ -1,5 +1,34 @@
 # Current state — v8.8.0
 
+## Architecture / Explain Why candidate — 2026-09-27
+
+Working branch: `agent/architecture-explain-why`. Candidate production source:
+`5c1937e557aa9996cef493709e94a6aa611d4e1c` (later branch commits update handoff docs only).
+This candidate is **not yet Windows-verified** and must not inherit the closed v8.8
+fingerprints simply because its parent release was green.
+
+Implemented in this candidate:
+
+- `PresentationReadRepository` owns Activity and Outfit/Coverage read projections that
+  were previously handwritten SQL inside `MainWindowViewModel`.
+- `ArchiveImportService` owns archive validation, quarantine extraction, single-wrapper
+  normalization, destination naming, publication into the mod library, and catalog refresh.
+- `EffectiveInspectorService.ExplainWhyAsync` replays the configured `DeploymentPlanner`
+  and exposes the resulting `ConflictDecision` plus applied-manifest state, provider
+  priority, logical family role, Nexus lineage, provenance, confidence, score and evidence.
+- The Overlaps tab now supports `Explain selected` with progressive detail instead of
+  requiring users to infer resolver behavior from overwrite rows.
+- Activity, Coverage, Import, and Overlap/Explain methods moved into partial feature
+  files. The central `MainWindowViewModel.cs` fell from about 72.6 KB to 65.7 KB while
+  retaining the same WPF binding type and commands.
+- Regression coverage was added for planner-backed Explain Why, presentation reads,
+  and the new XAML binding surface.
+
+No deployment executor, CAS, journal, rollback/recovery, TOCTOU, `ReplaceFileW`, or
+live-tree safety semantics were redesigned. FOMOD and the enhanced-game adapter redesign
+remain explicitly out of scope.
+
+
 ## Latest state: 2026-09-27 repair audit
 
 The exact parent is the supplied v8.8.0 FunctionVerification ZIP (four trace-scope
