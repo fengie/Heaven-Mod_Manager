@@ -61,3 +61,21 @@ The support lanes reveal several independently scoped future checkpoints. They a
 - MHW semantic coverage calculation separated from exact planner conflicts.
 
 Choose one independently verifiable boundary at a time. Preserve the permanent continuity constitution and require every successor to pass it to the agent after them. **Do not break the chain.**
+
+## Final canonical closure
+
+The combined support integration was pushed to canonical `main` and verified on exact integration commit `5619604e88a27176726ada8518f53d385abc7b0f`.
+
+Hosted Windows Release Gate `36340312353` completed successfully:
+
+- repository verification: **25/25 PASS**;
+- agent handoff continuity preflight: **PASS**;
+- release build/publish: **PASS**;
+- ReadyToRun fallback used: **False**;
+- release artifact SHA-256: `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`;
+- workflow evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
+
+The workflow's persistence step also completed successfully. Follow-up handoff-only closure edits use `[skip ci]` and do not alter production source, tests, verifier scripts, workflows, or verification caches.
+
+No support branches were deleted.
+
