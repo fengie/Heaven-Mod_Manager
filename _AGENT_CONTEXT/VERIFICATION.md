@@ -13,7 +13,30 @@ Last closed exact repository checkpoint before this source boundary:
 - evidence/cache persistence: `bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8`
 - release SHA-256: `0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A`
 
-Required next evidence is a fresh full hosted Windows Release Gate for the final candidate commit, including the handoff validator and recursive-continuity negative fixtures. No cache has been manually promoted for this candidate.
+### First PlannerSnapshotRepository hosted attempt — FAILED / superseded
+
+Run `36335255922` checked exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` on Windows / SDK 10.0.401.
+
+Confirmed before failure:
+- agent-handoff continuity preflight: PASS;
+- recursive-continuity negative fixtures: all four rejected as intended;
+- solution restore: PASS;
+- Storage strict compile: PASS.
+
+Primary failures:
+- function scan: **610** functions, **596** known-good, **14** needing verification, **2** trace gaps, **6454** explicit call sites, **36** uncovered, **0** parse errors;
+- trace gaps: `MainWindowViewModel.RestoreLastGood()` and `MainWindowViewModel.LaunchSafeMode()`;
+- compile: `NexusMetadataService` and `GameBuildMonitor` still called removed `ManagerDatabase.LoadPlannerSnapshotAsync`, producing CS1061;
+- later project/test failures were cascading missing-binary effects from the Filesystem compile failure;
+- verifier summary: **12 passed / 13 failed**;
+- release build/publish: SKIPPED;
+- verification-state persistence: SKIPPED.
+
+Root cause: the first caller audit was incomplete and the two changed MainWindow bodies had not been re-instrumented after the call-site move. No production runtime behavior or transaction boundary was implicated.
+
+Repair source `528401925b1d09b3d65c9652de8e4f2024e3677f` migrates both missed callers, adds both required entry traces, and corrects the representative planner parity assertion to the pre-existing ExactWinner semantics.
+
+Required next evidence is a fresh full hosted Windows Release Gate for the repaired final candidate commit, including the handoff validator and recursive-continuity negative fixtures. No cache has been manually promoted for this candidate.
 
 ---
 

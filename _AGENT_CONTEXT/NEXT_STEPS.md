@@ -2,8 +2,11 @@
 
 ## Immediate: verify and close the PlannerSnapshotRepository boundary
 
-Candidate production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+Initial production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
 Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+
+First hosted attempt `36335255922` on `161b5fcba88470b7d941a3831624bdbf071ff668` is failed/superseded evidence: two missing entry traces and two missed planner-snapshot callers caused the verification/compile failures. Run a fresh full gate on the repaired exact commit.
 
 Run a fresh full hosted Windows Release Gate for the final candidate commit. Do not reuse the prior green state for changed production source and do not manually promote verification caches.
 

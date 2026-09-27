@@ -1,7 +1,10 @@
-# Current candidate — PlannerSnapshotRepository extraction
+# Current candidate — PlannerSnapshotRepository extraction REPAIRED after first hosted failure
 
-Production source commit: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+Initial extraction source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
 Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+
+Hosted run `36335255922` on exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` failed and is preserved as superseded evidence. The exact root causes were two LR-001 trace gaps (`RestoreLastGood`, `LaunchSafeMode`) and two missed callers (`NexusMetadataService`, `GameBuildMonitor`) that still referenced the removed ManagerDatabase method. Release/publish was skipped and no verification state was persisted. The repair changes only this boundary.
 
 This is the one production boundary authorized by the MainWindow/storage audit. It is **not yet Windows-verified**.
 

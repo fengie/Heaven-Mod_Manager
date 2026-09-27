@@ -22,9 +22,10 @@ The next agent must be able to continue without previous chat history.
 
 ## Current checkpoint: PlannerSnapshotRepository candidate awaiting exact Windows closure
 
-PlannerSnapshotRepository production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
+PlannerSnapshotRepository initial source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
 Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
-This candidate is not green until a fresh full hosted Windows Release Gate passes. Do not begin another source boundary while it is unresolved.
+Repair source after failed run `36335255922`: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+The first hosted run exposed two missed callers and two LR-001 trace gaps; that failed run is preserved as superseded evidence. This candidate is not green until a fresh full hosted Windows Release Gate passes. Do not begin another source boundary while it is unresolved.
 
 Governance closure remains exact commit `73f1298455ec4c651e211488ececf9803504e60d`, hosted Windows run `36333960215`; the later documentation closure `c9b27b98d280b144ba52ba35167f1fcb594945bd` also passed run `36334644325`.
 

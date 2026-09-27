@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "planner-snapshot-repository-candidate-awaiting-exact-windows-gate",
+  "status": "planner-snapshot-repository-repaired-awaiting-exact-windows-gate",
   "verificationAppliesToCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
   "lastClosedVerificationCommit": "c9b27b98d280b144ba52ba35167f1fcb594945bd",
   "lastClosedVerificationRun": "36334644325",
-  "candidateSourceCommit": "8e0068bd44cc6735ffa9478067923ad5d9c54506",
-  "verificationScopeNote": "PlannerSnapshotRepository is implemented in production source commit 8e0068bd44cc6735ffa9478067923ad5d9c54506 with focused parity/cancellation tests hardened in 64e666a19ce17c21bc696b46cce9c07bb257a686. This is a new production verification boundary and is not yet green. The last closed exact repository state is c9b27b98d280b144ba52ba35167f1fcb594945bd, hosted Windows run 36334644325, with evidence/cache persistence bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8. No prior green evidence is being promoted onto the changed production source.",
+  "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
+  "verificationScopeNote": "PlannerSnapshotRepository remains a new production verification boundary. First hosted attempt 36335255922 on exact candidate 161b5fcba88470b7d941a3831624bdbf071ff668 failed before tests could run cleanly: function scan found two missing MainWindow entry traces (RestoreLastGood, LaunchSafeMode), and whole-solution compile found two missed callers still invoking removed ManagerDatabase.LoadPlannerSnapshotAsync (NexusMetadataService and GameBuildMonitor). The failure cascaded into downstream missing binaries; release/publish and verification-state persistence were correctly skipped. Repair source commit 528401925b1d09b3d65c9652de8e4f2024e3677f injects PlannerSnapshotRepository into those two callers, adds the required entry traces, and corrects a parity-test expectation to the resolver's existing ExactWinner RuleId=null semantics. No deployment transaction code changed.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
     "functionsVerified": 615,
@@ -28,6 +28,9 @@
     "releaseArtifactSha256": "0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A"
   },
   "candidateChanges": [
+    "Repair after failed run 36335255922: migrate NexusMetadataService and GameBuildMonitor, which were real planner-snapshot callers omitted from the original audit/caller list.",
+    "Repair LR-001 verification gaps by adding MasterDebugLog.BeginMethod() entry scopes to changed MainWindow RestoreLastGood and LaunchSafeMode bodies.",
+    "Correct the representative planner parity assertion: ExactWinner decisions historically expose ReasonCode exact-file-winner with RuleId null because ExactWinners stores only path -> winner.",
     "Extracted the existing planner-input query assembly from ManagerDatabase into read-only PlannerSnapshotRepository.",
     "Preserved the historical connection behavior: GetModsAsync runs first on its own connection, then planner files/rules/resources/manifest/originals are read through a second ManagerDatabase.OpenAsync connection with no encompassing transaction.",
     "Preserved full snapshot, case-insensitive distinct fileModIds filtering, and empty fileModIds behavior; no query ordering or data semantics were intentionally changed.",
@@ -59,7 +62,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run a fresh full hosted Windows Release Gate for the final PlannerSnapshotRepository candidate commit. If it fails, diagnose and repair only this boundary; do not begin another extraction. On success persist exact source SHA/run/toolchain/verifier/test/analyzer/publish/artifact evidence, update CURRENT_REVISION/CURRENT_STATE/NEXT_STEPS/VERIFICATION, run the continuity positive and negative checks through the normal harness, and explicitly pass the permanent continuity constitution to the successor.",
+  "nextRequiredAction": "Push the repaired PlannerSnapshotRepository boundary and run a fresh full hosted Windows Release Gate on the exact final commit. Preserve run 36335255922 as superseded failed evidence. If the fresh gate fails, repair only this boundary. Do not start another source extraction. On success persist exact source SHA/run/platform/SDK/verifier/fingerprint/call-site/test/analyzer/publish/artifact evidence and close the boundary while recursively propagating the continuity constitution.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",

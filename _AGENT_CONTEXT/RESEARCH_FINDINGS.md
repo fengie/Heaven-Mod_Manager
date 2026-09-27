@@ -174,3 +174,8 @@ the first extraction; do not combine that move with GetModsAsync extraction,
 transaction redesign, Generic Host/DI migration or DeploymentExecutor changes.
 See STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.
 
+
+
+## 2026-09-27 PlannerSnapshotRepository first-gate caller correction
+
+Hosted run `36335255922` proved the prior static caller list was incomplete: `NexusMetadataService` and `GameBuildMonitor` also consumed planner snapshots. The compiler, not the connector's private-code search index, was authoritative. Both callers are read consumers only, so adding them to the repository injection set does not change the transaction-boundary conclusion.
