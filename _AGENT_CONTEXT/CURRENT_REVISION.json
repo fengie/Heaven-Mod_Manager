@@ -28,6 +28,7 @@
     "releaseArtifactSha256": "226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E"
   },
   "candidateChanges": [
+    "Documentation-only independent support audit: shareable diagnostics/support bundles copy raw recent JSONL logs across a privacy boundary; LR-005 requires centralized export-time sanitization plus path/credential canary tests. No production source or exact verification evidence changed.",
     "Second test-only repair after run 36335692754: canonical-casing filtered test asserts selected mod files, and a separate regression preserves uppercase-first SQLite filter behavior exactly.",
     "Repair after failed run 36335255922: migrate NexusMetadataService and GameBuildMonitor, which were real planner-snapshot callers omitted from the original audit/caller list.",
     "Repair LR-001 verification gaps by adding MasterDebugLog.BeginMethod() entry scopes to changed MainWindow RestoreLastGood and LaunchSafeMode bodies.",
@@ -69,7 +70,8 @@
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
