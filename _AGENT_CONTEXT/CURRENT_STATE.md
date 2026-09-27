@@ -1,5 +1,41 @@
 # Current state — v8.8.0
 
+## MainWindow re-audit / storage transaction design COMPLETE — documentation checkpoint
+
+Canonical audit base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
+
+No production source changed in this checkpoint. The closed hosted Windows
+verification therefore still applies to exact commit
+`106a4569b572473394aa075bcfa5d9c03f2fe44d`, with last production source
+`fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34`.
+
+The remaining `MainWindowViewModel` responsibilities were re-audited by
+state ownership and coupling. Decision: **stop page-model splitting now**.
+Activity, Coverage, Profiles, and Games are the clean passive/read seams already
+closed. Mods/ModsView, Conflicts, IssueSuspects, Overlaps, staging/apply,
+Nexus/import, profile mutations, launch/crash diagnosis, health/support and
+global busy/status are either cross-feature workflows or mutually coupled state.
+
+Durable audit:
+- `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md`
+
+The fallback ManagerDatabase transaction-boundary audit is also complete.
+Critical existing transaction owners are documented, especially
+DeploymentExecutor prepared-journal, final commit, rollback, mod-file replacement,
+manual family chaining, profile save, adoption, trust and issue batches.
+
+Durable audit:
+- `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
+
+Exactly one first storage extraction is recommended: a **read-only
+PlannerSnapshotRepository** containing the existing
+`LoadPlannerSnapshotAsync` query assembly. Do not combine it with another
+repository move, transaction redesign, Generic Host/DI work, or MainWindow
+decomposition. Preserve the current query and connection semantics on the first
+move, add focused parity tests, then require a fresh full Windows Release Gate
+before any second production change.
+
+
 ## Games list-presentation slice CLOSED — hosted Windows
 
 The Games extraction is fully green.

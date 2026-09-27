@@ -30,7 +30,9 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
     "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
+    "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
+    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -39,7 +41,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Update the handoff context and CURRENT_REVISION.json with everything materially learned, preserve this manifest/protocol/AGENTS.md, run the handoff preflight, and commit context with the code it describes. If a source ZIP is exported, preserve equivalent or better continuity data. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Read MAINWINDOW_RESPONSIBILITY_AUDIT.md and STORAGE_TRANSACTION_BOUNDARY_AUDIT.md before the next architecture edit. The next production boundary is PlannerSnapshotRepository only unless canonical source disproves an audit assumption. Update handoff context and CURRENT_REVISION.json with everything materially learned, preserve this manifest/protocol/AGENTS.md, run the handoff preflight, and commit context with the code it describes. Keep one independently verifiable source boundary at a time and tie evidence to exact SHAs. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

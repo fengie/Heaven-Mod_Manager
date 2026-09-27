@@ -131,3 +131,46 @@ The existing game commands may live in a MainWindow partial for file-level
 decomposition, but they must not move into the page model or change restart
 semantics.
 
+## 2026-09-27 MainWindow / storage boundary audit
+
+The post-Games re-audit found that the clean passive presentation seams are
+exhausted for now. The remaining MainWindowViewModel state is materially
+cross-coupled:
+
+- Mods/ModsView is the common surface for staged state, effective state, update
+  badges, issue badges, search/filter views and aggregate counters.
+- IssueSuspects refreshes both its own list and ModRowViewModel issue state, then
+  refreshes the Mods view/counters; crash report, launch and bisect workflows
+  mutate the same persisted evidence.
+- Conflicts are planner output from the global staged draft, while conflict
+  choices mutate that same draft.
+- Overlap presentation uses current Conflicts to distinguish Needs choice from
+  Resolved overlay, and Explain Why replays the planner.
+- import/Nexus/profile mutation/launch/crash/health flows are application use
+  cases rather than passive page state.
+- RunBusy, StatusText/FooterText, cancellation and process/application lifetime
+  remain shell-global concerns.
+
+Implementation consequence: stop page-model splitting until a new state-ownership
+seam exists. See MAINWINDOW_RESPONSIBILITY_AUDIT.md.
+
+The ManagerDatabase audit also confirmed that repository decomposition must be
+transaction-aware rather than table-oriented. In particular:
+
+- DeploymentExecutor has three critical shared SQLite transaction boundaries:
+  prepared journal; final deployment commit; rollback state reconstruction.
+- ReplaceModFilesAsync, ChainManualFamilyAsync, ProfileRepository.SaveCurrentAsync,
+  adoption recording, mod-trust batches and issue-suspect batches each own
+  legitimate atomic write groups.
+- Existing PresentationReadRepository is the preferred model for early
+  read-only extraction.
+- LoadPlannerSnapshotAsync is the strongest first read boundary because it is
+  already a planner-specific projection, has no write transaction ownership,
+  and is consumed across analysis/inspection/health/launch-gate workflows.
+
+Recommended next source slice: PlannerSnapshotRepository only. Preserve the
+current full/filtered/empty query behavior and current connection semantics in
+the first extraction; do not combine that move with GetModsAsync extraction,
+transaction redesign, Generic Host/DI migration or DeploymentExecutor changes.
+See STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.
+

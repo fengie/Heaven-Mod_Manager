@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "games-list-presentation-closed-windows-verified",
+  "status": "mainwindow-reaudit-storage-transaction-design-complete",
   "verificationAppliesToCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
   "lastClosedVerificationCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
   "lastClosedVerificationRun": "36331057943",
   "candidateSourceCommit": "fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34",
-  "verificationScopeNote": "The Games list-presentation slice is closed. Hosted Windows Release Gate run 36331057943 verified exact main commit 106a4569b572473394aa075bcfa5d9c03f2fe44d; production source last changed at fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34. The verifier passed 25/25 and promoted all 615 production fingerprints. Explicit call sites: 6389 with 0 uncovered; trace gaps and parse errors: 0. Core 79/79, Automation 20/20, Integration/fault injection 66/66, self-test 11/11, App win-x64 analyzer compile and ReadyToRun self-contained publish all passed. Release SHA-256: 4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189. Evidence/cache persistence commit 750a3232ad9ac82bd1587ddd903709b886c9b8bb is cache/evidence-only. Earlier run 36330808544 is superseded partial evidence: it reached 24/25 and exposed the missing ScanInstalledGames entry trace that fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34 repaired. Any later production edit starts a new verification boundary.",
+  "verificationScopeNote": "No production source changed in the MainWindow responsibility / ManagerDatabase transaction-boundary audit. Hosted Windows verification still applies only to exact commit 106a4569b572473394aa075bcfa5d9c03f2fe44d (last production source fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34), run 36331057943: 25/25 verifier, 615/615 fingerprints, 6389 explicit call sites with 0 uncovered, Core 79/79, Automation 20/20, Integration 66/66, self-test 11/11, win-x64 analyzers and ReadyToRun PASS. The audit concludes no clean page-model seam remains and documents SQLite transaction ownership. Any later production source edit begins a new verification boundary.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
     "functionsVerified": 615,
@@ -28,25 +28,28 @@
     "releaseArtifactSha256": "4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189"
   },
   "candidateChanges": [
-    "GamesPageViewModel owns GameProfileRegistry.Load() consumption and observable game-profile list state.",
-    "MainWindowViewModel.Games aliases GamesPage.Rows, preserving the existing Games XAML binding.",
-    "Scan/Add/Switch/Configure/Restart commands live in MainWindowViewModel.Games.cs but remain shell-owned.",
-    "SelectedGame, registry mutation, SetActive, process restart/WPF shutdown, RunBusy, StatusText, AppPaths discovery, and startup service reconstruction remain outside the page model.",
-    "The first hosted Games run exposed one missing ScanInstalledGames entry trace; the final source adds MasterDebugLog.BeginMethod() and a regression assertion."
+    "Design-only checkpoint: re-audited every remaining MainWindowViewModel responsibility and stopped further page-model splitting.",
+    "IssueSuspects remains shell/cross-feature state because refresh projects persisted suspects into ModRowViewModel badges, ModsView, issue labels and header counters while crash/launch/bisect workflows mutate the same data.",
+    "Mods/ModsView, conflicts, overlaps, selected state, staging/apply/undo, Nexus/import, profile mutations, launch/crash diagnosis, health/support and global busy/status were classified by ownership/coupling in MAINWINDOW_RESPONSIBILITY_AUDIT.md.",
+    "Mapped ManagerDatabase methods, raw callers, existing repositories and service-owned SQLite transactions in STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.",
+    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
-    "Game switching still persists the active registry ID, launches a fresh manager process, and shuts down the current WPF app; services are rebuilt on startup rather than hot-swapped.",
-    "AppPaths.Discover still resolves the active game before constructing game-scoped database/planner/executor/services.",
-    "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, conflict-resolution, SQLite transaction, or game-adapter behavior changed.",
-    "Existing Games, SelectedGame, SwitchGameCommand, ScanInstalledGamesCommand, AddGameCommand, and ConfigureGameCommand bindings are preserved.",
-    "FOMOD, enhanced-game adapter redesign, IssueSuspects extraction, XAML decomposition, Generic Host/DI migration, and broad ManagerDatabase redesign remain out of scope for this closed slice."
+    "No production executable source changed in this design checkpoint.",
+    "DeploymentExecutor prepared-journal, final commit and rollback shared-transaction boundaries remain untouched.",
+    "ReplaceModFiles, ChainManualFamily, ProfileRepository.SaveCurrent, adoption, trust, issue, supersession, revalidation and enabled/priority batch atomicity remain untouched.",
+    "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
+    "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Re-audit the remaining MainWindowViewModel responsibilities after the closed Activity, Coverage, Profiles, and Games slices. Do not force IssueSuspects while it still mutates Mod rows and aggregate shell counters. If another genuinely low-coupling presentation seam exists, extract one slice only and verify it independently. Otherwise move to a separately scoped ManagerDatabase repository-extraction design, beginning with a transaction-boundary map and read-only domain seams.",
+  "nextRequiredAction": "Implement exactly one read-only PlannerSnapshotRepository extraction. Move only the existing LoadPlannerSnapshotAsync planner-input query assembly, preserve full/filtered/empty behavior and current connection semantics, do not move GetModsAsync or touch DeploymentExecutor, add focused parity/planner regressions, then create a fresh independently verified source boundary and close it with exact hosted Windows evidence before any second production change.",
   "canonicalEvidence": [
+    "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
+    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "750a3232ad9ac82bd1587ddd903709b886c9b8bb"
+  "closureEvidenceCommit": "750a3232ad9ac82bd1587ddd903709b886c9b8bb",
+  "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40"
 }

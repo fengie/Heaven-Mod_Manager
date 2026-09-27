@@ -1,5 +1,44 @@
 # NEXT AGENT — START HERE
 
+## Current checkpoint: MainWindow re-audit / storage transaction design COMPLETE
+
+Canonical design base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
+
+No production source changed in this checkpoint. The current decision is
+**Path B: stop splitting MainWindowViewModel**.
+
+Before editing, read:
+
+- `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md`
+- `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
+- `_AGENT_CONTEXT/NEXT_STEPS.md`
+
+The audit found no remaining page-model seam with lower coupling than the
+alternatives. Mods/ModsView, Conflicts, IssueSuspects and Overlaps share
+staged/effective/diagnosis state; import/Nexus/profile mutation/launch/crash/
+health flows are application workflows; RunBusy/status/lifetime remain shell
+responsibilities.
+
+The exact next production boundary is **PlannerSnapshotRepository only**:
+move the existing read-only `LoadPlannerSnapshotAsync` query assembly out of
+ManagerDatabase, preserve current behavior and connection semantics, add
+focused parity/planner tests, then run a fresh full Windows Release Gate.
+Do not move `GetModsAsync` in the same checkpoint and do not touch
+DeploymentExecutor transaction ownership.
+
+The closed green production baseline is still exact commit
+`106a4569b572473394aa075bcfa5d9c03f2fe44d`, run `36331057943`, because
+this audit changed documentation only.
+
+Preserve one source boundary at a time, exact SHA-bound evidence, and the
+continuity protocol. Update the audits if implementation reveals a material
+coupling assumption that was wrong.
+
+**Do not break the chain.**
+
+
+---
+
 ## Closed checkpoint: Games list presentation state
 
 Hosted Windows Release Gate `36331057943` verified exact commit
