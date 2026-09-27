@@ -41,3 +41,7 @@ Push at meaningful checkpoints and save the plan, completed work, evidence, limi
 No new packaged release was produced. The version remains 8.8.0 with unreleased workflow changes. FOMOD external dependencies fail closed and cross-version options require review. Recipes do not download payloads; family restore is explicit; profiles share global rules. Graph is a scoped persisted-relationship view. Adapter SDK is an initial contract, not completed semantic support for every game. See the full handoff before making broader claims.
 
 **Next agent: update these facts, push each meaningful checkpoint, and require your successor to do the same. Do not break the chain.**
+
+## Research continuation — 2026-09-27
+
+Batch 1 complete: RESEARCH_FOMOD_2026-09-27.md records Inbox partial-import/result risks, FOMOD compatibility differences, and concrete fixtures. These are source observations and proposed tests, not fixed regressions. Next: transaction/recovery and diagnosis audit, then Windows UI acceptance research. Save and push each batch.
