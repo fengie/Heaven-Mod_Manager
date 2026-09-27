@@ -62,9 +62,14 @@ public sealed class EffectiveInspectorService(ManagerDatabase db, DeploymentPlan
             && applied?.ProviderModId is not null
             && StringComparer.OrdinalIgnoreCase.Equals(decision.WinnerModId, applied.ProviderModId);
 
-        var persistentRule = decision.RuleId is null
-            ? null
-            : snapshot.Rules.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, decision.RuleId));
+        var persistentRule = decision.RuleId is not null
+            ? snapshot.Rules.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, decision.RuleId))
+            : snapshot.Rules.FirstOrDefault(x =>
+                x.Kind == RuleKind.ExactWinner
+                && x.Explicit
+                && x.PathPattern is not null
+                && PathRules.Comparer.Equals(x.PathPattern, normalized)
+                && StringComparer.OrdinalIgnoreCase.Equals(x.WinnerModId, decision.WinnerModId));
         var ruleSource = persistentRule?.Explicit == true
             ? "Explicit human rule"
             : decision.Inferred
