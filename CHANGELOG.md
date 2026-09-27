@@ -1,0 +1,489 @@
+# v8.8.0 — Function verification cache and call-error hardening
+
+## Repair audit — 2026-09-27
+
+- Fix generic-mode `nativePC` file exclusion and recapture missing CAS blobs on rescan.
+- Avoid entering/flushing the watcher trace when no events or overflow are pending.
+- Require unconditional using scopes at method entry; reject conditional, delayed,
+  discarded, and short-lived traces, including similarly named fake logger types.
+- Preserve the previous function checklist on parse/duplicate-ID failures.
+- Reject missing manifested trusted snapshots and duplicate trusted ZIP entries.
+- Include source/UI/script runtime inputs in integration-stage cache fingerprints;
+  include common build targets, editor configuration, and NuGet configuration.
+- Preserve hidden verification files in source ZIPs; validate a staged archive before
+  replacing a previous ZIP.
+- Add 18 executable regression cases and a PowerShell cache regression gate.
+- Validate with SDK 10.0.401: complete strict solution build, 158 passing tests,
+  11 passing self-test checks, and zero function-scan gaps. Windows validation pending.
+
+## Checked-pass persistence revision
+
+- Added `.verification/stage-status.json` with exact project/dependency/toolchain fingerprints so independently passing strict builds/tests stay checked and can print `PASS-CACHED` on unchanged reruns.
+- Seeded only checks proven by the user's first Windows run **and** whose exact fingerprints remain unchanged: Core, Storage, Mhw, UnitTests, Benchmarks, and 79/79 Core unit tests.
+- Function scan now writes a complete per-function `verified: true/false` checklist every run; unchanged trusted/exact-cache functions are checked immediately even if unrelated later stages fail.
+- Fixed the FunctionVerifier Roslyn indexer parameter-list type mismatch and `FormatVersion` initializer bug found by the first Windows run.
+- Fixed WPF `Thickness` constructor usage and missing `System.IO` in the game-profile editor.
+- Updated automation/self-test/integration call sites to the new `GameProfile`-aware service constructors.
+- Fixed strict CA1859 diagnostics in private game discovery helpers.
+- Preserved the user's first Windows verification log in `_AGENT_CONTEXT/EVIDENCE/` for future agents.
+- Fixed source-handoff manifest self-hashing: `SOURCE_HANDOFF_MANIFEST.json` is now deliberately excluded from its own hash inventory, and handoff preflight validates both function/stage checklist schemas.
+
+
+- Added `MhwModManager.FunctionVerifier`, an SDK-Roslyn source scanner that fingerprints every explicit production executable body in `src` (methods, constructors, operators, local functions, explicit accessors, and expression-bodied properties/indexers).
+- Added a persistent boolean per-function verification cache at `.verification/function-status.json`. Exact unchanged fingerprints stay `verified=true` and do not need semantic re-verification.
+- Bootstrapped v8.7.0 trust from both full-file SHA-256 values and a read-only v8.7.0 source snapshot, so unchanged functions remain known-good even when another function in the same file changes.
+- Changed/new functions are required to start with `MasterDebugLog.BeginMethod()` unless they are part of the tracing implementation itself.
+- `MasterDebugLog` now propagates first-chance exception observations through the active scope chain. Scopes emit clean/error-check metadata (`PASS-CHECK`, `ERROR-CHECK`, or `PASS-WITH-ERROR-CHECK`) without swallowing exceptions.
+- `Verify-Release.ps1` and `Build-Release.ps1` now scan function fingerprints before compilation and promote the cache only after every required verification stage passes. Failed builds preserve the last known-good cache.
+- Added source-level verification documentation and agent handoff context.
+
+# v8.7.0 — Universal game support
+
+- Promotes the existing game-profile scaffolding into a real generic multi-game architecture.
+- Adds best-effort installed-game discovery for Steam, Epic Games Store, and GOG plus the existing manual executable picker.
+- Adds layout presets for BepInEx, Unreal Paks, Data-folder and Mods-folder games, with a safe generic game-root fallback.
+- Keeps every game in an isolated library/database/rollback workspace.
+- Fixes generic relative-path validation and generic source-package mapping.
+- Generalizes process guarding, game-build revalidation, save snapshots and unmanaged live-file adoption.
+- Keeps MHW semantic armor/family/texture intelligence behind the enhanced MHW profile instead of applying it to unknown games.
+- Nexus domain is profile-scoped instead of conceptually MHW-only.
+
+# 8.6.27 — Visual Source Fallback
+
+- Fixed libraries showing `No visual available` when Nexus archives contain no screenshots and no API key is configured.
+- Imports Vortex-style `pictureUrl` / image URL fields from local sidecar metadata.
+- Adds a throttled public Nexus page `og:image` fallback for known MHW Nexus mod IDs, so basic thumbnails do not require an API key.
+- Visual sync now reports local, sidecar/Vortex, public Nexus, and authenticated API visual counts separately.
+- Accepts local GIF previews and rejects unsupported remote media types instead of saving them with a misleading `.jpg` extension.
+
+## 8.6.26 — App compile cleanup
+
+- Fixed `CS0103` in `ViewModels/Rows.cs` where the new visual gallery code referenced `File.Exists` without `System.IO`.
+- Removed the remaining CA1869 test warning by caching test JSON serializer options.
+- No behavior changes to deployment, family inference, conflict resolution, visuals, updates, or issue fallback.
+
+## 8.6.25 — UX, overlap explorer, dry-run planning and background hardening
+
+- Added smart mod-library views: **All**, **Enabled**, **Staged**, **Updates**, **Issues**, **Revalidate**, and **Superseded**. Search composes with the active view.
+- Added **Preview changes**: a true planner dry run that captures/indexes newly-enabled sources, builds the same deployment plan as Apply, reports add/replace/remove/restore counts, and redirects to **Needs attention** if a blocking choice remains. It never writes `nativePC`.
+- Added **Discard staged** to return all staged state to the last applied state without touching deployed files.
+- Added an **Overlaps** page: an informational, MO2-style view of assets supplied by multiple enabled mods. Resolved shared textures/family overlays are shown calmly; unresolved choices remain in **Needs attention**.
+- Added keyboard shortcuts: **Ctrl+F** focus Mods search, **Ctrl+Enter** Apply, **Ctrl+Z** Undo, **F5** refresh analysis.
+- Periodic Nexus metadata/artwork refresh is serialized and skipped while foreground/transactional work is active. Manual sync/import/adoption share the same gate.
+- Remote thumbnails now download to bounded temporary files and are atomically renamed only after a complete successful transfer.
+- Clicking through visual-heavy libraries reuses persisted gallery metadata before recursively rescanning large source folders.
+- See `RESEARCH-UX-ROBUSTNESS.md` for the Vortex/MO2/Fluffy UX patterns used in this pass.
+
+## 8.6.24 — Visual library, Nexus/Vortex artwork and automatic update checks
+
+- Mod rows now show cached thumbnails; selecting a mod expands a visual gallery of Nexus artwork, FOMOD/Vortex installer images, and screenshots found inside the source package.
+- Nexus v3 `thumbnail_url` / `picture_url` / `image_url` artwork is cached under `State\Next\PreviewCache\Nexus` and refreshed automatically during metadata sync.
+- FOMOD `Info.xml`/`ModuleConfig.xml` `<Image>` references are recognized as author-supplied visual metadata.
+- Outfit Coverage now shows a preview thumbnail and supplying mod names for each armor/model row.
+- Conflict thumbnails use the same safe image decoder. Corrupt image files fail closed instead of crashing the UI.
+- Nexus metadata/artwork refreshes automatically while the app is open; update chains are checked daily and logical mods get an `Update available` badge. Updates are detected automatically but never silently installed/deployed.
+- Manual **Sync metadata + visuals** forces an immediate refresh.
+
+## 8.6.23 — Mod issue fallback / suspect tracker
+
+- Added persistent per-mod issue suspect records for startup crashes, general game crashes, GPU/graphics crashes, and crash-bisector isolation.
+- Automatic startup failures compare the failing launch against the previous successful modded launch and mark likely changed/enabled mods.
+- Added one-click **Report game crash** and **Report GPU/graphics crash** actions for failures that happen after the 15-second startup observation window.
+- GPU reports weight texture-heavy packages more strongly; startup/game reports weight plugin, executable, game-data, and structural content more strongly. Prior successful launches reduce suspicion while prior failures increase it.
+- Suspects appear in **Needs attention** and as warning badges in the Mods list. Marks are advisory and never change files or enabled state.
+- Automatic crash-bisector results are persisted as 99% **ISOLATED** marks.
+- Added dismiss/clear controls for false positives and master-log `[MOD-ISSUE]` diagnostics.
+- Database schema bumped to v5 with `mod_issue_suspects`.
+
+
+## 8.6.22 — Shared texture resources + texture safety gate
+- Treat shared body/skin textures embedded inside broader armor/outfit packages as one shared resource provider instead of a whole-mod conflict.
+- Keep dedicated independent texture/recolor packs blocking unless lineage or an explicit provider rule proves they are related.
+- Add pre-launch/Health validation for enabled MHW `.tex` sources: missing/unreadable sources, post-index size changes, truncated files, and invalid TEX signatures are surfaced before launch.
+- Invalid/truncated TEX sources are launch blockers and are written to `MHW-DEBUG-ALL.log` under `[TEXTURE-SAFETY]`.
+- This gate catches obvious malformed mod textures; it does not claim every MHW ERR12/GPU-device crash is caused by a mod.
+
+## v8.6.22 - Texture family regression fix
+
+- Fixed unrelated texture replacers in the same `mod_*` resource namespace being mistaken for one lineage when they only shared generic words such as `recolor`.
+- Proven same-family texture providers now resolve deterministically by family priority instead of becoming a blocking self-conflict.
+- Manual family-chain precedence remains authoritative because explicit overlay rules are evaluated before this fallback.
+- Cleans CA1859/CA1854/xUnit2009 warnings surfaced by the v8.6.20 verifier.
+
+## v8.6.20 - Manual family chaining
+- Added a conflict-screen action to make any conflicting logical mod the family main and chain all other conflict candidates beneath it as optional/component children.
+- Manual chains persist an authoritative `manual:` family ID, explicit Main/Component/Optional roles, and an ordered explicit overlay chain across the selected logical groups.
+- Optional groups are ordered by current mod priority and saved as a total precedence chain, preventing later optional layers from conflicting with earlier optional layers on shared base files.
+- Manual chaining preserves current staged enable/disable state, rejects precedence cycles transactionally, and never moves or merges source folders.
+- Added `[FAMILY-MANUAL]` master-log events and regression coverage proving a previously blocking structural collision becomes an explicit nonblocking optional overlay after chaining.
+
+## v8.6.19 - Family conflict invariant
+
+- Fixed the v8.6.18 automation regression test string literals that caused CS1010/CS1003 build failures.
+- Added a hard conflict-engine boundary for proven logical families: base/optional/patch/component overlaps can no longer fall through to ordinary HARD_STRUCTURAL/HARD_GAME_DATA conflicts.
+- High-confidence family overlays still auto-compose with the child/optional provider winning only shared paths.
+- Generic same-family subset packages (>=75% overlap of the smaller package) auto-compose even when future authors use unfamiliar names.
+- Ambiguous mutually-exclusive sibling variants remain safe: they surface as one MOD_FAMILY_OPTION internal choice instead of being silently mixed or reported as unrelated mods.
+- Explicit incompatibility, exact-file winner, and resource-provider rules retain higher authority.
+- Added FAMILY-CONFLICT master-log events for every internal family compose/choice decision.
+- Added regression tests covering base+optional, unknown-name subset components, ambiguous sibling variants, and explicit same-family incompatibility.
+
+# Changelog
+
+## v8.6.18 - Generic family inference
+- Replaced the HPN-centric family patch with generic evidence-based family inference.
+- Family evidence now layers manual/manager metadata, shared Nexus/source identity, semantic names, file overlap/subsets, content roots, resource namespaces, and MHW asset/model identity.
+- Reads Vortex/Nexus-style logicalFileName/familyId hints from local sidecars when available.
+- Nexus file categories no longer decide family identity; shared source lineage is stronger evidence.
+- Added conservative negative evidence so similar names or shared armor slots alone do not collapse unrelated replacements.
+- Logs accepted generic family pairs with score and evidence in MHW-DEBUG-ALL.log.
+
+## v8.6.17 - HPN / Nexus family inference
+
+- Treats a shared game-scoped Nexus mod ID as strong logical-family evidence even when every Nexus file is author-labeled `Main`.
+- Persists Nexus-family hints for all current packages on the same Nexus mod page while preserving non-Nexus/manual family assignments.
+- Expands HPN component-name recognition for topless/braless/nude/panties/underwear/nipple, coatless/sleeveless and similar option packages.
+- Adds explicit `[FAMILY] GROUP` / `[FAMILY] SPLIT` evidence to `MHW-DEBUG-ALL.log`.
+- Adds regression tests for all-Main HPN Nexus packages, different Nexus IDs, and `Free the Nipples` suffix grouping.
+
+## v8.6.16 - WPF trace listener nullability fix
+
+- Fixed CS8765 in `WpfMasterTraceListener.TraceEvent` by matching the .NET 10 nullable `string? format` override contract.
+- Null trace format strings are normalized to `string.Empty` before invariant formatting.
+- Full-process tracing and all v8.6.15 trace-placement protections remain unchanged.
+
+## v8.6.16 - Trace placement compiler fix
+- Fixed the exhaustive tracer inserting method-scope statements into object/collection initializers.
+- Removed 14 illegal trace statements while preserving all valid method/process/database/filesystem/WPF tracing.
+- Added `Test-CSharpTracePlacement.ps1` to Build/Test/Verify launchers.
+- Added an integration regression test preventing this instrumentation corruption from returning.
+
+## v8.6.14 - Full-process master tracing
+
+- Adds dependency-free `MasterDebugLog` tracing in Core so every project layer can write to the same top-level `MHW-DEBUG-ALL.log`.
+- Instruments ~300 block-bodied methods across Core, Storage, Filesystem, MHW, Diagnostics, Automation, and App with nested operation IDs and timings.
+- Captures every first-chance exception before it is caught, plus unhandled AppDomain/UI/task failures.
+- Mirrors WPF `PresentationTraceSources` (bindings, dependency properties, markup, resources, routed events, shell) into the master log.
+- Tracks every external process launch/exit used by the manager, including MHW, diagnostics PowerShell, and texture conversion.
+- Adds file-by-file deployment mutation records, FileSystemWatcher events/errors, SQLite transaction boundaries, ViewModel property/collection changes, assembly loads, and process exit.
+- Keeps build/verifier/startup/runtime logging in the same root handoff file.
+- Logging remains best-effort: master-log I/O failures are swallowed so diagnostics cannot become a product failure.
+
+## v8.6.13 - WPF read-only binding safety
+
+- Fixed startup UI crash caused by inline `Run.Text` bindings attempting TwoWay/OneWayToSource updates into read-only/computed ViewModel properties.
+- `ComposedCount`, `RevalidationCount`, `WinningFiles`, and `ShadowedFiles` inline bindings are now explicitly `Mode=OneWay`.
+- Added an integration regression guard requiring every inline `Run.Text` binding in `MainWindow.xaml` to explicitly use `Mode=OneWay`.
+- Retains unified root-level `MHW-DEBUG-ALL.log` and traced startup lifecycle.
+
+## v8.6.12 - Startup lifecycle + root-log continuity
+
+- Keeps WPF in `OnExplicitShutdown` mode until the real main window has initialized and been shown.
+- Moves initial `MainWindowViewModel.InitializeAsync()` into the traced startup pipeline instead of an `async` `Loaded` event.
+- Converts dispatcher-unhandled exceptions into an explicit logged error dialog + controlled shutdown.
+- Adds very-early `APP-BOOTSTRAP` tracing before the splash workflow.
+- When running a locally built app under `release\MHW-Manual-Mod-Manager-v*`, automatically writes runtime diagnostics back to the project-root `MHW-DEBUG-ALL.log`.
+- Adds root-level `RUN BUILT APP.bat`, which sets `MHW_MANAGER_HOME` and `MHW_MASTER_DEBUG_ROOT` so the built app uses the project-root Mods/State and the same one-file debug log.
+- Cleans diagnostic/test analyzer warnings (CA1068 / xUnit2031).
+
+## v8.6.11 - Unified master debug log
+
+- Adds `MHW-DEBUG-ALL.log` at the top level as the single file to share for debugging.
+- Build, verification, per-stage dotnet output, startup tracing, runtime Serilog events, telemetry signals, and unhandled WPF/AppDomain/task exceptions append to the master log.
+- Existing detailed `BuildLogs`, `StartupLogs`, JSON reports, and rolling runtime JSONL logs are retained.
+- Adds `OPEN MASTER DEBUG LOG.bat` for one-click access.
+- Build release copies the master log into the published release folder so subsequent app startup/runtime entries continue in the same obvious location.
+- Logging remains best-effort: a log-write failure never becomes an application/build failure.
+
+## v8.6.10 - Build harness exit-code fix
+
+- Fixed `Build-Release.ps1` stage execution so `Tee-Object` console output cannot contaminate the function return value.
+- `Invoke-DotNetStage` now returns exactly one scalar integer exit code while still streaming output to both the console and per-stage log.
+- Added an explicit scalar-exit-code contract check before stage results are evaluated.
+- Keeps the v8.6.9 CA2016 fix, RID compile gate, startup diagnostics, and ReadyToRun publish diagnostics.
+
+## v8.6.9 - Publish analyzer fix
+
+- Fixed the win-x64 publish-only CA2016 failure in `App.xaml.cs` by forwarding the startup diagnostic cancellation token into `ManagerDatabase.InitializeAsync`.
+- Added an explicit `App win-x64 compile/analyzers` gate to `Build-Release.ps1` so RID-specific compiler/analyzer failures are caught before `dotnet publish`.
+- Retains v8.6.8 build/publish diagnostics, ReadyToRun restore/fallback handling, and v8.6.7 startup diagnostics.
+
+## v8.6.8 - Build/publish diagnostics and ReadyToRun recovery
+
+- Adds per-stage BuildLogs for restore, compile, tests, self-test, RID restore, and publish.
+- Explicitly restores win-x64 assets with PublishReadyToRun=true before the ReadyToRun publish.
+- If the SDK/runtime-pack ReadyToRun phase fails, retries a self-contained non-R2R publish and records PUBLISH FALLBACK.txt instead of losing the entire release build.
+- Build failures now print the first diagnostics and exact log path.
+- Keeps the full v8.6.7 startup diagnostic tracing.
+
+# 8.6.6 - Startup path classification fix
+
+- Fixed startup failure when uncaptured mod folders contain root-level documentation such as `Troubleshootings.txt`.
+- Auto-category classification now accepts safe source-relative paths without requiring the deployment-only `nativePC\` / `root\` prefixes.
+- Unsafe rooted/traversal-style paths are ignored during classification rather than reaching deployment path normalization.
+- Added regression coverage for documentation-only folders and startup categorization before capture.
+
+# 8.6.5 - Final App compile/analyzer cleanup
+
+- Fixed the logical-provider tuple to preserve the `identity` element name in both conditional branches.
+- Removed the redundant always-true `ConflictRow.Blocking` property and made blocker count use the blocker-row collection count directly.
+- Replaced LINQ `FirstOrDefault` calls on the indexable logical-member list with direct indexed lookup to satisfy CA1826 without changing winner selection.
+- Marked `NexusMetadataService.TryFetchNexusAsync` static to satisfy CA1822.
+- No planner, deployment, persistence, conflict-resolution, or test semantics were weakened.
+
+# 8.6.4 - Final compile cleanup
+
+- Fixed `CS1009` in the metadata-sync status message by escaping the Windows path `State\Next\nexus-api-key.txt` correctly in the C# string literal.
+- Marked the two Nexus lookup helpers static to satisfy `CA1822`; behavior is unchanged because they only use static HTTP helpers/data.
+- Replaced a repeated constant-array assertion in `AutoCompatibilityTests` to clear `CA1861` without weakening the test.
+- No planner, deployment, storage, conflict-resolution, or migration behavior changed in this patch.
+
+# 8.6.3 - Analyzer + regression repair
+
+- Fixed strict-analyzer regressions in Core private helpers by using the concrete array types actually passed by the intelligence engine.
+- Fixed invariant timestamp serialization in filesystem journaling/blob registration (`CA1305`).
+- Tightened private deployment helper collection types to match their concrete call sites (`CA1859`) without changing public APIs.
+- Tightened the private Nexus family-hint input and App analysis pipeline collection types for the same strict analyzer rule.
+- Corrected the independent-texture regression test: an unresolved independent replacement is a blocking `TextureOverride`, not a resolved `SharedTexture`.
+- Updated the verifier to print the first compiler/analyzer/test diagnostics directly after each failed stage while still continuing all gates.
+
+## 8.6.2 - Harness continuation + test regression fixes
+
+- Fixed the Windows PowerShell 5.1 verifier so failing native `dotnet` stages are recorded and the harness continues instead of being terminated by stderr/ErrorRecord conversion.
+- Replaced the verifier's generic `List[object]` report accumulator with a plain PowerShell object array to eliminate the `Argument types do not match` JSON/report binder failure.
+- Added a report-serialization preflight stage so the harness tests its own Markdown/JSON data path before the .NET matrix starts.
+- Fixed AutomationTests and SelfTest compile regressions where a helper named `File(...)` shadowed `System.IO.File`; the helper is now `ModFile(...)`.
+- Updated stale Core texture tests to the current policy: unrelated exact-path texture replacers require one compact human choice, while proven shared texture families remain deterministic/non-blocking.
+- Preserved warnings-as-errors and the continue-through-all-stages verification policy.
+
+## 8.6.1 - Verifier parser/encoding fix
+
+- Fixed Windows PowerShell 5.1 parse failure in `Verify-Release.ps1` caused by a UTF-8 em dash being decoded as a curly quote under legacy code pages.
+- Active build/test PowerShell scripts are now ASCII-safe so Windows PowerShell 5.1 cannot corrupt punctuation during parsing.
+- Added a PowerShell parser sweep to the full verifier; every active script is syntax-checked and recorded as its own verification stage.
+- Added root-launcher syntax preflight so a broken verifier is detected before execution with a direct parser error instead of a cascade of misleading failures.
+- `Test Everything.bat`, `Verify.bat`, and `Build.bat` now preserve the real exit code.
+
+# v8.5.0 — Compatibility intelligence / hands-off resolver
+
+- Added Nexus-aware provenance and lineage. Local sidecars/folder metadata work offline; optional live Nexus v3 enrichment can identify Main, Optional, Update, archived/old versions, upload time, and version chains.
+- Nexus evidence outranks filename heuristics for automatic main → optional → update precedence and supersession.
+- Logical mods now expose an internal configuration drawer while preserving one-click family enable/disable. Physical source packages remain immutable.
+- Added atomic MHW asset-bundle grouping for model/material/physics/game-data conflicts so direct-alternative choices select a coherent logical mod rather than mixing unrelated structural providers file-by-file.
+- Replaced pairwise conflict spam with one-of-N choice cards grouped by atomic asset bundle. Selecting a logical winner stages competing logical alternatives OFF; no live files change until Apply safely.
+- Added superseded-revision tracking. Conclusively older Nexus versions and safe local texture revisions are hidden from the normal library/conflict graph but retained as archived source members for provenance/rollback. Structural v1/v2 packages are not auto-archived from names alone.
+- Added unmanaged `nativePC` adoption. Manual live files are copied into an immutable tracked source package without modifying/deleting the live tree; adopted path + SHA-256 state prevents repeated adoption and re-surfaces the file if it is later changed externally.
+- Added confidence/evidence to automatic resolver decisions and persisted resolver audit records. Low-confidence unrelated replacements remain human choices rather than silent priority wins.
+- Added best-effort texture-choice previews from package/adjacent images, with optional raw `.tex` conversion when `MHW_TEX_CONVERTER` and `TEXCONV_EXE` are configured.
+- Added game-build fingerprinting. When `MonsterHunterWorld.exe` changes, plugin/executable/game-data mods are marked for revalidation while ordinary texture-only mods are not blanket-invalidated.
+- Added effective-mod state projection: Effective, Composed, Superseded, Pick one, Revalidate, or Disabled, including winning/shadowed file counts.
+- Startup now counts unadopted live files and surfaces the count on the Dashboard.
+- Added intelligence regression coverage for Nexus optional/update precedence, version supersession, independent texture alternatives, HPN dedicated/newer texture providers, structural atomic bundles, and superseded-source exclusion.
+
+# v8.4.0 — Logical mod families / direct-replacement-only choices
+
+- Collapsed recognizable main + Top/Waist/Legs/No Cape/Open Top/optional/patch/fix/update packages into one logical library row while preserving every physical source folder.
+- A logical-family toggle expands to all underlying source packages at planning/apply time; no source folder is rewritten or deleted.
+- Existing profiles with partially enabled family members are preserved as a PARTIAL state until the user deliberately toggles the family.
+- Dedicated texture revision families such as HPN skin v1/v2/Updated collapse into one logical entry; newest-provider inference still determines the actual winning texture bytes.
+- Arbitrary versioned structural mods are deliberately not collapsed merely because they share a base name.
+- Alternative/Alt/Variant packages remain separate pick-one logical mods rather than being misclassified as additive components.
+- Needs Attention is projected onto logical mods instead of raw source folders. Blocking N-way collisions are decomposed into compact pairwise direct-replacement choices.
+- Choosing Use A / Use B stages the chosen logical mod ON and the other logical mod OFF, avoiding accidental hybrid alternatives.
+- Rare direct collisions between two components inside one logical family are surfaced as a component-level pick instead of inventing an unsafe binary merge/order.
+- Added logical-family regression tests for HPN multipart groups, alternatives, HPN texture revisions, unrelated HPN armors, and structural version separation.
+
+# v8.3.1 — Smart composition / provider precedence
+
+- Added deterministic provider ordering for intentional MHW overwrite workflows: main/base → optional component → patch/fix/update.
+- Dedicated texture/skin packs now beat stale incidental texture copies embedded in armor packages while every source mod remains enabled.
+- Related texture revisions use Nexus-style upload timestamps, date/version labels, explicit Updated/Fix wording, and finally file revision time before falling back to configured priority.
+- HPN/UHPN/HHPN `mod_hepsy` resources receive lineage-aware texture revision handling without applying timestamp ordering to structural files.
+- Explicit exact-file winners, pinned resource providers, incompatible rules, and remembered human overlays remain authoritative over all automatic inference.
+- Same-label structural packages (for example multiple `Fatalis Patch` archives) no longer auto-order merely because one is smaller/newer.
+- `Alternative` / `Alt` / `Variant` naming alone is intentionally not enough to auto-order structural files.
+- Added Nexus archive suffix metadata detection for newly discovered local mod folders.
+- Added regression coverage for HPN optional components, dedicated texture providers, v1→v2 texture updates, explicit resource pins, ambiguous alternatives, and same-label patches.
+- Source mods remain immutable. The manager still performs a virtual merge into one final deployment tree; format-aware binary splicing is not attempted.
+
+# v8.3.0 — Automatic compatibility composition
+
+- Added research-backed automatic base/option/patch inference. High-confidence families are composed without human conflict prompts.
+- Overlay chains now resolve 3+ providers (`base -> option -> hotfix`) when every provider is ordered.
+- Shared/different textures remain non-blocking: all mods stay enabled while one exact-path provider is selected for the composed tree.
+- Pair-overlap indexing now works even when more than two mods share a path.
+- Explicit user incompatibility/overlay rules always beat inferred rules; auto edges that would create cycles are skipped.
+- Blocking conflict UI is compacted by provider pair + conflict kind instead of showing one row per path.
+- Group-level exact winner actions now apply to every file in the compacted conflict.
+- Added `docs/AUTO-COMPOSITION.md` documenting the safety model and MHW research basis.
+- Source folders remain immutable; this release performs a virtual merge rather than unsafe binary splicing.
+
+## 8.2.0 - Modern UI
+- Rebuilt the WPF visual system around a restrained MHW-inspired charcoal/gold palette.
+- Added a persistent left navigation rail with clearer selected/hover states.
+- Reworked the command bar so high-frequency actions are visually prioritized.
+- Rebuilt Dashboard with metric cards, system-status panel, quick actions, and conflict-policy guidance.
+- Reworked Mods into a denser library view with integrated search, two-line mod identity, staged-state pill, and cleaner table hierarchy.
+- Refined Needs Attention, Profiles, Outfits, and Activity screens with consistent page headers, cards, toolbars, and data tables.
+- Added consistent rounded inputs/buttons/cards, improved typography and spacing, table hover/selection states, and a cleaner busy overlay.
+- Redesigned the startup splash to match the main shell.
+- Made release artifact naming derive from VERSION.txt to prevent stale versioned output paths.
+- No deployment, migration, conflict-resolution, profile, or filesystem semantics were intentionally changed by this UI pass.
+
+# 8.1.7 Recovery Diagnostic Fix
+
+- Fixed the only failing integration/fault-injection test after the full solution compiled cleanly.
+- Recovery already failed closed and preserved the externally edited file; the top-level exception was replacing the precise inner diagnostic with a generic summary.
+- `RecoverIncompleteAsync` now preserves the exact recovery reason in the user-facing exception while retaining the original exception as `InnerException`.
+- Strengthened the regression test to verify both the top-level actionable reason and the preserved inner diagnostic.
+- No deployment/recovery safety rule was weakened.
+
+# 8.1.6 App Compile Fix
+
+- Fixed the full remaining App compile surface exposed by the all-project verifier.
+- Added explicit `System.IO` imports for App startup/path discovery and MainWindowViewModel.
+- `App` now implements `IDisposable` and centrally disposes DispatcherWatchdog, FileChangeHintService, and the logger during shutdown.
+- `MainWindowViewModel` now implements `IDisposable`; busy/search cancellation sources are cancelled and disposed when the window closes.
+- MainWindow now disposes its ViewModel on `Closed`.
+- Changed the hot `BuildAnalysisAsync` stage parameter to the concrete `Dictionary` type requested by CA1859.
+- Fixed the last xUnit1051 integration-test call by passing `TestContext.Current.CancellationToken` into synchronous archive extraction.
+- Preserves the all-project compile/analyzer sweep and automatic BuildLogs introduced in 8.1.5.
+
+# v8.1.5 — All-errors compile sweep + Diagnostics/Integration fixes
+
+- `Verify-Release.ps1` now performs a relaxed whole-solution dependency build followed by a strict per-project compiler/analyzer sweep. Analyzer errors in one project no longer prevent the verifier from exposing analyzer errors in downstream projects.
+- Every compile sweep writes a transcript, summary, relaxed binlog, final binlog, and one binlog per project under `BuildLogs\`.
+- Fixed Diagnostics Serilog JSON file sink overload usage.
+- Reused a static `JsonSerializerOptions` instance in support-bundle exports and made count conversion invariant-culture safe.
+- Integration tests now propagate `TestContext.Current.CancellationToken` to cancellable APIs instead of triggering xUnit1051 across the fixture suite.
+- Proactively made process launching disposable-safe and invariant-culture conflict-rule timestamps in the WPF app.
+- Version bumped to 8.1.5.
+
+# v8.1.4 — Compile Fix 4
+
+- Fixed the two remaining `ArchiveInspector` CA1822 warnings while preserving it as an injectable service.
+- `Verify-Release.ps1` now automatically writes timestamped text transcripts and MSBuild `.binlog` files to `BuildLogs\`.
+- Version metadata updated to 8.1.4.
+
+# v8.1.3 Compile Fix 3
+
+- Updated SharpCompress 0.50.x usage to `ArchiveFactory.OpenArchive`.
+- Fixed .NET 10 `XxHash3` usage (`XxHash3` is not `IDisposable`).
+- Reordered public `CancellationToken` parameters to satisfy CA1068 and updated callers.
+- Updated Restart Manager P/Invoke to use a character buffer and check `RmEndSession` results.
+- Removed CA1859 hot-path interface abstractions in the scanner where concrete types are guaranteed.
+- Hoisted armor CSV newline separators to a static readonly field.
+- Preserved DI-friendly instance services with narrowly documented CA1822 suppressions.
+
+
+## 8.1.3 - Analyzer/compile pass 2
+
+- Fixed locale-sensitive `DateTimeOffset.Parse` in profile loading with `CultureInfo.InvariantCulture`.
+- Fixed locale-sensitive migration backup timestamp formatting with `CultureInfo.InvariantCulture`.
+- Moved BenchmarkDotNet entry/types into the `MhwModManager.Benchmarks` namespace.
+- Scoped CA1707 off only in xUnit test projects so descriptive underscore test names remain readable; production analyzers stay strict.
+- Replaced collection-membership `Assert.True(...Any(...))` with xUnit's `Assert.Contains` predicate assertion.
+- Fixed invariant-culture formatting in stress-test hash generation.
+
+
+## 8.1.1 - compile/analyzer fixes
+- Fixed nullable-flow warning in `RuleGraph.FindCycle` by materializing validated winner/left/right IDs before graph insertion.
+- Fixed `CS1628` in armor-component parsing by avoiding capture of the `out modelId` parameter in a lambda.
+- Replaced single-character `StartsWith(string)` calls with `StartsWith(char)` to satisfy CA1865.
+- Kept `ConflictEngine` as an injectable instance service and documented/suppressed CA1822 for the indexed overload.
+# v8.1 Hardened
+
+This release is a production-hardening pass over the C#/.NET 10 v8 rewrite. It does not intentionally weaken conflict or recovery guarantees for speed.
+
+## Correctness / recovery
+- Reworked deployment around explicit `Prepared -> Applying -> FilesWritten -> StateCommitting -> Committed` states.
+- Added whole-plan live-file preflight before first mutation and a second per-file TOCTOU check immediately before each write.
+- Committed manifest, original-file ownership, enabled/priority state, and the `Committed` marker in one SQLite transaction.
+- Added deterministic startup rollback for incomplete transactions and `RecoveryRequired` fail-closed behavior when a file matches neither known transaction image.
+- Preserved first-takeover capture of unmanaged/manual files and ownership release after restoration.
+- Hardened existing-file replacement with flushed same-directory temp files and Windows `ReplaceFileW` semantics.
+
+## Performance / responsiveness
+- Removed SQLite shared-cache usage; retained WAL with pooled connection-per-operation and short transactions.
+- Added indexed conflict-rule lookups and sparse incompatibility adjacency instead of repeated raw-rule scans.
+- Removed a hidden O(paths²) planner lookup by indexing decisions by normalized path.
+- Restricted planner snapshot file loading to staged-enabled mods.
+- Added indexed `mod_file_armor` metadata so outfit coverage avoids wildcard path scans.
+- Batched/versioned the 663-row armor catalog import instead of repeating hundreds of DB operations every startup.
+- Added `ObservableRangeCollection.ReplaceAll` and kept WPF DataGrid virtualization/recycling enabled.
+- Moved planner/conflict CPU work, archive work, source enumeration, health hashes, and startup migration work away from the Dispatcher.
+
+## Cache / filesystem safety
+- Metadata cache hits are verified with XXH3 so same-size/same-timestamp source edits cannot silently reuse stale SHA-256 blobs.
+- FileSystemWatcher is hints-only and overflow is explicitly recorded; live hashes/manifests remain authoritative.
+- Archive extraction rejects traversal, rooted/device/ADS paths, reparse-point escape, excessive file counts, and excessive expanded size.
+- Added Restart Manager lock-owner diagnostics for Windows sharing/permission failures.
+
+## Diagnostics
+- Added correlation IDs, structured operation telemetry, runtime/ThreadPool/GC counters, classified error reports, and a Dispatcher heartbeat watchdog.
+- Added one-click support-bundle enrichment and a `Capture diagnostics` UI action.
+- Added `scripts/Capture-Diagnostics.ps1` for `dotnet-stack`, `dotnet-counters`, `dotnet-trace`, and `dotnet-gcdump` collection when installed.
+- Added `docs/BUG-AUDIT.md` and `docs/DIAGNOSTICS.md`.
+
+## Tests / gates
+- Added crash-phase matrix tests across the durable commit boundary.
+- Added stale whole-plan preflight regression test.
+- Added same-size/same-timestamp scanner regression test.
+- Added archive traversal/path normalization tests.
+- Added randomized deterministic planner invariants and large shared-resource incompatibility coverage.
+- Added `scripts/Verify-Release.ps1` and strengthened `Build-Release.ps1`.
+
+# v8 Next
+
+- Replaced the normal PowerShell runtime with a typed C#/.NET 10 architecture.
+- Added SQLite/WAL indexed persistence and v7 schema migration.
+- Added immutable content-addressed blob store, streaming hash/copy pipeline and cached XXH3 metadata.
+- Ported typed conflict semantics to an indexed one-pass provider model.
+- Added overlay precedence cycle detection.
+- Added atomic/journaled deployment with live precondition verification and crash rollback.
+- Added first-takeover protection for unmanaged/manual files.
+- Added WPF/MVVM GUI with staged changes and virtualized grids.
+- Added safe archive inspection, armor coverage, diagnostics/support bundles and manager-controlled Safe Mode.
+- Added unit/integration/benchmark projects and documented failure invariants.
+
+## 8.6.0 — Automation + reliability
+
+- Added `MhwModManager.Automation` as a separately testable convenience/orchestration layer.
+- Added Smart Inbox (`Inbox\` → automatic safe import → `Inbox\Processed\`).
+- Added automatic content-derived categories and dependency checks.
+- Added rolling pre-launch save/mod/deployment snapshots and Last Known Good tracking.
+- Added `JUST PLAY`: auto-apply staged changes, adopt safe unmanaged `nativePC` files, snapshot, health gate, launch observation, trust history, and Last Known Good recording.
+- Added one-click automatic startup crash bisection for newly enabled mods; surviving probes are closed and the original setup is restored afterward.
+- Added update diff logging, game-update impact reports, timeline events, safe duplicate/superseded archive cleanup, collection recipe export, effective-file provenance, asset heatmap service, outfit preset inference, and per-mod launch trust history.
+- Added schema v4 tables for automation timeline, save snapshots, launch history, and mod trust.
+- Added `MhwModManager.AutomationTests` and a standalone `MhwModManager.SelfTest` executable.
+- Reworked `Verify-Release.ps1` into a continue-on-failure whole-application test harness. One broken project/test no longer prevents later test groups from running.
+- Verification now creates per-stage logs plus final Markdown/JSON reports with failure excerpts.
+- Added `Test Everything.bat` as a one-click full test entry point.
+
+8.6.7 — Startup diagnostic trace
+- Added verifier-style startup text and JSON diagnostics under StartupLogs.
+- Records path discovery, service composition, database init, migration, catalog/armor import, intelligence, recovery, automation maintenance, main-window construction, and watchdog startup.
+- Startup maintenance attempts each safe substage independently and aggregates failures after collecting diagnostics.
+- Startup failure dialogs now show exact startup log/report paths.
+- Auto-category diagnostics identify the mod/source currently being classified.
+
+## 8.8.0 handoff-hardening revision
+
+- Added mandatory propagating `_AGENT_CONTEXT` continuity protocol and machine-readable handoff manifest.
+- Added handoff preflight and clean source-handoff packaging with per-file hashes.
+- Excluded generated `bin`/`obj` C# from function verification.
+- Added trusted v8.7 snapshot hash/self-consistency validation.
+- Prevented explicit-interface function-ID cache collisions.
+- Added explicit call-site coverage counts/gate to function reports.
+- Made full first-chance exception stack logging opt-in while preserving per-scope exception observation and aggregate counts.
+- Documented the re-audited architecture debt and research-backed follow-up recommendations.
+
+## 8.8.0 verification-closure revision
+
+- Consumed the second authoritative Windows verifier run: 24 PASS / 1 FAIL.
+- Confirmed relaxed and strict whole-solution builds at 0 warnings / 0 errors.
+- Confirmed Automation tests 18/18, Integration + fault injection 43/43, and full automation self-test PASS.
+- Fixed the sole remaining function-verifier failure by adding entry traces to `GameProfileEditorWindow.AddField`, `GameProfileRegistry.DiscoverSteam`, `DiscoverEpic`, and `DiscoverGog`.
+- Preserved exact-input known-good stage checks and added the independently verified FunctionVerifier strict-build check; dependency-invalidated checks will rerun automatically.
+- Added the second Windows debug log to durable agent evidence.
