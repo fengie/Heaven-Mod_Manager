@@ -1,0 +1,1006 @@
+{
+  "formatVersion": 1,
+  "project": "MHW Manual Mod Manager",
+  "sourceVersion": "8.8.0",
+  "generatedAt": "2026-09-27T19:45:09.7559924+10:00",
+  "continuityRequired": true,
+  "propagateToNextAgent": true,
+  "fileCount": 199,
+  "files": [
+    {
+      "path": "_AGENT_CONTEXT/ARCHITECTURE.md",
+      "sha256": "99f4cbdf04624bd345050b9ec5d407356e1fe7875bd70bc164e647a2dd58db33",
+      "bytes": 3013
+    },
+    {
+      "path": "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
+      "sha256": "b407ec4df5605c620b94465ba0b3cd49e1d05e3bb32338fb67ceae0dc14740f5",
+      "bytes": 4421
+    },
+    {
+      "path": "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
+      "sha256": "04cc5d60486c50ad14246360f0dfc13d81497186ebc696de3cbc857f4f2ecf0b",
+      "bytes": 2941
+    },
+    {
+      "path": "_AGENT_CONTEXT/CURRENT_STATE.md",
+      "sha256": "0aec1b88629148aad2d02bfd78650b0de32cc81678df891657b6d0252062c6c2",
+      "bytes": 7710
+    },
+    {
+      "path": "_AGENT_CONTEXT/DECISIONS.md",
+      "sha256": "50a51b8b3e5b944a6b48e109a423cc82e85995e48e8332e7b7690e7822a38e80",
+      "bytes": 3905
+    },
+    {
+      "path": "_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log",
+      "sha256": "178dd545a7db959cd68aacebda35f13be961ba639eb60df33fd128694c8ae918",
+      "bytes": 136941
+    },
+    {
+      "path": "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
+      "sha256": "064f83518736a5dec519fa1b646eaca855a3cb2cbebe4e19a1776443b1156067",
+      "bytes": 373725
+    },
+    {
+      "path": "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
+      "sha256": "4fb4d523af62306ba8c63ad5f6367dbbf7b129b0f773bb9bb16e9a08c360d8a9",
+      "bytes": 17121
+    },
+    {
+      "path": "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
+      "sha256": "eba08c2caea86c5f757e754df05c7226503447d3c90e157aa8b46d7e2010c5e5",
+      "bytes": 43542
+    },
+    {
+      "path": "_AGENT_CONTEXT/handoff-manifest.json",
+      "sha256": "0cdc9f5347f9139770c4887bfd2703cc34779064283787829be9a7c32ece82e0",
+      "bytes": 1736
+    },
+    {
+      "path": "_AGENT_CONTEXT/KNOWN_ISSUES.md",
+      "sha256": "a47ebcce7e90d83c89fb06db984a37dd4bea62b01471979b1937d010ba927e9a",
+      "bytes": 3714
+    },
+    {
+      "path": "_AGENT_CONTEXT/NEXT_STEPS.md",
+      "sha256": "a701b82e090b1118620c0349b3b71e0c8ac627ab48727c621552b36649bf8e44",
+      "bytes": 3268
+    },
+    {
+      "path": "_AGENT_CONTEXT/PROJECT_HISTORY.md",
+      "sha256": "536b899bc3ee0fc49b351bd9b7f1a495478bcd2acf933e8ff6daf0321d51da45",
+      "bytes": 3120
+    },
+    {
+      "path": "_AGENT_CONTEXT/README_FIRST.md",
+      "sha256": "4868fb07f60829494338bf81cd41c69a1ec6067810dc6580deb3468f216e9ad8",
+      "bytes": 2541
+    },
+    {
+      "path": "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+      "sha256": "2da73fee78501a15281961e9eaa2e426aa5e7293e0bb4e78240dd17f21bf6d84",
+      "bytes": 5366
+    },
+    {
+      "path": "_AGENT_CONTEXT/SOURCE_MAP.md",
+      "sha256": "b3d511a5ca5390cfd87ca09027671655064681681f962de785cf7c07228c60c4",
+      "bytes": 3425
+    },
+    {
+      "path": "_AGENT_CONTEXT/VERIFICATION.md",
+      "sha256": "82397f830e43de43b1b6d42bf1fa0ee906a6fedf09109d3f892894d71ad98d86",
+      "bytes": 7089
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "2bb142e155a4eafc52e30dfdf68c052c9ccfd66b6951ae734684c877681bca67",
+      "bytes": 72
+    },
+    {
+      "path": ".verification/function-status.json",
+      "sha256": "f7019f759a9654ae8569c97134319c80c72566be0a26075874c3739b69b09f92",
+      "bytes": 221581
+    },
+    {
+      "path": ".verification/README.md",
+      "sha256": "4ab11885c565de991cecb8ef6fd6329be883474d6e4c287266ba601311616847",
+      "bytes": 2754
+    },
+    {
+      "path": ".verification/stage-status.json",
+      "sha256": "ad4d0de11cd81614dd71c1f0e9d4022958558363ce311c1eec0cdbf039a89af4",
+      "bytes": 3484
+    },
+    {
+      "path": ".verification/trusted-v8.7.0-files.json",
+      "sha256": "b6182e71617588ce643e22f34d49cc6c9c09d447a5527823348ff2781f1cc281",
+      "bytes": 9363
+    },
+    {
+      "path": ".verification/trusted-v8.7.0-src.zip",
+      "sha256": "bbbf22c5ba8d4a87fdc5339f02f58a04a75f97a488e6131a5bdeaa9f54284eeb",
+      "bytes": 177136
+    },
+    {
+      "path": "benchmarks/MhwModManager.Benchmarks/MhwModManager.Benchmarks.csproj",
+      "sha256": "18a822487ec199e5ca03149cf7bfec550cd6e442809f541ff5967d4eb1621369",
+      "bytes": 297
+    },
+    {
+      "path": "benchmarks/MhwModManager.Benchmarks/Program.cs",
+      "sha256": "3a8cfc90a38c87c3c6a2aca8135ac325c347e76347982739a599126ac0b9b7bb",
+      "bytes": 1941
+    },
+    {
+      "path": "Build Source Handoff.bat",
+      "sha256": "acd8c36fd2d3c3945b399e1288557a989b114f38df244f5098d5bd8e2c4b235b",
+      "bytes": 142
+    },
+    {
+      "path": "Build.bat",
+      "sha256": "847b94a52d4010e1a1ad860cd4d2588da67d5e189c28d205b7b56eac3711ced7",
+      "bytes": 817
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "dd90e57b565f5373d4d7c8e5356942bc362b236d844e6bd5ffe262c5a8f0ff83",
+      "bytes": 43145
+    },
+    {
+      "path": "data/Armor Database.csv",
+      "sha256": "64c0e6abf055ea099f80caa41c9f1c214892c0ab67e1a448a93d0003b9fb1307",
+      "bytes": 17846
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "7d57edd749bb2c89601caa98b107f83f693b19813565425a70ffd2a7fa02bd6a",
+      "bytes": 696
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "3dc47530263b59adb24ee541cf5c0d3d04d6a06300443d2198a3ec70dfb4de12",
+      "bytes": 679
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "a9a33d11b789ee804f8918370872443b94317a7d3f5bc124cb22c5c3e33661ad",
+      "bytes": 6186
+    },
+    {
+      "path": "docs/AUTO-COMPOSITION.md",
+      "sha256": "26278f70b76c0b0b48676ead94d59ed13ba975fcfc44ef44ba96e35e442bbf4a",
+      "bytes": 8215
+    },
+    {
+      "path": "docs/AUTOMATION-AND-TESTING.md",
+      "sha256": "14174295a589a1855788bcb639c5c3a63055a4922fd31349120818dd32256eb9",
+      "bytes": 3065
+    },
+    {
+      "path": "docs/BUG-AUDIT.md",
+      "sha256": "6e3f725af6b557704dd9d9519d253abee14e972e15344bc873215606507cf891",
+      "bytes": 8690
+    },
+    {
+      "path": "docs/DIAGNOSTICS.md",
+      "sha256": "da28925cc616a301886a7068512cdc627d95ec82a0cbeb0c5f3ffb6fba2cb768",
+      "bytes": 2468
+    },
+    {
+      "path": "docs/FAILURE-MODES.md",
+      "sha256": "6014b2513dd6b0676594508fa7d61cf38b91ea4604b22e01780d096a15fa770a",
+      "bytes": 2414
+    },
+    {
+      "path": "docs/FUNCTION-VERIFICATION.md",
+      "sha256": "db880385424713c358bb7690bfaf5250622ff45f7830b70ee911e96d7df54be3",
+      "bytes": 10091
+    },
+    {
+      "path": "docs/MIGRATION.md",
+      "sha256": "8b2283a6e966db919d447c0dbb7fc75f43b41f90b4d04f535b17361d33e1b6e4",
+      "bytes": 1335
+    },
+    {
+      "path": "docs/SCHEMA.md",
+      "sha256": "2dd37210720ac3757b6b01147621a56a8e2368959a081b6ae4fd4aefccd08135",
+      "bytes": 537
+    },
+    {
+      "path": "global.json",
+      "sha256": "bc49629000beea71c32bacd72d10f26c91a875556834bc7210b65cfa693b8270",
+      "bytes": 171
+    },
+    {
+      "path": "legacy-v7/Armor Database.csv",
+      "sha256": "64c0e6abf055ea099f80caa41c9f1c214892c0ab67e1a448a93d0003b9fb1307",
+      "bytes": 17846
+    },
+    {
+      "path": "legacy-v7/CHANGELOG-v4.txt",
+      "sha256": "d9152fdfdd8af85dbb40734ebe75a69a07720af27fad73ea1321320cec406845",
+      "bytes": 1260
+    },
+    {
+      "path": "legacy-v7/CHANGELOG-v5.txt",
+      "sha256": "4263e7ceebb763ae5375a921e51c161f23ffb17b20760a0a3637c2a4d999ad48",
+      "bytes": 995
+    },
+    {
+      "path": "legacy-v7/CHANGELOG-v6.txt",
+      "sha256": "49dc17a9301ca015ef17ca6a96242533d35189785b90be7960ec403229855796",
+      "bytes": 1022
+    },
+    {
+      "path": "legacy-v7/CHANGELOG-v7.txt",
+      "sha256": "4984d4aa98ab60888210b8b992b5d94dee74f70746db559ddb5dbd1d3a76eff5",
+      "bytes": 1908
+    },
+    {
+      "path": "legacy-v7/Debug Console.bat",
+      "sha256": "32183be4b74e8826eb46ab4a13bfb9d0a506020974371a404d5a49240186959b",
+      "bytes": 110
+    },
+    {
+      "path": "legacy-v7/Engine.ps1",
+      "sha256": "6f301a2b10fd8d880542a2e22992a2fbe2e0cf0c276b1e104f72f24865ad2be0",
+      "bytes": 14776
+    },
+    {
+      "path": "legacy-v7/Launch Mod Manager.bat",
+      "sha256": "8db52371a3170b2ef747c5907ba1bc2688386ee951f022660a8c01a691773bd1",
+      "bytes": 141
+    },
+    {
+      "path": "legacy-v7/Manage Mods.bat",
+      "sha256": "8db52371a3170b2ef747c5907ba1bc2688386ee951f022660a8c01a691773bd1",
+      "bytes": 141
+    },
+    {
+      "path": "legacy-v7/MHW Mod Manager.ps1",
+      "sha256": "98ff34e71e1d6c717dcba006b5a08e0c7f36631a65a9c4b395c5a29ab336ff45",
+      "bytes": 63147
+    },
+    {
+      "path": "legacy-v7/ModManager.ps1",
+      "sha256": "22641877733bd28ac6cde085369dcf44edc467ebd8476a2097eb38a6c1c95311",
+      "bytes": 9961
+    },
+    {
+      "path": "legacy-v7/Modules/Deployment.ps1",
+      "sha256": "b2016ae87c50a7469e6ebb1675672fb49fb246436c4708e59ea8b03a7795765d",
+      "bytes": 10535
+    },
+    {
+      "path": "legacy-v7/Modules/Diagnostics.ps1",
+      "sha256": "241c9415bf22cd10676c4a720eb10188a784d5940ef7472d88355b03f847d365",
+      "bytes": 7500
+    },
+    {
+      "path": "legacy-v7/Modules/Import.ps1",
+      "sha256": "07ff7236e734a05c9f59e566af6750594739ebd9e59db6e7f7f47a3ce4fdf5b7",
+      "bytes": 10573
+    },
+    {
+      "path": "legacy-v7/Modules/Planner.ps1",
+      "sha256": "0c8acc706823d61db8ecbc89a4935f4c355263144c24be465484006b216af632",
+      "bytes": 25870
+    },
+    {
+      "path": "legacy-v7/Modules/Profiles.ps1",
+      "sha256": "27d330d8fd53ce3679faa4afbe983113b9ebf0644fe6d73abf5b53e97dc36e9f",
+      "bytes": 6613
+    },
+    {
+      "path": "legacy-v7/Modules/Reports.ps1",
+      "sha256": "30bff5ea45a18031a0e8975139e1b544af54ac3de9334443e063de3620f6a110",
+      "bytes": 13870
+    },
+    {
+      "path": "legacy-v7/README.txt",
+      "sha256": "8a341dd47ab9e6c7a98f4b06f3f5e7898df52b305a114a970749c31304af3482",
+      "bytes": 7896
+    },
+    {
+      "path": "legacy-v7/Test-Manager.ps1",
+      "sha256": "49cd5bcf271ec1a8a7243caa04330538d6a23f9e11604b9e9a061c3997e753a8",
+      "bytes": 15088
+    },
+    {
+      "path": "legacy-v7/VALIDATION.txt",
+      "sha256": "bbba60d1d75934be982becef9c70f7556655a9d9283184fd52b6f62bececd8f4",
+      "bytes": 1186
+    },
+    {
+      "path": "legacy-v7/VERSION.txt",
+      "sha256": "64342505aa59f739d87352bbe5ae4f97f3c4e7348bb6372a7f9ec6859d11f99e",
+      "bytes": 4
+    },
+    {
+      "path": "MHW-DEBUG-ALL.log",
+      "sha256": "d82669706696ed72b2e784427c81774bc2c5edaba7c951463b3798e152d0a293",
+      "bytes": 628
+    },
+    {
+      "path": "MhwModManager.sln",
+      "sha256": "9f817fed2b339dae23ca0d3652cf0e861843cd9fb02d3724b82cbbd1fd4b1f31",
+      "bytes": 7201
+    },
+    {
+      "path": "NEXT-AGENT-START-HERE.md",
+      "sha256": "e9f5cd10a5a90cbbcef449d10ed2beee11a171f911652c775f425089a1d7be3a",
+      "bytes": 2740
+    },
+    {
+      "path": "OPEN MASTER DEBUG LOG.bat",
+      "sha256": "2da1fd2aa80a7837b806b329336bacb615693f333544a8c428d5e39a20cfd58f",
+      "bytes": 294
+    },
+    {
+      "path": "Open Startup Logs.bat",
+      "sha256": "c6b37b34e0de3fb62aab3b098202fcb7b94a06e0740a946092c3cff3882d2938",
+      "bytes": 307
+    },
+    {
+      "path": "README.md",
+      "sha256": "875da87f55a2e40117697cf2fa4543083f8e1f5f5e37d9d827723dddfeaaffe9",
+      "bytes": 27243
+    },
+    {
+      "path": "REPAIR-NOTES.md",
+      "sha256": "f59a0e95a20209a09aac90019af8d28dd5556242fafcf98cea9fd7f58acf0cbd",
+      "bytes": 1961
+    },
+    {
+      "path": "RESEARCH-FAMILY-INFERENCE.md",
+      "sha256": "49a34b65bb7d96ff385a73613a98152a962b641189b3c7f48e4ec9437203891d",
+      "bytes": 1461
+    },
+    {
+      "path": "RESEARCH-MULTIGAME.md",
+      "sha256": "a52ec05373424fb1c0e77804a26646a9af9f2db4a126985b02827501d196d945",
+      "bytes": 2234
+    },
+    {
+      "path": "RESEARCH-UX-ROBUSTNESS.md",
+      "sha256": "8ce804f7d6fbfcbf492a678bdb6286ed5185e3bafae7bb4c13da2c4cb73d3c48",
+      "bytes": 3091
+    },
+    {
+      "path": "RESEARCH-VISUALS-AND-UPDATES.md",
+      "sha256": "7fd67dbe11b7c95fa6a83cd31bf7ff5cdc57d0c807c3482f32b3d7372cd0ab3a",
+      "bytes": 1251
+    },
+    {
+      "path": "RUN BUILT APP.bat",
+      "sha256": "022c5e9da3aaee2276c48d6e242106eac773b2ea57310b2e7e984e480fe16a20",
+      "bytes": 1303
+    },
+    {
+      "path": "scripts/Build-Release.ps1",
+      "sha256": "19f2bba51251483656a2822a5262a420259644fd355311d2e7dd8e3a45e63354",
+      "bytes": 14301
+    },
+    {
+      "path": "scripts/Build-Source-Handoff.ps1",
+      "sha256": "2e41c72fb8c000f911da636d5c2b5d6796e2eb69710d4a528bf484309941851b",
+      "bytes": 4592
+    },
+    {
+      "path": "scripts/Capture-Diagnostics.ps1",
+      "sha256": "695af4a8a1c8bdf9e28b3ea529e64bf049a27e9e49343831ed577a7563eec13b",
+      "bytes": 4851
+    },
+    {
+      "path": "scripts/Master-Debug.ps1",
+      "sha256": "0abcc2c828cc5fce9c734d2edd5a6d1616a2c8f26b14240b5071528344f77f5f",
+      "bytes": 1875
+    },
+    {
+      "path": "scripts/Run-Benchmarks.ps1",
+      "sha256": "df7a116ed134d0f7d72f5a6fc96ae72e0f5092b19ffef2d03f6f09d19d7d86aa",
+      "bytes": 852
+    },
+    {
+      "path": "scripts/Run-Tests.ps1",
+      "sha256": "b66d1c6a0b1456c7b0899ece8aa344c2f87ea2ad0b0642b81852f60f8ebe406e",
+      "bytes": 1386
+    },
+    {
+      "path": "scripts/Test-AgentHandoff.ps1",
+      "sha256": "9f93664e3609a329620d2c7648f8ce1a4e59ae694f9b6a68ae0b70a570c9496d",
+      "bytes": 4289
+    },
+    {
+      "path": "scripts/Test-CSharpTracePlacement.ps1",
+      "sha256": "c3bd0c697e302c9dabd7a92ae86670b801fad6d6b74e17ff0abdd3c65e5d0932",
+      "bytes": 1651
+    },
+    {
+      "path": "scripts/Test-PowerShellSyntax.ps1",
+      "sha256": "c0f8cf5322d3c579ce22e4a55b4ee2a79101e7dbd119c998be0f0a6b05a4714b",
+      "bytes": 1760
+    },
+    {
+      "path": "scripts/Test-VerificationCache.ps1",
+      "sha256": "13941440a1b85d3dd033d63a6ecbf03b7cd417357f85364fc0ba2e6e77ce4d92",
+      "bytes": 3071
+    },
+    {
+      "path": "scripts/Verify-Release.ps1",
+      "sha256": "70a13b608410a16b3cfbde1190c1327d6ee0e53d9b46243ab2401211cccbf134",
+      "bytes": 28190
+    },
+    {
+      "path": "src/MhwModManager.App/app.manifest",
+      "sha256": "39a44a2effb62e2d61376a2f2cab270e61686ca71ee890ed22af31e4d1141dcf",
+      "bytes": 488
+    },
+    {
+      "path": "src/MhwModManager.App/App.xaml",
+      "sha256": "3f9c310f166a0d6ec3f658e5e94fca0eeaa3a562622ba00e88cf2a434d1f1ad9",
+      "bytes": 17019
+    },
+    {
+      "path": "src/MhwModManager.App/App.xaml.cs",
+      "sha256": "8ef6407607265de9a7a77d7e6382aabda35f30f6ede9469cdf40abef8da60179",
+      "bytes": 21708
+    },
+    {
+      "path": "src/MhwModManager.App/DispatcherWatchdog.cs",
+      "sha256": "a715bb6768c5bc649f76c70790b71f7ce9b9a9a2bc657e8a436bbc3243aee602",
+      "bytes": 3530
+    },
+    {
+      "path": "src/MhwModManager.App/GameProfileEditorWindow.cs",
+      "sha256": "5b7713e2f6a7b6f2c5e31086f24cc51eef27a791a85baae7b9c96c70efb1e794",
+      "bytes": 5079
+    },
+    {
+      "path": "src/MhwModManager.App/MainWindow.xaml",
+      "sha256": "2072756055f06a0b9ee2f601857b160b5c7140dca8d86280bca33907aabca2ab",
+      "bytes": 59368
+    },
+    {
+      "path": "src/MhwModManager.App/MainWindow.xaml.cs",
+      "sha256": "f5f0a179ec499c993bb79256e1690d2c685ddea7a08179190c305287a08bdab6",
+      "bytes": 1770
+    },
+    {
+      "path": "src/MhwModManager.App/MhwModManager.App.csproj",
+      "sha256": "5dbfbf31511ea5c1f2e7b6b1d2662fc889c0f64a72d95ecb65a2d565378053ec",
+      "bytes": 1224
+    },
+    {
+      "path": "src/MhwModManager.App/SafeImageSourceConverter.cs",
+      "sha256": "f4d806608598905194df8a2eafd81a042ff9aed63e3000afb4070a70afa64d22",
+      "bytes": 1275
+    },
+    {
+      "path": "src/MhwModManager.App/StartupWindow.cs",
+      "sha256": "a79f234cdb2f3fc26a8262d082d2107f8a154fdf19c50452f16889fbbc276f60",
+      "bytes": 3438
+    },
+    {
+      "path": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs",
+      "sha256": "a3b256843857652847e33f5bfe30af65aeb84701dad6fe11534436b7c666b03d",
+      "bytes": 72585
+    },
+    {
+      "path": "src/MhwModManager.App/ViewModels/ObservableRangeCollection.cs",
+      "sha256": "1bb4249cb5722b8cdc8a33f83b7d2daa3336c7a1f74259bd826e0a1362b62d86",
+      "bytes": 716
+    },
+    {
+      "path": "src/MhwModManager.App/ViewModels/Rows.cs",
+      "sha256": "501cce41c96423c05dc6b7eed0762652c4ad54387ef8901868f7741c9fe0f30c",
+      "bytes": 13183
+    },
+    {
+      "path": "src/MhwModManager.App/WpfMasterTraceListener.cs",
+      "sha256": "287406e7c27e73eaa060af60f91e6e9b4d0a4f757215ca72f313a83a73dbff5b",
+      "bytes": 2733
+    },
+    {
+      "path": "src/MhwModManager.Automation/AutoCategoryService.cs",
+      "sha256": "44cb809219cbe40ab9b0d7911881a828bc0b11fcc733b40d570beaf4fbdf29f3",
+      "bytes": 6043
+    },
+    {
+      "path": "src/MhwModManager.Automation/AutomationCoordinator.cs",
+      "sha256": "78b30ac4abb3ae4eb7de3f3ec27879d5ef0e18e825973fe1101efecb39736620",
+      "bytes": 12235
+    },
+    {
+      "path": "src/MhwModManager.Automation/AutomationJson.cs",
+      "sha256": "39193f469a95497ab914bb3f16bc751286f2e88b945acd4559c5743ff2344931",
+      "bytes": 370
+    },
+    {
+      "path": "src/MhwModManager.Automation/AutomationModels.cs",
+      "sha256": "e99ebb226d93f153195e5500ac8dc4c12fc595130b95a3fbac3f22821409982e",
+      "bytes": 3803
+    },
+    {
+      "path": "src/MhwModManager.Automation/ChangeTimelineService.cs",
+      "sha256": "eb07474e603a2496ffbdb411db937bc030d6862136a1501d1b004bff7fa585ce",
+      "bytes": 2070
+    },
+    {
+      "path": "src/MhwModManager.Automation/CollectionRecipeService.cs",
+      "sha256": "cfe415f98edba4d27132275c0a48de4a1e6657781b058ec023b28afc68bb4cbe",
+      "bytes": 1253
+    },
+    {
+      "path": "src/MhwModManager.Automation/CrashBisectorEngine.cs",
+      "sha256": "fe0f5b46591496a4cc3eb1ef984e7bd66627246e4d4340f7d37b8a4f31487a8d",
+      "bytes": 1715
+    },
+    {
+      "path": "src/MhwModManager.Automation/DependencyDoctorService.cs",
+      "sha256": "69398d0b00eb42c090bf161b2e987b6009580fde51536022010fbd97486c1f3a",
+      "bytes": 3364
+    },
+    {
+      "path": "src/MhwModManager.Automation/DuplicateCleanupService.cs",
+      "sha256": "6cb50c7a51de1ebb580700d555a38719d7f690dc24977886663f0c7a16e37693",
+      "bytes": 3913
+    },
+    {
+      "path": "src/MhwModManager.Automation/EffectiveInspectorService.cs",
+      "sha256": "896f9478636177e4cec4c090fa848e2d07089e08619c87a964b36349f08b7c7f",
+      "bytes": 2726
+    },
+    {
+      "path": "src/MhwModManager.Automation/GameUpdateImpactService.cs",
+      "sha256": "ebbfdc098f2ae0b0fd2526043533b1592f18d97963cbf15db8c88d72930ffa29",
+      "bytes": 1133
+    },
+    {
+      "path": "src/MhwModManager.Automation/LastKnownGoodService.cs",
+      "sha256": "a8f349d332d24150baf2ad0aa59db02a35fe694620108f7517ab0f2ea7c389df",
+      "bytes": 2201
+    },
+    {
+      "path": "src/MhwModManager.Automation/LaunchHealthGateService.cs",
+      "sha256": "fca9459bb289939b29d3c5cc77181302e1b65d25c3086d0d7a0b976d1fd66390",
+      "bytes": 2127
+    },
+    {
+      "path": "src/MhwModManager.Automation/MhwModManager.Automation.csproj",
+      "sha256": "a8bb778fc5a8a4744ec50d5dbbb9bbada5033aa1417a9279df5462a4b6c6d17c",
+      "bytes": 615
+    },
+    {
+      "path": "src/MhwModManager.Automation/ModIssueFallbackService.cs",
+      "sha256": "b5370c6f92e3946bbeb74cc7de2ac73c8878ce6230b2b66e3ab6a97a4236eaea",
+      "bytes": 16213
+    },
+    {
+      "path": "src/MhwModManager.Automation/ModTrustService.cs",
+      "sha256": "eba9d31ea0f8a47a7b009c5d3902042d253c29f672ffe21eee15b643d46fe004",
+      "bytes": 2746
+    },
+    {
+      "path": "src/MhwModManager.Automation/OutfitPresetService.cs",
+      "sha256": "b280315e7a2f7a3bf6f645b9be19dadeaaef6557d6a2f39a87412d8d7bd117ab",
+      "bytes": 1873
+    },
+    {
+      "path": "src/MhwModManager.Automation/SaveBackupService.cs",
+      "sha256": "cbf81a04ba5634ec2f442ee4a7e98c97deddb2f479c3d3f7fa14379b23c9ee84",
+      "bytes": 6443
+    },
+    {
+      "path": "src/MhwModManager.Automation/SmartInboxService.cs",
+      "sha256": "df54d7bdf93726721832e6ac42688aa246a9de911186add817146ac397c1b617",
+      "bytes": 6558
+    },
+    {
+      "path": "src/MhwModManager.Automation/UpdateDiffService.cs",
+      "sha256": "a09541e061b439da9110ce3641ee49ec08fee4fed04347881825a1ffc4e81687",
+      "bytes": 2107
+    },
+    {
+      "path": "src/MhwModManager.Core/AssetBundles.cs",
+      "sha256": "c5ae9cbb0ee80a10e9c17e3a2170111e56d32b63af399c342a8c64950931ccb2",
+      "bytes": 1849
+    },
+    {
+      "path": "src/MhwModManager.Core/AutoCompatibility.cs",
+      "sha256": "3323cdef93cd5d7c395dbb79a08e919cbcb50de36148a0437ef7b0be58dd6210",
+      "bytes": 34094
+    },
+    {
+      "path": "src/MhwModManager.Core/ConflictEngine.cs",
+      "sha256": "aa0c3720295d495af43ad6dc9454c6e41e7dd89df9b0519826cd520de702b817",
+      "bytes": 18715
+    },
+    {
+      "path": "src/MhwModManager.Core/ConflictRuleIndex.cs",
+      "sha256": "99fcc879eb64bcde43fa47ab72032be3d84ffaef14954f4849da04dc1c57ae77",
+      "bytes": 6657
+    },
+    {
+      "path": "src/MhwModManager.Core/DeploymentPlanner.cs",
+      "sha256": "b440e8b053a65c5ba04e30eddaa580a5f83d8cb8aba12b10d693b9c0806b0c94",
+      "bytes": 7412
+    },
+    {
+      "path": "src/MhwModManager.Core/Domain.cs",
+      "sha256": "5e7581aaadbfa467a3e9c6482ee64da6fa5119e96ea3f9de04f29a6a510345a0",
+      "bytes": 6211
+    },
+    {
+      "path": "src/MhwModManager.Core/FamilyInference.cs",
+      "sha256": "1585e7d2b00c9603c68d16f4d28bf789f94574621f3ccf91a00741067a932552",
+      "bytes": 1527
+    },
+    {
+      "path": "src/MhwModManager.Core/GameProfiles.cs",
+      "sha256": "ad82c622b49ad7bcdb8b0909b634405efed207cfc72599a92097371898712497",
+      "bytes": 5343
+    },
+    {
+      "path": "src/MhwModManager.Core/GenericFamilyInference.cs",
+      "sha256": "6db6e952fcf58dd98e5fdf8f5a40fbec1a194cde2aba5376c8a9271b4064a58f",
+      "bytes": 14368
+    },
+    {
+      "path": "src/MhwModManager.Core/LogicalModFamilies.cs",
+      "sha256": "fd7405240d63198ababde782f0b2b7bb83d47fc9a7ee53c2456ab7d423db2ddc",
+      "bytes": 14156
+    },
+    {
+      "path": "src/MhwModManager.Core/MasterDebugLog.cs",
+      "sha256": "ebb6c43a792163dd47e5d32465dba311c1b206dd91ab715c0dad8bf66c549a7e",
+      "bytes": 17722
+    },
+    {
+      "path": "src/MhwModManager.Core/MhwModManager.Core.csproj",
+      "sha256": "a51978b62db74bdde13b58120551b05c0ace9b844b5bf2e94024d4865d46b13a",
+      "bytes": 151
+    },
+    {
+      "path": "src/MhwModManager.Core/PathRules.cs",
+      "sha256": "254c6290bf7f8c91888308863ac7b22d4bdd2a2bdffd54d2237322a3410d2666",
+      "bytes": 5282
+    },
+    {
+      "path": "src/MhwModManager.Core/ProvenanceIntelligence.cs",
+      "sha256": "4d2979e4af9962add59db8d3eb4116954483be149299d6e287456338b2809f56",
+      "bytes": 9370
+    },
+    {
+      "path": "src/MhwModManager.Core/RuleGraph.cs",
+      "sha256": "4c719354252c4d3d00215c5da45321de156b2d323349651470d9510c2c41a37b",
+      "bytes": 1796
+    },
+    {
+      "path": "src/MhwModManager.Core/TextureSafetyInspector.cs",
+      "sha256": "74b6e052112521c064db01f6b56b975421d2f2acb38fedc2540f80587651ed93",
+      "bytes": 1476
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/AppLogging.cs",
+      "sha256": "892781a256f1c8d2793f61fa0a4c850a1579ccb2e2d262b254ea3ecd256df699",
+      "bytes": 1349
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/DiagnosticTelemetry.cs",
+      "sha256": "360d039ed582f7698ac2ac59800167e0604d8849521eed7af2f508397eb43364",
+      "bytes": 7374
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/ExceptionPolicy.cs",
+      "sha256": "40cf9036c275cbb712dcf9d41c58d28ade0b6f84cc0e31e63f226667dd992e07",
+      "bytes": 2655
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/HealthService.cs",
+      "sha256": "740e2e22c75a6f3d75b1c0ffbc0e193cdfe4fe0b0f829a4faee1e916efbcf9e9",
+      "bytes": 6935
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj",
+      "sha256": "854c39cb517188fb995e6ad9c60152d140db80cf9c5f6dcd7fa1d3044c22b2fe",
+      "bytes": 591
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/StartupDiagnosticSession.cs",
+      "sha256": "b70d405e3646ab5111b5e9df7aab6033cbb76d0aa9ef73b05997212fd132f294",
+      "bytes": 10513
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/SupportBundleService.cs",
+      "sha256": "3fee52c202afc20f9517173ac1e9a5ba4bf300b531a512fe0c949aae2affd9bc",
+      "bytes": 7359
+    },
+    {
+      "path": "src/MhwModManager.Diagnostics/UnifiedDebugLog.cs",
+      "sha256": "45d8fa3a30f1258f50928f0d1d3427b74672d9b92f335b8d3e5ef90d9381b242",
+      "bytes": 1276
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/ArchiveInspector.cs",
+      "sha256": "6931dc46cdf026395a7adf9477f4b46a9f5c2af2b8043d0f5db5ae92ba8c98cd",
+      "bytes": 5362
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/AtomicFileOps.cs",
+      "sha256": "c1d3a63c96ea28d1d46cb777874bbb981e102e590df2d120db1e2ceed84d5a6e",
+      "bytes": 2472
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/BlobStore.cs",
+      "sha256": "cf3c9872f1f382b45a16b4d22ad680dd24436e008f09b4b1dfb7381089c8f632",
+      "bytes": 4636
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/CatalogService.cs",
+      "sha256": "fbd5cd04d32271d29f7691a4ae3fe68231fb7dc2993d1c8c73219958cad7a835",
+      "bytes": 2082
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/DeploymentExecutor.cs",
+      "sha256": "9a7724d5c86cf2694ffddc6b0ec93808e06f17706ea0c87021747d859b447f6e",
+      "bytes": 28597
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/FileChangeHintService.cs",
+      "sha256": "b7d15067b2cc07b838eb00c069b49c1381da72d2a87d8c21bcd15d867def6d5d",
+      "bytes": 3414
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/GameBuildMonitor.cs",
+      "sha256": "e2e13805bfd4ec41f08488e032eabf3ef7c3c672b8824e5330d832a52f4f1649",
+      "bytes": 2200
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/GameProfileRegistry.cs",
+      "sha256": "ef08e9156e41b31d17c95f96f0b9c33b17b5ecad0542c3abf29e86ffa6bb149f",
+      "bytes": 18024
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/HashingService.cs",
+      "sha256": "6b89daa9fefcf2b770223af9933c0bf1f74178709972edebae9685471bb10691",
+      "bytes": 2258
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/MhwModManager.Filesystem.csproj",
+      "sha256": "c1c519bc63f8df93cb8887a73aec8f1a4edbfe8bd32efae50a86edc6cfdc9344",
+      "bytes": 501
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/ModScanner.cs",
+      "sha256": "e4641a14fe7f0e541a8a2197d4856ec4375f9412f52bba3476f1664dae41a95b",
+      "bytes": 7079
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/ModVisualService.cs",
+      "sha256": "e0cb8966b78d63083f77b8dfa70903e92c5ea214b9e1a20005d0db3c1fc8436f",
+      "bytes": 5805
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/NexusMetadataService.cs",
+      "sha256": "239fc585cff22da9b004e5d82e247437fd28748269dce8d60ca937a33dd3cb86",
+      "bytes": 39308
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/RestartManagerInspector.cs",
+      "sha256": "dd6e2c7a65f85760e18e11c84bf54d8ace577b8830187b9006a1c5dec6cd54bb",
+      "bytes": 3624
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/TexturePreviewService.cs",
+      "sha256": "5843f262fc03d300054f0a87037522c845a27e95589c39d33155dc01fe4f7625",
+      "bytes": 4531
+    },
+    {
+      "path": "src/MhwModManager.Filesystem/UnmanagedAdoptionService.cs",
+      "sha256": "436f3c4a49e7cbf7a505f49648dea47f6187e91b7c4f9f918da5bc0d7ea219ab",
+      "bytes": 6336
+    },
+    {
+      "path": "src/MhwModManager.Mhw/ArmorCatalogLoader.cs",
+      "sha256": "21c3184126157ed9da2d84d3d9c20f37c770f479dbf6d6230447095928b95323",
+      "bytes": 2567
+    },
+    {
+      "path": "src/MhwModManager.Mhw/GameLocator.cs",
+      "sha256": "57c6dad05a85d0f82689af93b614fc54225ec8bc68a243ae327a82a68121a62e",
+      "bytes": 1169
+    },
+    {
+      "path": "src/MhwModManager.Mhw/GameProcessGuard.cs",
+      "sha256": "fde98462079b044de099f519f2872960db2a6b571a24e5ca01af243dacc24d01",
+      "bytes": 614
+    },
+    {
+      "path": "src/MhwModManager.Mhw/MhwModManager.Mhw.csproj",
+      "sha256": "2e0dfd7f9fed5916824b3332c1e6da5ba9af6a576ed30dd92df1ad2ea5eca709",
+      "bytes": 342
+    },
+    {
+      "path": "src/MhwModManager.Storage/LegacyV7Migrator.cs",
+      "sha256": "dcdf37c2ab81803bda5e9b2d4980f61e11dea5f059441351179ab38897dd2dd9",
+      "bytes": 16807
+    },
+    {
+      "path": "src/MhwModManager.Storage/ManagerDatabase.cs",
+      "sha256": "3a4a8523d33134a8d7bc16278c47de2ec2c5a9e0a427b6a829d14e1c8abaec47",
+      "bytes": 44555
+    },
+    {
+      "path": "src/MhwModManager.Storage/MhwModManager.Storage.csproj",
+      "sha256": "aa33f82be08157bb88fa57e971f2dd87e20ffaf45ab396bf625b0dbc529ebd74",
+      "bytes": 290
+    },
+    {
+      "path": "src/MhwModManager.Storage/ProfileRepository.cs",
+      "sha256": "516e1d25d61e06efbb108f84aebf7a1e133471307a1112d7ffd113ace065e6dc",
+      "bytes": 2910
+    },
+    {
+      "path": "src/MhwModManager.Storage/Schema.cs",
+      "sha256": "eb6705b8b1c5edc0fb6385957b8555da5eec42ee6dc4978cda38180e03f73e7b",
+      "bytes": 10484
+    },
+    {
+      "path": "Test Everything.bat",
+      "sha256": "22560f4bd500a57b180ed708f8e48868bdcf8b0a02a3371368c236a123fdf86e",
+      "bytes": 915
+    },
+    {
+      "path": "tests/MhwModManager.AutomationTests/AutomationLogicTests.cs",
+      "sha256": "543ddb7b12f70579b6fa96f395c01016e549631f49b2d2a9ff5f1a4d0b272bd2",
+      "bytes": 1925
+    },
+    {
+      "path": "tests/MhwModManager.AutomationTests/AutomationServiceTests.cs",
+      "sha256": "00f2c4adc408d170e7e2dede6b554130341224769bbf3ed23237e3cc54338b4f",
+      "bytes": 15471
+    },
+    {
+      "path": "tests/MhwModManager.AutomationTests/MhwModManager.AutomationTests.csproj",
+      "sha256": "81b25edd468c95fc2b83e8019a9fb5882122fa7bdd35f60f2eede5caf016518a",
+      "bytes": 679
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/DebugTraceCoverageTests.cs",
+      "sha256": "17eac78efbdd9e931c23dfa29dc07f927711a9bd46eefa17dc993b8f956d6c7d",
+      "bytes": 8002
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/DeploymentTests.cs",
+      "sha256": "b02eb6cc9ddc64b1795e6c63817586b6f089582c476538f79143d574d385687f",
+      "bytes": 8877
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/FunctionVerifierBehaviorTests.cs",
+      "sha256": "2a0d3e2804e92f55ce36a3ed36c6f4bae8674ca4efa2e4ecdeb0be23d99a234c",
+      "bytes": 4984
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/HardeningTests.cs",
+      "sha256": "c74645c4f2adc63420ed8db8e75e2c5bcc5a2f72854a40753668d28292ae0a70",
+      "bytes": 17453
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj",
+      "sha256": "709a959c625c7f2ab036e9f7358a23f5a1d22d6a9bec7902068e8109e2c4d0b7",
+      "bytes": 639
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/MultiGameTests.cs",
+      "sha256": "4d8d18481a94b8ba2d47b6f3e585a64d93abf203fdf2f3e20d0dae8e87782e1d",
+      "bytes": 5442
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/UxHardeningTests.cs",
+      "sha256": "e562d7456598c44595ab68c2ea739324f6ad1369340663d810afadcac64bd79b",
+      "bytes": 2733
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/VisualMetadataTests.cs",
+      "sha256": "73911cf985ffffb1caf0ed2bd9cc9323e3cf32d3a7b0bb6afec98afcaf5539fd",
+      "bytes": 2994
+    },
+    {
+      "path": "tests/MhwModManager.IntegrationTests/XamlBindingSafetyTests.cs",
+      "sha256": "adc3e14a3c894c14ad539a730e2c59e70b0be9683778dae326f41e37f6d9bc4d",
+      "bytes": 1674
+    },
+    {
+      "path": "tests/MhwModManager.Tests/AutoCompatibilityTests.cs",
+      "sha256": "2e8ec2d66289ca578c909c1c4929b6ed657f3ef475cf5290bbafe1e847c892f4",
+      "bytes": 20565
+    },
+    {
+      "path": "tests/MhwModManager.Tests/ConflictEngineTests.cs",
+      "sha256": "47b9b36eaffab6b1e8acdd804ccf95b0f6245911b47439a444b3df8072184f31",
+      "bytes": 4137
+    },
+    {
+      "path": "tests/MhwModManager.Tests/GameProfileTests.cs",
+      "sha256": "b5e0c17c267258bc146f1c2bc9168dc7a3a12504b00b16443fb0a3f80da9bbd2",
+      "bytes": 2376
+    },
+    {
+      "path": "tests/MhwModManager.Tests/IntelligenceTests.cs",
+      "sha256": "a1cf4ae65337b67a5a12033ee7c1e3322a5c2ef3b3c39be9de1fcf52346171ce",
+      "bytes": 9218
+    },
+    {
+      "path": "tests/MhwModManager.Tests/LogicalModFamiliesTests.cs",
+      "sha256": "5399ef043355223fa84e6aeb8f94a28eecfc838acd4dc2b62e7943c13439a727",
+      "bytes": 7394
+    },
+    {
+      "path": "tests/MhwModManager.Tests/MhwModManager.Tests.csproj",
+      "sha256": "6d7322b9783d918c8efadf086f8ddf2a095fc6ddd205fbb5f288e3ff2e973257",
+      "bytes": 323
+    },
+    {
+      "path": "tests/MhwModManager.Tests/PathRulesTests.cs",
+      "sha256": "ecf4d75539e9eacb90e9dc449e9916692b14a4487e7454ca7270f7337f22cea6",
+      "bytes": 1133
+    },
+    {
+      "path": "tests/MhwModManager.Tests/PlannerInvariantTests.cs",
+      "sha256": "e949964b919b5242812818ef5417fbb0210dad5ea70ed9b782bb8198125dc5ab",
+      "bytes": 3568
+    },
+    {
+      "path": "tests/MhwModManager.Tests/PlannerTests.cs",
+      "sha256": "186886a7b2c799b2d8f55629f166e621573b35b730ace7b52245b9961a51ddd6",
+      "bytes": 1725
+    },
+    {
+      "path": "tests/MhwModManager.Tests/RuleGraphTests.cs",
+      "sha256": "32a3922c15d7cfd71b6b2169f0651af81df9b81608eb16e3c58a99e7eb6db074",
+      "bytes": 556
+    },
+    {
+      "path": "tests/MhwModManager.Tests/TextureSafetyInspectorTests.cs",
+      "sha256": "826d012d77b1060421c131d27da7b257e2d5b5100bf7f3704806c860aae6a31c",
+      "bytes": 1104
+    },
+    {
+      "path": "tools/MhwModManager.FunctionVerifier/MhwModManager.FunctionVerifier.csproj",
+      "sha256": "cdd4f3739bcfbdcfbcf05f2a63d65ebe60899f43606ed10496209b4bc6d93eba",
+      "bytes": 997
+    },
+    {
+      "path": "tools/MhwModManager.FunctionVerifier/Program.cs",
+      "sha256": "01f9bad197d9c9db086d8a5eef9d61de86a9bea513cb43c32efe9a6175977882",
+      "bytes": 30228
+    },
+    {
+      "path": "tools/MhwModManager.SelfTest/MhwModManager.SelfTest.csproj",
+      "sha256": "5ccc6de5d371f26885fc0455532465267c5ed62dd0a88a8f6f3b5e7174340273",
+      "bytes": 396
+    },
+    {
+      "path": "tools/MhwModManager.SelfTest/Program.cs",
+      "sha256": "09273d196cac83aae3d52be8e40e5185b4df539f2bfb48dcc0c64c9f8eaf74cf",
+      "bytes": 7933
+    },
+    {
+      "path": "VALIDATION.md",
+      "sha256": "018b318900387c2a9a949fe11209bed11c22911d3418c0e4a831ef025e189918",
+      "bytes": 15652
+    },
+    {
+      "path": "Verify.bat",
+      "sha256": "56e449c9f5213f46198914c56a0a871aeb1a6a1d81e0d8c4fbad239581021d22",
+      "bytes": 807
+    },
+    {
+      "path": "VERSION.txt",
+      "sha256": "e0368c3454cc690f7ce48497f88b737c115c06c18bdea907fedb3781477017a2",
+      "bytes": 6
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+MHW Manual Mod Manager v4
+
+- Reconciled the newer Work-chat v2 engine with grouped conflict decisions from the later v3 branch.
+- Split code into Planner, Deployment, Profiles, Import, and Reports modules.
+- Fixed crash recovery so a transaction with a COMMITTED marker is finalized instead of rolled back.
+- Added deployment history and safe undo.
+- Fixed stale ownership of restored unmanaged paths and recaptures the latest unmanaged bytes on a later enable.
+- Added grouped numbered conflict resolution with EACH per-file escape hatch.
+- Added file/directory path-shape collision detection.
+- Added profile rename/delete/export/import and persisted conflict resolutions after a successful profile switch.
+- Added ON/OFF list filtering and inline commands such as "enable 2,5".
+- Added configurable mod_hepsy identical-file ownership policy.
+- Improved conflict reports to separate captured enabled hashes from edited source hashes.
+- Improved armor coverage to show actual winning mod names per piece and remain accurate if enabled source folders change.
+- Improved archive import root-file selection.
+- Expanded health diagnostics and dry-run reporting.
+- Expanded Windows integration tests for rollback/recovery/migration and the new ownership behavior.

@@ -1,0 +1,11 @@
+MHW Manual Mod Manager v5
+
+- Added typed conflict analysis: identical, shared texture, texture override, inferred patch overlay, saved overlay, hard structural, hard game-data, hard unknown, and incompatible.
+- Separated logical ON state from per-file winners so compatible overlays can stay enabled together.
+- Differing .tex overlaps are soft/non-blocking in Smart mode; higher-priority enabled mod wins unless a shared resource provider is pinned.
+- Added automatic base + " - option" overlay inference for common modular armor packages.
+- Added saved OVERLAY and INCOMPATIBLE relationships between mod pairs.
+- Added shared-resource provider pinning (especially useful for mod_hepsy skin textures).
+- Hard model/material/physics collisions remain blocking unless resolved or explicitly marked as overlays.
+- Conflict reports now classify risk and show ACTION REQUIRED only for blocking overlaps.
+- Preserves v4/v2 state, backups, profiles, snapshots, history, and unmanaged-file protection.

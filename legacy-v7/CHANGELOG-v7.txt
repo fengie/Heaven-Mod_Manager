@@ -1,0 +1,18 @@
+﻿MHW Manual Mod Manager v7 — Performance & Responsiveness
+==========================================================
+- Moved capture/hash, Apply, Undo, health checks, outfit scans, support bundle creation, and archive import/extraction off the WPF UI thread into background PowerShell runspaces.
+- Added responsive progress overlay; safe cancellation for non-transactional work; Apply/Undo remain non-cancellable while their transaction commits/rolls back.
+- Reworked conflict analysis around a single provider index per enabled state.
+- Added per-pass memoization for pair-level overlay/patch inference.
+- Replaced O(n^2) multi-provider incompatibility scans with sparse saved-relation lookup.
+- Debounced mod/outfit searches and stopped search typing from triggering conflict recomputation.
+- Enabled DataGrid row/column virtualization plus container recycling.
+- Replaced repeated JSON state cloning with top-level shallow map copies where planning treats nested snapshots as immutable.
+- Replaced full-state UI draft saves with a compact changed-mod delta tied to the live state hash.
+- Replaced hot-path PowerShell array += usage in deployment planning/journaling and bulk staging.
+- Cached mod directories, analysis results, recent history, and outfit rows until their dependencies change.
+- Removed automatic full outfit-coverage regeneration after every deployment; coverage is now lazy/manual.
+- Added elapsed-time telemetry for conflict analysis and all background operations to structured JSONL logs.
+- Improved worker error logging so support bundles include detailed background failures.
+- Expanded Test-Manager.ps1 with real PowerShell parser checks, optimized clone isolation, a 120-mod/2,280-entry conflict stress smoke test, and a multi-provider incompatibility safety regression test.
+- Existing State\V2 format remains compatible. Keep Mods and the entire State folder when upgrading.

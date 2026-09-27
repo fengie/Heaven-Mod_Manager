@@ -1,0 +1,182 @@
+=== Attached ZIP function scan ===
+FUNCTION VERIFICATION: 602 function(s); known-good=582; needs-verification=20; trace-gaps=0; explicit-call-sites=6311; uncovered-call-sites=0; parse-errors=0.
+
+=== Strict complete solution build ===
+  MhwModManager.Core -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Core/bin/Release/net10.0/MhwModManager.Core.dll
+  MhwModManager.Storage -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Storage/bin/Release/net10.0/MhwModManager.Storage.dll
+  MhwModManager.Filesystem -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Filesystem/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Filesystem.dll
+  MhwModManager.Mhw -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Mhw/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Mhw.dll
+  MhwModManager.Diagnostics -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Diagnostics/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Diagnostics.dll
+  MhwModManager.Automation -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.Automation/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.Automation.dll
+  MhwModManager.App -> /workspace/scratch/bcf29506d2df/work/src/MhwModManager.App/bin/Release/net10.0-windows10.0.19041.0/MHW Mod Manager.dll
+  MhwModManager.Tests -> /workspace/scratch/bcf29506d2df/work/tests/MhwModManager.Tests/bin/Release/net10.0/MhwModManager.Tests.dll
+  MhwModManager.FunctionVerifier -> /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/bin/Release/net10.0/MhwModManager.FunctionVerifier.dll
+  MhwModManager.IntegrationTests -> /workspace/scratch/bcf29506d2df/work/tests/MhwModManager.IntegrationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.IntegrationTests.dll
+  MhwModManager.Benchmarks -> /workspace/scratch/bcf29506d2df/work/benchmarks/MhwModManager.Benchmarks/bin/Release/net10.0/MhwModManager.Benchmarks.dll
+  MhwModManager.AutomationTests -> /workspace/scratch/bcf29506d2df/work/tests/MhwModManager.AutomationTests/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.AutomationTests.dll
+  MhwModManager.SelfTest -> /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.SelfTest/bin/Release/net10.0-windows10.0.19041.0/MhwModManager.SelfTest.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:40.76
+
+=== Core tests ===
+  Discovering: MhwModManager.Tests
+  Discovered:  MhwModManager.Tests
+  Starting:    MhwModManager.Tests
+  Finished:    MhwModManager.Tests (ID = '5f7498a931317716e5206cdd56f48e28f371e77ef61b9dd77a81dd9dbf42644a')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.Tests  Total: 79, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4.185s
+
+=== Automation tests ===
+  Discovering: MhwModManager.AutomationTests
+  Discovered:  MhwModManager.AutomationTests
+  Starting:    MhwModManager.AutomationTests
+  Finished:    MhwModManager.AutomationTests (ID = '61b10fd071f681d8499160fb42535dcbe23fb205e9dd08cc093ac59b812e8507')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.AutomationTests  Total: 18, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.716s
+
+=== Integration tests (negative-fixture errors are expected) ===
+  Discovering: MhwModManager.IntegrationTests
+  Discovered:  MhwModManager.IntegrationTests
+  Starting:    MhwModManager.IntegrationTests
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=3.
+PARSE ERROR: src/Fixture.cs:1: ) expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 2 function(s); known-good=0; needs-verification=2; trace-gaps=2; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=1.
+PARSE ERROR: Duplicate function ID generated for current source: src/Fixture.cs::C::method:Run()
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+System.IO.InvalidDataException: Trusted source snapshot is missing: /tmp/mhw-verifier-45adfa1de1014244a7919dfcd06b68a0/.verification/trusted-v8.7.0-src.zip
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 433
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+System.IO.InvalidDataException: Trusted source snapshot contains a duplicate file: src/Fixture.cs
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 468
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+  Finished:    MhwModManager.IntegrationTests (ID = '3cf8472e4f7c1dbea2831b5c40263245fdc16cb92b2e6972b535e23b37a3c40d')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.IntegrationTests  Total: 61, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.868s
+
+=== Automation self-test ===
+PASS: Category classifier
+PASS: Crash bisector
+PASS: SQLite schema
+PASS: Timeline persistence
+PASS: Last-known-good round trip
+PASS: Save snapshot
+PASS: Update diff
+PASS: Duplicate detector
+PASS: Recipe export
+PASS: Effective provider inspector
+PASS: Outfit preset inference
+SELFTEST REPORT: /workspace/scratch/bcf29506d2df/selftest-output/selftest-20260927-193904.md
+SELFTEST JSON: /workspace/scratch/bcf29506d2df/selftest-output/selftest-20260927-193904.json
+
+=== Cache and package verification ===
+PowerShell cache regression fixture passed (XAML edits, script edits, unchanged Core, generated files, common build targets).
+Six historical Windows fingerprints match unchanged inputs: strict Core, Storage, Mhw, UnitTests, Benchmarks, and Core tests.
+strict:FunctionVerifier changed and is not reusable.
+Original source packager reproduced an omission of .verification on Linux.
+No Windows release promotion performed.
+
+=== Final source input recheck ===
+  Discovering: MhwModManager.IntegrationTests
+  Discovered:  MhwModManager.IntegrationTests
+  Starting:    MhwModManager.IntegrationTests
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=3.
+PARSE ERROR: src/Fixture.cs:1: ) expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+PARSE ERROR: src/Fixture.cs:1: } expected
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 2 function(s); known-good=0; needs-verification=2; trace-gaps=2; explicit-call-sites=0; uncovered-call-sites=0; parse-errors=1.
+PARSE ERROR: Duplicate function ID generated for current source: src/Fixture.cs::C::method:Run()
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+System.IO.InvalidDataException: Trusted source snapshot is missing: /tmp/mhw-verifier-8c729d95d2764cb8987f4aa45e74cb34/.verification/trusted-v8.7.0-src.zip
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 433
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=1; needs-verification=0; trace-gaps=0; explicit-call-sites=1; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+System.IO.InvalidDataException: Trusted source snapshot contains a duplicate file: src/Fixture.cs
+   at MhwModManager.FunctionVerifier.Program.LoadTrustedFunctions(String path, TrustedFilesDocument trustedFiles) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 468
+   at MhwModManager.FunctionVerifier.Program.Scan(Options options) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 64
+   at MhwModManager.FunctionVerifier.Program.Main(String[] args) in /workspace/scratch/bcf29506d2df/work/tools/MhwModManager.FunctionVerifier/Program.cs:line 25
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=0; explicit-call-sites=2; uncovered-call-sites=0; parse-errors=0.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+FUNCTION VERIFICATION: 1 function(s); known-good=0; needs-verification=1; trace-gaps=1; explicit-call-sites=2; uncovered-call-sites=2; parse-errors=0.
+TRACE GAP: src/Fixture.cs::C::method:Run() (src/Fixture.cs:1)
+CALL-SITE COVERAGE GAP: src/Fixture.cs::C::method:Run() has 2 explicit call site(s) outside known-good/traced coverage.
+  Finished:    MhwModManager.IntegrationTests (ID = '3cf8472e4f7c1dbea2831b5c40263245fdc16cb92b2e6972b535e23b37a3c40d')
+=== TEST EXECUTION SUMMARY ===
+   MhwModManager.IntegrationTests  Total: 61, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.861s
+
+PowerShell syntax: 11 scripts passed.
+Handoff preflight: 27 required entries passed.
+Cache regression fixture passed.
+All JSON/XML and 73 trusted-source hashes passed.
+
+=== Source package checks ===
+Repaired packager retained .verification, all required handoff material, and evidence.
+ZIP CRC, unique paths, complete per-file SHA-256/size inventory, exclusion of build outputs, and 579/23 function checklist verified.

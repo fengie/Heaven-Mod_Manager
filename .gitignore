@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.user
+artifacts/
+release/
+State/Next/
+*.db-shm
+*.db-wal

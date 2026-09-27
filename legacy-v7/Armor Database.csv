@@ -1,0 +1,664 @@
+series_id,name,model_id
+1,"Leather",pl001_0000
+2,"Hunter's",pl002_0000
+3,"Anja",pl020_0000
+4,"Jagras",pl008_0000
+5,"Bone",pl003_0000
+6,"Alloy",pl004_0000
+7,"Kestodon",pl005_0000
+8,"Gajau",pl006_0000
+9,"Vespoid",pl007_0000
+10,"Kulu",pl009_0000
+11,"Pukei",pl010_0000
+12,"Jyura",pl011_0000
+13,"Barroth",pl012_0000
+14,"Kadachi",pl013_0000
+15,"Chainmail",pl014_0000
+17,"Hornetaur",pl017_0000
+19,"King Beetle",pl019_0000
+20,"Rathian",pl021_0000
+21,"Girros",pl022_0000
+22,"Tzitzi",pl023_0000
+23,"Lumu",pl024_0000
+24,"High Metal",pl025_0000
+25,"Death Stench",pl026_0000
+26,"Legiana",pl027_0000
+27,"Baan",pl028_0000
+28,"Odogaron",pl029_0000
+30,"Ingot",pl031_0000
+32,"Rathalos",pl033_0000
+33,"Diablos",pl034_0000
+34,"Kirin",pl035_0000
+35,"Brigade",pl036_0000
+36,"Unavailable",pl037_0000
+37,"Leather",pl001_0000
+38,"Leather",pl001_0000
+39,"Chainmail",pl014_0000
+40,"Chainmail",pl014_0000
+41,"Hunter's",pl002_0000
+42,"Hunter's",pl002_0010
+43,"Bone",pl003_0000
+44,"Bone",pl003_0000
+45,"Alloy",pl004_0000
+46,"Alloy",pl004_0000
+47,"Gajau",pl006_0000
+48,"Gajau",pl006_0000
+49,"Kestodon",pl005_0000
+50,"Kestodon",pl005_0000
+51,"Vespoid",pl007_0000
+52,"Vespoid",pl007_0000
+53,"Gastodon",pl015_0000
+54,"Gastodon",pl015_0000
+55,"Barnos",pl016_0000
+56,"Barnos",pl016_0000
+57,"Hornetaur",pl017_0000
+58,"Hornetaur",pl017_0000
+61,"Jagras",pl008_0000
+62,"Jagras",pl008_0000
+63,"Kulu",pl009_0000
+64,"Kulu",pl009_0000
+65,"Pukei",pl010_0000
+66,"Pukei",pl010_0010
+67,"Jyura",pl011_0000
+68,"Jyura",pl011_0000
+69,"Barroth",pl012_0000
+70,"Barroth",pl012_0000
+71,"Kadachi",pl013_0000
+72,"Kadachi",pl013_0000
+73,"Rathian",pl021_0000
+74,"Rathian",pl021_0010
+75,"Girros",pl022_0000
+76,"Girros",pl022_0000
+77,"Tzitzi",pl023_0000
+78,"Tzitzi",pl023_0000
+79,"Lumu",pl024_0000
+80,"Lumu",pl024_0000
+81,"Odogaron",pl029_0000
+82,"Odogaron",pl029_0010
+83,"Dodogama",pl039_0000
+84,"Dodogama",pl039_0000
+85,"Lavasioth",pl040_0000
+86,"Lavasioth",pl040_0010
+87,"Rath Heart",pl021_0100
+88,"Rath Heart",pl021_0110
+89,"High Metal",pl025_0000
+90,"High Metal",pl025_0000
+91,"Ingot",pl031_0000
+92,"Ingot",pl031_0000
+93,"Anja",pl020_0000
+94,"Anja",pl020_0010
+95,"Legiana",pl027_0000
+96,"Legiana",pl027_0010
+97,"Baan",pl028_0000
+98,"Baan",pl028_0010
+99,"Vaal Hazak",pl032_0000
+100,"Vaal Hazak",pl032_0010
+101,"Rathalos",pl033_0000
+102,"Rathalos",pl033_0010
+103,"Diablos",pl034_0000
+104,"Diablos",pl034_0010
+105,"Kirin",pl035_0000
+106,"Kirin",pl035_0010
+107,"Nergigante",pl030_0000
+108,"Nergigante",pl030_0010
+109,"Uragaan",pl041_0000
+110,"Uragaan",pl041_0010
+111,"Rath Soul",pl033_0100
+112,"Rath Soul",pl033_0110
+113,"Diablos Nero",pl034_0100
+114,"Diablos Nero",pl034_0110
+115,"Bazel",pl042_0000
+116,"Bazel",pl042_0010
+117,"King Beetle",pl019_0000
+118,"King Beetle",pl019_0000
+119,"Brigade",pl036_0000
+120,"Brigade",pl036_0000
+121,"Damascus",pl043_0000
+122,"Damascus",pl043_0010
+123,"Dober",pl044_0000
+124,"Dober",pl044_0000
+125,"Xeno'jiiva",pl045_0000
+126,"Xeno'jiiva",pl045_0010
+127,"Teostra",pl046_0000
+128,"Teostra",pl046_0010
+129,"Kushala",pl047_0000
+130,"Kushala",pl047_0010
+131,"Skull",pl054_0000
+132,"Skull",pl001_0000
+133,"Death Stench",pl026_0000
+134,"Death Stench",pl026_0000
+135,"Guild Cross",pl048_0000
+136,"Guild Cross",pl048_0000
+137,"Unavailable",pl001_0000
+138,"Unavailable",pl001_0000
+139,"Zorah",pl038_0000
+140,"Zorah",pl038_0010
+141,"Commission",pl053_0000
+142,"Commission",pl053_0000
+143,"Unavailable",pl001_0000
+144,"Unavailable",pl001_0000
+145,"Brigade",pl036_0000
+146,"Guild Cross",pl048_0000
+147,"Blossom",pl074_0000
+148,"Diver",pl075_0000
+149,"Harvest",pl076_0000
+150,"Orion",pl077_0000
+151,"Faux Felyne",pl055_0000
+152,"Mosswine Mask",pl056_0000
+153,"Gala Suit",pl078_0000
+154,"HARDUMMY",pl068_0000
+155,"Ryu",pl069_0000
+156,"Sakura",pl070_0000
+157,"Bushi ""Sabi""",pl001_0000
+158,"Bushi ""Sabi""",pl001_0000
+159,"Bayek",pl120_0000
+160,"Bushi ""Sabi""",pl001_0000
+161,"Shamos",pl058_0000
+162,"Shamos",pl058_0000
+163,"Shamos",pl058_0000
+164,"Butterfly",pl019_0000
+165,"Butterfly",pl019_0000
+166,"Butterfly",pl019_0000
+169,"Origin",pl018_0000
+170,"Bushi ""Homare""",pl001_0000
+171,"Bushi ""Homare""",pl001_0000
+172,"Bushi ""Homare""",pl001_0000
+173,"Bushi ""Homare""",pl001_0000
+174,"Bushi ""Homare""",pl059_0000
+175,"Unavailable",pl001_0000
+176,"Strategist",pl060_0000
+177,"Unavailable",pl001_0000
+178,"Dragonking",pl061_0000
+179,"Unavailable",pl001_0000
+180,"Unavailable",pl001_0000
+181,"Unavailable",pl001_0000
+182,"Unavailable",pl001_0000
+183,"Kulve Taroth",pl049_0000
+184,"Kulve Taroth",pl049_0010
+185,"Blossom",pl074_0000
+186,"Diver",pl075_0000
+187,"Harvest",pl076_0000
+188,"Orion",pl077_0000
+189,"Gala Suit",pl078_0000
+190,"Samurai",pl067_0000
+191,"Deviljho",pl050_0000
+192,"Deviljho",pl050_0010
+193,"Unavailable",pl001_0000
+194,"Bushi ""Sabi""",pl066_0000
+195,"Bushi ""Homare""",pl066_0010
+196,"Drachen",pl073_0000
+197,"Blossom",pl074_0000
+198,"Diver",pl075_0000
+199,"Harvest",pl076_0000
+200,"Orion",pl077_0000
+201,"Gala Suit",pl078_0000
+202,"Butterfly",pl057_0000
+203,"Butterfly",pl057_0000
+204,"Butterfly",pl057_0010
+205,"Queen Beetle",pl057_0000
+206,"Queen Beetle",pl057_0000
+207,"Queen Beetle",pl057_0000
+208,"Vaal Hazak",pl032_0020
+209,"Kirin",pl035_0020
+210,"Teostra",pl046_0020
+211,"Kushala",pl047_0020
+212,"Nergigante",pl030_0020
+213,"Zorah",pl038_0020
+214,"Xeno'jiiva",pl045_0020
+215,"HARDUMMY",pl068_0000
+216,"Ryu",pl069_0000
+217,"Ryu",pl069_0000
+218,"Sakura",pl070_0000
+219,"Azure Starlord",pl072_0000
+220,"Dante",pl071_0000
+221,"Lunastra",pl051_0000
+222,"Lunastra",pl051_0010
+223,"Sealed Eyepatch",pl063_0000
+224,"Shadow Shades",pl062_0000
+225,"Kulu-Ya-Ku Head",pl065_0000
+226,"Wiggler Head",pl064_0000
+227,"Butterfly",pl117_0000
+228,"Death Stench",pl026_0000
+229,"Shadow Shades",pl062_0000
+230,"Dante",pl071_0000
+231,"Drachen",pl073_0000
+232,"Mosswine Mask",pl056_0000
+233,"Faux Felyne",pl055_0000
+234,"Commission",pl053_0000
+235,"Sealed Eyepatch",pl063_0000
+236,"Wiggler Head",pl064_0000
+237,"Origin",pl018_0000
+238,"Beetle",pl116_0000
+239,"Unavailable",pl001_0000
+240,"Skull Mask",pl054_0000
+241,"Kulu-Ya-Ku Head",pl065_0000
+242,"HARDUMMY",pl068_0000
+243,"Lunastra",pl051_0020
+244,"Geralt",pl118_0000
+245,"Ciri",pl119_0000
+246,"Geralt of Rivia",pl118_0000
+247,"Ciri",pl119_0000
+248,"Kulve Taroth",pl049_0020
+249,"Defender",pl121_0000
+250,"Direwolf+",pl105_0000
+252,"Bone+",pl003_0000
+253,"Bone+",pl003_0000
+254,"Alloy+",pl004_0000
+255,"Alloy+",pl004_0000
+256,"Vespoid+",pl007_0001
+257,"Vespoid+",pl007_0001
+258,"Hornetaur+",pl017_0001
+259,"Hornetaur+",pl017_0001
+260,"Kestodon+",pl005_0000
+261,"Kestodon+",pl005_0000
+262,"Gajau+",pl006_0000
+263,"Gajau+",pl006_0000
+264,"Shamos+",pl058_0000
+265,"Shamos+",pl058_0000
+266,"Gastodon+",pl015_0000
+267,"Gastodon+",pl015_0000
+268,"Barnos+",pl016_0000
+269,"Barnos+",pl016_0000
+270,"Wulg+",pl102_0000
+271,"Wulg+",pl102_0000
+272,"Cortos+",pl103_0000
+273,"Cortos+",pl103_0000
+274,"Jagras+",pl008_0001
+275,"Jagras+",pl008_0001
+276,"Tzitzi+",pl023_0001
+277,"Tzitzi+",pl023_0001
+278,"Girros+",pl022_0001
+279,"Girros+",pl022_0001
+280,"Dodogama+",pl039_0001
+281,"Dodogama+",pl039_0001
+282,"Kulu+",pl009_0001
+283,"Kulu+",pl009_0001
+284,"Pukei+",pl010_0001
+285,"Pukei+",pl010_0001
+286,"Barroth+",pl012_0001
+287,"Barroth+",pl012_0001
+288,"Jyura+",pl011_0001
+289,"Jyura+",pl011_0001
+290,"Beo+",pl110_0000
+291,"Beo+",pl110_0000
+292,"Kadachi+",pl013_0001
+293,"Kadachi+",pl013_0001
+294,"High Metal+",pl025_0000
+295,"High Metal+",pl025_0000
+296,"Banbaro+",pl084_0000
+297,"Banbaro+",pl084_0010
+298,"Anja+",pl020_0001
+299,"Anja+",pl020_0011
+300,"Rathian+",pl021_0001
+301,"Rathian+",pl021_0011
+302,"Rath Heart+",pl021_0101
+303,"Rath Heart+",pl021_0111
+304,"Lumu+",pl024_0001
+305,"Lumu+",pl024_0001
+306,"Lumu Phantasm+",pl024_0101
+307,"Lumu Phantasm+",pl024_0101
+308,"Coral Pukei+",pl010_0101
+309,"Coral Pukei+",pl010_0101
+310,"Viper Kadachi+",pl013_0101
+311,"Viper Kadachi+",pl013_0101
+312,"Baan+",pl028_0001
+313,"Baan+",pl028_0001
+314,"Leather",pl001_0000
+315,"Chain",pl014_0000
+316,"Hunter",pl002_0000
+317,"Hunter",pl002_0010
+318,"Bone",pl003_0000
+319,"Alloy",pl004_0000
+320,"Vespoid",pl007_0000
+321,"Hornetaur",pl017_0000
+322,"Kestodon",pl005_0000
+323,"Gajau",pl006_0000
+324,"Unavailable",pl095_0000
+325,"Goldspring Macaque",pl113_0001
+326,"Shamos",pl058_0000
+327,"Faux Kelbi",pl096_0000
+328,"Ingot+",pl031_0000
+329,"Ingot+",pl031_0000
+330,"Barioth+",pl089_0000
+331,"Barioth+",pl089_0010
+332,"Rathalos+",pl033_0001
+333,"Rathalos+",pl033_0011
+334,"Diablos+",pl034_0001
+335,"Diablos+",pl034_0011
+336,"Legiana+",pl027_0001
+337,"Legiana+",pl027_0011
+338,"Odogaron+",pl029_0001
+339,"Odogaron+",pl029_0011
+340,"Lavasioth+",pl040_0001
+341,"Lavasioth+",pl040_0001
+342,"Uragaan+",pl041_0001
+343,"Uragaan+",pl041_0001
+344,"Nargacuga+",pl080_0000
+345,"Nargacuga+",pl080_0010
+346,"Glavenus+",pl081_0000
+347,"Glavenus+",pl081_0010
+348,"Brachydios+",pl082_0000
+349,"Brachydios+",pl082_0010
+350,"Tigrex+",pl083_0000
+351,"Tigrex+",pl083_0010
+352,"Fulgur Anja+",pl020_0101
+353,"Fulgur Anja+",pl020_0111
+354,"Jagras",pl008_0000
+355,"Kulu-Ya-Ku",pl009_0000
+356,"Black Belt+",pl093_0000
+357,"Black Belt+",pl093_0000
+358,"Dragonking Eyepatch",pl061_0000
+359,"Strategist Spectacles",pl060_0000
+360,"Pulverizing Feather",pl037_0000
+361,"Tzitzi-Ya-Ku",pl023_0000
+362,"Great Girros",pl022_0000
+363,"Shrieking Legia+",pl027_0500
+364,"Shrieking Legia+",pl027_0510
+365,"Rath Soul+",pl033_0101
+366,"Rath Soul+",pl033_0111
+367,"Diablos Nero+",pl034_0101
+368,"Diablos Nero+",pl034_0111
+369,"Death Garon+",pl029_0101
+370,"Death Garon+",pl029_0111
+371,"Acidic Glavenus+",pl081_0100
+372,"Acidic Glavenus+",pl081_0110
+373,"Artian+",pl091_0000
+374,"Artian+",pl091_0000
+375,"Skull Scarf",pl099_0000
+376,"Pukei-Pukei",pl010_0000
+377,"Pukei-Pukei",pl010_0010
+378,"Dober+",pl044_0000
+379,"Dober+",pl044_0000
+380,"Damascus+",pl043_0000
+381,"Damascus+",pl043_0010
+382,"Velkhana+",pl085_0000
+383,"Velkhana+",pl085_0010
+384,"Seething Bazel+",pl042_0500
+385,"Seething Bazel+",pl042_0510
+386,"Blackveil Hazak+",pl032_0500
+387,"Blackveil Hazak+",pl032_0510
+388,"Teostra+",pl046_0001
+389,"Teostra+",pl046_0011
+390,"Kushala+",pl047_0001
+391,"Kushala+",pl047_0011
+392,"Kirin+",pl035_0001
+393,"Kirin+",pl035_0011
+394,"Namielle+",pl086_0000
+395,"Namielle+",pl086_0010
+396,"Clockwork+",pl104_0000
+397,"Barroth",pl012_0000
+398,"Guild Palace+",pl094_0000
+399,"Guild Palace+",pl094_0000
+400,"Clockwork+",pl104_0000
+401,"Clockwork+",pl104_0000
+402,"Crystal Earring",pl059_0000
+403,"Ruiner Nergi+",pl030_0500
+404,"Ruiner Nergi+",pl030_0510
+405,"Shara Ishvalda+",pl088_0000
+406,"Shara Ishvalda+",pl088_0010
+407,"Savage Jho+",pl050_0500
+408,"Savage Jho+",pl050_0510
+409,"Anjanath",pl020_0000
+410,"Anjanath",pl020_0010
+411,"Guildwork+",pl092_0000
+412,"Guildwork+",pl092_0000
+413,"Unavailable",pl095_0010
+414,"Golden Lune+",pl021_0200
+415,"Golden Lune+",pl021_0210
+416,"Silver Sol+",pl033_0200
+417,"Silver Sol+",pl033_0210
+418,"Jyuratodus",pl011_0000
+419,"Tobi-Kadachi",pl013_0000
+420,"Zinogre+",pl107_0000
+421,"Zinogre+",pl107_0010
+422,"Stygian Zin+",pl107_0100
+423,"Stygian Zin+",pl107_0110
+424,"Yian Garuga+",pl108_0000
+425,"Yian Garuga+",pl108_0010
+426,"Zorah+",pl038_0000
+427,"Zorah+",pl038_0010
+428,"Rajang+",pl109_0000
+429,"Rajang+",pl109_0010
+430,"Furious Rajang+",pl109_0500
+431,"Furious Rajang+",pl109_0510
+432,"Raging Brachy+",pl082_0500
+433,"Raging Brachy+",pl082_0510
+434,"Safi'jiiva+",pl087_0000
+435,"Safi'jiiva+",pl087_0010
+436,"Alatreon+",pl052_0000
+437,"Alatreon+",pl052_0010
+438,"Sealed Dragon Cloth+",pl100_0000
+439,"Wyverian Ears+",pl101_0000
+440,"Faux Aptonoth",pl097_0000
+441,"Duffel Penguin Mask+",pl098_0000
+442,"Lunastra+",pl051_0001
+443,"Lunastra+",pl051_0011
+444,"Kulve Taroth+",pl049_0001
+445,"Kulve Taroth+",pl049_0011
+446,"Rose+",pl124_0000
+447,"Paolumu",pl024_0000
+448,"Passion+",pl125_0000
+449,"Rathian",pl021_0000
+450,"Demonlord+",pl126_0000
+451,"Rathian",pl021_0010
+452,"Oolong+",pl127_0000
+453,"Radobaan",pl028_0000
+454,"Astral+",pl128_0000
+455,"Radobaan",pl028_0010
+456,"Rose",pl124_0000
+457,"Passion",pl125_0000
+458,"Demonlord",pl126_0000
+459,"Oolong",pl127_0000
+460,"Astral",pl128_0000
+461,"High Metal",pl025_0000
+462,"Thermae",pl106_0000
+463,"Hare Band",pl111_0000
+464,"Downy Crake",pl112_0000
+465,"Pearlspring+",pl113_0000
+466,"Kadachi Scarf",pl114_0000
+467,"Buff Body+",pl115_0000
+468,"Brute Tigrex+",pl083_0100
+469,"Brute Tigrex+",pl083_0110
+470,"Guardian+",pl121_0000
+471,"Yukumo",pl122_0000
+472,"Silver Knight",pl123_0000
+473,"HARDUMMY",pl068_0010
+474,"Namielle+",pl086_0020
+475,"Azure Starlord",pl072_0000
+476,"Azure Age+",pl072_0001
+477,"Velkhana+",pl085_0020
+478,"Frostfang Barioth+",pl089_0500
+479,"Frostfang Barioth+",pl089_0510
+480,"Fatalis+",pl129_0000
+481,"Fatalis+",pl129_0010
+482,"HARDUMMY",pl068_0020
+484,"Leon+",pl130_0000
+485,"Claire+",pl131_0000
+486,"Leon+",pl130_0000
+487,"Claire+",pl131_0000
+488,"Gastodon",pl015_0000
+489,"Barnos",pl016_0000
+490,"Dodogama",pl039_0000
+491,"Ingot",pl031_0000
+492,"Rath Heart",pl021_0100
+493,"Rath Heart",pl021_0110
+494,"Lavasioth",pl040_0000
+495,"Lavasioth",pl040_0010
+496,"Legiana",pl027_0000
+497,"Legiana",pl027_0010
+498,"Odogaron",pl029_0000
+499,"Odogaron",pl029_0010
+500,"Rathalos",pl033_0000
+501,"Rathalos",pl033_0010
+502,"Rath Soul",pl033_0100
+503,"Rath Soul",pl033_0110
+504,"Diablos",pl034_0000
+505,"Diablos",pl034_0010
+506,"Diablos Nero",pl034_0100
+507,"Diablos Nero",pl034_0110
+508,"Uragaan",pl041_0000
+509,"Uragaan",pl041_0010
+510,"Bazelgeuse",pl042_0000
+511,"Bazelgeuse",pl042_0010
+512,"Deviljho",pl050_0000
+513,"Deviljho",pl050_0010
+514,"Dober",pl044_0000
+515,"Dober",pl044_0000
+516,"Damascus",pl043_0000
+517,"Damascus",pl043_0010
+518,"Zorah",pl038_0000
+519,"Zorah",pl038_0010
+520,"Zorah",pl038_0020
+521,"Nergigante",pl030_0000
+522,"Nergigante",pl030_0010
+523,"Nergigante",pl030_0020
+524,"Teostra",pl046_0000
+525,"Teostra",pl046_0010
+526,"Teostra",pl046_0020
+527,"Kushala",pl047_0000
+528,"Kushala",pl047_0010
+529,"Kushala",pl047_0020
+530,"Vaal Hazak",pl032_0000
+531,"Vaal Hazak",pl032_0010
+532,"Vaal Hazak",pl032_0020
+533,"Kirin",pl035_0000
+534,"Kirin",pl035_0010
+535,"Kirin",pl035_0020
+536,"Xeno",pl045_0000
+537,"Xeno",pl045_0010
+538,"Xeno",pl045_0020
+539,"Lunastra",pl051_0000
+540,"Lunastra",pl051_0010
+541,"Lunastra",pl051_0020
+542,"Kulve",pl049_0000
+543,"Kulve",pl049_0010
+544,"Kulve",pl049_0020
+545,"Guardian",pl121_0000
+546,"Vespoid+",pl007_0001
+547,"Hornetaur+",pl017_0001
+548,"Wulg+",pl102_0000
+549,"Cortos+",pl103_0000
+550,"Jagras+",pl008_0001
+551,"Tzitzi-Ya-Ku+",pl023_0001
+552,"Great Girros+",pl022_0001
+553,"Dodogama+",pl039_0001
+554,"Kulu-Ya-Ku+",pl009_0001
+555,"Pukei-Pukei+",pl010_0001
+556,"Coral Pukei+",pl010_0101
+557,"Barroth+",pl012_0001
+558,"Jyuratodus+",pl011_0001
+559,"Beotodus+",pl110_0000
+560,"Tobi-Kadachi+",pl013_0001
+561,"Viper Kadachi+",pl013_0101
+562,"Banbaro+",pl084_0000
+563,"Banbaro+",pl084_0010
+564,"Anjanath+",pl020_0001
+565,"Anjanath+",pl020_0011
+566,"Fulgur Anja+",pl020_0101
+567,"Fulgur Anja+",pl020_0111
+568,"Rathian+",pl021_0001
+569,"Rathian+",pl021_0011
+570,"Rath Heart+",pl021_0101
+571,"Rath Heart+",pl021_0111
+572,"Paolumu+",pl024_0001
+573,"Lumu Phantasm+",pl024_0101
+574,"Radobaan+",pl028_0001
+575,"Artian",pl091_0000
+576,"Barioth+",pl089_0000
+577,"Barioth+",pl089_0010
+578,"Rathalos+",pl033_0001
+579,"Rathalos+",pl033_0011
+580,"Rath Soul+",pl033_0101
+581,"Rath Soul+",pl033_0111
+582,"Diablos+",pl034_0001
+583,"Diablos+",pl034_0011
+584,"Diablos Nero+",pl034_0101
+585,"Diablos Nero+",pl034_0111
+586,"Legiana+",pl027_0001
+587,"Legiana+",pl027_0011
+588,"Shrieking Legia+",pl027_0500
+589,"Shrieking Legia+",pl027_0510
+590,"Odogaron+",pl029_0001
+591,"Odogaron+",pl029_0011
+592,"Death Garon+",pl029_0101
+593,"Death Garon+",pl029_0111
+594,"Lavasioth+",pl040_0001
+595,"Uragaan+",pl041_0001
+596,"Nargacuga+",pl080_0000
+597,"Nargacuga+",pl080_0010
+598,"Glavenus+",pl081_0000
+599,"Glavenus+",pl081_0010
+600,"Acidic Glavenus+",pl081_0100
+601,"Acidic Glavenus+",pl081_0110
+602,"Brachydios+",pl082_0000
+603,"Brachydios+",pl082_0010
+604,"Tigrex+",pl083_0000
+605,"Tigrex+",pl083_0010
+606,"Brute Tigrex+",pl083_0100
+607,"Brute Tigrex+",pl083_0110
+608,"Black Belt",pl093_0000
+609,"Seething Bazel+",pl042_0500
+610,"Seething Bazel+",pl042_0510
+611,"Savage Jho+",pl050_0500
+612,"Savage Jho+",pl050_0510
+613,"Velkhana+",pl085_0000
+614,"Velkhana+",pl085_0010
+615,"Blackveil Hazak+",pl032_0500
+616,"Blackveil Hazak+",pl032_0510
+617,"Teostra+",pl046_0001
+618,"Teostra+",pl046_0011
+619,"Kushala+",pl047_0001
+620,"Kushala+",pl047_0011
+621,"Kirin+",pl035_0001
+622,"Kirin+",pl035_0011
+623,"Namielle+",pl086_0000
+624,"Namielle+",pl086_0010
+625,"Guild Palace+",pl094_0000
+626,"Acrobat",pl095_0000
+627,"Showman",pl095_0010
+628,"Shara Ishvalda+",pl088_0000
+629,"Shara Ishvalda+",pl088_0010
+630,"Yian Garuga+",pl108_0000
+631,"Yian Garuga+",pl108_0010
+632,"Zinogre+",pl107_0000
+633,"Zinogre+",pl107_0010
+634,"Golden Lune+",pl021_0200
+635,"Golden Lune+",pl021_0210
+636,"Silver Sol+",pl033_0200
+637,"Silver Sol+",pl033_0210
+638,"Lunastra+",pl051_0001
+639,"Lunastra+",pl051_0011
+640,"Ruiner Nergi+",pl030_0500
+641,"Ruiner Nergi+",pl030_0510
+642,"Guildwork+",pl092_0000
+643,"Rajang+",pl109_0000
+644,"Rajang+",pl109_0010
+645,"Stygian Zin+",pl107_0100
+646,"Stygian Zin+",pl107_0110
+647,"Safi'jiiva+",pl087_0000
+648,"Safi'jiiva+",pl087_0010
+649,"Furious Rajang+",pl109_0500
+650,"Furious Rajang+",pl109_0510
+651,"Raging Brachy+",pl082_0500
+652,"Raging Brachy+",pl082_0510
+653,"Frostfang Barioth+",pl089_0500
+654,"Frostfang Barioth+",pl089_0510
+655,"Alatreon+",pl052_0000
+656,"Alatreon+",pl052_0010
+657,"Fatalis+",pl129_0000
+658,"Fatalis+",pl129_0010
+659,"Kulve Taroth+",pl049_0001
+660,"Kulve Taroth+",pl049_0011
+661,"Sealed Dragon Cloth",pl100_0000
+662,"Wyverian Ears",pl101_0000
+663,"Duffel Penguin+",pl098_0000
+664,"Pearlspring+",pl113_0000
+665,"Buff Body+",pl115_0000
+666,"Azure Age",pl072_0001
+668,"HARDUMMY",pl068_0020
+669,"Velkhana+",pl085_0020
+670,"Namielle+",pl086_0020
+672,"Buff Body+",pl115_0001
+673,"Innerwear",pl500_0000
+674,"Clockwork+",pl104_0000
+675,"Innerwear",pl501_0000

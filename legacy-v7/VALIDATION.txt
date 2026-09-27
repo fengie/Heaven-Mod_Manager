@@ -1,0 +1,15 @@
+﻿MHW Manual Mod Manager v7 packaging validation
+==============================================
+- Main WPF XAML parses as well-formed XML.
+- All controls referenced by the GUI controller exist in the main XAML.
+- All 10 PowerShell files passed static delimiter/string/here-string structure checks in the packaging environment.
+- Module references resolve; expected modules are present.
+- Armor Database.csv contains 663 data rows.
+- Existing State\V2 schema remains version 2 for backward compatibility.
+- Hot UI operations have been moved to background runspaces; DataGrid virtualization and debounced filtering are enabled.
+- Conflict analysis uses an indexed provider map and sparse saved-relation lookup for many-provider overlaps.
+- Test-Manager.ps1 now asks the real Windows PowerShell parser to parse every .ps1 file before running behavioral tests, then runs a 120-mod/2,280-entry stress smoke fixture.
+
+Runtime limitation of the packaging environment:
+- Windows PowerShell 5.1/WPF cannot run in this Linux container.
+- Test-Manager.ps1 remains the authoritative Windows filesystem/integration/performance smoke test and should be run once before the first live v7 deployment.

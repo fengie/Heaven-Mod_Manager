@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><IsTestProject>true</IsTestProject><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup><PackageReference Include="xunit.v3" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../../src/MhwModManager.Automation/MhwModManager.Automation.csproj" /><ProjectReference Include="../../src/MhwModManager.Storage/MhwModManager.Storage.csproj" /><ProjectReference Include="../../src/MhwModManager.Filesystem/MhwModManager.Filesystem.csproj" /><ProjectReference Include="../../src/MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj" /></ItemGroup>
+</Project>

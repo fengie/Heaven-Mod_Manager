@@ -1,0 +1,15 @@
+MHW Manual Mod Manager v6
+=========================
+- New WPF desktop GUI; Manage Mods.bat launches it with the console hidden.
+- Dashboard, searchable mod library, visual conflict inspector, outfit coverage, profiles, diagnostics, and activity/undo pages.
+- Staged changes: no nativePC writes until Apply safely.
+- Persistent crash-safe UI draft tied to the current state.json hash.
+- Automatic Steam library / MHW game-root discovery for new setups.
+- Structured health objects and one-click support bundle export.
+- JSONL diagnostic logging under State\V2\Logs.
+- GUI-safe, non-interactive deployment/profile/import APIs.
+- Added high-confidence PATCH-SUBSET inference for small related patch/fix folders.
+- Shared mod_hepsy provider can be pinned directly from the Mods page.
+- Blocking conflicts route to a Needs Attention queue instead of repeated console prompts.
+- Import UI safely inspects ZIP/7z/RAR layouts and never auto-selects root-level DLL/INI/JSON files.
+- Existing v5 State\V2 format remains compatible.

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>MHW Mod Manager</AssemblyName>
+    <RootNamespace>MhwModManager.App</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Serilog" />
+    <ProjectReference Include="../MhwModManager.Core/MhwModManager.Core.csproj" />
+    <ProjectReference Include="../MhwModManager.Storage/MhwModManager.Storage.csproj" />
+    <ProjectReference Include="../MhwModManager.Filesystem/MhwModManager.Filesystem.csproj" />
+    <ProjectReference Include="../MhwModManager.Mhw/MhwModManager.Mhw.csproj" />
+    <ProjectReference Include="../MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj" />
+    <ProjectReference Include="../MhwModManager.Automation/MhwModManager.Automation.csproj" />
+  </ItemGroup>
+  <ItemGroup><Content Include="../../data/Armor Database.csv"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><Link>data/Armor Database.csv</Link></Content></ItemGroup>
+</Project>

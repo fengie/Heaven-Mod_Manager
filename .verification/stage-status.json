@@ -1,0 +1,70 @@
+{
+  "formatVersion": 1,
+  "sourceVersion": "8.8.0",
+  "updatedAtUtc": "2026-09-27T09:10:20Z",
+  "stages": [
+    {
+      "id": "strict:Core",
+      "fingerprint": "eb43ed0a43ae31b872cafb345a897149dddfbb9e53fcd80d4db1ed3208ab38c2",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Strict compile/analyzers",
+      "name": "Core",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "strict:Storage",
+      "fingerprint": "9628547f82276fa60c8db7c379ba42b20012d34d3e7a2ebdb991384e919a6e86",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Strict compile/analyzers",
+      "name": "Storage",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "strict:Mhw",
+      "fingerprint": "d595c8091854afc98decca56d96dc2cc5a1b1e21103b2a317d0a00ff9edea83b",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Strict compile/analyzers",
+      "name": "Mhw",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "strict:UnitTests",
+      "fingerprint": "e7f320a01dcc6be1f76511a9db8ff3ab28d6e3a694289fdfdd51d509ac363558",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Strict compile/analyzers",
+      "name": "UnitTests",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "strict:Benchmarks",
+      "fingerprint": "d573583daea23d23f9a0d59397782081ffba2ca461919a759dc05f74832b2a3b",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Strict compile/analyzers",
+      "name": "Benchmarks",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "test:Core unit tests",
+      "fingerprint": "e7f320a01dcc6be1f76511a9db8ff3ab28d6e3a694289fdfdd51d509ac363558",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T08:53:04Z",
+      "group": "Tests",
+      "name": "Core unit tests",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log. Exact project/dependency inputs are unchanged from the passing v8.8.0 run; 79/79 core unit tests passed."
+    },
+    {
+      "id": "strict:FunctionVerifier",
+      "fingerprint": "3247b847e29bdba4f15f9f01598a80d5cd97e62d285dbfa454f02e749282641d",
+      "verified": true,
+      "verifiedAtUtc": "2026-09-27T09:10:20Z",
+      "group": "Strict compile/analyzers",
+      "name": "FunctionVerifier",
+      "evidence": "Imported from _AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log. FunctionVerifier itself passed strict build with 0 warnings/0 errors and is unaffected by the four production trace-scope edits in this packaged revision."
+    }
+  ]
+}

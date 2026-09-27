@@ -1,0 +1,42 @@
+{
+  "formatVersion": 1,
+  "continuityRequired": true,
+  "propagateToNextAgent": true,
+  "project": "MHW Manual Mod Manager",
+  "currentVersion": "8.8.0",
+  "parentVersion": "8.7.0",
+  "continuityProtocol": "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
+  "startHere": "NEXT-AGENT-START-HERE.md",
+  "requiredContextFiles": [
+    "_AGENT_CONTEXT/README_FIRST.md",
+    "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
+    "_AGENT_CONTEXT/CURRENT_STATE.md",
+    "_AGENT_CONTEXT/ARCHITECTURE.md",
+    "_AGENT_CONTEXT/SOURCE_MAP.md",
+    "_AGENT_CONTEXT/DECISIONS.md",
+    "_AGENT_CONTEXT/KNOWN_ISSUES.md",
+    "_AGENT_CONTEXT/VERIFICATION.md",
+    "_AGENT_CONTEXT/NEXT_STEPS.md",
+    "_AGENT_CONTEXT/PROJECT_HISTORY.md",
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log",
+    "_AGENT_CONTEXT/AUDIT-2026-09-27.md",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json"
+  ],
+  "requiredVerificationFiles": [
+    ".verification/README.md",
+    ".verification/stage-status.json",
+    ".verification/function-status.json",
+    ".verification/trusted-v8.7.0-files.json",
+    ".verification/trusted-v8.7.0-src.zip"
+  ],
+  "nextAgentObligation": "Update the handoff context with everything materially learned, preserve this manifest/protocol, run the handoff preflight, and package the next source deliverable with equivalent or better continuity data. Do not break the chain.",
+  "requiredToolingFiles": [
+    "scripts/Test-AgentHandoff.ps1",
+    "scripts/Build-Source-Handoff.ps1",
+    "Build Source Handoff.bat",
+    "scripts/Test-VerificationCache.ps1"
+  ]
+}
