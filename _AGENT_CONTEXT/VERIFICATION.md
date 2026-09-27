@@ -1,3 +1,34 @@
+# Parallel support-audit integration verification — 2026-09-27
+
+Canonical integration base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
+
+Integrated repository state before this verification-record commit: `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1`.
+
+Scope review:
+
+- branch-vs-main final diff contains documentation/context only;
+- no `src/`, `tests/`, verifier scripts, workflow files, or `.verification/` cache files changed;
+- the support branches themselves contained no production C# or test changes relative to the integration baseline;
+- `CURRENT_REVISION.json` and `handoff-manifest.json` parse;
+- README read order keeps `CONTINUITY_PROTOCOL.md` before `LEARNED_RULES.md`;
+- Learned Rules are exactly LR-001 through LR-006 with no duplicate Rule IDs;
+- successor -> agent-after recursive propagation language remains present;
+- function-status format is 1 with 610 unique entries / 610 marked verified;
+- stage-status format is 1 with 17 unique entries / 17 marked verified;
+- the handoff manifest keeps `continuityRequired=true`, `propagateToNextAgent=true`, and 33 required context files.
+
+These are connector-side structural checks, **not** a substitute for executing the repository verification scripts.
+
+A local `git status`, PowerShell handoff validator, build, and tests were not run by the integration agent because the authorized Remote Desktop Commander device was offline.
+
+The last closed hosted product evidence remains PlannerSnapshotRepository exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, Windows Release Gate `36336190920`.
+
+A fresh hosted Windows Release Gate for the final support-integration documentation state is required before this integration may be called fully repository-verified. Do not manually promote caches or infer success from the unchanged production source.
+
+**Do not break the chain.**
+
+---
+
 # Verification performed for this source handoff
 
 ## PlannerSnapshotRepository final hosted closure
