@@ -11,8 +11,8 @@
   "status": "architecture-explain-why-candidate-awaiting-windows-verification",
   "lastClosedVerificationCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationRun": "36321128433",
-  "candidateSourceCommit": "5c1937e557aa9996cef493709e94a6aa611d4e1c",
-  "verificationScopeNote": "The 25/25 hosted Windows baseline applies to v8.8.0 commit 5f6789af499fcc1afe6cb5d38244927bb02335fb, with be0d786e996a09fece24f5599dab8911af5b31db only persisting evidence/caches. The architecture/Explain Why candidate changes production source and MUST NOT inherit that green state. Run the exact Windows gate after integration.",
+  "candidateSourceCommit": "4f08a409c6a4d3083fa0886bd2c8b05829e48aac",
+  "verificationScopeNote": "The 25/25 hosted Windows baseline applies to v8.8.0 commit 5f6789af499fcc1afe6cb5d38244927bb02335fb, with be0d786e996a09fece24f5599dab8911af5b31db only persisting evidence/caches. The architecture/Explain Why candidate changes production source through commit 4f08a409c6a4d3083fa0886bd2c8b05829e48aac; later branch commits are continuity documentation only. The candidate MUST NOT inherit the old green state.",
   "lastClosedVerification": {
     "functionInventoryTotal": 602,
     "functionsVerified": 602,
