@@ -131,3 +131,24 @@ This revision converts that expression-bodied helper to a block body with the
 required `MasterDebugLog.BeginMethod()` scope and makes no migration-semantic
 change. The hosted Windows gate must rerun; only a green exact-source run may
 promote the affected fingerprints or close v8.8.
+
+## Final hosted v8.8 Windows closure
+
+- Verified source: `5f6789af499fcc1afe6cb5d38244927bb02335fb`
+- GitHub Actions run: `36321128433`
+- Environment: Windows x64, .NET SDK 10.0.401
+- Repository gate: **25/25 passed**
+- Core tests: **79/79**
+- Automation tests: **18/18**
+- Integration/fault-injection tests: **61/61**
+- Automation self-test: **11/11**
+- Production function fingerprints promoted: **602/602**
+- Self-contained win-x64 release publish: PASS
+- Release artifact SHA-256: `4C70E6BB4F97E46CDA91E2C196DF695E5FA9452EE0C93F2797C880BA9A0A1294`
+
+Canonical evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`.
+Commit `be0d786e996a09fece24f5599dab8911af5b31db` persisted promoted caches/evidence only and did not change production source.
+
+## Architecture / Explain Why verification boundary
+
+The `agent/architecture-explain-why` candidate changes production source and therefore does **not** inherit the closed v8.8 green state. Its new services, partial view-model files, explainability model/UI, and regression tests must pass the exact Windows Release Gate after integration to `main`. Until that happens, the candidate is intentionally marked unverified.
