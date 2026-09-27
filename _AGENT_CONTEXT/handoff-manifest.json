@@ -33,7 +33,9 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
-    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md"
+    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
+    "_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md",
+    "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -42,7 +44,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order. Preserve Core Rules and exact verification/safety invariants. Keep one independently verifiable source boundary at a time. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. The next production boundary remains PlannerSnapshotRepository only unless canonical source disproves the audit. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md (including LR-004), and the remaining README_FIRST order including the deep SQLite and Windows filesystem safety audits. Preserve the closed PlannerSnapshotRepository evidence and all transaction/recovery invariants. If taking the next filesystem safety checkpoint, begin with focused Windows tests proving Add/Replace/Remove/rollback/recovery cannot traverse a parent reparse point outside the game root; do not bundle broad filesystem refactors before that contract is pinned. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
