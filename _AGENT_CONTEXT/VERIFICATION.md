@@ -1,5 +1,31 @@
 # Verification performed for this source handoff
 
+## Games list-presentation hosted closure
+
+Hosted Windows run `36331057943` closed exact commit `106a4569b572473394aa075bcfa5d9c03f2fe44d`
+(last production source `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34`).
+
+- verifier: **25/25**
+- production function inventory: **615**
+- promoted: **615/615**
+- explicit call sites: **6389**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core **79/79**
+- Automation **20/20**
+- Integration/fault injection **66/66**
+- self-test **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun self-contained publish: PASS
+- release SHA-256: `4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189`
+- evidence/cache persistence: `750a3232ad9ac82bd1587ddd903709b886c9b8bb`
+
+The exact release workflow also passed the agent-handoff continuity preflight.
+
+Historical note: run `36330808544` on the pre-fix Games candidate produced
+24/25 solely because `ScanInstalledGames` lacked its required entry trace after
+being moved to a new production file. The final verified source adds that trace;
+the failure was not hidden or manually promoted.
+
 ## Games first hosted verification — one trace gap
 
 Run `36330808544` checked exact commit
@@ -36,28 +62,6 @@ Other evidence from the same run:
 Production fix `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34` adds the missing method-entry
 `MasterDebugLog.BeginMethod()` and a regression assertion. It remains
 unverified until a new full Windows Release Gate passes.
-
-
-## Games list-presentation verification boundary
-
-Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` changes WPF application source after
-the closed Profiles checkpoint.
-
-Implementation scope:
-
-- `GamesPageViewModel` owns `GameProfileRegistry.Load()` consumption and
-  game-list collection state.
-- `MainWindowViewModel.Games` aliases `GamesPage.Rows`.
-- game discovery/mutation, `SelectedGame`, switching, process restart,
-  application shutdown, busy coordination, and status stay shell-owned.
-- a new source-level integration guard checks the list seam, unchanged XAML
-  bindings, and shell-owned switch/restart path.
-
-No fresh Windows evidence exists for this candidate yet. Applicable closed
-verification remains Profiles run `36328183152` at exact commit
-`04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`. Do not promote changed
-fingerprints until a full new Windows Release Gate passes.
-
 
 ## Profiles read/list page-view-model hosted closure
 

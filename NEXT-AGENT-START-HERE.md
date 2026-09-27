@@ -1,58 +1,36 @@
 # NEXT AGENT — START HERE
 
-## Games verification follow-up: trace gap repaired
+## Closed checkpoint: Games list presentation state
 
-Hosted Windows run `36330808544` on exact commit
-`1aa8cff1d06ba3b97dfe362655fe07e1c5758514` produced **24/25**.
+Hosted Windows Release Gate `36331057943` verified exact commit
+`106a4569b572473394aa075bcfa5d9c03f2fe44d` (last production source `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34`): **25/25**
+verifier, **615/615** fingerprints, **6389** explicit call sites with **0**
+uncovered, Core **79/79**, Automation **20/20**, Integration/fault injection
+**66/66**, self-test **11/11**, App win-x64 analyzers PASS, and ReadyToRun
+self-contained publish PASS.
 
-The only failed stage was the function fingerprint scan:
+Release SHA-256:
+`4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189`
 
-- function inventory: **615**
-- known-good: **607**
-- needs verification: **8**
-- trace gaps: **1**
-- explicit call sites: **6388**
-- uncovered call sites: **7**
-- parse errors: **0**
-- sole gap: `MainWindowViewModel.ScanInstalledGames()`
+Evidence/cache persistence commit:
+`750a3232ad9ac82bd1587ddd903709b886c9b8bb`
 
-That method was moved into a new production file and therefore received a new
-fingerprint, but it lacked the mandatory `MasterDebugLog.BeginMethod()` entry
-scope. All seven uncovered call sites belonged to that one method.
+The earlier run `36330808544` is superseded historical evidence. It reached
+24/25 and correctly caught the missing `ScanInstalledGames` entry trace; the
+final verified source includes that trace and a regression assertion.
 
-The same run still confirmed relaxed + strict compilation with **0 warnings /
-0 errors** and Integration/fault injection **66/66**.
+Architecture boundary confirmed by this slice:
 
-Production fix commit `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34` adds only the missing entry trace and a
-regression assertion that the extracted scan command retains it.
+- `GamesPageViewModel` owns only registry `Load()` -> observable rows.
+- `SelectedGame`, discovery, add/configure, `SetActive`, switching,
+  process restart/WPF shutdown, `RunBusy`, and `StatusText` remain shell-owned.
+- `AppPaths.Discover` still resolves the active game before startup rebuilds
+  the game-scoped service graph.
 
-Treat the fix as **unverified** until a fresh full Windows Release Gate passes.
-Run `36330808544` is superseded partial evidence, not closure.
-
-## Active candidate: Games list presentation state
-
-Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` extracts only the available-game list
-read/state into `GamesPageViewModel`.
-
-Confirmed source flow before extraction:
-
-- `AppPaths.Discover()` reads the active profile from `GameProfileRegistry`
-  before the game-scoped database/planner/executor/service graph is built.
-- `SwitchGame` calls `SetActive`, starts a fresh manager process, then shuts
-  down the current WPF application. Services are not hot-swapped in-process.
-- installed-game discovery and add/configure operations mutate the registry and
-  remain shell/application responsibilities.
-- `SelectedGame`, `RunBusy`, `StatusText`, switching, restart/lifetime,
-  and AppPaths/service composition remain outside `GamesPageViewModel`.
-
-The page model owns only `GameProfileRegistry.Load()` -> observable rows.
-The existing game commands live in `MainWindowViewModel.Games.cs`, which is
-still the shell partial class.
-
-This source is **not verified yet**. The last closed checkpoint remains Profiles
-at commit `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`, run
-`36328183152`. Run the full Windows Release Gate and do not start another
-source slice until Games is independently green.
+Next: re-audit remaining `MainWindowViewModel` responsibilities before choosing
+another source slice. Do not force `IssueSuspects`; if no clean presentation
+seam remains, move to a separately scoped ManagerDatabase repository-extraction
+design with explicit transaction-boundary mapping first.
 
 ## Closed checkpoint: Profiles read/list page view model
 

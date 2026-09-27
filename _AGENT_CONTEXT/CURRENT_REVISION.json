@@ -8,43 +8,45 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "games-list-trace-fix-awaiting-windows-verification",
-  "verificationAppliesToCommit": "04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8",
-  "lastClosedVerificationCommit": "04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8",
-  "lastClosedVerificationRun": "36328183152",
+  "status": "games-list-presentation-closed-windows-verified",
+  "verificationAppliesToCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
+  "lastClosedVerificationCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
+  "lastClosedVerificationRun": "36331057943",
   "candidateSourceCommit": "fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34",
-  "verificationScopeNote": "Profiles remains the last closed checkpoint. Games run 36330808544 on exact commit 1aa8cff1d06ba3b97dfe362655fe07e1c5758514 reached 24/25: the only failed verifier stage was the function fingerprint scan because newly moved MainWindowViewModel.ScanInstalledGames() lacked its required MasterDebugLog.BeginMethod() entry scope. The scan reported 615 functions, known-good=607, needs-verification=8, trace-gaps=1, explicit-call-sites=6388, uncovered-call-sites=7, parse-errors=0. Relaxed and strict compilation passed with 0 warnings/errors and Integration/fault injection passed 66/66. Production fix fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34 adds only the missing entry trace plus a source-level regression assertion. It is unverified until a fresh full Windows Release Gate passes.",
+  "verificationScopeNote": "The Games list-presentation slice is closed. Hosted Windows Release Gate run 36331057943 verified exact main commit 106a4569b572473394aa075bcfa5d9c03f2fe44d; production source last changed at fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34. The verifier passed 25/25 and promoted all 615 production fingerprints. Explicit call sites: 6389 with 0 uncovered; trace gaps and parse errors: 0. Core 79/79, Automation 20/20, Integration/fault injection 66/66, self-test 11/11, App win-x64 analyzer compile and ReadyToRun self-contained publish all passed. Release SHA-256: 4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189. Evidence/cache persistence commit 750a3232ad9ac82bd1587ddd903709b886c9b8bb is cache/evidence-only. Earlier run 36330808544 is superseded partial evidence: it reached 24/25 and exposed the missing ScanInstalledGames entry trace that fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34 repaired. Any later production edit starts a new verification boundary.",
   "lastClosedVerification": {
-    "functionInventoryTotal": 613,
-    "functionsVerified": 613,
+    "functionInventoryTotal": 615,
+    "functionsVerified": 615,
     "functionsPending": 0,
     "windowsGate": "passed: 25/25",
+    "explicitCallSites": 6389,
+    "uncoveredCallSites": 0,
     "coreTests": "79/79 passed",
     "automationTests": "20/20 passed",
-    "integrationTests": "65/65 passed",
+    "integrationTests": "66/66 passed",
     "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8"
+    "releaseArtifactSha256": "4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189"
   },
   "candidateChanges": [
-    "GamesPageViewModel owns GameProfileRegistry.Load() consumption and the observable game-profile list.",
-    "MainWindowViewModel composes GamesPageViewModel while preserving Games as an alias to GamesPage.Rows.",
-    "Game discovery/add/configure/switch/restart commands remain shell-owned in MainWindowViewModel.Games.cs.",
-    "Run 36330808544 exposed one required trace gap in newly moved ScanInstalledGames(); the current source adds MasterDebugLog.BeginMethod() at method entry.",
-    "The Games source-level integration guard now also asserts that ScanInstalledGames retains the required entry trace.",
-    "SelectedGame, registry mutation, restart/shutdown, RunBusy, StatusText, AppPaths, and startup service composition remain unchanged."
+    "GamesPageViewModel owns GameProfileRegistry.Load() consumption and observable game-profile list state.",
+    "MainWindowViewModel.Games aliases GamesPage.Rows, preserving the existing Games XAML binding.",
+    "Scan/Add/Switch/Configure/Restart commands live in MainWindowViewModel.Games.cs but remain shell-owned.",
+    "SelectedGame, registry mutation, SetActive, process restart/WPF shutdown, RunBusy, StatusText, AppPaths discovery, and startup service reconstruction remain outside the page model.",
+    "The first hosted Games run exposed one missing ScanInstalledGames entry trace; the final source adds MasterDebugLog.BeginMethod() and a regression assertion."
   ],
   "invariantsPreserved": [
-    "Switching games still writes the active GameProfileRegistry ID, starts a fresh manager process, and shuts down the current WPF application.",
-    "AppPaths.Discover still resolves the active game before constructing the game-scoped database/planner/executor/service graph.",
-    "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, conflict-resolution, or game-adapter behavior changed.",
+    "Game switching still persists the active registry ID, launches a fresh manager process, and shuts down the current WPF app; services are rebuilt on startup rather than hot-swapped.",
+    "AppPaths.Discover still resolves the active game before constructing game-scoped database/planner/executor/services.",
+    "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, conflict-resolution, SQLite transaction, or game-adapter behavior changed.",
     "Existing Games, SelectedGame, SwitchGameCommand, ScanInstalledGamesCommand, AddGameCommand, and ConfigureGameCommand bindings are preserved.",
-    "FOMOD, enhanced-game adapter redesign, IssueSuspects extraction, XAML decomposition, Generic Host/DI migration, and ManagerDatabase redesign remain out of scope."
+    "FOMOD, enhanced-game adapter redesign, IssueSuspects extraction, XAML decomposition, Generic Host/DI migration, and broad ManagerDatabase redesign remain out of scope for this closed slice."
   ],
-  "nextRequiredAction": "Run a fresh full Windows Release Gate for fixed Games source fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34. The previous run 36330808544 is superseded 24/25 evidence only. Do not begin another source slice until the full verifier + release gate is green and evidence is persisted.",
+  "nextRequiredAction": "Re-audit the remaining MainWindowViewModel responsibilities after the closed Activity, Coverage, Profiles, and Games slices. Do not force IssueSuspects while it still mutates Mod rows and aggregate shell counters. If another genuinely low-coupling presentation seam exists, extract one slice only and verify it independently. Otherwise move to a separately scoped ManagerDatabase repository-extraction design, beginning with a transaction-boundary map and read-only domain seams.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
-  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855"
+  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
+  "closureEvidenceCommit": "750a3232ad9ac82bd1587ddd903709b886c9b8bb"
 }
