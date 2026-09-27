@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   windows-release:
@@ -62,3 +62,38 @@ jobs:
             .verification/function-status.json
             .verification/stage-status.json
             MHW-DEBUG-ALL.log
+
+      - name: Persist promoted verification state
+        if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        run: |
+          $verify = Get-ChildItem -Path BuildLogs -Filter 'verification-report-*.md' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          $build = Get-ChildItem -Path BuildLogs -Filter 'build-release-report-*.txt' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if (-not $verify -or -not $build) { throw 'Expected verification/build reports were not produced.' }
+
+          $evidencePath = '_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log'
+          @(
+            'MHW Manual Mod Manager v8.8.0 hosted Windows closure'
+            ('source_sha=' + $env:GITHUB_SHA)
+            ('run_id=' + $env:GITHUB_RUN_ID)
+            ('runner_os=' + $env:RUNNER_OS)
+            ('runner_arch=' + $env:RUNNER_ARCH)
+            ('dotnet_sdk=' + (& dotnet --version))
+            ''
+            '=== VERIFICATION REPORT ==='
+            (Get-Content -LiteralPath $verify.FullName -Raw)
+            ''
+            '=== RELEASE BUILD REPORT ==='
+            (Get-Content -LiteralPath $build.FullName -Raw)
+          ) | Set-Content -LiteralPath $evidencePath -Encoding UTF8
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m 'Persist hosted Windows verification evidence [skip ci]'
+            git push origin HEAD:main
+          } else {
+            Write-Host 'Promoted verification state already matches the repository.'
+          }
