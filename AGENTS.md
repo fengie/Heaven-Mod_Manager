@@ -19,3 +19,15 @@ GitHub `fengie/mhw-mods` on `main` is the source of truth. Source ZIPs are optio
 The next agent must be able to continue without access to previous chat history.
 
 **Do not break the chain.**
+
+## Checkpoint cadence
+
+The user explicitly requests frequent durable checkpoints before session credits run out.
+Push the working feature branch at each meaningful checkpoint (for example: a coherent
+backend change, integrated UI, or validation milestone), even if the overall task is
+still in progress. Pair every checkpoint with updated `_AGENT_CONTEXT/` notes stating:
+current plan, completed changes, exact test evidence, known failures/limits, and the
+next concrete action. Clearly label unverified work; never promote verification
+booleans to make a checkpoint look finished. Do not leave the only copy of substantial
+work in a transient workspace. Preserve the user's existing authorization; checkpoint
+pushes do not require another confirmation. Do not merge the PR without authorization.

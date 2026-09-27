@@ -66,3 +66,11 @@ If a future task produces a different durable artifact (research package, datase
 ## Privacy / secrets
 
 Do not copy passwords, API keys, tokens, private credentials, or unnecessary personal data into handoff files. Preserve only project-relevant technical context.
+
+## User-required checkpoint pushes (2026-09-27)
+
+Push meaningful checkpoints to the active feature branch while work is ongoing. Update
+`CHECKPOINT.md` with the plan, what changed, tests actually run, remaining risks, remote
+commit/PR links, and the exact next step. This is an explicit user preference intended
+to preserve progress before credits expire. Keep unverified checkpoints clearly marked.
+Do not wait until the whole feature set is complete to make work durable.

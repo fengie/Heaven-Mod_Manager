@@ -1,3 +1,5 @@
+**Checkpoint cadence:** Read `CHECKPOINT.md` first for the active plan, remote branch/PR, and exact next action. The user requires meaningful progress to be pushed throughout the task.
+
 **Workflow expansion:** Read `WORKFLOW_IMPLEMENTATION.md` and `../docs/WORKFLOWS.md` for the new feature branch. Its evidence and Windows UI limitations supersede the older repair-only status below.
 
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0

@@ -33,7 +33,8 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
     "_AGENT_CONTEXT/WORKFLOW_IMPLEMENTATION.md",
     "docs/WORKFLOWS.md",
-    "docs/GAME-ADAPTER-SDK.md"
+    "docs/GAME-ADAPTER-SDK.md",
+    "_AGENT_CONTEXT/CHECKPOINT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
