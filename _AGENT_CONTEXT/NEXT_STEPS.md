@@ -1,5 +1,31 @@
 # Next steps
 
+## ACTIVE: close the pure Smart Pack planner boundary before anything else
+
+Candidate production source: `ab340ff2d6db8470d37846e68c6bdddcb5844657`  
+Focused tests: `231fa62b0df66ef6bfc9f4b0f602f734c2a28891`  
+Branch: `agent/smart-pack-planner-core`  
+PR: #13  
+Architecture/reuse audit: `_AGENT_CONTEXT/SMART_PACK_PLANNER_AUDIT.md`
+
+This is the **only active production boundary**. It is implemented and pushed but not yet compile/test/Windows-gate verified.
+
+Exact next action:
+
+1. re-check canonical `main` and intervening commits before integration;
+2. preserve the existing planner/conflict/deployment/SQLite ownership documented in the Smart Pack audit;
+3. run `scripts/Test-AgentHandoff.ps1` and the full repository verification path for the exact integrated candidate;
+4. fix any compiler/analyzer/test/function-verifier failure without weakening checks;
+5. persist failed-run evidence/root causes if any;
+6. after an exact green hosted Windows Release Gate, update verification/cache evidence and close **only** this provider-neutral core boundary;
+7. do not begin provider discovery, popularity normalization, dependency resolution, downloads, retarget transforms, persistence/schema work, WPF UI, or deployment integration until this boundary is closed and a successor scopes the next seam.
+
+The successor inherits the permanent continuity constitution. Before finishing, require the successor after you to inherit, preserve, obey active Learned Rules, add only justified Learned Rules, and recursively propagate the same constitution again.
+
+**Do not break the chain.**
+
+---
+
 ## PlannerSnapshotRepository boundary — CLOSED
 
 Exact verified commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
