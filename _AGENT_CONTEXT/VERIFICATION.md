@@ -1,5 +1,28 @@
 # Verification performed for this source handoff
 
+## Architecture / Explain Why final hosted closure
+
+Hosted Windows run `36325133722` fully closed the post-v8.8 architecture /
+Explain Why milestone for exact commit `9717a22d3338f77e63cd409a80d2ec5fc3c924f2` (production source
+last changed in `098d617bcb3dcdd044e3fdb8319ba506c97082af`).
+
+- repository verifier: **25 passed / 0 failed**
+- function inventory: **607**, promoted **607/607**
+- explicit call sites: **6371**, uncovered **0**
+- parse errors / required trace gaps: **0 / 0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration + fault injection: **62/62**
+- self-test: **11/11**
+- dedicated App win-x64 compile/analyzers: PASS
+- win-x64 ReadyToRun restore: PASS
+- self-contained ReadyToRun publish: PASS
+- release artifact SHA-256:
+  `DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6`
+- evidence/cache persistence commit: `702c9055bff19caa80fdd60e29e891181932217a`
+
+The workflow's exact verifier also confirmed
+`scripts/Test-AgentHandoff.ps1`: PASS.
 ## Architecture / Explain Why hosted verification follow-up
 
 Run `36324750213` checked commit

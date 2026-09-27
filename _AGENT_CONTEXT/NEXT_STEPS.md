@@ -1,48 +1,51 @@
 # Next steps
 
-## Immediate: verify the architecture / Explain Why candidate
+## Immediate: first post-closure architecture slice
 
-The closed v8.8.0 Windows baseline remains commit
-`5f6789af499fcc1afe6cb5d38244927bb02335fb` / run `36321128433`.
-The current architecture candidate changes production source and is **not green until a
-new Windows Release Gate run passes for the integrated main SHA**.
+The architecture / Explain Why checkpoint is closed at exact commit
+`9717a22d3338f77e63cd409a80d2ec5fc3c924f2` by hosted Windows run `36325133722`.
 
-1. Integrate `agent/architecture-explain-why` into `main` without rewriting history.
-2. Let `.github/workflows/windows-release-gate.yml` run the repository's exact
-   verification and release scripts.
-3. Fix real compile/test/trace/handoff failures. Do not weaken or bypass the gate.
-4. When green, persist the exact source SHA, run ID, updated function inventory/test
-   counts, release artifact hash, and hosted evidence into the continuity state.
-5. Only then continue architecture work.
+Proceed **one independently verifiable slice at a time**:
 
-## What this candidate already establishes
+1. Convert the existing Activity partial seam into a real
+   `ActivityPageViewModel`.
+2. Preserve the current `ActivityRows` / `RefreshActivityCommand` binding
+   surface during that first extraction so the change is responsibility-only.
+3. Keep `MainWindowViewModel.RunBusy` as the cross-page/global operation
+   coordinator for now; the page model should own Activity read projection and
+   row state, not application-wide busy state.
+4. Run the exact Windows Release Gate and close that source boundary before
+   extracting another page.
+5. Then repeat for another low-coupling seam (Coverage is a likely candidate),
+   followed by persistence decomposition, XAML page extraction, and only later
+   startup/DI lifetime changes.
 
-- WPF no longer owns the Activity and Outfit/Coverage SQL projections.
-- WPF no longer owns archive staging/wrapper-normalization filesystem code.
-- Explain Why consumes `DeploymentPlanner` / `ConflictDecision`; there is no second
-  compatibility engine.
-- Overlaps expose exact-path winner/provider/rule/confidence/evidence/provenance details.
-- Activity, Coverage, Import, and Overlap/Explain orchestration have feature partials,
-  reducing the central MainWindow view-model file while preserving bindings.
-- New regression tests cover structured Explain Why, presentation reads, and XAML bindings.
+## Closed checkpoint evidence
 
-## After this candidate is fully green
+- verified exact commit: `9717a22d3338f77e63cd409a80d2ec5fc3c924f2`
+- production source commit: `098d617bcb3dcdd044e3fdb8319ba506c97082af`
+- run: `36325133722`
+- verifier: **25/25**
+- fingerprints: **607/607**
+- Core **79/79**, Automation **20/20**, Integration/fault injection **62/62**
+- self-test **11/11**
+- ReadyToRun self-contained win-x64 publish: PASS
+- artifact SHA-256: `DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6`
 
-Continue **incrementally**, in this order:
+## Architecture order after Activity
 
-1. Convert the partial feature seams into actual page view models where cross-page
-   coordination is no longer needed.
-2. Extract additional cohesive persistence domains from `ManagerDatabase`, preserving
-   explicit transaction ownership and deployment atomicity.
-3. Split `MainWindow.xaml` along stable page boundaries after shared resource placement
-   is made safe.
-4. Refactor the startup composition graph only as a separate change; evaluate Generic
-   Host/DI then rather than mixing lifecycle changes into this milestone.
-5. Finish nearby workflows whose backend is already mature (profile diff / collection
-   import / update migration) only after the architecture checkpoint remains green.
+1. Continue actual page-view-model extraction where cross-page coupling is low.
+2. Extract cohesive persistence domains from `ManagerDatabase`, keeping
+   explicit transaction ownership visible and deployment atomicity unchanged.
+3. Split `MainWindow.xaml` only along stable page boundaries after view-model
+   seams are real.
+4. Treat Generic Host / DI lifetime migration as its own later change. Do not
+   combine desktop lifetime semantics with page/database decomposition.
+5. Finish nearby mature workflows only after each architecture checkpoint is
+   independently green.
 
-Do **not** start FOMOD support or a broad enhanced-game-adapter redesign before the
-architecture/explainability checkpoint is closed.
+Do **not** start FOMOD support or a broad enhanced-game-adapter redesign during
+these architecture slices.
 
 ## Invariants to preserve
 
@@ -53,11 +56,13 @@ architecture/explainability checkpoint is closed.
 - Windows path/archive safety;
 - explicit human rules outranking inference;
 - generic-game fail-closed behavior;
+- Explain Why consuming the real DeploymentPlanner/ConflictDecision path;
 - verification promotion only after the required gate passes.
 
 ## Before finishing any future repository task
 
-Read the agent/continuity instructions, update `_AGENT_CONTEXT` with materially learned
-state, keep evidence tied to an exact SHA, run `scripts/Test-AgentHandoff.ps1`, commit
-handoff context with the code it describes, and tell the next agent to repeat the process.
-Do not break the chain.
+Read the agent/continuity instructions, update `_AGENT_CONTEXT` with materially
+learned state, keep evidence tied to an exact SHA, run
+`scripts/Test-AgentHandoff.ps1`, commit handoff context with the code it
+describes, push stable checkpoints, and tell the next agent to repeat this
+practice. Do not break the chain.

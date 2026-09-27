@@ -1,5 +1,28 @@
 # Current state — v8.8.0
 
+## Architecture / Explain Why milestone CLOSED — hosted Windows
+
+The integrated architecture/Explain Why checkpoint is now fully closed.
+
+- exact verified commit: `9717a22d3338f77e63cd409a80d2ec5fc3c924f2`
+- last production-source change: `098d617bcb3dcdd044e3fdb8319ba506c97082af`
+- GitHub Actions Windows Release Gate: `36325133722`
+- repository verification: **25/25 PASS**
+- production function fingerprints: **607/607 promoted**
+- Core tests: **79/79**
+- Automation tests: **20/20**
+- Integration/fault injection: **62/62**
+- automation self-test: **11/11**
+- win-x64 compile/analyzers: PASS
+- self-contained ReadyToRun publish: PASS
+- release ZIP SHA-256: `DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6`
+- promoted-cache/evidence persistence commit: `702c9055bff19caa80fdd60e29e891181932217a`
+
+The previous CA1826 failure was repaired by direct `IReadOnlyList` Count/indexer
+access in overlap primary-path selection; no resolver/deployment semantics changed.
+This checkpoint is the required stable base for the next incremental architecture
+slice. Any new production-source edit invalidates the applicable source evidence
+until a fresh verifier/gate run confirms the changed fingerprints.
 ## Architecture candidate release-gate follow-up — 2026-09-27
 
 GitHub Actions run `36324750213` on integrated main checkpoint

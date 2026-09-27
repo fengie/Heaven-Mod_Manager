@@ -77,3 +77,32 @@ The backend deployment/journal/CAS safety path remains materially healthier than
 - MO2 and Vortex conflict UIs both expose concrete competing providers/winner relationships. Explain Why follows that pattern while adding this manager's confidence/evidence/provenance data.
 - Implementation consequence: Explain Why consumes the existing DeploymentPlanner/ConflictDecision output rather than creating a second resolver.
 
+
+
+## 2026-09-27 post-closure architecture guidance
+
+Fresh Microsoft guidance was checked before choosing the next slice:
+
+- .NET dependency injection documentation recommends central service
+  registration plus constructor injection, and explicitly notes that WPF owns
+  its desktop lifetime integration.
+- The .NET Generic Host packages DI, configuration, logging, and lifetime
+  management and is supported in WPF, but adopting it changes application
+  lifetime/composition semantics.
+- CommunityToolkit.Mvvm documents constructor injection / an external DI
+  container as the normal modularity path rather than providing a competing
+  container.
+- Microsoft.Data.Sqlite documents a transaction as the atomic unit of work;
+  statements participating in an atomic operation must remain on the same
+  connection/transaction.
+
+References:
+- https://learn.microsoft.com/dotnet/core/extensions/dependency-injection
+- https://learn.microsoft.com/dotnet/core/extensions/generic-host
+- https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/ioc
+- https://learn.microsoft.com/dotnet/standard/data/sqlite/transactions
+
+Implementation consequence: do **not** combine Generic Host adoption with the
+next page-view-model/database split. First establish small responsibility seams
+under the existing lifetime model, verify them, and treat host/DI migration as
+a later independent checkpoint.

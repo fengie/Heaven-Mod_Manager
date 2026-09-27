@@ -1,5 +1,16 @@
 # NEXT AGENT — START HERE
 
+## Current checkpoint: architecture / Explain Why is CLOSED
+
+Hosted Windows Release Gate `36325133722` verified exact commit
+`9717a22d3338f77e63cd409a80d2ec5fc3c924f2`; the last production-source edit is
+`098d617bcb3dcdd044e3fdb8319ba506c97082af`. Verification is **25/25**, function fingerprints are
+**607/607**, Core **79/79**, Automation **20/20**, Integration/fault injection
+**62/62**, self-test **11/11**, and the ReadyToRun win-x64 publish passed.
+Release SHA-256: `DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6`.
+
+The next source change must start a new verification boundary. The next intended
+slice is one page-view-model extraction at a time, beginning with Activity.
 ## Immediate architecture-candidate verification update
 
 Hosted run `36324750213` passed the exact repository verifier but the release
@@ -22,10 +33,7 @@ v8.8.0 has a closed hosted Windows baseline: commit
 function fingerprints promoted, and the win-x64 release publish passed. Read
 `_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`.
 
-A post-v8.8 architecture / Explain Why candidate is now being developed. Read
-`_AGENT_CONTEXT/CURRENT_REVISION.json` and `CURRENT_STATE.md` for the exact
-candidate SHA and verification status. Do **not** transfer the old green
-fingerprints to changed source; the candidate must pass a fresh Windows gate.
+The post-v8.8 architecture / Explain Why milestone is closed by run `36325133722` at exact commit `9717a22d3338f77e63cd409a80d2ec5fc3c924f2`. Any subsequent production-source change starts a new verification boundary and must pass a fresh Windows gate.
 
 ## Mandatory continuity requirement
 
