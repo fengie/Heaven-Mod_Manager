@@ -68,3 +68,12 @@ These are prioritized future refactor targets, not reasons to destabilize v8.8 n
 - `src/MhwModManager.App/App.xaml.cs` — composition/bootstrap remains sizable; keep it composition-oriented and resist new domain/filesystem behavior.
 
 The backend deployment/journal/CAS safety path remains materially healthier than the WPF presentation boundary. Refactor presentation/application boundaries before redesigning the transactional core without evidence.
+
+## 2026-09-27 architecture research
+
+- Current Microsoft .NET guidance favors centralized service registration and constructor injection; a Generic Host is available for desktop lifetime/DI, but this milestone intentionally avoids changing WPF lifetime composition at the same time as feature decomposition.
+- Current Microsoft MVVM guidance supports incremental loose-coupling for complex multi-screen applications. The chosen path is therefore feature-boundary extraction first, page view models second.
+- Microsoft.Data.Sqlite transaction guidance reinforces that transaction scope is the atomic unit. Repository extraction must not split existing deployment transactions.
+- MO2 and Vortex conflict UIs both expose concrete competing providers/winner relationships. Explain Why follows that pattern while adding this manager's confidence/evidence/provenance data.
+- Implementation consequence: Explain Why consumes the existing DeploymentPlanner/ConflictDecision output rather than creating a second resolver.
+
