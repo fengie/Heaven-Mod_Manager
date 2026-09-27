@@ -19,6 +19,30 @@ The next agent must be able to continue without previous chat history.
 
 **Do not break the chain.**
 
+## ACTIVE checkpoint: Smart Pack planner core candidate — verify before expanding
+
+The user separately scoped Smart Auto-Fill / Smart Pack Planner after the closed PlannerSnapshotRepository boundary.
+
+Read `_AGENT_CONTEXT/SMART_PACK_PLANNER_AUDIT.md` before touching this feature.
+
+Current candidate:
+
+- branch: `agent/smart-pack-planner-core`
+- PR: #13
+- last production source: `ab340ff2d6db8470d37846e68c6bdddcb5844657`
+- focused test checkpoint: `231fa62b0df66ef6bfc9f4b0f602f734c2a28891`
+- scope: pure provider-neutral Core planner only
+- verification state: **NOT YET GREEN / DO NOT INHERIT OLD GREEN STATE**
+
+The candidate adds normalized hard eligibility, lexicographic preferences, normalized-popularity fallback, source-neutral logical identity input, mirror suppression, indexed normalized hard conflicts, protected occupied/installed state, deterministic safe-target matching and actual-decision explanations. It does not add provider APIs, downloads, dependency resolution, schema/persistence, archive/path retargeting, WPF UI or deployment mutation.
+
+Do not start a second Smart Auto-Fill seam. First re-check canonical main/concurrent work, integrate this candidate safely, run the handoff validator and exact repository/hosted Windows verification, repair any failures, and close only this boundary with SHA-bound evidence.
+
+You inherit the repository's permanent continuity constitution. Preserve it, obey active Learned Rules, add justified Learned Rules only when concrete discoveries warrant them, and before finishing explicitly require your successor to inherit, preserve and recursively propagate the same rules to the agent after them.
+
+**Do not break the chain.**
+
+
 
 ## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
 
