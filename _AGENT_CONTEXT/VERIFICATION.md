@@ -1,5 +1,29 @@
 # Verification performed for this source handoff
 
+## Architecture / Explain Why hosted verification follow-up
+
+Run `36324750213` checked commit
+`35abe5c7425456675086cdc38455a8447d3560c5` on hosted Windows/.NET 10.0.401.
+
+Confirmed in that run:
+
+- agent handoff continuity preflight: PASS;
+- exact repository verification gate: PASS;
+- function scan: 607 functions, 590 known-good, 17 requiring current
+  verification, 0 trace gaps, 0 uncovered explicit call sites, 0 parse errors;
+- Core tests: **79/79 PASS**;
+- Automation tests: **20/20 PASS**;
+- Integration/fault-injection: **62/62 PASS**;
+- automation self-test: **11/11 PASS**.
+
+The overall workflow remained red because `Build-Release.ps1` correctly treats
+an analyzer warning as an error in its dedicated win-x64 compile gate. The sole
+release diagnostic was CA1826 at
+`MainWindowViewModel.Overlaps.cs:22`. Production commit
+`098d617bcb3dcdd044e3fdb8319ba506c97082af` replaces `FirstOrDefault()` with direct
+`IReadOnlyList` Count/indexer access. This fix is not yet promoted evidence;
+the complete Windows release gate must rerun and pass.
+
 ## Latest executed checks — 2026-09-27 repair revision
 
 The latest evidence is `EVIDENCE/v8.8.0-repair-validation.log` and

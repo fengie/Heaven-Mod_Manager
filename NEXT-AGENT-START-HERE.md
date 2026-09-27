@@ -1,5 +1,13 @@
 # NEXT AGENT — START HERE
 
+## Immediate architecture-candidate verification update
+
+Hosted run `36324750213` passed the exact repository verifier but the release
+win-x64 analyzer gate found one CA1826 diagnostic in overlap path selection.
+Production source commit `098d617bcb3dcdd044e3fdb8319ba506c97082af` contains the minimal analyzer-safe
+fix. Treat it as unverified until a fresh full Windows Release Gate passes and
+persists exact evidence.
+
 Read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/README_FIRST.md`, and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` **before modifying this project**.
 
 ## Canonical repository state

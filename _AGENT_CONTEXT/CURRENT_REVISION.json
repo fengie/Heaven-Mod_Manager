@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "architecture-explain-why-integrated-awaiting-windows-verification",
+  "status": "architecture-explain-why-release-analyzer-fix-awaiting-windows-verification",
   "verificationAppliesToCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationRun": "36321128433",
-  "candidateSourceCommit": "4f08a409c6a4d3083fa0886bd2c8b05829e48aac",
-  "verificationScopeNote": "The 25/25 hosted Windows baseline applies to v8.8.0 commit 5f6789af499fcc1afe6cb5d38244927bb02335fb, with be0d786e996a09fece24f5599dab8911af5b31db only persisting evidence/caches. The architecture/Explain Why candidate changes production source through commit 4f08a409c6a4d3083fa0886bd2c8b05829e48aac; later branch commits are continuity documentation only. The integrated main candidate has not yet closed a fresh Windows gate and MUST NOT inherit the old green state.",
+  "candidateSourceCommit": "098d617bcb3dcdd044e3fdb8319ba506c97082af",
+  "verificationScopeNote": "The closed 25/25 v8.8 baseline still applies only to commit 5f6789af499fcc1afe6cb5d38244927bb02335fb. Architecture/Explain Why verification run 36324750213 on 35abe5c7425456675086cdc38455a8447d3560c5 passed the exact repository verifier but failed the release win-x64 analyzer gate solely on CA1826 in MainWindowViewModel.Overlaps.cs. Production source commit 098d617bcb3dcdd044e3fdb8319ba506c97082af replaces FirstOrDefault() on IReadOnlyList Paths with Count/indexer access; this source fix requires a fresh complete Windows gate before promotion.",
   "lastClosedVerification": {
     "functionInventoryTotal": 602,
     "functionsVerified": 602,
@@ -32,7 +32,8 @@
     "Added structured provider/reason/evidence/family/Nexus/provenance explanation models and overlap exact-path inspection.",
     "Split Activity, Coverage, Import, and Overlap/Explain orchestration into MainWindowViewModel partial feature files; central file reduced from roughly 72.6 KB to 65.7 KB without changing its binding type.",
     "Added Explain Why UI with progressive provider/evidence details in the Overlaps tab.",
-    "Added Automation tests for Explain Why and presentation read projection plus an integration/XAML binding guard."
+    "Added Automation tests for Explain Why and presentation read projection plus an integration/XAML binding guard.",
+    "Fixed release-only CA1826 in overlap primary-path selection by using IReadOnlyList Count/indexer access instead of LINQ FirstOrDefault; no selection semantics changed."
   ],
   "invariantsPreserved": [
     "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, or path-safety semantics were redesigned.",
@@ -40,7 +41,7 @@
     "SQLite deployment transaction boundaries remain unchanged; the new repository is read-only.",
     "FOMOD and enhanced-game adapter redesign were not started."
   ],
-  "nextRequiredAction": "Run the Windows Release Gate for this integrated main revision. Fix real failures rather than weakening the gate. If green, persist the exact verification SHA/run/test counts/function inventory/release artifact hash, then continue only with the next incremental architecture slice.",
+  "nextRequiredAction": "Run the Windows Release Gate for production source commit 098d617bcb3dcdd044e3fdb8319ba506c97082af (plus adjacent continuity commit). Require exact verifier + win-x64 release publish to pass; then persist promoted caches/evidence and mark the architecture/Explain Why checkpoint closed. Do not begin the next architecture slice until that closure is recorded.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",

@@ -1,5 +1,23 @@
 # Current state — v8.8.0
 
+## Architecture candidate release-gate follow-up — 2026-09-27
+
+GitHub Actions run `36324750213` on integrated main checkpoint
+`35abe5c7425456675086cdc38455a8447d3560c5` passed the exact repository
+verification gate, including the continuity preflight, strict builds/tests,
+Automation **20/20**, Integration/fault injection **62/62**, and all **11**
+self-tests. The release stage then failed at the dedicated win-x64
+compile/analyzer gate on a single diagnostic:
+
+- `MainWindowViewModel.Overlaps.cs:22` — CA1826, LINQ
+  `FirstOrDefault()` used on indexable `IReadOnlyList<string>`.
+
+Production source commit `098d617bcb3dcdd044e3fdb8319ba506c97082af` changes only that expression to
+`Count` + indexer access while preserving the same empty-list fallback to the
+asset key. No deployment, conflict-resolution, database, or filesystem safety
+semantics changed. A fresh complete Windows Release Gate is required before the
+architecture/Explain Why milestone can be marked closed.
+
 ## Architecture / Explain Why candidate — 2026-09-27
 
 Working branch: `agent/architecture-explain-why`. Candidate production source:
