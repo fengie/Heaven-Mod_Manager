@@ -45,7 +45,8 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -54,7 +55,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before edits inspect actual main/status when available/history, then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LR-001 through LR-006, SUPPORT_BRANCH_INTEGRATION_2026-09-27.md, WINDOWS_FILESYSTEM_SAFETY_AUDIT.md, and remaining README_FIRST order. The active production boundary is live DeploymentExecutor physical containment. Do not start ReplaceFileW/CAS/recursive-scan/migration/async/diagnostics/networking/backup/Smart-Pack work until this exact candidate is integrated and Windows-gate verified. Preserve transaction/recovery semantics, never weaken fail-closed behavior, update durable context, run handoff/negative fixtures, and explicitly require your successor to recursively pass the same constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status when available, active PRs/branches, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, the support-integration inventory, and the remaining README_FIRST order. Preserve the newly integrated live-deployment reparse-containment checkpoint and its exact verification state. This support branch adds LR-008 for catalog-invisible import staging; PR #15 independently reserves LR-007 for mod-retirement semantics, so preserve both rather than collapsing them. Any import implementation must begin with mixed-failure/restart/cancellation/retry regressions and a commit-on-success publication boundary, and must remain separate from deployment containment, native replacement, Smart Pack, migration, and mod-retirement work. Preserve Core Rules and exact verification/transaction/filesystem invariants, update durable handoff/context, run the normal handoff validator plus recursive-continuity negative fixtures when execution is available, and explicitly require your successor to recursively pass the same obligation to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
