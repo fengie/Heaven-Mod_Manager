@@ -28,6 +28,46 @@ public sealed record ModIssueSuspect(string ModId, string DisplayName, ModIssueK
 public sealed record IssueDiagnosisResult(ModIssueKind Kind, string LaunchId, string? BaselineLaunchId, IReadOnlyList<ModIssueSuspect> Suspects, string Message);
 public sealed record GameUpdateImpactReport(bool Changed, int Revalidate, int TextureOnly, int OtherLowRisk, IReadOnlyList<string> HighRiskMods, string Message);
 public sealed record EffectiveFileProvider(string Path, string? EffectiveModId, string? EffectiveModName, IReadOnlyList<string> ShadowedModIds, string? Sha256);
-public sealed record AssetHeatmapRow(string AssetKey, string DisplayName, int ProviderCount, bool NeedsChoice, IReadOnlyList<string> Providers);
+public sealed record EffectiveProviderDetail(
+    string ModId,
+    string DisplayName,
+    string BlobSha256,
+    int Priority,
+    bool PlannedWinner,
+    bool AppliedProvider,
+    string? FamilyId,
+    string? FamilyRole,
+    string? NexusModId,
+    string? NexusFileId,
+    NexusFileCategory NexusCategory,
+    ProvenanceSource ProvenanceSource,
+    int ProvenanceScore);
+public sealed record EffectiveDecisionExplanation(
+    string Path,
+    string Summary,
+    bool Blocking,
+    string? PlannedWinnerModId,
+    string? PlannedWinnerName,
+    string? AppliedProviderModId,
+    string? AppliedProviderName,
+    bool AppliedMatchesPlan,
+    ConflictKind Kind,
+    string ReasonCode,
+    string Explanation,
+    Confidence Confidence,
+    int ResolverScore,
+    string Evidence,
+    string? RuleId,
+    string RuleSource,
+    bool Inferred,
+    IReadOnlyList<EffectiveProviderDetail> Providers);
+public sealed record AssetHeatmapRow(
+    string AssetKey,
+    string DisplayName,
+    int ProviderCount,
+    bool NeedsChoice,
+    IReadOnlyList<string> Providers,
+    IReadOnlyList<string>? Paths = null);
+public sealed record ArchiveImportResult(string DestinationPath, string DisplayName);
 public sealed record OutfitPreset(string FamilyId, string Name, IReadOnlySet<string> EnabledMemberIds, string Description);
 public sealed record StartupMaintenanceResult(InboxRunResult Inbox, DuplicateAnalysis Duplicates, int CategoriesAssigned, IReadOnlyList<DependencyStatus> Dependencies, string Summary);
