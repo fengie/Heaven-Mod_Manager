@@ -20,6 +20,22 @@ The permanent continuity constitution remains recursive: the successor must inhe
 
 ---
 
+## Test-gap / failure-mode / performance audit — documentation checkpoint
+
+Support audit: `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` (audit document commit `8bb47884c841ca8c27652777fc45da0d673389ef` on the isolated support branch).
+
+This audit does **not** supersede the immediate repaired PlannerSnapshotRepository Windows gate above. Close that exact source boundary first.
+
+After it is green and its exact evidence is persisted, use the audit to schedule independent checkpoints. The first safety checkpoint recommended by the audit is Windows filesystem behavior: documented `ReplaceFileW` partial-failure postconditions plus live deployment reparse/junction containment. Then address corrupt-CAS handling, multi-file crash rollback, statement-level SQLite fault injection, migration recovery, and the measured performance checkpoints.
+
+Do not bundle those findings into one broad source change. Each production repair remains its own source -> focused regression -> continuity -> hosted Windows evidence -> closure cycle.
+
+The audit did not execute `dotnet test`, BenchmarkDotNet, or a Windows gate and did not promote verification state.
+
+**Do not break the chain.**
+
+---
+
 ## Recursive-continuity governance checkpoint — CLOSED
 
 Exact governance commit `73f1298455ec4c651e211488ececf9803504e60d` passed hosted Windows Release Gate `36333960215` on Windows x64 / .NET SDK 10.0.401. The handoff validator passed, the baseline fixture passed, all four recursive-continuity negative fixtures were rejected, the repository verifier finished 25/25, and the release publish passed. Evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
