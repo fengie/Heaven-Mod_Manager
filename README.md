@@ -296,9 +296,9 @@ Names alone do not collapse packages. Two similarly named mods with disjoint lay
 
 Accepted heuristic pairings are written to `MHW-DEBUG-ALL.log` as `[FAMILY] GENERIC ... score=... evidence=...` so every automatic grouping can be audited.
 
-## Source handoff continuity
+## Git-first agent continuity
 
-This source tree carries its own agent/developer handoff context. Before changing code, read `NEXT-AGENT-START-HERE.md`. Before sharing the next source revision, update `_AGENT_CONTEXT/`, run `scripts/Test-AgentHandoff.ps1`, and prefer `Build Source Handoff.bat`. The continuity rule itself must be preserved for the next agent.
+GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Run `scripts/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
 
 ## Verification closure status
 
