@@ -109,3 +109,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** audit branch `agent/support-8-diagnostics-privacy-audit-20260927`, based on canonical main `6ada5a5c4cc83afadfba42bc6af6559540920e3d`; documentation-only, no runtime gate claimed.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-007 — entity retirement must close live semantic references
+
+- **Rule ID:** LR-007
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Durable entity deletion, mod retirement, resolver/configuration state, and identity reuse
+- **Rule:** Deleting a durable entity is not complete merely because its row and declared foreign-key children disappear. Before retirement commits, classify and retire every **live semantic reference** that can affect a future entity reusing the same identity, while preserving historical evidence according to an explicit retention contract.
+- **Trigger / evidence:** At canonical main `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1`, `DuplicateCleanupService.ArchiveSafeAsync` deletes a mod row after archiving its source. FK-owned provenance/files/profile/trust/issue state cascades correctly, but planner-active `conflict_rules` and `resource_providers` have no FK to `mods`, and mod-keyed settings such as `preview:`, `visuals:`, `update:`, and `visual-public-last:` survive. `CatalogService.RefreshFoldersAsync` derives local IDs from the lowercased absolute source path, so a later different package at the same path can reuse the deleted ID and reactivate old resolver/configuration state. See `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md`.
+- **Rationale:** Foreign keys encode only declared ownership. Live configuration can reference an identity through untyped text columns, key/value namespaces, caches, manifests, or external indexes. Reusable identifiers turn stale references from harmless orphan data into future behavior.
+- **Enforcement:** Any new deletion/retirement workflow must inventory live semantic references, distinguish them from historical records, define current-deployment preconditions, add delete -> identity-reuse regression tests, and centralize the retirement boundary instead of issuing raw entity-row deletes from feature services. Do not add blanket cascading FKs to historical or recovery-sensitive state without a migration/retention design.
+- **Relevant audit:** `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md`
+- **Relevant canonical base:** `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1`
+- **Supersedes:** none
+- **Superseded by:** none
