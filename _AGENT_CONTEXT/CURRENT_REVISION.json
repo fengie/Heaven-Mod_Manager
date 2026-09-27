@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "support-audit-integration-documentation-only-awaiting-hosted-handoff-verification",
-  "verificationAppliesToCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
-  "lastClosedVerificationCommit": "efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3",
-  "lastClosedVerificationRun": "36336190920",
+  "status": "support-audit-integration-closed-hosted-windows-verified",
+  "verificationAppliesToCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
+  "lastClosedVerificationCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
+  "lastClosedVerificationRun": "36340312353",
   "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
-  "verificationScopeNote": "Production executable source and tests are unchanged by the support-audit integration. The last closed product verification remains PlannerSnapshotRepository at exact commit efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3 / hosted Windows Release Gate 36336190920. The integration changes documentation, handoff inputs, docs/MIGRATION.md and the append-only Learned Rules ledger, so the newly integrated repository state itself still requires a fresh hosted Windows Release Gate after canonical push. No cache was manually promoted. Local git status/runtime verification was unavailable because the connected desktop device was offline; canonical GitHub history, branch comparisons and file diffs were inspected.",
+  "verificationScopeNote": "Parallel support-audit integration CLOSED. Hosted Windows Release Gate 36340312353 verified exact integration commit 5619604e88a27176726ada8518f53d385abc7b0f on Windows X64 / .NET SDK 10.0.401. Repository verification passed 25/25, including the expanded agent-handoff continuity preflight; the release build/publish gate passed with ReadyToRun fallback=false. Artifact SHA-256 43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF. Evidence/cache persistence commit 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. Production executable source/tests were unchanged by the integration; the previous PlannerSnapshotRepository production behavior remains intact. No cache was manually promoted outside the normal gate. A local git status/runtime run was unavailable because the connected desktop device was offline, but hosted Windows closure is authoritative for the exact integration SHA.",
   "lastClosedVerification": {
     "functionInventoryTotal": 610,
     "functionsVerified": 610,
@@ -21,11 +21,11 @@
     "windowsGate": "passed: 25/25",
     "explicitCallSites": 6456,
     "uncoveredCallSites": 0,
-    "coreTests": "79/79 passed",
-    "automationTests": "20/20 passed",
+    "coreTests": "79/79 passed/cached exact fingerprint",
+    "automationTests": "20/20 passed/cached exact fingerprint",
     "integrationTests": "72/72 passed",
-    "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E"
+    "selfTest": "11/11 passed/cached exact fingerprint",
+    "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF"
   },
   "candidateChanges": [
     "Integrated the parallel support-agent branch inventory and dispositions without blindly merging stale continuity snapshots.",
@@ -92,7 +92,7 @@
     "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
+  "closureEvidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed.",
@@ -111,6 +111,11 @@
       "agent/support-diagnostic-privacy-audit-20260927": "identical to main; no unique work",
       "agent/test-gap-performance-audit-20260927": "superseded by agent/test-gap-performance-audit-20260927-v2"
     },
-    "localVerificationLimitation": "Remote Desktop Commander device offline; no local checkout/git status/runtime execution available."
+    "localVerificationLimitation": "Remote Desktop Commander device offline; no local checkout/git status/runtime execution available.",
+    "verifiedCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
+    "hostedVerificationRun": "36340312353",
+    "evidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
+    "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF",
+    "verificationStatus": "closed: Windows Release Gate passed 25/25"
   }
 }
