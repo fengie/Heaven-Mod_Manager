@@ -30,7 +30,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public ObservableRangeCollection<ConflictRow> Conflicts{get;}=[];
     public ObservableRangeCollection<OutfitRow> OutfitRows{get;}=[];
     public ObservableRangeCollection<ProfileSummary> Profiles{get;}=[];
-    public ObservableRangeCollection<ActivityRow> ActivityRows{get;}=[];
+    public ActivityPageViewModel Activity{get;}\n    public ObservableRangeCollection<ActivityRow> ActivityRows{get;}
     public ObservableRangeCollection<ModIssueRow> IssueSuspects{get;}=[];
     public ObservableRangeCollection<AssetOverlapRow> OverlapRows{get;}=[];
     public ObservableRangeCollection<GameProfile> Games{get;}=[];
@@ -95,7 +95,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public MainWindowViewModel(AppServices services)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        s=services;
+        s=services;\n        Activity=new ActivityPageViewModel(s.PresentationReads);\n        ActivityRows=Activity.Rows;
         PropertyChanged += (_, args) => MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
         Mods.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
         Conflicts.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");

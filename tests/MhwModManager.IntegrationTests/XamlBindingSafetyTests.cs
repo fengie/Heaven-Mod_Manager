@@ -42,6 +42,23 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("SelectedExplanation.Providers", xaml);
     }
 
+    [Fact]
+    public void ActivityPageExtractionPreservesExistingBindingSurface()
+    {
+        var root = FindRepositoryRoot();
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var activityFeature = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Activity.cs"));
+        var activityPage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "ActivityPageViewModel.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("public ActivityPageViewModel Activity{get;}", mainViewModel);
+        Assert.Contains("ActivityRows=Activity.Rows;", mainViewModel);
+        Assert.Contains("await Activity.RefreshAsync(ct);", activityFeature);
+        Assert.Contains("PresentationReadRepository", activityPage);
+        Assert.Contains("ItemsSource=\"{Binding ActivityRows}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshActivityCommand}\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
