@@ -9,10 +9,11 @@
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
   "status": "architecture-explain-why-integrated-awaiting-windows-verification",
+  "verificationAppliesToCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationCommit": "5f6789af499fcc1afe6cb5d38244927bb02335fb",
   "lastClosedVerificationRun": "36321128433",
   "candidateSourceCommit": "4f08a409c6a4d3083fa0886bd2c8b05829e48aac",
-  "verificationScopeNote": "The 25/25 hosted Windows baseline applies to v8.8.0 commit 5f6789af499fcc1afe6cb5d38244927bb02335fb, with be0d786e996a09fece24f5599dab8911af5b31db only persisting evidence/caches. The architecture/Explain Why candidate changes production source through commit 4f08a409c6a4d3083fa0886bd2c8b05829e48aac; later branch commits are continuity documentation only. The candidate MUST NOT inherit the old green state.",
+  "verificationScopeNote": "The 25/25 hosted Windows baseline applies to v8.8.0 commit 5f6789af499fcc1afe6cb5d38244927bb02335fb, with be0d786e996a09fece24f5599dab8911af5b31db only persisting evidence/caches. The architecture/Explain Why candidate changes production source through commit 4f08a409c6a4d3083fa0886bd2c8b05829e48aac; later branch commits are continuity documentation only. The integrated main candidate has not yet closed a fresh Windows gate and MUST NOT inherit the old green state.",
   "lastClosedVerification": {
     "functionInventoryTotal": 602,
     "functionsVerified": 602,
