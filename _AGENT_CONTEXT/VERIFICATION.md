@@ -1,41 +1,33 @@
-# Windows live-containment candidate — verification OPEN
+# Windows live-containment hosted closure — 2026-09-27
 
-Canonical hosted-verified handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`  
-Production source checkpoint: `b671bac33917649ff89e5e3b0866725f7b165232`  
-Focused Windows regression checkpoint: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`  
-Branch: `agent/windows-live-containment-hardening-v3`
+Hosted Windows Release Gate `36341049469` closed exact merge `356fde242046b78e39c7266c57b27e52220141fa`.
 
-Implemented but **not yet claimed green**:
+- runner: **Windows / X64**
+- .NET SDK: **10.0.401**
+- handoff continuity preflight: **PASS**
+- repository verifier: **25/25 PASS**
+- production function inventory: **611**
+- production fingerprints promoted: **611/611**
+- explicit call sites: **6478**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **76/76**
+- automation self-test: **11/11**
+- strict Filesystem/App and whole-solution analyzers/builds: **PASS**
+- win-x64 ReadyToRun restore: **PASS**
+- self-contained ReadyToRun publish: **PASS**
+- release ZIP SHA-256: `F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D`
+- workflow evidence/cache persistence commit: `dc7eb83c94427479c59413c77935050dadf051ff`
 
-- descendant reparse traversal rejection before deployment capture/precondition reads;
-- repeated containment check immediately before live mutation;
-- rollback/startup-recovery containment checks;
-- pruning and lock-related containment checks;
-- real Windows directory-junction regressions for Add/Replace/Remove and crash/restart recovery.
+The focused Windows integration coverage includes real parent-junction Add/Replace/Remove rejection and startup recovery after a parent is replaced by a junction while the app is down. External redirected bytes remain untouched; unsafe recovery fails closed into `RecoveryRequired`.
 
-Verification actually performed so far:
+The verifier initially identified 8 changed/new function fingerprints with **0 trace gaps**; the successful gate promoted all 611 exact current fingerprints. No verification cache was manually promoted.
 
-- canonical GitHub history/current source/audits inspected;
-- source/test patch rebased onto the latest hosted-closed support-integration handoff;
-- branch source/test diff inspected;
-- LR-001 method-entry tracing statically re-audited;
-- Microsoft primary documentation checked for reparse-point detection and symbolic-link/junction path redirection.
-
-Not yet performed for this changed source:
-
-- local `git status` (authorized desktop is offline);
-- C# compile/analyzers;
-- targeted integration test execution;
-- full repository verifier;
-- PowerShell handoff validator execution;
-- hosted Windows Release Gate;
-- verification cache promotion.
-
-Previous hosted green evidence does not apply to changed production fingerprints. No cache has been manually promoted.
-
-Required closure is the exact hosted Windows gate after safe canonical integration.
+Known residual risk is explicitly unchanged: path-component attributes are rechecked immediately before mutation/recovery work, but a topology swap after that final check remains a TOCTOU window. This closure does not claim handle-level physical identity locking.
 
 ---
+
 
 # Parallel support-audit integration verification — 2026-09-27
 
