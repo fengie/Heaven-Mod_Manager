@@ -402,3 +402,29 @@ Support Agent 1 completed an independent static cross-check of SQLite write owne
 The deployment journal/final-commit/rollback transactions were independently confirmed. Four non-deployment consistency defects/gaps were documented for later isolated checkpoints: duplicate cleanup move-before-delete recovery, trust-vs-launch-history split persistence, snapshot-prune DB/payload drift, and legacy migration run-status closure. No production source was changed by this support audit, and no local/hosted Windows execution is claimed for it.
 
 Any successor working on these findings must preserve the permanent recursive continuity constitution and explicitly pass that requirement to its successor. Do not break the chain.
+
+
+## Independent support audit — diagnostics privacy and secret handling (documentation only)
+
+Support branch `agent/support-8-diagnostics-privacy-audit-20260927` audited the share boundary around support bundles,
+startup/manual-share diagnostics, telemetry metadata, and the Nexus API key.
+
+Durable authority:
+
+- `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md`
+
+Highest-priority confirmed finding: the support bundle copies the five newest
+structured JSONL logs verbatim. Those logs are known from source to include
+absolute local roots/paths and may include structured properties or exception
+text. This is a share-boundary privacy defect, not a confirmed Nexus credential
+leak: Nexus HTTP logging redacts the API key, and the key file is not copied into
+the bundle.
+
+LR-005 records the durable rule that shareable diagnostics require centralized
+export-time sanitization plus path/credential canary tests. The recommended
+future source checkpoint is support-export sanitization + canary integration
+tests only. No production source, schema, transaction owner, network behavior,
+or verification cache changed in this support audit.
+
+The existing PlannerSnapshotRepository hosted-Windows closure remains the exact
+production verification authority.
