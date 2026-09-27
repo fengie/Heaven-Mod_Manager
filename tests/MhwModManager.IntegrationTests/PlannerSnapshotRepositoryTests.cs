@@ -32,12 +32,29 @@ public sealed class PlannerSnapshotRepositoryTests : IDisposable
     public async Task Filtered_snapshot_matches_pre_extraction_case_insensitive_distinct_filter()
     {
         var db = await CreateSeededAsync("filtered");
-        string[] filter = ["B", "b", "missing"];
+        string[] filter = ["b", "B", "missing"];
         var expected = await LoadLegacyAsync(db, filter, TestToken);
         var actual = await new PlannerSnapshotRepository(db).LoadAsync(filter, TestToken);
         AssertSnapshotEqual(expected, actual);
         Assert.Equal(2, actual.Files.Count);
         Assert.All(actual.Files, file => Assert.Equal("b", file.ModId));
+        Assert.Equal(2, actual.Mods.Count);
+        Assert.NotEmpty(actual.Rules);
+        Assert.NotEmpty(actual.CurrentManifest);
+    }
+
+    [Fact]
+    public async Task Filtered_snapshot_preserves_legacy_first_casing_sql_semantics()
+    {
+        var db = await CreateSeededAsync("filtered-casing");
+        string[] filter = ["B", "b"];
+        var expected = await LoadLegacyAsync(db, filter, TestToken);
+        var actual = await new PlannerSnapshotRepository(db).LoadAsync(filter, TestToken);
+
+        AssertSnapshotEqual(expected, actual);
+        // Distinct(StringComparer.OrdinalIgnoreCase) keeps the first representative ("B"), while
+        // the existing SQLite IN comparison uses default case-sensitive text equality.
+        Assert.Empty(actual.Files);
         Assert.Equal(2, actual.Mods.Count);
         Assert.NotEmpty(actual.Rules);
         Assert.NotEmpty(actual.CurrentManifest);

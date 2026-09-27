@@ -3,8 +3,9 @@
 Initial extraction source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
 Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
 Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+Final test-only filter-parity repair: this commit.
 
-Hosted run `36335255922` on exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` failed and is preserved as superseded evidence. The exact root causes were two LR-001 trace gaps (`RestoreLastGood`, `LaunchSafeMode`) and two missed callers (`NexusMetadataService`, `GameBuildMonitor`) that still referenced the removed ManagerDatabase method. Release/publish was skipped and no verification state was persisted. The repair changes only this boundary.
+Hosted runs `36335255922` and `36335692754` are preserved as superseded evidence. Run `36335255922` on exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` failed first. The exact root causes were two LR-001 trace gaps (`RestoreLastGood`, `LaunchSafeMode`) and two missed callers (`NexusMetadataService`, `GameBuildMonitor`) that still referenced the removed ManagerDatabase method. Release/publish was skipped and no verification state was persisted. The first repair changes only this boundary. Run `36335692754` then reached **24/25** with clean function verification, clean compile/analyzers, Automation **20/20**, self-test **11/11**, and Integration **70/71**. Its only failure was a wrong extra assertion in the new filtered parity test; production and the copied legacy query agreed exactly. The final test-only repair now covers both a canonical-casing filtered result and the preserved uppercase-first SQLite behavior.
 
 This is the one production boundary authorized by the MainWindow/storage audit. It is **not yet Windows-verified**.
 

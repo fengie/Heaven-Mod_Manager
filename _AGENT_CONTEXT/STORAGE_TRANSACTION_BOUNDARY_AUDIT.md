@@ -287,3 +287,8 @@ The independent Support Agent 1 cross-check is persisted in `_AGENT_CONTEXT/SQLI
 It confirms the critical DeploymentExecutor, ReplaceModFiles, manual-family, profile, supersession, revalidation, trust-batch and issue-batch transaction boundaries, and adds four concrete consistency defects/gaps outside the deployment core: duplicate cleanup move-before-delete recovery, split trust/history launch persistence, snapshot-prune DB/payload drift, and stale legacy migration-run status after abrupt death. It also records adoption/save/CAS crash-litter windows, the intentionally non-transactional planner read snapshot, missing write-concurrency tests, and exact extraction rules for caller-owned transactions.
 
 Future write-side extraction work must read the deep audit before moving any transaction participant. The permanent recursive continuity constitution still applies; successors must preserve it and require the agent after them to do the same. Do not break the chain.
+
+
+### Filter-casing semantics confirmed by hosted run 36335692754
+
+The optional `fileModIds` path has a subtle existing behavior that this extraction must preserve: IDs are deduplicated with `StringComparer.OrdinalIgnoreCase`, but the retained first representative is bound into a normal SQLite `IN` query. Under the existing default text comparison, stored mod id `b` is not matched by retained parameter `B`. This extraction deliberately does not add `COLLATE NOCASE` or normalize IDs because the checkpoint is architectural extraction only. Regression coverage now exercises both a canonical-casing selected-file case and the uppercase-first legacy result.

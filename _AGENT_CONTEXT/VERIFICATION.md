@@ -36,7 +36,27 @@ Root cause: the first caller audit was incomplete and the two changed MainWindow
 
 Repair source `528401925b1d09b3d65c9652de8e4f2024e3677f` migrates both missed callers, adds both required entry traces, and corrects the representative planner parity assertion to the pre-existing ExactWinner semantics.
 
-Required next evidence is a fresh full hosted Windows Release Gate for the repaired final candidate commit, including the handoff validator and recursive-continuity negative fixtures. No cache has been manually promoted for this candidate.
+### Second PlannerSnapshotRepository hosted attempt — 24/25 / superseded
+
+Run `36335692754` checked exact candidate `0e561f3c059475ad443a79ac4a27dd68264a7bdb` on Windows / SDK 10.0.401.
+
+Confirmed:
+- handoff continuity preflight: PASS;
+- recursive-continuity negative fixtures: 4/4 rejected as intended;
+- function scan: **610** functions, **594** known-good, **16** requiring verification, **0** trace gaps, **6456** explicit call sites, **0** uncovered, **0** parse errors;
+- relaxed and strict whole-solution compile/analyzers: PASS;
+- Automation tests: **20/20 PASS**;
+- Integration/fault injection: **70/71 PASS**, exactly one failed new parity assertion;
+- self-test: **11/11 PASS**;
+- repository verifier: **24/25**;
+- release build/publish: SKIPPED;
+- verification-state persistence: SKIPPED.
+
+The one failed test expected two files for `["B","b","missing"]`, while both the copied pre-extraction query and the extracted repository returned zero. Existing behavior first uses `Distinct(StringComparer.OrdinalIgnoreCase)`, retaining `"B"`, then binds that representative to SQLite `IN` under default case-sensitive text equality against stored id `"b"`.
+
+The final test-only repair now uses `["b","B","missing"]` for the normal selected-file case and separately proves that uppercase-first `["B","b"]` still returns zero exactly like the legacy query.
+
+Required next evidence is a fresh full hosted Windows Release Gate for the final candidate. No cache has been manually promoted for this candidate.
 
 ---
 

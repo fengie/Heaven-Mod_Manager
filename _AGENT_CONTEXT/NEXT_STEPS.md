@@ -5,8 +5,9 @@
 Initial production source: `8e0068bd44cc6735ffa9478067923ad5d9c54506`.
 Focused regression-test hardening: `64e666a19ce17c21bc696b46cce9c07bb257a686`.
 Repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
+Final test-only filter-parity repair: this commit.
 
-First hosted attempt `36335255922` on `161b5fcba88470b7d941a3831624bdbf071ff668` is failed/superseded evidence: two missing entry traces and two missed planner-snapshot callers caused the verification/compile failures. Run a fresh full gate on the repaired exact commit.
+First hosted attempt `36335255922` on `161b5fcba88470b7d941a3831624bdbf071ff668` is failed/superseded evidence: two missing entry traces and two missed planner-snapshot callers caused verification/compile failures. Second hosted attempt `36335692754` on `0e561f3c059475ad443a79ac4a27dd68264a7bdb` is also failed/superseded evidence: all production verification/compile checks were clean and the only failure was the new filtered test's incorrect extra expectation. Run a fresh full gate on the final test-parity-repaired exact commit.
 
 Run a fresh full hosted Windows Release Gate for the final candidate commit. Do not reuse the prior green state for changed production source and do not manually promote verification caches.
 

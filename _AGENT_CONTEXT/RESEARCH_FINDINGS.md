@@ -179,3 +179,8 @@ See STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.
 ## 2026-09-27 PlannerSnapshotRepository first-gate caller correction
 
 Hosted run `36335255922` proved the prior static caller list was incomplete: `NexusMetadataService` and `GameBuildMonitor` also consumed planner snapshots. The compiler, not the connector's private-code search index, was authoritative. Both callers are read consumers only, so adding them to the repository injection set does not change the transaction-boundary conclusion.
+
+
+## 2026-09-27 planner filter casing parity
+
+Run `36335692754` exposed a test assumption, not a production regression. The pre-extraction query and `PlannerSnapshotRepository` both deduplicate `fileModIds` case-insensitively while retaining the first input string, then bind that string into SQLite `IN` under default comparison semantics. Thus `["B","b"]` against stored id `b` yields no mod_files, while `["b","B"]` yields the rows. This behavior is now regression-tested and deliberately unchanged.
