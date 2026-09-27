@@ -1,3 +1,51 @@
+# Parallel support-agent integration — documentation/continuity checkpoint
+
+Integration base: canonical `main` at `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
+
+The recent support branches were inspected from actual branch-vs-main diffs and branch file contents. Durable inventory and disposition:
+
+- `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`
+
+No examined support branch contained production C# or test changes relative to the integration base. The integrated work is documentation, research, one migration-guide correction, and durable Learned Rules. Stale branch-local copies of canonical continuity state were deliberately not merged wholesale.
+
+Integrated specialized knowledge now includes:
+
+- async/background lifetime, shutdown and staged-draft risks;
+- Windows physical containment/reparse, CAS and native replacement safety;
+- broad test/failure/performance gaps;
+- legacy migration retry/ownership/cleanup/fidelity risks;
+- diagnostics share-boundary privacy and secret handling;
+- remote preview egress/redirect/HTTP/response validation;
+- verification exact-input/stage-cache/CI supply-chain risks;
+- full-state backup/portability recovery design;
+- source-neutral multi-provider bulk-fill design;
+- MHW semantic physical-slot coverage/gap-fill design;
+- an independent MainWindow re-audit that reaffirms the stop-page-model-splitting decision.
+
+`docs/MIGRATION.md` now describes the current restart protocol, backup limits, completion marker/run-status split, best-effort cleanup, and known hardening work.
+
+Active Learned Rules are now **LR-001 through LR-006**. The integration resolved one parallel numbering collision by keeping migration as LR-005 and renumbering diagnostics export sanitization to LR-006.
+
+## Verification status for this checkpoint
+
+Production executable source and tests are unchanged by this integration. The last closed product verification therefore remains the PlannerSnapshotRepository boundary at exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`.
+
+That does **not** mean the newly changed continuity/documentation inputs have already passed a fresh hosted gate. A new Windows Release Gate must run after the canonical integration push to verify the current handoff/continuity state. No verification cache was manually promoted.
+
+A local `git status` / local test run was unavailable during integration because the connected Remote Desktop Commander device was offline. Remote GitHub canonical state, history, branch comparisons and file diffs were inspected instead.
+
+## Next boundary
+
+Do not reopen PlannerSnapshotRepository, continue page-model splitting, or bundle all findings into one production change. Read `NEXT_STEPS.md`.
+
+The highest-safety candidate identified independently by the test-gap and Windows-filesystem audits is a **test-first Windows physical-containment / native-`ReplaceFileW` characterization checkpoint**. Re-check current `main` before acting and keep that checkpoint independently verifiable.
+
+The successor must inherit the permanent continuity constitution, obey LR-001 through LR-006, update durable handoff state, and explicitly require its successor to propagate the same rules to the agent after them.
+
+**Do not break the chain.**
+
+---
+
 # PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
 
 Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
