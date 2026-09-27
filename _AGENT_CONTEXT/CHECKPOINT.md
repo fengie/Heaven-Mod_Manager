@@ -59,3 +59,11 @@ verifier fixtures; inspect the final suite summary (zero failures).
 **Do not break the chain. Push and update this checkpoint at each meaningful milestone.**
 
 Checkpoint policy commit: `172d22118f2b33feb03b56b6971358195f628aa3`.
+
+## CI efficiency checkpoint
+
+LF checkout fix published as `a11ca39bcf5ba7fed6593d767dfa3a2e427d3209`.
+Run `36318654840` is the first PR rerun containing the fix. CI now runs once per PR
+change (plus manual dispatch), cancels superseded runs, and skips documentation-only
+updates. This avoids duplicate push/PR builds and repeated builds for evidence notes.
+Query the latest run because this workflow change triggers its own verification.

@@ -1,9 +1,13 @@
 name: Windows workflow verification
 on:
   pull_request:
-  push:
-    branches: [codex/complete-mod-workflows]
+    paths-ignore:
+      - '**/*.md'
+      - '_AGENT_CONTEXT/**'
   workflow_dispatch:
+concurrency:
+  group: windows-workflows-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
