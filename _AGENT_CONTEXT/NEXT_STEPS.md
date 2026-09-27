@@ -1,5 +1,42 @@
 # Next steps
 
+## Current checkpoint — native ReplaceFileW failure semantics CLOSED
+
+Final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`.  
+Production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`.  
+Hosted Windows Release Gate: `36342205103`.  
+Evidence/cache persistence: `689a17ce5dff18bd0bf1201205446edd51ada8b5`.  
+Release SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468`.
+
+The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as proof that staged recovery material can be discarded: documented 1176/1177 partial-name-mutation outcomes preserve the replacement staging path and remain fail-closed in `RecoveryRequired`. Focused fixtures pin 1175/1176/1177 filesystem and operation/journal postconditions.
+
+### Highest-value next independently verifiable boundary
+
+Implement the **CAS integrity checkpoint** identified as step 3 in `TEST_GAP_AND_PERFORMANCE_AUDIT.md`.
+
+Keep it test-first and narrow:
+
+1. re-check canonical `main`, current continuity, and active Learned Rules;
+2. inspect `BlobStore.CaptureWithHashAsync`, `BlobStore.RestoreAsync`, deployment/rollback CAS consumers, and the CAS sections of the filesystem/test-gap audits;
+3. create a known blob, corrupt the existing hash-named CAS object without renaming it, and prove restore/deployment never accepts those bytes as the advertised SHA;
+4. cover the existing-object capture path where a newly verified temp currently loses to an already-existing hash filename;
+5. define the smallest safe behavior before implementation: reject/fail closed, or atomically replace a proven-corrupt object only when recovery invariants make that safe;
+6. assert live destination bytes and operation/recovery state so a CAS integrity failure cannot silently become a committed deployment;
+7. run the exact full hosted Windows Release Gate and persist exact evidence before opening another source boundary.
+
+Do **not** combine this with recursive ModScanner/adoption/Smart Inbox reparse traversal, hardlink/migration redesign, async lifetime, diagnostics privacy, remote networking, backup, or Smart Pack work.
+
+Recursive source/live reparse traversal remains a separate P0 finding in `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`; address it after this CAS checkpoint unless new canonical evidence changes the priority.
+
+## Continuity
+
+Preserve exact SHA/run evidence, update durable context, and explicitly require the successor to recursively propagate the permanent continuity constitution to the agent after them.
+
+**Do not break the chain.**
+
+---
+
+
 ## Current checkpoint — Windows live containment CLOSED
 
 Exact verified commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
