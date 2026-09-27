@@ -63,6 +63,57 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExplainWhyUsesPlannerDecisionAndHumanRuleEvidence()
+    {
+        var db=await CreateDbAsync("explain-why.db");
+        await SeedModAsync(db,"a","Base Provider");
+        await SeedModAsync(db,"b","Chosen Provider");
+        await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","a1",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","b1",FileClass.Texture)],TestContext.Current.CancellationToken);
+        var now=DateTimeOffset.UtcNow.ToString("O",System.Globalization.CultureInfo.InvariantCulture);
+        await db.ExecuteAsync(
+            "INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at) VALUES('exact-b','ExactWinner','ExactPath',NULL,NULL,'b',$p,'User selected B',1,$t)",
+            new Dictionary<string,object?>{{"$p",@"nativePC\same.tex"},{"$t",now}},
+            TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            "INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at) VALUES($p,'b','b1','b1','exact-b',$t)",
+            new Dictionary<string,object?>{{"$p",@"nativePC\same.tex"},{"$t",now}},
+            TestContext.Current.CancellationToken);
+
+        var planner=new DeploymentPlanner(new ConflictEngine());
+        var result=await new EffectiveInspectorService(db,planner).ExplainWhyAsync(@"nativePC\same.tex",TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result);
+        Assert.False(result!.Blocking);
+        Assert.Equal("b",result.PlannedWinnerModId);
+        Assert.Equal("Chosen Provider",result.PlannedWinnerName);
+        Assert.Equal("exact-file-winner",result.ReasonCode);
+        Assert.Equal("Explicit human rule",result.RuleSource);
+        Assert.True(result.AppliedMatchesPlan);
+        Assert.Equal(2,result.Providers.Count);
+        Assert.Single(result.Providers,x=>x.PlannedWinner&&x.AppliedProvider&&x.ModId=="b");
+        Assert.Contains("saved exact-file winner",result.Explanation,StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task PresentationReadRepositoryCombinesAutomationActivity()
+    {
+        var db=await CreateDbAsync("presentation-read.db");
+        var when=DateTimeOffset.UtcNow.ToString("O",System.Globalization.CultureInfo.InvariantCulture);
+        await db.ExecuteAsync(
+            "INSERT INTO automation_events(id,time,kind,severity,message,data_json) VALUES('event-1',$t,'test','Info','Readable activity',NULL)",
+            new Dictionary<string,object?>{{"$t",when}},
+            TestContext.Current.CancellationToken);
+
+        var rows=await new PresentationReadRepository(db).GetRecentActivityAsync(10,TestContext.Current.CancellationToken);
+
+        var row=Assert.Single(rows);
+        Assert.Equal("event-1",row.Id);
+        Assert.Equal("Info",row.State);
+        Assert.Equal("Readable activity",row.Description);
+    }
+
+    [Fact]
     public void OutfitPresetsCollapseCommonOptionParts()
     {
         var family=new LogicalModFamily("f","HPN Test","HPN Test",[
