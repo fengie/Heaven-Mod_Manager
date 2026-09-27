@@ -583,7 +583,10 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Asset overlaps" Style="{StaticResource PageTitle}"/>
                                 <Border Margin="12,5,0,0" Padding="8,3" CornerRadius="11" Background="#151A20" BorderBrush="#303844" BorderThickness="1" VerticalAlignment="Top">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="Bold" Text="{Binding OverlapCount,Mode=OneWay,StringFormat={}{0} shared assets}"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="Bold" Text="{Binding OverlapCount,Mode=OneWay}"/>
+                                        <TextBlock Margin="4,0,0,0" Foreground="{StaticResource Muted}" FontSize="11" FontWeight="Bold" Text="shared assets"/>
+                                    </StackPanel>
                                 </Border>
                             </StackPanel>
                             <TextBlock Text="See every shared asset, then inspect the exact resolver decision behind a selected path. Normal composition stays quiet; unresolved choices still fail closed." Style="{StaticResource PageSubtitle}"/>
