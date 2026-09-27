@@ -20,6 +20,33 @@ The next agent must be able to continue without previous chat history.
 **Do not break the chain.**
 
 
+## Current support checkpoint: Windows filesystem safety audit COMPLETE
+
+Documentation-only audit:
+
+`_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`
+
+Audit base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
+
+No production C# or verification cache changed in this support checkpoint. The PlannerSnapshotRepository boundary remains closed at its exact hosted Windows evidence.
+
+Before any filesystem source change, also read:
+
+- `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
+- `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md`
+- `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`
+- `_AGENT_CONTEXT/NEXT_STEPS.md`
+
+The audit's highest-priority future boundary is physical containment for live deployment. Start with focused Windows tests showing Add, Replace, Remove, rollback, startup recovery, and pruning cannot follow a parent junction/symbolic-link/reparse component outside the configured game root. Do not broadly refactor filesystem code before those tests define the contract.
+
+Also preserve LR-004: lexical containment is not physical filesystem containment.
+
+Every successor must preserve and recursively propagate the permanent continuity constitution to the agent after them.
+
+**Do not break the chain.**
+
+---
+
 ## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
 
 Exact verified final commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
