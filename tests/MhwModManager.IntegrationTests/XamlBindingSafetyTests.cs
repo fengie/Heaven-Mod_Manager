@@ -30,6 +30,18 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Choose only", xaml);
     }
 
+    [Fact]
+    public void OverlapUiExposesExplainWhyEvidence()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        Assert.Contains("Explain Why", xaml);
+        Assert.Contains("ExplainSelectedOverlapCommand", xaml);
+        Assert.Contains("SelectedExplanation.RuleSource", xaml);
+        Assert.Contains("SelectedExplanation.Evidence", xaml);
+        Assert.Contains("SelectedExplanation.Providers", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
