@@ -84,7 +84,7 @@ PlannerSnapshotRepository remains **CLOSED** at exact verified commit `efe58f38c
 
 The parallel support-agent branches have been inventoried and their worthwhile documentation/research integrated. Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` for the exact branch dispositions and overlap decisions. No production C# or test code came from those support branches.
 
-Active Learned Rules are now LR-001 through LR-006. They protect moved-body verification, compile-backed API caller closure, native replacement failure semantics, physical filesystem containment, restartable migration convergence/ownership, and share-boundary diagnostic sanitization.
+Active Learned Rules are now LR-001 through LR-009. They protect moved-body verification, compile-backed API caller closure, native replacement failure semantics, physical filesystem containment, restartable migration convergence/ownership, and share-boundary diagnostic sanitization.
 
 ## Recommended next independently verifiable boundary
 
@@ -113,6 +113,10 @@ Keep these separate and consult their specialized audits before implementation:
 - full manager backup/portability recovery capsule;
 - source-neutral multi-provider acquisition;
 - MHW physical-slot coverage calculator and marginal bulk-fill selection.
+- launch-health/game-build revalidation semantics; read `LAUNCH_HEALTH_REVALIDATION_AUDIT.md` and keep runtime evidence separate from deployment success;
+- mod retirement / same-ID re-import lifecycle closure; read `MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` and centralize live semantic retirement separately from historical evidence;
+- crash-bisector diagnosis evidence integrity; read `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` and validate baseline + full-candidate reproduction before persistent blame;
+- catalog-invisible import publication; read `IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and stage outside catalog-visible roots until commit-on-success.
 
 ## Verification truth
 

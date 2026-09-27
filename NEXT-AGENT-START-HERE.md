@@ -9,7 +9,7 @@ Before modifying this project:
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
 2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
 5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -44,7 +44,7 @@ Read `TEST_GAP_AND_PERFORMANCE_AUDIT.md` and the CAS section of `WINDOWS_FILESYS
 
 Keep recursive ModScanner/adoption/Smart Inbox reparse traversal as a separate later boundary. Do not combine CAS with migration, async, diagnostics, networking, backup, Smart Pack, or unrelated architecture work.
 
-You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
 
@@ -74,7 +74,7 @@ Before modifying source, inspect actual canonical `main`, current continuity, `A
 
 Keep that checkpoint narrow: introduce only the seam necessary to reproduce/document 1175/1176/1177 postconditions, assert actual destination/replacement recovery bytes and operation/journal state, and preserve fail-closed `RecoveryRequired`. Do not mix CAS, recursive scans, migration, async, diagnostics, networking, backup, or Smart Pack work into it.
 
-You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
 
@@ -121,7 +121,11 @@ New durable specialized audits cover:
 - remote preview network trust;
 - state backup / portability;
 - multi-source discovery / bulk fill;
-- MHW semantic coverage / gap fill.
+- MHW semantic coverage / gap fill;
+- launch-health/game-build revalidation;
+- mod lifecycle / entity retirement integrity;
+- crash-bisector diagnosis evidence integrity;
+- import publication / catalog visibility integrity.
 
 Migration documentation was corrected to match current source behavior.
 
@@ -135,8 +139,11 @@ Read the full ledger; do not rely only on this summary.
 - LR-004 — lexical containment is not physical filesystem containment.
 - LR-005 — restartable migrations must prove ownership and convergence.
 - LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
+- LR-007 — entity retirement must close live semantic references.
+- LR-008 — import publication requires catalog-invisible staging.
+- LR-009 — automated diagnosis must validate its control before persisting blame.
 
-The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
+The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule. A later crash-diagnosis branch independently proposed LR-007; follow-up integration preserved lifecycle LR-007 and import LR-008, and renumbered crash diagnosis to LR-009 without changing the rule.
 
 ## What to do next
 

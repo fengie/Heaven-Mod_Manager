@@ -28,6 +28,21 @@ Closed behavior:
 
 No new Learned Rule was required because LR-003 already states the governing invariant.
 
+## Follow-up support research integration — assembled from later parallel lanes
+
+After the original support-audit integration closed, later support PRs #14, #15, #16, and #18 produced four additional documentation-only audits. Their audited source paths are unchanged between their fork points and the current pre-integration main `3991b2c1fffcb6e32cb3f0225919900455310fa9`, so the findings remain applicable to current source.
+
+Integrated knowledge:
+
+- launch-health/game-build revalidation semantics and Just Play safety;
+- mod retirement / live semantic reference closure and same-path identity reuse;
+- crash-bisector experimental validity before persistent confirmed blame;
+- catalog-invisible import staging / commit-on-success publication.
+
+Canonical Learned Rules now extend through LR-009: LR-007 entity retirement, LR-008 import publication, LR-009 diagnosis control validation. The combined diagnostic/privacy branch `agent/support-diagnostic-privacy-audit-20260927` is intentionally skipped because its substantive findings are already covered by the canonical diagnostics-privacy and remote-preview trust audits.
+
+No production C# or tests are part of this follow-up integration. The next production boundary remains the independently scoped CAS-integrity checkpoint below; do not bundle these new audit findings into that work.
+
 ## Exact next boundary
 
 The next recommended independently verifiable checkpoint is **CAS integrity: corrupt existing hash-named object trust**. Start test-first in `BlobStore`: prove a valid SHA filename containing wrong bytes cannot be trusted for restore/deployment, define whether capture repairs it or restore rejects it, and preserve fail-closed recovery semantics. Keep recursive scanner/adoption/Smart Inbox reparse containment, migration, async, diagnostics, networking, backup, and Smart Pack separate.

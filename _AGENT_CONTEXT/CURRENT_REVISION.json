@@ -28,6 +28,11 @@
     "releaseArtifactSha256": "B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468"
   },
   "candidateChanges": [
+    "Follow-up support integration: harvested later documentation-only PRs #14, #15, #16, and #18 without merging stale branch-local continuity snapshots.",
+    "Added launch-health/game-build revalidation, mod-lifecycle referential integrity, crash-bisector diagnosis evidence, and import-publication/catalog-visibility audits.",
+    "Appended LR-007 entity-retirement semantics, LR-008 catalog-invisible import publication, and LR-009 validated-control diagnosis semantics; resolved the parallel crash LR-007 collision by renumbering crash to LR-009.",
+    "Skipped agent/support-diagnostic-privacy-audit-20260927 because its combined findings are already covered by canonical diagnostics-privacy and remote-preview trust audits.",
+    "Preserved the CAS integrity corrupt-existing-object checkpoint as the next production boundary; no support finding was implemented in production during this integration.",
     "CLOSED: native ReplaceFileW 1175/1176/1177 failure-postcondition characterization verified on hosted Windows.",
     "Added narrow IAtomicReplaceBackend seam; default production backend still invokes ReplaceFileW.",
     "AtomicFileOps preserves the staged replacement for documented errors 1176/1177 because false can follow pathname mutation.",
@@ -71,6 +76,7 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "Follow-up support integration changes documentation/continuity only; production source, tests, verification scripts, workflows, and promoted caches remain unchanged.",
     "Fail-closed rollback/recovery semantics were preserved: 1176/1177 do not auto-commit or destructively guess.",
     "CAS integrity, recursive scanner/adoption/Smart Inbox traversal, migration, async, diagnostics, networking, backup, and Smart Pack were not redesigned.",
     "DeploymentPlanner/conflict behavior, SQLite transaction ownership, journal schema, CAS model, WPF, migration, provider/network behavior, and verification infrastructure were not redesigned.",
@@ -111,7 +117,11 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/LAUNCH_HEALTH_REVALIDATION_AUDIT.md",
+    "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md",
+    "_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md",
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "689a17ce5dff18bd0bf1201205446edd51ada8b5",
@@ -138,7 +148,27 @@
     "hostedVerificationRun": "36340312353",
     "evidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
     "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF",
-    "verificationStatus": "closed: Windows Release Gate passed 25/25"
+    "verificationStatus": "closed: Windows Release Gate passed 25/25",
+    "followupPass": {
+      "baselineMain": "3991b2c1fffcb6e32cb3f0225919900455310fa9",
+      "integratedBranches": [
+        "agent/support-launch-health-revalidation-audit-20260927",
+        "agent/support-mod-lifecycle-integrity-audit-20260927",
+        "agent/support-crash-bisect-diagnosis-audit-20260927",
+        "agent/support-import-publication-integrity-audit-20260927"
+      ],
+      "skippedBranches": {
+        "agent/support-diagnostic-privacy-audit-20260927": "redundant with canonical diagnostics-privacy and remote-preview trust audits"
+      },
+      "productionSourceChanged": false,
+      "testsChanged": false,
+      "learnedRulesIntegrated": [
+        "LR-007",
+        "LR-008",
+        "LR-009"
+      ],
+      "verificationStatus": "pending exact hosted Windows Release Gate after canonical integration commit"
+    }
   },
   "lastClosedBoundary": {
     "boundary": "Windows live DeploymentExecutor physical containment",

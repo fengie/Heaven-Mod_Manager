@@ -45,7 +45,11 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/LAUNCH_HEALTH_REVALIDATION_AUDIT.md",
+    "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md",
+    "_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md",
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -54,7 +58,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before edits inspect actual main, git status when a checkout is available, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LR-001 through LR-006, WINDOWS_FILESYSTEM_SAFETY_AUDIT.md, TEST_GAP_AND_PERFORMANCE_AUDIT.md, and the remaining README_FIRST order. Native ReplaceFileW failure-postcondition characterization is CLOSED at final exact commit 17abfb05d83ff38040eb9356d34fbb3131644801 / hosted run 36342205103 / evidence 689a17ce5dff18bd0bf1201205446edd51ada8b5; do not reopen it casually. The next recommended independently verifiable production boundary is CAS integrity: corrupt existing hash-named object trust in BlobStore. Start test-first, prove wrong bytes under a valid SHA filename are never trusted by capture/restore/deployment/recovery, define the smallest fail-closed reject-or-repair behavior, and keep recursive ModScanner/adoption/Smart Inbox reparse traversal separate. Do not combine CAS with migration, async lifetime, diagnostics, networking, backup, Smart Pack, or unrelated architecture work. Preserve exact verification/transaction/recovery invariants, update durable handoff state, run the handoff validator/negative fixtures through the normal verification path, and explicitly require your successor to recursively propagate this same constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before edits inspect actual main, git status when a checkout is available, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LR-001 through LR-009, SUPPORT_BRANCH_INTEGRATION_2026-09-27.md, and the remaining README_FIRST order. Native ReplaceFileW failure-postcondition characterization is closed and the next recommended independently verifiable production boundary remains CAS integrity: corrupt existing hash-named object trust in BlobStore. Keep recursive reparse traversal, launch-health revalidation, mod retirement, crash-bisector diagnosis evidence, import publication, migration, async lifetime, diagnostics, networking, backup, and Smart Pack as separate boundaries. Preserve exact verification/transaction/recovery invariants, update durable handoff state, run the handoff validator/negative fixtures through the normal verification path, and explicitly require your successor to recursively propagate this same constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

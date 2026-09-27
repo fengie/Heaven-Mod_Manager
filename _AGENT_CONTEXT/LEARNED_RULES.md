@@ -109,3 +109,55 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** audit branch `agent/support-8-diagnostics-privacy-audit-20260927`, based on canonical main `6ada5a5c4cc83afadfba42bc6af6559540920e3d`; documentation-only, no runtime gate claimed.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-007 — entity retirement must close live semantic references
+
+- **Rule ID:** LR-007
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Durable entity deletion, mod retirement, resolver/configuration state, and identity reuse
+- **Rule:** Deleting a durable entity is not complete merely because its row and declared foreign-key children disappear. Before retirement commits, classify and retire every **live semantic reference** that can affect a future entity reusing the same identity, while preserving historical evidence according to an explicit retention contract.
+- **Trigger / evidence:** At canonical main `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1`, `DuplicateCleanupService.ArchiveSafeAsync` deletes a mod row after archiving its source. FK-owned provenance/files/profile/trust/issue state cascades correctly, but planner-active `conflict_rules` and `resource_providers` have no FK to `mods`, and mod-keyed settings such as `preview:`, `visuals:`, `update:`, and `visual-public-last:` survive. `CatalogService.RefreshFoldersAsync` derives local IDs from the lowercased absolute source path, so a later different package at the same path can reuse the deleted ID and reactivate old resolver/configuration state. See `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md`.
+- **Rationale:** Foreign keys encode only declared ownership. Live configuration can reference an identity through untyped text columns, key/value namespaces, caches, manifests, or external indexes. Reusable identifiers turn stale references from harmless orphan data into future behavior.
+- **Enforcement:** Any new deletion/retirement workflow must inventory live semantic references, distinguish them from historical records, define current-deployment preconditions, add delete -> identity-reuse regression tests, and centralize the retirement boundary instead of issuing raw entity-row deletes from feature services. Do not add blanket cascading FKs to historical or recovery-sensitive state without a migration/retention design.
+- **Relevant audit:** `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md`
+- **Relevant canonical base:** `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1`
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-008 — import publication requires catalog-invisible staging
+
+- **Rule ID:** LR-008
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Archive/folder import, Smart Inbox, package acquisition, catalog discovery, cancellation/restart recovery
+- **Rule:** Do not treat the existence of a partially copied or extracted directory under a catalog-scanned library root as successful publication. Import work must remain catalog-invisible until validation/normalization completes, then become visible through an explicit commit-on-success publication boundary. Failure, cancellation, and process death must not allow unfinished import state to become a normal mod merely because files exist.
+- **Trigger / evidence:** The import-publication audit found that `SmartInboxService` writes archive and direct-directory imports to their final `ModsRoot` destination and catches recoverable failures without removing that destination. A later global `CatalogService.RefreshFoldersAsync` enumerates every top-level `ModsRoot` directory and can persist that failed partial directory as a mod. `ArchiveImportService` uses a `.importing` staging folder, but it is also a direct child of `ModsRoot`; failure/cancellation can leave it behind and the next startup catalog refresh runs before maintenance, so the staging folder can be registered. Catalog refresh is add-only, allowing a later retry to remove the folder while leaving the stale DB row.
+- **Rationale:** Cleanup is not a sufficient publication guarantee because cleanup itself can fail or be bypassed by process death. A structural separation between in-progress work and the catalog discovery namespace makes incomplete state harmless to library identity and persistence.
+- **Enforcement:** New or changed import/acquisition code must stage outside the catalog-visible root (or prove an equivalently strong explicit visibility protocol), publish only after the package is complete, and add regression coverage for mixed success/failure, cancellation, restart/process-death residue, retry convergence, and exactly-once successful publication. Preserve source input until publication succeeds.
+- **Relevant audit:** `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`
+- **Parallel numbering note:** `agent/support-mod-lifecycle-integrity-audit-20260927` independently reserved LR-007 for entity-retirement semantics. Preserve both rules; do not collapse them.
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-009 — automated diagnosis must validate its control before persisting blame
+
+- **Rule ID:** LR-009
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Automated crash bisection, fault isolation, and persistent culprit/issue confirmation
+- **Rule:** A diagnostic bisection or fault-isolation workflow must not persist high-confidence culprit state until it has proven that its current control/baseline does not reproduce the failure and that the full candidate condition does reproduce under the same relevant environment and provenance. Ambiguous, noisy, stale-provenance, or non-reproducible probe outcomes must remain inconclusive rather than becoming confirmed blame.
+- **Trigger / evidence:** At canonical main `5619604e88a27176726ada8518f53d385abc7b0f`, `CrashBisectorEngine.RunAsync` begins halving immediately. `MainWindowViewModel.AutoDiagnoseCrash` does not first probe the last-known-good control or the full suspect set, while `ProbeCrashSubsetAsync` treats any process exit inside 12 seconds as reproduction. A currently-bad baseline can therefore make every tested half appear to reproduce until one arbitrary mod remains, after which `ModIssueFallbackService.MarkBisectResultAsync` persists that mod at score 99 with `confirmed=true`.
+- **Rationale:** Bisection only has causal meaning when its control and positive condition are currently valid. Because confirmed diagnosis is intentionally durable and survives later normal launch success, experiment validity must be proven before confidence is persisted.
+- **Enforcement:** Add explicit baseline-control and full-candidate preflight tests before narrowing; represent ambiguous/noisy outcomes as inconclusive; test stale environment/provenance and flaky probes; gate score-99/confirmed persistence on validated reproduction evidence. Reuse the canonical game-build freshness mechanism rather than creating a competing one inside diagnosis.
+- **Relevant audit:** `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md`
+- **Integration numbering note:** The crash support branch proposed LR-007 in parallel. Canonical integration preserves the earlier coordinated LR-007 entity-retirement and LR-008 import-publication assignments, so crash diagnosis is renumbered to LR-009 without changing its rule.
+- **Supersedes:** none
+- **Superseded by:** none
