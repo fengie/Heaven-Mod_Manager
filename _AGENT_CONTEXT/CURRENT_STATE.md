@@ -28,11 +28,21 @@ Active Learned Rules are now **LR-001 through LR-006**. The integration resolved
 
 ## Verification status for this checkpoint
 
-Production executable source and tests are unchanged by this integration. The last closed product verification therefore remains the PlannerSnapshotRepository boundary at exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`.
+Parallel support-audit integration is **CLOSED and hosted-Windows verified**.
 
-That does **not** mean the newly changed continuity/documentation inputs have already passed a fresh hosted gate. A new Windows Release Gate must run after the canonical integration push to verify the current handoff/continuity state. No verification cache was manually promoted.
+- exact verified integration commit: `5619604e88a27176726ada8518f53d385abc7b0f`;
+- hosted Windows Release Gate: `36340312353`;
+- runner / SDK: Windows X64 / .NET 10.0.401;
+- repository verifier: **25/25 PASS**;
+- agent-handoff continuity preflight: **PASS**;
+- release build/publish: **PASS**;
+- ReadyToRun fallback used: **False**;
+- release ZIP SHA-256: `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`;
+- evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
 
-A local `git status` / local test run was unavailable during integration because the connected Remote Desktop Commander device was offline. Remote GitHub canonical state, history, branch comparisons and file diffs were inspected instead.
+Production executable source and tests were unchanged by this integration, so the PlannerSnapshotRepository production behavior remains the same as the previously closed boundary. The new hosted run nevertheless verified the changed handoff/continuity inputs on their exact repository SHA. No cache was manually promoted outside the normal gate.
+
+A local `git status` / local runtime run was unavailable during integration because the connected Remote Desktop Commander device was offline. Remote GitHub state plus the hosted Windows gate provide the authoritative closure evidence.
 
 ## Next boundary
 
