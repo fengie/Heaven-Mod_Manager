@@ -127,3 +127,280 @@ Why rejected: these are use cases, not passive page state. The correct future bo
 Do not reopen page-model extraction merely because MainWindowViewModel is large. A future extraction should be justified by ownership of state and dependencies, not line count.
 
 The next architecture work is the ManagerDatabase transaction-boundary audit in STORAGE_TRANSACTION_BOUNDARY_AUDIT.md. The first storage production change should be one read-only query seam only, independently verified before any second extraction.
+
+# Independent Support Agent 3 re-audit — 2026-09-27
+
+## Scope and canonical state
+
+This addendum independently re-audits the WPF/MainWindow ownership decision after the original audit, rather than assuming the earlier conclusion is still correct.
+
+Audit branch: `agent/support-3-mainwindow-ui-audit-20260927`.
+
+Canonical `main` was re-queried repeatedly during the audit because another agent was working concurrently. The branch was cut from exact canonical commit `161b5fcba88470b7d941a3831624bdbf071ff668` ("Document PlannerSnapshotRepository verification boundary"). That state includes production source `8e0068bd44cc6735ffa9478067923ad5d9c54506` and parity-test hardening `64e666a19ce17c21bc696b46cce9c07bb257a686`.
+
+The PlannerSnapshotRepository work was performed concurrently by another agent. This audit did **not** implement, alter, or extend that production boundary.
+
+This session used the GitHub repository connector rather than a local checkout. There is therefore no local working tree whose `git status` can be inspected. To preserve the intent of the parallel-work rule, canonical remote history/state was inspected before every write and all audit writes are isolated on this dedicated branch.
+
+At the branch point the PlannerSnapshotRepository candidate was explicitly **not yet Windows-closed**. This audit must not be used to imply green evidence for that production change.
+
+## Independent conclusion
+
+**The previous "stop splitting MainWindowViewModel into more page models" conclusion remains correct.**
+
+The PlannerSnapshotRepository extraction reduces direct persistence coupling for planner-input reads, but it does not change ownership of the central mutable UI draft or turn any of the remaining large MainWindow responsibilities into a clean page-local seam.
+
+Activity, Coverage, Profiles-list, and Games-list remain the only currently proven passive/read-state page seams. The remaining responsibilities are still one of:
+
+- shared deployment-draft presentation state;
+- cross-feature application orchestration;
+- shell-global busy/status/cancellation state;
+- WPF dialog/process/application lifetime coordination;
+- background lifetime work;
+- domain/filesystem/persistence operations already delegated to services.
+
+A new page ViewModel would mostly require callbacks or shell back-references into `Mods`, staged state, conflict analysis, issue projection, global status/busy state, or process/application lifetime. That is line-count reduction, not coupling reduction.
+
+**Further UI page-model architecture work is not currently justified.** If future refactoring pressure remains after the active production boundary is independently closed, prefer a narrowly scoped application-use-case/service extraction only when one workflow can own its dependencies without taking ownership of WPF bindings or the shared deployment draft.
+
+## What changed since the original audit
+
+The material architecture change since the original audit is the new read-only `PlannerSnapshotRepository`.
+
+Current composition creates one planner-snapshot repository and supplies it to MainWindow planner workflows plus EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption, Health, NexusMetadataService, and GameBuildMonitor. MainWindow no longer needs `ManagerDatabase.LoadPlannerSnapshotAsync` for analysis/restore/safe-mode paths.
+
+That change is healthy layering, but it actually reinforces the original ownership result:
+
+- MainWindow analysis still begins from `Mods` and its staged member state.
+- Conflict rows remain derived from that shared draft.
+- conflict choices still mutate that shared draft.
+- overlap classification still reads the current conflict set.
+- Apply/Undo/safe mode/crash diagnosis still coordinate planner output with deployment/process/lifetime services.
+- global busy/status/cancellation and critical-operation state remain shell concerns.
+
+The cleaner storage read boundary therefore removes one dependency direction without creating a new presentation-state owner.
+
+## Current responsibility ownership
+
+### Mods / ModsView / search / filters / counters
+
+Mutable ownership remains split intentionally between `ModRowViewModel` row state and the MainWindow shell:
+
+- `ModRowViewModel` owns applied/staged member dictionaries, parts, effective state, issue/update/visual badges, and row-derived labels.
+- MainWindow owns the `Mods` collection identity, `ICollectionView`, search/filter mode, aggregate counters, selection, and the shared `Changed()` notification/refresh fan-out.
+- profile staging, conflict choice, Apply, diagnosis, metadata refresh, and reload all read or mutate the same row state.
+
+This is not presentation-local to a Mods page. Extracting a ModsPageViewModel now would either make it the new shell or require callbacks for planner/deployment/profile/issue workflows.
+
+### Conflicts and staged choices
+
+Conflicts are planner output from the same staged draft represented by `Mods`. Choosing a winner writes back into `ModRowViewModel` staged state, then re-runs analysis. Manual family chaining additionally crosses persistence, logical-family rebuilding, staged-state restoration, and timeline recording.
+
+The state owner is therefore the deployment draft + application workflow, not the Conflicts tab.
+
+### IssueSuspects
+
+`RefreshIssueSuspects` intentionally has two outputs:
+
+1. the `IssueSuspects` list;
+2. issue badge/score/reason projection back onto every affected `ModRowViewModel`, followed by ModsView/counter refresh.
+
+Crash reports, launch observation, clearing, and automatic bisect mutate/read the same persisted issue evidence. A page model cannot own this without cross-writing the Mods page.
+
+### Overlaps / Explain Why
+
+Overlap rows are read-oriented, but their "Needs choice" vs "Resolved overlay" presentation reads current `Conflicts`. Explain Why is a planner-backed application query and participates in global `RunBusy` state.
+
+The new PlannerSnapshotRepository makes the Inspector's persistence dependency cleaner; it does not make current conflict state local to the Overlaps page.
+
+### Profiles
+
+The existing split is still the correct one:
+
+- `ProfilesPageViewModel` owns list reads and stable row collection identity.
+- MainWindow owns selected profile, staging into the global Mod draft, save workflow status, and global busy handling.
+
+Moving profile mutation into the page model would cross the deployment-draft ownership boundary.
+
+### Games
+
+The existing split is still the correct one:
+
+- `GamesPageViewModel` owns registry list projection only.
+- discovery/add/configure/switch mutate the registry or open WPF dialogs.
+- switching persists the active game, starts a fresh manager process, and shuts down the current WPF application because the service graph is game-scoped.
+
+That is application lifetime behavior, not page state.
+
+### Import / Nexus / inbox / cleanup / adoption / health / support / recipes
+
+These are application use cases over services. WPF owns only user interaction (file dialog, global operation/status surface) while actual archive, Nexus, catalog, filesystem, diagnostics, or export behavior is delegated.
+
+If any of these are extracted later, an application use-case/service boundary is more appropriate than another page ViewModel.
+
+### Apply / Preview / Undo / safe mode / launch / crash diagnosis
+
+These flows intentionally coordinate the global staged draft, planner snapshots, planner output, transaction-aware deployment, process blockers, launch observation, issue state, activity, and status.
+
+They are not UI page responsibilities. They must remain above storage and deployment transaction owners.
+
+### RunBusy / status / cancellation / critical operation
+
+`RunBusy`, `StatusText`, `FooterText`, busy overlay state, foreground cancellation, and `CriticalOperation` are shell-global operation coordination.
+
+`MainWindow.OnClosing` consults `CriticalOperation` and blocks normal close while a non-cancellable transactional/startup operation is active. That lifecycle contract must remain centralized unless a future application-operation coordinator replaces it as one coherent boundary.
+
+## WPF / binding contract safety
+
+Current binding safety depends on keeping `MainWindowViewModel` as the DataContext and preserving the legacy public surface.
+
+The closed page extractions deliberately alias collection identity:
+
+- `ActivityRows = Activity.Rows`
+- `OutfitRows = Coverage.Rows`
+- `Profiles = ProfilesPage.Rows`
+- `Games = GamesPage.Rows`
+
+That is important: changing to replacement collection objects can silently break selection/view/list semantics even if property names remain the same.
+
+The integration suite currently has source-level contract tests for Activity, Coverage, Profiles, Games, conflict-family UI, Explain Why, and inline Run binding mode. This is useful but is **not** a complete reflection/compile-time proof of all MainWindow bindings. MainWindow.xaml currently exposes a broad binding surface, including generated relay commands and many computed properties.
+
+Future refactors must therefore preserve, or explicitly regression-test, at minimum:
+
+- `MainWindowViewModel` DataContext assumptions;
+- existing property and command names;
+- `Mods`, `Conflicts`, `IssueSuspects`, `OverlapRows`, and extracted-page collection identities;
+- two-way selected state where used;
+- generated CommunityToolkit relay-command names;
+- Ctrl+F code-behind behavior that selects the Mods tab and focuses `ModSearchBox`;
+- MainWindow closing/closed semantics;
+- game switch restart/shutdown behavior.
+
+Do not infer safety from a successful backend test run alone when changing the binding surface.
+
+## Dispatcher / threading audit
+
+### Correctly off-thread or asynchronous
+
+The current source already avoids several important UI-thread hazards:
+
+- deterministic planner building and heavy analysis projection run inside `Task.Run`;
+- game discovery is sent through `Task.Run`;
+- database/service reads are awaited before observable-collection mutation;
+- overlap heatmap row projection is performed before the final Dispatcher collection replacement;
+- page VMs query repositories first and use the Dispatcher only for row collection mutation;
+- `DispatcherWatchdog` runs its timer loop off-thread and posts only one lightweight heartbeat at a time.
+
+No evidence was found that deployment filesystem mutation, archive extraction, hashing, migration, or the planner itself is intentionally executed synchronously on the WPF Dispatcher.
+
+### UI-thread work worth watching
+
+Two concrete projection paths still do more than the minimum inside Dispatcher callbacks:
+
+1. `ReloadMods` builds logical families, constructs all `ModRowViewModel` rows, projects update badges, replaces the collection, refreshes the view, and fans out notifications inside one Dispatcher invocation.
+2. `RefreshIssueSuspects` replaces suspect rows, projects issue state across all Mods/members, refreshes ModsView, and fans out counters inside one Dispatcher invocation.
+
+These are real source-observable UI-thread costs, but this audit has no timing evidence showing either is currently a user-visible hot path. They should be profiled before optimization. If measurements show stalls, compute immutable projections off-thread and keep only observable-object/collection mutation on the Dispatcher.
+
+Conflict preview enrichment also awaits preview generation serially per missing option. That may add latency when many blocking choices require previews, but there is no measurement here proving it is a hot path.
+
+## Collection and refresh efficiency
+
+`ObservableRangeCollection.ReplaceAll` preserves collection identity and performs the replacement against the underlying item list, then emits one `Reset` rather than one change event per item. This is the correct batching shape for the current UI.
+
+The current MainWindow/partials contain a small number of explicit `ModsView.Refresh()` calls concentrated in:
+
+- mode/search changes;
+- `Changed()` when a filter/search is active;
+- full Mod reload;
+- effective-state analysis refresh;
+- issue projection refresh.
+
+Staging bulk operations already use `suppressChanged` and perform one final `Changed()`, avoiding an obvious per-row refresh storm.
+
+The aggregate counter getters scan `Mods`, and `Changed()` raises a broad group of notifications. That is simple and safe; it becomes a performance concern only if measured library size/interaction frequency makes the repeated scans material.
+
+No evidence was found of large collection replacement causing per-item CollectionChanged storms.
+
+## Background lifetime and concurrency finding
+
+The periodic Nexus metadata loop is correctly shell-owned, has its own `backgroundCts`, uses `metadataGate` to serialize metadata refreshes, skips a tick when it observes a foreground/critical operation, and is cancelled during ViewModel disposal.
+
+There are, however, two lifetime/concurrency hardening opportunities that are **not** page-model seams:
+
+1. `InitializeAsync` starts the loop with `_ = AutoMetadataLoopAsync(backgroundCts.Token)` and does not retain/await the Task. Disposal cancels the CTS but cannot await loop termination, and an unexpected exception outside the loop's filtered network/IO catches can become an unobserved fault.
+2. The `BusyVisibility/CriticalOperation` check is advisory, not an atomic exclusion with foreground `RunBusy`. A foreground workflow can begin after the periodic loop passes that check. `metadataGate` serializes Nexus metadata operations, but unrelated foreground workflows such as deployment do not take that gate while the background loop can later call `ReloadMods` and `RefreshAnalysis`.
+
+No failure was reproduced in this audit, so this is recorded as a concrete concurrency/lifetime risk from source structure, not as a confirmed production bug.
+
+If this is hardened later, keep it as one shell-lifetime checkpoint: retain the background Task, establish explicit coordination with foreground state mutation, cancel and await it on disposal, and add tests for shutdown plus foreground/background overlap. Do **not** create a page ViewModel to solve it.
+
+## Performance verdict
+
+Observed/obvious:
+
+- planner computation is deliberately off-thread;
+- range collection replacement is batched;
+- bulk staged mutations suppress repeated `Changed()` calls;
+- ReloadMods and issue projection contain non-trivial UI-thread projection work;
+- full `ModsView.Refresh()` is intentionally used after state classes that affect filtering;
+- background refresh can interleave with foreground operation start because its busy check is not a lock.
+
+Not established by evidence:
+
+- that MainWindow itself is currently a measurable bottleneck;
+- that the counter scans are expensive enough to cache;
+- that conflict preview serialization is user-visible;
+- that another page extraction would improve performance.
+
+Do not use file size or theoretical complexity alone to justify a refactor.
+
+## Acceptance criteria for any future UI ownership change
+
+Before changing another MainWindow ownership boundary, require all of the following:
+
+1. one state owner can be named without shared mutation through shell callbacks;
+2. the extracted unit has a narrower dependency set than MainWindow;
+3. no shell back-reference is required;
+4. XAML public property/command names and collection identity are explicitly preserved or intentionally migrated with tests;
+5. WPF Dispatcher responsibility is reduced, not merely relocated;
+6. application shutdown/restart/critical-operation behavior is unchanged;
+7. focused contract tests cover the seam;
+8. exact repository verification is rerun for changed production source;
+9. the current active source boundary is closed before starting the next one.
+
+No remaining page responsibility currently meets those criteria better than staying in the shell.
+
+## Learned Rules decision
+
+No new Learned Rule is justified by this audit alone.
+
+The background-loop concerns are newly documented risks, not reproduced incidents. Existing LR-001 already covers the concrete moved-production-body instrumentation incident. Add another Learned Rule only if a future implementation or failure provides durable evidence.
+
+## Handoff / integration notes
+
+- This audit is documentation-only; no production C# or XAML was changed.
+- Preserve the active PlannerSnapshotRepository verification boundary. Do not claim this audit closes it.
+- The independent verdict is: **stop splitting page models remains correct**.
+- Do not begin another MainWindow source extraction while the PlannerSnapshotRepository candidate is unresolved.
+- If UI architecture work resumes later, investigate measured Dispatcher stalls or application-use-case ownership before page-model decomposition.
+- The next agent must re-read `AGENTS.md`, `CURRENT_REVISION.json`, `CONTINUITY_PROTOCOL.md`, active `LEARNED_RULES.md`, this audit, and the current canonical `NEXT_STEPS.md` before editing.
+- The successor must preserve the permanent continuity constitution and explicitly require the agent after them to inherit and recursively propagate it again.
+
+**Do not break the chain.**
+
+
+## Post-branch canonical delta revalidation
+
+While this audit was being written, canonical `main` advanced through `528401925b1d09b3d65c9652de8e4f2024e3677f` and documentation commit `0e561f3c059475ad443a79ac4a27dd68264a7bdb` to repair PlannerSnapshotRepository caller migration after Windows Release Gate `36335255922` failed.
+
+The MainWindow delta converts `RestoreLastGood` and `LaunchSafeMode` from expression-bodied relay-command methods to block-bodied methods while retaining the same shell-owned `RunBusy`, staged/planner/deployment, status, and process-lifetime responsibilities. App composition also injects PlannerSnapshotRepository into additional read consumers. No new page-local state owner or WPF binding seam was introduced.
+
+Therefore the independent UI ownership conclusion is unchanged at `0e561f3c059475ad443a79ac4a27dd68264a7bdb`.
+
+The failed Windows gate belongs to the active PlannerSnapshotRepository production boundary and must be repaired/closed independently. This documentation audit does not make that candidate green.
+
+
+### Integration note
+
+The PlannerSnapshotRepository boundary later closed successfully at exact verified commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3` under hosted Windows Release Gate `36336190920`. The support audit's ownership and lifetime conclusions remain valid against canonical `main` at integration time; this documentation integration does not reopen that production boundary.
