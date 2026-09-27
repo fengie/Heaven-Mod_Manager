@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO.Compression;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
@@ -30,6 +31,27 @@ public sealed class HardeningTests : IDisposable
         var file = Path.Combine(root, name + "-" + Guid.NewGuid().ToString("N"));
         await File.WriteAllTextAsync(file, contents, TestToken);
         return await blobs.CaptureAsync(file, TestToken);
+    }
+
+    private static void CreateDirectoryJunction(string link, string target)
+    {
+        if(!OperatingSystem.IsWindows())throw new PlatformNotSupportedException();
+        var info=new ProcessStartInfo("cmd.exe",$"/d /c mklink /J \"{link}\" \"{target}\"")
+        {
+            UseShellExecute=false,
+            RedirectStandardOutput=true,
+            RedirectStandardError=true,
+            CreateNoWindow=true
+        };
+        using var process=Process.Start(info)??throw new InvalidOperationException("Could not start cmd.exe to create junction.");
+        process.WaitForExit();
+        if(process.ExitCode!=0)
+        {
+            var error=process.StandardError.ReadToEnd();
+            var output=process.StandardOutput.ReadToEnd();
+            throw new IOException($"Could not create test junction '{link}' -> '{target}'. Exit={process.ExitCode}; stdout={output}; stderr={error}");
+        }
+        Assert.True((File.GetAttributes(link)&FileAttributes.ReparsePoint)!=0);
     }
 
     [Theory]
@@ -112,6 +134,107 @@ public sealed class HardeningTests : IDisposable
         Assert.Equal("A0", await File.ReadAllTextAsync(a, TestToken));
         Assert.Equal("EXTERNAL", await File.ReadAllTextAsync(b, TestToken));
         Assert.Equal(0, result.FilesChanged);
+    }
+
+    [Theory]
+    [InlineData(ChangeKind.Add)]
+    [InlineData(ChangeKind.Replace)]
+    [InlineData(ChangeKind.Remove)]
+    public async Task Deployment_mutations_reject_parent_junction_outside_game_root(ChangeKind kind)
+    {
+        if(!OperatingSystem.IsWindows())return;
+
+        var (game, db, hashing, blobs) = await CreateAsync("reparse-" + kind);
+        var external=Path.Combine(root,"external-" + kind);
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"SENTINEL",TestToken);
+
+        var redirect=Path.Combine(game,"nativePC","redirect");
+        CreateDirectoryJunction(redirect,external);
+
+        var after=await BlobAsync(blobs,"reparse-after-" + kind,"AFTER");
+        string key;
+        DeploymentChange change;
+        if(kind==ChangeKind.Add)
+        {
+            key=@"nativePC\redirect\new.bin";
+            change=new(1,kind,key,null,after,null,"m",null,null);
+        }
+        else
+        {
+            key=@"nativePC\redirect\victim.bin";
+            var victim=Path.Combine(external,"victim.bin");
+            await File.WriteAllTextAsync(victim,"OUTSIDE",TestToken);
+            var before=await blobs.CaptureAsync(victim,TestToken);
+            change=kind==ChangeKind.Replace
+                ? new(1,kind,key,before,after,"old","new",before,null)
+                : new(1,kind,key,before,null,"old",null,before,null);
+        }
+
+        var planId="reparse-" + kind + "-" + Guid.NewGuid().ToString("N");
+        var plan=new DeploymentPlan(planId,DateTimeOffset.UtcNow,[change],[],[]);
+        var executor=new DeploymentExecutor(db,blobs,hashing,game);
+
+        var ex=await Assert.ThrowsAsync<IOException>(()=>executor.ApplyAsync(plan,"reparse containment fixture",ct:TestToken));
+        Assert.Contains("reparse point",ex.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("SENTINEL",await File.ReadAllTextAsync(sentinel,TestToken));
+        if(kind==ChangeKind.Add)Assert.False(File.Exists(Path.Combine(external,"new.bin")));
+        else
+        {
+            var victim=Path.Combine(external,"victim.bin");
+            Assert.True(File.Exists(victim));
+            Assert.Equal("OUTSIDE",await File.ReadAllTextAsync(victim,TestToken));
+        }
+
+        var snapshot=await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
+        Assert.DoesNotContain(key,snapshot.CurrentManifest.Keys);
+        await using var connection=await db.OpenAsync(TestToken);
+        await using var command=connection.CreateCommand();
+        command.CommandText="SELECT COUNT(*) FROM operations WHERE id=$id";
+        command.Parameters.AddWithValue("$id",planId);
+        Assert.Equal(0L,(long)(await command.ExecuteScalarAsync(TestToken))!);
+    }
+
+    [Fact]
+    public async Task Startup_recovery_refuses_parent_junction_introduced_while_app_was_down()
+    {
+        if(!OperatingSystem.IsWindows())return;
+
+        var (game, db, hashing, blobs) = await CreateAsync("reparse-recovery");
+        var managed=Path.Combine(game,"nativePC","managed");
+        Directory.CreateDirectory(managed);
+        var live=Path.Combine(managed,"x.bin");
+        await File.WriteAllTextAsync(live,"BEFORE",TestToken);
+        var after=await BlobAsync(blobs,"reparse-recovery-after","AFTER");
+        var planId="reparse-recovery-" + Guid.NewGuid().ToString("N");
+        var plan=new DeploymentPlan(planId,DateTimeOffset.UtcNow,
+            [new(1,ChangeKind.Add,@"nativePC\managed\x.bin",null,after,null,"m",null,null)],[],[]);
+
+        var crashing=new DeploymentExecutor(db,blobs,hashing,game,(stage,sequence)=>
+        {
+            if(stage=="after-file-write"&&sequence==1)throw new SimulatedCrashException("crash after live write");
+        });
+        await Assert.ThrowsAsync<SimulatedCrashException>(()=>crashing.ApplyAsync(plan,"reparse recovery fixture",ct:TestToken));
+        Assert.Equal("AFTER",await File.ReadAllTextAsync(live,TestToken));
+
+        Directory.Delete(managed,true);
+        var external=Path.Combine(root,"reparse-recovery-external");
+        Directory.CreateDirectory(external);
+        var outside=Path.Combine(external,"x.bin");
+        await File.WriteAllTextAsync(outside,"OUTSIDE",TestToken);
+        CreateDirectoryJunction(managed,external);
+
+        var recovering=new DeploymentExecutor(db,blobs,hashing,game);
+        var ex=await Assert.ThrowsAsync<IOException>(()=>recovering.RecoverIncompleteAsync(TestToken));
+        Assert.Contains("Physical containment failed",ex.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("OUTSIDE",await File.ReadAllTextAsync(outside,TestToken));
+
+        await using var connection=await db.OpenAsync(TestToken);
+        await using var command=connection.CreateCommand();
+        command.CommandText="SELECT state FROM operations WHERE id=$id";
+        command.Parameters.AddWithValue("$id",planId);
+        Assert.Equal(OperationState.RecoveryRequired.ToString(),(string?)await command.ExecuteScalarAsync(TestToken));
     }
 
     [Fact]
