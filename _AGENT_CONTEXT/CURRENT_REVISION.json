@@ -46,7 +46,10 @@
     "IssueSuspects remains shell/cross-feature state because refresh projects persisted suspects into ModRowViewModel badges, ModsView, issue labels and header counters while crash/launch/bisect workflows mutate the same data.",
     "Mods/ModsView, conflicts, overlaps, selected state, staging/apply/undo, Nexus/import, profile mutations, launch/crash diagnosis, health/support and global busy/status were classified by ownership/coupling in MAINWINDOW_RESPONSIBILITY_AUDIT.md.",
     "Mapped ManagerDatabase methods, raw callers, existing repositories and service-owned SQLite transactions in STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.",
-    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
+    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved.",
+    "Documentation-only support checkpoint: added _AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md with assertion-backed subsystem coverage, a safety failure-mode matrix, prioritized regression/fault-injection checkpoints, and realistic-scale benchmark recommendations.",
+    "The audit identified highest-value future guards around documented ReplaceFileW partial-failure postconditions, live deployment reparse containment, corrupt CAS objects, multi-file crash rollback, statement-level SQLite faults, migration recovery, deployment cancellation/concurrency/retry, and family/scanner/Nexus performance.",
+    "No production source or verification cache changed in the test-gap/performance audit; repaired PlannerSnapshotRepository source 528401925b1d09b3d65c9652de8e4f2024e3677f remains the active verification boundary and its fresh Windows gate must close first."
   ],
   "invariantsPreserved": [
     "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
@@ -60,7 +63,9 @@
     "DeploymentExecutor prepared-journal, final commit and rollback shared-transaction boundaries remain untouched.",
     "ReplaceModFiles, ChainManualFamily, ProfileRepository.SaveCurrent, adoption, trust, issue, supersession, revalidation and enabled/priority batch atomicity remain untouched.",
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
-    "No verification cache was manually promoted."
+    "No verification cache was manually promoted.",
+    "The test-gap/performance audit is documentation-only; production behavior, transaction ownership, planner semantics, and the open repaired PlannerSnapshotRepository verification boundary are unchanged.",
+    "No verification cache was promoted and no Windows runtime behavior was claimed from static inspection."
   ],
   "nextRequiredAction": "Push the repaired PlannerSnapshotRepository boundary and run a fresh full hosted Windows Release Gate on the exact final commit. Preserve run 36335255922 as superseded failed evidence. If the fresh gate fails, repair only this boundary. Do not start another source extraction. On success persist exact source SHA/run/platform/SDK/verifier/fingerprint/call-site/test/analyzer/publish/artifact evidence and close the boundary while recursively propagating the continuity constitution.",
   "canonicalEvidence": [
@@ -68,7 +73,8 @@
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8",
