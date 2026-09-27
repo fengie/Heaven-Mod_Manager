@@ -19,6 +19,35 @@ Before finishing, update durable repository handoff state and explicitly require
 
 **Do not break the chain.**
 
+## CLOSED checkpoint: native ReplaceFileW failure postconditions
+
+This LR-003 boundary is complete and hosted-Windows verified.
+
+- final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`
+- production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`
+- Windows Release Gate: `36342205103`
+- evidence/cache persistence: `689a17ce5dff18bd0bf1201205446edd51ada8b5`
+- verifier: **25/25 PASS**
+- functions: **612/612**
+- explicit call sites: **6480 / 0 uncovered**
+- Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**
+- ReadyToRun self-contained publish: PASS
+- release SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468`
+
+`AtomicFileOps` now has a narrow injectable native replacement seam. Documented 1176/1177 partial-name-mutation failures preserve staged replacement bytes and remain fail-closed as `RecoveryRequired` / journal `Writing`; 1175 rolls back to exact BEFORE bytes with operation/journal `RolledBack`. Do not reopen this boundary to solve CAS, recursive traversal, or migration findings.
+
+## Exact next programmer boundary
+
+The next highest-value independent checkpoint is **CAS integrity: corrupt existing hash-named object trust**.
+
+Read `TEST_GAP_AND_PERFORMANCE_AUDIT.md` and the CAS section of `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`, then inspect `BlobStore.CaptureWithHashAsync`, `BlobStore.RestoreAsync`, and deployment/recovery CAS consumers. Add tests first: a valid SHA filename containing wrong bytes must never be accepted as that hash, and live destination/recovery state must remain safe. Define the smallest reject-or-repair behavior from those tests before changing production code.
+
+Keep recursive ModScanner/adoption/Smart Inbox reparse traversal as a separate later boundary. Do not combine CAS with migration, async, diagnostics, networking, backup, Smart Pack, or unrelated architecture work.
+
+You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+
+**Do not break the chain.**
+
 ## CLOSED checkpoint: Windows live DeploymentExecutor physical containment
 
 This boundary is complete and hosted-Windows verified.
@@ -118,7 +147,7 @@ Do **not** automatically:
 - combine all support findings into one hardening change;
 - weaken tests or verification to obtain a green result.
 
-Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The highest-safety candidate is a separate, test-first Windows filesystem physical-containment/native-`ReplaceFileW` characterization checkpoint, because two independent support audits identified that boundary. Re-check current canonical source before acting.
+Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The current highest-safety candidate is the separate, test-first **CAS integrity corrupt-existing-object checkpoint**. Re-check current canonical source before acting; the Windows live-containment and native `ReplaceFileW` boundaries are already closed.
 
 Any production source change starts a new exact verification boundary and must earn a fresh full Windows Release Gate.
 
