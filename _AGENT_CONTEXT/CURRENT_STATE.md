@@ -1,18 +1,34 @@
-# Import publication / catalog visibility support audit — documentation-only
+# ACTIVE candidate — Windows live deployment physical containment (NOT YET VERIFIED)
 
-Audit source inspection began from canonical `main` at `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3` and was revalidated after upstream advanced to `208a66da89632acf36c065dc3bfead76af8d6bf4`; the intervening canonical changes were documentation/continuity closure only.
+Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4` (support integration already hosted-Windows closed).  
+Working branch: `agent/windows-live-containment-hardening-v3`.  
+Production source checkpoint: `b671bac33917649ff89e5e3b0866725f7b165232`.  
+Focused Windows regressions checkpoint: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`.
 
-Durable audit: `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
+This candidate addresses exactly one P0 finding: descendant junction/symlink/reparse traversal in the live `DeploymentExecutor` path. Native `ReplaceFileW` failure semantics are intentionally separate.
 
-No production C#, tests, schema, workflow, or verification cache changed in this support branch. The audit confirms a distinct P1 library-ingestion boundary: Smart Inbox writes unfinished archive/directory imports directly under `ModsRoot`, recoverable failures do not remove the destination, and `CatalogService.RefreshFoldersAsync` later treats every top-level ModsRoot directory as a published mod. A failed item can therefore become a persisted ghost/partial mod either when another Inbox item succeeds and triggers a global refresh or at the next startup, where catalog refresh runs before maintenance. Manual `ArchiveImportService` extracts to `.importing` then renames on success, but that staging directory is still inside `ModsRoot`; failure/cancellation can leave it catalog-visible on restart, and add-only catalog semantics can leave a stale DB row after retry.
+Implemented behavior:
 
-Recommended implementation is a separate future checkpoint: regression-first catalog-invisible staging outside `ModsRoot`, then commit-on-success final publication shared by manual import and Smart Inbox. Do not combine it with reparse hardening, mod retirement, Smart Pack, migration, or deployment redesign.
+- existing destination components below configured `gameRoot` are checked for `FileAttributes.ReparsePoint`;
+- containment is checked before capture/precondition reads and again immediately before Add/Replace/Remove;
+- rollback/startup recovery checks before examining bytes and again before restore/delete;
+- empty-directory pruning and lock-inspection paths obey the same rule;
+- Windows tests create real directory junctions and cover Add/Replace/Remove plus a crash/restart topology change.
 
-This branch adds **LR-008** for import publication isolation. Active parallel PR #15 independently reserves **LR-007** for mod-retirement semantics; integration must preserve both rules. PR #16 crash-bisector evidence work is also independent.
+Expected safety contract:
 
-Canonical hosted closure remains exact support-integration source `5619604e88a27176726ada8518f53d385abc7b0f`, Windows Release Gate `36340312353`, evidence/cache persistence `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`. This documentation-only support branch has not itself run a new gate.
+- a pre-existing parent junction fails before the deployment journal is created and external bytes remain untouched;
+- if a junction is introduced while the app is down after a crash, startup recovery refuses to traverse it, leaves external bytes untouched, and marks the operation `RecoveryRequired`.
 
-The successor must preserve the permanent continuity constitution and explicitly require its successor to pass it to the agent after them. **Do not break the chain.**
+Known limitation: this narrows/fails closed on observable path topology but does not make path-based operations handle-atomic. A junction/topology swap after the final attribute check remains a TOCTOU risk and is explicitly preserved as future hardening.
+
+Verification is **open** for this changed production source. The prior hosted gate proves only the support-integration baseline and does not transfer to these fingerprints. No cache was manually promoted.
+
+Do not begin another production boundary before exact Windows closure.
+
+The successor inherits the permanent continuity constitution and LR-001 through LR-006, and must explicitly require its successor to recursively propagate them.
+
+**Do not break the chain.**
 
 ---
 

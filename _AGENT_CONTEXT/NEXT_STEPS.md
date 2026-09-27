@@ -1,14 +1,35 @@
-# Parallel support candidate — import publication isolation
+# Next steps
 
-A separate documentation-only support audit records a P1 import-publication boundary in `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
+## ACTIVE — verify and close Windows live-containment only
 
-Keep it independent from the Windows physical-containment/native-replacement checkpoint below. When this import boundary is prioritized, begin with regressions for mixed success/failure, cancellation, restart/process-death residue, retry convergence, and exactly-once successful publication. The intended production seam is catalog-invisible staging outside `ModsRoot` plus a commit-on-success final move shared by manual archive import and Smart Inbox. Do not combine it with mod retirement (PR #15), Smart Pack, CAS/reparse work, migration, or deployment redesign.
+Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`  
+Production source: `b671bac33917649ff89e5e3b0866725f7b165232`  
+Focused tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`  
+Branch: `agent/windows-live-containment-hardening-v3`
 
-This support branch adds LR-008. PR #15 independently reserves LR-007; preserve both.
+This is the only active production boundary.
+
+Exact next action:
+
+1. re-check canonical `main` and intervening commits before integration;
+2. integrate the candidate without reverting the hosted support-integration closure;
+3. run `scripts/Test-AgentHandoff.ps1` and the repository's exact full hosted Windows Release Gate;
+4. fix any compiler/analyzer/test/function-verifier regression without weakening checks;
+5. preserve any failed run and root cause;
+6. persist exact SHA-bound evidence and close only this boundary;
+7. keep the documented handle-level topology-swap TOCTOU limitation explicit.
+
+### Recommended next programming boundary after this closes
+
+Isolate native **`ReplaceFileW` failure postconditions** under LR-003. Add a narrow injectable native-replacement seam and Windows fixtures for documented 1175/1176/1177 states; assert actual destination/replacement recovery bytes and operation/journal state. A false native return must never be treated as proof that nothing changed.
+
+Keep CAS corruption, recursive scanner/adoption/Inbox traversal, migration, async lifetime, diagnostics privacy, remote networking, backup, and Smart Pack as separate future boundaries.
+
+The successor must inherit and recursively propagate the permanent continuity constitution.
+
+**Do not break the chain.**
 
 ---
-
-# Next steps
 
 ## Current checkpoint — parallel support-audit integration
 

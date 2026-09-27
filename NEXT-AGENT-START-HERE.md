@@ -9,7 +9,7 @@ Before modifying this project:
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
 2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (this support branch contains LR-001 through LR-006 plus LR-008; active parallel PR #15 independently reserves LR-007);
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
 5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -19,11 +19,26 @@ Before finishing, update durable repository handoff state and explicitly require
 
 **Do not break the chain.**
 
-## Import publication support branch
+## ACTIVE checkpoint: Windows live DeploymentExecutor physical containment
 
-This branch adds the documentation-only `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and LR-008. The confirmed boundary is that unfinished import folders under `ModsRoot` are catalog-visible: Smart Inbox can leave partial final destinations after recoverable failure, and manual archive `.importing` staging can be registered on the next startup. No production C#, tests, schema, workflow, or verification cache changed here.
+Current candidate:
 
-PR #15 owns separate successful mod-retirement/referential-integrity semantics and reserves LR-007. PR #16 owns crash-bisector diagnosis evidence. Preserve all three lanes independently.
+- canonical hosted-closed handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`
+- branch: `agent/windows-live-containment-hardening-v3`
+- production source: `b671bac33917649ff89e5e3b0866725f7b165232`
+- focused Windows tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`
+- status: **NOT YET GREEN**
+
+Read `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`, `CURRENT_STATE.md`, and `VERIFICATION.md`.
+
+Do not start `ReplaceFileW`, CAS, recursive scanner/adoption/Inbox, migration, async, diagnostics, networking, backup, or Smart Pack work first. Re-check canonical main, integrate this candidate safely, run the handoff validator and exact full Windows Release Gate, preserve/repair any failure, and close only this boundary.
+
+After closure, the next recommended programming boundary is isolated `ReplaceFileW` failure-postcondition characterization under LR-003.
+
+You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, explicitly require your successor to inherit, preserve, and recursively propagate the same rules to the agent after them.
+
+**Do not break the chain.**
+
 
 ## Current canonical product checkpoint
 
@@ -82,8 +97,6 @@ Read the full ledger; do not rely only on this summary.
 - LR-004 — lexical containment is not physical filesystem containment.
 - LR-005 — restartable migrations must prove ownership and convergence.
 - LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
-- LR-007 — reserved by active parallel PR #15 for successful mod-retirement semantic cleanup; read that PR before integrating.
-- LR-008 — unfinished imports must remain catalog-invisible until commit-on-success publication.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
 

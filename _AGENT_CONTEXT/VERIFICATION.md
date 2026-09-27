@@ -1,3 +1,42 @@
+# Windows live-containment candidate — verification OPEN
+
+Canonical hosted-verified handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`  
+Production source checkpoint: `b671bac33917649ff89e5e3b0866725f7b165232`  
+Focused Windows regression checkpoint: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`  
+Branch: `agent/windows-live-containment-hardening-v3`
+
+Implemented but **not yet claimed green**:
+
+- descendant reparse traversal rejection before deployment capture/precondition reads;
+- repeated containment check immediately before live mutation;
+- rollback/startup-recovery containment checks;
+- pruning and lock-related containment checks;
+- real Windows directory-junction regressions for Add/Replace/Remove and crash/restart recovery.
+
+Verification actually performed so far:
+
+- canonical GitHub history/current source/audits inspected;
+- source/test patch rebased onto the latest hosted-closed support-integration handoff;
+- branch source/test diff inspected;
+- LR-001 method-entry tracing statically re-audited;
+- Microsoft primary documentation checked for reparse-point detection and symbolic-link/junction path redirection.
+
+Not yet performed for this changed source:
+
+- local `git status` (authorized desktop is offline);
+- C# compile/analyzers;
+- targeted integration test execution;
+- full repository verifier;
+- PowerShell handoff validator execution;
+- hosted Windows Release Gate;
+- verification cache promotion.
+
+Previous hosted green evidence does not apply to changed production fingerprints. No cache has been manually promoted.
+
+Required closure is the exact hosted Windows gate after safe canonical integration.
+
+---
+
 # Parallel support-audit integration verification — 2026-09-27
 
 Canonical integration base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
