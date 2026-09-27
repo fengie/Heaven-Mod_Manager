@@ -230,8 +230,8 @@ public sealed class SmartPackPlanner
                     }
                     case SmartPackPriorityKind.Recency:
                     {
-                        var leftRecency = left.UpdatedAt?.UtcTicks ?? long.MinValue;
-                        var rightRecency = right.UpdatedAt?.UtcTicks ?? long.MinValue;
+                        var leftRecency = left.UpdatedAt?.UtcDateTime.Ticks ?? long.MinValue;
+                        var rightRecency = right.UpdatedAt?.UtcDateTime.Ticks ?? long.MinValue;
                         comparison = rightRecency.CompareTo(leftRecency);
                         break;
                     }
