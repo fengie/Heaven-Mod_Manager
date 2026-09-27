@@ -1,3 +1,43 @@
+# Native ReplaceFileW failure-postcondition boundary — CLOSED / hosted Windows verified
+
+Final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`.  
+Production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`.  
+Hosted Windows Release Gate: `36342205103`.  
+Workflow evidence/cache persistence: `689a17ce5dff18bd0bf1201205446edd51ada8b5`.
+
+Final exact evidence:
+
+- Windows X64 / .NET SDK 10.0.401;
+- repository verifier **25/25 PASS**;
+- production fingerprints **612/612** promoted;
+- explicit call sites **6480**, uncovered **0**, trace gaps **0**, parse errors **0**;
+- Core **79/79**;
+- Automation **20/20**;
+- Integration/fault injection **79/79**;
+- strict solution/analyzer verification PASS;
+- ReadyToRun self-contained win-x64 publish PASS with fallback **False**;
+- release ZIP SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468`.
+
+Closed behavior:
+
+- `AtomicFileOps.ReplaceFromAsync` has a narrow injectable native replacement backend; normal production behavior still uses `ReplaceFileW`;
+- error 1175 is characterized as recoverable without pathname mutation and ends with exact BEFORE bytes plus operation/journal `RolledBack`;
+- documented partial-name-mutation errors 1176/1177 retain the staged AFTER bytes instead of deleting the only known replacement recovery material;
+- 1176/1177 remain fail-closed as operation `RecoveryRequired` / journal `Writing`; no destructive guessing was added;
+- the final tests assert filesystem bytes/path existence and durable operation/journal state.
+
+No new Learned Rule was required because LR-003 already states the governing invariant.
+
+## Exact next boundary
+
+The next recommended independently verifiable checkpoint is **CAS integrity: corrupt existing hash-named object trust**. Start test-first in `BlobStore`: prove a valid SHA filename containing wrong bytes cannot be trusted for restore/deployment, define whether capture repairs it or restore rejects it, and preserve fail-closed recovery semantics. Keep recursive scanner/adoption/Smart Inbox reparse containment, migration, async, diagnostics, networking, backup, and Smart Pack separate.
+
+The successor inherits the permanent continuity constitution and active LR-001 through LR-006, and must explicitly require its own successor to recursively propagate them to the agent after them.
+
+**Do not break the chain.**
+
+---
+
 # Windows live DeploymentExecutor physical containment — CLOSED / hosted Windows verified
 
 Exact verified integration commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
