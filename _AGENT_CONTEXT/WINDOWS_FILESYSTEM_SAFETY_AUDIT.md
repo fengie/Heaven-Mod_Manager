@@ -1,3 +1,28 @@
+# Closed implementation checkpoint — ReplaceFileW partial-failure preservation
+
+The second production checkpoint from this audit is **CLOSED and hosted-Windows verified**.
+
+- production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`
+- final exact test/behavior commit: `17abfb05d83ff38040eb9356d34fbb3131644801`
+- hosted Windows Release Gate: `36342205103`
+- evidence/cache persistence: `689a17ce5dff18bd0bf1201205446edd51ada8b5`
+- repository verification: **25/25**
+- functions: **612/612**
+- explicit call sites: **6480 / 0 uncovered**
+- Integration/fault injection: **79/79**
+- ReadyToRun publish: PASS
+- release SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468`
+
+Closed scope is deliberately narrow. `AtomicFileOps` now uses an injectable `IAtomicReplaceBackend`; production still calls `ReplaceFileW`. When documented errors 1176/1177 occur, the staged replacement is retained rather than deleted in `finally`, because native failure can follow pathname mutation. Deployment rollback/recovery does not guess around those states: the operation remains `RecoveryRequired`, the journal remains `Writing`, and the fixture proves recovery bytes survive. Error 1175 is characterized separately and rolls back to the exact before image.
+
+The fixtures materialize Microsoft-documented postconditions through the seam; they do not claim the GitHub runner naturally induced real kernel 1175/1176/1177 conditions. Metadata/alternate-stream behavior outside the default data stream is still not newly claimed or redesigned.
+
+### Recommended next checkpoint from this audit
+
+Follow the repository-wide test-gap ordering: **CAS integrity** first. Add a corrupt-existing-object test around `BlobStore` proving that a valid SHA filename with wrong bytes is never trusted for restore/deployment. Define the fail-closed repair/rejection contract before production changes. Keep recursive ModScanner/adoption/Smart Inbox reparse traversal as a separate subsequent boundary.
+
+---
+
 # Closed implementation checkpoint — live DeploymentExecutor physical containment
 
 The first production checkpoint from this audit is **CLOSED and hosted-Windows verified**.
