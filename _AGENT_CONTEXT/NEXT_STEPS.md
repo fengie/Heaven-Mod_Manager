@@ -1,13 +1,3 @@
-# Parallel support candidate — import publication isolation
-
-A separate documentation-only support audit now records a P1 import-publication boundary in `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
-
-Keep it independent from the Windows physical-containment/native-replacement checkpoint below. When this import boundary is prioritized, begin with regressions for mixed success/failure, cancellation, restart/process-death residue, retry convergence, and exactly-once successful publication. The intended production seam is catalog-invisible staging outside `ModsRoot` plus a commit-on-success final move shared by manual archive import and Smart Inbox. Do not combine it with mod retirement (PR #15), Smart Pack, CAS/reparse work, migration, or deployment redesign.
-
-This support branch adds LR-008. PR #15 independently reserves LR-007; preserve both.
-
----
-
 # Next steps
 
 ## Current checkpoint — parallel support-audit integration
@@ -48,7 +38,9 @@ Keep these separate and consult their specialized audits before implementation:
 
 ## Verification truth
 
-The support integration is documentation/continuity work. It does not change the production source SHA verified by run `36336190920`, and it does not manually promote caches. A fresh hosted Windows gate after the canonical integration push is still required to verify the changed handoff/continuity inputs themselves.
+The support integration is documentation/continuity work and is now independently closed by hosted Windows Release Gate `36340312353` for exact integration commit `5619604e88a27176726ada8518f53d385abc7b0f`: repository verifier **25/25 PASS**, handoff continuity preflight PASS, release build/publish PASS, ReadyToRun fallback **False**, artifact SHA-256 `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`. Evidence/cache persistence: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
+
+Production source/tests were unchanged by the integration, and no cache was manually promoted outside the normal verifier/build path.
 
 Historical failed planner runs `36335255922` and `36335692754` remain useful evidence in `VERIFICATION.md`; do not erase them.
 

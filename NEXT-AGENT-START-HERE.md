@@ -9,7 +9,7 @@ Before modifying this project:
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
 2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (this support branch contains LR-001 through LR-006 plus LR-008; active parallel PR #15 independently reserves LR-007);
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
 5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -19,21 +19,13 @@ Before finishing, update durable repository handoff state and explicitly require
 
 **Do not break the chain.**
 
-## This support branch
-
-This branch adds the documentation-only `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and LR-008. The confirmed boundary is that unfinished import folders under `ModsRoot` are catalog-visible: Smart Inbox can leave partial final destinations after recoverable failure, and manual archive `.importing` staging can be registered on the next startup. No production C#, tests, schema, workflow, or verification cache changed here.
-
-PR #15 owns a separate mod-retirement/referential-integrity audit and reserves LR-007. Preserve both rule texts and keep implementation checkpoints independent.
-
 ## Current canonical product checkpoint
-
-The support-integration source at `5619604e88a27176726ada8518f53d385abc7b0f` passed hosted Windows Release Gate `36340312353`; evidence/cache persistence is canonical commit `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`. The production behavior remains the closed PlannerSnapshotRepository line.
 
 PlannerSnapshotRepository is **CLOSED**.
 
-- exact hosted support-integration source/commit: `5619604e88a27176726ada8518f53d385abc7b0f`
-- hosted Windows Release Gate: `36340312353`
-- evidence/cache persistence: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`
+- exact verified source/commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`
+- hosted Windows Release Gate: `36336190920`
+- evidence/cache persistence: `852f07b9d6ad0457c161df0aa1c8165981d349cf`
 - repository verifier: **25/25**
 - production fingerprints: **610/610**
 - explicit call sites: **6456**, uncovered **0**
@@ -55,6 +47,8 @@ Canonical inventory and decisions:
 `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`
 
 Important result: the support branches contributed **documentation/research only** relative to the integration baseline; none contained production C# or test changes that needed merging.
+
+The combined integration is now closed by hosted Windows Release Gate `36340312353` for exact commit `5619604e88a27176726ada8518f53d385abc7b0f`: repository verifier **25/25 PASS**, handoff continuity preflight PASS, release build/publish PASS, ReadyToRun fallback **False**, artifact SHA-256 `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`. Evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
 
 New durable specialized audits cover:
 
@@ -82,8 +76,6 @@ Read the full ledger; do not rely only on this summary.
 - LR-004 — lexical containment is not physical filesystem containment.
 - LR-005 — restartable migrations must prove ownership and convergence.
 - LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
-- LR-007 — reserved by active parallel PR #15 for successful mod-retirement semantic cleanup; read that branch/PR if integrating it.
-- LR-008 — unfinished imports must remain catalog-invisible until commit-on-success publication.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
 

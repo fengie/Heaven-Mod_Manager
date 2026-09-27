@@ -1,21 +1,3 @@
-# Import publication / catalog visibility support audit — documentation-only
-
-Audit base: canonical `main` at `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
-
-Durable audit: `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`.
-
-No production C#, tests, schema, workflow, or verification cache changed in this support branch. The audit confirms a distinct P1 library-ingestion boundary: Smart Inbox writes unfinished archive/directory imports directly under `ModsRoot`, recoverable failures do not remove the destination, and `CatalogService.RefreshFoldersAsync` later treats every top-level ModsRoot directory as a published mod. A failed item can therefore become a persisted ghost/partial mod either when another Inbox item succeeds and triggers a global refresh or at the next startup, where catalog refresh runs before maintenance. Manual `ArchiveImportService` is safer because it extracts to `.importing` then renames on success, but that staging directory is still inside `ModsRoot`; failure/cancellation can leave it catalog-visible on restart, and add-only catalog semantics can leave a stale DB row after retry.
-
-Recommended implementation remains a separate future checkpoint: regression-first catalog-invisible staging outside `ModsRoot`, then commit-on-success final publication shared by manual import and Smart Inbox. Do not combine it with reparse hardening, mod retirement, Smart Pack, migration, or deployment redesign.
-
-This branch adds **LR-008** for import publication isolation. Active parallel PR #15 independently reserves **LR-007** for mod-retirement semantics; integration must preserve both rules.
-
-Canonical main's hosted verification evidence is source `5619604e88a27176726ada8518f53d385abc7b0f`, Windows Release Gate `36340312353`, persisted by `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`. This documentation-only support branch has not itself run a new gate.
-
-The successor must preserve the permanent continuity constitution and explicitly require its successor to pass it to the agent after them. **Do not break the chain.**
-
----
-
 # Parallel support-agent integration — documentation/continuity checkpoint
 
 Integration base: canonical `main` at `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
@@ -46,11 +28,21 @@ Active Learned Rules are now **LR-001 through LR-006**. The integration resolved
 
 ## Verification status for this checkpoint
 
-Production executable source and tests are unchanged by this integration. The last closed product verification therefore remains the PlannerSnapshotRepository boundary at exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`.
+Parallel support-audit integration is **CLOSED and hosted-Windows verified**.
 
-That does **not** mean the newly changed continuity/documentation inputs have already passed a fresh hosted gate. A new Windows Release Gate must run after the canonical integration push to verify the current handoff/continuity state. No verification cache was manually promoted.
+- exact verified integration commit: `5619604e88a27176726ada8518f53d385abc7b0f`;
+- hosted Windows Release Gate: `36340312353`;
+- runner / SDK: Windows X64 / .NET 10.0.401;
+- repository verifier: **25/25 PASS**;
+- agent-handoff continuity preflight: **PASS**;
+- release build/publish: **PASS**;
+- ReadyToRun fallback used: **False**;
+- release ZIP SHA-256: `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`;
+- evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`.
 
-A local `git status` / local test run was unavailable during integration because the connected Remote Desktop Commander device was offline. Remote GitHub canonical state, history, branch comparisons and file diffs were inspected instead.
+Production executable source and tests were unchanged by this integration, so the PlannerSnapshotRepository production behavior remains the same as the previously closed boundary. The new hosted run nevertheless verified the changed handoff/continuity inputs on their exact repository SHA. No cache was manually promoted outside the normal gate.
+
+A local `git status` / local runtime run was unavailable during integration because the connected Remote Desktop Commander device was offline. Remote GitHub state plus the hosted Windows gate provide the authoritative closure evidence.
 
 ## Next boundary
 
