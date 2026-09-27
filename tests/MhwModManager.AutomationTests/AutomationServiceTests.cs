@@ -58,7 +58,7 @@ public sealed class AutomationServiceTests : IDisposable
         await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","a1",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","b1",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ExecuteAsync("INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at) VALUES($p,$m,$b,$e,NULL,$t)",new Dictionary<string,object?>{{"$p",@"nativePC\same.tex"},{"$m","b"},{"$b","b1"},{"$e","b1"},{"$t",DateTimeOffset.UtcNow.ToString("O",System.Globalization.CultureInfo.InvariantCulture)}},TestContext.Current.CancellationToken);
-        var result=await new EffectiveInspectorService(db).ExplainAsync(@"nativePC\same.tex",TestContext.Current.CancellationToken);
+        var result=await new EffectiveInspectorService(new PlannerSnapshotRepository(db)).ExplainAsync(@"nativePC\same.tex",TestContext.Current.CancellationToken);
         Assert.NotNull(result);Assert.Equal("b",result!.EffectiveModId);Assert.Contains("a",result.ShadowedModIds);
     }
 
@@ -81,7 +81,7 @@ public sealed class AutomationServiceTests : IDisposable
             TestContext.Current.CancellationToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
-        var result=await new EffectiveInspectorService(db,planner).ExplainWhyAsync(@"nativePC\same.tex",TestContext.Current.CancellationToken);
+        var result=await new EffectiveInspectorService(new PlannerSnapshotRepository(db),planner).ExplainWhyAsync(@"nativePC\same.tex",TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
         Assert.False(result!.Blocking);

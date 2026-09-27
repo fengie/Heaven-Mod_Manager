@@ -308,7 +308,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             .ToDictionary(x=>x.MemberId,StringComparer.OrdinalIgnoreCase);
         var logicalMemberIds=Mods.ToDictionary(row=>row.Id,row=>(IReadOnlyList<string>)row.Members.Select(m=>m.Id).ToArray(),StringComparer.OrdinalIgnoreCase);
         var enabledIds=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
-        var snap=await s.Database.LoadPlannerSnapshotAsync(enabledIds,ct);
+        var snap=await s.PlannerSnapshots.LoadAsync(enabledIds,ct);
         return await Task.Run(() =>
         {
             ct.ThrowIfCancellationRequested();
@@ -811,7 +811,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
-        var snap=await s.Database.LoadPlannerSnapshotAsync(ct);
+        var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("The saved setup now has a blocking conflict under the current files; nothing was changed.");
@@ -891,7 +891,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task ApplyStateDirectAsync(Dictionary<string,(bool enabled,int priority)> state,string description,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var snap=await s.Database.LoadPlannerSnapshotAsync(ct);
+        var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>state.TryGetValue(m.Id,out var v)?m with{Enabled=v.enabled,Priority=v.priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("Automatic diagnosis hit a blocking structural conflict and stopped without guessing.");
@@ -904,14 +904,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
         await s.Backups.CreateAsync("pre-vanilla-launch",ct);
-        var snap=await s.Database.LoadPlannerSnapshotAsync(ct);
+        var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var none=snap.Mods.Select(m=>m with{Enabled=false}).ToArray();
         var offPlan=await Task.Run(()=>s.Planner.Build(snap with{Mods=none}),ct);
         var off=await s.Executor.ApplyAsync(offPlan,"Enter safe mode",ct:ct);
         if(!off.Success)throw off.Exception??new InvalidOperationException(off.Message);
         using var p=ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath){WorkingDirectory=s.Paths.GameRoot,UseShellExecute=true}, "game-safe-mode-launch");
         await p.WaitForExitAsync(ct);
-        var restoreSnap=await s.Database.LoadPlannerSnapshotAsync(ct);
+        var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
         var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
         if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);

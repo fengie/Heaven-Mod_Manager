@@ -74,6 +74,7 @@ public sealed partial class App:Application, IDisposable
 
             var db=startup.Run("services.database.construct",()=>new ManagerDatabase(paths.DatabasePath));
             await startup.RunAsync("database.initialize",ct=>db.InitializeAsync(ct));
+            var plannerSnapshots=startup.Run("services.planner-snapshots",()=>new PlannerSnapshotRepository(db));
             var logger=startup.Run("services.logging",()=>AppLogging.Create(paths.StateRoot));
             var telemetry=startup.Run("services.telemetry",()=>new DiagnosticTelemetry(db,logger));
             var hash=startup.Run("services.hashing",()=>new HashingService());
@@ -84,7 +85,7 @@ public sealed partial class App:Application, IDisposable
             var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
             var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
-            var health=startup.Run("services.health",()=>new HealthService(db,hash,blobs,executor.Destination,paths.Game));
+            var health=startup.Run("services.health",()=>new HealthService(db,plannerSnapshots,hash,blobs,executor.Destination,paths.Game));
             var profiles=startup.Run("services.profiles",()=>new ProfileRepository(db));
             var presentationReads=startup.Run("services.presentation-reads",()=>new PresentationReadRepository(db));
             var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
@@ -92,7 +93,7 @@ public sealed partial class App:Application, IDisposable
             var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
             var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,paths.NextStateRoot,paths.Game));
             var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,paths.Game));
-            var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,hash,paths.ModsRoot,paths.Game));
+            var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,plannerSnapshots,hash,paths.ModsRoot,paths.Game));
             var previews=startup.Run("services.texture-preview",()=>new TexturePreviewService(Path.Combine(paths.NextStateRoot,"PreviewCache")));
             var visuals=startup.Run("services.mod-visuals",()=>new ModVisualService(db));
             var timeline=startup.Run("services.timeline",()=>new ChangeTimelineService(db));
@@ -105,12 +106,12 @@ public sealed partial class App:Application, IDisposable
             var trust=startup.Run("services.mod-trust",()=>new ModTrustService(db));
             var issues=startup.Run("services.mod-issue-fallback",()=>new ModIssueFallbackService(db,timeline,trust));
             var updateDiff=startup.Run("services.update-diff",()=>new UpdateDiffService(db));
-            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(db,planner));
+            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(plannerSnapshots,planner));
             var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
-            var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(db));
+            var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(plannerSnapshots));
             var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
             var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
-            var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(db,health,adoption,dependencies,planner,paths.Game));
+            var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
             changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LiveModRoot));
@@ -122,7 +123,7 @@ public sealed partial class App:Application, IDisposable
                     new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
             };
 
-            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
+            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
                 timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
@@ -240,6 +241,7 @@ public sealed record AppServices(
     AppPaths Paths,
     GameProfileRegistry GameRegistry,
     ManagerDatabase Database,
+    PlannerSnapshotRepository PlannerSnapshots,
     ILogger Log,
     DiagnosticTelemetry Telemetry,
     HashingService Hashing,

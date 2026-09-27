@@ -5,7 +5,7 @@ using MhwModManager.Filesystem;
 
 namespace MhwModManager.Diagnostics;
 
-public sealed class HealthService(ManagerDatabase db,HashingService hashing,BlobStore blobs,Func<string,string> destination,GameProfile? game = null)
+public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository plannerSnapshots,HashingService hashing,BlobStore blobs,Func<string,string> destination,GameProfile? game = null)
 {
     private const int HashParallelism=4;
 
@@ -19,7 +19,7 @@ public sealed class HealthService(ManagerDatabase db,HashingService hashing,Blob
 
         // Health does not need every mod file; avoid materializing the whole library just to
         // validate the current deployment/rules.
-        var snap=await db.LoadPlannerSnapshotAsync(Array.Empty<string>(),ct);
+        var snap=await plannerSnapshots.LoadAsync(Array.Empty<string>(),ct);
         await Parallel.ForEachAsync(snap.CurrentManifest.Values,
             new ParallelOptions{MaxDegreeOfParallelism=HashParallelism,CancellationToken=ct},
             async(e,token)=>

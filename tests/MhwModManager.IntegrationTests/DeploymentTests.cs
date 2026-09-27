@@ -45,7 +45,7 @@ public sealed class DeploymentTests : IDisposable
         var result = await executor.ApplyAsync(add, "take over", ct: TestToken);
         Assert.True(result.Success);
         Assert.Equal("MOD", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.Contains(@"nativePC\same.tex", snap.Originals.Keys);
         var original = snap.Originals[@"nativePC\same.tex"];
 
@@ -54,14 +54,14 @@ public sealed class DeploymentTests : IDisposable
         var r2 = await executor.ApplyAsync(remove, "restore original", ct: TestToken);
         Assert.True(r2.Success);
         Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(live, TestToken));
-        snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.DoesNotContain(@"nativePC\same.tex", snap.Originals.Keys); // ownership released
         Assert.DoesNotContain(@"nativePC\same.tex", snap.CurrentManifest.Keys);
 
         var undo = await executor.UndoLastAsync(TestToken);
         Assert.True(undo.Success);
         Assert.Equal("MOD", await File.ReadAllTextAsync(live, TestToken));
-        snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.Contains(@"nativePC\same.tex", snap.Originals.Keys); // baseline re-registered
         Assert.Equal("m", snap.CurrentManifest[@"nativePC\same.tex"].ProviderModId);
     }
@@ -86,7 +86,7 @@ public sealed class DeploymentTests : IDisposable
         var recovered = new DeploymentExecutor(db, blobs, hashing, game);
         await recovered.RecoverIncompleteAsync(TestToken);
         Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.CurrentManifest.Keys);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.Originals.Keys);
     }
@@ -111,7 +111,7 @@ public sealed class DeploymentTests : IDisposable
         var recovered = new DeploymentExecutor(db, blobs, hashing, game);
         await recovered.RecoverIncompleteAsync(TestToken);
         Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.Originals.Keys);
     }
 

@@ -4,7 +4,7 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
-public sealed class UnmanagedAdoptionService(ManagerDatabase db,HashingService hashing,string modsRoot,GameProfile game)
+public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotRepository plannerSnapshots,HashingService hashing,string modsRoot,GameProfile game)
 {
     public async Task<int> CountAsync(CancellationToken ct=default)=>(await FindCandidatesAsync(ct)).Count;
 
@@ -51,7 +51,7 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,HashingService h
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={game.Id}");
         var live=game.LiveModRoot;if(!Directory.Exists(live))return [];
-        var snapshot=await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot=await plannerSnapshots.LoadAsync(ct);
         var managed=snapshot.CurrentManifest.Keys.Select(PathRules.Normalize).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var adopted=await LoadAdoptedAsync(ct);
         var files=await Task.Run(()=>Directory.EnumerateFiles(live,"*",SearchOption.AllDirectories)

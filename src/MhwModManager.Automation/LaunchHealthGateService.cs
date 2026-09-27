@@ -5,7 +5,7 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
 
-public sealed class LaunchHealthGateService(ManagerDatabase db, HealthService health, UnmanagedAdoptionService adoption, DependencyDoctorService dependencies, DeploymentPlanner planner, GameProfile? game = null)
+public sealed class LaunchHealthGateService(PlannerSnapshotRepository plannerSnapshots, HealthService health, UnmanagedAdoptionService adoption, DependencyDoctorService dependencies, DeploymentPlanner planner, GameProfile? game = null)
 {
     public async Task<LaunchHealthReport> EvaluateAsync(CancellationToken ct = default)
     {
@@ -17,7 +17,7 @@ public sealed class LaunchHealthGateService(ManagerDatabase db, HealthService he
         if (unmanaged > 0) findings.Add(new("unmanaged", AutomationSeverity.Warning, $"{unmanaged} unmanaged live file(s)", "These can be adopted automatically before launch."));
         var deps = await dependencies.ScanAsync(ct);
         foreach (var d in deps.Where(x => !x.Ready)) findings.Add(new("dependency", AutomationSeverity.Blocker, $"Missing requirement for {d.ModName}", string.Join("; ", d.Missing), d.ModId));
-        var snap = await db.LoadPlannerSnapshotAsync(ct);
+        var snap = await plannerSnapshots.LoadAsync(ct);
         var plan = planner.Build(snap);
         foreach (var conflict in plan.Conflicts.Where(x => x.Blocking)) findings.Add(new("conflict", AutomationSeverity.Blocker, "Unresolved direct replacement", conflict.Explanation));
         foreach (var mod in snap.Mods.Where(x => x.Enabled && x.NeedsRevalidation)) findings.Add(new("revalidate", AutomationSeverity.Warning, $"{mod.DisplayName} needs revalidation", "The game executable changed since this mod was last validated.", mod.Id));

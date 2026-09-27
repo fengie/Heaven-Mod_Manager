@@ -56,7 +56,7 @@ public sealed class HardeningTests : IDisposable
         var recovered = new DeploymentExecutor(db, blobs, hashing, game);
         await recovered.RecoverIncompleteAsync(TestToken);
         Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.CurrentManifest.Keys);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.Originals.Keys);
     }
@@ -82,7 +82,7 @@ public sealed class HardeningTests : IDisposable
         var recovered = new DeploymentExecutor(db, blobs, hashing, game);
         await recovered.RecoverIncompleteAsync(TestToken);
         Assert.Equal("MOD", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.Equal("m", snap.CurrentManifest[@"nativePC\x.tex"].ProviderModId);
         Assert.Contains(@"nativePC\x.tex", snap.Originals.Keys);
     }
@@ -187,7 +187,7 @@ public sealed class HardeningTests : IDisposable
 
         await new DeploymentExecutor(db, blobs, hashing, game).RecoverIncompleteAsync(TestToken);
         Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(live, TestToken));
-        var snap = await db.LoadPlannerSnapshotAsync(TestToken);
+        var snap = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.CurrentManifest.Keys);
         Assert.DoesNotContain(@"nativePC\x.tex", snap.Originals.Keys);
     }
@@ -199,7 +199,7 @@ public sealed class HardeningTests : IDisposable
         var modsRoot=Path.Combine(root,"adoption","Mods");Directory.CreateDirectory(modsRoot);
         var live=Path.Combine(game,"nativePC","manual.tex");
         await File.WriteAllTextAsync(live,"MANUAL-A",TestToken);
-        var adoption=new UnmanagedAdoptionService(db,hashing,modsRoot,GameProfile.MonsterHunterWorld(game));
+        var adoption=new UnmanagedAdoptionService(db,new PlannerSnapshotRepository(db),hashing,modsRoot,GameProfile.MonsterHunterWorld(game));
 
         Assert.Equal(1,await adoption.CountAsync(TestToken));
         var result=await adoption.AdoptAsync(TestToken);
@@ -226,7 +226,7 @@ public sealed class HardeningTests : IDisposable
         await db.ReplaceModFilesAsync(optional.Id,[new(optional.Id,path,"bb",null,10,now,FileClass.Structural)],TestToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
-        var before=planner.Build(await db.LoadPlannerSnapshotAsync(TestToken));
+        var before=planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(TestToken));
         Assert.True(before.IsBlocked);
 
         var familyId=await db.ChainManualFamilyAsync(main.Id,[main.Id],[[optional.Id]],main.DisplayName,TestToken);
@@ -234,7 +234,7 @@ public sealed class HardeningTests : IDisposable
         Assert.Equal(familyId,mods[main.Id].FamilyId);Assert.Equal(familyId,mods[optional.Id].FamilyId);
         Assert.Equal("Main",mods[main.Id].FamilyRole);Assert.Equal("Optional",mods[optional.Id].FamilyRole);
 
-        var after=planner.Build(await db.LoadPlannerSnapshotAsync(TestToken));
+        var after=planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(TestToken));
         Assert.False(after.IsBlocked);
         var decision=Assert.Single(after.Conflicts,x=>PathRules.Comparer.Equals(x.Path,path));
         Assert.Equal(ConflictKind.UserOverlayRule,decision.Kind);
@@ -258,9 +258,9 @@ public sealed class HardeningTests : IDisposable
             """,new Dictionary<string,object?>{{"$a",main.Id},{"$b",optional.Id},{"$t",now.ToString("O",System.Globalization.CultureInfo.InvariantCulture)}},TestToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
-        Assert.True(planner.Build(await db.LoadPlannerSnapshotAsync(TestToken)).IsBlocked);
+        Assert.True(planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(TestToken)).IsBlocked);
         await db.ChainManualFamilyAsync(main.Id,[main.Id],[[optional.Id]],main.DisplayName,TestToken);
-        var after=planner.Build(await db.LoadPlannerSnapshotAsync(TestToken));
+        var after=planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(TestToken));
         Assert.False(after.IsBlocked);
         var decision=Assert.Single(after.Conflicts,x=>PathRules.Comparer.Equals(x.Path,path));
         Assert.Equal(ConflictKind.UserOverlayRule,decision.Kind);
@@ -281,7 +281,7 @@ public sealed class HardeningTests : IDisposable
         await db.ReplaceModFilesAsync(waist.Id,[new(waist.Id,path,"w1",null,10,now,FileClass.Structural)],TestToken);
 
         await db.ChainManualFamilyAsync(main.Id,[main.Id],[[chest.Id],[waist.Id]],main.DisplayName,TestToken);
-        var plan=new DeploymentPlanner(new ConflictEngine()).Build(await db.LoadPlannerSnapshotAsync(TestToken));
+        var plan=new DeploymentPlanner(new ConflictEngine()).Build(await new PlannerSnapshotRepository(db).LoadAsync(TestToken));
         Assert.False(plan.IsBlocked);
         var decision=Assert.Single(plan.Conflicts,x=>PathRules.Comparer.Equals(x.Path,path));
         Assert.Equal(waist.Id,decision.WinnerModId);

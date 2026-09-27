@@ -3,13 +3,13 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
 
-public sealed class EffectiveInspectorService(ManagerDatabase db, DeploymentPlanner? planner = null)
+public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerSnapshots, DeploymentPlanner? planner = null)
 {
     public async Task<EffectiveFileProvider?> ExplainAsync(string path, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = PathRules.Normalize(path);
-        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot = await plannerSnapshots.LoadAsync(ct);
         var mods = snapshot.Mods.ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
         var providers = snapshot.Files
             .Where(x => PathRules.Comparer.Equals(x.Path, normalized) && mods.ContainsKey(x.ModId))
@@ -35,7 +35,7 @@ public sealed class EffectiveInspectorService(ManagerDatabase db, DeploymentPlan
         if (planner is null) throw new InvalidOperationException("Explain Why requires the application's configured deployment planner.");
 
         var normalized = PathRules.Normalize(path);
-        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot = await plannerSnapshots.LoadAsync(ct);
         var enabledMods = snapshot.Mods
             .Where(x => x.Enabled && !x.IsSuperseded)
             .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
@@ -130,7 +130,7 @@ public sealed class EffectiveInspectorService(ManagerDatabase db, DeploymentPlan
     public async Task<IReadOnlyList<AssetHeatmapRow>> HeatmapAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot = await plannerSnapshots.LoadAsync(ct);
         var enabled = snapshot.Mods.Where(x => x.Enabled).ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
         var providers = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var paths = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
