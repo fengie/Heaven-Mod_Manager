@@ -1,36 +1,46 @@
-# ACTIVE candidate — Windows live deployment physical containment (NOT YET VERIFIED)
+# Windows live DeploymentExecutor physical containment — CLOSED / hosted Windows verified
 
-Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4` (support integration already hosted-Windows closed).  
-Working branch: `agent/windows-live-containment-hardening-v3`.  
-Production source checkpoint: `b671bac33917649ff89e5e3b0866725f7b165232`.  
-Focused Windows regressions checkpoint: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`.
+Exact verified integration commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
+Hosted Windows Release Gate: `36341049469`.  
+Workflow evidence/cache persistence: `dc7eb83c94427479c59413c77935050dadf051ff`.
 
-This candidate addresses exactly one P0 finding: descendant junction/symlink/reparse traversal in the live `DeploymentExecutor` path. Native `ReplaceFileW` failure semantics are intentionally separate.
+Final exact evidence:
 
-Implemented behavior:
+- Windows X64 / .NET SDK 10.0.401;
+- repository verifier **25/25 PASS**;
+- production fingerprints **611/611** promoted;
+- explicit call sites **6478**, uncovered **0**, trace gaps **0**, parse errors **0**;
+- Core **79/79**;
+- Automation **20/20**;
+- Integration/fault injection **76/76**;
+- automation self-test **11/11**;
+- strict Filesystem/App and whole-solution analyzers/builds PASS;
+- ReadyToRun restore and self-contained win-x64 publish PASS;
+- release ZIP SHA-256: `F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D`.
 
-- existing destination components below configured `gameRoot` are checked for `FileAttributes.ReparsePoint`;
-- containment is checked before capture/precondition reads and again immediately before Add/Replace/Remove;
-- rollback/startup recovery checks before examining bytes and again before restore/delete;
-- empty-directory pruning and lock-inspection paths obey the same rule;
-- Windows tests create real directory junctions and cover Add/Replace/Remove plus a crash/restart topology change.
+Closed behavior:
 
-Expected safety contract:
+- live deployment rejects an existing descendant reparse/junction component before capture/hash/precondition work;
+- Add/Replace/Remove re-check containment immediately before live mutation;
+- rollback and startup recovery reject unsafe topology before inspection and before restore/delete;
+- restart recovery encountering a newly introduced parent junction fails closed into `RecoveryRequired` without touching the external target;
+- empty-directory pruning and Restart Manager lock inspection share the same containment guard;
+- focused Windows tests use real directory junctions and cover Add, Replace, Remove and crash/restart recovery.
 
-- a pre-existing parent junction fails before the deployment journal is created and external bytes remain untouched;
-- if a junction is introduced while the app is down after a crash, startup recovery refuses to traverse it, leaves external bytes untouched, and marks the operation `RecoveryRequired`.
+The configured `gameRoot` remains the trusted anchor. Descendant reparse components are rejected. This remains path-based hardening, not handle/file-ID atomic containment: a topology swap after the final attribute check is a documented residual TOCTOU.
 
-Known limitation: this narrows/fails closed on observable path topology but does not make path-based operations handle-atomic. A junction/topology swap after the final attribute check remains a TOCTOU risk and is explicitly preserved as future hardening.
+No new Learned Rule was needed: LR-004 already encodes this invariant.
 
-Verification is **open** for this changed production source. The prior hosted gate proves only the support-integration baseline and does not transfer to these fingerprints. No cache was manually promoted.
+## Exact next boundary
 
-Do not begin another production boundary before exact Windows closure.
+Do not broaden this work into CAS/scanner/migration/network/UI changes. The next recommended programmer boundary is **native `ReplaceFileW` failure-postcondition characterization** under LR-003, kept independently verifiable.
 
-The successor inherits the permanent continuity constitution and LR-001 through LR-006, and must explicitly require its successor to recursively propagate them.
+The successor inherits the permanent continuity constitution, active LR-001 through LR-006, and must require its own successor to recursively propagate them again.
 
 **Do not break the chain.**
 
 ---
+
 
 # Parallel support-agent integration — documentation/continuity checkpoint
 
