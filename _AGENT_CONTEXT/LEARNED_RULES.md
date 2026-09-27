@@ -109,3 +109,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** audit branch `agent/support-8-diagnostics-privacy-audit-20260927`, based on canonical main `6ada5a5c4cc83afadfba42bc6af6559540920e3d`; documentation-only, no runtime gate claimed.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-008 — import publication requires catalog-invisible staging
+
+- **Rule ID:** LR-008
+- **Status:** Active
+- **Date:** 2026-09-27
+- **Scope:** Archive/folder import, Smart Inbox, package acquisition, catalog discovery, cancellation/restart recovery
+- **Rule:** Do not treat the existence of a partially copied or extracted directory under a catalog-scanned library root as successful publication. Import work must remain catalog-invisible until validation/normalization completes, then become visible through an explicit commit-on-success publication boundary. Failure, cancellation, and process death must not allow unfinished import state to become a normal mod merely because files exist.
+- **Trigger / evidence:** The import-publication audit found that `SmartInboxService` writes archive and direct-directory imports to their final `ModsRoot` destination and catches recoverable failures without removing that destination. A later global `CatalogService.RefreshFoldersAsync` enumerates every top-level `ModsRoot` directory and can persist that failed partial directory as a mod. `ArchiveImportService` uses a `.importing` staging folder, but it is also a direct child of `ModsRoot`; failure/cancellation can leave it behind and the next startup catalog refresh runs before maintenance, so the staging folder can be registered. Catalog refresh is add-only, allowing a later retry to remove the folder while leaving the stale DB row.
+- **Rationale:** Cleanup is not a sufficient publication guarantee because cleanup itself can fail or be bypassed by process death. A structural separation between in-progress work and the catalog discovery namespace makes incomplete state harmless to library identity and persistence.
+- **Enforcement:** New or changed import/acquisition code must stage outside the catalog-visible root (or prove an equivalently strong explicit visibility protocol), publish only after the package is complete, and add regression coverage for mixed success/failure, cancellation, restart/process-death residue, retry convergence, and exactly-once successful publication. Preserve source input until publication succeeds.
+- **Relevant audit:** `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md`
+- **Parallel numbering note:** PR #15 (`agent/support-mod-lifecycle-integrity-audit-20260927`) independently reserves LR-007 for entity-retirement semantics. Preserve both rules; do not collapse them.
+- **Supersedes:** none
+- **Superseded by:** none
