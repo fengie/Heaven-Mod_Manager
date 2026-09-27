@@ -1,5 +1,36 @@
 # Current state — v8.8.0
 
+## Games verification follow-up — trace gap repaired, rerun required
+
+Windows run `36330808544` targeted exact candidate commit
+`1aa8cff1d06ba3b97dfe362655fe07e1c5758514` and finished **24/25**.
+
+The only failure was the function fingerprint scan:
+
+- 615 production functions
+- 607 known-good
+- 8 requiring current verification
+- 1 trace gap
+- 6388 explicit call sites
+- 7 uncovered call sites
+- 0 parse errors
+- gap: `MainWindowViewModel.ScanInstalledGames()`
+
+Because that method moved into `MainWindowViewModel.Games.cs`, its fingerprint
+changed and the verifier correctly required an entry trace. The method had none.
+
+Production fix `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34` adds
+`MasterDebugLog.BeginMethod()` at the method entry and extends the Games
+regression guard to require that trace. No Games behavior, discovery behavior,
+restart semantics, adapter behavior, or deployment/database logic changed.
+
+The failed run still passed relaxed/strict compilation with zero warnings/errors
+and Integration/fault injection **66/66**. Release build/publish was correctly
+skipped because the repository gate was not fully green.
+
+A fresh complete Windows Release Gate is mandatory before Games can close.
+
+
 ## Games list-presentation candidate — awaiting hosted Windows verification
 
 Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` begins the next incremental

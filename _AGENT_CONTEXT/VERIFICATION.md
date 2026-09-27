@@ -1,5 +1,43 @@
 # Verification performed for this source handoff
 
+## Games first hosted verification — one trace gap
+
+Run `36330808544` checked exact commit
+`1aa8cff1d06ba3b97dfe362655fe07e1c5758514`.
+
+Result: **24 passed / 1 failed**.
+
+The only failed stage was the function fingerprint scan:
+
+- inventory: **615**
+- known-good: **607**
+- needs verification: **8**
+- trace gaps: **1**
+- explicit call sites: **6388**
+- uncovered call sites: **7**
+- parse errors: **0**
+- exact gap: `MainWindowViewModel.ScanInstalledGames()` in
+  `MainWindowViewModel.Games.cs`
+
+The verifier also reported all seven uncovered explicit call sites inside that
+same untraced method. This is an instrumentation/verification defect caused by
+moving the method into a new production fingerprint, not a runtime behavior
+failure.
+
+Other evidence from the same run:
+
+- agent-handoff continuity preflight: PASS
+- relaxed whole solution: PASS, 0 warnings / 0 errors
+- strict whole solution: PASS, 0 warnings / 0 errors
+- Integration/fault injection: **66/66 PASS**
+- release build/publish: correctly skipped because repository verification was
+  not fully green
+
+Production fix `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34` adds the missing method-entry
+`MasterDebugLog.BeginMethod()` and a regression assertion. It remains
+unverified until a new full Windows Release Gate passes.
+
+
 ## Games list-presentation verification boundary
 
 Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` changes WPF application source after

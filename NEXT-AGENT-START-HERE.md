@@ -1,5 +1,34 @@
 # NEXT AGENT — START HERE
 
+## Games verification follow-up: trace gap repaired
+
+Hosted Windows run `36330808544` on exact commit
+`1aa8cff1d06ba3b97dfe362655fe07e1c5758514` produced **24/25**.
+
+The only failed stage was the function fingerprint scan:
+
+- function inventory: **615**
+- known-good: **607**
+- needs verification: **8**
+- trace gaps: **1**
+- explicit call sites: **6388**
+- uncovered call sites: **7**
+- parse errors: **0**
+- sole gap: `MainWindowViewModel.ScanInstalledGames()`
+
+That method was moved into a new production file and therefore received a new
+fingerprint, but it lacked the mandatory `MasterDebugLog.BeginMethod()` entry
+scope. All seven uncovered call sites belonged to that one method.
+
+The same run still confirmed relaxed + strict compilation with **0 warnings /
+0 errors** and Integration/fault injection **66/66**.
+
+Production fix commit `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34` adds only the missing entry trace and a
+regression assertion that the extracted scan command retains it.
+
+Treat the fix as **unverified** until a fresh full Windows Release Gate passes.
+Run `36330808544` is superseded partial evidence, not closure.
+
 ## Active candidate: Games list presentation state
 
 Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` extracts only the available-game list
