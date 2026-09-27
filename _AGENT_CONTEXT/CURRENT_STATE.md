@@ -1,5 +1,28 @@
 # Current state — v8.8.0
 
+## Games list-presentation candidate — awaiting hosted Windows verification
+
+Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` begins the next incremental
+presentation slice after the closed Profiles checkpoint.
+
+- Added `GamesPageViewModel` to own `GameProfileRegistry.Load()` and the
+  observable game-profile list.
+- `MainWindowViewModel.Games` aliases `GamesPage.Rows`, preserving the
+  existing XAML collection binding.
+- Existing scan/add/switch/configure/restart methods moved to
+  `MainWindowViewModel.Games.cs` but remain shell-owned.
+- `SelectedGame`, registry mutation, active-game changes, process restart,
+  WPF shutdown, `RunBusy`, and global `StatusText` remain in the shell.
+- `AppPaths.Discover` and startup service reconstruction are unchanged.
+- Added a source-level integration guard covering list binding plus shell-owned
+  selection/switch lifecycle.
+- No deployment, planner, database-transaction, filesystem-safety, adapter,
+  FOMOD, XAML-layout, or DI-lifetime semantics changed.
+
+This candidate does **not** inherit the Profiles green state. A fresh complete
+Windows Release Gate is required before another source change.
+
+
 ## Profiles read/list page-view-model slice CLOSED — hosted Windows
 
 The Profiles read/list extraction is fully green.

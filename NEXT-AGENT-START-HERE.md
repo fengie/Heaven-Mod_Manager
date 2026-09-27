@@ -1,5 +1,30 @@
 # NEXT AGENT — START HERE
 
+## Active candidate: Games list presentation state
+
+Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` extracts only the available-game list
+read/state into `GamesPageViewModel`.
+
+Confirmed source flow before extraction:
+
+- `AppPaths.Discover()` reads the active profile from `GameProfileRegistry`
+  before the game-scoped database/planner/executor/service graph is built.
+- `SwitchGame` calls `SetActive`, starts a fresh manager process, then shuts
+  down the current WPF application. Services are not hot-swapped in-process.
+- installed-game discovery and add/configure operations mutate the registry and
+  remain shell/application responsibilities.
+- `SelectedGame`, `RunBusy`, `StatusText`, switching, restart/lifetime,
+  and AppPaths/service composition remain outside `GamesPageViewModel`.
+
+The page model owns only `GameProfileRegistry.Load()` -> observable rows.
+The existing game commands live in `MainWindowViewModel.Games.cs`, which is
+still the shell partial class.
+
+This source is **not verified yet**. The last closed checkpoint remains Profiles
+at commit `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`, run
+`36328183152`. Run the full Windows Release Gate and do not start another
+source slice until Games is independently green.
+
 ## Closed checkpoint: Profiles read/list page view model
 
 Hosted Windows Release Gate `36328183152` verified exact commit

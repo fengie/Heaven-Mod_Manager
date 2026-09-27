@@ -106,3 +106,28 @@ Implementation consequence: do **not** combine Generic Host adoption with the
 next page-view-model/database split. First establish small responsibility seams
 under the existing lifetime model, verify them, and treat host/DI migration as
 a later independent checkpoint.
+
+## 2026-09-27 Games presentation seam inspection
+
+Source inspection confirmed that game selection is intentionally a process-lifetime
+boundary, not an in-process service swap:
+
+- `AppPaths.Discover()` constructs a `GameProfileRegistry`, resolves the active
+  game, then derives game-specific workspace/database paths.
+- `App.OnStartup` constructs the database, planner, executor, scanners, Nexus,
+  automation and other services from that resolved `AppPaths.Game`.
+- `MainWindowViewModel.SwitchGame` persists the selected active profile, launches
+  a fresh copy of the manager executable, and shuts down the current WPF app.
+- `ScanInstalledGames`, `AddGame`, and `ConfigureGame` mutate
+  `GameProfileRegistry`; they are application operations, not passive
+  presentation reads.
+- The safe extraction boundary is therefore only
+  `GameProfileRegistry.Load()` -> observable list state. `SelectedGame`,
+  mutation, switching, restart/shutdown, busy/status, and composition remain in
+  the shell/application layer.
+
+Implementation consequence: `GamesPageViewModel` is deliberately read/list-only.
+The existing game commands may live in a MainWindow partial for file-level
+decomposition, but they must not move into the page model or change restart
+semantics.
+

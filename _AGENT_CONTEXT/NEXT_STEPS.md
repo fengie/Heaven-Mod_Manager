@@ -1,31 +1,39 @@
 # Next steps
 
-## Immediate: inspect Games presentation/state seam
+## Immediate: verify Games list-presentation candidate
 
-Profiles is closed at exact commit `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`, run `36328183152`.
+Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` implements the Games list-state
+extraction.
 
-Do not broaden the next slice before inspecting the current game-management flow.
+Do not begin another source slice yet.
 
-If the seam remains low-coupling:
+1. Run the full Windows Release Gate against the exact integrated Games
+   checkpoint.
+2. Require agent-handoff preflight, function scan, strict builds/analyzers,
+   Core/Automation/Integration tests, self-test, win-x64 compile, and
+   ReadyToRun publish to pass.
+3. Fix real failures rather than weakening gates or manually promoting caches.
+4. If green, persist the exact verified SHA/run, function inventory,
+   explicit/uncovered call-site counts, test counts, release SHA-256, and
+   promoted cache evidence.
+5. Update the canonical handoff files to mark Games CLOSED.
+6. Only then choose another architecture seam.
 
-1. Add a small Games page/presentation view model that owns loading and exposing
-   the game-profile list only.
-2. Preserve the existing `Games` binding surface by aliasing its collection
-   from `MainWindowViewModel`.
-3. Keep `SelectedGame`, game switching, AppPaths/service reconstruction,
-   application lifetime, `RunBusy`, and global `StatusText` in the shell /
-   composition root unless source inspection proves a narrower safe boundary.
-4. Add a binding/seam regression guard.
-5. Push source + adjacent continuity checkpoint.
-6. Require a full fresh Windows Release Gate before any further extraction.
+## Games boundary confirmed by inspection
 
-If Games is more coupled than expected, do not force the abstraction. Record
-the coupling and choose another low-risk seam instead.
+- `GamesPageViewModel`: registry `Load()` + observable rows only.
+- `MainWindowViewModel.Games`: discovery/add/configure/switch/restart shell
+  commands and busy/status coordination.
+- `SelectedGame`: still shell-owned.
+- `AppPaths.Discover`: still resolves the active registry profile before
+  constructing all game-scoped services.
+- switching still uses full process restart rather than in-process service
+  graph mutation.
 
-## Closed Profiles evidence
+## Last closed evidence
 
-- exact verified commit: `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`
-- production source: `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`
+- Profiles exact verified commit: `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`
+- Profiles production source: `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`
 - run: `36328183152`
 - verifier/fingerprints: **25/25**, **613/613**
 - explicit call sites: **6385**, uncovered **0**
@@ -33,16 +41,16 @@ the coupling and choose another low-risk seam instead.
 - self-test **11/11**
 - ReadyToRun win-x64 publish: PASS
 - SHA-256: `A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8`
-- evidence/cache persistence: `122bcdb525bb432e73dff6f5887a63e065246964`
 
-## Architecture order after page seams
+## After Games is independently green
 
-Continue one independently verified seam at a time. Defer `IssueSuspects`
-until its coupling to Mod rows/effective-state badges is deliberately designed.
+Reassess the remaining MainWindow responsibilities before choosing another
+slice. Do not force `IssueSuspects` into a page model while it still mutates
+Mod-row issue badges and aggregate shell counters.
 
-After the remaining clean page seams, move to cohesive `ManagerDatabase`
-repository extraction while preserving explicit transaction ownership and the
-single logical deployment commit point.
+After clean presentation seams, move toward cohesive `ManagerDatabase`
+repository extraction while preserving explicit connection/transaction
+ownership and the single logical deployment commit point.
 
 Keep these as separate later checkpoints:
 
@@ -55,7 +63,8 @@ Keep these as separate later checkpoints:
 
 Preserve deployment journal/CAS/rollback/TOCTOU/path safety, one logical SQLite
 deployment commit point, human-rule precedence, generic fail-closed behavior,
-planner-backed Explain Why, and verification promotion only after exact gates.
+planner-backed Explain Why, game-switch restart semantics, and verification
+promotion only after exact gates.
 
 Before every handoff: update `_AGENT_CONTEXT`, keep evidence tied to exact
 SHAs, run/confirm `scripts/Test-AgentHandoff.ps1`, push stable checkpoints,

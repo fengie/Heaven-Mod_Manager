@@ -1,5 +1,26 @@
 # Verification performed for this source handoff
 
+## Games list-presentation verification boundary
+
+Production source commit `ba6b6b32bfb754d25afe3349c2692a9279954c4a` changes WPF application source after
+the closed Profiles checkpoint.
+
+Implementation scope:
+
+- `GamesPageViewModel` owns `GameProfileRegistry.Load()` consumption and
+  game-list collection state.
+- `MainWindowViewModel.Games` aliases `GamesPage.Rows`.
+- game discovery/mutation, `SelectedGame`, switching, process restart,
+  application shutdown, busy coordination, and status stay shell-owned.
+- a new source-level integration guard checks the list seam, unchanged XAML
+  bindings, and shell-owned switch/restart path.
+
+No fresh Windows evidence exists for this candidate yet. Applicable closed
+verification remains Profiles run `36328183152` at exact commit
+`04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`. Do not promote changed
+fingerprints until a full new Windows Release Gate passes.
+
+
 ## Profiles read/list page-view-model hosted closure
 
 Hosted Windows run `36328183152` closed exact commit `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`
