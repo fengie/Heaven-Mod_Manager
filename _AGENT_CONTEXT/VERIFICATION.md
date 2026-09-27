@@ -1,23 +1,25 @@
 # Verification performed for this source handoff
 
-## Coverage page-view-model verification boundary
+## Coverage page-view-model hosted closure
 
-Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` changes the WPF application source
-after the closed Activity checkpoint.
+Hosted Windows run `36327634813` closed exact commit `e3ed3be730000d1829b02e5d2d29b3f23ca52d94`
+(production source `855f6e5eb4998aa442538636b76f5c644146eb6a`).
 
-Implementation scope:
+- verifier: **25/25**
+- production function inventory: **611**
+- promoted: **611/611**
+- explicit call sites: **6379**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core **79/79**
+- Automation **20/20**
+- Integration/fault injection **64/64**
+- self-test **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun restore/publish: PASS
+- release SHA-256: `40B47B6E3C9CF21A0945095FE28E118540B415FBD9177190BDB99FE80C9657A8`
+- evidence/cache persistence: `e62e7ad5d93cdb6c6ae3d6e8562d6fae667e9c02`
 
-- `CoveragePageViewModel` owns `PresentationReadRepository.GetOutfitCoverageAsync`
-  consumption, `OutfitRow` mapping, and row collection state.
-- `MainWindowViewModel.OutfitRows` aliases `Coverage.Rows`.
-- shell command/busy/status ownership is preserved.
-- a new source-level integration guard checks the seam and unchanged XAML
-  bindings.
-
-No fresh Windows evidence exists for this candidate yet. The applicable closed
-verification remains Activity run `36325994246` at exact commit
-`5eab48f0a2139e3aee96a7c71e4466d2e1168877`. Do not promote changed
-fingerprints until a full new Windows Release Gate passes.
+The exact release build also passed the agent-handoff continuity preflight.
 
 
 ## Activity page-view-model hosted closure

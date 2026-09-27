@@ -1,20 +1,23 @@
 # NEXT AGENT — START HERE
 
-## Active candidate: Coverage page view model
+## Closed checkpoint: Coverage page view model
 
-Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` extracts the Coverage read/state seam
-into `CoveragePageViewModel` while deliberately preserving the existing
-`OutfitRows` and `RefreshOutfitsCommand` binding surface.
+Hosted Windows Release Gate `36327634813` verified exact commit
+`e3ed3be730000d1829b02e5d2d29b3f23ca52d94` (production source `855f6e5eb4998aa442538636b76f5c644146eb6a`): **25/25**
+verifier, **611/611** fingerprints, Core **79/79**, Automation **20/20**,
+Integration/fault injection **64/64**, self-test **11/11**, and ReadyToRun
+win-x64 publish PASS.
 
-The page model now owns semantic coverage reads, `OutfitRow` mapping, and row
-collection state. `MainWindowViewModel` still owns `RefreshOutfitsCommand`,
-`RunBusy`, and global `StatusText`. Generic games return their explanatory
-status from the page model to the shell instead of mutating shell-global state.
+Release SHA-256:
+`40B47B6E3C9CF21A0945095FE28E118540B415FBD9177190BDB99FE80C9657A8`
 
-This source is **not verified yet**. The last closed checkpoint remains the
-Activity slice at commit `5eab48f0a2139e3aee96a7c71e4466d2e1168877`, run
-`36325994246`. Run the full Windows Release Gate and do not start another page
-extraction until Coverage is independently green.
+Evidence/cache persistence commit:
+`e62e7ad5d93cdb6c6ae3d6e8562d6fae667e9c02`
+
+The next intended source boundary is **Profiles read/list state only**. Preserve
+the existing `Profiles` and `RefreshProfilesCommand` binding surface. Keep
+profile staging/save/delete actions, `RunBusy`, and global `StatusText` in
+`MainWindowViewModel` for the next slice.
 
 ## Closed checkpoint: Activity page view model
 

@@ -1,25 +1,27 @@
 # Current state — v8.8.0
 
-## Coverage page-view-model candidate — awaiting hosted Windows verification
+## Coverage page-view-model slice CLOSED — hosted Windows
 
-Production source commit `855f6e5eb4998aa442538636b76f5c644146eb6a` begins the next incremental architecture
-slice after the closed Activity checkpoint.
+The Coverage extraction is fully green.
 
-- Added `CoveragePageViewModel` to own semantic coverage reads, `OutfitRow`
-  mapping, and coverage collection state.
-- `MainWindowViewModel` composes the page model and exposes the same
-  `OutfitRows` collection reference via `Coverage.Rows`.
-- `RefreshOutfitsCommand`, `RunBusy`, and global `StatusText` remain shell
-  responsibilities.
-- For generic games without semantic coverage, the page model clears its rows
-  and returns the existing explanatory status text to the shell.
-- Added a source-level integration guard for the seam and preserved
-  `OutfitRows` / `RefreshOutfitsCommand` XAML bindings.
-- No deployment, conflict, database transaction, filesystem safety, FOMOD, or
-  enhanced-adapter semantics changed.
+- exact verified commit: `e3ed3be730000d1829b02e5d2d29b3f23ca52d94`
+- last production-source change: `855f6e5eb4998aa442538636b76f5c644146eb6a`
+- Windows Release Gate: `36327634813`
+- repository verification: **25/25 PASS**
+- production fingerprints: **611/611 promoted**
+- explicit call sites: **6379**, uncovered **0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **64/64**
+- self-test: **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun self-contained publish: PASS
+- release ZIP SHA-256: `40B47B6E3C9CF21A0945095FE28E118540B415FBD9177190BDB99FE80C9657A8`
+- evidence/cache persistence commit: `e62e7ad5d93cdb6c6ae3d6e8562d6fae667e9c02`
 
-This candidate does **not** inherit the Activity green state. A fresh complete
-Windows Release Gate is required before another extraction.
+This verifies the real `CoveragePageViewModel` extraction while preserving the
+legacy `OutfitRows` / `RefreshOutfitsCommand` binding surface and keeping
+shell-global busy/status ownership in `MainWindowViewModel`.
 
 
 ## Activity page-view-model slice CLOSED — hosted Windows
