@@ -296,7 +296,8 @@ Those omissions are intentional because this branch is documentation-only and th
 - PR #4 / broad test/performance audit remains the general test-gap authority; this document provides the specialized privacy test contract.
 - PR #5 / multi-source discovery owns future provider architecture; any provider added there must inherit the share-safe secret/logging contract described here.
 - PR #8 / semantic coverage owns MHW catalog/gap-fill semantics.
-- The reserved state-backup/portability branch was identical to main at task selection and was not touched.
+- PR #9 / state backup, portability, and disaster recovery is the specialized authority for backup-set secret exclusion, WAL-safe snapshots, portable path rebasing, and recovery capsules. It opened after this audit began; its recommendation to exclude `nexus-api-key.txt` from portable backups is compatible with this audit's local-secret finding.
+- PR #10 / remote-preview network trust is the specialized authority for SSRF/private-address/redirect/plain-HTTP/response-cap/image-validation risks. It opened after this audit began. This audit's URL note is narrower: even an otherwise legitimate remote URL should have sensitive query values scrubbed before it crosses a share/log-export boundary.
 
 If another audit discovers the same issue from a broader angle, this document should remain the specialized authority for diagnostics share-boundary privacy and credential handling.
 
@@ -309,3 +310,18 @@ Before implementing it, re-check canonical `main` and open PRs because parallel 
 The successor must preserve this continuity system and explicitly require its successor to inherit and recursively propagate it again to the agent after them.
 
 **Do not break the chain.**
+
+
+## Late parallel-work reconciliation
+
+Before finalizing this branch, canonical `main` was rechecked and remained at
+`6ada5a5c4cc83afadfba42bc6af6559540920e3d`. Two additional documentation-only
+support PRs appeared while this audit was in progress:
+
+- PR #9: state backup / portability / disaster recovery;
+- PR #10: remote preview network trust.
+
+Neither makes this audit obsolete. PR #9 owns backup/recovery scope and PR #10
+owns remote-fetch network trust. This document remains the specialized authority
+for what diagnostic/support artifacts disclose when they are shared. No
+production boundary is jointly owned.
