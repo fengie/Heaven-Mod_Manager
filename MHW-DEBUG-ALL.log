@@ -1,7 +1,0 @@
-MHW MOD MANAGER MASTER DEBUG LOG
-This file is intentionally stored in the top-level folder.
-Build, verification, startup, method/process tracing, WPF internals, database transactions, filesystem activity, runtime telemetry, and exceptions append here.
-Every traced operation receives an operation id so nested work and first-chance exceptions can be correlated.
-IMPORTANT: this debug build is intentionally extremely verbose. It logs paths/names/operations but should not log API-key contents.
-If something fails, upload THIS ONE FILE to ChatGPT.
-================================================================================
