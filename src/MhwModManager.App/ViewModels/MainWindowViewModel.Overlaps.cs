@@ -19,7 +19,7 @@ public sealed partial class MainWindowViewModel
             var detail=blocking
                 ?"Independent providers still require a decision."
                 :"Informational overlap. Priority, family composition, identical bytes, or a shared-resource rule already determines the effective file provider.";
-            var primaryPath=item.Paths?.FirstOrDefault()??item.AssetKey;
+            var primaryPath=item.Paths is { Count: > 0 } ? item.Paths[0] : item.AssetKey;
             return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail,primaryPath);
         }).OrderByDescending(x=>StringComparer.OrdinalIgnoreCase.Equals(x.Resolution,"Needs choice"))
           .ThenByDescending(x=>x.ProviderCount)
