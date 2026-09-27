@@ -1,3 +1,28 @@
+# Implementation checkpoint — live DeploymentExecutor physical containment candidate
+
+This audit's first source checkpoint is implemented on `agent/windows-live-containment-hardening-v3` from hosted-closed canonical handoff `208a66da89632acf36c065dc3bfead76af8d6bf4`.
+
+Production source: `b671bac33917649ff89e5e3b0866725f7b165232`.  
+Focused Windows tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`.
+
+Scope is deliberately limited to **live DeploymentExecutor descendant-reparse containment**:
+
+- reject existing `FileAttributes.ReparsePoint` components beneath trusted `gameRoot`;
+- check before capture/precondition reads and immediately before mutation;
+- apply the rule during rollback/startup recovery before inspection and before restore/delete;
+- protect pruning and lock-related path consumers;
+- exercise real parent junction escapes for Add/Replace/Remove and restart recovery.
+
+The configured game root itself is the trust anchor; descendant reparse components are rejected. This checkpoint does not change user-selected root alias policy.
+
+This is not a handle/file-ID race-proof design: a topology swap after the last attribute check remains a TOCTOU limitation.
+
+Still open from this audit: `ReplaceFileW` 1175/1176/1177 failure semantics, CAS corruption/reparse trust, recursive ModScanner/adoption/Smart Inbox traversal, and remaining path-edge cases.
+
+Verification is open; see `VERIFICATION.md`.
+
+---
+
 # Windows filesystem safety deep audit — 2026-09-27
 
 ## 1. Scope and canonical state
