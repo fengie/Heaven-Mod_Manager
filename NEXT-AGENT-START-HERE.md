@@ -20,9 +20,11 @@ The next agent must be able to continue without previous chat history.
 **Do not break the chain.**
 
 
-## Current checkpoint: MainWindow re-audit / storage transaction design COMPLETE
+## Current checkpoint: governance CLOSED; PlannerSnapshotRepository is the only next production boundary
 
-Canonical design base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
+Governance closure: exact commit `73f1298455ec4c651e211488ececf9803504e60d`, hosted Windows run `36333960215`, evidence/cache commit `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
+
+Canonical architecture design base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
 
 No production source changed in this checkpoint. The current decision is
 **Path B: stop splitting MainWindowViewModel**.

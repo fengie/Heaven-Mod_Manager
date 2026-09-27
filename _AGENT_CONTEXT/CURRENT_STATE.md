@@ -1,4 +1,4 @@
-# Governance checkpoint — permanent recursive continuity
+# Governance checkpoint CLOSED — permanent recursive continuity
 
 A governance-only checkpoint now installs the repository-level continuity constitution requested by the user.
 
@@ -9,8 +9,12 @@ A governance-only checkpoint now installs the repository-level continuity consti
 - `scripts/Test-AgentHandoff-NegativeFixtures.ps1` deliberately breaks learned-rules linkage, successor propagation, and Core-Rule protection and requires the real validator to fail closed.
 - `scripts/Verify-Release.ps1` runs both the positive handoff preflight and negative fixtures.
 - No production C# changed. The previously closed product baseline remains exact commit `106a4569b572473394aa075bcfa5d9c03f2fe44d`, hosted run `36331057943`.
-- Because continuity scripts changed, earlier handoff-preflight evidence does **not** verify the new validator. The governance commit needs exact-input validation before its verification-infrastructure change is called green.
-- The next product boundary remains **PlannerSnapshotRepository only** after governance closure.
+- Hosted Windows Release Gate `36333960215` verified exact governance commit `73f1298455ec4c651e211488ececf9803504e60d` on Windows x64 / .NET SDK 10.0.401.
+- `scripts/Test-AgentHandoff.ps1` passed; the baseline negative-fixture copy passed; all four recursive-continuity negative fixtures were rejected as intended.
+- Repository verification finished **25/25** with **615/615** production fingerprints, **6389** explicit call sites / **0** uncovered, Core **79/79**, Automation **20/20**, Integration/fault injection **66/66**, self-test **11/11**, App win-x64 analyzers PASS, and ReadyToRun publish PASS.
+- Release SHA-256: `8A8D78DA53AE81703091683F5BC25D298C7BDEE3FB831098040D91EB2F85AAF4`.
+- Workflow evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
+- The next product boundary is now **PlannerSnapshotRepository only**.
 
 Every future handoff must explicitly require the successor to preserve and recursively pass this system to the agent after them.
 

@@ -1,18 +1,12 @@
 # Next steps
 
-## First: close the recursive-continuity governance checkpoint
+## Recursive-continuity governance checkpoint — CLOSED
 
-Before changing production source, confirm the exact governance commit passes:
-
-1. `scripts/Test-AgentHandoff.ps1`;
-2. `scripts/Test-AgentHandoff-NegativeFixtures.ps1`;
-3. the normal verification harness/hosted Windows Release Gate as applicable to the changed verification infrastructure.
-
-Do not manually promote caches. No production C# changed in the governance checkpoint, so the existing product baseline remains tied to its prior exact source SHA; only the changed continuity infrastructure needs new exact evidence.
+Exact governance commit `73f1298455ec4c651e211488ececf9803504e60d` passed hosted Windows Release Gate `36333960215` on Windows x64 / .NET SDK 10.0.401. The handoff validator passed, the baseline fixture passed, all four recursive-continuity negative fixtures were rejected, the repository verifier finished 25/25, and the release publish passed. Evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
 
 Every future agent must preserve `CONTINUITY_PROTOCOL.md`, append-only `LEARNED_RULES.md`, the mechanical propagation checks, and must explicitly require its successor to pass the same rules to the agent after them.
 
-After governance closure, the exact next production action remains **PlannerSnapshotRepository only**.
+The exact next production action is **PlannerSnapshotRepository only**.
 
 **Do not break the chain.**
 

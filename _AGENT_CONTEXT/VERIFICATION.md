@@ -13,7 +13,26 @@ Changed verification behavior:
 The previous product evidence remains authoritative only for its exact source:
 `106a4569b572473394aa075bcfa5d9c03f2fe44d`, hosted Windows run `36331057943`.
 
-Do **not** claim that prior handoff-preflight evidence verifies the new scripts. The exact governance commit requires a fresh handoff/negative-fixture execution, normally via the hosted Windows Release Gate. No verification cache was manually promoted by this documentation/governance change.
+Hosted Windows Release Gate `36333960215` closed exact governance commit `73f1298455ec4c651e211488ececf9803504e60d`.
+
+- platform: Windows Server 2025 / x64
+- .NET SDK: `10.0.401`
+- `scripts/Test-AgentHandoff.ps1`: PASS
+- baseline recursive-continuity fixture: PASS
+- negative fixtures rejected as intended: **4/4**
+- repository verifier: **25/25 PASS**
+- production fingerprints: **615/615 verified**
+- explicit call sites: **6389**, uncovered **0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **66/66**
+- self-test: **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun self-contained publish: PASS
+- release SHA-256: `8A8D78DA53AE81703091683F5BC25D298C7BDEE3FB831098040D91EB2F85AAF4`
+- evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`
+
+No production C# changed in governance. No verification cache was manually promoted outside the normal gate.
 
 
 ## Games list-presentation hosted closure
