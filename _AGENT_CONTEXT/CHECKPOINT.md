@@ -45,3 +45,5 @@ No new packaged release was produced. The version remains 8.8.0 with unreleased 
 ## Research continuation — 2026-09-27
 
 Batch 1 complete: RESEARCH_FOMOD_2026-09-27.md records Inbox partial-import/result risks, FOMOD compatibility differences, and concrete fixtures. These are source observations and proposed tests, not fixed regressions. Next: transaction/recovery and diagnosis audit, then Windows UI acceptance research. Save and push each batch.
+
+Batch 2 complete: RESEARCH_RECOVERY_2026-09-27.md maps actual transaction/undo behavior and existing tests to missing fault cases, profile semantics, and tri-state diagnosis follow-up. Next: Windows UI/performance and adapter acceptance; consolidate priorities.
