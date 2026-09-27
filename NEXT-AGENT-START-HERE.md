@@ -6,14 +6,18 @@ Read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/README
 
 GitHub repository `fengie/mhw-mods` on `main` is the canonical development state. Inspect recent commits/diffs relevant to the task before editing. Source ZIPs remain useful release/export artifacts, but they are not the primary source of truth.
 
-## Current repair revision
+## Current revision
 
-Read `_AGENT_CONTEXT/AUDIT-2026-09-27.md` and `REPAIR-NOTES.md` next. They supersede
-older statements that no SDK/PowerShell were available. The repaired source builds
-strictly with SDK 10.0.401 and passes 158 tests plus 11 self-test checks on Linux.
-Windows UI/locking/publish validation is still outstanding. Preserve the exact
-579 checked function fingerprints and six reusable prior Windows stage checks;
-the 23 changed/new functions are deliberately not release-promoted.
+v8.8.0 has a closed hosted Windows baseline: commit
+`5f6789af499fcc1afe6cb5d38244927bb02335fb`, GitHub Actions run
+`36321128433`, **25/25** verification stages passed, all 602 exact production
+function fingerprints promoted, and the win-x64 release publish passed. Read
+`_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`.
+
+A post-v8.8 architecture / Explain Why candidate is now being developed. Read
+`_AGENT_CONTEXT/CURRENT_REVISION.json` and `CURRENT_STATE.md` for the exact
+candidate SHA and verification status. Do **not** transfer the old green
+fingerprints to changed source; the candidate must pass a fresh Windows gate.
 
 ## Mandatory continuity requirement
 
@@ -37,10 +41,11 @@ The next agent must be able to continue without access to previous chat history.
 
 **Do not break the chain.**
 
-## Latest Windows evidence
+## Verification evidence
 
-Read `_AGENT_CONTEXT/EVIDENCE/v8.8.0-first-windows-verification.log` before touching verification code. Some checks are already proven and persisted in `.verification/stage-status.json`; do not delete/re-run them casually. Cache reuse is valid only for exact input fingerprints. Functions are similarly represented as exact-fingerprint booleans in `.verification/function-status.json`. Preserve and extend both mechanisms for the next agent.
-
-## Latest Windows verification evidence
-
-Read `_AGENT_CONTEXT/EVIDENCE/v8.8.0-second-windows-verification.log` as the newest authoritative Windows run. It reached **24 PASS / 1 FAIL**: every compile/analyzer/test/self-test stage passed, and the only failing stage was the function fingerprint scan because four changed functions lacked `MasterDebugLog.BeginMethod()` entry scopes. The later repair revision adds those scopes and additional validated repairs. Because production Filesystem/App inputs changed afterward, affected stages must rerun; do not falsely carry prior green state across changed fingerprints. Exact unaffected cached checks remain checked.
+The canonical closed v8.8 evidence is
+`_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`. Earlier first and
+second Windows logs remain useful historical evidence, but their 13/12 and 24/1
+states are superseded by the final 25/25 hosted closure. For any later source
+change, reuse cached stages/functions only when the verifier confirms exact input
+fingerprints; never copy a green status manually.
