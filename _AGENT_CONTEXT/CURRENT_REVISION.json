@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/support-import-publication-integrity-audit-20260927",
   "currentVersion": "8.8.0",
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "support-audit-integration-closed-hosted-windows-verified",
+  "status": "support-import-publication-audit-documentation-only-awaiting-integration",
   "verificationAppliesToCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
   "lastClosedVerificationCommit": "5619604e88a27176726ada8518f53d385abc7b0f",
   "lastClosedVerificationRun": "36340312353",
   "candidateSourceCommit": "528401925b1d09b3d65c9652de8e4f2024e3677f",
-  "verificationScopeNote": "Parallel support-audit integration CLOSED. Hosted Windows Release Gate 36340312353 verified exact integration commit 5619604e88a27176726ada8518f53d385abc7b0f on Windows X64 / .NET SDK 10.0.401. Repository verification passed 25/25, including the expanded agent-handoff continuity preflight; the release build/publish gate passed with ReadyToRun fallback=false. Artifact SHA-256 43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF. Evidence/cache persistence commit 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. Production executable source/tests were unchanged by the integration; the previous PlannerSnapshotRepository production behavior remains intact. No cache was manually promoted outside the normal gate. A local git status/runtime run was unavailable because the connected desktop device was offline, but hosted Windows closure is authoritative for the exact integration SHA.",
+  "verificationScopeNote": "Canonical support-integration source 5619604e88a27176726ada8518f53d385abc7b0f passed hosted Windows Release Gate 36340312353; evidence/cache persistence is 4de981ab7ee47a3a8f0dd60f38e17644517b2ea3. This support branch was reconciled onto canonical main 208a66da89632acf36c065dc3bfead76af8d6bf4 and changes documentation/continuity only: it adds the import-publication/catalog-visibility audit and LR-008. The six upstream commits from 4de981a to 208a66d were documentation/continuity closure only, so the inspected import source bodies were unchanged. No production executable C#, tests, schema, workflow, or verification cache changed on this branch, and no new runtime verification is claimed for the branch itself. Local git status/runtime execution was unavailable in this chat; canonical GitHub history, branch/PR comparisons, and source bodies were inspected.",
   "lastClosedVerification": {
     "functionInventoryTotal": 610,
     "functionsVerified": 610,
@@ -28,6 +28,9 @@
     "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF"
   },
   "candidateChanges": [
+    "Documentation-only support audit: trace manual archive import, Smart Inbox, CatalogService, and startup ordering to define import publication/catalog visibility semantics.",
+    "Confirmed that recoverable/canceled/crash-interrupted import residue under ModsRoot can be cataloged as a normal mod; manual .importing staging is also catalog-visible on restart.",
+    "Added LR-008 requiring catalog-invisible staging and commit-on-success publication; active parallel PR #15 independently reserves LR-007 for mod-retirement semantics.",
     "Integrated the parallel support-agent branch inventory and dispositions without blindly merging stale continuity snapshots.",
     "Added async/lifetime, broad test/performance, Windows filesystem safety, migration recovery, diagnostics privacy, remote preview network trust, verification infrastructure, state backup/portability, multi-source discovery, and MHW semantic coverage audits.",
     "Appended the independent MainWindow support re-audit to the canonical responsibility and research documents; stop-page-model-splitting remains the current ownership decision.",
@@ -56,6 +59,8 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "No production executable C#, tests, schema, workflow, or verification-cache state changed in the import-publication support audit.",
+    "Windows filesystem physical-containment/reparse findings remain owned by the specialized filesystem audit; successful mod retirement remains owned by PR #15.",
     "No production executable C# source or tests changed during support-audit integration.",
     "PlannerSnapshotRepository remains closed; no second storage extraction was started.",
     "Support branch continuity snapshots were not allowed to overwrite newer canonical verification/history state.",
@@ -72,7 +77,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Read SUPPORT_BRANCH_INTEGRATION_2026-09-27.md, active LR-001 through LR-006, and NEXT_STEPS.md. PlannerSnapshotRepository is closed; do not automatically start another repository extraction or resume MainWindow page-model splitting. Select one separately scoped, independently verifiable boundary. The highest-safety candidate identified independently by the test-gap and Windows-filesystem audits is test-first Windows physical-containment/native-ReplaceFileW characterization. Preserve all documented transaction/recovery invariants and recursively propagate the continuity constitution.",
+  "nextRequiredAction": "Re-check actual canonical main and active PRs before implementation. Read IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md and LR-008; preserve PR #15's separate LR-007 mod-retirement semantics and PR #16's crash-bisector evidence lane. If the import boundary is prioritized, write regression tests for mixed-result Smart Inbox, restart residue, cancellation, retry convergence, and exactly-once publication before implementing one shared catalog-invisible staging/commit-on-success seam. Keep this separate from the Windows physical-containment/native-ReplaceFileW checkpoint and from Smart Pack/deployment/migration work. Recursively propagate the continuity constitution.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -89,7 +94,8 @@
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
-    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md"
+    "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
@@ -116,6 +122,16 @@
     "hostedVerificationRun": "36340312353",
     "evidenceCommit": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
     "releaseArtifactSha256": "43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF",
-    "verificationStatus": "closed: Windows Release Gate passed 25/25"
+    "verificationStatus": "closed: Windows Release Gate passed 25/25",
+    "parallelRuleReservation": "PR #15 reserves LR-007; this branch uses LR-008 for import publication isolation."
+  },
+  "supportAudit": {
+    "kind": "import-publication-catalog-visibility",
+    "auditBase": "4de981ab7ee47a3a8f0dd60f38e17644517b2ea3",
+    "reconciledMain": "208a66da89632acf36c065dc3bfead76af8d6bf4",
+    "productionSourceChanged": false,
+    "testsChanged": false,
+    "learnedRule": "LR-008",
+    "auditFile": "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
   }
 }
