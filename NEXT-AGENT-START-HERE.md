@@ -1,5 +1,13 @@
 # NEXT AGENT — START HERE
 
+## Active candidate: Activity page view model
+
+Production source commit `b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` extracts the Activity read/state seam
+into `ActivityPageViewModel` while deliberately preserving
+`ActivityRows` and `RefreshActivityCommand` bindings. It is not green until
+a fresh Windows Release Gate passes. Do not start a second page extraction
+before that closure.
+
 ## Current checkpoint: architecture / Explain Why is CLOSED
 
 Hosted Windows Release Gate `36325133722` verified exact commit

@@ -8,12 +8,12 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "architecture-explain-why-closed-windows-verified",
+  "status": "activity-page-viewmodel-candidate-awaiting-windows-verification",
   "verificationAppliesToCommit": "9717a22d3338f77e63cd409a80d2ec5fc3c924f2",
   "lastClosedVerificationCommit": "9717a22d3338f77e63cd409a80d2ec5fc3c924f2",
   "lastClosedVerificationRun": "36325133722",
-  "candidateSourceCommit": "098d617bcb3dcdd044e3fdb8319ba506c97082af",
-  "verificationScopeNote": "The architecture/Explain Why checkpoint is closed. Hosted Windows Release Gate run 36325133722 verified exact main commit 9717a22d3338f77e63cd409a80d2ec5fc3c924f2; production source last changed at 098d617bcb3dcdd044e3fdb8319ba506c97082af. The repository verifier passed 25/25, promoted all 607 exact production function fingerprints, and the win-x64 ReadyToRun self-contained release publish passed. Bot commit 702c9055bff19caa80fdd60e29e891181932217a persisted the promoted caches and hosted evidence only. Any later production-source change requires fresh verification and must not inherit this green state manually.",
+  "candidateSourceCommit": "b0881ee5780159b49c26b3e79e3a0b26b1b39a6b",
+  "verificationScopeNote": "The architecture/Explain Why checkpoint remains closed at 9717a22d3338f77e63cd409a80d2ec5fc3c924f2 / run 36325133722. Production source commit b0881ee5780159b49c26b3e79e3a0b26b1b39a6b starts the next verification boundary by extracting Activity read/state responsibility into ActivityPageViewModel while retaining MainWindow ActivityRows and RefreshActivityCommand bindings. The previous green fingerprints MUST NOT be manually transferred to changed/new bodies.",
   "lastClosedVerification": {
     "functionInventoryTotal": 607,
     "functionsVerified": 607,
@@ -26,22 +26,18 @@
     "releaseArtifactSha256": "DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6"
   },
   "candidateChanges": [
-    "Added PresentationReadRepository so Activity and Outfit/Coverage read SQL no longer lives in WPF.",
-    "Added ArchiveImportService so archive validation/staging/wrapper normalization/library publication no longer lives in MainWindowViewModel.",
-    "Expanded EffectiveInspectorService with planner-backed structured Explain Why using the same DeploymentPlanner/ConflictDecision data as deployment.",
-    "Added structured provider/reason/evidence/family/Nexus/provenance explanation models and overlap exact-path inspection.",
-    "Split Activity, Coverage, Import, and Overlap/Explain orchestration into MainWindowViewModel partial feature files; central file reduced from roughly 72.6 KB to 65.7 KB without changing its binding type.",
-    "Added Explain Why UI with progressive provider/evidence details in the Overlaps tab.",
-    "Added Automation tests for Explain Why and presentation read projection plus an integration/XAML binding guard.",
-    "Fixed release-only CA1826 in overlap primary-path selection by using IReadOnlyList Count/indexer access instead of LINQ FirstOrDefault; no selection semantics changed."
+    "Added ActivityPageViewModel owning recent-activity projection refresh and Activity row collection.",
+    "MainWindowViewModel now composes ActivityPageViewModel and aliases its Rows collection so existing ActivityRows XAML binding remains unchanged.",
+    "MainWindowViewModel keeps RefreshActivityCommand and RunBusy cross-page/global coordination while delegating Activity data refresh to the page model.",
+    "Added source-level integration guard proving existing ActivityRows/RefreshActivityCommand binding surface is preserved."
   ],
   "invariantsPreserved": [
-    "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, or path-safety semantics were redesigned.",
-    "Explain Why consumes DeploymentPlanner decisions; it does not implement a second conflict resolver.",
-    "SQLite deployment transaction boundaries remain unchanged; the new repository is read-only.",
-    "FOMOD and enhanced-game adapter redesign were not started."
+    "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, or conflict-resolution behavior changed.",
+    "Existing MainWindow ActivityRows and RefreshActivityCommand bindings remain intact.",
+    "SQLite transaction ownership and schema are unchanged.",
+    "FOMOD and enhanced-game adapter redesign remain out of scope."
   ],
-  "nextRequiredAction": "Begin the next incremental architecture slice only. First convert the existing Activity partial seam into a real ActivityPageViewModel while preserving the existing MainWindow binding surface/RunBusy coordination; verify it independently before moving to another page or persistence slice. Do not start FOMOD or broad adapter redesign.",
+  "nextRequiredAction": "Run the exact Windows Release Gate for Activity page-view-model source commit b0881ee5780159b49c26b3e79e3a0b26b1b39a6b plus its adjacent continuity commit. Fix real failures without weakening the gate. If green, persist exact SHA/run/counts/artifact hash and then choose only one next low-coupling page seam.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",

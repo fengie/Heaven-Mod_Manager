@@ -1,5 +1,24 @@
 # Current state — v8.8.0
 
+## Activity page-view-model candidate — awaiting hosted Windows verification
+
+Production source commit `b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` begins the first post-closure
+architecture slice.
+
+- Added `ActivityPageViewModel` to own recent Activity read projection and row
+  collection state.
+- `MainWindowViewModel` composes the page model but continues exposing the
+  same `ActivityRows` collection reference.
+- `RefreshActivityCommand` and `RunBusy` remain in `MainWindowViewModel`,
+  preserving cross-page/global operation coordination.
+- The existing XAML binding surface is unchanged.
+- A source-level integration guard asserts the page seam and the preserved
+  bindings.
+- No database/deployment/conflict/filesystem semantics changed.
+
+This candidate does **not** inherit the closed green state from
+`9717a22d3338f77e63cd409a80d2ec5fc3c924f2`. A fresh Windows gate is required.
+
 ## Architecture / Explain Why milestone CLOSED — hosted Windows
 
 The integrated architecture/Explain Why checkpoint is now fully closed.

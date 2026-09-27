@@ -1,6 +1,10 @@
 # Next steps
 
-## Immediate: first post-closure architecture slice
+## Immediate: verify the Activity page-view-model slice
+
+The first slice is now implemented in production source commit
+`b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` and is awaiting a fresh hosted Windows gate. Do not extract a
+second page until this source boundary is green and recorded.
 
 The architecture / Explain Why checkpoint is closed at exact commit
 `9717a22d3338f77e63cd409a80d2ec5fc3c924f2` by hosted Windows run `36325133722`.
