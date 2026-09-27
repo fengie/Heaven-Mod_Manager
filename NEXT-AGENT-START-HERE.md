@@ -38,7 +38,10 @@ Before editing, read:
 
 - `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md`
 - `_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`
+- `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md`
 - `_AGENT_CONTEXT/NEXT_STEPS.md`
+
+The test-gap/performance audit is documentation-only and does not supersede the repaired PlannerSnapshotRepository Windows gate. After that exact boundary closes, take its recommended safety/performance checkpoints one at a time.
 
 The audit found no remaining page-model seam with lower coupling than the
 alternatives. Mods/ModsView, Conflicts, IssueSuspects and Overlaps share
