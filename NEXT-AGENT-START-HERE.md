@@ -19,6 +19,27 @@ Before finishing, update durable repository handoff state and explicitly require
 
 **Do not break the chain.**
 
+## ACTIVE checkpoint: Windows live DeploymentExecutor physical containment
+
+Current candidate:
+
+- canonical hosted-closed handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`
+- branch: `agent/windows-live-containment-hardening-v3`
+- production source: `b671bac33917649ff89e5e3b0866725f7b165232`
+- focused Windows tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`
+- status: **NOT YET GREEN**
+
+Read `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`, `CURRENT_STATE.md`, and `VERIFICATION.md`.
+
+Do not start `ReplaceFileW`, CAS, recursive scanner/adoption/Inbox, migration, async, diagnostics, networking, backup, or Smart Pack work first. Re-check canonical main, integrate this candidate safely, run the handoff validator and exact full Windows Release Gate, preserve/repair any failure, and close only this boundary.
+
+After closure, the next recommended programming boundary is isolated `ReplaceFileW` failure-postcondition characterization under LR-003.
+
+You inherit the permanent continuity constitution and active LR-001 through LR-006. Before finishing, explicitly require your successor to inherit, preserve, and recursively propagate the same rules to the agent after them.
+
+**Do not break the chain.**
+
+
 ## Current canonical product checkpoint
 
 PlannerSnapshotRepository is **CLOSED**.
