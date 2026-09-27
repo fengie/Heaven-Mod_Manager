@@ -453,33 +453,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RefreshOverlaps(ct);
     }
 
-    private async Task RefreshOverlaps(CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var heatmap=await s.Inspector.HeatmapAsync(ct);
-        var blockingBundles=Conflicts.Select(c=>c.BundleKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var rows=heatmap.Select(item=>
-        {
-            var blocking=blockingBundles.Contains(item.AssetKey);
-            var providers=string.Join("  •  ",item.Providers);
-            var resolution=blocking?"Needs choice":"Resolved overlay";
-            var detail=blocking
-                ?"Independent providers still require a decision."
-                :"Informational overlap. Priority, family composition, identical bytes, or a shared-resource rule already determines the effective file provider.";
-            var primaryPath=item.Paths?.FirstOrDefault()??item.AssetKey;
-            return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail,primaryPath);
-        }).OrderByDescending(x=>StringComparer.OrdinalIgnoreCase.Equals(x.Resolution,"Needs choice"))
-          .ThenByDescending(x=>x.ProviderCount)
-          .ThenBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase)
-          .Take(500)
-          .ToArray();
-        await Application.Current.Dispatcher.InvokeAsync(()=>
-        {
-            OverlapRows.ReplaceAll(rows);
-            OnPropertyChanged(nameof(OverlapCount));
-        });
-    }
-
     private async Task<ConflictRow[]> EnrichConflictPreviewsAsync(ConflictRow[] rows,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -562,38 +535,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     [RelayCommand]
     private async Task RefreshAnalysisNow()=>await RunBusy("analysis.refresh","Refreshing analysis","Rebuilding effective providers, overlaps, and blocking choices…",true,RefreshAnalysis);
-
-    [RelayCommand]
-    private void ShowOverlaps()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        SelectedTab=6;
-    }
-
-    [RelayCommand]
-    private async Task ExplainSelectedOverlap()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var selected=SelectedOverlap;
-        if(selected is null)
-        {
-            ExplainWhyStatus="Select an overlap first.";
-            return;
-        }
-
-        await RunBusy("analysis.explain-why","Explaining effective file","Replaying the deterministic planner against the indexed state and collecting its evidence…",true,async ct=>
-        {
-            var explanation=await s.Inspector.ExplainWhyAsync(selected.PrimaryPath,ct);
-            SelectedExplanation=explanation;
-            ExplainWhyStatus=explanation is null
-                ?"No enabled provider currently supplies that path."
-                :explanation.Blocking
-                    ?"The resolver intentionally stopped without selecting a provider."
-                    :explanation.AppliedMatchesPlan
-                        ?"The applied provider matches the current deterministic plan."
-                        :"The current plan differs from the applied manifest; Apply safely would reconcile it.";
-        });
-    }
 
     [RelayCommand]
     private async Task Apply()=>await RunBusy("deployment.apply","Applying safely","Capturing newly enabled mods, validating the live tree, then committing one transaction…",false,async ct=>
@@ -719,35 +660,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task RefreshOutfits()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunBusy("outfits.refresh","Refreshing armor coverage","Querying the indexed armor-component map and effective winners…",true,LoadOutfits);
-    }
-
-    private async Task LoadOutfits(CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!HasSemanticCoverage)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(()=>OutfitRows.Clear());
-            StatusText="This generic game profile has file-level coverage through Mods and Overlaps. Add a rich game adapter to define semantic outfit/asset slots.";
-            return;
-        }
-
-        var coverage=await s.PresentationReads.GetOutfitCoverageAsync(ct);
-        var rows=coverage.Select(x=>new OutfitRow(
-            x.Armor,
-            x.ModelId,
-            x.AvailableProviders,
-            x.WinningPieces,
-            x.AvailableProviders==0?"Unmodded":string.IsNullOrWhiteSpace(x.WinningPieces)?"Available / off":"Active",
-            x.PreviewPath,
-            x.Providers)).ToArray();
-        await Application.Current.Dispatcher.InvokeAsync(()=>OutfitRows.ReplaceAll(rows));
-    }
-
-    [RelayCommand]
     private async Task StageProfile()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -849,15 +761,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         });
     }
 
-    [RelayCommand]private async Task RefreshActivity()=>await RunBusy("activity.refresh","Activity","Reading recent transactional history…",true,RefreshActivity);
-    private async Task RefreshActivity(CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var entries=await s.PresentationReads.GetRecentActivityAsync(300,ct);
-        var rows=entries.Select(x=>new ActivityRow(x.Id,x.State,x.Description,x.StartedAt)).ToArray();
-        await Application.Current.Dispatcher.InvokeAsync(()=>ActivityRows.ReplaceAll(rows));
-    }
-
     [RelayCommand]
     private async Task Undo()=>await RunBusy("deployment.undo","Undo","Restoring the previous committed filesystem and mod-state snapshot…",false,async ct=>
     {
@@ -920,23 +823,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(string.IsNullOrWhiteSpace(exe))throw new InvalidOperationException("Could not determine the manager executable for restart.");
         ProcessDebug.Start(new ProcessStartInfo(exe){UseShellExecute=true,WorkingDirectory=AppContext.BaseDirectory},"switch-game-restart");
         Application.Current.Shutdown();
-    }
-
-    [RelayCommand]
-    private async Task ImportArchive()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dlg=new OpenFileDialog{Filter="Mod archives|*.zip;*.7z;*.rar|All files|*.*",Multiselect=false};
-        if(dlg.ShowDialog()!=true)return;
-        await RunBusy("archive.import","Inspecting archive","Checking paths and extracting to a quarantined staging folder…",true,async ct=>
-        {
-            var imported=await s.Importer.ImportAsync(dlg.FileName,ct);
-            await metadataGate.WaitAsync(ct);
-            try{await s.Nexus.RefreshAsync(ct);}
-            finally{metadataGate.Release();}
-            await ReloadMods(ct);
-            StatusText=$"Imported '{imported.DisplayName}'. It is OFF until you stage it.";
-        });
     }
 
     [RelayCommand]
