@@ -34,6 +34,8 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 10. `_AGENT_CONTEXT/VERIFICATION.md`
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
+13. `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` — specialized write-side transaction/failure audit.
+14. `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md` — v7→v8 retry, ownership, semantic-fidelity, cleanup, backup and fault-matrix audit.
 
 ## Critical rule
 
