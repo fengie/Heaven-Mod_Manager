@@ -31,3 +31,13 @@ next concrete action. Clearly label unverified work; never promote verification
 booleans to make a checkpoint look finished. Do not leave the only copy of substantial
 work in a transient workspace. Preserve the user's existing authorization; checkpoint
 pushes do not require another confirmation. Do not merge the PR without authorization.
+
+## Knowledge transfer
+
+The user explicitly requests comprehensive project knowledge in Git and propagation
+to every successor. Read `_AGENT_CONTEXT/SESSION_HANDOFF_2026-09-27.md` and the latest
+`CHECKPOINT.md`. Update relevant architecture, decisions, evidence, limits and next
+steps as you learn; keep current status free of stale contradictions. Push the handoff
+with each meaningful checkpoint. Remind the next agent to repeat this obligation.
+Record task-relevant knowledge and user instructions, not credentials or unrelated
+personal information. **Do not break the chain.**

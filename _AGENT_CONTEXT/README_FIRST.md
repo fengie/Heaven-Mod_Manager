@@ -1,3 +1,5 @@
+**Complete session knowledge:** Read `SESSION_HANDOFF_2026-09-27.md` after CHECKPOINT.md. It records the user’s exact continuity instructions, implementation map, limits, tested commits, runtime/publishing details, and native acceptance checklist. Future agents must maintain and propagate this knowledge.
+
 **Checkpoint cadence:** Read `CHECKPOINT.md` first for the active plan, remote branch/PR, and exact next action. The user requires meaningful progress to be pushed throughout the task.
 
 **Workflow expansion:** Read `WORKFLOW_IMPLEMENTATION.md` and `../docs/WORKFLOWS.md` for the new feature branch. Its evidence and Windows UI limitations supersede the older repair-only status below.

@@ -34,7 +34,8 @@
     "_AGENT_CONTEXT/WORKFLOW_IMPLEMENTATION.md",
     "docs/WORKFLOWS.md",
     "docs/GAME-ADAPTER-SDK.md",
-    "_AGENT_CONTEXT/CHECKPOINT.md"
+    "_AGENT_CONTEXT/CHECKPOINT.md",
+    "_AGENT_CONTEXT/SESSION_HANDOFF_2026-09-27.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
