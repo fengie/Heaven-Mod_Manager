@@ -47,7 +47,10 @@
     "IssueSuspects remains shell/cross-feature state because refresh projects persisted suspects into ModRowViewModel badges, ModsView, issue labels and header counters while crash/launch/bisect workflows mutate the same data.",
     "Mods/ModsView, conflicts, overlaps, selected state, staging/apply/undo, Nexus/import, profile mutations, launch/crash diagnosis, health/support and global busy/status were classified by ownership/coupling in MAINWINDOW_RESPONSIBILITY_AUDIT.md.",
     "Mapped ManagerDatabase methods, raw callers, existing repositories and service-owned SQLite transactions in STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.",
-    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
+    "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved.",
+    "Documentation-only support checkpoint: added _AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md and corrected docs/MIGRATION.md to match the current completion-marker/reset/backup/CAS protocol.",
+    "Migration audit confirmed zero migration-specific references across the current 21 C# test files and identified retry-convergence, cleanup-truthfulness, migration-ownership, semantic-fidelity, and backup-identity gaps.",
+    "No production C# or verification cache changed in the migration recovery audit."
   ],
   "invariantsPreserved": [
     "PlannerSnapshotRepository is read-only and owns no SQLite transaction.",
@@ -61,15 +64,21 @@
     "DeploymentExecutor prepared-journal, final commit and rollback shared-transaction boundaries remain untouched.",
     "ReplaceModFiles, ChainManualFamily, ProfileRepository.SaveCurrent, adoption, trust, issue, supersession, revalidation and enabled/priority batch atomicity remain untouched.",
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
-    "No verification cache was manually promoted."
+    "No verification cache was manually promoted.",
+    "PlannerSnapshotRepository remains closed at exact hosted Windows evidence; this migration audit does not reopen or alter that production boundary.",
+    "Legacy v7 state authority, startup fail-closed behavior, final referenced-blob SHA verification, exact enabled-order validation, and current reset implementation are unchanged because this checkpoint is documentation-only.",
+    "No migration runtime, process-kill fault, concurrent migration, test pass, or Windows gate is claimed from static inspection."
   ],
-  "nextRequiredAction": "PlannerSnapshotRepository is closed. A successor must first re-verify canonical main, inspect current history/context including the deep SQLite transaction audit, and obtain a separately scoped next task before changing production source. Do not automatically begin a second repository extraction, reopen MainWindow page-model splitting, or modify documented transaction owners. Preserve the permanent continuity constitution, obey LR-001/LR-002, add only justified Learned Rules, and explicitly require the successor after you to inherit and recursively propagate the same rules.",
+  "nextRequiredAction": "PlannerSnapshotRepository remains closed. For migration hardening, take a separately scoped test-first LegacyV7Migrator characterization checkpoint before changing migration protocol: pin happy path, marker skip, malformed/missing/corrupt blob behavior, exact enabled-order and semantic import, failure/retry, cancellation, and corrupt pre-existing CAS convergence. Preserve SQLite transaction/reset findings and filesystem/CAS findings as separate authorities; do not bundle migration ownership, generic CAS redesign, app single-instance behavior, or broad storage decomposition into the first source change. Any production change requires fresh exact verification and recursive continuity.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
-    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
+    "_AGENT_CONTEXT/RESEARCH_FINDINGS.md",
+    "_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md",
+    "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md",
+    "docs/MIGRATION.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "852f07b9d6ad0457c161df0aa1c8165981d349cf",
