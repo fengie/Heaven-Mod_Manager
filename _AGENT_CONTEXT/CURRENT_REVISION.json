@@ -35,7 +35,7 @@
     "_AGENT_CONTEXT/EVIDENCE/workflow-windows-passed.log"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Review draft PR #1. Test the new WPF screens and FOMOD chooser with a disposable game workspace on Windows; then run the normal Test Everything.bat / Build.bat release pipeline before release. Continue checkpoint pushes and update CHECKPOINT.md. Do not merge without authorization.",
+  "nextRequiredAction": "Read RESEARCH_NEXT_AGENT_2026-09-27.md; reproduce Inbox partial-import and duplicate-result risks, fix with focused tests, then native WPF/game acceptance. Research checkpoints changed documentation only. Push meaningful checkpoints and propagate the handoff; do not merge without authorization.",
   "pendingRepositoryChangesSinceVerification": [],
   "featureBranch": "codex/complete-mod-workflows",
   "windowsEvidenceRun": "https://github.com/fengie/mhw-mods/actions/runs/36318654840",

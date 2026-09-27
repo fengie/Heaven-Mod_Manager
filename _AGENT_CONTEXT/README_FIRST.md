@@ -1,3 +1,5 @@
+**Latest research handoff:** RESEARCH_NEXT_AGENT_2026-09-27.md consolidates priorities, source-backed findings and remaining acceptance.
+
 **New research:** Read RESEARCH_FOMOD_2026-09-27.md for source-audited Inbox/FOMOD follow-ups; no production fixes are claimed.
 
 **Complete session knowledge:** Read `SESSION_HANDOFF_2026-09-27.md` after CHECKPOINT.md. It records the user’s exact continuity instructions, implementation map, limits, tested commits, runtime/publishing details, and native acceptance checklist. Future agents must maintain and propagate this knowledge.
