@@ -1,0 +1,21 @@
+Run: https://github.com/fengie/mhw-mods/actions/runs/36318654840
+Head: a11ca39bcf5ba7fed6593d767dfa3a2e427d3209
+2026-09-27T12:21:41.7820826Z Build succeeded.
+2026-09-27T12:21:41.7823959Z     0 Warning(s)
+2026-09-27T12:21:41.7841671Z     0 Error(s)
+2026-09-27T12:21:52.0601545Z    MhwModManager.Tests  Total: 79, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6.895s
+2026-09-27T12:22:03.4674762Z    MhwModManager.AutomationTests  Total: 39, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12.393s
+2026-09-27T12:22:18.3614072Z    MhwModManager.IntegrationTests  Total: 61, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13.796s
+2026-09-27T12:22:19.6234550Z PASS: Category classifier
+2026-09-27T12:22:19.6325048Z PASS: Crash bisector
+2026-09-27T12:22:20.0162027Z PASS: SQLite schema
+2026-09-27T12:22:20.2663184Z PASS: Timeline persistence
+2026-09-27T12:22:20.5457293Z PASS: Last-known-good round trip
+2026-09-27T12:22:20.8567694Z PASS: Save snapshot
+2026-09-27T12:22:21.1552979Z PASS: Update diff
+2026-09-27T12:22:21.3907100Z PASS: Duplicate detector
+2026-09-27T12:22:21.6285876Z PASS: Recipe export
+2026-09-27T12:22:21.9335094Z PASS: Effective provider inspector
+2026-09-27T12:22:21.9376564Z PASS: Outfit preset inference
+2026-09-27T12:22:22.4893030Z PASS: Agent handoff continuity preflight. Version=8.8.0; requiredFiles=33
+2026-09-27T12:22:23.8095534Z FUNCTION VERIFICATION: 683 function(s); known-good=562; needs-verification=121; trace-gaps=0; explicit-call-sites=7345; uncovered-call-sites=0; parse-errors=0.

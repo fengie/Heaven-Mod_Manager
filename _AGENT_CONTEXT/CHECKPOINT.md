@@ -1,5 +1,7 @@
 # Checkpoint — workflow expansion
 
+**Current status: automated Linux and Windows validation passed. Next: hands-on Windows UI/game acceptance and release packaging. PR #1 is still draft.**
+
 Updated: 2026-09-27. User explicitly requested frequent checkpoint pushes and handoff notes before credits expire.
 
 ## Durable remote state
@@ -28,9 +30,9 @@ Handoff preflight and whitespace checks pass. No manual fingerprint promotions.
 2. DONE — implement and integrate the requested workflow areas.
 3. DONE — Linux validation, fault-injection tests, evidence and continuity notes.
 4. DONE — publish draft PR and verify remote file parity.
-5. IN PROGRESS — Windows build, all 179 tests, and 11 self-tests passed. Fix the checkout line-ending trace-scan failure, push, and observe the rerun.
-6. PENDING — record final Windows CI outcome in CURRENT_REVISION/VERIFICATION. Native
-   WPF interaction and real-game smoke tests remain a separate Windows acceptance step.
+5. DONE — Windows build/tests/self-tests and final trace scan passed after the LF checkout fix.
+6. DONE — record final Windows CI outcome in CURRENT_REVISION/VERIFICATION.
+7. PENDING — native WPF interaction, real-game smoke tests, and release packaging.
 
 Windows run: https://github.com/fengie/mhw-mods/actions/runs/36318260759
 Job `108616978328`: strict build, backend suites, self-test and handoff all passed.
@@ -67,3 +69,19 @@ Run `36318654840` is the first PR rerun containing the fix. CI now runs once per
 change (plus manual dispatch), cancels superseded runs, and skips documentation-only
 updates. This avoids duplicate push/PR builds and repeated builds for evidence notes.
 Query the latest run because this workflow change triggers its own verification.
+
+## Final automated validation checkpoint
+
+Windows run **36318654840** passed all steps at commit
+`a11ca39bcf5ba7fed6593d767dfa3a2e427d3209`: strict Release build 0 warnings/errors,
+179 tests, 11 self-tests, handoff, and function scan with 683 functions / 562 known-good /
+121 pending / zero gaps. Evidence: `EVIDENCE/workflow-windows-passed.log`.
+The LF checkout fix resolved the Windows-only fingerprint drift. No verifier relaxation
+or manual promotion was used. CI efficiency commit: `66a48bf8f00f212d0943bdc57d8074433392a839`
+(changes CI triggers only, no production code). Its run is `36318708338`.
+
+Plan steps 1–5 are complete. This evidence checkpoint completes step 6 for automated
+validation. Next agent/user: perform native WPF interaction and real-game smoke tests
+in a disposable workspace, run the normal release verification/packaging pipeline,
+and only then consider merging/releasing. PR #1 remains draft and main is unchanged.
+Continue pushing meaningful checkpoints and preserve this handoff.

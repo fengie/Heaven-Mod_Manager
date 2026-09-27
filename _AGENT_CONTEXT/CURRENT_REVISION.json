@@ -6,9 +6,9 @@
   "currentVersion": "8.8.0",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "GitHub main 91f2b9e9815caab2e4670084022a5c2ab3e45f55",
-  "status": "workflow-expansion-windows-tests-passed-trace-rerun-pending",
-  "verificationAppliesToCommit": "02fa1dd5c3e98d319067043598bfdfd32617e65f",
-  "verificationScopeNote": "Evidence describes the workflow code commit above. This adjacent metadata commit records its SHA. Linux strict build, backend tests and self-tests passed. Native WPF interaction and Windows release verification are pending. No function verification booleans were manually promoted.",
+  "status": "workflow-expansion-ci-passed-native-ui-acceptance-pending",
+  "verificationAppliesToCommit": "a11ca39bcf5ba7fed6593d767dfa3a2e427d3209",
+  "verificationScopeNote": "Windows CI passed at a11ca39, including the LF checkout policy. Production source matches the Linux-validated 02fa1dd code. The later 66a48bf commit only deduplicates CI triggers and updates checkpoint notes. Native WPF interaction, packaged release and real-game acceptance remain pending. No function booleans were manually promoted.",
   "verification": {
     "functionInventoryTotal": 683,
     "functionsVerified": 562,
@@ -20,21 +20,24 @@
     "selfTest": "11/11 passed",
     "functionTraceScan": "passed: zero trace gaps, uncovered call sites or parse errors",
     "handoffPreflight": "passed",
-    "finalWindowsReleaseVerification": "pending; Windows CI configured; native UI acceptance still required",
+    "finalWindowsReleaseVerification": "native UI, real-game acceptance and packaged release remain pending",
     "windowsStrictReleaseBuild": "passed: 0 warnings / 0 errors",
     "windowsBackendTests": "179/179 passed",
     "windowsSelfTest": "11/11 passed",
-    "windowsFunctionTraceScan": "initial scan failed because Windows autocrlf changed raw-string token fingerprints; *.cs LF checkout policy added; rerun pending"
+    "windowsFunctionTraceScan": "passed: 683 functions, 562 known-good, 121 pending; zero trace gaps, uncovered call sites or parse errors",
+    "windowsCI": "passed: strict build, 179 backend tests, 11 self-tests, handoff and trace scan"
   },
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/workflow-expansion-validation.log",
     "_AGENT_CONTEXT/EVIDENCE/workflow-expansion-function-scan.json",
     "_AGENT_CONTEXT/WORKFLOW_IMPLEMENTATION.md",
-    "_AGENT_CONTEXT/VERIFICATION.md"
+    "_AGENT_CONTEXT/VERIFICATION.md",
+    "_AGENT_CONTEXT/EVIDENCE/workflow-windows-passed.log"
   ],
   "sourceHandoffManifestScope": "_AGENT_CONTEXT/SOURCE_HANDOFF_MANIFEST.json describes the most recently packaged source ZIP only; it is not the canonical repository-state manifest.",
-  "nextRequiredAction": "Observe the latest Windows CI after the *.cs LF checkout policy fix, then record the result. Native WPF acceptance remains pending. Push each meaningful checkpoint with CHECKPOINT.md updated.",
+  "nextRequiredAction": "Review draft PR #1. Test the new WPF screens and FOMOD chooser with a disposable game workspace on Windows; then run the normal Test Everything.bat / Build.bat release pipeline before release. Continue checkpoint pushes and update CHECKPOINT.md. Do not merge without authorization.",
   "pendingRepositoryChangesSinceVerification": [],
   "featureBranch": "codex/complete-mod-workflows",
-  "windowsEvidenceRun": "https://github.com/fengie/mhw-mods/actions/runs/36318260759"
+  "windowsEvidenceRun": "https://github.com/fengie/mhw-mods/actions/runs/36318654840",
+  "linuxVerificationAppliesToCommit": "02fa1dd5c3e98d319067043598bfdfd32617e65f"
 }

@@ -26,7 +26,7 @@ Preserve native Windows verification requirements. Do not manually promote finge
 - Self-test 11/11. Recipe self-test updated for the format-2 export and import preview.
 - Function scan: 683 functions, 562 unchanged known-good, 121 pending normal verification; 0 trace gaps, 0 uncovered call sites, 0 parse errors.
 - Handoff preflight and git whitespace checks pass.
-- Windows CI is configured on this feature branch/PR. Its outcome must be recorded separately; this Linux session cannot validate WPF rendering or real game launches.
+- Windows CI passed at a11ca39 (run 36318654840): strict build, all 179 tests, 11 self-tests, handoff and scan. This does not validate hands-on WPF rendering/input or real game launches.
 - Evidence logs: `_AGENT_CONTEXT/EVIDENCE/workflow-expansion-validation.log` and `workflow-expansion-function-scan.json`.
 
 ## Remaining product boundaries

@@ -1,3 +1,7 @@
+## Windows workflow CI — PASS
+
+Run https://github.com/fengie/mhw-mods/actions/runs/36318654840 passed at `a11ca39bcf5ba7fed6593d767dfa3a2e427d3209`: strict Release build (0 warnings/errors), 179 tests, 11 self-tests, handoff preflight, and trace scan (683 functions, 562 known-good, 121 pending, zero trace/call-site/parse gaps). Evidence: `EVIDENCE/workflow-windows-passed.log`. C# checkout line endings are pinned to LF so raw-string token fingerprints agree across platforms; the verifier was not weakened. Native WPF/manual game acceptance and packaged release verification remain pending.
+
 ## Workflow expansion validation (2026-09-27)
 
 Strict Linux-hosted .NET 10.0.401 Release cross-build: zero warnings/errors. Core 79, Automation 39, Integration 61 all pass (179 total); self-test 11/11. Function scan: 683 total, 562 known-good, 121 pending, zero trace/parse/call-site coverage gaps. No functions were manually promoted. Evidence is in `EVIDENCE/workflow-expansion-validation.log` and `EVIDENCE/workflow-expansion-function-scan.json`. Native WPF acceptance remains required; Windows CI is configured separately.
