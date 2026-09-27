@@ -1,6 +1,6 @@
 # Known issues / limitations
 
-1. **Windows release confirmation is still required for the repaired source.** The two preserved historical Windows runs reached 13 PASS / 12 FAIL, then 24 PASS / 1 FAIL. The four trace gaps from the second run were already fixed in the supplied ZIP. The current repair revision builds cleanly and passes 158 tests plus 11 self-test checks on Linux, but WPF interaction, Windows locks, and publishing were not exercised here. See `AUDIT-2026-09-27.md`.
+1. **The v8.8.0 Windows baseline is closed, but the post-v8.8 architecture candidate is not yet verified.** Hosted run `36321128433` passed 25/25 for commit `5f6789af499fcc1afe6cb5d38244927bb02335fb`. Explain Why and the presentation-boundary refactor change production inputs and must pass a new exact-input Windows gate before being called green.
 
 2. **`verified=true` means the source body survived the project's required verification pipeline, not that a dedicated unit test executed every possible branch.** The runtime scope/error observation helps diagnostics, but it is not code-coverage proof.
 
@@ -10,7 +10,7 @@
 
 5. **The tracer itself is exempt from entry tracing to avoid recursion.** Keep this exemption narrowly scoped to `MasterDebugLog` in `src/MhwModManager.Core/MasterDebugLog.cs`.
 
-6. **Presentation architecture is still comparatively concentrated.** `MainWindowViewModel.cs` remains large. Avoid adding filesystem/domain behavior directly to WPF rows/viewmodels when an application/backend service can own it.
+6. **Presentation architecture is still comparatively concentrated, although the first extraction is underway.** Activity, Coverage, Import and Overlap/Explain now have feature partials; presentation SQL moved to `PresentationReadRepository` and archive filesystem work moved to `ArchiveImportService`. `MainWindowViewModel` and `MainWindow.xaml` are still large, so future work should turn stable seams into page view models/views instead of adding domain/filesystem behavior back into WPF.
 
 7. **Universal-game support is not a completely pure plugin architecture yet.** MHW-specific compatibility/enhanced-semantic branches remain in portions of Core/Filesystem. Do not remove them casually; migrate deliberately behind game capabilities/adapters if refactoring.
 
@@ -22,12 +22,6 @@
 
 11. **Stage-cache reuse is exact-input only.** `stage-status.json` is not a blanket waiver. Any change to a project, its transitive project references, common build inputs, SDK, OS, or architecture causes a cache miss and reruns that stage. `Build-Release.ps1` intentionally remains a full release gate.
 
-## Verification closure still needs one final Windows rerun
+## Current verification boundary
 
-The second Windows run proved all compile/analyzer/test/self-test stages green but
-failed the function scan solely because four changed functions lacked entry traces.
-Those four gaps are fixed, and the subsequent repair audit adds further verified
-changes. Run Windows verification for the exact current source before promoting
-the 23 changed/new fingerprints. Syntax entry checks are not semantic call-graph
-proof. Missing-blob recapture restores absent files; corrupt existing blobs remain
-subject to deployment integrity checks rather than being silently trusted or repaired.
+The closed v8.8 baseline is authoritative only for its exact source. The architecture/Explain Why candidate changes production inputs and therefore awaits a new Windows Release Gate run. This milestone does not alter deployment integrity, CAS, journal, rollback/recovery, or path-safety semantics.
