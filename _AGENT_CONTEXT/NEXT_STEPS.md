@@ -1,35 +1,45 @@
 # Next steps
 
-## ACTIVE — verify and close Windows live-containment only
+## Current checkpoint — Windows live containment CLOSED
 
-Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`  
-Production source: `b671bac33917649ff89e5e3b0866725f7b165232`  
-Focused tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`  
-Branch: `agent/windows-live-containment-hardening-v3`
+Exact verified commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
+Hosted Windows Release Gate: `36341049469`.  
+Evidence/cache persistence: `dc7eb83c94427479c59413c77935050dadf051ff`.  
+Release SHA-256: `F7CBC330D652835FFBC6A24395D105FF509F3800FE21E741FBDD9BAE7D94433D`.
 
-This is the only active production boundary.
+The live `DeploymentExecutor` physical-containment boundary is complete and independently green. Do not reopen it merely because other filesystem findings remain.
 
-Exact next action:
+### Highest-value next independently verifiable boundary
 
-1. re-check canonical `main` and intervening commits before integration;
-2. integrate the candidate without reverting the hosted support-integration closure;
-3. run `scripts/Test-AgentHandoff.ps1` and the repository's exact full hosted Windows Release Gate;
-4. fix any compiler/analyzer/test/function-verifier regression without weakening checks;
-5. preserve any failed run and root cause;
-6. persist exact SHA-bound evidence and close only this boundary;
-7. keep the documented handle-level topology-swap TOCTOU limitation explicit.
+Implement **native `ReplaceFileW` failure-postcondition characterization** under LR-003.
 
-### Recommended next programming boundary after this closes
+Before editing:
 
-Isolate native **`ReplaceFileW` failure postconditions** under LR-003. Add a narrow injectable native-replacement seam and Windows fixtures for documented 1175/1176/1177 states; assert actual destination/replacement recovery bytes and operation/journal state. A false native return must never be treated as proof that nothing changed.
+1. re-check canonical `main`, current handoff, and active Learned Rules;
+2. read the `ReplaceFileW` section of `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md` and the relevant test-gap audit;
+3. inspect `AtomicFileOps.ReplaceFromAsync`, `DeploymentExecutor` rollback/recovery, and existing Windows tests.
 
-Keep CAS corruption, recursive scanner/adoption/Inbox traversal, migration, async lifetime, diagnostics privacy, remote networking, backup, and Smart Pack as separate future boundaries.
+Keep the first slice narrow:
 
-The successor must inherit and recursively propagate the permanent continuity constitution.
+- introduce only the seam needed to control/native-characterize replacement outcomes;
+- cover documented failure postconditions such as 1175, 1176, and 1177;
+- assert actual destination/replacement/backup bytes and path existence, not only error codes;
+- assert operation/journal state after failure and recovery;
+- never treat `ReplaceFileW == false` as proof that the filesystem is unchanged;
+- do not weaken `RecoveryRequired` fail-closed behavior to make tests pass.
+
+Do **not** combine this with CAS corruption repair, recursive ModScanner/adoption/Smart Inbox containment, migration, async lifetime, diagnostics privacy, remote networking, backup, or Smart Pack work.
+
+Residual live-containment risk remains documented: the closed reparse guard is path-based and cannot atomically prevent a topology swap after its final check. Handle-based containment would be a separate later boundary if justified.
+
+## Continuity
+
+Before every handoff, preserve exact SHA/run evidence, update durable context, run the repository handoff/verification checks, and explicitly require the successor to recursively propagate the permanent continuity constitution.
 
 **Do not break the chain.**
 
 ---
+
 
 ## Current checkpoint — parallel support-audit integration
 
