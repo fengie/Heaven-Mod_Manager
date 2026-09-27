@@ -57,6 +57,16 @@ public sealed class HardeningTests : IDisposable
         return (string?)await command.ExecuteScalarAsync(TestToken);
     }
 
+    private static async Task<string?> ReadJournalStatusAsync(ManagerDatabase db, string operationId, int sequence)
+    {
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT status FROM operation_journal WHERE operation_id=$id AND seq=$sequence";
+        command.Parameters.AddWithValue("$id", operationId);
+        command.Parameters.AddWithValue("$sequence", sequence);
+        return (string?)await command.ExecuteScalarAsync(TestToken);
+    }
+
     private static void CreateDirectoryJunction(string link, string target)
     {
         if(!OperatingSystem.IsWindows())throw new PlatformNotSupportedException();
@@ -282,6 +292,7 @@ public sealed class HardeningTests : IDisposable
         Assert.True(result.RollbackCompleted);
         Assert.Equal("BEFORE",await File.ReadAllTextAsync(live,TestToken));
         Assert.Equal(OperationState.RolledBack.ToString(),await ReadOperationStateAsync(db,planId));
+        Assert.Equal("RolledBack",await ReadJournalStatusAsync(db,planId,1));
         Assert.Empty(Directory.EnumerateFiles(Path.GetDirectoryName(live)!, ".*.mhwmm.tmp"));
     }
 
@@ -310,6 +321,7 @@ public sealed class HardeningTests : IDisposable
         Assert.True(File.Exists(replacement));
         Assert.Equal("AFTER",await File.ReadAllTextAsync(replacement,TestToken));
         Assert.Equal(OperationState.RecoveryRequired.ToString(),await ReadOperationStateAsync(db,planId));
+        Assert.Equal("Writing",await ReadJournalStatusAsync(db,planId,1));
     }
 
     [Fact]
@@ -345,6 +357,7 @@ public sealed class HardeningTests : IDisposable
         Assert.True(File.Exists(displaced));
         Assert.Equal("BEFORE",await File.ReadAllTextAsync(displaced!,TestToken));
         Assert.Equal(OperationState.RecoveryRequired.ToString(),await ReadOperationStateAsync(db,planId));
+        Assert.Equal("Writing",await ReadJournalStatusAsync(db,planId,1));
     }
 
     [Fact]
