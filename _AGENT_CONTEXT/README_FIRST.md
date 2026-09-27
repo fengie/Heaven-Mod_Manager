@@ -1,6 +1,6 @@
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
-**Latest closed product verification:** PlannerSnapshotRepository at `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`. Parallel support-agent research has since been integrated as documentation only; read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` before choosing a new production boundary.
+**Latest closed hosted repository verification:** support-integration source `5619604e88a27176726ada8518f53d385abc7b0f`, hosted Windows Release Gate `36340312353`, evidence/cache persistence `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`. A later live-deployment reparse-containment production checkpoint is now on canonical main; read `CURRENT_REVISION.json` / `VERIFICATION.md` for its exact verification state. The import-publication work in this support branch is documentation-only.
 
 GitHub repository `fengie/mhw-mods` on `main` is now the canonical development
 state. The project originally advanced from the user-supplied
@@ -49,6 +49,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md` — full-state backup, CAS/DB consistency and portability.
 - `_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md` — source-neutral acquisition/bulk-fill design.
 - `_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md` — MHW physical-slot coverage and marginal selection semantics.
+- `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — failed/canceled import staging, catalog visibility, restart contamination, and commit-on-success publication semantics.
 
 ## Critical rule
 
