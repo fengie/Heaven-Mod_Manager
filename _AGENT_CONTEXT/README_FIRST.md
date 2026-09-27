@@ -1,9 +1,6 @@
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
-**Latest revision:** the 2026-09-27 repair audit is in `AUDIT-2026-09-27.md`.
-Read it after the continuity protocol. Historical toolchain limitations below do
-not describe the latest verified source state; Linux build/tests have real evidence,
-while Windows release confirmation still must run.
+**Latest closed product verification:** PlannerSnapshotRepository at `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`. Parallel support-agent research has since been integrated as documentation only; read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` before choosing a new production boundary.
 
 GitHub repository `fengie/mhw-mods` on `main` is now the canonical development
 state. The project originally advanced from the user-supplied
@@ -34,6 +31,24 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 10. `_AGENT_CONTEXT/VERIFICATION.md`
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
+
+## Integrated specialized support audits
+
+These documents are durable research, **not claims that their proposed fixes are implemented**. Read the ones intersecting your task:
+
+- `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` — branch inventory, integration decisions, overlaps and skips.
+- `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` — specialized SQLite atomicity findings already canonical before this integration.
+- `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md` — canonical ownership audit plus independent support re-audit.
+- `_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md` — background-task, staging, close/cancel, and mutation-coordination risks.
+- `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` — broad failure-mode and scale coverage gaps.
+- `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md` — reparse containment, CAS integrity, and native replacement semantics.
+- `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md` — migration retry/ownership/cleanup/fidelity risks.
+- `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — verifier, stage-cache, CI and supply-chain trust gaps.
+- `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` — share-boundary sanitization and credential handling.
+- `_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md` — remote-fetch destination/redirect/HTTP/response validation.
+- `_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md` — full-state backup, CAS/DB consistency and portability.
+- `_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md` — source-neutral acquisition/bulk-fill design.
+- `_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md` — MHW physical-slot coverage and marginal selection semantics.
 
 ## Critical rule
 
