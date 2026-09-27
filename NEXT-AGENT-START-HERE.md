@@ -9,7 +9,7 @@ Before modifying this project:
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
 2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (this support branch contains the canonical active rules plus LR-008; active parallel PR #15 independently reserves LR-007);
 5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -39,6 +39,12 @@ You inherit the permanent continuity constitution and active LR-001 through LR-0
 
 **Do not break the chain.**
 
+
+## Import publication support branch
+
+This branch adds the documentation-only `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and LR-008. The confirmed boundary is that unfinished import folders under `ModsRoot` are catalog-visible: Smart Inbox can leave partial final destinations after recoverable failure, and manual archive `.importing` staging can be registered on the next startup. No production import code, tests, schema, workflow, or verification cache changed here.
+
+The live-deployment reparse-containment checkpoint has already landed on canonical main and remains separate. PR #15 owns successful mod-retirement/referential-integrity semantics and reserves LR-007. PR #16 owns crash-bisector diagnosis evidence. Preserve these lanes independently.
 
 ## Current canonical product checkpoint
 
@@ -97,6 +103,8 @@ Read the full ledger; do not rely only on this summary.
 - LR-004 — lexical containment is not physical filesystem containment.
 - LR-005 — restartable migrations must prove ownership and convergence.
 - LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
+- LR-007 — reserved by active parallel PR #15 for successful mod-retirement semantic cleanup; read that PR before integrating.
+- LR-008 — unfinished imports must remain catalog-invisible until commit-on-success publication.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
 
