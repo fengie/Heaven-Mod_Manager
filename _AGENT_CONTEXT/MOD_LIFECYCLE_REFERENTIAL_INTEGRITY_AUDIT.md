@@ -792,3 +792,26 @@ If implementing this finding:
 10. update durable handoff state and explicitly require your successor to inherit and recursively pass the continuity constitution to the agent after them.
 
 **Do not break the chain.**
+
+
+---
+
+# 20. Late upstream reconciliation
+
+During the final concurrency check, canonical `main` advanced from the audit's
+task-lock base `a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1` to:
+
+`5619604e88a27176726ada8518f53d385abc7b0f`
+
+That new commit changes only `_AGENT_CONTEXT/VERIFICATION.md` to record
+connector-side structural verification of the prior support-audit integration.
+It explicitly preserves the same closed product evidence and still requires a
+fresh hosted Windows gate for the integrated documentation state.
+
+It changes no production source, tests, schema, deletion path, identity
+generation, planner inputs, settings behavior, or lifecycle conclusion in this
+audit.
+
+This support branch deliberately does not rewrite or duplicate that newer
+verification record. Integration should preserve canonical main's
+`VERIFICATION.md` and apply this audit on top.
