@@ -397,7 +397,6 @@ public sealed class SmartPackPlanner
         }
 
         var selectedLogicalIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var selectedCandidateIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var selectedInOrder = new List<string>();
         var assignmentByCandidate = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var candidateByTarget = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -423,7 +422,7 @@ public sealed class SmartPackPlanner
                     return true;
                 }
 
-                if (tryAssign(occupantId, visitedCandidates, visitedTargets))
+                if (tryAssign!(occupantId, visitedCandidates, visitedTargets))
                 {
                     candidateByTarget[target] = candidateId;
                     assignmentByCandidate[candidateId] = target;
@@ -482,7 +481,6 @@ public sealed class SmartPackPlanner
             }
 
             selectedLogicalIds.Add(candidate.LogicalModId);
-            selectedCandidateIds.Add(candidate.CandidateId);
             selectedInOrder.Add(candidate.CandidateId);
 
             var reasonCode = string.Empty;
