@@ -1,3 +1,23 @@
+# Governance checkpoint — permanent recursive continuity
+
+A governance-only checkpoint now installs the repository-level continuity constitution requested by the user.
+
+- `AGENTS.md` remains concise and points every agent into the permanent system before edits.
+- `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` is the permanent Core-Rule constitution. Recursive propagation itself may be weakened only with explicit user authorization.
+- `_AGENT_CONTEXT/LEARNED_RULES.md` is the append-only Active/Superseded ledger for durable incident-driven rules.
+- `scripts/Test-AgentHandoff.ps1` validates the invariant by concept rather than exact prose.
+- `scripts/Test-AgentHandoff-NegativeFixtures.ps1` deliberately breaks learned-rules linkage, successor propagation, and Core-Rule protection and requires the real validator to fail closed.
+- `scripts/Verify-Release.ps1` runs both the positive handoff preflight and negative fixtures.
+- No production C# changed. The previously closed product baseline remains exact commit `106a4569b572473394aa075bcfa5d9c03f2fe44d`, hosted run `36331057943`.
+- Because continuity scripts changed, earlier handoff-preflight evidence does **not** verify the new validator. The governance commit needs exact-input validation before its verification-infrastructure change is called green.
+- The next product boundary remains **PlannerSnapshotRepository only** after governance closure.
+
+Every future handoff must explicitly require the successor to preserve and recursively pass this system to the agent after them.
+
+**Do not break the chain.**
+
+---
+
 # Current state — v8.8.0
 
 ## MainWindow re-audit / storage transaction design COMPLETE — documentation checkpoint

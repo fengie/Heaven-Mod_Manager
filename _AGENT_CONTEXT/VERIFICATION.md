@@ -1,5 +1,21 @@
 # Verification performed for this source handoff
 
+## Recursive-continuity governance checkpoint
+
+This checkpoint changes verification/continuity infrastructure but does **not** change production C#.
+
+Changed verification behavior:
+
+- `Test-AgentHandoff.ps1` now verifies the permanent recursive-continuity invariant by concept, including learned-rules linkage, required start state, chat-independent continuation, Core-Rule protection, and successor-to-agent-after propagation.
+- `Test-AgentHandoff-NegativeFixtures.ps1` adds independent negative fixtures that must be rejected by the real validator.
+- `Verify-Release.ps1` now runs those negative fixtures inside the agent-handoff preflight.
+
+The previous product evidence remains authoritative only for its exact source:
+`106a4569b572473394aa075bcfa5d9c03f2fe44d`, hosted Windows run `36331057943`.
+
+Do **not** claim that prior handoff-preflight evidence verifies the new scripts. The exact governance commit requires a fresh handoff/negative-fixture execution, normally via the hosted Windows Release Gate. No verification cache was manually promoted by this documentation/governance change.
+
+
 ## Games list-presentation hosted closure
 
 Hosted Windows run `36331057943` closed exact commit `106a4569b572473394aa075bcfa5d9c03f2fe44d`

@@ -17,6 +17,7 @@
     "_AGENT_CONTEXT/CURRENT_REVISION.json",
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
+    "_AGENT_CONTEXT/LEARNED_RULES.md",
     "_AGENT_CONTEXT/CURRENT_STATE.md",
     "_AGENT_CONTEXT/ARCHITECTURE.md",
     "_AGENT_CONTEXT/SOURCE_MAP.md",
@@ -41,11 +42,13 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Read MAINWINDOW_RESPONSIBILITY_AUDIT.md and STORAGE_TRANSACTION_BOUNDARY_AUDIT.md before the next architecture edit. The next production boundary is PlannerSnapshotRepository only unless canonical source disproves an audit assumption. Update handoff context and CURRENT_REVISION.json with everything materially learned, preserve this manifest/protocol/AGENTS.md, run the handoff preflight, and commit context with the code it describes. Keep one independently verifiable source boundary at a time and tie evidence to exact SHAs. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order. Preserve Core Rules and exact verification/safety invariants. Keep one independently verifiable source boundary at a time. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. The next production boundary remains PlannerSnapshotRepository only unless canonical source disproves the audit. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
     "Build Source Handoff.bat",
-    "scripts/Test-VerificationCache.ps1"
-  ]
+    "scripts/Test-VerificationCache.ps1",
+    "scripts/Test-AgentHandoff-NegativeFixtures.ps1"
+  ],
+  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
 }

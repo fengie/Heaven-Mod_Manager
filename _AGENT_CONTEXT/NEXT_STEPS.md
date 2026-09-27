@@ -1,5 +1,24 @@
 # Next steps
 
+## First: close the recursive-continuity governance checkpoint
+
+Before changing production source, confirm the exact governance commit passes:
+
+1. `scripts/Test-AgentHandoff.ps1`;
+2. `scripts/Test-AgentHandoff-NegativeFixtures.ps1`;
+3. the normal verification harness/hosted Windows Release Gate as applicable to the changed verification infrastructure.
+
+Do not manually promote caches. No production C# changed in the governance checkpoint, so the existing product baseline remains tied to its prior exact source SHA; only the changed continuity infrastructure needs new exact evidence.
+
+Every future agent must preserve `CONTINUITY_PROTOCOL.md`, append-only `LEARNED_RULES.md`, the mechanical propagation checks, and must explicitly require its successor to pass the same rules to the agent after them.
+
+After governance closure, the exact next production action remains **PlannerSnapshotRepository only**.
+
+**Do not break the chain.**
+
+---
+
+
 ## Immediate: implement one read-only storage boundary
 
 The MainWindow responsibility re-audit is complete. Do **not** continue

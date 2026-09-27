@@ -8,7 +8,7 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "mainwindow-reaudit-storage-transaction-design-complete",
+  "status": "recursive-continuity-governance-installed-pending-exact-gate",
   "verificationAppliesToCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
   "lastClosedVerificationCommit": "106a4569b572473394aa075bcfa5d9c03f2fe44d",
   "lastClosedVerificationRun": "36331057943",
@@ -28,6 +28,11 @@
     "releaseArtifactSha256": "4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189"
   },
   "candidateChanges": [
+    "Governance-only checkpoint: install permanent recursive continuity Core Rules so the repository, not chat, carries the obligation indefinitely.",
+    "Add _AGENT_CONTEXT/LEARNED_RULES.md as an append-only Active/Superseded rule ledger and seed it with the moved-production-body verification-instrumentation lesson from runs 36330808544 -> 36331057943.",
+    "Strengthen scripts/Test-AgentHandoff.ps1 to validate the continuity invariant by concept: canonical start order, learned-rules linkage, chat-independent handoff, Core Rule protection, and successor -> agent-after recursive propagation.",
+    "Add scripts/Test-AgentHandoff-NegativeFixtures.ps1 and wire it into Verify-Release.ps1 so broken propagation cannot obtain a clean handoff result.",
+    "Keep the exact next production boundary unchanged: PlannerSnapshotRepository only.",
     "Design-only checkpoint: re-audited every remaining MainWindowViewModel responsibility and stopped further page-model splitting.",
     "IssueSuspects remains shell/cross-feature state because refresh projects persisted suspects into ModRowViewModel badges, ModsView, issue labels and header counters while crash/launch/bisect workflows mutate the same data.",
     "Mods/ModsView, conflicts, overlaps, selected state, staging/apply/undo, Nexus/import, profile mutations, launch/crash diagnosis, health/support and global busy/status were classified by ownership/coupling in MAINWINDOW_RESPONSIBILITY_AUDIT.md.",
@@ -35,13 +40,16 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "No production executable C# source changed in this governance checkpoint.",
+    "No verification cache was manually promoted; product green evidence remains bound to its existing exact source SHA.",
+    "Deployment, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, transaction, and UI/runtime semantics are unchanged.",
     "No production executable source changed in this design checkpoint.",
     "DeploymentExecutor prepared-journal, final commit and rollback shared-transaction boundaries remain untouched.",
     "ReplaceModFiles, ChainManualFamily, ProfileRepository.SaveCurrent, adoption, trust, issue, supersession, revalidation and enabled/priority batch atomicity remain untouched.",
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Implement exactly one read-only PlannerSnapshotRepository extraction. Move only the existing LoadPlannerSnapshotAsync planner-input query assembly, preserve full/filtered/empty behavior and current connection semantics, do not move GetModsAsync or touch DeploymentExecutor, add focused parity/planner regressions, then create a fresh independently verified source boundary and close it with exact hosted Windows evidence before any second production change.",
+  "nextRequiredAction": "First close this governance checkpoint by confirming the exact committed handoff validator and negative fixtures pass; then implement exactly one read-only PlannerSnapshotRepository extraction. Do not move GetModsAsync or touch DeploymentExecutor, and do not begin a second source boundary until the first is independently verified.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -51,5 +59,7 @@
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "750a3232ad9ac82bd1587ddd903709b886c9b8bb",
-  "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40"
+  "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
+  "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
+  "governanceScopeNote": "Governance-only checkpoint: no production C# changed. The permanent recursive continuity constitution, append-only Learned Rules ledger, stronger handoff validator, and negative fixtures are being installed. Existing product verification remains tied to exact commit 106a4569b572473394aa075bcfa5d9c03f2fe44d / run 36331057943; because continuity verification infrastructure changed, prior handoff-preflight evidence does not verify the new scripts. The new exact governance commit must pass its own handoff/negative-fixture checks (normally through the hosted Windows Release Gate) before those verifier changes are called release-gate verified."
 }

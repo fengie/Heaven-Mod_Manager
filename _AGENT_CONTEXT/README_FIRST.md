@@ -23,16 +23,17 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 ## Read order
 
 1. `_AGENT_CONTEXT/CURRENT_REVISION.json` — machine-readable current status and the exact source commit verification applies to.
-2. `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` — mandatory handoff rule; preserve it for the next agent.
-3. `_AGENT_CONTEXT/CURRENT_STATE.md`
-4. `_AGENT_CONTEXT/ARCHITECTURE.md`
-5. `docs/FUNCTION-VERIFICATION.md`
-6. `_AGENT_CONTEXT/DECISIONS.md`
-7. `_AGENT_CONTEXT/KNOWN_ISSUES.md`
-8. `_AGENT_CONTEXT/SOURCE_MAP.md`
-9. `_AGENT_CONTEXT/VERIFICATION.md`
-10. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
-11. `_AGENT_CONTEXT/NEXT_STEPS.md`
+2. `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` — permanent Core Rules and recursive continuity constitution.
+3. `_AGENT_CONTEXT/LEARNED_RULES.md` — active incident-driven rules; preserve append-only history.
+4. `_AGENT_CONTEXT/CURRENT_STATE.md`
+5. `_AGENT_CONTEXT/ARCHITECTURE.md`
+6. `docs/FUNCTION-VERIFICATION.md`
+7. `_AGENT_CONTEXT/DECISIONS.md`
+8. `_AGENT_CONTEXT/KNOWN_ISSUES.md`
+9. `_AGENT_CONTEXT/SOURCE_MAP.md`
+10. `_AGENT_CONTEXT/VERIFICATION.md`
+11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
+12. `_AGENT_CONTEXT/NEXT_STEPS.md`
 
 ## Critical rule
 
@@ -44,4 +45,4 @@ The original supplied baseline was `MHW-Manual-Mod-Manager-v8.7.0-UniversalGameS
 
 ## Continuity is part of definition of done
 
-Every future repository change must keep the relevant `_AGENT_CONTEXT/` state current, preserve `AGENTS.md`, `_AGENT_CONTEXT/handoff-manifest.json` and `CONTINUITY_PROTOCOL.md`, run `scripts/Test-AgentHandoff.ps1`, and explicitly tell the next agent to repeat the practice. Commit handoff/context changes with the code they describe. If a source ZIP is exported, prefer `Build Source Handoff.bat` for packaging. The next agent should not need old chat history. **Do not break the chain.**
+Every future repository change must keep the relevant `_AGENT_CONTEXT/` state current, preserve `AGENTS.md`, `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PROTOCOL.md`, and append-only `LEARNED_RULES.md`, run `scripts/Test-AgentHandoff.ps1` and the recursive-continuity negative fixtures through the normal verification harness, and explicitly require the next agent to preserve and recursively pass the same obligation to its successor. Commit handoff/context changes with the code they describe. If a source ZIP is exported, prefer `Build Source Handoff.bat` for packaging. The next agent should not need old chat history. **Do not break the chain.**

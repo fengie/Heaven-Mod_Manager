@@ -1,7 +1,20 @@
 param([string]$Root)
 $ErrorActionPreference='Stop'
-if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path}
-else{$Root=(Resolve-Path $Root).Path}
+
+if([string]::IsNullOrWhiteSpace($Root)){
+    $Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+}else{
+    $Root=(Resolve-Path $Root).Path
+}
+
+function Assert-Match {
+    param(
+        [string]$Text,
+        [string]$Pattern,
+        [string]$Message
+    )
+    if($Text -notmatch $Pattern){throw $Message}
+}
 
 $manifestPath=Join-Path $Root '_AGENT_CONTEXT\handoff-manifest.json'
 if(-not (Test-Path $manifestPath)){throw "Agent handoff manifest is missing: $manifestPath"}
@@ -13,6 +26,8 @@ if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods'){throw "Unexpecte
 if([string]$manifest.canonicalBranch -ne 'main'){throw "Unexpected canonical branch: $($manifest.canonicalBranch)"}
 if([string]$manifest.agentInstructions -ne 'AGENTS.md'){throw 'handoff-manifest.json must point agentInstructions to AGENTS.md.'}
 if([string]$manifest.currentRevisionFile -ne '_AGENT_CONTEXT/CURRENT_REVISION.json'){throw 'handoff-manifest.json must point currentRevisionFile to CURRENT_REVISION.json.'}
+if([string]$manifest.continuityProtocol -ne '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md'){throw 'handoff-manifest.json must point continuityProtocol to CONTINUITY_PROTOCOL.md.'}
+if([string]$manifest.learnedRules -ne '_AGENT_CONTEXT/LEARNED_RULES.md'){throw 'handoff-manifest.json must point learnedRules to LEARNED_RULES.md.'}
 
 $version=(Get-Content -Raw -Path (Join-Path $Root 'VERSION.txt')).Trim()
 if([string]$manifest.currentVersion -ne [string]$version){throw "Agent handoff manifest version '$($manifest.currentVersion)' does not match VERSION.txt '$version'."}
@@ -20,9 +35,11 @@ if([string]$manifest.currentVersion -ne [string]$version){throw "Agent handoff m
 $required=@()
 $required += [string]$manifest.startHere
 $required += [string]$manifest.continuityProtocol
+$required += [string]$manifest.learnedRules
 $required += @($manifest.requiredContextFiles | ForEach-Object {[string]$_})
 $required += @($manifest.requiredVerificationFiles | ForEach-Object {[string]$_})
 if($null -ne $manifest.requiredToolingFiles){$required += @($manifest.requiredToolingFiles | ForEach-Object {[string]$_})}
+
 $missing=@()
 foreach($relative in ($required | Where-Object {-not [string]::IsNullOrWhiteSpace($_)} | Select-Object -Unique)){
     $path=Join-Path $Root ($relative.Replace([char]47, [char]92))
@@ -39,10 +56,52 @@ if([string]$revision.canonicalBranch -ne [string]$manifest.canonicalBranch){thro
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
 
-$agentsPath=Join-Path $Root 'AGENTS.md'
-$agents=Get-Content -Raw -Path $agentsPath
-if($agents -notmatch '(?i)canonical working state'){throw 'AGENTS.md must identify the repository as canonical working state.'}
-if($agents -notmatch '(?i)Do not break the chain'){throw 'AGENTS.md must preserve the continuity invariant.'}
+$agents=Get-Content -Raw -Path (Join-Path $Root 'AGENTS.md')
+Assert-Match $agents '(?i)canonical (working state|development state|source of truth)' 'AGENTS.md must identify the canonical repository state.'
+Assert-Match $agents 'NEXT-AGENT-START-HERE\.md' 'AGENTS.md must direct agents to NEXT-AGENT-START-HERE.md.'
+Assert-Match $agents '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'AGENTS.md must direct agents to CURRENT_REVISION.json.'
+Assert-Match $agents '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'AGENTS.md must direct agents to CONTINUITY_PROTOCOL.md.'
+Assert-Match $agents '_AGENT_CONTEXT/LEARNED_RULES\.md' 'AGENTS.md must direct agents to LEARNED_RULES.md.'
+Assert-Match $agents '(?i)git status' 'AGENTS.md must require git status inspection.'
+Assert-Match $agents '(?i)(history|diff)' 'AGENTS.md must require relevant history/diff inspection.'
+Assert-Match $agents '(?i)successor' 'AGENTS.md must explicitly pass continuity to a successor.'
+Assert-Match $agents '(?i)agent after' 'AGENTS.md must require the successor to propagate continuity again.'
+Assert-Match $agents '(?i)without previous chat history' 'AGENTS.md must require chat-independent continuation.'
+Assert-Match $agents '(?i)explicit user authorization' 'AGENTS.md must protect Core Rules from unauthorized weakening.'
+Assert-Match $agents '(?i)Do not break the chain' 'AGENTS.md must preserve the continuity invariant.'
+
+$start=Get-Content -Raw -Path (Join-Path $Root 'NEXT-AGENT-START-HERE.md')
+Assert-Match $start '(?i)permanent continuity constitution' 'NEXT-AGENT-START-HERE.md must identify the permanent continuity constitution.'
+Assert-Match $start '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'NEXT-AGENT-START-HERE.md must link the permanent continuity constitution.'
+Assert-Match $start '_AGENT_CONTEXT/LEARNED_RULES\.md' 'NEXT-AGENT-START-HERE.md must link the Learned Rules ledger.'
+Assert-Match $start '(?i)successor' 'NEXT-AGENT-START-HERE.md must explicitly pass continuity to the successor.'
+Assert-Match $start '(?i)agent after' 'NEXT-AGENT-START-HERE.md must require recursive propagation beyond the successor.'
+Assert-Match $start '(?i)Do not break the chain' 'NEXT-AGENT-START-HERE.md must preserve the continuity invariant.'
+
+$protocol=Get-Content -Raw -Path (Join-Path $Root '_AGENT_CONTEXT\CONTINUITY_PROTOCOL.md')
+Assert-Match $protocol '(?i)Core Rule' 'CONTINUITY_PROTOCOL.md must identify Core Rules.'
+Assert-Match $protocol '(?i)recursive and indefinite' 'CONTINUITY_PROTOCOL.md must preserve indefinite recursive propagation.'
+Assert-Match $protocol '(?i)successor' 'CONTINUITY_PROTOCOL.md must explicitly instruct successor propagation.'
+Assert-Match $protocol '(?i)agent after' 'CONTINUITY_PROTOCOL.md must require propagation beyond the immediate successor.'
+Assert-Match $protocol '(?i)explicit user authorization' 'CONTINUITY_PROTOCOL.md must protect Core Rules from unauthorized weakening.'
+Assert-Match $protocol '(?i)preservation mode' 'CONTINUITY_PROTOCOL.md must define preservation mode.'
+Assert-Match $protocol '(?i)exact verification' 'CONTINUITY_PROTOCOL.md must preserve exact-input verification semantics.'
+Assert-Match $protocol '(?i)SQLite transaction' 'CONTINUITY_PROTOCOL.md must preserve SQLite transaction-boundary discipline.'
+Assert-Match $protocol '(?i)append-only' 'CONTINUITY_PROTOCOL.md must define append-only Learned Rules history.'
+Assert-Match $protocol '(?i)Do not break the chain' 'CONTINUITY_PROTOCOL.md must preserve the continuity invariant.'
+
+$learned=Get-Content -Raw -Path (Join-Path $Root '_AGENT_CONTEXT\LEARNED_RULES.md')
+Assert-Match $learned '(?i)append-only' 'LEARNED_RULES.md must identify append-only history.'
+Assert-Match $learned '(?i)Rule ID' 'LEARNED_RULES.md must define auditable Rule IDs.'
+Assert-Match $learned '(?i)Active' 'LEARNED_RULES.md must define Active status.'
+Assert-Match $learned '(?i)Superseded' 'LEARNED_RULES.md must define Superseded status.'
+Assert-Match $learned '(?i)Core Rules' 'LEARNED_RULES.md must defer to Core Rules.'
+
+$readme=Get-Content -Raw -Path (Join-Path $Root '_AGENT_CONTEXT\README_FIRST.md')
+$protocolIndex=$readme.IndexOf('_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',[StringComparison]::Ordinal)
+$learnedIndex=$readme.IndexOf('_AGENT_CONTEXT/LEARNED_RULES.md',[StringComparison]::Ordinal)
+if($protocolIndex -lt 0 -or $learnedIndex -lt 0){throw 'README_FIRST.md must include CONTINUITY_PROTOCOL.md and LEARNED_RULES.md in the read order.'}
+if($protocolIndex -gt $learnedIndex){throw 'README_FIRST.md must place the permanent continuity protocol before the Learned Rules ledger.'}
 
 $functionStatusPath=Join-Path $Root '.verification\function-status.json'
 $functionStatus=Get-Content -Raw -Path $functionStatusPath | ConvertFrom-Json
@@ -69,11 +128,5 @@ foreach($entry in @($stageStatus.stages)){
     if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "stage-status.json entry '$($entry.id)' is missing its fingerprint."}
     if($entry.verified -ne $true -and $entry.verified -ne $false){throw "stage-status.json entry '$($entry.id)' must have boolean verified state."}
 }
-
-$start=Get-Content -Raw -Path (Join-Path $Root 'NEXT-AGENT-START-HERE.md')
-$protocol=Get-Content -Raw -Path (Join-Path $Root '_AGENT_CONTEXT\CONTINUITY_PROTOCOL.md')
-if($start -notmatch '(?i)Do not break the chain'){throw 'NEXT-AGENT-START-HERE.md must preserve the continuity propagation instruction.'}
-if($protocol -notmatch '(?i)next agent'){throw 'CONTINUITY_PROTOCOL.md must explicitly instruct the next agent.'}
-if($protocol -notmatch '(?i)Do not break the chain'){throw 'CONTINUITY_PROTOCOL.md must preserve the continuity invariant.'}
 
 Write-Host ("PASS: Agent handoff continuity preflight. Version="+$version+"; requiredFiles="+$required.Count) -ForegroundColor Green
