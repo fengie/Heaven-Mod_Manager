@@ -1,59 +1,63 @@
 # Next steps
 
-## Current repair revision
+## Immediate: verify the architecture / Explain Why candidate
 
-Read `AUDIT-2026-09-27.md`. Run `Test Everything.bat` on Windows for the exact
-repaired source, then `Build.bat` for Windows publishing. Expect 61 integration
-cases and the new cache regression preflight. Six historical Windows stages
-remain reusable; FunctionVerifier and Filesystem-dependent checks must rerun.
-Confirm all 23 currently unchecked functions only through the complete gate.
-No further speculative refactor is needed to finish this repair.
+The closed v8.8.0 Windows baseline remains commit
+`5f6789af499fcc1afe6cb5d38244927bb02335fb` / run `36321128433`.
+The current architecture candidate changes production source and is **not green until a
+new Windows Release Gate run passes for the integrated main SHA**.
 
-## First action on a Windows machine
+1. Integrate `agent/architecture-explain-why` into `main` without rewriting history.
+2. Let `.github/workflows/windows-release-gate.yml` run the repository's exact
+   verification and release scripts.
+3. Fix real compile/test/trace/handoff failures. Do not weaken or bypass the gate.
+4. When green, persist the exact source SHA, run ID, updated function inventory/test
+   counts, release artifact hash, and hosted evidence into the continuity state.
+5. Only then continue architecture work.
 
-Run:
+## What this candidate already establishes
 
-```powershell
-.\Test Everything.bat
-```
+- WPF no longer owns the Activity and Outfit/Coverage SQL projections.
+- WPF no longer owns archive staging/wrapper-normalization filesystem code.
+- Explain Why consumes `DeploymentPlanner` / `ConflictDecision`; there is no second
+  compatibility engine.
+- Overlaps expose exact-path winner/provider/rule/confidence/evidence/provenance details.
+- Activity, Coverage, Import, and Overlap/Explain orchestration have feature partials,
+  reducing the central MainWindow view-model file while preserving bindings.
+- New regression tests cover structured Explain Why, presentation reads, and XAML bindings.
 
-or directly:
+## After this candidate is fully green
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\Verify-Release.ps1
-```
+Continue **incrementally**, in this order:
 
-Use .NET SDK 10.0.401 or newer compatible SDK as enforced by the script/global.json.
+1. Convert the partial feature seams into actual page view models where cross-page
+   coordination is no longer needed.
+2. Extract additional cohesive persistence domains from `ManagerDatabase`, preserving
+   explicit transaction ownership and deployment atomicity.
+3. Split `MainWindow.xaml` along stable page boundaries after shared resource placement
+   is made safe.
+4. Refactor the startup composition graph only as a separate change; evaluate Generic
+   Host/DI then rather than mixing lifecycle changes into this milestone.
+5. Finish nearby workflows whose backend is already mature (profile diff / collection
+   import / update migration) only after the architecture checkpoint remains green.
 
-## On failure
+Do **not** start FOMOD support or a broad enhanced-game-adapter redesign before the
+architecture/explainability checkpoint is closed.
 
-1. Read the newly written `BuildLogs/function-verification-*.json` first for parse/trace gaps.
-2. Read `MHW-DEBUG-ALL.log` and the stage-specific build log.
-3. Fix compile/analyzer/test failures without manually editing `verified` booleans.
-4. Rerun the verifier. Exact unchanged stages already recorded in `.verification/stage-status.json` will show `PASS-CACHED`; changed/failed stages rerun. Full function promotion is still automatic only after a complete required PASS.
+## Invariants to preserve
 
-## On the next run
-
-The FunctionVerifier and whole solution already compiled successfully in the second Windows run. Re-run `Test Everything.bat` to validate the four newly added entry traces and the later repair revision. Expect the function scan to have zero trace/call-site coverage gaps. Exact unaffected stages should show `PASS-CACHED`; stages whose fingerprints include edited App/Filesystem/verification inputs must rerun. If everything passes, the function confirmation step should promote all exact current function fingerprints to `verified: true`.
-
-## On first complete PASS
-
-Confirm `.verification/function-status.json` has every exact current body at `verified: true` with `verificationBasis: full-release-confirmation`. Commit both function and stage caches with the exact source they verify, and update `CURRENT_REVISION.json` to identify that source commit/evidence. Export a source ZIP only if one is useful for release/handoff.
-
-## Architectural follow-up after v8.8 stabilizes
-
-A sensible next structural project is WPF/application-boundary decomposition: split the very large `MainWindowViewModel` into feature-oriented presentation controllers/viewmodels while leaving transactional deployment/conflict/state logic in backend services. Do this separately from verification hardening.
+- immutable source/CAS assumptions;
+- whole-plan preflight and per-write revalidation;
+- journal-before-mutation and one logical SQLite commit point for deployment state;
+- rollback/recovery refusing to overwrite unknown external edits;
+- Windows path/archive safety;
+- explicit human rules outranking inference;
+- generic-game fail-closed behavior;
+- verification promotion only after the required gate passes.
 
 ## Before finishing any future repository task
 
-1. Update `_AGENT_CONTEXT/` with everything materially learned in the task.
-2. Update `CURRENT_REVISION.json` when source or verification status changes.
-3. Update `handoff-manifest.json` if required context/tooling changes.
-4. Run `scripts/Test-AgentHandoff.ps1`.
-5. Commit the handoff/context changes with the code they describe.
-6. If a source ZIP is needed, prefer `Build Source Handoff.bat` to package the source and emit a per-file hash manifest.
-7. Tell the next agent to repeat these exact continuity steps. **Do not break the chain.**
-
-## Recommended architecture sequence after v8.8 is compiler/test-confirmed
-
-Do not immediately rewrite the transactional core. First extract feature-oriented application/presentation services from `MainWindowViewModel` and move its direct import/normalization filesystem work behind backend/application services. Then consider splitting `ManagerDatabase`, `NexusMetadataService`, and `AutoCompatibility` along cohesive responsibilities while preserving transaction/test boundaries.
+Read the agent/continuity instructions, update `_AGENT_CONTEXT` with materially learned
+state, keep evidence tied to an exact SHA, run `scripts/Test-AgentHandoff.ps1`, commit
+handoff context with the code it describes, and tell the next agent to repeat the process.
+Do not break the chain.
