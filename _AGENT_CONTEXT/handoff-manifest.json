@@ -33,7 +33,10 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-validation.log",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-repair-function-scan.json",
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
-    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md"
+    "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
+    "docs/MIGRATION.md",
+    "_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md",
+    "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -42,7 +45,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order. Preserve Core Rules and exact verification/safety invariants. Keep one independently verifiable source boundary at a time. Update durable handoff/context, commit and push meaningful checkpoints, and run the handoff validator plus recursive-continuity negative fixtures. Explicitly require your successor to inherit, preserve, extend only with justified Learned Rules, and recursively propagate this same obligation to the agent after them. The next production boundary remains PlannerSnapshotRepository only unless canonical source disproves the audit. Do not break the chain.",
+  "nextAgentObligation": "Treat GitHub main as canonical. Before any edit, inspect actual main, git status, recent history/diffs, open parallel PRs, NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LEARNED_RULES.md, and the remaining README_FIRST order including the deep SQLite and legacy migration recovery audits. Preserve the closed PlannerSnapshotRepository evidence. If taking migration hardening, begin with a characterization/fault-test boundary for LegacyV7Migrator before changing protocol; pin retry convergence and cleanup truthfulness first. Keep SQLite atomicity, filesystem/CAS hardening, app lifetime, and migration ownership changes independently scoped unless an explicit later checkpoint proves they must combine. Update durable handoff/context, push stable checkpoints, run applicable handoff/verification checks, and explicitly require your successor to recursively propagate the continuity constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
