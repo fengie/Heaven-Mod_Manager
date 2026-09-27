@@ -35,6 +35,7 @@ Keep these separate and consult their specialized audits before implementation:
 - full manager backup/portability recovery capsule;
 - source-neutral multi-provider acquisition;
 - MHW physical-slot coverage calculator and marginal bulk-fill selection.
+- mod retirement / same-ID re-import lifecycle closure; read `MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` and start with characterization tests + one centralized retirement transaction.
 
 ## Verification truth
 
