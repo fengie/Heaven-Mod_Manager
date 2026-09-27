@@ -278,3 +278,12 @@ The implementation confirmed the audit assumptions rather than disproving them: 
 ### Caller-audit correction from hosted run 36335255922
 
 The original audit omitted two real callers of `LoadPlannerSnapshotAsync`: `NexusMetadataService` and `GameBuildMonitor`. The first hosted candidate compile exposed both CS1061 failures after the ManagerDatabase method was removed. Repair commit `528401925b1d09b3d65c9652de8e4f2024e3677f` migrates both to the same read-only `PlannerSnapshotRepository`. This correction does not alter the transaction analysis: both callers only consume planner snapshot reads; their existing ManagerDatabase writes remain under their prior ownership/sequencing.
+
+
+## Independent deep atomicity follow-up — 2026-09-27
+
+The independent Support Agent 1 cross-check is persisted in `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` (source audit base `0e561f3c059475ad443a79ac4a27dd68264a7bdb`; durable audit commit `5fd7f41f6229474907aa751fd410bcf32dbe2d50`).
+
+It confirms the critical DeploymentExecutor, ReplaceModFiles, manual-family, profile, supersession, revalidation, trust-batch and issue-batch transaction boundaries, and adds four concrete consistency defects/gaps outside the deployment core: duplicate cleanup move-before-delete recovery, split trust/history launch persistence, snapshot-prune DB/payload drift, and stale legacy migration-run status after abrupt death. It also records adoption/save/CAS crash-litter windows, the intentionally non-transactional planner read snapshot, missing write-concurrency tests, and exact extraction rules for caller-owned transactions.
+
+Future write-side extraction work must read the deep audit before moving any transaction participant. The permanent recursive continuity constitution still applies; successors must preserve it and require the agent after them to do the same. Do not break the chain.
