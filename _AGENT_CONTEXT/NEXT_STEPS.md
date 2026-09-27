@@ -1,5 +1,29 @@
 # Next steps
 
+## Windows filesystem safety audit — documentation checkpoint
+
+Durable audit: `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`.
+
+This support checkpoint changes no production C# and does not alter the closed PlannerSnapshotRepository verification evidence.
+
+The audit's highest-priority future safety boundary is **Windows live-path physical containment**. Before implementing a broad guard, add focused Windows regression fixtures proving that deployment Add, Replace, Remove, rollback, startup recovery, and empty-directory pruning cannot follow a parent junction/symbolic-link/reparse component outside the configured game root.
+
+Other high-priority findings must remain separate checkpoints:
+
+- recursive `SearchOption.AllDirectories` traversal in ModScanner, unmanaged adoption, and Smart Inbox directory import;
+- CAS corrupt/reparse-object trust;
+- documented `ReplaceFileW` partial-failure postconditions;
+- legacy-migration CAS hardlink aliasing;
+- incomplete DOS device-name edge handling.
+
+Preserve `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` as the more specific authority for SQLite transaction findings.
+
+Any production fix must be independently verified with exact hosted Windows evidence. Do not bundle all filesystem findings into one source change.
+
+**Do not break the chain.**
+
+---
+
 ## PlannerSnapshotRepository boundary — CLOSED
 
 Exact verified commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
