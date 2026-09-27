@@ -231,7 +231,7 @@ public sealed record ConflictRow(
 }
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
-public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int ProviderCount,string Providers,string Resolution,string Detail);
+public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int ProviderCount,string Providers,string Resolution,string Detail,string PrimaryPath);
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)
 {
