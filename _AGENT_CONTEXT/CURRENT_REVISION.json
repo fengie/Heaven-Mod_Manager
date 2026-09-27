@@ -8,42 +8,42 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "activity-page-viewmodel-candidate-awaiting-windows-verification",
-  "verificationAppliesToCommit": "9717a22d3338f77e63cd409a80d2ec5fc3c924f2",
-  "lastClosedVerificationCommit": "9717a22d3338f77e63cd409a80d2ec5fc3c924f2",
-  "lastClosedVerificationRun": "36325133722",
+  "status": "activity-page-viewmodel-closed-windows-verified",
+  "verificationAppliesToCommit": "5eab48f0a2139e3aee96a7c71e4466d2e1168877",
+  "lastClosedVerificationCommit": "5eab48f0a2139e3aee96a7c71e4466d2e1168877",
+  "lastClosedVerificationRun": "36325994246",
   "candidateSourceCommit": "e2396c7c91c5d8d88fe229603689539b5cdfb2da",
-  "verificationScopeNote": "The architecture/Explain Why checkpoint remains closed at 9717a22d3338f77e63cd409a80d2ec5fc3c924f2 / run 36325133722. Activity extraction initially produced intermediate source b0881ee5780159b49c26b3e79e3a0b26b1b39a6b, but connector string serialization wrote literal \\\\n sequences into MainWindowViewModel.cs; run 36325764389 is therefore superseded. Corrected production source e2396c7c91c5d8d88fe229603689539b5cdfb2da contains actual C# newlines and preserves the intended ActivityPageViewModel extraction. It requires a fresh complete Windows gate before any verification promotion.",
+  "verificationScopeNote": "The Activity page-view-model slice is closed. Hosted Windows Release Gate run 36325994246 verified exact main commit 5eab48f0a2139e3aee96a7c71e4466d2e1168877; production source last changed at e2396c7c91c5d8d88fe229603689539b5cdfb2da. The verifier passed 25/25 and promoted all 609 production fingerprints. Core 79/79, Automation 20/20, Integration/fault injection 63/63, self-test 11/11, win-x64 analyzer compile and ReadyToRun self-contained publish all passed. Evidence/cache persistence commit f0221e545ab4bf75b989d985dc3e5a90e2faa6fc is documentation/cache-only. Any later production edit starts a new verification boundary.",
   "lastClosedVerification": {
-    "functionInventoryTotal": 607,
-    "functionsVerified": 607,
+    "functionInventoryTotal": 609,
+    "functionsVerified": 609,
     "functionsPending": 0,
     "windowsGate": "passed: 25/25",
     "coreTests": "79/79 passed",
     "automationTests": "20/20 passed",
-    "integrationTests": "62/62 passed",
+    "integrationTests": "63/63 passed",
     "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6"
+    "releaseArtifactSha256": "7ED67747DADE8BD3E56D30139BF39886F5E0A293F9CAE9B2887D06D720F589AF"
   },
   "candidateChanges": [
-    "Added ActivityPageViewModel owning recent-activity projection refresh and Activity row collection.",
-    "MainWindowViewModel now composes ActivityPageViewModel and aliases its Rows collection so existing ActivityRows XAML binding remains unchanged.",
-    "MainWindowViewModel keeps RefreshActivityCommand and RunBusy cross-page/global coordination while delegating Activity data refresh to the page model.",
-    "Added source-level integration guard proving existing ActivityRows/RefreshActivityCommand binding surface is preserved.",
-    "Corrected a connector serialization defect from the first Activity extraction commit: literal \\\\n text in MainWindowViewModel.cs was replaced with actual newlines; intended behavior is unchanged."
+    "ActivityPageViewModel now owns recent-activity read projection and Activity row state.",
+    "MainWindowViewModel composes ActivityPageViewModel while preserving ActivityRows and RefreshActivityCommand bindings.",
+    "RunBusy/global operation coordination remains in MainWindowViewModel.",
+    "Activity binding seam has a source-level integration regression guard.",
+    "Malformed intermediate connector serialization was corrected before closure; verified source contains normal C# newlines."
   ],
   "invariantsPreserved": [
     "No DeploymentExecutor, journal, CAS, rollback/recovery, TOCTOU, ReplaceFileW, path-safety, planner, or conflict-resolution behavior changed.",
-    "Existing MainWindow ActivityRows and RefreshActivityCommand bindings remain intact.",
+    "Existing ActivityRows and RefreshActivityCommand binding behavior is preserved.",
     "SQLite transaction ownership and schema are unchanged.",
     "FOMOD and enhanced-game adapter redesign remain out of scope."
   ],
-  "nextRequiredAction": "Run the exact Windows Release Gate for corrected Activity production source e2396c7c91c5d8d88fe229603689539b5cdfb2da plus its adjacent continuity commit. Treat run 36325764389 as superseded. If green, persist exact SHA/run/counts/artifact hash; do not start a second page extraction before closure.",
+  "nextRequiredAction": "Begin one next low-coupling page-view-model slice only: Coverage. Preserve existing OutfitRows/RefreshOutfitsCommand bindings, keep global StatusText ownership in MainWindowViewModel, and let the page model own coverage reads/mapping/row state. Verify that slice completely before any further extraction.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "702c9055bff19caa80fdd60e29e891181932217a"
+  "closureEvidenceCommit": "f0221e545ab4bf75b989d985dc3e5a90e2faa6fc"
 }

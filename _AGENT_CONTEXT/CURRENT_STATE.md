@@ -1,5 +1,28 @@
 # Current state — v8.8.0
 
+## Activity page-view-model slice CLOSED — hosted Windows
+
+The first post-closure architecture slice is fully green.
+
+- exact verified commit: `5eab48f0a2139e3aee96a7c71e4466d2e1168877`
+- last production-source change: `e2396c7c91c5d8d88fe229603689539b5cdfb2da`
+- Windows Release Gate: `36325994246`
+- repository verification: **25/25 PASS**
+- production fingerprints: **609/609 promoted**
+- explicit call sites: **6375**, uncovered **0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **63/63**
+- self-test: **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun self-contained publish: PASS
+- release ZIP SHA-256: `7ED67747DADE8BD3E56D30139BF39886F5E0A293F9CAE9B2887D06D720F589AF`
+- evidence/cache persistence commit: `f0221e545ab4bf75b989d985dc3e5a90e2faa6fc`
+
+This verifies the real `ActivityPageViewModel` extraction while preserving the
+legacy `ActivityRows` / `RefreshActivityCommand` binding surface. The malformed
+intermediate run `36325764389` remains superseded historical evidence only.
+
 ## Activity candidate serialization correction
 
 The first Activity extraction source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` accidentally

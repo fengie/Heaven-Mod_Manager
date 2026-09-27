@@ -1,5 +1,16 @@
 # NEXT AGENT — START HERE
 
+## Closed checkpoint: Activity page view model
+
+Activity extraction is closed by hosted run `36325994246` at exact commit
+`5eab48f0a2139e3aee96a7c71e4466d2e1168877` (production source `e2396c7c91c5d8d88fe229603689539b5cdfb2da`): **25/25** verifier,
+**609/609** fingerprints, Core **79/79**, Automation **20/20**, Integration
+**63/63**, self-test **11/11**, ReadyToRun publish PASS.
+
+The next intended source boundary is **CoveragePageViewModel only**. Preserve
+`OutfitRows` and `RefreshOutfitsCommand` bindings, and keep shell-global
+`StatusText` ownership in `MainWindowViewModel`.
+
 ## Active candidate: Activity page view model
 
 Run `36325764389` targets a malformed intermediate connector patch and is superseded; verify the corrected source SHA below instead.

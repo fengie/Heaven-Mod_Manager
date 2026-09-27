@@ -1,5 +1,26 @@
 # Verification performed for this source handoff
 
+## Activity page-view-model hosted closure
+
+Hosted Windows run `36325994246` closed exact commit `5eab48f0a2139e3aee96a7c71e4466d2e1168877`
+(production source `e2396c7c91c5d8d88fe229603689539b5cdfb2da`).
+
+- verifier: **25/25**
+- production function inventory: **609**
+- promoted: **609/609**
+- explicit call sites: **6375**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core **79/79**
+- Automation **20/20**
+- Integration/fault injection **63/63**
+- self-test **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun restore/publish: PASS
+- release SHA-256: `7ED67747DADE8BD3E56D30139BF39886F5E0A293F9CAE9B2887D06D720F589AF`
+- evidence/cache persistence: `f0221e545ab4bf75b989d985dc3e5a90e2faa6fc`
+
+The exact verifier again passed the agent-handoff continuity preflight.
+
 ## Architecture / Explain Why final hosted closure
 
 Hosted Windows run `36325133722` fully closed the post-v8.8 architecture /
