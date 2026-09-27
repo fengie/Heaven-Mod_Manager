@@ -4,194 +4,101 @@
 
 You inherit the repository's **permanent continuity constitution**.
 
-Before modifying this project, read:
+Before modifying this project:
 
-- `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`
-- `_AGENT_CONTEXT/LEARNED_RULES.md`
-- `_AGENT_CONTEXT/CURRENT_REVISION.json`
-- the remaining order in `_AGENT_CONTEXT/README_FIRST.md`
+1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
+2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
+3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
+4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-006);
+5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
+6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
 Preserve the constitution. Obey active Learned Rules. Add a Learned Rule only when a concrete, durable discovery justifies it.
 
-Before finishing, update the repository handoff and explicitly require your **successor** to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement again for the **agent after them**.
-
-The next agent must be able to continue without previous chat history.
+Before finishing, update durable repository handoff state and explicitly require your **successor** to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement for the **agent after them**. The next agent must be able to continue without previous chat history.
 
 **Do not break the chain.**
 
+## Current canonical product checkpoint
 
-## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
+PlannerSnapshotRepository is **CLOSED**.
 
-Exact verified final commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
-Hosted Windows Release Gate: `36336190920`.
-Evidence/cache persistence commit: `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
+- exact verified source/commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`
+- hosted Windows Release Gate: `36336190920`
+- evidence/cache persistence: `852f07b9d6ad0457c161df0aa1c8165981d349cf`
+- repository verifier: **25/25**
+- production fingerprints: **610/610**
+- explicit call sites: **6456**, uncovered **0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **72/72**
+- self-test: **11/11**
+- App win-x64 analyzers: PASS
+- ReadyToRun self-contained publish: PASS
 
-Final exact evidence: verifier **25/25**, fingerprints **610/610**, explicit call sites **6456 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **72/72**, self-test **11/11**, App win-x64 analyzers PASS, ReadyToRun publish PASS, release SHA-256 `226DFA5C4E21A184B8895D27EAA069046B71A33CA50F1CE224EC06BBF908D12E`.
+The historical failed runs `36335255922` and `36335692754` are preserved in `VERIFICATION.md` with their root causes. No second storage production boundary has been started.
 
-The completed boundary is read-only `PlannerSnapshotRepository`. It preserves the historical two-connection planner read behavior, leaves `ManagerDatabase.GetModsAsync` in place, preserves filtered/empty/cancellation/planner-output semantics (including the existing first-casing SQLite filter nuance), and does not alter `DeploymentExecutor` or any documented write-side SQLite transaction owner.
+## Parallel support-agent integration
 
-Failed runs `36335255922` and `36335692754` are intentional historical evidence; read `_AGENT_CONTEXT/VERIFICATION.md` for root causes.
+The integration agent inspected the recent support branches and recovered every worthwhile contribution without blindly merging stale branch-local handoff snapshots.
 
-Do not reopen MainWindow page-model splitting or begin a second repository extraction merely because this seam is closed. First inherit the full canonical read order, inspect current main/history, read the storage/deep SQLite audits, and confirm a separately scoped next task.
+Canonical inventory and decisions:
 
-Before finishing your own future work, you must update durable handoff state and explicitly require your **successor** to inherit, preserve, and recursively propagate the permanent continuity constitution; that successor must pass the same obligation to the **agent after them**.
+`_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`
 
-**Do not break the chain.**
+Important result: the support branches contributed **documentation/research only** relative to the integration baseline; none contained production C# or test changes that needed merging.
 
----
+New durable specialized audits cover:
 
-## Closed checkpoint: Games list presentation state
+- MainWindow ownership re-audit;
+- async/background lifetime and cancellation;
+- broad test/failure/performance gaps;
+- Windows filesystem/reparse/CAS/native-replacement safety;
+- legacy migration/recovery;
+- verification infrastructure / CI supply chain;
+- diagnostics privacy / secrets;
+- remote preview network trust;
+- state backup / portability;
+- multi-source discovery / bulk fill;
+- MHW semantic coverage / gap fill.
 
-Hosted Windows Release Gate `36331057943` verified exact commit
-`106a4569b572473394aa075bcfa5d9c03f2fe44d` (last production source `fdbe9b71f29b1c4c7d9fcd061a23c2ca75fa3e34`): **25/25**
-verifier, **615/615** fingerprints, **6389** explicit call sites with **0**
-uncovered, Core **79/79**, Automation **20/20**, Integration/fault injection
-**66/66**, self-test **11/11**, App win-x64 analyzers PASS, and ReadyToRun
-self-contained publish PASS.
+Migration documentation was corrected to match current source behavior.
 
-Release SHA-256:
-`4872ABDA6D548CB9F97668AF1A3019AC44B146A9A66876F92B065D7009455189`
+## Active Learned Rules
 
-Evidence/cache persistence commit:
-`750a3232ad9ac82bd1587ddd903709b886c9b8bb`
+Read the full ledger; do not rely only on this summary.
 
-The earlier run `36330808544` is superseded historical evidence. It reached
-24/25 and correctly caught the missing `ScanInstalledGames` entry trace; the
-final verified source includes that trace and a regression assertion.
+- LR-001 — moved production bodies require verification-instrumentation re-audit.
+- LR-002 — shared API removal requires compile-backed caller closure.
+- LR-003 — native replacement failure is not equivalent to no filesystem mutation.
+- LR-004 — lexical containment is not physical filesystem containment.
+- LR-005 — restartable migrations must prove ownership and convergence.
+- LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
 
-Architecture boundary confirmed by this slice:
+The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule.
 
-- `GamesPageViewModel` owns only registry `Load()` -> observable rows.
-- `SelectedGame`, discovery, add/configure, `SetActive`, switching,
-  process restart/WPF shutdown, `RunBusy`, and `StatusText` remain shell-owned.
-- `AppPaths.Discover` still resolves the active game before startup rebuilds
-  the game-scoped service graph.
+## What to do next
 
-Next: re-audit remaining `MainWindowViewModel` responsibilities before choosing
-another source slice. Do not force `IssueSuspects`; if no clean presentation
-seam remains, move to a separately scoped ManagerDatabase repository-extraction
-design with explicit transaction-boundary mapping first.
+Do **not** automatically:
 
-## Closed checkpoint: Profiles read/list page view model
+- extract another ManagerDatabase repository;
+- reopen MainWindow page-model splitting;
+- combine all support findings into one hardening change;
+- weaken tests or verification to obtain a green result.
 
-Hosted Windows Release Gate `36328183152` verified exact commit
-`04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8` (production source `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`): **25/25**
-verifier, **613/613** fingerprints, Core **79/79**, Automation **20/20**,
-Integration/fault injection **65/65**, self-test **11/11**, and ReadyToRun
-win-x64 publish PASS.
+Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The highest-safety candidate is a separate, test-first Windows filesystem physical-containment/native-`ReplaceFileW` characterization checkpoint, because two independent support audits identified that boundary. Re-check current canonical source before acting.
 
-Release SHA-256:
-`A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8`
+Any production source change starts a new exact verification boundary and must earn a fresh full Windows Release Gate.
 
-Evidence/cache persistence commit:
-`122bcdb525bb432e73dff6f5887a63e065246964`
+## Handoff finish rule
 
-The next candidate should be **Games presentation/state only**, after inspecting
-the current seam. Keep game switching, service/path rebuilding, application
-lifetime, `RunBusy`, and global status ownership in the shell/composition root.
+Before your task ends:
 
-## Closed checkpoint: Coverage page view model
-
-Hosted Windows Release Gate `36327634813` verified exact commit
-`e3ed3be730000d1829b02e5d2d29b3f23ca52d94` (production source `855f6e5eb4998aa442538636b76f5c644146eb6a`): **25/25**
-verifier, **611/611** fingerprints, Core **79/79**, Automation **20/20**,
-Integration/fault injection **64/64**, self-test **11/11**, and ReadyToRun
-win-x64 publish PASS.
-
-Release SHA-256:
-`40B47B6E3C9CF21A0945095FE28E118540B415FBD9177190BDB99FE80C9657A8`
-
-Evidence/cache persistence commit:
-`e62e7ad5d93cdb6c6ae3d6e8562d6fae667e9c02`
-
-The next intended source boundary is **Profiles read/list state only**. Preserve
-the existing `Profiles` and `RefreshProfilesCommand` binding surface. Keep
-profile staging/save/delete actions, `RunBusy`, and global `StatusText` in
-`MainWindowViewModel` for the next slice.
-
-## Closed checkpoint: Activity page view model
-
-Activity extraction is closed by hosted run `36325994246` at exact commit
-`5eab48f0a2139e3aee96a7c71e4466d2e1168877` (production source `e2396c7c91c5d8d88fe229603689539b5cdfb2da`): **25/25** verifier,
-**609/609** fingerprints, Core **79/79**, Automation **20/20**, Integration
-**63/63**, self-test **11/11**, ReadyToRun publish PASS.
-
-The next intended source boundary is **CoveragePageViewModel only**. Preserve
-`OutfitRows` and `RefreshOutfitsCommand` bindings, and keep shell-global
-`StatusText` ownership in `MainWindowViewModel`.
-
-## Active candidate: Activity page view model
-
-Run `36325764389` targets a malformed intermediate connector patch and is superseded; verify the corrected source SHA below instead.
-
-Production source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` extracts the Activity read/state seam
-into `ActivityPageViewModel` while deliberately preserving
-`ActivityRows` and `RefreshActivityCommand` bindings. It is not green until
-a fresh Windows Release Gate passes. Do not start a second page extraction
-before that closure.
-
-## Current checkpoint: architecture / Explain Why is CLOSED
-
-Hosted Windows Release Gate `36325133722` verified exact commit
-`9717a22d3338f77e63cd409a80d2ec5fc3c924f2`; the last production-source edit is
-`098d617bcb3dcdd044e3fdb8319ba506c97082af`. Verification is **25/25**, function fingerprints are
-**607/607**, Core **79/79**, Automation **20/20**, Integration/fault injection
-**62/62**, self-test **11/11**, and the ReadyToRun win-x64 publish passed.
-Release SHA-256: `DF87A48716596ABFFF545DD6C73BAAE02954167424908850D943BFFA3833A2D6`.
-
-The next source change must start a new verification boundary. The next intended
-slice is one page-view-model extraction at a time, beginning with Activity.
-## Immediate architecture-candidate verification update
-
-Hosted run `36324750213` passed the exact repository verifier but the release
-win-x64 analyzer gate found one CA1826 diagnostic in overlap path selection.
-Production source commit `098d617bcb3dcdd044e3fdb8319ba506c97082af` contains the minimal analyzer-safe
-fix. Treat it as unverified until a fresh full Windows Release Gate passes and
-persists exact evidence.
-
-Read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/README_FIRST.md`, and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` **before modifying this project**.
-
-## Canonical repository state
-
-GitHub repository `fengie/mhw-mods` on `main` is the canonical development state. Inspect recent commits/diffs relevant to the task before editing. Source ZIPs remain useful release/export artifacts, but they are not the primary source of truth.
-
-## Current revision
-
-v8.8.0 has a closed hosted Windows baseline: commit
-`5f6789af499fcc1afe6cb5d38244927bb02335fb`, GitHub Actions run
-`36321128433`, **25/25** verification stages passed, all 602 exact production
-function fingerprints promoted, and the win-x64 release publish passed. Read
-`_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`.
-
-The post-v8.8 architecture / Explain Why milestone is closed by run `36325133722` at exact commit `9717a22d3338f77e63cd409a80d2ec5fc3c924f2`. Any subsequent production-source change starts a new verification boundary and must pass a fresh Windows gate.
-
-## Mandatory continuity requirement
-
-You are responsible for two deliverables:
-
-1. the requested project work; and
-2. a durable handoff of everything materially learned while doing that work.
-
-Update `_AGENT_CONTEXT/` as you investigate and modify the project. Preserve architecture discoveries, execution/data flows, invariants, decisions and rationale, rejected approaches, regressions/root causes, verification evidence, uncertainties, changed files, debugging knowledge, and next steps.
-
-Before finishing repository work:
-
-- update `_AGENT_CONTEXT/` and `_AGENT_CONTEXT/CURRENT_REVISION.json` with material discoveries and the verification state that applies to the changed source;
-- run `scripts/Test-AgentHandoff.ps1`;
-- preserve `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PROTOCOL.md`, and `AGENTS.md`;
-- commit the context/handoff updates with the code they describe;
-- if producing a source ZIP, use `Build Source Handoff.bat` / `scripts/Build-Source-Handoff.ps1` when possible;
-- explicitly tell the next agent to repeat this continuity practice.
-
-The next agent must be able to continue without access to previous chat history.
+- preserve exact source/verification provenance;
+- update `CURRENT_STATE.md`, `NEXT_STEPS.md`, `CURRENT_REVISION.json`, and any specialized audit affected by your work;
+- keep `handoff-manifest.json` accurate;
+- run the handoff validator and recursive-continuity negative fixtures through the normal verification path;
+- push meaningful checkpoints without force-rewriting canonical history;
+- explicitly require your successor to pass this same continuity system to the agent after them.
 
 **Do not break the chain.**
-
-## Verification evidence
-
-The canonical closed v8.8 evidence is
-`_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`. Earlier first and
-second Windows logs remain useful historical evidence, but their 13/12 and 24/1
-states are superseded by the final 25/25 hosted closure. For any later source
-change, reuse cached stages/functions only when the verifier confirms exact input
-fingerprints; never copy a green status manually.
