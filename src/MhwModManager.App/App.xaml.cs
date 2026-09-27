@@ -91,8 +91,8 @@ public sealed partial class App:Application, IDisposable
             var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
             var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
             var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
-            var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,paths.NextStateRoot,paths.Game));
-            var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,paths.Game));
+            var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,plannerSnapshots,paths.NextStateRoot,paths.Game));
+            var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,plannerSnapshots,paths.Game));
             var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,plannerSnapshots,hash,paths.ModsRoot,paths.Game));
             var previews=startup.Run("services.texture-preview",()=>new TexturePreviewService(Path.Combine(paths.NextStateRoot,"PreviewCache")));
             var visuals=startup.Run("services.mod-visuals",()=>new ModVisualService(db));

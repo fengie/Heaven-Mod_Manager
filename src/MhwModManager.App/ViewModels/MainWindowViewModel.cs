@@ -807,8 +807,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task RestoreLastGood()=>await RunBusy("automation.restore-lkg","Restore last known good","Restoring the last startup-validated mod state and deploying it transactionally…",false,async ct=>
+    private async Task RestoreLastGood()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await RunBusy("automation.restore-lkg","Restore last known good","Restoring the last startup-validated mod state and deploying it transactionally…",false,async ct=>
+        {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
@@ -818,8 +821,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var result=await s.Executor.ApplyAsync(plan,"Restore last known good",stage,ct:ct);
         if(!result.Success)throw result.Exception??new InvalidOperationException(result.Message);
         await ReloadMods(ct);await RefreshAnalysis(ct);await RefreshActivity(ct);
-        StatusText="Restored last known good from "+known.RecordedAt.LocalDateTime.ToString("g",CultureInfo.CurrentCulture)+".";
-    });
+            StatusText="Restored last known good from "+known.RecordedAt.LocalDateTime.ToString("g",CultureInfo.CurrentCulture)+".";
+        });
+    }
 
     [RelayCommand]
     private async Task ExportRecipe()=>await RunBusy("automation.recipe","Exporting collection recipe","Writing Nexus IDs, logical state, priorities, and provenance without copying mod payloads…",true,async ct=>
@@ -900,8 +904,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task LaunchSafeMode()=>await RunBusy("game.safe-mode","Safe mode",$"Temporarily removing manager-controlled mods, launching {s.Paths.Game.DisplayName}, then restoring your applied configuration after the game exits…",false,async ct=>
+    private async Task LaunchSafeMode()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await RunBusy("game.safe-mode","Safe mode",$"Temporarily removing manager-controlled mods, launching {s.Paths.Game.DisplayName}, then restoring your applied configuration after the game exits…",false,async ct=>
+        {
         if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
         await s.Backups.CreateAsync("pre-vanilla-launch",ct);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
@@ -915,8 +922,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
         var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
         if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
-        StatusText="Safe mode ended and the applied mod configuration was restored.";
-    });
+            StatusText="Safe mode ended and the applied mod configuration was restored.";
+        });
+    }
 
     [RelayCommand]
     private async Task ChooseConflictOption(string? winnerToken)

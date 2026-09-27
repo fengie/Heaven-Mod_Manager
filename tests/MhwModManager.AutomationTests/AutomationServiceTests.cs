@@ -172,7 +172,7 @@ public sealed class AutomationServiceTests : IDisposable
         await db.UpsertModAsync(new("generic-a","Generic Pack Base","Generic Pack Base",a,true,1),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("generic-b","Generic Pack Component","Generic Pack Component",b,true,2),TestContext.Current.CancellationToken);
 
-        await new MhwModManager.Filesystem.NexusMetadataService(db,state).RefreshAsync(TestContext.Current.CancellationToken);
+        await new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state).RefreshAsync(TestContext.Current.CancellationToken);
         var mods=await db.GetModsAsync(TestContext.Current.CancellationToken);
         var first=Assert.Single(mods,m=>m.Id=="generic-a");var second=Assert.Single(mods,m=>m.Id=="generic-b");
         Assert.False(string.IsNullOrWhiteSpace(first.FamilyId));
@@ -186,7 +186,7 @@ public sealed class AutomationServiceTests : IDisposable
         var db=await CreateDbAsync("inbox.db");var mods=Path.Combine(root,"Mods");var inbox=Path.Combine(root,"Inbox");var state=Path.Combine(root,"state");Directory.CreateDirectory(inbox);
         var source=Path.Combine(inbox,"Sample Armor");Directory.CreateDirectory(Path.Combine(source,"nativePC","pl","f_equip"));await File.WriteAllTextAsync(Path.Combine(source,"Troubleshootings.txt"),"notes",TestContext.Current.CancellationToken);await File.WriteAllTextAsync(Path.Combine(source,"nativePC","pl","f_equip","x.mod3"),"x",TestContext.Current.CancellationToken);
         var hash=new MhwModManager.Filesystem.HashingService();var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
-        var categories=new AutoCategoryService(db);var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,state);
+        var categories=new AutoCategoryService(db);var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
         var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,categories,inbox,mods);
         var result=await service.ProcessAsync(TestContext.Current.CancellationToken);
         Assert.Equal(1,result.Imported);Assert.True(Directory.Exists(Path.Combine(mods,"Sample Armor")));Assert.True(Directory.Exists(Path.Combine(inbox,"Processed")));

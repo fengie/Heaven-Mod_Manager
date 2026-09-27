@@ -78,7 +78,8 @@ public sealed class PlannerSnapshotRepositoryTests : IDisposable
         var shared = Assert.Single(actual.Conflicts, x => PathRules.Comparer.Equals(x.Path, SharedPath));
         Assert.False(shared.Blocking);
         Assert.Equal("b", shared.WinnerModId);
-        Assert.Equal("exact-b", shared.RuleId);
+        Assert.Equal("exact-file-winner", shared.ReasonCode);
+        Assert.Null(shared.RuleId); // ExactWinners preserves path -> winner, not the originating rule ID.
     }
 
     [Fact]

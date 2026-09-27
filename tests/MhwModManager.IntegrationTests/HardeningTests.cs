@@ -300,7 +300,7 @@ public sealed class HardeningTests : IDisposable
         var now=DateTimeOffset.UtcNow;
         await db.ReplaceModFilesAsync(binary.Id,[new(binary.Id,@"root\loader.dll","aa",null,4,now,FileClass.Plugin)],TestToken);
         await db.ReplaceModFilesAsync(texture.Id,[new(texture.Id,@"nativePC\pl\f_equip\skin.tex","bb",null,4,now,FileClass.Texture)],TestToken);
-        var monitor=new GameBuildMonitor(db,GameProfile.MonsterHunterWorld(game));
+        var monitor=new GameBuildMonitor(db,new PlannerSnapshotRepository(db),GameProfile.MonsterHunterWorld(game));
         var baseline=await monitor.CheckAsync(TestToken);Assert.False(baseline.Changed);
 
         await File.WriteAllBytesAsync(exe,[5,6,7,8],TestToken);

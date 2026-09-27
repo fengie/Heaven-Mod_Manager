@@ -13,7 +13,7 @@ namespace MhwModManager.Filesystem;
 /// Best-effort Nexus provenance enrichment. Local sidecars/folder names work offline; if a Nexus API
 /// key is present, v3 metadata is used as stronger evidence for main/optional/update/version lineage.
 /// </summary>
-public sealed partial class NexusMetadataService(ManagerDatabase db,string nextStateRoot,GameProfile? game = null)
+public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnapshotRepository plannerSnapshots,string nextStateRoot,GameProfile? game = null)
 {
     private readonly string? gameDomain = game?.NexusGameDomain ?? (game is null || game.IsMonsterHunterWorld ? "monsterhunterworld" : null);
     private static readonly HttpClient Http=CreateHttpClient();
@@ -91,7 +91,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,string nextS
         mods=await db.GetModsAsync(ct);
         await ApplyNexusFamilyHintsAsync(mods.ToArray(),ct);
         mods=await db.GetModsAsync(ct);
-        var snapshot=await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot=await plannerSnapshots.LoadAsync(ct);
         var supersession=ProvenanceIntelligence.BuildSupersessionLinks(mods)
             .Concat(ProvenanceIntelligence.BuildLocalTextureSupersessionLinks(mods,snapshot.Files))
             .GroupBy(x=>x.older,StringComparer.OrdinalIgnoreCase)
