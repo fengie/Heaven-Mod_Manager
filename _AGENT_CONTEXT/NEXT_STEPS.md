@@ -1,5 +1,32 @@
 # Next steps
 
+## Independent support checkpoint — share-safe support export
+
+The diagnostics/privacy support audit is complete and documentation-only:
+
+- `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md`
+- active learned rule: LR-005
+
+If this independent lane is selected for production work, do exactly one
+checkpoint first: **support-export sanitization + generated-bundle canary
+integration tests**.
+
+Keep full-fidelity local diagnostics intact. Sanitize only the shareable export
+boundary; default unknown settings/metadata to safe handling; transform or omit
+raw JSONL logs; preserve useful non-sensitive relative paths and operation data.
+Do not combine this with Nexus transport/provider refactoring, credential-store
+migration, filesystem/deployment safety, SQLite transaction changes, or
+MainWindow decomposition.
+
+Because production diagnostics code would change, require a fresh exact Windows
+Release Gate before closing that future checkpoint. Re-check canonical main and
+parallel PRs before beginning it.
+
+This does not reopen or alter the closed PlannerSnapshotRepository evidence.
+
+---
+
+
 ## PlannerSnapshotRepository boundary — CLOSED
 
 Exact verified commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
