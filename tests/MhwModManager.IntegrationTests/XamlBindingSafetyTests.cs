@@ -59,6 +59,23 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Command=\"{Binding RefreshActivityCommand}\"", xaml);
     }
 
+    [Fact]
+    public void CoveragePageExtractionPreservesExistingBindingSurface()
+    {
+        var root = FindRepositoryRoot();
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var coverageFeature = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Coverage.cs"));
+        var coveragePage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "CoveragePageViewModel.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("public CoveragePageViewModel Coverage{get;}", mainViewModel);
+        Assert.Contains("OutfitRows=Coverage.Rows;", mainViewModel);
+        Assert.Contains("await Coverage.RefreshAsync(HasSemanticCoverage,ct);", coverageFeature);
+        Assert.Contains("PresentationReadRepository", coveragePage);
+        Assert.Contains("ItemsSource=\"{Binding OutfitRows}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshOutfitsCommand}\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
