@@ -53,6 +53,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private bool criticalOperation;
     [ObservableProperty]private int unmanagedFileCount;
     [ObservableProperty]private GameProfile? selectedGame;
+    [ObservableProperty]private AssetOverlapRow? selectedOverlap;
+    [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;
+    [ObservableProperty]private string explainWhyStatus="Select an overlap, then choose Explain selected to inspect the exact resolver decision.";
 
     public string UnmanagedAdoptionLabel=>!SupportsLiveAdoption?"Manual live-file adoption is disabled when the whole game root is managed":UnmanagedFileCount==0?"No unmanaged live files":$"{UnmanagedFileCount} unmanaged live file(s) can be adopted";
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
@@ -463,7 +466,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var detail=blocking
                 ?"Independent providers still require a decision."
                 :"Informational overlap. Priority, family composition, identical bytes, or a shared-resource rule already determines the effective file provider.";
-            return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail);
+            var primaryPath=item.Paths?.FirstOrDefault()??item.AssetKey;
+            return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail,primaryPath);
         }).OrderByDescending(x=>StringComparer.OrdinalIgnoreCase.Equals(x.Resolution,"Needs choice"))
           .ThenByDescending(x=>x.ProviderCount)
           .ThenBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase)
@@ -564,6 +568,31 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SelectedTab=6;
+    }
+
+    [RelayCommand]
+    private async Task ExplainSelectedOverlap()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var selected=SelectedOverlap;
+        if(selected is null)
+        {
+            ExplainWhyStatus="Select an overlap first.";
+            return;
+        }
+
+        await RunBusy("analysis.explain-why","Explaining effective file","Replaying the deterministic planner against the indexed state and collecting its evidence…",true,async ct=>
+        {
+            var explanation=await s.Inspector.ExplainWhyAsync(selected.PrimaryPath,ct);
+            SelectedExplanation=explanation;
+            ExplainWhyStatus=explanation is null
+                ?"No enabled provider currently supplies that path."
+                :explanation.Blocking
+                    ?"The resolver intentionally stopped without selecting a provider."
+                    :explanation.AppliedMatchesPlan
+                        ?"The applied provider matches the current deterministic plan."
+                        :"The current plan differs from the applied manifest; Apply safely would reconcile it.";
+        });
     }
 
     [RelayCommand]
@@ -705,37 +734,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText="This generic game profile has file-level coverage through Mods and Overlaps. Add a rich game adapter to define semantic outfit/asset slots.";
             return;
         }
-        var rows=new List<OutfitRow>();
-        await using var c=await s.Database.OpenAsync(ct);
-        await using var cmd=c.CreateCommand();
-        cmd.CommandText="""
-            SELECT a.name,a.model_id,
-                   COUNT(DISTINCT mfa.mod_id),
-                   GROUP_CONCAT(DISTINCT CASE WHEN dm.path IS NOT NULL THEN mfa.component END),
-                   GROUP_CONCAT(DISTINCT pm.display_name),
-                   (SELECT st.value
-                    FROM mod_file_armor px
-                    JOIN mods mx ON mx.id=px.mod_id
-                    JOIN settings st ON st.key='preview:'||mx.id
-                    WHERE px.model_id=a.model_id AND length(st.value)>0
-                    ORDER BY mx.enabled DESC,mx.priority DESC
-                    LIMIT 1)
-            FROM armor_catalog a
-            LEFT JOIN mod_file_armor mfa ON mfa.model_id=a.model_id
-            LEFT JOIN mods pm ON pm.id=mfa.mod_id
-            LEFT JOIN deployment_manifest dm ON dm.path=mfa.path
-            GROUP BY a.series_id,a.name,a.model_id
-            ORDER BY a.series_id
-            """;
-        await using var r=await cmd.ExecuteReaderAsync(ct);
-        while(await r.ReadAsync(ct))
-        {
-            var avail=r.GetInt32(2);
-            var pieces=r.IsDBNull(3)?"":r.GetString(3);
-            var providers=r.IsDBNull(4)?"":r.GetString(4);
-            var preview=r.IsDBNull(5)?null:r.GetString(5);
-            rows.Add(new(r.GetString(0),r.GetString(1),avail,pieces,avail==0?"Unmodded":string.IsNullOrWhiteSpace(pieces)?"Available / off":"Active",preview,providers));
-        }
+
+        var coverage=await s.PresentationReads.GetOutfitCoverageAsync(ct);
+        var rows=coverage.Select(x=>new OutfitRow(
+            x.Armor,
+            x.ModelId,
+            x.AvailableProviders,
+            x.WinningPieces,
+            x.AvailableProviders==0?"Unmodded":string.IsNullOrWhiteSpace(x.WinningPieces)?"Available / off":"Active",
+            x.PreviewPath,
+            x.Providers)).ToArray();
         await Application.Current.Dispatcher.InvokeAsync(()=>OutfitRows.ReplaceAll(rows));
     }
 
@@ -845,16 +853,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshActivity(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var rows=new List<ActivityRow>();
-        await using var c=await s.Database.OpenAsync(ct);await using var cmd=c.CreateCommand();
-        cmd.CommandText="""
-            SELECT id,state,description,started_at FROM operations
-            UNION ALL
-            SELECT id,severity,message,time FROM automation_events
-            ORDER BY started_at DESC LIMIT 300
-            """;
-        await using var r=await cmd.ExecuteReaderAsync(ct);
-        while(await r.ReadAsync(ct))rows.Add(new(r.GetString(0),r.GetString(1),r.GetString(2),r.GetString(3)));
+        var entries=await s.PresentationReads.GetRecentActivityAsync(300,ct);
+        var rows=entries.Select(x=>new ActivityRow(x.Id,x.State,x.Description,x.StartedAt)).ToArray();
         await Application.Current.Dispatcher.InvokeAsync(()=>ActivityRows.ReplaceAll(rows));
     }
 
@@ -930,21 +930,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(dlg.ShowDialog()!=true)return;
         await RunBusy("archive.import","Inspecting archive","Checking paths and extracting to a quarantined staging folder…",true,async ct=>
         {
-            var info=await s.Archive.InspectAsync(dlg.FileName,ct);
-            if(info.HasSuspiciousPaths)throw new InvalidDataException("Archive contains unsafe absolute/traversal/device paths.");
-            var name=Path.GetFileNameWithoutExtension(dlg.FileName);
-            var dest=UniqueDirectory(Path.Combine(s.Paths.ModsRoot,name));
-            var temp=dest+".importing";
-            if(Directory.Exists(temp))Directory.Delete(temp,true);
-            await s.Archive.ExtractSafelyAsync(dlg.FileName,temp,ct);
-            await Task.Run(()=>NormalizeWrapper(temp),ct);
-            Directory.Move(temp,dest);
-            await s.Catalog.RefreshFoldersAsync(ct);
+            var imported=await s.Importer.ImportAsync(dlg.FileName,ct);
             await metadataGate.WaitAsync(ct);
             try{await s.Nexus.RefreshAsync(ct);}
             finally{metadataGate.Release();}
             await ReloadMods(ct);
-            StatusText=$"Imported '{Path.GetFileName(dest)}'. It is OFF until you stage it.";
+            StatusText=$"Imported '{imported.DisplayName}'. It is OFF until you stage it.";
         });
     }
 
@@ -1224,22 +1215,4 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private static string UniqueDirectory(string path){
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!Directory.Exists(path))return path;for(var i=2;;i++){var p=$"{path} ({i})";if(!Directory.Exists(p))return p;}}
-    private static void NormalizeWrapper(string root)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dirs=Directory.GetDirectories(root);var files=Directory.GetFiles(root);
-        if(files.Length==0&&dirs.Length==1)
-        {
-            var child=dirs[0];
-            foreach(var entry in Directory.GetFileSystemEntries(child))
-            {
-                var dest=Path.Combine(root,Path.GetFileName(entry));
-                if(Directory.Exists(entry))Directory.Move(entry,dest);else File.Move(entry,dest);
-            }
-            Directory.Delete(child,true);
-        }
-    }
 }
