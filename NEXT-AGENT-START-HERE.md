@@ -1,20 +1,22 @@
 # NEXT AGENT — START HERE
 
-## Active candidate: Profiles read/list page view model
+## Closed checkpoint: Profiles read/list page view model
 
-Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` extracts profile list read/state into
-`ProfilesPageViewModel` while preserving the existing `Profiles` and
-`RefreshProfilesCommand` binding surface.
+Hosted Windows Release Gate `36328183152` verified exact commit
+`04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8` (production source `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`): **25/25**
+verifier, **613/613** fingerprints, Core **79/79**, Automation **20/20**,
+Integration/fault injection **65/65**, self-test **11/11**, and ReadyToRun
+win-x64 publish PASS.
 
-The page model owns `ProfileRepository.ListAsync` consumption and row collection
-state. `MainWindowViewModel` still owns refresh busy coordination, profile
-staging/save/delete mutations, `SelectedProfile`, mod application logic, and
-global status.
+Release SHA-256:
+`A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8`
 
-This source is **not verified yet**. The last closed checkpoint remains Coverage
-at commit `e3ed3be730000d1829b02e5d2d29b3f23ca52d94`, run
-`36327634813`. Run the full Windows Release Gate and do not start another
-extraction until Profiles is independently green.
+Evidence/cache persistence commit:
+`122bcdb525bb432e73dff6f5887a63e065246964`
+
+The next candidate should be **Games presentation/state only**, after inspecting
+the current seam. Keep game switching, service/path rebuilding, application
+lifetime, `RunBusy`, and global status ownership in the shell/composition root.
 
 ## Closed checkpoint: Coverage page view model
 

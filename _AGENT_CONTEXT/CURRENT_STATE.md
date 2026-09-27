@@ -1,25 +1,28 @@
 # Current state — v8.8.0
 
-## Profiles read/list page-view-model candidate — awaiting hosted Windows verification
+## Profiles read/list page-view-model slice CLOSED — hosted Windows
 
-Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` begins the next incremental page-model
-slice after the closed Coverage checkpoint.
+The Profiles read/list extraction is fully green.
 
-- Added `ProfilesPageViewModel` to own `ProfileRepository.ListAsync` and the
-  profile list collection.
-- `MainWindowViewModel.Profiles` aliases `ProfilesPage.Rows`, preserving the
-  existing XAML collection binding.
-- `RefreshProfilesCommand` remains shell-owned and forwards through
-  `RunBusy` to the page model.
-- `SelectedProfile`, profile staging/save/delete mutations, mod staging logic,
-  and global status remain in the shell.
-- Added a source-level integration guard for the seam and preserved
-  `Profiles` / `RefreshProfilesCommand` bindings.
-- No deployment, conflict, database transaction, filesystem safety, FOMOD,
-  enhanced-adapter, XAML layout, or DI-lifetime semantics changed.
+- exact verified commit: `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`
+- last production-source change: `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`
+- Windows Release Gate: `36328183152`
+- repository verification: **25/25 PASS**
+- production fingerprints: **613/613 promoted**
+- explicit call sites: **6385**, uncovered **0**
+- Core: **79/79**
+- Automation: **20/20**
+- Integration/fault injection: **65/65**
+- self-test: **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun self-contained publish: PASS
+- release ZIP SHA-256: `A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8`
+- evidence/cache persistence commit: `122bcdb525bb432e73dff6f5887a63e065246964`
 
-This candidate does **not** inherit the Coverage green state. A fresh complete
-Windows Release Gate is required before another extraction.
+This verifies `ProfilesPageViewModel` owning profile list reads/state while
+preserving the legacy `Profiles` / `RefreshProfilesCommand` binding surface.
+Profile mutations, selected-profile behavior, mod staging/application, and
+shell-global busy/status ownership remain in `MainWindowViewModel`.
 
 
 ## Coverage page-view-model slice CLOSED — hosted Windows

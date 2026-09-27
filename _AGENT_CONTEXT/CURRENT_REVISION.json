@@ -8,28 +8,28 @@
   "nextMilestone": "v9 architecture/explainability",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "profiles-read-state-awaiting-windows-verification",
-  "verificationAppliesToCommit": "e3ed3be730000d1829b02e5d2d29b3f23ca52d94",
-  "lastClosedVerificationCommit": "e3ed3be730000d1829b02e5d2d29b3f23ca52d94",
-  "lastClosedVerificationRun": "36327634813",
+  "status": "profiles-read-state-closed-windows-verified",
+  "verificationAppliesToCommit": "04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8",
+  "lastClosedVerificationCommit": "04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8",
+  "lastClosedVerificationRun": "36328183152",
   "candidateSourceCommit": "19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0",
-  "verificationScopeNote": "Coverage remains the last closed checkpoint: hosted Windows Release Gate run 36327634813 verified exact commit e3ed3be730000d1829b02e5d2d29b3f23ca52d94 with 611/611 promoted production fingerprints. Profiles read/list extraction changes production source at 19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0 and starts a new verification boundary. It must not inherit Coverage's green state until a fresh full Windows Release Gate passes.",
+  "verificationScopeNote": "The Profiles read/list page-model slice is closed. Hosted Windows Release Gate run 36328183152 verified exact main commit 04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8; production source last changed at 19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0. The verifier passed 25/25 and promoted all 613 production fingerprints. Core 79/79, Automation 20/20, Integration/fault injection 65/65, self-test 11/11, win-x64 analyzer compile and ReadyToRun self-contained publish all passed. Evidence/cache persistence commit 122bcdb525bb432e73dff6f5887a63e065246964 is cache/evidence-only. Any later production edit starts a new verification boundary.",
   "lastClosedVerification": {
-    "functionInventoryTotal": 611,
-    "functionsVerified": 611,
+    "functionInventoryTotal": 613,
+    "functionsVerified": 613,
     "functionsPending": 0,
     "windowsGate": "passed: 25/25",
     "coreTests": "79/79 passed",
     "automationTests": "20/20 passed",
-    "integrationTests": "64/64 passed",
+    "integrationTests": "65/65 passed",
     "selfTest": "11/11 passed",
-    "releaseArtifactSha256": "40B47B6E3C9CF21A0945095FE28E118540B415FBD9177190BDB99FE80C9657A8"
+    "releaseArtifactSha256": "A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8"
   },
   "candidateChanges": [
     "ProfilesPageViewModel owns ProfileRepository.ListAsync consumption and profile list collection state.",
-    "MainWindowViewModel composes ProfilesPageViewModel while preserving the existing Profiles collection binding as an alias to ProfilesPage.Rows.",
-    "RefreshProfilesCommand and its RunBusy coordination remain in MainWindowViewModel via a partial feature file.",
-    "Profile staging, save/delete mutations, SelectedProfile, mod staging/application logic, and global StatusText remain in MainWindowViewModel.",
+    "MainWindowViewModel composes ProfilesPageViewModel while preserving the existing Profiles binding as an alias to ProfilesPage.Rows.",
+    "RefreshProfilesCommand and RunBusy coordination remain in MainWindowViewModel through a partial feature file.",
+    "SelectedProfile, profile staging/save/delete mutations, mod staging/application logic, and global StatusText remain in MainWindowViewModel.",
     "Profiles binding seam has a source-level integration regression guard."
   ],
   "invariantsPreserved": [
@@ -38,11 +38,12 @@
     "ProfileRepository transaction/mutation behavior and SQLite ownership are unchanged; only list read ownership moved.",
     "FOMOD, enhanced-game adapter redesign, XAML decomposition, and Generic Host/DI migration remain out of scope."
   ],
-  "nextRequiredAction": "Run the full Windows Release Gate for Profiles source 19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0. Fix real failures rather than weakening gates. Do not begin another architecture slice until this Profiles boundary is independently green and exact evidence is persisted.",
+  "nextRequiredAction": "Inspect the Games presentation/state seam as the next low-coupling candidate. Keep game switching, AppPaths/service rebuilding, RunBusy, and global status/lifetime ownership in MainWindowViewModel/App composition. If the seam is still clean, extract only game-list presentation state, add a binding guard, and require a fresh full Windows gate before anything further.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
     "_AGENT_CONTEXT/VERIFICATION.md",
     "_AGENT_CONTEXT/RESEARCH_FINDINGS.md"
   ],
-  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855"
+  "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
+  "closureEvidenceCommit": "122bcdb525bb432e73dff6f5887a63e065246964"
 }

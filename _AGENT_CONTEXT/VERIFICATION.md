@@ -1,23 +1,25 @@
 # Verification performed for this source handoff
 
-## Profiles read/list page-view-model verification boundary
+## Profiles read/list page-view-model hosted closure
 
-Production source commit `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0` changes WPF application source after
-the closed Coverage checkpoint.
+Hosted Windows run `36328183152` closed exact commit `04bc05779f5d94fa3e2e8cc3bf80fbc6fbed09b8`
+(production source `19a1ad4a4e665e4ce7f38586dea5f08f1c3acdf0`).
 
-Implementation scope:
+- verifier: **25/25**
+- production function inventory: **613**
+- promoted: **613/613**
+- explicit call sites: **6385**, uncovered **0**
+- trace gaps / parse errors: **0 / 0**
+- Core **79/79**
+- Automation **20/20**
+- Integration/fault injection **65/65**
+- self-test **11/11**
+- App win-x64 compile/analyzers: PASS
+- ReadyToRun restore/publish: PASS
+- release SHA-256: `A150FFA7B832C56535A9CA19DCFEDD7640C3BE1F8E9ACB4D40881CB8C69F93B8`
+- evidence/cache persistence: `122bcdb525bb432e73dff6f5887a63e065246964`
 
-- `ProfilesPageViewModel` owns `ProfileRepository.ListAsync` consumption and
-  profile collection state.
-- `MainWindowViewModel.Profiles` aliases `ProfilesPage.Rows`.
-- refresh command/busy coordination and profile mutations stay shell-owned.
-- a new source-level integration guard checks the seam and unchanged XAML
-  bindings.
-
-No fresh Windows evidence exists for this candidate yet. Applicable closed
-verification remains Coverage run `36327634813` at exact commit
-`e3ed3be730000d1829b02e5d2d29b3f23ca52d94`. Do not promote changed
-fingerprints until a full new Windows Release Gate passes.
+The exact release workflow also passed the agent-handoff continuity preflight.
 
 
 ## Coverage page-view-model hosted closure
