@@ -72,6 +72,7 @@ public sealed class DeploymentExecutor(
                 var dest=Destination(ch.Path);
                 await VerifyPreconditionAsync(ch,dest,ct);
                 await SetJournalStatusAsync(plan.Id,ch.Sequence,"Writing",ct);
+                EnsureNoReparseTraversal(dest);
 
                 if(ch.Kind==ChangeKind.Remove)
                 {
@@ -200,6 +201,7 @@ public sealed class DeploymentExecutor(
             ct.ThrowIfCancellationRequested();
             var prepared=ch;
             var dest=Destination(ch.Path);
+            EnsureNoReparseTraversal(dest);
             if(Directory.Exists(dest))throw new IOException($"File/directory collision: deployment target is a directory: {ch.Path}");
             if(ch.BeforeBlobSha256 is null&&File.Exists(dest))
             {
@@ -222,8 +224,14 @@ public sealed class DeploymentExecutor(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!OperatingSystem.IsWindows())return;
-        var paths=changes.Select(ch=>Destination(ch.Path)).Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        foreach(var chunk in paths.Chunk(256))
+        var paths=new List<string>(changes.Count);
+        foreach(var ch in changes)
+        {
+            var path=Destination(ch.Path);
+            EnsureNoReparseTraversal(path);
+            if(File.Exists(path))paths.Add(path);
+        }
+        foreach(var chunk in paths.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(256))
         {
             var blockers=RestartManagerInspector.GetLockingProcesses(chunk);
             if(blockers.Count==0)continue;
@@ -235,6 +243,7 @@ public sealed class DeploymentExecutor(
     private async Task VerifyPreconditionAsync(DeploymentChange ch,string dest,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        EnsureNoReparseTraversal(dest);
         if(Directory.Exists(dest))throw new IOException($"Precondition failed: target became a directory: {ch.Path}");
         if(ch.ExpectedLiveSha256 is not null)
         {
@@ -384,6 +393,7 @@ public sealed class DeploymentExecutor(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var dest=Destination(row.Path);
+        EnsureNoReparseTraversal(dest);
         string? liveHash=null;
         if(Directory.Exists(dest))throw new IOException($"Recovery stopped safely: '{row.Path}' is now a directory.");
         if(File.Exists(dest))liveHash=(await hashing.HashFileAsync(dest,true,ct)).Sha256;
@@ -392,6 +402,7 @@ public sealed class DeploymentExecutor(
         var looksApplied=HashEquals(liveHash,row.AfterSha256)||(liveHash is null&&row.AfterSha256 is null&&row.BeforeSha256 is not null);
         if(!looksApplied)throw new IOException($"Recovery stopped safely: '{row.Path}' matches neither the transaction's before nor after image. The file may have been changed externally.");
 
+        EnsureNoReparseTraversal(dest);
         if(row.BeforeSha256 is null)
         {
             if(File.Exists(dest))File.Delete(dest);
@@ -410,6 +421,33 @@ public sealed class DeploymentExecutor(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText=sql;foreach(var kv in args)cmd.Parameters.AddWithValue(kv.Key,kv.Value??DBNull.Value);await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    private void EnsureNoReparseTraversal(string destination)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var root=Path.TrimEndingDirectorySeparator(Path.GetFullPath(gameRoot));
+        var full=Path.GetFullPath(destination);
+        var prefix=root.EndsWith(Path.DirectorySeparatorChar)?root:root+Path.DirectorySeparatorChar;
+        if(!PathRules.Comparer.Equals(full,root)&&!full.StartsWith(prefix,StringComparison.OrdinalIgnoreCase))
+            throw new IOException($"Physical containment failed: deployment target escaped the configured game root: {destination}");
+
+        var relative=Path.GetRelativePath(root,full);
+        if(PathRules.Comparer.Equals(relative,"."))return;
+
+        var current=root;
+        foreach(var segment in relative.Split([Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar],StringSplitOptions.RemoveEmptyEntries))
+        {
+            current=Path.Combine(current,segment);
+            try
+            {
+                var attributes=File.GetAttributes(current);
+                if((attributes&FileAttributes.ReparsePoint)!=0)
+                    throw new IOException($"Physical containment failed: deployment path traverses a reparse point: {current}");
+            }
+            catch(FileNotFoundException){break;}
+            catch(DirectoryNotFoundException){break;}
+        }
     }
 
     private string StopRootFor(string key)
@@ -460,6 +498,7 @@ public sealed class DeploymentExecutor(
         try
         {
             var dest=Destination(path);
+            EnsureNoReparseTraversal(dest);
             var blockers=RestartManagerInspector.GetLockingProcesses([dest]);
             if(blockers.Count==0)return ex;
             var summary=string.Join(", ",blockers.Select(x=>$"{x.ApplicationName} (PID {x.ProcessId})"));
@@ -471,13 +510,15 @@ public sealed class DeploymentExecutor(
     private sealed record StateDto(bool Enabled,int Priority);
     private sealed record JournalRow(int Sequence,string Path,string? BeforeSha256,string? AfterSha256,string? ProviderBefore,string? ProviderAfter,string Status);
 
-    private static void PruneEmpty(string dir,string stopRoot)
+    private void PruneEmpty(string dir,string stopRoot)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var stop=Path.GetFullPath(stopRoot).TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
         var current=Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
-        while(!PathRules.Comparer.Equals(current,stop)&&current.StartsWith(stop+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)&&Directory.Exists(current)&&!Directory.EnumerateFileSystemEntries(current).Any())
+        while(!PathRules.Comparer.Equals(current,stop)&&current.StartsWith(stop+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))
         {
+            EnsureNoReparseTraversal(current);
+            if(!Directory.Exists(current)||Directory.EnumerateFileSystemEntries(current).Any())break;
             var parent=Directory.GetParent(current)?.FullName;
             Directory.Delete(current);
             if(parent is null)break;
