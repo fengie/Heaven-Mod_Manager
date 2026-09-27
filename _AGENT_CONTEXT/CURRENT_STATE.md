@@ -1,8 +1,22 @@
 # Current state — v8.8.0
 
+## Activity candidate serialization correction
+
+The first Activity extraction source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` accidentally
+contained literal `\\n` text in two generated replacement strings inside
+`MainWindowViewModel.cs`. This was detected by source inspection before relying
+on CI. Run `36325764389` is superseded.
+
+Corrected production source: `e2396c7c91c5d8d88fe229603689539b5cdfb2da`.
+
+The corrected source contains normal C# declarations and constructor statements.
+No intended Activity architecture or runtime behavior changed; only the connector
+serialization defect was removed. A fresh complete Windows Release Gate is
+required for this corrected source.
+
 ## Activity page-view-model candidate — awaiting hosted Windows verification
 
-Production source commit `b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` begins the first post-closure
+Production source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` begins the first post-closure
 architecture slice.
 
 - Added `ActivityPageViewModel` to own recent Activity read projection and row

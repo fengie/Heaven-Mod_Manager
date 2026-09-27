@@ -2,7 +2,9 @@
 
 ## Active candidate: Activity page view model
 
-Production source commit `b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` extracts the Activity read/state seam
+Run `36325764389` targets a malformed intermediate connector patch and is superseded; verify the corrected source SHA below instead.
+
+Production source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` extracts the Activity read/state seam
 into `ActivityPageViewModel` while deliberately preserving
 `ActivityRows` and `RefreshActivityCommand` bindings. It is not green until
 a fresh Windows Release Gate passes. Do not start a second page extraction

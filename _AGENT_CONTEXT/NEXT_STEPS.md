@@ -2,8 +2,8 @@
 
 ## Immediate: verify the Activity page-view-model slice
 
-The first slice is now implemented in production source commit
-`b0881ee5780159b49c26b3e79e3a0b26b1b39a6b` and is awaiting a fresh hosted Windows gate. Do not extract a
+The malformed intermediate Activity run `36325764389` is superseded by the corrected source below. The first slice is now implemented in production source commit
+`e2396c7c91c5d8d88fe229603689539b5cdfb2da` and is awaiting a fresh hosted Windows gate. Do not extract a
 second page until this source boundary is green and recorded.
 
 The architecture / Explain Why checkpoint is closed at exact commit
