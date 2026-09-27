@@ -65,7 +65,7 @@ public sealed class SmartPackPlannerTests
             ],
             [new(SmartPackPriorityKind.Tag,"Elegant")]);
 
-        Assert.Equal(["priority","fallback-high"], plan.Selected.Select(x => x.CandidateId).ToArray());
+        Assert.Equal(new[] { "priority", "fallback-high" }, plan.Selected.Select(x => x.CandidateId).ToArray());
         Assert.Equal("fallback-popularity", plan.Selected[1].ReasonCode);
         Assert.Equal("no-free-compatible-target", plan.Decisions.Single(x => x.CandidateId == "fallback-low").ReasonCode);
     }
