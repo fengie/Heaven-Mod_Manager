@@ -8,7 +8,7 @@ using MhwModManager.Storage;
 namespace MhwModManager.Filesystem;
 
 /// <summary>Immutable SHA-256-addressed content store.</summary>
-public sealed class BlobStore(string root, ManagerDatabase db)
+public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBackend? atomicReplaceBackend = null)
 {
     public string Root { get; } = root;
     public string PathFor(string sha)
@@ -103,6 +103,6 @@ public sealed class BlobStore(string root, ManagerDatabase db)
         var source = PathFor(sha);
         if (!File.Exists(source)) throw new InvalidDataException($"Required blob is missing: {sha}");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await AtomicFileOps.ReplaceFromAsync(source, destination, ct);
+        await AtomicFileOps.ReplaceFromAsync(source, destination, ct, atomicReplaceBackend);
     }
 }

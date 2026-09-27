@@ -4,20 +4,29 @@ using System.Runtime.InteropServices;
 
 namespace MhwModManager.Filesystem;
 
+public interface IAtomicReplaceBackend
+{
+    bool TryReplace(string replaced, string replacement, string? backup, out int errorCode);
+}
+
 public static class AtomicFileOps
 {
     private const int BufferSize = 256 * 1024;
+    private const int ErrorUnableToMoveReplacement = 1176;
+    private const int ErrorUnableToMoveReplacement2 = 1177;
+    private static readonly IAtomicReplaceBackend WindowsReplaceBackend = new Win32AtomicReplaceBackend();
 
-    [DllImport("kernel32.dll", EntryPoint="ReplaceFileW", CharSet=CharSet.Unicode, SetLastError=true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool ReplaceFile(string replaced, string replacement, string? backup, uint flags, nint exclude, nint reserved);
-
-    public static async Task ReplaceFromAsync(string source, string destination, CancellationToken ct = default)
+    public static async Task ReplaceFromAsync(
+        string source,
+        string destination,
+        CancellationToken ct = default,
+        IAtomicReplaceBackend? replaceBackend = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; destination={destination}");
         var dir = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException($"Destination has no parent directory: {destination}");
         Directory.CreateDirectory(dir);
         var temp = Path.Combine(dir, "." + Path.GetFileName(destination) + "." + Guid.NewGuid().ToString("N") + ".mhwmm.tmp");
+        var preserveTemp = false;
         try
         {
             await using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize,
@@ -35,8 +44,15 @@ public static class AtomicFileOps
             {
                 if (OperatingSystem.IsWindows())
                 {
-                    if (!ReplaceFile(destination,temp,null,0,0,0))
-                        throw new Win32Exception(Marshal.GetLastWin32Error(), $"Atomic replacement failed for '{destination}'.");
+                    var backend = replaceBackend ?? WindowsReplaceBackend;
+                    if (!backend.TryReplace(destination, temp, null, out var errorCode))
+                    {
+                        preserveTemp = errorCode is ErrorUnableToMoveReplacement or ErrorUnableToMoveReplacement2;
+                        var recoveryNote = preserveTemp
+                            ? $" Staged replacement retained at '{temp}' because this native failure can occur after pathname mutation."
+                            : string.Empty;
+                        throw new Win32Exception(errorCode, $"Atomic replacement failed for '{destination}'.{recoveryNote}");
+                    }
                 }
                 else
                 {
@@ -51,7 +67,25 @@ public static class AtomicFileOps
         }
         finally
         {
-            try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+            if (!preserveTemp)
+            {
+                try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+            }
+        }
+    }
+
+    private sealed class Win32AtomicReplaceBackend : IAtomicReplaceBackend
+    {
+        [DllImport("kernel32.dll", EntryPoint="ReplaceFileW", CharSet=CharSet.Unicode, SetLastError=true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ReplaceFile(string replaced, string replacement, string? backup, uint flags, nint exclude, nint reserved);
+
+        public bool TryReplace(string replaced, string replacement, string? backup, out int errorCode)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            var success = ReplaceFile(replaced,replacement,backup,0,0,0);
+            errorCode = success ? 0 : Marshal.GetLastWin32Error();
+            return success;
         }
     }
 }

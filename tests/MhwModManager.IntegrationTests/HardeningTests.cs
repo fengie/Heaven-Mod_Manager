@@ -14,7 +14,9 @@ public sealed class HardeningTests : IDisposable
     public HardeningTests() => Directory.CreateDirectory(root);
     public void Dispose() { try { Directory.Delete(root, true); } catch { } }
 
-    private async Task<(string game, ManagerDatabase db, HashingService hashing, BlobStore blobs)> CreateAsync(string name)
+    private async Task<(string game, ManagerDatabase db, HashingService hashing, BlobStore blobs)> CreateAsync(
+        string name,
+        IAtomicReplaceBackend? atomicReplaceBackend = null)
     {
         var game = Path.Combine(root, name, "game");
         var state = Path.Combine(root, name, "state");
@@ -22,7 +24,7 @@ public sealed class HardeningTests : IDisposable
         var db = new ManagerDatabase(Path.Combine(state, "manager.db"));
         await db.InitializeAsync(TestToken);
         var hashing = new HashingService();
-        var blobs = new BlobStore(Path.Combine(state, "blobs"), db);
+        var blobs = new BlobStore(Path.Combine(state, "blobs"), db, atomicReplaceBackend);
         return (game, db, hashing, blobs);
     }
 
@@ -31,6 +33,28 @@ public sealed class HardeningTests : IDisposable
         var file = Path.Combine(root, name + "-" + Guid.NewGuid().ToString("N"));
         await File.WriteAllTextAsync(file, contents, TestToken);
         return await blobs.CaptureAsync(file, TestToken);
+    }
+
+    private sealed class ScriptedReplaceBackend(int nativeErrorCode, Action<string, string> materializeFailure) : IAtomicReplaceBackend
+    {
+        public string? LastReplacementPath { get; private set; }
+
+        public bool TryReplace(string replaced, string replacement, string? backup, out int errorCode)
+        {
+            LastReplacementPath = replacement;
+            materializeFailure(replaced, replacement);
+            errorCode = nativeErrorCode;
+            return false;
+        }
+    }
+
+    private static async Task<string?> ReadOperationStateAsync(ManagerDatabase db, string operationId)
+    {
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT state FROM operations WHERE id=$id";
+        command.Parameters.AddWithValue("$id", operationId);
+        return (string?)await command.ExecuteScalarAsync(TestToken);
     }
 
     private static void CreateDirectoryJunction(string link, string target)
@@ -235,6 +259,92 @@ public sealed class HardeningTests : IDisposable
         command.CommandText="SELECT state FROM operations WHERE id=$id";
         command.Parameters.AddWithValue("$id",planId);
         Assert.Equal(OperationState.RecoveryRequired.ToString(),(string?)await command.ExecuteScalarAsync(TestToken));
+    }
+
+    [Fact]
+    public async Task Atomic_replace_1175_failure_preserves_recoverable_before_image()
+    {
+        if(!OperatingSystem.IsWindows())return;
+
+        var backend=new ScriptedReplaceBackend(1175,(_,_)=>{});
+        var (game,db,hashing,blobs)=await CreateAsync("replace-1175",backend);
+        var live=Path.Combine(game,"nativePC","replace.bin");
+        await File.WriteAllTextAsync(live,"BEFORE",TestToken);
+        var before=await blobs.CaptureAsync(live,TestToken);
+        var after=await BlobAsync(blobs,"replace-1175-after","AFTER");
+        var planId="replace-1175-" + Guid.NewGuid().ToString("N");
+        var plan=new DeploymentPlan(planId,DateTimeOffset.UtcNow,
+            [new(1,ChangeKind.Replace,@"nativePC\replace.bin",before,after,null,"m",before,null)],[],[]);
+
+        var result=await new DeploymentExecutor(db,blobs,hashing,game).ApplyAsync(plan,"replace 1175 fixture",ct:TestToken);
+
+        Assert.False(result.Success);
+        Assert.True(result.RollbackCompleted);
+        Assert.Equal("BEFORE",await File.ReadAllTextAsync(live,TestToken));
+        Assert.Equal(OperationState.RolledBack.ToString(),await ReadOperationStateAsync(db,planId));
+        Assert.Empty(Directory.EnumerateFiles(Path.GetDirectoryName(live)!, ".*.mhwmm.tmp"));
+    }
+
+    [Fact]
+    public async Task Atomic_replace_1176_failure_preserves_staged_replacement_for_recovery()
+    {
+        if(!OperatingSystem.IsWindows())return;
+
+        var backend=new ScriptedReplaceBackend(1176,(replaced,_)=>File.Delete(replaced));
+        var (game,db,hashing,blobs)=await CreateAsync("replace-1176",backend);
+        var live=Path.Combine(game,"nativePC","replace.bin");
+        await File.WriteAllTextAsync(live,"BEFORE",TestToken);
+        var before=await blobs.CaptureAsync(live,TestToken);
+        var after=await BlobAsync(blobs,"replace-1176-after","AFTER");
+        var planId="replace-1176-" + Guid.NewGuid().ToString("N");
+        var plan=new DeploymentPlan(planId,DateTimeOffset.UtcNow,
+            [new(1,ChangeKind.Replace,@"nativePC\replace.bin",before,after,null,"m",before,null)],[],[]);
+
+        var result=await new DeploymentExecutor(db,blobs,hashing,game).ApplyAsync(plan,"replace 1176 fixture",ct:TestToken);
+
+        Assert.False(result.Success);
+        Assert.False(result.RollbackCompleted);
+        Assert.Equal(FailureCategory.DataIntegrityFailure,result.FailureCategory);
+        Assert.False(File.Exists(live));
+        var replacement=Assert.IsType<string>(backend.LastReplacementPath);
+        Assert.True(File.Exists(replacement));
+        Assert.Equal("AFTER",await File.ReadAllTextAsync(replacement,TestToken));
+        Assert.Equal(OperationState.RecoveryRequired.ToString(),await ReadOperationStateAsync(db,planId));
+    }
+
+    [Fact]
+    public async Task Atomic_replace_1177_failure_preserves_both_documented_recovery_images()
+    {
+        if(!OperatingSystem.IsWindows())return;
+
+        string? displaced=null;
+        var backend=new ScriptedReplaceBackend(1177,(replaced,_)=>
+        {
+            displaced=replaced + ".1177-displaced";
+            File.Move(replaced,displaced,false);
+        });
+        var (game,db,hashing,blobs)=await CreateAsync("replace-1177",backend);
+        var live=Path.Combine(game,"nativePC","replace.bin");
+        await File.WriteAllTextAsync(live,"BEFORE",TestToken);
+        var before=await blobs.CaptureAsync(live,TestToken);
+        var after=await BlobAsync(blobs,"replace-1177-after","AFTER");
+        var planId="replace-1177-" + Guid.NewGuid().ToString("N");
+        var plan=new DeploymentPlan(planId,DateTimeOffset.UtcNow,
+            [new(1,ChangeKind.Replace,@"nativePC\replace.bin",before,after,null,"m",before,null)],[],[]);
+
+        var result=await new DeploymentExecutor(db,blobs,hashing,game).ApplyAsync(plan,"replace 1177 fixture",ct:TestToken);
+
+        Assert.False(result.Success);
+        Assert.False(result.RollbackCompleted);
+        Assert.Equal(FailureCategory.DataIntegrityFailure,result.FailureCategory);
+        Assert.False(File.Exists(live));
+        var replacement=Assert.IsType<string>(backend.LastReplacementPath);
+        Assert.True(File.Exists(replacement));
+        Assert.Equal("AFTER",await File.ReadAllTextAsync(replacement,TestToken));
+        Assert.NotNull(displaced);
+        Assert.True(File.Exists(displaced));
+        Assert.Equal("BEFORE",await File.ReadAllTextAsync(displaced!,TestToken));
+        Assert.Equal(OperationState.RecoveryRequired.ToString(),await ReadOperationStateAsync(db,planId));
     }
 
     [Fact]
