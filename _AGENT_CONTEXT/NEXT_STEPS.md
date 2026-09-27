@@ -1,5 +1,36 @@
 # Next steps
 
+## ACTIVE — verify and close Windows live-containment only
+
+Canonical handoff base: `208a66da89632acf36c065dc3bfead76af8d6bf4`  
+Production source: `b671bac33917649ff89e5e3b0866725f7b165232`  
+Focused tests: `5479c2e2ef6f0c731ccad8d65fcacd558c1428c1`  
+Branch: `agent/windows-live-containment-hardening-v3`
+
+This is the only active production boundary.
+
+Exact next action:
+
+1. re-check canonical `main` and intervening commits before integration;
+2. integrate the candidate without reverting the hosted support-integration closure;
+3. run `scripts/Test-AgentHandoff.ps1` and the repository's exact full hosted Windows Release Gate;
+4. fix any compiler/analyzer/test/function-verifier regression without weakening checks;
+5. preserve any failed run and root cause;
+6. persist exact SHA-bound evidence and close only this boundary;
+7. keep the documented handle-level topology-swap TOCTOU limitation explicit.
+
+### Recommended next programming boundary after this closes
+
+Isolate native **`ReplaceFileW` failure postconditions** under LR-003. Add a narrow injectable native-replacement seam and Windows fixtures for documented 1175/1176/1177 states; assert actual destination/replacement recovery bytes and operation/journal state. A false native return must never be treated as proof that nothing changed.
+
+Keep CAS corruption, recursive scanner/adoption/Inbox traversal, migration, async lifetime, diagnostics privacy, remote networking, backup, and Smart Pack as separate future boundaries.
+
+The successor must inherit and recursively propagate the permanent continuity constitution.
+
+**Do not break the chain.**
+
+---
+
 ## Current checkpoint — parallel support-audit integration
 
 PlannerSnapshotRepository remains **CLOSED** at exact verified commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`, evidence/cache persistence `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
