@@ -21,9 +21,20 @@ These are connector-side structural checks, **not** a substitute for executing t
 
 A local `git status`, PowerShell handoff validator, build, and tests were not run by the integration agent because the authorized Remote Desktop Commander device was offline.
 
-The last closed hosted product evidence remains PlannerSnapshotRepository exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, Windows Release Gate `36336190920`.
+The previous hosted product evidence was PlannerSnapshotRepository exact commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, Windows Release Gate `36336190920`.
 
-A fresh hosted Windows Release Gate for the final support-integration documentation state is required before this integration may be called fully repository-verified. Do not manually promote caches or infer success from the unchanged production source.
+The final support-integration documentation state is now independently closed by hosted Windows Release Gate `36340312353` for exact commit `5619604e88a27176726ada8518f53d385abc7b0f`.
+
+- runner: Windows / X64
+- .NET SDK: 10.0.401
+- agent handoff continuity preflight: PASS
+- repository verifier: **25/25 PASS**
+- release build/publish: PASS
+- ReadyToRun fallback used: **False**
+- release ZIP SHA-256: `43C753174810650A4C4F8956F4329CD5A21A45B9253EDAE30E16EE0551F1FEBF`
+- evidence/cache persistence commit: `4de981ab7ee47a3a8f0dd60f38e17644517b2ea3`
+
+The normal verifier/build path promoted/persisted evidence; no cache was manually promoted. Production source/tests remained unchanged.
 
 **Do not break the chain.**
 
