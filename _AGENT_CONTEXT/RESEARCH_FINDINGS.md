@@ -179,3 +179,23 @@ See STORAGE_TRANSACTION_BOUNDARY_AUDIT.md.
 ## 2026-09-27 PlannerSnapshotRepository first-gate caller correction
 
 Hosted run `36335255922` proved the prior static caller list was incomplete: `NexusMetadataService` and `GameBuildMonitor` also consumed planner snapshots. The compiler, not the connector's private-code search index, was authoritative. Both callers are read consumers only, so adding them to the repository injection set does not change the transaction-boundary conclusion.
+
+
+## 2026-09-27 independent WPF/MainWindow support audit
+
+Support Agent 3 independently re-ran the MainWindow ownership audit against canonical state through `161b5fcba88470b7d941a3831624bdbf071ff668`, including the concurrent PlannerSnapshotRepository candidate.
+
+Result: the earlier **stop page-model splitting** decision still holds. The new planner read repository removes direct database coupling from planner-input consumers, but does not change ownership of the shared staged Mod draft, conflict output/choice mutation, issue projection into Mods, overlap dependence on Conflicts, shell-global busy/status/cancellation, or game/application lifetime.
+
+The existing Activity, Coverage, Profiles-list, and Games-list ViewModels remain the clean passive/read-state seams. Future extraction pressure should be evaluated as application-use-case ownership rather than by MainWindow line count.
+
+Two concrete UI-thread projection areas were recorded for measurement, not speculative refactoring: `ReloadMods` constructs logical/row presentation state inside a Dispatcher callback, and `RefreshIssueSuspects` projects suspect state across Mods inside a Dispatcher callback. `ObservableRangeCollection.ReplaceAll` already batches replacement into one Reset, and planner computation is already off-thread.
+
+One shell-lifetime risk was newly documented: the periodic metadata loop is launched fire-and-forget and its pre-tick busy/critical check is not atomic with a foreground `RunBusy` start. It is correctly cancellable and metadata-gated, but a future hardening checkpoint should retain/await the loop task and explicitly coordinate background state mutation with foreground operations if this risk is prioritized. No failure was reproduced, so no Learned Rule was added.
+
+Full detail and future acceptance criteria are in `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md`.
+
+This audit changed documentation only and does not close or alter the active PlannerSnapshotRepository verification boundary. Preserve the continuity constitution recursively for the successor and the agent after them.
+
+
+Post-audit revalidation: canonical main advanced to `0e561f3c059475ad443a79ac4a27dd68264a7bdb` with a PlannerSnapshotRepository caller-migration repair after failed run `36335255922`. The MainWindow changes did not alter state ownership or create a new page seam, so the support-audit conclusion remains unchanged.
