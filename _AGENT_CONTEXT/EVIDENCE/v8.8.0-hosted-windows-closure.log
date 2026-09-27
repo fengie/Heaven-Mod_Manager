@@ -1,6 +1,6 @@
 ﻿MHW Manual Mod Manager v8.8.0 hosted Windows closure
-source_sha=73f1298455ec4c651e211488ececf9803504e60d
-run_id=36333960215
+source_sha=c9b27b98d280b144ba52ba35167f1fcb594945bd
+run_id=36334644325
 runner_os=Windows
 runner_arch=X64
 dotnet_sdk=10.0.401
@@ -8,18 +8,18 @@ dotnet_sdk=10.0.401
 === VERIFICATION REPORT ===
 # MHW Manual Mod Manager verification report
 
-Generated: 2026-09-27T16:40:44.3093751+00:00
+Generated: 2026-09-27T16:51:56.4426450+00:00
 SDK: 10.0.401
 Overall: **PASS** - 25 passed / 0 failed
 
 | Group | Stage | Result | Exit | Seconds | Detail | Log |
 |---|---|---:|---:|---:|---|---|
-| Harness | PowerShell syntax sweep | PASS | 0 | 0 | All active PowerShell scripts parsed successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\powershell-syntax-20260927-163824.log |
-| Harness | Report serialization preflight | PASS | 0 | 0.039 | Plain PowerShell object-array report serialization round-tripped successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\harness-report-preflight-20260927-163824.log |
-| Harness | Agent handoff continuity preflight | PASS | 0 | 0.921 | Required continuity context/manifest is present and propagates to the next agent. | D:\a\mhw-mods\mhw-mods\BuildLogs\agent-handoff-preflight-20260927-163824.log |
-| Restore | Solution restore | PASS | 0 | 32.2 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\restore-20260927-163824-Solution_restore.log |
-| Verification | Function fingerprint scan | PASS | 0 | 19.218 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-scan-20260927-163824-Function_fingerprint_scan.log |
-| Compile | Relaxed whole solution | PASS | 0 | 37.173 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-relaxed-20260927-163824-Relaxed_whole_solution.log |
+| Harness | PowerShell syntax sweep | PASS | 0 | 0 | All active PowerShell scripts parsed successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\powershell-syntax-20260927-164937.log |
+| Harness | Report serialization preflight | PASS | 0 | 0.041 | Plain PowerShell object-array report serialization round-tripped successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\harness-report-preflight-20260927-164937.log |
+| Harness | Agent handoff continuity preflight | PASS | 0 | 1.178 | Required continuity context/manifest is present and propagates to the next agent. | D:\a\mhw-mods\mhw-mods\BuildLogs\agent-handoff-preflight-20260927-164937.log |
+| Restore | Solution restore | PASS | 0 | 27.715 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\restore-20260927-164937-Solution_restore.log |
+| Verification | Function fingerprint scan | PASS | 0 | 12.311 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-scan-20260927-164937-Function_fingerprint_scan.log |
+| Compile | Relaxed whole solution | PASS | 0 | 46.431 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-relaxed-20260927-164937-Relaxed_whole_solution.log |
 | Strict compile/analyzers | Core | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T13:06:05.6297790+00:00; check skipped |  |
 | Strict compile/analyzers | Storage | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:12.3310970+00:00; check skipped |  |
 | Strict compile/analyzers | Filesystem | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:15.5644275+00:00; check skipped |  |
@@ -28,17 +28,17 @@ Overall: **PASS** - 25 passed / 0 failed
 | Strict compile/analyzers | Automation | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:26.2553855+00:00; check skipped |  |
 | Strict compile/analyzers | UnitTests | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T13:06:28.6137292+00:00; check skipped |  |
 | Strict compile/analyzers | AutomationTests | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:30.2412211+00:00; check skipped |  |
-| Strict compile/analyzers | IntegrationTests | PASS | 0 | 2.813 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260927-163824-IntegrationTests.log |
+| Strict compile/analyzers | IntegrationTests | PASS | 0 | 3.655 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260927-164937-IntegrationTests.log |
 | Strict compile/analyzers | Benchmarks | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T13:06:37.2825156+00:00; check skipped |  |
 | Strict compile/analyzers | SelfTest | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:37.3858453+00:00; check skipped |  |
 | Strict compile/analyzers | FunctionVerifier | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T13:06:41.0494809+00:00; check skipped |  |
 | Strict compile/analyzers | App | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T15:53:00.1491790+00:00; check skipped |  |
-| Compile | Strict whole solution | PASS | 0 | 8.287 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-final-20260927-163824-Strict_whole_solution.log |
+| Compile | Strict whole solution | PASS | 0 | 16.673 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-final-20260927-164937-Strict_whole_solution.log |
 | Tests | Core unit tests | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T13:06:58.2506782+00:00; check skipped |  |
 | Tests | Automation unit tests | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:15:55.7231761+00:00; check skipped |  |
-| Tests | Integration + fault injection | PASS | 0 | 33.693 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\test-20260927-163824-Integration___fault_injection.log |
+| Tests | Integration + fault injection | PASS | 0 | 24.142 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\test-20260927-164937-Integration___fault_injection.log |
 | Tests | Full automation self-test | PASS | 0 | 0 | cached verified=true; exact project/dependency fingerprint unchanged; originally verified 2026-09-27T14:16:29.5138881+00:00; check skipped |  |
-| Verification | Promote verified function fingerprints | PASS | 0 | 1.42 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-confirm-20260927-163824-Promote_verified_function_fingerprints.log |
+| Verification | Promote verified function fingerprints | PASS | 0 | 1.834 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-confirm-20260927-164937-Promote_verified_function_fingerprints.log |
 
 
 
@@ -48,6 +48,6 @@ SDK: 10.0.401
 ReadyToRun fallback used: False
 Release folder: D:\a\mhw-mods\mhw-mods\release\MHW-Manual-Mod-Manager-v8.8.0
 Artifact: D:\a\mhw-mods\mhw-mods\artifacts\MHW-Manual-Mod-Manager-v8.8.0-win-x64.zip
-SHA256: 8A8D78DA53AE81703091683F5BC25D298C7BDEE3FB831098040D91EB2F85AAF4
-Master transcript: D:\a\mhw-mods\mhw-mods\BuildLogs\build-release-20260927-164045.log
+SHA256: 0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A
+Master transcript: D:\a\mhw-mods\mhw-mods\BuildLogs\build-release-20260927-165157.log
 
