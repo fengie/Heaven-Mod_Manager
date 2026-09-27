@@ -402,3 +402,21 @@ Support Agent 1 completed an independent static cross-check of SQLite write owne
 The deployment journal/final-commit/rollback transactions were independently confirmed. Four non-deployment consistency defects/gaps were documented for later isolated checkpoints: duplicate cleanup move-before-delete recovery, trust-vs-launch-history split persistence, snapshot-prune DB/payload drift, and legacy migration run-status closure. No production source was changed by this support audit, and no local/hosted Windows execution is claimed for it.
 
 Any successor working on these findings must preserve the permanent recursive continuity constitution and explicitly pass that requirement to its successor. Do not break the chain.
+
+
+## Support Agent 5 — async/background lifetime audit
+
+Documentation-only support audit: `_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md`.
+
+Audit base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`. No production C# changed and no Windows/runtime verification is claimed.
+
+Key source-confirmed findings:
+
+- metadata-triggered `ReloadMods` reconstructs staged state from persisted state and can silently discard unapplied user staging; the manual-family path already demonstrates the required capture/reapply pattern;
+- the periodic metadata loop's Busy/Critical check is advisory and not mutually exclusive with foreground `RunBusy`, while Nexus refresh writes provenance/family/supersession/settings and then rebuilds Mods/analysis;
+- normal MainWindow close is permitted during `cancellable:true` side-effect workflows, cancels them, and does not await convergence before WPF application shutdown; this provides an ordinary UI trigger for the duplicate-cleanup move-before-delete inconsistency documented by the deep SQLite audit;
+- the periodic metadata Task is launched fire-and-forget and is not retained/awaited; unexpected faults can terminate the loop and surface only through eventual unobserved-task reporting.
+
+Recommended future boundary: one shell operation/lifetime coordinator checkpoint with behavioral tests for staged-draft preservation, foreground/background exclusion, owned background-task shutdown, and graceful cancel-and-await close. Do not combine it with page-model splitting, database decomposition, Generic Host migration, or deployment transaction redesign.
+
+Any successor must preserve the permanent recursive continuity constitution and explicitly pass it to the agent after them. **Do not break the chain.**
