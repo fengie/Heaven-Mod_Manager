@@ -73,12 +73,23 @@ public sealed class PlannerSnapshotRepositoryTests : IDisposable
         Assert.Equal(
             expected.Changes.Select(x => (x.Sequence, x.Kind, x.Path, x.BeforeBlobSha256, x.AfterBlobSha256, x.ProviderBefore, x.ProviderAfter, x.RuleId)).ToArray(),
             actual.Changes.Select(x => (x.Sequence, x.Kind, x.Path, x.BeforeBlobSha256, x.AfterBlobSha256, x.ProviderBefore, x.ProviderAfter, x.RuleId)).ToArray());
-        Assert.Equal(expected.Preconditions, actual.Preconditions);
+        Assert.Equal(expected.Preconditions.ToArray(), actual.Preconditions.ToArray());
 
         var shared = Assert.Single(actual.Conflicts, x => PathRules.Comparer.Equals(x.Path, SharedPath));
         Assert.False(shared.Blocking);
         Assert.Equal("b", shared.WinnerModId);
         Assert.Equal("exact-b", shared.RuleId);
+    }
+
+    [Fact]
+    public async Task Already_canceled_token_remains_canceled()
+    {
+        var db = await CreateSeededAsync("canceled");
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => new PlannerSnapshotRepository(db).LoadAsync(cts.Token));
     }
 
     private async Task<ManagerDatabase> CreateSeededAsync(string name)
@@ -180,9 +191,9 @@ public sealed class PlannerSnapshotRepositoryTests : IDisposable
 
     private static void AssertSnapshotEqual(PlannerSnapshot expected, PlannerSnapshot actual)
     {
-        Assert.Equal(expected.Mods, actual.Mods);
-        Assert.Equal(expected.Files, actual.Files);
-        Assert.Equal(expected.Rules, actual.Rules);
+        Assert.Equal(expected.Mods.ToArray(), actual.Mods.ToArray());
+        Assert.Equal(expected.Files.ToArray(), actual.Files.ToArray());
+        Assert.Equal(expected.Rules.ToArray(), actual.Rules.ToArray());
         Assert.Equal(expected.ExactWinners.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray(), actual.ExactWinners.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray());
         Assert.Equal(expected.ResourceProviders.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray(), actual.ResourceProviders.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray());
         Assert.Equal(expected.CurrentManifest.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray(), actual.CurrentManifest.OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase).ToArray());
