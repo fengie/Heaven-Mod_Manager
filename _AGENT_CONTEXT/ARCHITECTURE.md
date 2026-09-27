@@ -61,7 +61,7 @@ The first post-audit storage extraction moves planner-input query assembly into 
 
 - `ManagerDatabase.GetModsAsync` remains in the database facade.
 - The repository preserves the historical two-connection read behavior rather than adding an encompassing SQLite transaction/snapshot.
-- App composition creates one repository instance and passes it to MainWindow planner workflows plus EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption and Health.
+- App composition creates one repository instance and passes it to MainWindow planner workflows plus EffectiveInspector, GameUpdateImpact, LaunchHealthGate, UnmanagedAdoption, Health, NexusMetadataService and GameBuildMonitor.
 - DeploymentExecutor and every documented write-side transaction owner are unchanged.
 
 Hosted Windows Release Gate `36336190920` verified exact final commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`; this boundary is closed. Any future storage seam is a separate production boundary and must be independently scoped and verified.
