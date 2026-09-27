@@ -20,6 +20,36 @@ The next agent must be able to continue without previous chat history.
 **Do not break the chain.**
 
 
+## Current support checkpoint: legacy migration recovery audit COMPLETE
+
+Documentation-only audit:
+
+`_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md`
+
+Corrected protocol guide:
+
+`docs/MIGRATION.md`
+
+Audit base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
+
+No production C# or verification cache changed. The closed PlannerSnapshotRepository evidence remains exact.
+
+The migration path currently has no dedicated migration tests. The first future migration source checkpoint must therefore be characterization/fault coverage, not a broad rewrite. Pin valid migration, marker skip, malformed/missing/corrupt blob behavior, exact enabled-order + semantic import, failure/retry, cancellation, and corrupt pre-existing CAS convergence.
+
+Read alongside:
+
+- `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md`
+- open filesystem/CAS support work if it has been integrated
+- `_AGENT_CONTEXT/NEXT_STEPS.md`
+
+Preserve LR-005: restartable migrations must prove ownership and convergence. LR-003/LR-004 are reserved by currently open parallel support PRs, so do not renumber casually when integrating branches.
+
+Every successor must preserve and recursively propagate the permanent continuity constitution to the agent after them.
+
+**Do not break the chain.**
+
+---
+
 ## Current checkpoint: PlannerSnapshotRepository CLOSED — do not start another boundary automatically
 
 Exact verified final commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
