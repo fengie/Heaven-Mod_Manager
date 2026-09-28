@@ -1,3 +1,9 @@
+# Company programming-agent trainer — ACTIVE LIVING SYSTEM
+
+A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captures reusable company values, agent operating standards, development pipeline, role boundaries, multi-agent coordination, continuity/recovery, verification, destructive-operation safety, CI/release doctrine, knowledge maintenance, prompting guidance, and reusable role prompts.
+
+This is a documentation/governance layer only; it does not change MHW product behavior or inherit/replace product verification. Future agents must read `_AGENT_TRAINING/README.md` during startup and evaluate reusable lessons for trainer updates at meaningful checkpoints. Project-specific architecture, current bugs, verification, branches, and next steps remain in `_AGENT_CONTEXT/`.
+
 # CAS integrity checkpoint — CLOSED
 
 The CAS byte-integrity/concurrency repair is closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**, verifier **25/25**, functions **613/613**, call sites **6494 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.

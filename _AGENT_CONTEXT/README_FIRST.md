@@ -19,6 +19,7 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 
 ## Read order
 
+0. `_AGENT_TRAINING/README.md` — company-level, project-agnostic engineering doctrine and living knowledge-maintenance rules.
 1. `_AGENT_CONTEXT/CURRENT_REVISION.json` — machine-readable current status and the exact source commit verification applies to.
 2. `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` — permanent Core Rules and recursive continuity constitution.
 3. `_AGENT_CONTEXT/LEARNED_RULES.md` — active incident-driven rules; preserve append-only history.

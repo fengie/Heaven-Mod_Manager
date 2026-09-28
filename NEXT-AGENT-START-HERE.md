@@ -14,13 +14,16 @@ You inherit the repository's **permanent continuity constitution**.
 Before modifying this project:
 
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
-2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
-3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
-5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
-6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
+2. read `_AGENT_TRAINING/README.md` and the company-doctrine sections relevant to the task;
+3. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
+4. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
+5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
+6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
+7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
-Preserve the constitution. Obey active Learned Rules. Add a Learned Rule only when a concrete, durable discovery justifies it.
+The authority hierarchy is company engineering doctrine → project-specific operating rules/current repository truth → current task instructions, with more specific and newer verified repository truth taking precedence when guidance conflicts.
+
+Preserve the constitution. Obey active Learned Rules. Add a project Learned Rule only when a concrete, durable discovery justifies it. Before finishing any meaningful engineering task, also ask whether the work revealed a reusable lesson that should update `_AGENT_TRAINING/`.
 
 Before finishing, update durable repository handoff state and explicitly require your **successor** to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement for the **agent after them**. The next agent must be able to continue without previous chat history.
 

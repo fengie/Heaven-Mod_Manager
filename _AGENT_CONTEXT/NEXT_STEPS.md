@@ -2,7 +2,7 @@
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
-The next independent production boundary is recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+The next independent production boundary is recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox. The new company trainer in `_AGENT_TRAINING/` does not change that product priority. Future agents must also evaluate meaningful reusable lessons for promotion into the trainer while keeping transient MHW state in `_AGENT_CONTEXT/`. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ## Newly integrated support research
 

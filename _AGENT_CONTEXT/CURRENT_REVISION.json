@@ -5,6 +5,8 @@
   "canonicalBranch": "main",
   "workingBranch": "main",
   "currentVersion": "8.8.0",
+  "companyTrainingRoot": "_AGENT_TRAINING",
+  "companyTrainingStatus": "active-living-system",
   "nextMilestone": "recursive source reparse containment",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
@@ -28,6 +30,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "Governance/documentation: added _AGENT_TRAINING as a project-agnostic living company engineering trainer; startup guidance now requires future agents to read it and evaluate reusable lessons for promotion while keeping transient MHW state in _AGENT_CONTEXT.",
     "CLOSED: CAS integrity byte-validation and concurrent-capture repair passed hosted Windows Release Gate 36367883836 and fresh local heaven2 verification on canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f.",
     "Local CAS closure: focused BlobIntegrityTests 10/10; Verify-Release 25/25; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79.",
     "CAS capture verifies existing/concurrent winning object before trust; restore verifies staged bytes before publication; bounded Windows sharing/lock retries preserve FileShare.Read and hash mismatch remains immediate failure.",
