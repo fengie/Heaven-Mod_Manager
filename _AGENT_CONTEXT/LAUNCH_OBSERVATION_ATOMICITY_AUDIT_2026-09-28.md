@@ -544,3 +544,26 @@ your successor to inherit, preserve, and recursively propagate the same continui
 constitution to the agent after them.
 
 **Do not break the chain.**
+
+## Post-audit canonical-main revalidation
+
+While this audit was being written, canonical `main` advanced from
+`a8b581176aac0e6bcf09c049285ed40f4b2b392c` to
+`3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
+
+The six intervening commits only changed archive-streaming provenance/continuity
+documentation:
+
+- `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`;
+- `_AGENT_CONTEXT/ARCHIVE_STREAMING_INTEGRATION_PROVENANCE_AUDIT_2026-09-28.md`;
+- `_AGENT_CONTEXT/NEXT_STEPS.md`;
+- `_AGENT_CONTEXT/README_FIRST.md`.
+
+No `src/`, `tests/`, schema, launch-history, trust, issue-diagnosis, or verification
+implementation file changed. The launch-observation findings therefore remain applicable
+without source reinterpretation.
+
+The support branch merged that exact current main as a second parent at reconciliation
+commit `386b1c9a3b970a2a1159c938549a6a393e61360c`, preserving the newer archive
+provenance text plus this audit's single README index entry.
+
