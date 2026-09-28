@@ -1,10 +1,26 @@
-# Updater C12 first-publication repair — current verification
+# Updater C13 publication sequencing + tag-verification repair — current verification
 
-Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.
+Hosted repository truth: immutable releases `updater-main-43` and `updater-main-44` were successfully published for exact commits `8d5cc311ed13f5cb7f0df1f9e7c3e8bf9fcaec82` and `a8b581176aac0e6bcf09c049285ed40f4b2b392c`. Their Windows Release Gate runs **36442433856** and **36443919632** passed exact repository verification, release build/package, and publication-policy stages, then failed after publication because `git fetch origin refs/tags/<new-tag>` could not immediately observe the newly created tag. GitHub REST git-ref inspection confirms both refs are direct commit refs to the expected source SHAs. Release 44 is immutable and exposes exactly the ZIP (129,529,934 bytes, server digest `sha256:b7d114e9f1e5254abde6d7a2414d95ffc017059f29639c16851d528dfa29e578`) and `update-manifest.json` (612 bytes, digest `sha256:bd15319fbfb575a9384d473a94a9cc58f960740c9c78e9522f0958fe0310a114`).
 
-On isolated branch `agent/auto-updater-publication-fix-20260928`, the new policy test passed on Windows PowerShell 5.1.26100.8737 and .NET SDK 10.0.401. Cases cover empty CLI output, JSON `[]`, valid single release, malformed JSON/object, JSON null row, and missing required field. `git diff --check` passed.
+PR #65 / `agent/updater-publication-verification-20260928` combines PR #58's draft→upload→verify→post-upload main refresh→publish sequence with deterministic REST tag-ref verification. The new parser requires the exact `refs/tags/<expected>` identity, a direct `commit` target, and a valid 40-hex SHA; malformed/wrong/annotated-tag fixtures fail closed. Exact locally verified code head before continuity-only edits: `98115515b2dc5fb256560c50ed8c40d08abb21f6`, based on canonical main `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
 
-Not yet run on C12: full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows gate, GitHub publication, disposable old→new update, or injected rollback. Do not reuse run 36428542918 as verification for the changed C12 files. The current release collection is empty; no tag/release/assets were created by the failed run.
+Fresh heaven2 / Windows x64 / PowerShell 5.1 / .NET SDK 10.0.401 evidence:
+- `scripts/Test-UpdaterReleasePolicy.ps1`: **PASS**;
+- `scripts/Test-AgentHandoff.ps1`: **PASS**;
+- `git diff --check`: **PASS**;
+- `scripts/Verify-Release.ps1`: **25/25 PASS**;
+- FunctionVerifier: **728/728 promoted inside the isolated worktree**, **7,772 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **177/177 PASS**;
+- self-test: **11/11 PASS**;
+- strict builds/analyzers: **PASS, 0 warnings / 0 errors**;
+- app win-x64 ReadyToRun publish: **PASS**;
+- updater-helper self-contained publish: **PASS**;
+- `scripts/Build-Release.ps1`: **PASS** using test-only build **900000065** and exact source `98115515b2dc5fb256560c50ed8c40d08abb21f6`;
+- local ZIP SHA-256: `5ABE8B2E4F8F6BF2E0ECED05BC690156274158B9A046FADD550ED08A0DD6F26C`.
+
+Generated `.verification`, `MHW-DEBUG-ALL.log`, and `BuildLogs` changes were restored/removed after evidence capture; they were not manually promoted into repository history. Remaining closure: hosted PR #65 gate on the final continuity-updated head, integration against current main, exact-main Windows Release Gate green through the post-publication verification step, exact immutable release/tag/assets inspection, then disposable old→new plus injected rollback.
 
 # Updater C11b publication policy — exact local Windows verification — 2026-09-28
 

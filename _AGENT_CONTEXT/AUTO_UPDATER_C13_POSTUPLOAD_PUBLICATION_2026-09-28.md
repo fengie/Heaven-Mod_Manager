@@ -20,14 +20,16 @@ The publisher previously re-fetched `origin/main` before invoking one `gh releas
 - Added a narrow PR-only Windows gate for these publication scripts; it runs the publication policy/fault tests and continuity handoff check with read-only repository permissions and performs no release publication.
 
 ## Verification status
-Not yet closed. This chat environment has not executed Windows PowerShell, the full repository verifier, Build-Release, or a hosted exact-main publication. The branch is intentionally not merged on static inspection alone.
+The implementation has been extended by PR #65 / `agent/updater-publication-verification-20260928` after repeated hosted evidence exposed a separate post-publication verification race. Windows Release Gate runs **36442433856** and **36443919632** both published correct immutable releases 43/44 and then failed because immediate Git transport could not fetch the new tag, even though GitHub REST exposed the correct direct-commit ref. The publisher now verifies that just-created tag through the GitHub REST git-ref endpoint and fails closed on wrong ref identity, non-direct-commit targets, or malformed SHAs.
+
+Exact locally verified code head before continuity-only edits: `98115515b2dc5fb256560c50ed8c40d08abb21f6`, based on main `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`. Fresh heaven2/Windows/.NET 10.0.401 evidence: publication policy PASS; handoff PASS; `Verify-Release.ps1` **25/25**; FunctionVerifier **728/728** with **7,772 / 0 uncovered**; Core **79/79**; Automation **24/24**; Integration **177/177**; self-test **11/11**; strict builds/analyzers PASS; app ReadyToRun and updater-helper publish PASS; `Build-Release.ps1` PASS with test-only build **900000065** and ZIP SHA-256 `5ABE8B2E4F8F6BF2E0ECED05BC690156274158B9A046FADD550ED08A0DD6F26C`. Generated verification/cache/log outputs were restored rather than committed.
 
 Required closure:
-1. require the PR-only Windows publication gate to pass `scripts/Test-UpdaterReleasePolicy.ps1` and `scripts/Test-AgentHandoff.ps1`;
-2. run the repository handoff check and exact release verification/build gates;
-3. review the PR diff and any PR-triggered checks;
-4. integrate only after those are green;
-5. on an eligible exact `main`, inspect the hosted Windows Release Gate and immutable release assets;
+1. require the PR #65 hosted Windows publication gate to pass on its final continuity-updated head;
+2. integrate only after rechecking current `main` and PR mergeability;
+3. inspect the resulting exact-main Windows Release Gate and require it to finish green through post-publication tag/source/asset verification;
+4. verify the resulting immutable release tag/source and exact two asset names/sizes/server SHA-256 digests;
+5. close/supersede PR #58 because PR #65 contains its sequencing work;
 6. complete the disposable installed-client old→new plus injected rollback proof before calling automatic updates end-to-end complete.
 
 ## Continuity
