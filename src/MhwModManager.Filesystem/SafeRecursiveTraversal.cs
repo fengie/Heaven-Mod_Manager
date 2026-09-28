@@ -9,12 +9,7 @@ public static class SafeRecursiveTraversal
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");
-        if (!Directory.Exists(root))
-            throw new DirectoryNotFoundException($"Recursive source root is missing: {root}");
-
-        var fullRoot = Path.GetFullPath(root);
-        if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
-            throw new IOException($"Recursive source traversal rejected reparse point: {fullRoot}");
+        var fullRoot = EnsureRootIsNotReparse(root);
 
         var directories = new List<string>();
         var files = new List<string>();
@@ -25,6 +20,7 @@ public static class SafeRecursiveTraversal
         {
             ct.ThrowIfCancellationRequested();
             var current = pending.Pop();
+            var childDirectories = new List<string>();
             foreach (var entry in Directory.EnumerateFileSystemEntries(
                          current, "*", SearchOption.TopDirectoryOnly))
             {
@@ -36,15 +32,30 @@ public static class SafeRecursiveTraversal
                 if ((attributes & FileAttributes.Directory) != 0)
                 {
                     directories.Add(entry);
-                    pending.Push(entry);
+                    childDirectories.Add(entry);
                 }
                 else
                 {
                     files.Add(entry);
                 }
             }
+
+            for (var i = childDirectories.Count - 1; i >= 0; i--)
+                pending.Push(childDirectories[i]);
         }
 
         return (directories, files);
+    }
+
+    public static string EnsureRootIsNotReparse(string root)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");
+        if (!Directory.Exists(root))
+            throw new DirectoryNotFoundException($"Recursive source root is missing: {root}");
+
+        var fullRoot = Path.GetFullPath(root);
+        if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Recursive source traversal rejected reparse point: {fullRoot}");
+        return fullRoot;
     }
 }

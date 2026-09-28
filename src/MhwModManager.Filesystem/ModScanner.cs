@@ -47,6 +47,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private List<ScanCandidate> EnumerateCandidates(ModDescriptor mod, Dictionary<string,ModFileDescriptor> cache, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        SafeRecursiveTraversal.EnsureRootIsNotReparse(mod.SourcePath);
         var result = new List<ScanCandidate>();
         foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game))
         {
