@@ -3,7 +3,7 @@
   "repository": "fengie/mhw-mods",
   "canonicalMain": "4fd61dd33609a7c55e5aedbaad026266a410f942",
   "asOfUtc": "2026-09-28T09:15:00Z",
-  "rule": "Re-check live GitHub state before acting. Historical entries must not be merged wholesale merely because Git ancestry shows unique commits. Update this ledger when disposition changes.",
+  "rule": "Re-check live GitHub state before acting. The categorized arrays cover the 30 pre-existing open PRs reviewed before PR #36 was opened; selfReviewPr records PR #36 itself. Historical entries must not be merged wholesale merely because Git ancestry shows unique commits. Update this ledger when disposition changes.",
   "activeCurrent": [
     {
       "pr": 35,
@@ -221,5 +221,11 @@
       "behind": 185,
       "action": "fresh current-main re-audit required"
     }
-  ]
+  ],
+  "selfReviewPr": {
+    "pr": 36,
+    "branch": "agent/support-pr-disposition-ledger-20260928",
+    "scope": "this documentation/coordination ledger checkpoint",
+    "action": "review this PR as the ledger update itself; re-check live state after it merges or closes"
+  }
 }
