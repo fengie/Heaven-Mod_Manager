@@ -32,7 +32,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     if (ext is not ".zip" and not ".7z" and not ".rar") { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
                     var info = await archive.InspectAsync(entry, ct);
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
-                    await archive.ExtractSafelyAsync(entry, destination, ct); NormalizeWrapper(destination);
+                    await archive.ExtractSafelyAsync(entry, destination, modsRoot, ct); NormalizeWrapper(destination);
                 }
                 var category = categories.Classify(Directory.EnumerateFiles(destination, "*", SearchOption.AllDirectories).Select(x => Path.GetRelativePath(destination, x)));
                 results.Add(new(entry, destination, true, category, "Imported automatically."));

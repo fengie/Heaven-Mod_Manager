@@ -42,17 +42,24 @@ public sealed class ArchiveInspector
         return new(entries,hasNative,hasRoot,bad,total,top.Count==1?top.First():null);
     }
 
-    public Task ExtractSafelyAsync(string archivePath,string destination,CancellationToken ct=default) =>
-        Task.Run(() => ExtractSafely(archivePath,destination,ct), ct);
+    public Task ExtractSafelyAsync(string archivePath,string destination,string trustedRoot,CancellationToken ct=default) =>
+        Task.Run(() => ExtractSafely(archivePath,destination,trustedRoot,ct), ct);
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
-    public void ExtractSafely(string archivePath,string destination,CancellationToken ct=default)
+    public void ExtractSafely(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
     {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}");
-        if (Directory.Exists(destination) && IsReparsePoint(destination))
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
+        var trusted=Path.GetFullPath(trustedRoot).TrimEnd(Path.DirectorySeparatorChar);
+        var destinationFull=Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar);
+        var trustedPrefix=trusted+Path.DirectorySeparatorChar;
+        if(!destinationFull.Equals(trusted,StringComparison.OrdinalIgnoreCase) && !destinationFull.StartsWith(trustedPrefix,StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Extraction destination is outside the trusted root.");
+        if(!Directory.Exists(trusted))throw new InvalidDataException("Trusted extraction root does not exist.");
+        EnsureNoReparsePoint(trusted,Path.GetDirectoryName(destinationFull)??trusted);
+        if (Directory.Exists(destinationFull) && IsReparsePoint(destinationFull))
             throw new InvalidDataException("Extraction destination is a reparse point.");
-        Directory.CreateDirectory(destination);
-        var root=Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar;
+        Directory.CreateDirectory(destinationFull);
+        var root=destinationFull+Path.DirectorySeparatorChar;
         using var archive=ArchiveFactory.OpenArchive(archivePath);
         long total=0;
         int count=0;
@@ -64,11 +71,11 @@ public sealed class ArchiveInspector
             if(count>MaxEntries||total>MaxExpandedBytes)throw new InvalidDataException("Archive expansion safety limit exceeded.");
             var key=(e.Key??"").Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
             if (!PathRules.IsSafeArchiveRelativePath(key)) throw new InvalidDataException($"Unsafe archive path: {e.Key}");
-            var dest=Path.GetFullPath(Path.Combine(destination,key));
+            var dest=Path.GetFullPath(Path.Combine(destinationFull,key));
             if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Archive path traversal detected.");
             var parent = Path.GetDirectoryName(dest)!;
             Directory.CreateDirectory(parent);
-            EnsureNoReparsePoint(root,parent);
+            EnsureNoReparsePoint(trusted,parent);
             e.WriteToFile(dest,new ExtractionOptions{ExtractFullPath=false,Overwrite=false});
         }
     }
@@ -76,14 +83,16 @@ public sealed class ArchiveInspector
     private static void EnsureNoReparsePoint(string root,string directory)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var current=Path.GetFullPath(directory);
-        var stop=root.TrimEnd(Path.DirectorySeparatorChar);
-        while(current.StartsWith(stop,StringComparison.OrdinalIgnoreCase) && !current.Equals(stop,StringComparison.OrdinalIgnoreCase))
+        var current=Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar);
+        var stop=Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
+        var stopPrefix=stop+Path.DirectorySeparatorChar;
+        while(current.Equals(stop,StringComparison.OrdinalIgnoreCase) || current.StartsWith(stopPrefix,StringComparison.OrdinalIgnoreCase))
         {
             if(Directory.Exists(current) && IsReparsePoint(current))throw new InvalidDataException($"Extraction path traverses a reparse point: {current}");
+            if(current.Equals(stop,StringComparison.OrdinalIgnoreCase))break;
             var parent=Directory.GetParent(current)?.FullName;
             if(parent is null)break;
-            current=parent;
+            current=parent.TrimEnd(Path.DirectorySeparatorChar);
         }
     }
 
