@@ -16,6 +16,7 @@
   "requiredContextFiles": [
     "_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md",
+    "_AGENT_CONTEXT/AUTO_UPDATER_RUNTIME_RECOVERY_AUDIT.md",
     "AGENTS.md",
     "_AGENT_TRAINING/README.md",
     "_AGENT_TRAINING/COMPANY_ENGINEERING_VALUES.md",
@@ -87,7 +88,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, AUTO_UPDATER_IMPLEMENTATION.md, AUTO_UPDATER_NEXT_AGENT.md, AUTO_UPDATER_RUNTIME_RECOVERY_AUDIT.md, and the permanent continuity constitution before edits. The user-selected production boundary is the incomplete automatic updater on agent/auto-updater-20260928. Checkpoint C4 exact source 50f15a439be6afe0a6b12b1dba3081daf73ed6ae has focused Windows evidence 47/47 plus strict solution build 0 warnings/errors, but no release-gate verification. Next close previous-build rollback executable identity, then authenticated GitHub host enforcement and exact build-metadata agreement. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

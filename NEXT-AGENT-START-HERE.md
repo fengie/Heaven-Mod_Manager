@@ -4,6 +4,8 @@ The user selected automatic updates as the current production boundary. Older ar
 
 The updater is INCOMPLETE and NOT release-gate verified. Preserve the permanent continuity constitution and active Learned Rules; require the successor to preserve and recursively propagate them to the agent after them.
 
+Latest updater checkpoint C4 is exact commit `50f15a439be6afe0a6b12b1dba3081daf73ed6ae`: durable target launch-attempt/PID/start-time recovery prevents duplicate relaunch after helper interruption and binds health to the exact launch. Focused Windows/.NET 10.0.401 updater tests are **47/47 PASS** and strict whole-solution build is **0 warnings / 0 errors**. This is not a release-gate closure. Next: previous-build rollback executable identity, then authenticated GitHub host enforcement and exact staged build-metadata agreement; see the updater continuation docs and runtime/recovery audit.
+
 ---
 # 2026-09-28 support integration — CLOSED / HOSTED WINDOWS VERIFIED
 

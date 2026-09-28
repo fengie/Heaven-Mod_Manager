@@ -14,7 +14,7 @@
   "verificationAppliesToCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationRun": "hosted-github-actions-36392282315",
-  "candidateSourceCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
+  "candidateSourceCommit": "50f15a439be6afe0a6b12b1dba3081daf73ed6ae",
   "verificationScopeNote": "Recursive source reparse containment and archive extraction physical-root containment are CLOSED. Hosted Windows Release Gate 36392282315 passed exact production integration commit d66bff290f197236ec43c9b37d2b015ab2ee5fe8 and persisted promoted cache/evidence at a94066004660e4d542f5d4a528c7e5e22bdea9cb; hosted release SHA-256 A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB. Separate local Windows verification on the same production code plus documentation passed Verify-Release 25/25; functions 615/615; 6532 explicit call sites / 0 uncovered; Core 79/79; Automation 24/24; Integration 96/96; self-test 11/11; strict analyzers PASS; Build-Release/ReadyToRun PASS; local release SHA-256 359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
@@ -30,6 +30,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 updater C4: crash-safe target launch state persists attempt before process creation, records PID/start identity, binds startup health to attempt/PID, resumes without duplicate relaunch, and passes 47/47 focused Windows tests plus strict solution build 0 warnings/errors at commit 50f15a439be6afe0a6b12b1dba3081daf73ed6ae.",
     "2026-09-28 integration: added shared SafeRecursiveTraversal and migrated ModScanner, unmanaged adoption, and Smart Inbox recursive source traversal to fail closed on root/descendant reparse points while preserving safe-tree classification order.",
     "2026-09-28 integration: hardened archive extraction with an explicit trusted root and component-by-component prevalidation so ancestor/descendant junctions are rejected before redirected directory/file creation.",
     "2026-09-28 integration: added Windows junction/root/cycle and archive physical-root regressions; combined local suites pass Automation 24/24 and Integration 96/96.",
