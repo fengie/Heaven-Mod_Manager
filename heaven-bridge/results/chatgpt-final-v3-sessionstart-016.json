@@ -1,0 +1,28 @@
+{
+  "id": "chatgpt-final-v3-sessionstart-016",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:54:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:53:55.414666+00:00",
+  "finished_at": "2026-09-28T19:53:55.426810+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "data": {
+    "session_id": "1cb5e452dbed4654",
+    "pid": 45500,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-28T19:53:55.426810+00:00",
+    "last_activity_at": "2026-09-28T19:53:55.426810+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 300,
+    "max_runtime_seconds": 900,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1cb5e452dbed4654.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1cb5e452dbed4654.err.log"
+  },
+  "job_hash": "5826a5208cb279e603c11247a78509618584b882d8f6226f5a3e20cf26708cc0"
+}
