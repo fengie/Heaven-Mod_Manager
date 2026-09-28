@@ -136,7 +136,7 @@ try {
   $publication=Invoke-UpdaterDraftPublication -ExpectedSourceSha $ExpectedSourceSha `
     -CreateDraft {
       & gh release create $tag --repo $Repository --target $ExpectedSourceSha --title "MHW Manual Mod Manager updater build $ExpectedBuildNumber" --notes $notes --draft --latest=false
-      if($LASTEXITCODE -ne 0){throw "Failed to create updater draft release $tag."}
+      if($LASTEXITCODE -ne 0){throw "Failed to create updater draft release $tag; draft state must be inspected before retry because creation may be response-ambiguous."}
     } `
     -UploadAssets {
       # Never pass --clobber. This draft is new and exact asset names are verified below.
