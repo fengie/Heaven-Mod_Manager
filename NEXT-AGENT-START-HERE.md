@@ -1,4 +1,4 @@
-# Branch-specific frontend continuation — ui/frontend-responsive-polish-20260928
+# Branch-specific frontend continuation - ui/frontend-responsive-polish-20260928
 
 This branch is the evidence-backed continuation of ui/frontend-ux-overhaul. Read _AGENT_CONTEXT/UI_FRONTEND_UX_2026-09-28.md before the canonical updater history below.
 
@@ -9,27 +9,26 @@ Preserve updater implementation and lifetime semantics when resolving shared WPF
 You inherit the permanent continuity constitution and active Learned Rules. Before finishing, update durable handoff state and require your successor to inherit, preserve, and recursively propagate those rules to the agent after them. Do not break the chain.
 
 ---
-
-# Current updater handoff ΓÇö 2026-09-28
+# Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.
 
-The isolated repair branch is `agent/auto-updater-publication-fix-20260928`, based on that exact main SHA. Read `_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md` and the current section at the top of `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md` before continuing. C12's focused Windows policy regression passes. Full exact-source verifier/build, hosted publication, and disposable oldΓåÆnew plus injected rollback proof remain required.
+The isolated repair branch is `agent/auto-updater-publication-fix-20260928`, based on that exact main SHA. Read `_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md` and the current section at the top of `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md` before continuing. C12's focused Windows policy regression passes. Full exact-source verifier/build, hosted publication, and disposable old→new plus injected rollback proof remain required.
 
 Continue in the repair worktree; preserve the clean canonical main checkout and active support-agent work. After integration, verify the immutable release/tag/assets and complete the disposable update/rollback proof. Preserve the permanent continuity constitution and active Learned Rules, and require your successor to propagate them recursively to the agent after them.
 
 ---
 
-# Active updater continuation ΓÇö 2026-09-28
+# Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
 
 The updater implementation is locally release-verified through C11b but is NOT yet hosted-main/end-to-end closed. Preserve the permanent continuity constitution and active Learned Rules; require the successor to preserve and recursively propagate them to the agent after them.
 
-Updater checkpoints C4-C11b now culminate at exact integrated commit `08054d96a8ba84819b6dfd775d56f9eeabc7986d`. C9 closes updater-level LR-003 native 1176/1177 fail-closed behavior plus fresh-process recovery; C10 integrates/hardens WPF client lifetime and helper handoff; C11a builds/verifies deterministic updater ownership/install/build/update metadata and the complete helper invocation closure; C11b adds immutable exact-main GitHub Release policy, deterministic artifact identity, exact two-asset verification, stale-main/evidence-only/monotonic-build refusal, final pre-publication `origin/main` revalidation, and remaining metadata/rollback native replacement coverage. Exact local heaven/Windows/.NET 10.0.401 evidence at C11b: `Verify-Release.ps1` **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict analyzers, ReadyToRun app publish, updater-helper publish, package verifier, publication-policy tests, and `Build-Release.ps1` PASS; updater build **227**, ZIP SHA-256 `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`. No release was published from this branch. Next: integrate to eligible exact `main`, verify hosted immutable publication, then run disposable real oldΓåÆnew and injected rollback end-to-end tests with seeded user-data hashes and exact restart identity.
+Updater checkpoints C4-C11b now culminate at exact integrated commit `08054d96a8ba84819b6dfd775d56f9eeabc7986d`. C9 closes updater-level LR-003 native 1176/1177 fail-closed behavior plus fresh-process recovery; C10 integrates/hardens WPF client lifetime and helper handoff; C11a builds/verifies deterministic updater ownership/install/build/update metadata and the complete helper invocation closure; C11b adds immutable exact-main GitHub Release policy, deterministic artifact identity, exact two-asset verification, stale-main/evidence-only/monotonic-build refusal, final pre-publication `origin/main` revalidation, and remaining metadata/rollback native replacement coverage. Exact local heaven/Windows/.NET 10.0.401 evidence at C11b: `Verify-Release.ps1` **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict analyzers, ReadyToRun app publish, updater-helper publish, package verifier, publication-policy tests, and `Build-Release.ps1` PASS; updater build **227**, ZIP SHA-256 `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`. No release was published from this branch. Next: integrate to eligible exact `main`, verify hosted immutable publication, then run disposable real old→new and injected rollback end-to-end tests with seeded user-data hashes and exact restart identity.
 
 ---
-# 2026-09-28 support integration ΓÇö CLOSED / HOSTED WINDOWS VERIFIED
+# 2026-09-28 support integration — CLOSED / HOSTED WINDOWS VERIFIED
 
 Recursive source reparse containment and archive extraction physical-root containment are now integrated on canonical `main`. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and `Build-Release.ps1` with ReadyToRun publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
 
@@ -39,16 +38,16 @@ Active Learned Rules are now **LR-001 through LR-010**. Preserve the permanent c
 
 ---
 
-# CAS integrity checkpoint ΓÇö CLOSED
+# CAS integrity checkpoint — CLOSED
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
 Historical note: recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox was the next boundary at this CAS checkpoint and has since been integrated and hosted-Windows verified. Current action is the archive streaming cancellation/resource-budget boundary stated at the top of this file. Keep CAS root/hash-leaf identity and digest-namespace findings separately scoped. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
-# NEXT AGENT ΓÇö START HERE
+# NEXT AGENT — START HERE
 
-## Permanent recursive continuity obligation ΓÇö read before any edit
+## Permanent recursive continuity obligation — read before any edit
 
 You inherit the repository's **permanent continuity constitution**.
 
@@ -62,7 +61,7 @@ Before modifying this project:
 6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`, then the 2026-09-27 historical inventory as needed;
 7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
-The authority hierarchy is company engineering doctrine ΓåÆ project-specific operating rules/current repository truth ΓåÆ current task instructions, with more specific and newer verified repository truth taking precedence when guidance conflicts.
+The authority hierarchy is company engineering doctrine → project-specific operating rules/current repository truth → current task instructions, with more specific and newer verified repository truth taking precedence when guidance conflicts.
 
 Preserve the constitution. Obey active Learned Rules. Add a project Learned Rule only when a concrete, durable discovery justifies it. Before finishing any meaningful engineering task, also ask whether the work revealed a reusable lesson that should update `_AGENT_TRAINING/`.
 
@@ -87,7 +86,7 @@ This LR-003 boundary is complete and hosted-Windows verified.
 
 `AtomicFileOps` now has a narrow injectable native replacement seam. Documented 1176/1177 partial-name-mutation failures preserve staged replacement bytes and remain fail-closed as `RecoveryRequired` / journal `Writing`; 1175 rolls back to exact BEFORE bytes with operation/journal `RolledBack`. Do not reopen this boundary to solve CAS, recursive traversal, or migration findings.
 
-## Historical next programmer boundary ΓÇö completed 2026-09-28
+## Historical next programmer boundary — completed 2026-09-28
 
 This section originally selected **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox. That checkpoint is now integrated; its instructions below are retained as historical acceptance criteria.
 
@@ -186,16 +185,16 @@ Migration documentation was corrected to match current source behavior.
 
 Read the full ledger; do not rely only on this summary.
 
-- LR-001 ΓÇö moved production bodies require verification-instrumentation re-audit.
-- LR-002 ΓÇö shared API removal requires compile-backed caller closure.
-- LR-003 ΓÇö native replacement failure is not equivalent to no filesystem mutation.
-- LR-004 ΓÇö lexical containment is not physical filesystem containment.
-- LR-005 ΓÇö restartable migrations must prove ownership and convergence.
-- LR-006 ΓÇö shareable diagnostic artifacts require export-boundary sanitization.
-- LR-007 ΓÇö entity retirement must close live semantic references.
-- LR-008 ΓÇö import publication requires catalog-invisible staging.
-- LR-009 ΓÇö automated diagnosis must validate its control before persisting blame.
-- LR-010 ΓÇö a containment check after mutation is not fail-closed.
+- LR-001 — moved production bodies require verification-instrumentation re-audit.
+- LR-002 — shared API removal requires compile-backed caller closure.
+- LR-003 — native replacement failure is not equivalent to no filesystem mutation.
+- LR-004 — lexical containment is not physical filesystem containment.
+- LR-005 — restartable migrations must prove ownership and convergence.
+- LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
+- LR-007 — entity retirement must close live semantic references.
+- LR-008 — import publication requires catalog-invisible staging.
+- LR-009 — automated diagnosis must validate its control before persisting blame.
+- LR-010 — a containment check after mutation is not fail-closed.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule. A later crash-diagnosis branch independently proposed LR-007; follow-up integration preserved lifecycle LR-007 and import LR-008, and renumbered crash diagnosis to LR-009 without changing the rule.
 
