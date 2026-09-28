@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.2 does
+## What v0.3.1 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -90,6 +90,8 @@ node .\agentctl.mjs stop <agent-id>
 - Each deployment creates a separate worktree and branch.
 - A named mutable-boundary lease prevents two managed agents from silently owning the same implementation surface.
 - Stopping a worker targets only the PID launched by this controller.
+- Operator stop intent dominates a zero exit code: a stopped worker remains `stopped` and cannot become an integration candidate.
+- Authoritative child-exit handling collects asynchronous Git evidence before loading and mutating the registry, preventing a stale whole-state snapshot from overwriting newer control-plane changes.
 - The controller does not merge branches automatically.
 - Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
 
