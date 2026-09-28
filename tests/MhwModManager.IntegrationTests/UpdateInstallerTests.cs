@@ -146,18 +146,50 @@ public sealed class UpdateInstallerTests : IDisposable
         var installer = new UpdateInstaller();
         await installer.ApplyAsync(fixture.Request, TestToken);
         var previousLaunched = false;
+        string? previousExecutable = null;
         var coordinator = new UpdateRestartCoordinator(
             _ => throw new System.ComponentModel.Win32Exception("injected launch failure"),
-            () =>
+            executable =>
             {
                 previousLaunched = true;
+                previousExecutable = executable;
                 return Process.GetCurrentProcess();
             },
             _ => throw new InvalidOperationException("No target process was started."));
 
         Assert.Equal(5, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(100)));
         Assert.True(previousLaunched);
+        Assert.Equal("app.exe", previousExecutable);
         await AssertOldInstallRestoredAsync();
+    }
+
+    [Fact]
+    public async Task Rollback_restart_uses_restored_previous_executable_when_target_name_changed()
+    {
+        var fixture = await CreateFixtureAsync("old-manager.exe", "new-manager.exe");
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        string? restartedExecutable = null;
+        var coordinator = new UpdateRestartCoordinator(
+            _ => throw new System.ComponentModel.Win32Exception("injected target launch failure"),
+            executable =>
+            {
+                restartedExecutable = executable;
+                return Process.GetCurrentProcess();
+            },
+            _ => throw new InvalidOperationException("No target process was started."));
+
+        Assert.Equal(5, await coordinator.RunAsync(
+            installer, fixture.Request, TimeSpan.FromMilliseconds(100)));
+
+        Assert.Equal("old-manager.exe", restartedExecutable);
+        Assert.Equal(
+            "OLD-APP",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "old-manager.exe"), TestToken));
+        Assert.False(File.Exists(Path.Combine(installRoot, "new-manager.exe")));
+        var restoredMarker = await ReleaseInstallMarker.LoadAsync(installRoot, TestToken);
+        Assert.Equal("old-manager.exe", restoredMarker.ExecutableRelativePath);
+        Assert.Equal(1, restoredMarker.Build.BuildNumber);
     }
 
     [Fact]
@@ -168,7 +200,7 @@ public sealed class UpdateInstallerTests : IDisposable
         await installer.ApplyAsync(fixture.Request, TestToken);
         var coordinator = new UpdateRestartCoordinator(
             _ => Process.GetCurrentProcess(),
-            () => throw new InvalidOperationException("Previous application must not launch while target exit is unproven."),
+            _ => throw new InvalidOperationException("Previous application must not launch while target exit is unproven."),
             _ => Task.FromResult(false));
 
         Assert.Equal(4, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(30)));
@@ -202,7 +234,7 @@ public sealed class UpdateInstallerTests : IDisposable
                 targetLaunches++;
                 return Process.GetCurrentProcess();
             },
-            () =>
+            _ =>
             {
                 previousLaunches++;
                 return Process.GetCurrentProcess();
@@ -300,7 +332,7 @@ public sealed class UpdateInstallerTests : IDisposable
                 targetLaunches++;
                 return Process.GetCurrentProcess();
             },
-            () =>
+            _ =>
             {
                 previousLaunches++;
                 return Process.GetCurrentProcess();
@@ -352,7 +384,7 @@ public sealed class UpdateInstallerTests : IDisposable
                 targetLaunches++;
                 return Process.GetCurrentProcess();
             },
-            () => throw new InvalidOperationException("Previous app must not restart after successful health."),
+            _ => throw new InvalidOperationException("Previous app must not restart after successful health."),
             _ => Task.FromResult(true));
 
         Assert.Equal(
@@ -465,7 +497,9 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("OLD-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
     }
 
-    private async Task<UpdateFixture> CreateFixtureAsync()
+    private async Task<UpdateFixture> CreateFixtureAsync(
+        string oldExecutable = "app.exe",
+        string newExecutable = "app.exe")
     {
         UpdatePackageStager.EnsureUpdaterRoot(UpdatePackageStager.GetUpdaterRoot());
         Directory.CreateDirectory(updaterTestRoot);
@@ -473,7 +507,7 @@ public sealed class UpdateInstallerTests : IDisposable
         Directory.CreateDirectory(Path.Combine(installRoot, "Mods"));
         Directory.CreateDirectory(Path.Combine(installRoot, "State"));
 
-        await File.WriteAllTextAsync(Path.Combine(installRoot, "app.exe"), "OLD-APP", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(installRoot, oldExecutable), "OLD-APP", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "stale.dll"), "STALE", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "Mods", "mine.mod"), "USER-MOD", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "State", "user.dat"), "USER-STATE", TestToken);
@@ -481,7 +515,7 @@ public sealed class UpdateInstallerTests : IDisposable
 
         var oldManifest = new ProductFileManifest(1,
         [
-            await EntryAsync(installRoot, "app.exe"),
+            await EntryAsync(installRoot, oldExecutable),
             await EntryAsync(installRoot, "stale.dll")
         ]);
         var oldManifestPath = Path.Combine(installRoot, UpdateProtocol.ProductManifestFileName);
@@ -490,16 +524,16 @@ public sealed class UpdateInstallerTests : IDisposable
         var oldIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
             "sha-old-abcdef", 1, DateTimeOffset.UtcNow.AddMinutes(-5));
         var oldMarker = new ReleaseInstallMarker(1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
-            oldIdentity, oldProductHash);
+            oldIdentity, oldExecutable, oldProductHash);
         await WriteJsonAsync(Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName), oldMarker);
 
         var stage = Path.Combine(updaterTestRoot, "stage");
         Directory.CreateDirectory(stage);
-        await File.WriteAllTextAsync(Path.Combine(stage, "app.exe"), "NEW-APP", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(stage, newExecutable), "NEW-APP", TestToken);
         await File.WriteAllTextAsync(Path.Combine(stage, "new.dll"), "NEW-LIB", TestToken);
         var newManifest = new ProductFileManifest(1,
         [
-            await EntryAsync(stage, "app.exe"),
+            await EntryAsync(stage, newExecutable),
             await EntryAsync(stage, "new.dll")
         ]);
         var newManifestPath = Path.Combine(stage, UpdateProtocol.ProductManifestFileName);
@@ -509,7 +543,7 @@ public sealed class UpdateInstallerTests : IDisposable
         var newIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
             "sha-new-abcdef", 2, DateTimeOffset.UtcNow);
         var newMarker = new ReleaseInstallMarker(1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
-            newIdentity, newProductHash);
+            newIdentity, newExecutable, newProductHash);
         await WriteJsonAsync(Path.Combine(stage, UpdateProtocol.InstallMarkerFileName), newMarker);
 
         var updateManifest = new UpdateManifest(
@@ -522,7 +556,7 @@ public sealed class UpdateInstallerTests : IDisposable
             123,
             new string('A', 64),
             newProductHash,
-            "app.exe",
+            newExecutable,
             1,
             DateTimeOffset.UtcNow);
 

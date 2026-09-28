@@ -18,7 +18,7 @@ The senior branch has a strong safety baseline: explicit product ownership, veri
 
 While this audit was being written, the senior branch advanced from 2 to 4 commits ahead of `main`. Its new Checkpoint C2 now states that journal identity is checked before interrupted-metadata recovery and adds identity-mismatch regressions. That supersedes the lower-priority journal/source-SHA finding below; it is retained only as historical review context and should **not** be re-opened unless a newer regression disproves C2.
 
-Checkpoint C4 on `agent/auto-updater-20260928` now closes the first P1 gap below with durable launch-attempt/process identity and real helper-process regression coverage. The remaining three P1 findings (rollback executable identity, authenticated GitHub host enforcement, and exact cross-file build identity agreement) remain live after C4.
+Checkpoint C4 closes the duplicate-launch P1. Checkpoint C5 now also closes rollback executable identity by restoring the previous release marker and choosing that marker's owned executable path after rollback. The remaining live P1 findings are authenticated GitHub host enforcement and exact cross-file build identity agreement.
 
 ---
 
@@ -78,6 +78,10 @@ Inject helper interruption after target process creation but before health confi
 ---
 
 ## P1 — Rollback restart always uses the *new* manifest executable path
+
+### CLOSED by Checkpoint C5 — restored release owns its restart executable
+
+`release-install.json` now records `ExecutableRelativePath`. The installed/staged/rollback product manifests must own the declared executable, the staged marker must agree with the target manifest, and rollback reloads the restored marker before restart. A Windows regression updates from `old-manager.exe` to `new-manager.exe`, forces target launch failure, proves rollback restores `old-manager.exe`, removes the new executable, and passes the restored old executable path to restart. Focused updater suite: **48/48 PASS**; strict whole-solution build: **0 warnings / 0 errors** on .NET SDK 10.0.401.
 
 ### Observed code path
 

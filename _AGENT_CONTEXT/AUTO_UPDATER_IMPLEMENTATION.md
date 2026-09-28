@@ -153,3 +153,13 @@ Verification for this checkpoint:
 - One preceding regression run failed because the test harness constructed bin\\bin instead of bin\\Release for the helper fixture; the production updater was not implicated. The corrected harness passed.
 - Full release verification remains pending for these changed production inputs.
 - The runtime/recovery support audit has been harvested into this branch. Its duplicate-launch P1 is closed by C4; remaining P1s are rollback executable identity, authenticated GitHub host enforcement, and exact build-metadata agreement.
+
+## Checkpoint C5 — rollback restart executable identity
+- release-install.json now carries ExecutableRelativePath as part of installed release metadata.
+- Installed, staged, and rollback product manifests must own their declared restart executable.
+- The staged marker executable must agree with update-manifest.json before live mutation.
+- After rollback, the coordinator reloads the restored release marker and restarts that previous executable rather than reusing the target manifest path.
+- Added Windows regression old-manager.exe -> new-manager.exe -> forced target launch failure -> rollback; previous executable is restored and selected for restart.
+- Focused updater tests: **48/48 PASS** on Windows x64 / .NET SDK 10.0.401.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Full release verification remains pending. Remaining support-audit P1s: authenticated GitHub host enforcement and exact cross-file build identity agreement.

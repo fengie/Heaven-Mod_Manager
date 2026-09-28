@@ -61,6 +61,7 @@ public sealed record ReleaseInstallMarker(
     string ProductId,
     string Channel,
     UpdateBuildIdentity Build,
+    string ExecutableRelativePath,
     string ProductManifestSha256)
 {
     public void Validate()
@@ -74,8 +75,25 @@ public sealed record ReleaseInstallMarker(
             throw new InvalidDataException($"Unexpected installed update channel '{Channel}'.");
         if (Build.SchemaVersion != UpdateProtocol.BuildIdentitySchemaVersion)
             throw new InvalidDataException($"Unsupported installed build identity schema {Build.SchemaVersion}.");
+        UpdatePathSafety.NormalizeRelativeFilePath(ExecutableRelativePath);
         if (ProductManifestSha256.Length != 64 || ProductManifestSha256.Any(c => !Uri.IsHexDigit(c)))
             throw new InvalidDataException("Install marker product manifest SHA-256 is malformed.");
+    }
+
+    public static async Task<ReleaseInstallMarker> LoadAsync(
+        string installRoot,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"installRoot={installRoot}");
+        var path = UpdatePathSafety.CombineUnderRoot(installRoot, UpdateProtocol.InstallMarkerFileName);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(installRoot, path);
+        if (!File.Exists(path))
+            throw new FileNotFoundException("Installed release marker is missing.", path);
+        var marker = JsonSerializer.Deserialize<ReleaseInstallMarker>(
+                         await File.ReadAllTextAsync(path, ct), UpdateProtocol.Json)
+                     ?? throw new InvalidDataException("Installed release marker is empty.");
+        marker.Validate();
+        return marker;
     }
 }
 

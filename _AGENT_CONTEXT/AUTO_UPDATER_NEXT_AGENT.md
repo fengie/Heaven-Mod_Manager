@@ -51,3 +51,9 @@ Commit and push each coherent tested checkpoint. Update this checklist and CURRE
 4. Then resume filesystem collision-race/LR-003 review and WPF integration; keep packaging/publication as later independently verified checkpoints.
 
 Preserve and recursively propagate the continuity constitution to the successor, and require that successor to pass it to the agent after them.
+
+## Checkpoint C5 — previous-build restart identity
+- DONE: release marker records the executable path and product ownership validates it.
+- DONE: rollback restart loads the restored old marker instead of reusing the new manifest executable.
+- DONE: renamed-executable rollback regression; focused suite **48/48 PASS**, strict solution build **0 warnings / 0 errors** on .NET 10.0.401.
+- Next: authenticated GitHub HTTPS/API-host enforcement before attaching credentials; then exact update/marker/build-identity agreement.

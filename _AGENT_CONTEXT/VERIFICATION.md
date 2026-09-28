@@ -667,3 +667,10 @@ Verification actually performed on the working tree before checkpoint commit:
 Useful failed attempt preserved: the first real-helper regression run failed because the test harness resolved the fixture as ...\\bin\\bin\\net10... instead of ...\\bin\\Release\\net10.... The harness path was corrected; the same updater code then passed. This was not production updater failure evidence.
 
 This is focused/local Windows evidence only. Verify-Release.ps1, Build-Release.ps1, hosted Windows Release Gate, publication checks, and live old→new/rollback closure have **not** yet been run for this changed source. Do not promote prior release verification to C4.
+
+## Checkpoint C5 — rollback executable identity
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+- Focused updater tests: **48/48 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Regression updates a disposable install from old-manager.exe to new-manager.exe, forces target launch failure, verifies rollback restores old-manager.exe/removes new-manager.exe, reloads the restored release marker, and passes old-manager.exe to previous-build restart.
+- No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.

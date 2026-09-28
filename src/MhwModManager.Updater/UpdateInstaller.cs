@@ -149,6 +149,7 @@ public sealed class UpdateInstaller(
         if (!string.Equals(oldProductHash, marker.ProductManifestSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Installed product manifest no longer matches the packaged install marker.");
         var oldManifest = await LoadProductManifestAsync(oldProductPath, ct);
+        EnsureManifestOwnsExecutable(oldManifest, marker.ExecutableRelativePath, "Installed");
 
         var newManifest = await UpdatePackageVerifier.VerifyAsync(
             request.StagingRoot, request.Manifest.ProductManifestSha256, ct);
@@ -159,13 +160,14 @@ public sealed class UpdateInstaller(
         stagedMarker.Validate();
         if (stagedMarker.Build.BuildNumber != request.Manifest.BuildNumber
             || !string.Equals(stagedMarker.Build.SourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                UpdatePathSafety.NormalizeRelativeFilePath(stagedMarker.ExecutableRelativePath),
+                UpdatePathSafety.NormalizeRelativeFilePath(request.Manifest.ExecutableRelativePath),
+                StringComparison.OrdinalIgnoreCase)
             || !string.Equals(stagedMarker.ProductManifestSha256, request.Manifest.ProductManifestSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Staged install marker does not match the target update manifest.");
 
-        var exe = UpdatePathSafety.NormalizeRelativeFilePath(request.Manifest.ExecutableRelativePath);
-        if (!newManifest.Files.Any(x =>
-                string.Equals(UpdatePathSafety.NormalizeRelativeFilePath(x.Path), exe, StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidDataException("Staged product manifest does not own the declared restart executable.");
+        EnsureManifestOwnsExecutable(newManifest, request.Manifest.ExecutableRelativePath, "Staged");
 
         var ownedPaths = oldManifest.Files.Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -297,7 +299,11 @@ public sealed class UpdateInstaller(
                      ?? throw new InvalidDataException("Installed release marker is empty after apply.");
         marker.Validate();
         if (marker.Build.BuildNumber != request.Manifest.BuildNumber
-            || !string.Equals(marker.Build.SourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase))
+            || !string.Equals(marker.Build.SourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                UpdatePathSafety.NormalizeRelativeFilePath(marker.ExecutableRelativePath),
+                UpdatePathSafety.NormalizeRelativeFilePath(request.Manifest.ExecutableRelativePath),
+                StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Installed release marker does not describe the target update build.");
     }
 
@@ -337,6 +343,7 @@ public sealed class UpdateInstaller(
                 backupMarker.ProductManifestSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Rollback metadata does not describe the previous installation.");
         var previousManifest = await LoadProductManifestAsync(backupProductPath, ct);
+        EnsureManifestOwnsExecutable(previousManifest, backupMarker.ExecutableRelativePath, "Rollback");
         var previousPaths = previousManifest.Files.Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         previousPaths.Add(UpdateProtocol.ProductManifestFileName);
@@ -426,6 +433,23 @@ public sealed class UpdateInstaller(
                     ?? throw new InvalidDataException("Product manifest is empty.");
         value.Validate();
         return value;
+    }
+
+    private static void EnsureManifestOwnsExecutable(
+        ProductFileManifest manifest,
+        string executableRelativePath,
+        string label)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"label={label}; executable={executableRelativePath}");
+        var executable = UpdatePathSafety.NormalizeRelativeFilePath(executableRelativePath);
+        if (!manifest.Files.Any(x =>
+                string.Equals(
+                    UpdatePathSafety.NormalizeRelativeFilePath(x.Path),
+                    executable,
+                    StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidDataException(
+                $"{label} product manifest does not own declared restart executable '{executableRelativePath}'.");
     }
 
     private static async Task<UpdateJournal?> ReadJournalAsync(string path, CancellationToken ct)

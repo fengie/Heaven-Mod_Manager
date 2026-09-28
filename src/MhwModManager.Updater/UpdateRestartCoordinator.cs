@@ -6,7 +6,7 @@ namespace MhwModManager.Updater;
 // The helper owns the process operations; this coordinator owns their recovery order.
 public sealed class UpdateRestartCoordinator(
     Func<string, Process> startTargetApplication,
-    Func<Process> startPreviousApplication,
+    Func<string, Process> startPreviousApplication,
     Func<Process, Task<bool>> stopApplication,
     Action<string>? log = null)
 {
@@ -153,9 +153,11 @@ public sealed class UpdateRestartCoordinator(
         {
             using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             await installer.RollbackAsync(request, recovery.Token);
+            var previousMarker = await ReleaseInstallMarker.LoadAsync(request.InstallRoot, recovery.Token);
             UpdateLaunchStateStore.DeleteBestEffort(request, log);
-            using var previous = startPreviousApplication();
-            log?.Invoke($"update restored previous application pid={previous.Id}");
+            using var previous = startPreviousApplication(previousMarker.ExecutableRelativePath);
+            log?.Invoke(
+                $"update restored previous application pid={previous.Id} executable={previousMarker.ExecutableRelativePath}");
             return 5;
         }
         catch (Exception ex)

@@ -48,7 +48,13 @@ internal static class Program
                 if (await ReadJournalPhaseAsync(request.JournalPath) == UpdateJournalPhase.RolledBack)
                 {
                     Log(logPath, "helper rollback completed after apply failure; restarting previous application");
-                    StartApplication(request, includeHealthArguments: false, attemptId: null).Dispose();
+                    var previousMarker = await ReleaseInstallMarker.LoadAsync(
+                        request.InstallRoot, CancellationToken.None);
+                    StartApplication(
+                        request,
+                        previousMarker.ExecutableRelativePath,
+                        includeHealthArguments: false,
+                        attemptId: null).Dispose();
                 }
                 return 2;
             }
@@ -97,20 +103,24 @@ internal static class Program
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return new UpdateRestartCoordinator(
-            attemptId => StartApplication(request, includeHealthArguments: true, attemptId),
-            () => StartApplication(request, includeHealthArguments: false, attemptId: null),
+            attemptId => StartApplication(
+                request, request.Manifest.ExecutableRelativePath, includeHealthArguments: true, attemptId),
+            executableRelativePath => StartApplication(
+                request, executableRelativePath, includeHealthArguments: false, attemptId: null),
             process => StopProcessAsync(process, logPath),
             message => Log(logPath, message));
     }
 
     private static Process StartApplication(
         UpdateApplyRequest request,
+        string executableRelativePath,
         bool includeHealthArguments,
         string? attemptId)
     {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"health={includeHealthArguments}");
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"health={includeHealthArguments}; executable={executableRelativePath}");
         var executable = UpdatePathSafety.CombineUnderRoot(
-            request.InstallRoot, request.Manifest.ExecutableRelativePath);
+            request.InstallRoot, executableRelativePath);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(request.InstallRoot, executable);
         if (!File.Exists(executable))
             throw new FileNotFoundException("Updater restart executable is missing.", executable);
