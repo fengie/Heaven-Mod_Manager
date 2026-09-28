@@ -1,3 +1,131 @@
+# Updater C11b publication policy — exact local Windows verification — 2026-09-28
+
+Exact integrated updater source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d` on `agent/auto-updater-20260928`.
+
+Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
+- `scripts/Test-UpdaterReleasePolicy.ps1`: PASS;
+- `scripts/Test-AgentHandoff.ps1`: PASS;
+- strict whole-solution build/analyzers: **PASS, 0 warnings / 0 errors**;
+- Integration/fault injection: **173/173 PASS**;
+- `scripts/Verify-Release.ps1`: **25/25 PASS** after restoring the standard process-local `OS=Windows_NT` marker omitted by Remote Desktop Commander;
+- FunctionVerifier: **727/727 promoted**, **7749 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- automation self-test: **11/11 PASS**;
+- App win-x64 strict analyzers + ReadyToRun self-contained publish: PASS;
+- updater-helper self-contained publish: PASS;
+- updater package verification: PASS;
+- `Build-Release.ps1`: PASS;
+- updater build: **227**;
+- updater ZIP SHA-256: `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`.
+
+C11b includes deterministic immutable publication policy, exact two-asset verification, monotonic build/stale-main/evidence-only refusal, no-clobber behavior, final `origin/main` revalidation immediately before irreversible publication, and updater metadata/rollback native replacement fail-closed coverage. No GitHub Release was published from the updater branch. Remaining closure requires eligible `main`, hosted Windows publication verification, and disposable real old-to-new plus injected rollback tests with seeded user-data preservation.
+
+---
+
+# Updater C11a packaging — exact clean-checkout Windows verification — 2026-09-28
+
+Exact committed packaging checkpoint: `2e136cc22f570a94db8da67c91aa755d4c7a3ce6`.
+
+From a freshly reset and `git clean -fdx` review worktree on heaven / Windows x64 / .NET SDK 10.0.401, using test-only build number `987654325` and exact source SHA equal to the commit:
+- handoff continuity preflight: PASS;
+- verification-cache regressions: PASS;
+- FunctionVerifier scan before confirm: **727 functions**, **609 known-good / 118 needing current verification**, **0 trace gaps**, **7746 explicit call sites / 0 uncovered**, **0 parse errors**;
+- strict solution build/analyzers: PASS;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **170/170 PASS**;
+- automation self-test: **11/11 PASS**;
+- App win-x64 compile/analyzers: PASS;
+- App ReadyToRun self-contained publish: PASS;
+- updater-helper self-contained multi-file invocation-closure publish: PASS;
+- normal build verifier confirm stage: **727/727 promoted inside the isolated worktree only**;
+- updater package verifier: PASS;
+- updater ZIP SHA-256: `8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74`.
+
+The isolated verifier cache was not copied to the canonical checkout. C11a does not claim immutable GitHub Release publication, a hosted Windows publication gate, or disposable real old→new/rollback closure.
+
+Three failed attempts are preserved in `AUTO_UPDATER_C11_PACKAGING_2026-09-28.md`: trace-policy gaps, single-file-helper IL3000 incompatibility, and generic-list PowerShell serialization.
+
+---
+
+# Updater C10 WPF/client hardening — local Windows verification — 2026-09-28
+
+Exact hardened production/test source: `fdff9ed940b8801c1b17bedb6e6de523d7b807a6` (inherited C10 integration `1fbdd06`).
+
+Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
+- pre-repair focused characterization: **5/5 failed as intended** for dangling/mispaired updater health arguments and incomplete helper dependency copying;
+- repaired focused updater/handoff suite: **74/74 PASS**;
+- full `MhwModManager.IntegrationTests`: **170/170 PASS**;
+- strict `dotnet build MhwModManager.sln -c Release -warnaserror`: **PASS, 0 warnings / 0 errors**;
+- `scripts/Test-AgentHandoff.ps1`: PASS;
+- `git diff --check`: PASS before source checkpoint.
+
+C10 now includes late startup health acknowledgement, non-fatal background/manual check-stage UI, stale updater-health argument removal with malformed input rejection, complete product-owned `UpdaterHelper/` invocation-closure copying with per-file verification, and an atomic foreground-operation/handoff gate.
+
+No full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, verification-cache promotion, immutable publication, or disposable old→new packaged update is claimed for C10. Those belong to the separate C11 packaging/publication and final end-to-end boundaries.
+
+See `_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md`.
+
+---
+
+# Updater C9 local Windows verification — 2026-09-28
+
+Exact changed production/test commit: `8cdf54d0bc4065a55124aef96c68b26de2a78f0c`.
+
+Scope: updater-specific LR-003 native existing-file replacement handling.
+
+Evidence on authorized support machine `heaven`, Windows x64, .NET SDK 10.0.401 installed user-locally:
+
+- pre-fix characterization: 3 targeted tests, **1 passed / 2 failed**; 1176 and 1177 showed current auto-rollback recreating the destination through ambiguous native pathname mutation;
+- repaired targeted native updater fixtures: **3/3 PASS**;
+- focused updater suite: **61/61 PASS**;
+- existing native DeploymentExecutor 1175/1176/1177 fixtures: **3/3 PASS**;
+- full `MhwModManager.IntegrationTests`: **157/157 PASS**;
+- strict `dotnet build MhwModManager.sln -c Release -warnaserror`: **PASS, 0 warnings / 0 errors**;
+- `git diff --check`: PASS before commit.
+
+No full repository verifier, release build, hosted Windows Release Gate, verification-cache promotion, or live old→new update is claimed for this source. Previous closed main evidence remains bound to its exact historical inputs.
+
+---
+
+# Updater C8 atomic publication race — Windows evidence only
+
+Exact production/test commit: `fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.
+
+- Pre-fix focused race regression: **FAILED as intended** — `Unowned_file_created_after_preflight_is_never_overwritten` observed no exception because the raced unknown file was overwritten.
+- Repaired focused updater suite: **58/58 PASS**.
+- Existing LR-003 Atomic ReplaceFileW fixtures (1175/1176/1177): **3/3 PASS**.
+- First full integration after the race repair: **153/154**; sole failure was the inherited `ExternalProcessesCannotBypassMasterProcessTrace` static policy test identifying direct `Process.Start` in the updater helper.
+- Helper launch was switched to the existing `ProcessDebug.Start` wrapper.
+- Final full IntegrationTests: **154/154 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- `git diff --check`: PASS.
+- No verification cache was manually promoted.
+- No full repository `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, immutable release publication, or disposable live old→new update is claimed for C8.
+
+C8 deliberately does not claim to close the path-based physical-containment TOCTOU window. Next evidence should characterize updater-specific native partial-replacement failures under LR-003 before WPF integration.
+
+---
+
+# Updater C7 exact published build identity — focused Windows evidence only
+
+Exact production/test commit: `f70fea687be362fb0869390b119f77417d9bf707`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.
+
+- Focused updater tests (`UpdateInstallerTests|UpdateRuntimeTests|UpdaterCoreTests`): **57/57 PASS**.
+- Strict whole-solution `dotnet build MhwModManager.sln -c Release -warnaserror --no-restore`: **PASS, 0 warnings / 0 errors**.
+- New regressions prove staged marker product-version disagreement, nested build-channel disagreement, and a cryptographically self-consistent staged build-identity/source disagreement all fail before backup/live mutation.
+- No repository-wide `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, immutable publication test, or live disposable old→new update is claimed for this updater source.
+- Verification caches were not manually promoted.
+
+The updater remains INCOMPLETE. Next bounded evidence should target updater collision-race/LR-003 mutation behavior, then WPF integration, before packaging/publication and full end-to-end closure.
+
+---
+
+# Updater cancellation/ownership checkpoint — focused Windows evidence only
+
+Inherited source e42fdd4 plus this checkpoint: two new regression tests failed before the fix; all 35 focused updater tests passed afterward on Windows x64 / SDK 10.0.401. Full release gates and live old-to-new update remain pending. See AUTO_UPDATER_NEXT_AGENT.md. Older closure evidence below does not verify updater changes.
+
 # 2026-09-28 combined support integration — CLOSED / hosted + local Windows verification
 
 Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.
@@ -636,3 +764,46 @@ This commit integrated documentation/continuity only. The exact Windows gate nev
 - release artifact SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
 
 The workflow persisted promoted verification/cache evidence normally. No cache was manually promoted. Any future production-source change starts a new exact verification boundary.
+
+## Checkpoint C2 — interrupted metadata recovery
+- Journal identity is checked before normal installed metadata validation. Applying/BackupCreated/RollbackRequired recover first using a separate bounded recovery token, then reload the restored installation.
+- Rollback prevalidates all backup bytes, previous marker/product-manifest agreement and previous ownership before mutating the live tree.
+- Three new journal/metadata regressions failed on the preceding checkpoint and passed after repair. Added corrupt-backup regression proves new live files remain untouched if recovery material is corrupt.
+- Focused updater tests: 39/39 PASS (Windows x64, SDK 10.0.401). Full release verification remains pending.
+- Next: helper start/stop failure recovery; see AUTO_UPDATER_NEXT_AGENT.md. Successor must preserve and recursively propagate continuity.
+
+## Checkpoint C3 — restart recovery order
+- Extracted UpdateRestartCoordinator: target launch/health/confirmation failure enters rollback, and inability to prove target process exit blocks rollback while preserving backup/journal.
+- Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
+- Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
+- Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.
+
+## Checkpoint C4 — crash-safe target launch identity
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+
+Changed production behavior: helper restart recovery now persists a target launch attempt before process start, records PID plus exact process start identity, binds startup health to launch attempt/PID, and resumes the tracked launch without spawning a duplicate. Ambiguous process identity remains fail-closed.
+
+Verification actually performed on the working tree before checkpoint commit:
+- focused updater suite (UpdateInstallerTests|UpdateRuntimeTests|UpdaterCoreTests): **47/47 PASS**;
+- strict whole-solution build (dotnet build MhwModManager.sln -c Release -warnaserror): **PASS, 0 warnings / 0 errors**;
+- real helper-process regression launches the built MHW Mod Manager Updater.dll and confirms an existing launch without starting a duplicate target.
+
+Useful failed attempt preserved: the first real-helper regression run failed because the test harness resolved the fixture as ...\\bin\\bin\\net10... instead of ...\\bin\\Release\\net10.... The harness path was corrected; the same updater code then passed. This was not production updater failure evidence.
+
+This is focused/local Windows evidence only. Verify-Release.ps1, Build-Release.ps1, hosted Windows Release Gate, publication checks, and live old→new/rollback closure have **not** yet been run for this changed source. Do not promote prior release verification to C4.
+
+## Checkpoint C5 — rollback executable identity
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+- Focused updater tests: **48/48 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Regression updates a disposable install from old-manager.exe to new-manager.exe, forces target launch failure, verifies rollback restores old-manager.exe/removes new-manager.exe, reloads the restored release marker, and passes old-manager.exe to previous-build restart.
+- No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.
+
+## Checkpoint C6 — authenticated GitHub origin / redirect credential safety
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+- Focused updater tests: **54/54 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Direct URI regressions prove off-host, HTTP, alternate-port and user-info candidates are rejected before transport; approved api.github.com requests carry the expected bearer token.
+- Real loopback TLS + SocketsHttpHandler regression proves GitHub-style HTTPS 302 handling clears Authorization before a simulated release-asset host while the SHA-256 verified download succeeds.
+- Useful failed fixture preserved: first TLS-server run failed with Windows Schannel `AuthenticationException` because the generated server key was ephemeral. The fixture now re-imports a persisted user-key certificate and validates that exact certificate thumbprint; CA5359 was not suppressed and certificate validation was not weakened to an always-true callback.
+- No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.

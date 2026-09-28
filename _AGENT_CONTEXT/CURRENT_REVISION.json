@@ -3,19 +3,19 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/auto-updater-20260928",
   "currentVersion": "8.8.0",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "archive extraction streaming cancellation and actual-output resource budgeting",
+  "nextMilestone": "complete verified automatic updater; see AUTO_UPDATER_NEXT_AGENT.md",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "recursive-and-archive-physical-containment-closed-hosted-windows-verified",
+  "status": "updater-c11b-local-verified-hosted-publication-e2e-pending",
   "verificationAppliesToCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationRun": "hosted-github-actions-36392282315",
-  "candidateSourceCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
-  "verificationScopeNote": "Recursive source reparse containment and archive extraction physical-root containment are CLOSED. Hosted Windows Release Gate 36392282315 passed exact production integration commit d66bff290f197236ec43c9b37d2b015ab2ee5fe8 and persisted promoted cache/evidence at a94066004660e4d542f5d4a528c7e5e22bdea9cb; hosted release SHA-256 A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB. Separate local Windows verification on the same production code plus documentation passed Verify-Release 25/25; functions 615/615; 6532 explicit call sites / 0 uncovered; Core 79/79; Automation 24/24; Integration 96/96; self-test 11/11; strict analyzers PASS; Build-Release/ReadyToRun PASS; local release SHA-256 359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21.",
+  "candidateSourceCommit": "08054d96a8ba84819b6dfd775d56f9eeabc7986d",
+  "verificationScopeNote": "Recursive source reparse containment and archive extraction physical-root containment are CLOSED. Hosted Windows Release Gate 36392282315 passed exact production integration commit d66bff290f197236ec43c9b37d2b015ab2ee5fe8 and persisted promoted cache/evidence at a94066004660e4d542f5d4a528c7e5e22bdea9cb; hosted release SHA-256 A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB. Separate local Windows verification on the same production code plus documentation passed Verify-Release 25/25; functions 615/615; 6532 explicit call sites / 0 uncovered; Core 79/79; Automation 24/24; Integration 96/96; self-test 11/11; strict analyzers PASS; Build-Release/ReadyToRun PASS; local release SHA-256 359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21. Updater candidate f70fea687be362fb0869390b119f77417d9bf707 has focused Windows evidence only: 57/57 updater tests and strict solution build 0 warnings/errors on .NET 10.0.401; no full updater release gate or verification-cache promotion is claimed. Updater C8 candidate fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b: Windows updater 58/58, native replacement fixtures 3/3, full integration 154/154, strict solution build 0 warnings/errors; no full updater release gate or cache promotion claimed. Updater C9 candidate 8cdf54d0bc4065a55124aef96c68b26de2a78f0c: Windows updater 61/61, native replacement fixtures 3/3, full integration 157/157, strict solution build 0 warnings/errors on heaven/.NET 10.0.401; 1176/1177 now fail closed in RollbackRequired with recovery evidence preserved. C10 hardened WPF/client lifetime at fdff9ed940b8801c1b17bedb6e6de523d7b807a6 with 74/74 focused updater/handoff and 170/170 full integration. C11a exact packaging commit 2e136cc22f570a94db8da67c91aa755d4c7a3ce6 passed a clean-checkout local Windows release build and updater-package verification; ZIP SHA-256 8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74. C11b is now integrated at exact commit 08054d96a8ba84819b6dfd775d56f9eeabc7986d with deterministic immutable publication policy, final pre-publication origin/main race recheck, and updater metadata/rollback native replacement closure. Exact local heaven/Windows verification passed Verify-Release 25/25, FunctionVerifier 727/727 with 7749 explicit call sites and zero uncovered/trace/parse gaps, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, app ReadyToRun publish, updater-helper publish, package verifier, publication policy, and Build-Release; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C. Hosted eligible-main publication and disposable old-to-new/rollback end-to-end evidence remain pending.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
     "functionsVerified": 615,
@@ -30,6 +30,15 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 updater C11b closure: exact commit 08054d96a8ba84819b6dfd775d56f9eeabc7986d integrates immutable exact-main publication policy, deterministic artifacts, final pre-publication main race recheck, and updater metadata/rollback native replacement coverage; local heaven Windows verification passed Verify-Release 25/25, functions 727/727, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, ReadyToRun app/helper publish, package and publication-policy checks, Build-Release; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C; hosted main publication and disposable end-to-end remain pending.",
+    "2026-09-28 updater C11a packaging: exact commit 2e136cc22f570a94db8da67c91aa755d4c7a3ce6 generates build identity, product ownership, install marker, update manifest, complete self-contained helper closure, and post-build package verification; clean-checkout Windows release run passed Core 79/79, Automation 24/24, Integration 170/170, self-test 11/11, analyzers/app/helper publish/package verifier; ZIP SHA-256 8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74; immutable publication and end-to-end update remain pending.",
+    "2026-09-28 updater C10 hardening: WPF/client lifetime integration plus malformed health-argument rejection, complete product-owned UpdaterHelper closure copying, and atomic foreground-operation/handoff exclusion; final heaven/Windows/.NET 10.0.401 evidence 74/74 focused updater/handoff, 170/170 full integration, strict build 0 warnings/errors at fdff9ed940b8801c1b17bedb6e6de523d7b807a6; full release gate and C11 packaging/publication pending.",
+    "2026-09-28 updater C9: native ReplaceFileW 1175/1176/1177 characterized at updater apply boundary; 1176/1177 no longer auto-rollback through ambiguous pathname mutation and instead preserve backup/native staging evidence in RollbackRequired; updater 61/61, native 3/3, full integration 157/157, strict build 0 warnings/errors at 8cdf54d0bc4065a55124aef96c68b26de2a78f0c; full release gate pending.",
+    "2026-09-28 updater C8: late-created unowned destination race reproduced and fixed with atomic no-overwrite publication for new product paths plus same-process published-new-path rollback bookkeeping; inherited updater helper Process.Start bypass fixed via ProcessDebug; updater 58/58, native 1175/1176/1177 3/3, full integration 154/154, strict build 0 warnings/errors at fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b; full release gate pending.",
+    "2026-09-28 updater C7: exact published build identity agreement enforced across update-manifest.json, release-install.json, build-identity.json, product ownership, installed state, and rollback metadata before live mutation; focused Windows updater tests 57/57 and strict whole-solution build 0 warnings/errors at production/test commit f70fea687be362fb0869390b119f77417d9bf707; full release gate remains pending.",
+    "2026-09-28 updater C6: authenticated requests are restricted to HTTPS exact api.github.com/default port/no user-info before bearer attachment; real TLS redirect regression proves Authorization is cleared at the asset host; 54/54 focused Windows tests and strict solution build 0 warnings/errors at commit 5b0dc9ad03fa5f6eedfbae51ec6af9dac7703776.",
+    "2026-09-28 updater C5: release-install metadata owns the executable path; rollback reloads the restored previous marker so renamed executables restart correctly; 48/48 focused Windows tests and strict solution build 0 warnings/errors at commit 3b55a8d6682803133d4deaf291e93112206af6ac.",
+    "2026-09-28 updater C4: crash-safe target launch state persists attempt before process creation, records PID/start identity, binds startup health to attempt/PID, resumes without duplicate relaunch, and passes 47/47 focused Windows tests plus strict solution build 0 warnings/errors at commit 50f15a439be6afe0a6b12b1dba3081daf73ed6ae.",
     "2026-09-28 integration: added shared SafeRecursiveTraversal and migrated ModScanner, unmanaged adoption, and Smart Inbox recursive source traversal to fail closed on root/descendant reparse points while preserving safe-tree classification order.",
     "2026-09-28 integration: hardened archive extraction with an explicit trusted root and component-by-component prevalidation so ancestor/descendant junctions are rejected before redirected directory/file creation.",
     "2026-09-28 integration: added Windows junction/root/cycle and archive physical-root regressions; combined local suites pass Automation 24/24 and Integration 96/96.",
@@ -112,8 +121,10 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it; read ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "nextRequiredAction": "Integrate exact locally verified updater C11b source 08054d96a8ba84819b6dfd775d56f9eeabc7986d to eligible main without weakening its publication gates; then run and inspect the hosted Windows gate, verify the immutable updater-main-<build-number> tag/release and exact ZIP plus update-manifest.json assets, and run disposable real old-to-new plus injected rollback end-to-end tests with seeded user-data hashes and exact restart identity. Preserve and recursively propagate continuity and LR-001 through LR-010.",
   "canonicalEvidence": [
+    "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
+    "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
@@ -159,7 +170,9 @@
     "hostedRun": "36392282315",
     "hostedEvidenceCommit": "a94066004660e4d542f5d4a528c7e5e22bdea9cb",
     "hostedVerificationStatus": "closed: Windows Release Gate passed 25/25",
-    "learnedRulesIntegrated": ["LR-010"]
+    "learnedRulesIntegrated": [
+      "LR-010"
+    ]
   },
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",

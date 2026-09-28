@@ -9,6 +9,7 @@ using MhwModManager.Filesystem;
 using MhwModManager.Mhw;
 using MhwModManager.Diagnostics;
 using MhwModManager.Automation;
+using MhwModManager.Updater;
 using Serilog;
 
 namespace MhwModManager.App;
@@ -114,6 +115,10 @@ public sealed partial class App:Application, IDisposable
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
+            var installRoot=startup.Run("services.updater-install-root",UpdateClientService.GetInstallRoot);
+            var buildIdentity=startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
+            var updater=startup.Run("services.updater",()=>new UpdateClientService(
+                log:message=>logger.Information("Program updater: {UpdaterMessage}",message)));
             changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LiveModRoot));
             changeHints.HintsAvailable+=hint=>
             {
@@ -124,7 +129,7 @@ public sealed partial class App:Application, IDisposable
             };
 
             Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector));
+                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
             var migration=paths.Game.IsMonsterHunterWorld
@@ -170,6 +175,19 @@ public sealed partial class App:Application, IDisposable
             splash.Close();
             watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
             startup.Complete(true,"Main window initialized and displayed successfully.");
+            try
+            {
+                await UpdateHealthProtocol.AcknowledgeIfRequestedAsync(
+                    e.Args,
+                    buildIdentity,
+                    message=>logger.Information("Program updater: {UpdaterMessage}",message),
+                    CancellationToken.None);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex,"Program updater startup-health acknowledgement failed; normal application startup remains available.");
+            }
+            window.StartProgramUpdater();
         }
         catch(Exception ex)
         {
@@ -231,6 +249,7 @@ public sealed partial class App:Application, IDisposable
         watchdog=null;
         changeHints?.Dispose();
         changeHints=null;
+        Services?.Updater.Dispose();
         if(Services?.Log is IDisposable disposable)disposable.Dispose();
         UnifiedDebugLog.Write("APP", "Dispose complete");
         GC.SuppressFinalize(this);
@@ -280,7 +299,10 @@ public sealed record AppServices(
     SmartInboxService Inbox,
     LaunchHealthGateService LaunchGate,
     AutomationCoordinator Automation,
-    CrashBisectorEngine Bisector);
+    CrashBisectorEngine Bisector,
+    UpdateClientService Updater,
+    UpdateBuildIdentity BuildIdentity,
+    IReadOnlyList<string> StartupArguments);
 
 public sealed record AppPaths(
     string ToolRoot,

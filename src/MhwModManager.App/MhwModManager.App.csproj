@@ -17,6 +17,7 @@
     <ProjectReference Include="../MhwModManager.Mhw/MhwModManager.Mhw.csproj" />
     <ProjectReference Include="../MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj" />
     <ProjectReference Include="../MhwModManager.Automation/MhwModManager.Automation.csproj" />
+    <ProjectReference Include="../MhwModManager.Updater/MhwModManager.Updater.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\MHWModManager.ico" />

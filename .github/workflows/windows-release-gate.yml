@@ -47,6 +47,18 @@ jobs:
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Build-Release.ps1"
 
+      - name: Test updater publication policy
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
+
+      - name: Publish immutable updater release
+        if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .\scripts\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
+
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
         uses: actions/upload-artifact@v7

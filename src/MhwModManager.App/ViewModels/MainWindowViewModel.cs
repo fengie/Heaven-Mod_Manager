@@ -12,6 +12,7 @@ using MhwModManager.Core;
 using MhwModManager.Storage;
 using MhwModManager.Diagnostics;
 using MhwModManager.Automation;
+using MhwModManager.Updater;
 
 namespace MhwModManager.App.ViewModels;
 
@@ -100,6 +101,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         s=services;
+        CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
+            ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
+            : $"v{s.BuildIdentity.ProductVersion} · development";
+        ProgramUpdateStatus=UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot())
+            ? "Automatic program updates are ready."
+            : "Self-update is disabled for this development/unmanaged installation.";
         Activity=new ActivityPageViewModel(s.PresentationReads);
         ActivityRows=Activity.Rows;
         Coverage=new CoveragePageViewModel(s.PresentationReads);
@@ -1025,7 +1032,17 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RunBusy(string operationName,string title,string detail,bool cancellable,Func<CancellationToken,Task> action)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"operation={operationName}; title={title}; cancellable={cancellable}");
-        if(BusyVisibility==Visibility.Visible){MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; another operation is already busy");return;}
+        if(!programUpdateHandoffGate.TryBeginForeground())
+        {
+            MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; updater handoff or another foreground operation owns the gate");
+            return;
+        }
+        if(BusyVisibility==Visibility.Visible)
+        {
+            programUpdateHandoffGate.EndForeground();
+            MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; another operation is already busy");
+            return;
+        }
         busyCts=new CancellationTokenSource();
         BusyTitle=title;BusyDetail=detail;CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
         var sw=Stopwatch.StartNew();
@@ -1047,6 +1064,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
+            programUpdateHandoffGate.EndForeground();
         }
     }
 

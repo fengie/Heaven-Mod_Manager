@@ -14,6 +14,9 @@
   "continuityProtocol": "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
   "startHere": "NEXT-AGENT-START-HERE.md",
   "requiredContextFiles": [
+    "_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md",
+    "_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md",
+    "_AGENT_CONTEXT/AUTO_UPDATER_RUNTIME_RECOVERY_AUDIT.md",
     "AGENTS.md",
     "_AGENT_TRAINING/README.md",
     "_AGENT_TRAINING/COMPANY_ENGINEERING_VALUES.md",
@@ -85,7 +88,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, AUTO_UPDATER_IMPLEMENTATION.md, AUTO_UPDATER_NEXT_AGENT.md, AUTO_UPDATER_RUNTIME_RECOVERY_AUDIT.md, and the permanent continuity constitution before edits. The active automatic-updater branch is agent/auto-updater-20260928 at locally release-verified C11b source 08054d96a8ba84819b6dfd775d56f9eeabc7986d. C9-C11b close updater-native LR-003 recovery, WPF/client lifetime integration, deterministic package generation, immutable exact-main publication policy, final pre-publication main-race revalidation, and metadata/rollback native replacement gaps. Exact local heaven Windows evidence: Verify-Release 25/25, FunctionVerifier 727/727 with 7749 explicit call sites and zero uncovered/trace/parse gaps, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, ReadyToRun app publish, updater-helper publish, package verifier, publication policy, and Build-Release PASS; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C. No release was published from this branch. Next integrate the exact verified source to eligible main, inspect hosted Windows publication and immutable tag/assets, then run disposable real old-to-new and injected rollback end-to-end tests with seeded user-data hashes and exact restart identity. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

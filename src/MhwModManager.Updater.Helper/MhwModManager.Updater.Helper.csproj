@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <AssemblyName>MHW Mod Manager Updater</AssemblyName>
+    <RootNamespace>MhwModManager.Updater.Helper</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MhwModManager.Updater/MhwModManager.Updater.csproj" />
+    <ProjectReference Include="../MhwModManager.Core/MhwModManager.Core.csproj" />
+  </ItemGroup>
+</Project>

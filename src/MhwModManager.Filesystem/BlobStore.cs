@@ -110,7 +110,12 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
         var source = PathFor(sha);
         if (!File.Exists(source)) throw new InvalidDataException($"Required blob is missing: {sha}");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await AtomicFileOps.ReplaceFromAsync(source, destination, atomicReplaceBackend, sha, ct);
+        await AtomicFileOps.ReplaceFromAsync(
+            source,
+            destination,
+            replaceBackend: atomicReplaceBackend,
+            expectedSha256: sha,
+            ct: ct);
     }
 
     private static async Task VerifyExistingAsync(string path, string expectedSha256, CancellationToken ct)

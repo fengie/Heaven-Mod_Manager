@@ -24,6 +24,12 @@ public partial class MainWindow:Window
         return ((MainWindowViewModel)DataContext).InitializeAsync();
     }
 
+    public void StartProgramUpdater()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ((MainWindowViewModel)DataContext).StartProgramUpdater();
+    }
+
 
     private void OnPreviewKeyDown(object sender,KeyEventArgs e)
     {
