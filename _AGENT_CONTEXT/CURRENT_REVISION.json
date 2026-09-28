@@ -112,7 +112,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "After committing/pushing the local evidence/cache checkpoint derived from verified source 742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a, confirm the candidate remains current with canonical main and dispatch the hosted Windows Release Gate against the exact final branch HEAD. If hosted green, persist run ID/artifacts and mark this boundary closed before starting another safety boundary.",
+  "nextRequiredAction": "Confirm the final candidate remains current with canonical main, then dispatch the hosted Windows Release Gate against the exact final branch HEAD. If hosted green, persist run ID/artifacts and mark this boundary closed before starting another safety boundary.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
@@ -143,7 +143,7 @@
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",
+  "closureEvidenceCommit": "90976103be0a8e97b6740d8b4eb8c34fa49a6456",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed.",
