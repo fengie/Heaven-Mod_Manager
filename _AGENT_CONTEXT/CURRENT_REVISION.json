@@ -4,7 +4,7 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.2",
+  "currentVersion": "8.8.3",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
   "nextMilestone": "inspect the exact-main v8.8.2 hosted Windows Release Gate, then continue the highest-priority unowned audited boundary without duplicating active Agent Control or frontend lanes",
