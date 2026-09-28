@@ -1,0 +1,23 @@
+{
+  "id": "chatgpt-v2-session-kill-5e0a72",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T15:23:00-04:00",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:13:51.188696+00:00",
+  "finished_at": "2026-09-28T19:13:51.197854+00:00",
+  "host": "heaven",
+  "action": "proc_kill",
+  "data": {
+    "session_id": "96d426081e5843bf",
+    "pid": 80576,
+    "running": false,
+    "exit_code": 1,
+    "shell": "powershell",
+    "command": "",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-28T19:12:47.379231+00:00",
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\96d426081e5843bf.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\96d426081e5843bf.err.log"
+  }
+}
