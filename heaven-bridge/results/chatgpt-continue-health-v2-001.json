@@ -1,0 +1,39 @@
+{
+  "id": "chatgpt-continue-health-v2-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:31:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:34:43.154941+00:00",
+  "finished_at": "2026-09-28T19:34:43.154941+00:00",
+  "host": "heaven",
+  "action": "health",
+  "data": {
+    "worker_version": 2,
+    "protocol": "chatgpt-heaven-bridge-v2",
+    "actions": [
+      "cmd",
+      "codex",
+      "fs_edit",
+      "fs_info",
+      "fs_list",
+      "fs_mkdir",
+      "fs_move",
+      "fs_read",
+      "fs_read_many",
+      "fs_search",
+      "fs_write",
+      "health",
+      "powershell",
+      "proc_input",
+      "proc_kill",
+      "proc_list",
+      "proc_list_sessions",
+      "proc_read",
+      "proc_run",
+      "proc_start",
+      "python",
+      "system_info"
+    ]
+  }
+}
