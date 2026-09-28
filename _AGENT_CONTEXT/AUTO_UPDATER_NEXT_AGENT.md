@@ -30,3 +30,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Test-AgentHandof
 ```
 
 Commit and push each coherent tested checkpoint. Update this checklist and CURRENT_STATE/NEXT_STEPS/CURRENT_REVISION/VERIFICATION with exact evidence. Near context limits, finish the smallest safe unit, preserve and push it, and leave exact remaining steps. Do not break the chain.
+## Checkpoint C3 — restart recovery order
+- Extracted UpdateRestartCoordinator: target launch/health/confirmation failure enters rollback, and inability to prove target process exit blocks rollback while preserving backup/journal.
+- Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
+- Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
+- Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.

@@ -135,3 +135,9 @@ Verification for this checkpoint:
 - Three new journal/metadata regressions failed on the preceding checkpoint and passed after repair. Added corrupt-backup regression proves new live files remain untouched if recovery material is corrupt.
 - Focused updater tests: 39/39 PASS (Windows x64, SDK 10.0.401). Full release verification remains pending.
 - Next: helper start/stop failure recovery; see AUTO_UPDATER_NEXT_AGENT.md. Successor must preserve and recursively propagate continuity.
+
+## Checkpoint C3 — restart recovery order
+- Extracted UpdateRestartCoordinator: target launch/health/confirmation failure enters rollback, and inability to prove target process exit blocks rollback while preserving backup/journal.
+- Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
+- Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
+- Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.

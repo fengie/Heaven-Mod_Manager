@@ -84,39 +84,12 @@ internal static class Program
         string logPath)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
-        try { if (File.Exists(request.HealthFile)) File.Delete(request.HealthFile); } catch (IOException ex) { Log(logPath, $"health marker cleanup deferred: {ex.Message}"); }
-        using var process = StartApplication(request, includeHealthArguments: true);
-        Log(logPath, $"helper restarted target build={request.Manifest.BuildNumber} pid={process.Id}");
-        var healthy = await UpdateHealthProtocol.WaitForHealthyAsync(
-            request.HealthFile,
-            request.HealthToken,
-            request.Manifest,
-            process,
-            TimeSpan.FromSeconds(90),
-            CancellationToken.None);
-        if (healthy)
-        {
-            await installer.ConfirmAsync(request, CancellationToken.None);
-            Log(logPath, $"helper confirmed target build={request.Manifest.BuildNumber}");
-            return 0;
-        }
-
-        Log(logPath, $"helper target build={request.Manifest.BuildNumber} failed startup health; rolling back");
-        await StopProcessBestEffortAsync(process, logPath);
-        try
-        {
-            await installer.RollbackAsync(request, CancellationToken.None);
-        }
-        catch (Exception ex)
-        {
-            Log(logPath, $"helper rollback after startup-health failure failed type={ex.GetType().Name} message={ex.Message}");
-            return 4;
-        }
-        StartApplication(request, includeHealthArguments: false).Dispose();
-        Log(logPath, "helper restarted previous application after rollback");
-        return 5;
+        var coordinator = new UpdateRestartCoordinator(
+            healthy => StartApplication(request, healthy),
+            process => StopProcessAsync(process, logPath),
+            message => Log(logPath, message));
+        return await coordinator.RunAsync(installer, request, TimeSpan.FromSeconds(90));
     }
-
     private static Process StartApplication(UpdateApplyRequest request, bool includeHealthArguments)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"health={includeHealthArguments}");
@@ -144,19 +117,21 @@ internal static class Program
                ?? throw new InvalidOperationException("Failed to start MHW Manual Mod Manager after update.");
     }
 
-    private static async Task StopProcessBestEffortAsync(Process process, string logPath)
+    private static async Task<bool> StopProcessAsync(Process process, string logPath)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"pid={process.Id}");
         try
         {
-            if (process.HasExited) return;
+            if (process.HasExited) return true;
             process.Kill(entireProcessTree: true);
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             await process.WaitForExitAsync(cts.Token);
+            return process.HasExited;
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or OperationCanceledException)
         {
             Log(logPath, $"could not fully stop failed updated process pid={process.Id}: {ex.Message}");
+            return false;
         }
     }
 

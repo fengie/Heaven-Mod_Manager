@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics;
 using MhwModManager.Updater;
 using Xunit;
 
@@ -136,6 +137,43 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
         Assert.Equal("NEW-LIB", await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
         Assert.Equal(UpdateJournalPhase.AppliedAwaitingHealth, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
+    public async Task Restart_failure_restores_previous_payload_and_attempts_previous_launch()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var previousLaunched = false;
+        var coordinator = new UpdateRestartCoordinator(health =>
+        {
+            if (health) throw new System.ComponentModel.Win32Exception("injected launch failure");
+            previousLaunched = true;
+            return Process.GetCurrentProcess();
+        }, _ => throw new InvalidOperationException("No target process was started."));
+
+        Assert.Equal(5, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(100)));
+        Assert.True(previousLaunched);
+        await AssertOldInstallRestoredAsync();
+    }
+
+    [Fact]
+    public async Task Unproven_target_exit_blocks_rollback_and_preserves_recovery_material()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var coordinator = new UpdateRestartCoordinator(health =>
+        {
+            Assert.True(health);
+            return Process.GetCurrentProcess();
+        }, _ => Task.FromResult(false));
+
+        Assert.Equal(4, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(30)));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.Equal(UpdateJournalPhase.AppliedAwaitingHealth, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(Directory.Exists(fixture.Request.BackupRoot));
     }
 
     [Fact]
