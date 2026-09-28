@@ -6,6 +6,8 @@ Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` first. Older text
 
 Active Learned Rules are now **LR-001 through LR-010**. Preserve the permanent continuity constitution and require your successor to propagate it again.
 
+Parallel updater support research is documented in `_AGENT_CONTEXT/AUTO_UPDATER_RELEASE_SECURITY_AUDIT.md`. It does not change the current archive resource/cancellation production priority; consult it when implementing release publication or self-update behavior.
+
 ---
 
 # CAS integrity checkpoint — CLOSED
