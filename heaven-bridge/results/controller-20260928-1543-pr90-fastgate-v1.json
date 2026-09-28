@@ -1,0 +1,13 @@
+{
+  "id": "controller-20260928-1543-pr90-fastgate-v1",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-28T19:43:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-28T19:32:40.799574+00:00",
+  "finished_at": "2026-09-28T19:32:42.942282+00:00",
+  "stdout": "HEAD=9bf048a8e49038d29b11123ebbee494b5125c477\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1543-pr90-fastgate-v1\\repo'...\nCURRENT_REVISION version '8.8.4' does not match VERSION.txt '8.8.5'.\nAt C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1543-pr90-fastgate-v1\\repo\\scripts\\Test-AgentHandoff.ps1:67 \nchar:59\n+ ... g]$version){throw \"CURRENT_REVISION version '$($revision.currentVersi ...\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    + CategoryInfo          : OperationStopped: (CURRENT_REVISIO...ON.txt '8.8.5'.:String) [], RuntimeException\n    + FullyQualifiedErrorId : CURRENT_REVISION version '8.8.4' does not match VERSION.txt '8.8.5'.\n \n",
+  "host": "heaven",
+  "action": "powershell"
+}
