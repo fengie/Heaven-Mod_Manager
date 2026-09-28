@@ -124,11 +124,22 @@ Preserve the permanent continuity constitution and active Learned Rules, and req
 - Detailed evidence: `AUTO_UPDATER_C10_HARDENING_2026-09-28.md`.
 - No full release gate or cache promotion is claimed.
 
-### Next bounded work — C11 only
-1. Finish deterministic minimal updater package generation and exact metadata.
-2. Ship and own the full helper invocation closure.
-3. Publish immutable private GitHub Releases keyed to exact main build identity; never overwrite an existing release/tag/assets.
-4. Add publication-negative, stale-build, and evidence-only-change regressions.
-5. Then run the repository verifier/release build/hosted Windows gate and disposable real old→new plus injected rollback closure.
+## Checkpoint C11a — deterministic updater package generation
+- Exact committed checkpoint: `2e136cc22f570a94db8da67c91aa755d4c7a3ce6`.
+- `Build-Release.ps1` now generates exact `build-identity.json`, `product-files.json`, `release-install.json`, and `update-manifest.json`.
+- Protected user/runtime roots plus mutable `MHW-DEBUG-ALL.log` are excluded from updater ownership.
+- The updater helper is published self-contained as a multi-file invocation closure under `UpdaterHelper/`; C10 copies/verifies the complete owned closure before launch.
+- `Test-UpdaterPackage.ps1` verifies artifact name/size/SHA-256, cross-file build identity, product-manifest SHA, all owned file size/hashes, protected-root exclusions, helper/restart executable ownership, and exact ZIP file-set equality.
+- Exact clean-checkout local Windows release evidence: Core **79/79**, Automation **24/24**, Integration **170/170**, self-test **11/11**, analyzers/App publish/helper publish/package verifier PASS.
+- Exact updater ZIP SHA-256: `8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74`.
+- Failed attempts and repairs are documented in `AUTO_UPDATER_C11_PACKAGING_2026-09-28.md`.
+- No immutable release/publication or end-to-end closure is claimed.
 
-Keep C11 packaging/publication separate from C10 and from unrelated hardening. Preserve and recursively propagate the continuity constitution again.
+### Next bounded work — C11b publication only
+1. Extend the existing Windows workflow so only eligible exact `main` builds may publish.
+2. Create immutable tag/release `updater-main-<build-number>`; fail closed if tag, release, or assets already exist.
+3. Upload exactly the verified updater ZIP and `update-manifest.json`; never overwrite.
+4. Add publication-negative, stale-build, and evidence-only-change coverage.
+5. Then run hosted Windows closure and disposable real old→new plus injected rollback tests.
+
+Keep C11b publication separate from C11a generation and unrelated hardening. Preserve and recursively propagate the continuity constitution again.

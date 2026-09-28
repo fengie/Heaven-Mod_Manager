@@ -1,3 +1,29 @@
+# Updater C11a packaging — exact clean-checkout Windows verification — 2026-09-28
+
+Exact committed packaging checkpoint: `2e136cc22f570a94db8da67c91aa755d4c7a3ce6`.
+
+From a freshly reset and `git clean -fdx` review worktree on heaven / Windows x64 / .NET SDK 10.0.401, using test-only build number `987654325` and exact source SHA equal to the commit:
+- handoff continuity preflight: PASS;
+- verification-cache regressions: PASS;
+- FunctionVerifier scan before confirm: **727 functions**, **609 known-good / 118 needing current verification**, **0 trace gaps**, **7746 explicit call sites / 0 uncovered**, **0 parse errors**;
+- strict solution build/analyzers: PASS;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **170/170 PASS**;
+- automation self-test: **11/11 PASS**;
+- App win-x64 compile/analyzers: PASS;
+- App ReadyToRun self-contained publish: PASS;
+- updater-helper self-contained multi-file invocation-closure publish: PASS;
+- normal build verifier confirm stage: **727/727 promoted inside the isolated worktree only**;
+- updater package verifier: PASS;
+- updater ZIP SHA-256: `8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74`.
+
+The isolated verifier cache was not copied to the canonical checkout. C11a does not claim immutable GitHub Release publication, a hosted Windows publication gate, or disposable real old→new/rollback closure.
+
+Three failed attempts are preserved in `AUTO_UPDATER_C11_PACKAGING_2026-09-28.md`: trace-policy gaps, single-file-helper IL3000 incompatibility, and generic-list PowerShell serialization.
+
+---
+
 # Updater C10 WPF/client hardening — local Windows verification — 2026-09-28
 
 Exact hardened production/test source: `fdff9ed940b8801c1b17bedb6e6de523d7b807a6` (inherited C10 integration `1fbdd06`).
