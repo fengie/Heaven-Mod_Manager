@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260928-1528-session-input-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_input",
+  "params": {
+    "session_id": "86e4833d7ee8474c",
+    "input": "Write-Output 'SESSION_OK'; $x=40+2; Write-Output \"ANSWER=$x\"",
+    "newline": true
+  },
+  "created_at": "2026-09-28T19:28:00Z",
+  "priority": "highest"
+}
