@@ -1,0 +1,12 @@
+{
+  "id": "controller-20260928-1530-live-worker-read",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_read",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\worker.py",
+    "offset": 0,
+    "length": 20000
+  },
+  "created_at": "2026-09-28T19:30:00Z",
+  "priority": "highest"
+}
