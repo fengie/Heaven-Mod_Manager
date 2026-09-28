@@ -1,14 +1,17 @@
-# v8.8.4 final support reconciliation — verification in progress
+# v8.8.4 final support reconciliation — local release closure
 
-Final reconciliation base: canonical `origin/main` `317ba6c86d54012a65a41772109a72566d29c0a9` on `heaven2` / Windows / .NET SDK 10.0.401. This base already contains the v8.8.3 archive-cleanup release and hosted evidence. The support harvest is being reapplied as one squash candidate so none of that newer canonical work is reverted.
+Exact verified product/source commit: `b48c1ff865ab41841d8c7eb931fca19f371f960e`, based on canonical `317ba6c86d54012a65a41772109a72566d29c0a9`. Local Windows / .NET SDK 10.0.401 verification is **CLOSED/PASS** for this exact source; hosted exact-main verification remains pending.
 
-Pre-rebase targeted support evidence:
-- snapshot-hardened Automation strict build: **0 warnings / 0 errors**; direct xUnit v3 **30/30 PASS**;
-- remote-preview-integrated Integration strict build: **0 warnings / 0 errors**; direct xUnit v3 **196/196 PASS**;
-- an initial fresh-worktree Automation build with `--no-restore` failed only because `project.assets.json` did not yet exist; restore followed and the unchanged strict build/tests passed;
-- an earlier zero-test `dotnet test` invocation is not counted as verification.
+- Verify-Release: **25/25 PASS**.
+- FunctionVerifier: **748/748** promoted; **7,921** explicit call sites; **0** uncovered / trace gaps / parse errors.
+- Strict/relaxed builds and analyzers: PASS, **0 warnings / 0 errors**.
+- Core **79/79**, Automation **31/31**, Integration/fault-injection **199/199**, self-test **11/11**.
+- Build-Release: PASS; ReadyToRun self-contained app publish PASS without fallback; updater-helper publish PASS.
+- Updater build **326**.
+- Artifact `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip` SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`; product manifest SHA-256 `8CA52722E0770B0E0125BA6DC7C836EE2E9947E74F462707B6A874FD4539AF8B`.
+- Evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.4-local-windows-closure.md`.
 
-These are useful slice checks but are not the final exact-tree claim. The v8.8.4 handoff/release gates below must run after this reconciliation.
+Hosted Windows Release Gate for the final canonical-main commit is **NOT YET VERIFIED** and must not be inferred from this local closure.
 
 ---
 

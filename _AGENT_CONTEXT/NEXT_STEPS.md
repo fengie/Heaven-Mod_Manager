@@ -1,10 +1,10 @@
 # v8.8.4 final support reconciliation — current next steps
 
-1. Run `git diff --check`, handoff validation and all adversarial negative fixtures, then `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` on the exact reconciled v8.8.4 tree.
-2. Record exact results and artifact identity without manually promoting support-branch or v8.8.3 verification caches.
-3. Fetch `origin/main` again immediately before push. If it advanced beyond `317ba6c86d54012a65a41772109a72566d29c0a9`, inspect/reconcile the new commits and rerun invalidated checks rather than overwriting concurrent work.
-4. Push only the coherent verified squash commit to canonical `main`, fetch again, and prove remote `origin/main` equals the pushed HEAD. Then inspect the exact-main hosted Windows Release Gate.
-5. Keep follow-ups independent: remove legacy CAS hardlink aliasing; establish writer orphanhood/exclusive ownership before recovery takeover; span updater ownership across supported Windows sessions; leave broader preview redirect/image-content policy and active Updater/Agent-Control/frontend/game-profile lanes separate.
+1. Re-fetch `origin/main` immediately before canonical push. If it advanced beyond `317ba6c86d54012a65a41772109a72566d29c0a9`, inspect/reconcile the new commits and rerun any checks invalidated by that reconciliation; never overwrite concurrent work.
+2. Push the verified v8.8.4 state to canonical `main`, fetch again, and prove remote `origin/main` equals the pushed HEAD.
+3. Inspect the exact-main hosted Windows Release Gate. Local closure applies to source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; do not call hosted closure until CI passes the final canonical commit.
+4. Keep follow-ups independent: remove legacy CAS hardlink aliasing; establish writer orphanhood/exclusive ownership before recovery takeover; span updater ownership across supported Windows sessions; leave broader preview redirect/image-content policy and active Updater/Agent-Control/frontend/game-profile lanes separate.
+5. Preserve and recursively propagate the continuity constitution and active Learned Rules.
 
 ---
 

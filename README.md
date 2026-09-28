@@ -4,7 +4,7 @@
 
 This release rebases the final support harvest onto canonical v8.8.3 archive-cleanup main. Save-snapshot retention now limits recursive deletion to verified direct children of the manager-owned `SnapshotRoot`; malformed/outside/missing/reparse rows are de-indexed without following their paths, and over-limit rows are retired only after their owned payload directory is successfully deleted. Failed cleanup therefore remains indexed for retry.
 
-Remote previews derived from imported metadata are HTTPS-only and use a fail-closed egress boundary: automatic redirects are disabled, preview transport bypasses proxies, every DNS answer must be public, and the socket connects to the validated address. Nexus API traffic uses a separate no-redirect client so its custom API-key header cannot follow a redirect to another origin.
+Remote previews derived from imported metadata are HTTPS-only and use a fail-closed egress boundary: automatic redirects are disabled, preview transport bypasses proxies, every DNS answer must be public, and the socket connects to the validated address. Nexus API traffic uses a separate no-redirect client so its custom API-key header cannot follow a redirect to another origin. Exact local release closure for `b48c1ff865ab41841d8c7eb931fca19f371f960e` passed Verify-Release **25/25**, Core **79/79**, Automation **31/31**, Integration **199/199**, self-test **11/11**, and Build-Release/ReadyToRun/helper publish; updater build **326**; ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`.
 
 
 ## v8.8.3 ? archive streaming failure-cleanup hardening

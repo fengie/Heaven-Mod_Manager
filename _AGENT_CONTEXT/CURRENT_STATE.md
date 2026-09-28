@@ -2,7 +2,7 @@
 
 Canonical base is `317ba6c86d54012a65a41772109a72566d29c0a9` (v8.8.3 archive-streaming cleanup plus hosted evidence). The v8.8.4 candidate preserves that entire baseline and adds only the final support harvest: save-snapshot retention with manager-owned delete containment and delete-then-retire ordering; HTTPS/public-only remote-preview egress with redirects disabled; three unique ownership/recovery audits; LR-012 through LR-014; and corresponding continuity/release identity.
 
-The pre-rebase support candidate passed Automation **30/30** and Integration **196/196** with strict builds. Those runs established the support slices themselves, but final promotion requires rerunning the repository gates on this reconciled v8.8.4 exact tree.
+Exact local v8.8.4 closure at `b48c1ff865ab41841d8c7eb931fca19f371f960e` is now PASS: Verify-Release **25/25**, functions **748/748** with **7,921** explicit call sites / **0** uncovered, Core **79/79**, Automation **31/31**, Integration **199/199**, self-test **11/11**, strict builds/analyzers PASS, Build-Release ReadyToRun/helper publish PASS, updater build **326**, ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`. Hosted exact-main verification remains pending.
 
 ---
 
