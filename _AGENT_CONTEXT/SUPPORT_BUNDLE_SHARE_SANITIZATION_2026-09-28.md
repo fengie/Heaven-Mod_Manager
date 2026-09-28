@@ -1,0 +1,148 @@
+# Support-bundle share sanitization checkpoint — 2026-09-28
+
+**Support lane:** diagnostics share-boundary privacy under LR-006  
+**Canonical repository:** `fengie/mhw-mods`  
+**Canonical main selected:** `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`  
+**Canonical main reconciled before verification:** `92cad66dd743c5c67e1441ad77161ccf6e531c34`  
+**Working branch:** `agent/support-bundle-share-sanitization-20260928`  
+**Reconciled implementation head:** `79345ec2b428b46e2851155838f4926d66e1ee80`  
+**Production source changed:** yes, diagnostics export only
+
+## Why this task was selected
+
+Parallel work at selection time already owned the automatic updater, Agent Control v2, frontend modernization,
+archive streaming cleanup semantics, persisted game-profile path containment, launch-observation persistence,
+crash-bisector controls, duplicate-cleanup recovery, profile-save atomicity, and continuity-adversarial validation.
+No open PR owned diagnostics share-boundary privacy.
+
+The existing specialized audit, `DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md`, already confirmed a P1:
+`SupportBundleService.CreateAsync` copied the five newest structured JSONL logs verbatim into a user-shareable
+ZIP. Those logs can contain absolute Windows paths and arbitrary structured values. LR-006 explicitly requires
+centralized export-time sanitization plus path/credential canaries. Implementing that narrow checkpoint was
+therefore higher value than duplicating active work or writing another research-only audit.
+
+## Exact scope
+
+Changed:
+
+- `src/MhwModManager.Diagnostics/SupportBundleService.cs`
+- `tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj`
+- `tests/MhwModManager.IntegrationTests/SupportBundlePrivacyTests.cs`
+- diagnostics documentation and this continuity record
+
+The implementation:
+
+1. replaces raw support-ZIP log copying with line-by-line structured JSON sanitization;
+2. recursively redacts secret-like JSON property names;
+3. scrubs secret-like assignments in string payloads, including bearer/token/API-key/password/secret/credential/cookie forms;
+4. replaces known local roots and residual absolute Windows paths in exported log strings;
+5. falls back to text sanitization if a JSONL line is malformed instead of copying it raw;
+6. keeps the original local JSONL files untouched;
+7. broadens the existing settings-key secret-name check and sanitizes path/assignment text in nonsecret setting values;
+8. adds `CONTENTS-AND-PRIVACY.txt` to the ZIP with an explicit review-before-sharing notice;
+9. adds an end-to-end generated-bundle canary regression.
+
+## Deliberate exclusions
+
+This checkpoint does **not** claim full LR-006 closure.
+
+Not changed:
+
+- local/full-fidelity logging;
+- startup/master-log manual-share flows;
+- Nexus API-key storage or provider transport;
+- SQLite schema or transaction boundaries;
+- deployment/filesystem behavior;
+- arbitrary DB-backed support exports such as `recent-diagnostics.data_json`, `recent-errors.message`, or operation descriptions;
+- a schema-level settings allowlist/default-redact policy.
+
+Those remaining items are separate follow-up boundaries. In particular, the older audit's P2 finding that arbitrary
+telemetry metadata can enter DB-backed support exports remains open.
+
+## Regression contract
+
+`SupportBundlePrivacyTests.Support_bundle_sanitizes_exported_structured_logs_without_mutating_local_log` seeds a
+real recent JSONL log with:
+
+- an absolute `C:\Users\...` privacy canary;
+- a URL query `token=...` canary;
+- an `Authorization: Bearer ...` structured value;
+- a nested `apiKey` structured value;
+- a normal relative managed path that should remain useful.
+
+The test creates a real support ZIP and proves:
+
+- all privacy/secret canaries remain present in the local source log;
+- those canaries are absent from the exported JSONL entry;
+- redaction placeholders are present;
+- the ordinary relative managed path survives;
+- the privacy notice is included.
+
+## Verification actually performed
+
+On `heaven2`, Windows with .NET SDK `10.0.401`, using an isolated detached worktree so the canonical main
+checkout remained untouched:
+
+1. The first strict Release build exposed three patch defects: invalid async disposal of `StreamReader`,
+   CA1822 on the privacy-notice helper, and CA1859 on the sensitive-root return type. All were corrected.
+2. The second strict build exposed two xUnit2031 analyzer errors in the new regression. Both were corrected.
+3. After reconciling branch history with canonical main `92cad66dd743c5c67e1441ad77161ccf6e531c34` by a normal merge
+   (no force push), the exact reconciled implementation head `79345ec2b428b46e2851155838f4926d66e1ee80` passed:
+   - `dotnet build tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release`
+     — **0 warnings / 0 errors**;
+   - focused `SupportBundlePrivacyTests` — **1/1 passed**.
+
+No failed attempt is being represented as passing evidence.
+
+## Not yet verified at this checkpoint record
+
+At the time this document was written:
+
+- the repository-wide `Verify-Release.ps1` gate had not yet been run for this branch;
+- `Build-Release.ps1` / ReadyToRun packaging had not yet been run for this branch;
+- no hosted Windows workflow result applied to this support branch;
+- DB-backed support-export sanitization beyond the narrow changes above had not been tested.
+
+Later PR/check evidence may add stronger verification without changing the scope claims in this document.
+
+## Existing strengths preserved
+
+- Full-fidelity local logs remain available for local diagnosis.
+- The support bundle still omits mod assets, CAS blobs, and the SQLite database.
+- Exception `details` / full `Exception.ToString()` remains excluded from the generic recent-errors query.
+- Nexus request logging continues to redact the API key at the producer.
+- Existing row bounds remain unchanged.
+
+## Learned-rule decision
+
+No new Learned Rule is warranted. This checkpoint is a direct implementation of existing **LR-006 — shareable
+diagnostic artifacts require export-boundary sanitization**. Duplicating that rule would weaken the append-only
+ledger's signal.
+
+## Parallel-agent integration notes
+
+This work deliberately avoids active updater, Agent Control, frontend, archive-cleanup, crash-bisector,
+duplicate-cleanup, launch-observation, profile-save, and game-profile path-containment boundaries. The branch was
+merged forward from canonical main rather than rebased or force-pushed.
+
+The existing `DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` remains the specialized authority for the broader
+privacy threat model. This checkpoint should be treated as implementation evidence for its raw-structured-log P1,
+not as a replacement for that audit.
+
+## Recommended next independent checkpoint
+
+After this branch is integrated and exact verification is green, independently harden the DB-backed share export
+surface: recursively sanitize `recent-diagnostics.data_json`, error/operation free text, and move settings toward
+an allowlist or default-redact contract. Add canaries that enumerate **every textual ZIP entry**, not only the
+recent JSONL log entry.
+
+Do not combine that follow-up with protected credential storage or provider/network redesign.
+
+## Successor handoff
+
+Preserve the permanent recursive continuity constitution and active Learned Rules, including LR-006 and LR-011.
+Re-check canonical main and active PRs before implementation because this repository is moving concurrently.
+Any successor must explicitly require its own successor to inherit, preserve, and recursively propagate the same
+continuity system to the agent after them.
+
+**Do not break the chain.**
