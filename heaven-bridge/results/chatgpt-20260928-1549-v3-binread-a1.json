@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260928-1549-v3-binread-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:47:40Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:49:15.302396+00:00",
+  "finished_at": "2026-09-28T19:49:15.303966+00:00",
+  "host": "heaven",
+  "action": "fs_read_binary",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\blob.bin",
+    "offset": 0,
+    "length": 11,
+    "total_bytes": 11,
+    "next_offset": 11,
+    "eof": true,
+    "content_b64": "AAECAwT6+/z9/v8="
+  },
+  "job_hash": "576e0399ff8f3325e5044abb173be633e97e3234d5a9bb267c5e864da0a91671"
+}
