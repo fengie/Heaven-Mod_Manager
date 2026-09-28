@@ -2,7 +2,9 @@
 
 The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
 
-The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work.
+The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. A live parallel checkout/branch `agent/archive-streaming-budget-20260928` already claimed that boundary during the support pass, so do not duplicate it without rechecking current ownership.
+
+A separate non-overlapping candidate is ready for integration as **PR #34**: support-bundle raw structured-log share safety. Exact production/test checkpoint `d24fe670990249e36a5832c4ab227eaa4f3bd52f` passed local Windows `Verify-Release.ps1` 25/25 and `Build-Release.ps1` with ReadyToRun publish, release SHA-256 `3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE`. Read `SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md`. It is not canonical until integrated; do not duplicate that raw-log sanitizer either.
 
 Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-010.
 

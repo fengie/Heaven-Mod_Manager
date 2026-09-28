@@ -53,7 +53,7 @@ Support-bundle JSONL logs are no longer copied verbatim.
 - falls back to text sanitization if a line is malformed.
 
 The original local JSONL file is never rewritten. The regression explicitly confirms the local log still contains the canaries.
-## Verification performed so far
+## Verification
 
 Focused red phase:
 - integration test project restore/build: PASS after adding its required direct Serilog package reference;
@@ -66,7 +66,21 @@ Focused green phase:
 - complete Integration/fault-injection executable: **97/97 PASS**;
 - `git diff --check`: PASS.
 
-The full repository verifier/release gate has not yet been claimed at this checkpoint. Production source changed, so older green function/cache evidence does not automatically apply.
+Exact production/test checkpoint commit: `d24fe670990249e36a5832c4ab227eaa4f3bd52f`.
+
+Local Windows repository gates on heaven2 / .NET SDK 10.0.401:
+- `scripts/Verify-Release.ps1`: **25/25 PASS**;
+- functions: **618/618 verified**, 6576 explicit call sites / 0 uncovered, 0 trace gaps, 0 parse errors;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **97/97 PASS**;
+- automation self-test: **11/11 PASS**;
+- strict whole-solution/project analyzers: **PASS**;
+- `scripts/Build-Release.ps1`: **PASS**;
+- win-x64 self-contained ReadyToRun publish: **PASS**;
+- local release ZIP SHA-256: `3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE`.
+
+The normal verifier/build paths promoted the exact function/stage caches; no cache was manually promoted. This is local Windows evidence for the support candidate, not a claim that PR #34 is already integrated into canonical `main` or hosted-CI closed.
 
 ## Residuals / not closed here
 

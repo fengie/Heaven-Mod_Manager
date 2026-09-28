@@ -112,7 +112,21 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it; read ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "parallelSupportCandidates": [
+    {
+      "branch": "agent/support-bundle-share-safety-20260928",
+      "pullRequest": 34,
+      "baseMain": "4fd61dd33609a7c55e5aedbaad026266a410f942",
+      "productionTestCommit": "d24fe670990249e36a5832c4ab227eaa4f3bd52f",
+      "scope": "sanitize raw structured JSONL logs only in shareable support-bundle copies while preserving local log fidelity",
+      "status": "local-windows-verified-awaiting-integration",
+      "verifyRelease": "25/25 passed; functions 618/618; call sites 6576/0 uncovered; Core 79/79; Automation 24/24; Integration 97/97; self-test 11/11",
+      "buildRelease": "passed; win-x64 self-contained ReadyToRun publish passed",
+      "releaseArtifactSha256": "3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE",
+      "evidence": "_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md"
+    }
+  ],
+  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it, but re-check ownership because agent/archive-streaming-budget-20260928 already claimed that lane during this support pass. PR #34 is a separate local-Windows-verified diagnostics candidate; do not duplicate it. Preserve and recursively propagate continuity and LR-001 through LR-010.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -126,6 +140,7 @@
     "_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md",
     "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md",
+    "_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md",
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",

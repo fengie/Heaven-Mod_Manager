@@ -57,6 +57,7 @@
     "_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md",
     "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md",
+    "_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md",
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
@@ -85,7 +86,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Archive streaming cancellation/actual-output budgeting remains the main implementation priority but was already claimed by a parallel branch during this support pass; recheck ownership before acting. PR #34 is a separately local-Windows-verified support-bundle raw-log sanitizer candidate and must not be duplicated. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

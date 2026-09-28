@@ -1,3 +1,28 @@
+# 2026-09-28 support-bundle raw-log share-safety candidate — LOCAL WINDOWS VERIFIED / PR #34
+
+Canonical base when selected: `4fd61dd33609a7c55e5aedbaad026266a410f942`. Exact production/test checkpoint: `d24fe670990249e36a5832c4ab227eaa4f3bd52f`. Branch: `agent/support-bundle-share-safety-20260928`. PR: #34.
+
+A generated-ZIP canary test first reproduced the defect against unchanged production: the support bundle contained the fake Windows-user path canary from the raw structured JSONL log. The product fix sanitizes only the share copy; the regression also confirms the original local log remains full fidelity.
+
+Local heaven2 / Windows / .NET SDK 10.0.401 evidence:
+- focused support-bundle privacy regression: **1/1 PASS** after the pre-fix **1/1 FAIL** reproduction;
+- strict Diagnostics and IntegrationTests builds: **PASS**, 0 warnings / 0 errors;
+- `scripts/Verify-Release.ps1`: **25/25 PASS**;
+- functions: **618/618 verified**;
+- explicit call sites: **6576 / 0 uncovered**;
+- trace gaps / parse errors: **0 / 0**;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **97/97 PASS**;
+- self-test: **11/11 PASS**;
+- `scripts/Build-Release.ps1`: **PASS**;
+- win-x64 self-contained ReadyToRun publish: **PASS**;
+- release ZIP SHA-256: `3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE`.
+
+The normal verifier/build path promoted the exact caches; no verification state was manually promoted. This evidence applies to the support candidate and does not by itself mean PR #34 is integrated into canonical `main` or independently hosted-CI closed. Residual DB telemetry/settings, startup/manual-log sharing, protected credential storage, and remote network trust remain separate boundaries. See `SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md`.
+
+---
+
 # 2026-09-28 combined support integration — CLOSED / hosted + local Windows verification
 
 Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.

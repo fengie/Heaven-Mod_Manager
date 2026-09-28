@@ -8,6 +8,8 @@ state. The project originally advanced from the user-supplied
 Source ZIPs are retained as reproducible handoff/release exports, not as the primary
 source of truth.
 
+**Parallel verified support candidate:** PR #34 (`agent/support-bundle-share-safety-20260928`) sanitizes raw structured logs only in the shareable support-bundle copy. Exact production/test checkpoint `d24fe670990249e36a5832c4ab227eaa4f3bd52f` passed local Windows verifier 25/25 and ReadyToRun release build; read `_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md`. It is not canonical until integrated.
+
 ## User intent
 
 The user wants a robust manual mod manager with strong failure diagnostics and incremental verification. Their explicit v8.8 request was:
@@ -54,6 +56,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md` — migration retry/ownership/cleanup/fidelity risks.
 - `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — verifier, stage-cache, CI and supply-chain trust gaps.
 - `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` — share-boundary sanitization and credential handling.
+- `_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md` — PR #34 implementation candidate, pre-fix generated-ZIP reproduction, sanitizer scope, exact local Windows verification, and residual privacy boundaries.
 - `_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md` — remote-fetch destination/redirect/HTTP/response validation.
 - `_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md` — full-state backup, CAS/DB consistency and portability.
 - `_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md` — source-neutral acquisition/bulk-fill design.

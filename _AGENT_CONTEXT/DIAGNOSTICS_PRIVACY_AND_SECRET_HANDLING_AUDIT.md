@@ -1,5 +1,11 @@
 # Diagnostics privacy and secret-handling audit
 
+## 2026-09-28 implementation follow-up — PR #34
+
+The audit's confirmed P1 raw-structured-log bundle leak now has a narrow implementation candidate on `agent/support-bundle-share-safety-20260928` / PR #34. Exact production/test checkpoint `d24fe670990249e36a5832c4ab227eaa4f3bd52f` first reproduced the leak with a generated-ZIP canary, then passed local Windows `Verify-Release.ps1` **25/25** and `Build-Release.ps1` with ReadyToRun publish after the fix. See `SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md`.
+
+This follow-up closes only the raw JSONL share-copy path when integrated. The audit's DB telemetry/settings, startup/manual-share, protected credential-storage, and URL/network residuals remain separate and should not be represented as solved.
+
 **Support lane:** shareable diagnostics privacy, redaction, and local credential handling  
 **Canonical commit inspected:** `6ada5a5c4cc83afadfba42bc6af6559540920e3d`  
 **Branch:** `agent/support-8-diagnostics-privacy-audit-20260927`  

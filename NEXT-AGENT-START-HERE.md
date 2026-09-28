@@ -4,6 +4,8 @@ Recursive source reparse containment and archive extraction physical-root contai
 
 Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` first. Older text below that names recursive source reparse containment as the next boundary is historical and superseded by this section. Hosted Windows Release Gate **36392282315** passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8` and persisted evidence/cache state in `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The hosted release artifact SHA-256 is `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. The strongest independently reproduced unimplemented production boundary is now archive extraction streaming cancellation / actual-output resource budgeting in `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`.
 
+Parallel support candidate **PR #34** (`agent/support-bundle-share-safety-20260928`) fixes the reproduced raw structured-log disclosure in shareable support bundles without changing local log fidelity. Exact production/test checkpoint `d24fe670990249e36a5832c4ab227eaa4f3bd52f` passed local Windows `Verify-Release.ps1` **25/25**, functions **618/618**, call sites **6576 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **97/97**, self-test **11/11**, and `Build-Release.ps1` with ReadyToRun publish; local release SHA-256 `3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE`. It is not canonical until integrated. Read `_AGENT_CONTEXT/SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md` and do not duplicate that lane.
+
 Active Learned Rules are now **LR-001 through LR-010**. Preserve the permanent continuity constitution and require your successor to propagate it again.
 
 ---

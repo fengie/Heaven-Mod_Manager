@@ -4,6 +4,14 @@ A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captu
 
 This is a documentation/governance layer only; it does not change MHW product behavior or inherit/replace product verification. Future agents must read `_AGENT_TRAINING/README.md` during startup and evaluate reusable lessons for trainer updates at meaningful checkpoints. Project-specific architecture, current bugs, verification, branches, and next steps remain in `_AGENT_CONTEXT/`.
 
+# 2026-09-28 parallel support candidate — support-bundle raw-log share safety / PR #34
+
+Canonical `main` remains `4fd61dd33609a7c55e5aedbaad026266a410f942` for this branch's selection baseline; this support candidate is **not yet canonical**. Exact production/test checkpoint `d24fe670990249e36a5832c4ab227eaa4f3bd52f` on `agent/support-bundle-share-safety-20260928` closes the reproduced raw-JSONL share leak by sanitizing the bundle copy while leaving local logs unchanged.
+
+Local Windows verification on heaven2 / SDK 10.0.401 passed `Verify-Release.ps1` **25/25**, functions **618/618**, call sites **6576 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **97/97**, self-test **11/11**, strict analyzers, and `Build-Release.ps1` with ReadyToRun publish. Local release SHA-256: `3CAABDFD1D23055DCACF94DA8361FA33A569C9D7F7C43F3FE3992503D0F6EADE`.
+
+PR #34 is the integration path. Do not duplicate this raw-log sanitizer work. Residual diagnostics DB/settings export policy, startup/manual-log sharing, credential-at-rest protection, and network trust remain separate. LR-006 already captures the durable lesson; no new Learned Rule was added. Read `SUPPORT_BUNDLE_RAW_LOG_SHARE_SAFETY_CHECKPOINT.md`.
+
 # 2026-09-28 support integration — CLOSED / hosted Windows verified
 
 Canonical main now contains the recursive-source reparse hardening, its adversarial parity/root/cycle follow-up, archive extraction trusted-root physical containment, the associated Windows regressions, three independent support audits, and the durable LR-010 fail-before-mutation rule. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun release publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
