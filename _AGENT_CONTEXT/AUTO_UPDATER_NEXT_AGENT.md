@@ -99,3 +99,14 @@ Preserve and recursively propagate the continuity constitution and active Learne
 3. Keep packaging/publication and full end-to-end release closure separate.
 
 Preserve the permanent continuity constitution and active Learned Rules, and require the successor to recursively propagate them to the agent after them.
+
+
+## Checkpoint C9 — updater LR-003 native replacement recovery
+- Exact production/test commit: `8cdf54d0bc4065a55124aef96c68b26de2a78f0c`.
+- Added updater-level injectable apply replacement backend only for deterministic native failure fixtures; default production replacement remains the existing Windows `ReplaceFileW` backend.
+- Characterization before repair: updater 1175 passed, while 1176/1177 failed because `UpdateInstaller` automatically rolled back through documented ambiguous native pathname mutation and recreated the destination.
+- Repair: `Win32Exception` 1176/1177 now records `RollbackRequired` and preserves rollback backup plus native replacement evidence instead of guessing through ambiguous namespace state. Error 1175 retains ordinary deterministic rollback.
+- Windows x64 / .NET SDK 10.0.401 on heaven: updater focused **61/61 PASS**; native 1175/1176/1177 **3/3 PASS**; full IntegrationTests **157/157 PASS**; strict whole-solution build **0 warnings / 0 errors**.
+- No `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, cache promotion, or live old→new updater closure is claimed for this changed source.
+- Next bounded work: WPF startup health acknowledgement, background check/stage, operation-aware handoff, verified helper copying, and minimal updater status/manual-check UX. Keep packaging/publication as the following independent checkpoint.
+- Preserve the permanent continuity constitution and active Learned Rules; require the successor to recursively propagate them to the agent after them.

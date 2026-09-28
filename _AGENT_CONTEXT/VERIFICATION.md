@@ -1,3 +1,23 @@
+# Updater C9 local Windows verification — 2026-09-28
+
+Exact changed production/test commit: `8cdf54d0bc4065a55124aef96c68b26de2a78f0c`.
+
+Scope: updater-specific LR-003 native existing-file replacement handling.
+
+Evidence on authorized support machine `heaven`, Windows x64, .NET SDK 10.0.401 installed user-locally:
+
+- pre-fix characterization: 3 targeted tests, **1 passed / 2 failed**; 1176 and 1177 showed current auto-rollback recreating the destination through ambiguous native pathname mutation;
+- repaired targeted native updater fixtures: **3/3 PASS**;
+- focused updater suite: **61/61 PASS**;
+- existing native DeploymentExecutor 1175/1176/1177 fixtures: **3/3 PASS**;
+- full `MhwModManager.IntegrationTests`: **157/157 PASS**;
+- strict `dotnet build MhwModManager.sln -c Release -warnaserror`: **PASS, 0 warnings / 0 errors**;
+- `git diff --check`: PASS before commit.
+
+No full repository verifier, release build, hosted Windows Release Gate, verification-cache promotion, or live old→new update is claimed for this source. Previous closed main evidence remains bound to its exact historical inputs.
+
+---
+
 # Updater C8 atomic publication race — Windows evidence only
 
 Exact production/test commit: `fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.
