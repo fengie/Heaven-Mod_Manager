@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
@@ -192,6 +193,41 @@ public sealed class AutomationServiceTests : IDisposable
         Assert.Equal(1,result.Imported);Assert.True(Directory.Exists(Path.Combine(mods,"Sample Armor")));Assert.True(Directory.Exists(Path.Combine(inbox,"Processed")));
     }
 
+    [Fact]
+    public async Task SmartInboxDirectDirectoryRejectsDescendantJunctionWithoutPublishingPartialMod()
+    {
+        var db=await CreateDbAsync("inbox-reparse.db");
+        var mods=Path.Combine(root,"Mods-reparse");
+        var inbox=Path.Combine(root,"Inbox-reparse");
+        var state=Path.Combine(root,"state-reparse");
+        Directory.CreateDirectory(inbox);
+        var source=Path.Combine(inbox,"Unsafe Pack");
+        Directory.CreateDirectory(Path.Combine(source,"nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(source,"nativePC","safe.tex"),"SAFE",TestContext.Current.CancellationToken);
+        var external=Path.Combine(root,"inbox-reparse-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"outside.tex");
+        await File.WriteAllTextAsync(sentinel,"OUTSIDE",TestContext.Current.CancellationToken);
+        CreateDirectoryJunction(Path.Combine(source,"escape"),external);
+
+        var hash=new MhwModManager.Filesystem.HashingService();
+        var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);
+        var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);
+        var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
+        var categories=new AutoCategoryService(db);
+        var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
+        var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,categories,inbox,mods);
+
+        var result=await service.ProcessAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(0,result.Imported);
+        Assert.Equal(1,result.Skipped);
+        Assert.True(Directory.Exists(source));
+        Assert.False(Directory.Exists(Path.Combine(mods,"Unsafe Pack")));
+        Assert.Empty(await db.GetModsAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("OUTSIDE",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+    }
+
 
     [Fact]
     public async Task GpuIssueFallbackRanksNewTextureModFromLastLaunch()
@@ -245,6 +281,22 @@ public sealed class AutomationServiceTests : IDisposable
     {
         var json=JsonSerializer.Serialize(state,TestJsonOptions);
         await db.ExecuteAsync("INSERT INTO launch_history(id,started_at,ended_at,mode,success,startup_survived,state_json,details) VALUES($i,$s,$e,'Modded',$ok,$ok,$j,'test')",new Dictionary<string,object?>{{"$i",id},{"$s",started.ToString("O",System.Globalization.CultureInfo.InvariantCulture)},{"$e",started.AddSeconds(15).ToString("O",System.Globalization.CultureInfo.InvariantCulture)},{"$ok",success?1:0},{"$j",json}},TestContext.Current.CancellationToken);
+    }
+
+    private static void CreateDirectoryJunction(string link,string target)
+    {
+        var info=new ProcessStartInfo("cmd.exe",$"/d /c mklink /J \"{link}\" \"{target}\"")
+        {
+            UseShellExecute=false,
+            RedirectStandardOutput=true,
+            RedirectStandardError=true,
+            CreateNoWindow=true
+        };
+        using var process=Process.Start(info)??throw new InvalidOperationException("Could not start cmd.exe to create junction.");
+        process.WaitForExit();
+        if(process.ExitCode!=0)
+            throw new IOException($"Could not create test junction '{link}' -> '{target}'. Exit={process.ExitCode}; stdout={process.StandardOutput.ReadToEnd()}; stderr={process.StandardError.ReadToEnd()}");
+        Assert.True((File.GetAttributes(link)&FileAttributes.ReparsePoint)!=0);
     }
 
     private async Task<ManagerDatabase> CreateDbAsync(string name){var db=new ManagerDatabase(Path.Combine(root,name));await db.InitializeAsync(TestContext.Current.CancellationToken);return db;}

@@ -50,7 +50,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         var result = new List<ScanCandidate>();
         foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game))
         {
-            foreach (var file in Directory.EnumerateFiles(diskRoot, "*", SearchOption.AllDirectories))
+            foreach (var file in SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files)
             {
                 ct.ThrowIfCancellationRequested();
                 var fi = new FileInfo(file);
