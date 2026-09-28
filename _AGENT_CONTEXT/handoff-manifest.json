@@ -91,6 +91,7 @@
     "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md",
     "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md",
+    "_AGENT_CONTEXT/EVIDENCE/game-profile-id-containment-v8.8.4-local-windows-closure.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log"
   ],
   "requiredVerificationFiles": [
@@ -100,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Current branch reconciles the persisted game-profile ID containment repair on canonical main 8702934aabd6fb73bb95d29068e00169b35c2170, which already contains the v8.8.3 archive streaming cleanup. Release identity is v8.8.4. Before integration, run focused profile tests, Verify-Release, and Build-Release on the exact reconciliation commit; the older e5eb300 v8.8.3 containment evidence does not prove the combined tree. Then persist exact evidence/cache, push, and integrate through the repository workflow before inspecting exact-main hosted Windows evidence. Preserve the continuity constitution and active Learned Rules and recursively propagate them.",
+  "nextAgentObligation": "v8.8.4 game-profile ID path containment is locally release-verified on exact combined source 5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33, which already incorporates canonical v8.8.3 archive-cleanup main 8702934aabd6fb73bb95d29068e00169b35c2170. Focused profile tests 18/18 and 12/12; Verify-Release 25/25; functions 739/739 with 7871 explicit call sites and 0 uncovered; Core 88/88; Automation 29/29; Integration 187/187; self-test 11/11; Build-Release PASS; updater build 331; ZIP SHA-256 62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914. Push/open/integrate this branch through the repository workflow, then inspect and persist exact-main hosted Windows Release Gate provenance. Re-query live ownership before selecting another programming lane. Preserve the continuity constitution and active Learned Rules and recursively propagate them.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

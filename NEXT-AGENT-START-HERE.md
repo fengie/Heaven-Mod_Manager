@@ -1,10 +1,15 @@
-# v8.8.4 profile-containment reconciliation - verification pending
+# v8.8.4 profile-containment local release closure
 
-Canonical `main` advanced to `8702934aabd6fb73bb95d29068e00169b35c2170` with the v8.8.3 archive streaming cleanup while the profile-ID lane was being verified. This branch now reconciles that canonical product code with the persisted game-profile ID containment repair and bumps shipped release identity to v8.8.4.
+Exact locally release-verified source: `5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33` on `agent/game-profile-id-containment-v2-20260928`. It already incorporates canonical v8.8.3 archive-cleanup main `8702934aabd6fb73bb95d29068e00169b35c2170`.
 
-Do not treat the earlier `e5eb300223c01800e3a7652ce4ffe303cbc168c5` v8.8.3 containment gate as proof for this combined tree. Focused tests, full `Verify-Release.ps1`, and `Build-Release.ps1` must be rerun on the exact reconciliation commit before integration.
+Profile-ID containment is complete: persisted/upserted IDs must be exact canonical single-segment manager IDs before registry trust, and generic workspace/state roots are independently checked for lexical containment before directory creation. Hostile registry entries cannot escape Mods/Inbox/archive/Next/database/blob roots and are ignored without rewrite-on-read.
+
+Local Windows closure: focused profile tests 18/18 + 12/12; Verify-Release 25/25; FunctionVerifier 739/739 with 7,871 explicit call sites and 0 uncovered; Core 88/88; Automation 29/29; Integration 187/187; self-test 11/11; Build-Release PASS; updater build 331; ZIP SHA-256 `62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914`.
+
+Next: push/open/integrate this branch, then inspect and persist the exact-main hosted Windows Release Gate. Re-query live branch/PR ownership before taking another lane. Preserve and recursively propagate the continuity constitution and active Learned Rules.
 
 ---
+
 # v8.8.3 archive streaming failure-cleanup ? local Windows release closure
 
 Exact locally release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. `Verify-Release.ps1` passed **25/25**, FunctionVerifier **738/738** with **7,850 / 0 uncovered** call sites, Core **79/79**, Automation **29/29**, Integration **181/181**, self-test **11/11**, and strict builds/analyzers. `Build-Release.ps1` passed win-x64 ReadyToRun and updater-helper publish; updater build **320**; ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.

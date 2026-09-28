@@ -259,3 +259,13 @@ The narrow repair was implemented without introducing a StorageKey migration: `G
 Exact verified source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`. Focused tests passed 18/18 and 12/12. Full local Windows release verification passed 25/25, functions 737/737, Core 88/88, Automation 28/28, Integration 184/184, self-test 11/11, Build-Release, updater build 324, ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
 
 No new Learned Rule was added: the repair is a concrete application of existing fail-before-mutation/path-authority containment rules (including LR-004/LR-010), so duplicating doctrine would add noise.
+
+## v8.8.4 reconciliation closure - 2026-09-28
+
+Status: **implemented and locally release-verified on the current combined tree; integration/hosted exact-main closure pending**.
+
+Canonical main advanced during implementation to v8.8.3 archive streaming cleanup. The profile-containment lane was therefore reconciled on top of main `8702934aabd6fb73bb95d29068e00169b35c2170`, release identity was moved to v8.8.4, and all focused/full gates were rerun instead of reusing pre-reconciliation evidence.
+
+Exact verified product source: `5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33`. Focused profile tests 18/18 and 12/12; Verify-Release 25/25; FunctionVerifier 739/739 with 7,871/0 call-site coverage; Core 88/88; Automation 29/29; Integration 187/187; self-test 11/11; Build-Release PASS; updater build 331; ZIP SHA-256 `62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914`.
+
+No new Learned Rule is needed: this remains a concrete application of existing fail-before-mutation/path-authority containment doctrine.

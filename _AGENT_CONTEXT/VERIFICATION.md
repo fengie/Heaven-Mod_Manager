@@ -1,8 +1,19 @@
-# v8.8.4 combined-tree verification - pending
+# v8.8.4 game-profile ID containment local verification - 2026-09-28
 
-Canonical v8.8.3 archive cleanup and the profile-ID containment repair have been reconciled, but no v8.8.4 combined-tree pass is claimed yet. The earlier archive and profile-local gates apply only to their exact source commits. Rerun focused tests, `Verify-Release.ps1`, and `Build-Release.ps1` after the reconciliation source commit is created.
+Exact source: `5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33`; branch `agent/game-profile-id-containment-v2-20260928`; heaven2 / Windows / .NET SDK 10.0.401.
+
+- Focused: GameProfileTests 18/18 PASS; MultiGameTests 12/12 PASS.
+- Verify-Release: 25/25 PASS; FunctionVerifier 739/739; 7,871 explicit call sites; 0 uncovered; 0 trace gaps; 0 parse errors.
+- Core 88/88 PASS; Automation 29/29 PASS; Integration/fault injection 187/187 PASS; self-test 11/11 PASS.
+- Strict and relaxed builds/analyzers: 0 warnings, 0 errors.
+- Build-Release: PASS through win-x64 ReadyToRun app publish, updater-helper publish, package verification, and fingerprint promotion.
+- Updater build 331; ZIP SHA-256 `62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914`.
+- Source incorporates canonical v8.8.3 archive-cleanup main `8702934aabd6fb73bb95d29068e00169b35c2170`; older pre-reconciliation profile evidence was not reused as proof.
+
+Hosted exact-main verification remains pending until integration.
 
 ---
+
 # Reconciled canonical-main hosted evidence
 
 Inherited v8.8.2 hosted Windows closure: source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, run `36455992975`, 25/25, release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. Keep this distinct from v8.8.3 local release evidence at `26485dad2c931544728d108de9da66446dedf0a6`.

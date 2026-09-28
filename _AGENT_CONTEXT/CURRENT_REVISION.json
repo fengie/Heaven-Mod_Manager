@@ -7,15 +7,15 @@
   "currentVersion": "8.8.4",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify the reconciled v8.8.4 game-profile ID containment tree on current canonical v8.8.3 archive-cleanup main, persist exact evidence, then open/integrate the PR and inspect exact-main hosted Windows verification",
+  "nextMilestone": "open/integrate the locally release-verified v8.8.4 game-profile ID containment branch, then inspect/persist exact-main hosted Windows Release Gate provenance and re-query live ownership before selecting another lane",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.3 archive streaming failure-cleanup hardening",
-  "status": "v8.8.4-game-profile-id-containment-reconciled-verification-pending",
-  "verificationAppliesToCommit": "26485dad2c931544728d108de9da66446dedf0a6",
+  "status": "v8.8.4-game-profile-id-containment-locally-release-verified-integration-pending",
+  "verificationAppliesToCommit": "5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33",
   "lastClosedVerificationCommit": "fdf67b2c85b37b3a31c5156a6ed483323778350b",
   "lastClosedVerificationRun": "hosted-github-actions-36455992975",
-  "candidateSourceCommit": "pending-v8.8.4-reconciliation-commit",
-  "verificationScopeNote": "Canonical main advanced during the profile-containment lane to merged v8.8.3 archive cleanup at 8702934aabd6fb73bb95d29068e00169b35c2170. The current branch now combines that canonical product code with the profile-ID repair and bumps release identity to v8.8.4. Existing v8.8.3 archive evidence remains valid only for its exact source; full combined v8.8.4 verification is pending and must be rerun before integration.",
+  "candidateSourceCommit": "5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33",
+  "verificationScopeNote": "Local Windows closure for exact combined v8.8.4 source 5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33 on heaven2/.NET 10.0.401: focused GameProfile 18/18 and MultiGame 12/12; Verify-Release 25/25; FunctionVerifier 739/739 with 7871 explicit call sites and 0 uncovered/trace/parse gaps; strict and relaxed builds 0 warnings/errors; Core 88/88; Automation 29/29; Integration/fault injection 187/187; self-test 11/11; Build-Release PASS; updater build 331; ZIP SHA-256 62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914. Source already incorporates canonical v8.8.3 archive-cleanup main 8702934aabd6fb73bb95d29068e00169b35c2170. Hosted exact-main closure remains pending until integration.",
   "lastClosedVerification": {
     "functionInventoryTotal": 615,
     "functionsVerified": 615,
@@ -30,6 +30,7 @@
     "releaseArtifactSha256": "CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841"
   },
   "candidateChanges": [
+    "2026-09-28 v8.8.4 game-profile ID path containment: exact locally release-verified combined source 5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33 incorporates canonical v8.8.3 archive cleanup and rejects noncanonical persisted/upserted GameProfile.Id values before path authority; generic workspace/state roots receive defense-in-depth lexical containment before directory creation; focused 18/18 and 12/12; Verify-Release 25/25; functions 739/739 with 7871/0 call-site coverage; Core 88/88; Automation 29/29; Integration 187/187; self-test 11/11; Build-Release PASS; updater build 331; ZIP SHA-256 62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914; integration and hosted exact-main verification pending.",
     "2026-09-28 v8.8.3 LR-011 local release closure at 26485dad2c931544728d108de9da66446dedf0a6: Verify-Release 25/25, functions 738/738, 7850 explicit call sites / 0 uncovered, Core 79/79, Automation 29/29, Integration 181/181, self-test 11/11, strict builds/analyzers PASS; Build-Release ReadyToRun/helper publish PASS; updater build 320; ZIP SHA-256 60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433; exact-main hosted verification pending.",
     "2026-09-28 v8.8.3 LR-011 candidate 5688fe91c03b56b651a3e9d94d7111b974693ab9: ArchiveInspector adds a deterministic payload/cleanup fault seam, attempts current-file cleanup for all exceptional payload exits while preserving the primary failure if cleanup fails, Smart Inbox preserves requested cancellation over recoverable I/O, and focused regressions pass Integration 181/181 plus Automation 29/29; strict whole-solution build passes 0 warnings/errors; full release verification remains pending.",
     "2026-09-28 updater C11b closure: exact commit 08054d96a8ba84819b6dfd775d56f9eeabc7986d integrates immutable exact-main publication policy, deterministic artifacts, final pre-publication main race recheck, and updater metadata/rollback native replacement coverage; local heaven Windows verification passed Verify-Release 25/25, functions 727/727, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, ReadyToRun app/helper publish, package and publication-policy checks, Build-Release; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C; hosted main publication and disposable end-to-end remain pending.",
@@ -123,7 +124,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Complete focused tests plus Verify-Release and Build-Release on the exact reconciled v8.8.4 source commit, persist promoted cache/evidence, push, and open/integrate through the repository workflow. Do not reuse the earlier e5eb300 v8.8.3 profile-containment gate as proof for the combined archive+containment tree. Preserve and recursively propagate continuity and active Learned Rules.",
+  "nextRequiredAction": "Push/open/integrate branch agent/game-profile-id-containment-v2-20260928 without overwriting concurrent work, then inspect the exact-main hosted Windows Release Gate for v8.8.4 and persist exact SHA/run/artifact provenance. Re-query open PRs/branches before taking another task; do not duplicate active lanes. Choose the highest-priority unowned audited boundary after that refresh. Preserve and recursively propagate continuity and all active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

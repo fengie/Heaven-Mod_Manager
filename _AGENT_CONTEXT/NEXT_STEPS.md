@@ -1,11 +1,12 @@
-# v8.8.4 reconciliation next steps
+# v8.8.4 immediate next steps - verified branch
 
-1. Commit the reconciled v8.8.4 source checkpoint.
-2. Run focused game-profile regressions plus full `Verify-Release.ps1` and `Build-Release.ps1` on that exact commit.
-3. Persist promoted cache and exact local Windows closure evidence in a separate handoff commit, push, and open/integrate the PR.
-4. After integration, inspect the exact-main hosted Windows Release Gate; do not relabel branch-local evidence as hosted evidence.
+1. Push and open/integrate `agent/game-profile-id-containment-v2-20260928`; exact verified source is `5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33`.
+2. After integration, inspect/persist the exact-main hosted Windows Release Gate: main SHA, workflow run, promoted cache, updater build, and artifact digest.
+3. Re-query open PRs/branches before taking another task; do not duplicate active lanes.
+4. Choose the highest-severity unowned audited boundary after that ownership refresh; likely candidates remain duplicate-cleanup crash-durable reconciliation, broader LR-006 diagnostic export hardening, or remaining crash-bisector evidence risks unless another agent has claimed them.
 
 ---
+
 # v8.8.3 current next steps ? local release gate closed
 
 1. Integrate exact locally release-verified checkpoint `26485dad2c931544728d108de9da66446dedf0a6` through the repository workflow without replaying stale branch-local continuity snapshots over newer main.

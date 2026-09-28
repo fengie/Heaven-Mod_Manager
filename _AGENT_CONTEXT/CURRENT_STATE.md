@@ -1,10 +1,11 @@
-# v8.8.4 reconciliation state - verification pending
+# v8.8.4 game-profile ID containment - locally release-verified
 
-The branch combines canonical v8.8.3 archive streaming cleanup (`main` at `8702934aabd6fb73bb95d29068e00169b35c2170`) with the game-profile ID path-containment repair. Product paths do not overlap, but release metadata, continuity files, and verification caches did and were reconciled deliberately. Release identity is now v8.8.4.
+Exact product source `5d5b52a2193f8b6c377dfc9da5f504b7ad4ffc33` combines canonical v8.8.3 archive cleanup with the profile-ID containment repair and release identity v8.8.4. Full local Windows release closure is green: Verify-Release 25/25; 739/739 functions; 7,871/0 call sites; Core 88/88; Automation 29/29; Integration 187/187; self-test 11/11; Build-Release PASS; updater build 331; artifact SHA-256 `62113ACCC65212B6FFDD2917FB95CFD96C058035798047541EA16DF51282E914`.
 
-Full exact-source v8.8.4 verification is pending; older component-local evidence remains historical only.
+Integration and exact-main hosted Windows verification are the only remaining closure steps for this lane.
 
 ---
+
 # Concurrent canonical-main evidence reconciled
 
 The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.
