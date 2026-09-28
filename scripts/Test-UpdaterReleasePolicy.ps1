@@ -1,5 +1,6 @@
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'UpdaterReleasePolicy.ps1')
+. (Join-Path $PSScriptRoot 'UpdaterReleasePublication.ps1')
 
 function Assert-Equal {
   param($Expected,$Actual,[string]$Label)
@@ -54,5 +55,92 @@ foreach($invalidJson in @('{}','null','not-json','[null]','[{"isDraft":false,"is
   try{[void](ConvertFrom-UpdaterReleaseList -Json $invalidJson)}catch{$rejected=$true}
   Assert-Equal $true $rejected "invalid release-list rejection: $invalidJson"
 }
+
+
+function Invoke-PublicationSequenceFixture {
+  param(
+    [Parameter(Mandatory=$true)][string]$ExpectedSha,
+    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
+    [string]$FailStage=''
+  )
+
+  $script:UpdaterPublicationFixture=[ordered]@{
+    Events=New-Object System.Collections.Generic.List[string]
+    RemoteMainSha=$RemoteMainSha
+    FailStage=$FailStage
+  }
+  $result=$null
+  $errorMessage=''
+
+  try {
+    $result=Invoke-UpdaterDraftPublication -ExpectedSourceSha $ExpectedSha `
+      -CreateDraft {
+        $script:UpdaterPublicationFixture.Events.Add('create')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'create'){throw 'fixture-create'}
+      } `
+      -UploadAssets {
+        $script:UpdaterPublicationFixture.Events.Add('upload')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'upload'){throw 'fixture-upload'}
+      } `
+      -VerifyDraft {
+        $script:UpdaterPublicationFixture.Events.Add('verify')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'verify'){throw 'fixture-verify'}
+      } `
+      -RefreshMain {
+        $script:UpdaterPublicationFixture.Events.Add('refresh')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'refresh'){throw 'fixture-refresh'}
+        return [string]$script:UpdaterPublicationFixture.RemoteMainSha
+      } `
+      -DeleteDraft {
+        $script:UpdaterPublicationFixture.Events.Add('delete')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'delete'){throw 'fixture-delete'}
+      } `
+      -PublishDraft {
+        $script:UpdaterPublicationFixture.Events.Add('publish')
+        if($script:UpdaterPublicationFixture.FailStage -eq 'publish'){throw 'fixture-publish'}
+      }
+  }
+  catch {
+    $errorMessage=$_.Exception.Message
+  }
+
+  return [pscustomobject]@{
+    Result=$result
+    Error=$errorMessage
+    Events=(@($script:UpdaterPublicationFixture.Events) -join '|')
+  }
+}
+
+$sequenceSuccess=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current
+Assert-Equal '' $sequenceSuccess.Error 'draft sequence success error'
+Assert-Equal $true $sequenceSuccess.Result.Published 'draft sequence success publish'
+Assert-Equal 'published' $sequenceSuccess.Result.Reason 'draft sequence success reason'
+Assert-Equal 'create|upload|verify|refresh|publish' $sequenceSuccess.Events 'draft sequence success order'
+
+$sequenceStale=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $previous
+Assert-Equal '' $sequenceStale.Error 'post-upload stale main error'
+Assert-Equal $false $sequenceStale.Result.Published 'post-upload stale main publish'
+Assert-Equal 'stale-main-after-upload' $sequenceStale.Result.Reason 'post-upload stale main reason'
+Assert-Equal 'create|upload|verify|refresh|delete' $sequenceStale.Events 'post-upload stale main cleanup order'
+
+$sequenceUploadFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'upload'
+Assert-Equal 'fixture-upload' $sequenceUploadFailure.Error 'upload failure propagated'
+Assert-Equal 'create|upload|delete' $sequenceUploadFailure.Events 'upload failure draft cleanup'
+
+$sequenceVerifyFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'verify'
+Assert-Equal 'fixture-verify' $sequenceVerifyFailure.Error 'draft verification failure propagated'
+Assert-Equal 'create|upload|verify|delete' $sequenceVerifyFailure.Events 'draft verification failure cleanup'
+
+$sequenceRefreshFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'refresh'
+Assert-Equal 'fixture-refresh' $sequenceRefreshFailure.Error 'final main refresh failure propagated'
+Assert-Equal 'create|upload|verify|refresh|delete' $sequenceRefreshFailure.Events 'final main refresh failure cleanup'
+
+$sequenceDeleteFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $previous -FailStage 'delete'
+Assert-Equal 'fixture-delete' $sequenceDeleteFailure.Error 'stale draft cleanup failure propagated'
+Assert-Equal 'create|upload|verify|refresh|delete' $sequenceDeleteFailure.Events 'stale draft cleanup failure is not retried blindly'
+
+$sequencePublishFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'publish'
+Assert-Equal 'fixture-publish' $sequencePublishFailure.Error 'publish failure propagated'
+Assert-Equal 'create|upload|verify|refresh|publish' $sequencePublishFailure.Events 'publish failure avoids unsafe automatic deletion'
 
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
