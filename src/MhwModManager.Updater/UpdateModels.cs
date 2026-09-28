@@ -266,6 +266,8 @@ public sealed record UpdateJournal(
 internal sealed record GitHubReleaseDto(
     [property: JsonPropertyName("tag_name")] string TagName,
     [property: JsonPropertyName("draft")] bool Draft,
+    [property: JsonPropertyName("prerelease")] bool Prerelease,
+    [property: JsonPropertyName("immutable")] bool Immutable,
     [property: JsonPropertyName("assets")] IReadOnlyList<GitHubAssetDto> Assets);
 
 internal sealed record GitHubAssetDto(
