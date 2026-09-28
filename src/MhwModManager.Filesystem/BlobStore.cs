@@ -10,6 +10,10 @@ namespace MhwModManager.Filesystem;
 /// <summary>Immutable SHA-256-addressed content store.</summary>
 public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBackend? atomicReplaceBackend = null)
 {
+    private const int ErrorSharingViolation = 32;
+    private const int ErrorLockViolation = 33;
+    private const int ExistingVerificationMaxAttempts = 9;
+
     public string Root { get; } = root;
     public string PathFor(string sha)
     {
@@ -112,10 +116,27 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
     private static async Task VerifyExistingAsync(string path, string expectedSha256, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-            1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        var actual = Convert.ToHexString(await SHA256.HashDataAsync(input, ct));
-        if (!StringComparer.OrdinalIgnoreCase.Equals(actual, expectedSha256))
-            throw new InvalidDataException($"CAS integrity failure: existing blob does not match SHA-256 {expectedSha256}.");
+        for (var attempt = 0; ; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+                    1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                var actual = Convert.ToHexString(await SHA256.HashDataAsync(input, ct));
+                if (!StringComparer.OrdinalIgnoreCase.Equals(actual, expectedSha256))
+                    throw new InvalidDataException($"CAS integrity failure: existing blob does not match SHA-256 {expectedSha256}.");
+                return;
+            }
+            catch (IOException ex) when (
+                attempt + 1 < ExistingVerificationMaxAttempts &&
+                (ex.HResult & 0xFFFF) is ErrorSharingViolation or ErrorLockViolation)
+            {
+                // A competing same-directory rename can make the destination name visible
+                // before Windows releases its delete/rename handle. Keep FileShare.Read so
+                // verification still excludes mutation; only retry that transient OS window.
+                await Task.Delay(1 << attempt, ct);
+            }
+        }
     }
 }
