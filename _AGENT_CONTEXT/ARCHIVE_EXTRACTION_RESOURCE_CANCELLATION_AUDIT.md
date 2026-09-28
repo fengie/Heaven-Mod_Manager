@@ -1,5 +1,15 @@
 # Archive extraction resource/cancellation audit — 2026-09-28
 
+## 2026-09-28 implementation status update
+
+The core implementation checkpoint recommended by this audit is now **implemented on canonical `main`** through PR #57 / merge commit `a8b581176aac0e6bcf09c049285ed40f4b2b392c`. The current `ArchiveInspector` uses a cancellation-aware async entry-stream copy loop, enforces cumulative actual-output bytes before writes, and removes an owned partial output file on cancellation or actual-output-budget failure. Focused integration regressions cover those behaviors.
+
+PR #57 records a full fresh local Windows release verification on integration head `fd8b48fc92e6f5e64591fd1938b7ccce5ac94083` (25/25 verifier; 728/728 functions; 7,772 / 0 uncovered call sites; Core 79/79; Automation 24/24; Integration 177/177; self-test 11/11; strict build/analyzers; ReadyToRun/updater-helper package; Build-Release PASS; artifact SHA-256 `AC3571853650CFA91243199B23A44007488F9244780FCBD18A7A38552B652734`).
+
+At the separate support provenance checkpoint, exact merge commit `a8b581...` had no hosted workflow/status record. Keep that distinction explicit: this audit's former single-entry cancellation/actual-output implementation gap is closed in source and locally release-verified on the integration head, while exact-main hosted provenance remains pending. See `ARCHIVE_STREAMING_INTEGRATION_PROVENANCE_AUDIT_2026-09-28.md`.
+
+The older text below is retained as historical evidence of the original defect and implementation design. Remaining free-space reserve/compression-ratio policy is still separate future work.
+
 ## Status and canonical baseline
 
 Documentation-only support checkpoint. Source inspection and the runtime reproduction began from canonical `main` at `831da365c0c67e0239ad668f60fe3c78513dc63b`. During the task, canonical `main` advanced first to `ef9c0dc93ca5270e9ee5ab3dea080b2fcb461585` with the generic agent-training/continuity system, then to `2d6969c7d94438dd64a540dab93fc9a910a8458b` with hosted-verification evidence/cache persistence. Neither interval changes `src/` or `tests/`. This branch was rebased onto `2d6969c7d94438dd64a540dab93fc9a910a8458b` before final verification and push.

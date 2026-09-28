@@ -8,6 +8,8 @@ Exact implementation commit locally verified: `a7b33431ea274b9be5c27abdacbef6325
 
 Canonical `main` inspected before work: `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
 
+Final concurrent-main reconciliation before completion: `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`; its intervening changes are archive-audit/provenance/continuity/evidence files and do not modify `CrashBisectorEngine.cs` or `AutomationLogicTests.cs`.
+
 This checkpoint closes only CB-01 from `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md`: automatic bisection must validate its experimental control and positive condition before narrowing can produce a persistent confirmed culprit.
 
 ## Why this was selected

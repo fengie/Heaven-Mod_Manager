@@ -206,3 +206,12 @@ Post-audit revalidation: canonical main advanced to `0e561f3c059475ad443a79ac4a2
 
 
 Integration note: PlannerSnapshotRepository subsequently closed at `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3` / run `36336190920`; the UI audit remains documentation-only and does not change that verified production state.
+
+
+## 2026-09-28 post-PR57 archive failure-cleanup audit
+
+Canonical main includes PR #57's streamed archive extraction, mid-entry cancellation, actual-output budgeting, and current-partial-file cleanup for cancellation / budget `InvalidDataException`. The final support branch was reconciled onto main `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`, which also contains the separate PR #61 provenance repair.
+
+A focused post-merge source audit found a separate failure-cleanup contract gap. The cancellation handler deletes the owned partial file before rethrowing the original `OperationCanceledException`. If that cleanup itself fails, the cleanup exception replaces cancellation; at the current Smart Inbox boundary, `IOException` / `UnauthorizedAccessException` are caught as recoverable item failures, so requested cancellation can conditionally be downgraded and later inbox work can continue. Non-matching streamed I/O failures after output creation also bypass the current per-file cleanup path. No runtime delete/write-fault reproduction is claimed.
+
+See `_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md`. LR-011 records the reusable rule: cleanup must not replace the primary failure/cancellation semantics. Keep the older LR-008 import-publication problem separate; #57's per-current-file cleanup does not make whole import destinations transactionally invisible or residue-free.
