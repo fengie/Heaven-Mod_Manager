@@ -1,3 +1,9 @@
+# 2026-09-28 remote preview egress support candidate — LOCAL WINDOWS VERIFIED
+
+Support branch `agent/support-remote-preview-egress-hardening-20260928` closes the audited P1 untrusted-preview egress path on exact candidate `66a799074a066ddb237903111d89c08df2681528`. Sidecar/API/meta preview URLs are HTTPS-only, uncredentialed preview transport validates resolved connection addresses and rejects non-public ranges, automatic redirects are disabled, and Nexus credentialed traffic uses a separate client. Focused network trust regressions pass **18/18**; repository verifier **25/25**; functions **623/623** with **6571 / 0 uncovered** call sites; Core **79/79**; Automation **24/24**; Integration **114/114**; self-test **11/11**; ReadyToRun publish PASS; local ZIP SHA-256 `065B62826C9CAD513EE6C79D28F660A14FD39C14D752F194EBD0D01B21FE3A5D`.
+
+This branch is not canonical until integrated and hosted-Windows verified. The pre-fix runtime reproduction also confirmed a separate preview-cache publication lifetime defect: `File.Move` can run while the output stream is still open. Read `_AGENT_CONTEXT/REMOTE_PREVIEW_EGRESS_HARDENING_2026-09-28.md` and its evidence file. Preserve newer parallel candidate/disposition state during integration.
+
 # Company programming-agent trainer — ACTIVE LIVING SYSTEM
 
 A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captures reusable company values, agent operating standards, development pipeline, role boundaries, multi-agent coordination, continuity/recovery, verification, destructive-operation safety, CI/release doctrine, knowledge maintenance, prompting guidance, and reusable role prompts.

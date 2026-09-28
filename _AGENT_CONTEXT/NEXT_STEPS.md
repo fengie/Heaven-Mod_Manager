@@ -1,3 +1,11 @@
+# Parallel support candidate — remote preview egress hardening
+
+Branch `agent/support-remote-preview-egress-hardening-20260928` has a locally Windows-verified remote-preview network boundary at exact candidate `66a799074a066ddb237903111d89c08df2681528`: focused network tests **18/18**, verifier **25/25**, functions **623/623**, call sites **6571 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **114/114**, self-test **11/11**, ReadyToRun PASS, SHA-256 `065B62826C9CAD513EE6C79D28F660A14FD39C14D752F194EBD0D01B21FE3A5D`. Integrate only after rechecking current main/parallel work, then require the hosted exact Windows gate.
+
+After that boundary is canonically closed, the recommended independent follow-up from this lane is the runtime-confirmed `CacheRemoteImageAsync` stream-disposal-before-`File.Move` defect. Keep response-size/image-decoder policy separate.
+
+The archive streaming candidate remains a separate parallel lane; this support branch does not supersede it.
+
 # Current next step — archive streaming cancellation/resource budgeting
 
 The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.

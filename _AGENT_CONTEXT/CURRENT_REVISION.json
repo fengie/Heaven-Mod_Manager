@@ -3,7 +3,7 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/support-remote-preview-egress-hardening-20260928",
   "currentVersion": "8.8.0",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
@@ -11,6 +11,7 @@
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
   "status": "recursive-and-archive-physical-containment-closed-hosted-windows-verified",
+  "activeSupportCandidate": {"branch":"agent/support-remote-preview-egress-hardening-20260928","productionCommit":"66a799074a066ddb237903111d89c08df2681528","scope":"remote preview network egress hardening","localWindowsVerification":"Verify-Release 25/25; Build-Release PASS; functions 623/623; call sites 6571/0 uncovered; Core 79/79; Automation 24/24; Integration 114/114; self-test 11/11; ReadyToRun PASS; SHA256 065B62826C9CAD513EE6C79D28F660A14FD39C14D752F194EBD0D01B21FE3A5D","hostedStatus":"pending integration/hosted exact gate"},
   "verificationAppliesToCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationRun": "hosted-github-actions-36392282315",
@@ -30,6 +31,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 support candidate: hardened remote preview network egress with HTTPS-only untrusted preview URLs, separate credentialed/uncredentialed clients, disabled redirects, actual resolved-address public-network validation, and 18 focused network trust regressions; exact local Windows candidate 66a799074a066ddb237903111d89c08df2681528 passed Verify-Release 25/25 and Build-Release.",
     "2026-09-28 integration: added shared SafeRecursiveTraversal and migrated ModScanner, unmanaged adoption, and Smart Inbox recursive source traversal to fail closed on root/descendant reparse points while preserving safe-tree classification order.",
     "2026-09-28 integration: hardened archive extraction with an explicit trusted root and component-by-component prevalidation so ancestor/descendant junctions are rejected before redirected directory/file creation.",
     "2026-09-28 integration: added Windows junction/root/cycle and archive physical-root regressions; combined local suites pass Automation 24/24 and Integration 96/96.",
@@ -127,6 +129,8 @@
     "_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md",
     "_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md",
     "_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md",
+    "_AGENT_CONTEXT/REMOTE_PREVIEW_EGRESS_HARDENING_2026-09-28.md",
+    "_AGENT_CONTEXT/EVIDENCE/remote-preview-egress-local-windows-closure.md",
     "_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md",
     "_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md",
     "_AGENT_CONTEXT/MHW_SEMANTIC_COVERAGE_BULK_FILL_AUDIT.md",

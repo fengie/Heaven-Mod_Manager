@@ -1,3 +1,7 @@
+# 2026-09-28 remote preview egress support candidate — LOCAL WINDOWS VERIFIED
+
+If this branch is still pending, read `_AGENT_CONTEXT/REMOTE_PREVIEW_EGRESS_HARDENING_2026-09-28.md` before editing the network boundary. Exact candidate `66a799074a066ddb237903111d89c08df2681528` passed local Windows verifier **25/25** and Build-Release/ReadyToRun; focused network regressions are **18/18**, Integration **114/114**, and release SHA-256 is `065B62826C9CAD513EE6C79D28F660A14FD39C14D752F194EBD0D01B21FE3A5D`. It still requires current-main reconciliation and the hosted exact Windows gate after integration. Do not overwrite newer parallel continuity snapshots.
+
 # 2026-09-28 support integration — CLOSED / HOSTED WINDOWS VERIFIED
 
 Recursive source reparse containment and archive extraction physical-root containment are now integrated on canonical `main`. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and `Build-Release.ps1` with ReadyToRun publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
