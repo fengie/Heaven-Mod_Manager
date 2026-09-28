@@ -37,3 +37,7 @@ Close the exact full Windows gate before another production boundary. Then prior
 Support tasks: (1) measure duplicate-capture/restore hashing at realistic blob sizes, preserving validation; (2) audit CAS root/leaf reparse policy and design real-link fixtures without changing migration semantics; (3) reconcile obsolete historical top-level guidance in README_FIRST/KNOWN_ISSUES against current closure evidence without deleting history. Each task must document scope, commands, and limitations; production changes require their own gate.
 
 The successor must read AGENTS.md, inherit and preserve the permanent continuity constitution and active Learned Rules, update durable handoff state, and explicitly require its successor to recursively propagate these obligations to the agent after them. Do not break the chain.
+
+## Local full-gate checkpoint
+
+Exact source 8334d725f6bdb73661e2f3ed71a04189db76950b passed both local Windows gates; evidence is EVIDENCE/cas-integrity-local-windows.log. The 25-stage verifier passed, including 88 integration tests and 11 self-tests; release ReadyToRun publishing passed. Generated caches were promoted only by the successful normal pipeline. Hosted canonical verification remains pending.

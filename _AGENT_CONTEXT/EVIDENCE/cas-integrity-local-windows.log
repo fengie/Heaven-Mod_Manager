@@ -1,0 +1,25 @@
+CAS integrity local Windows verification
+source_sha=8334d725f6bdb73661e2f3ed71a04189db76950b
+platform=Windows 11 10.0.26200 X64
+sdk=10.0.401
+runtime=10.0.12
+
+Baseline: original production at 23ddc6a + initial BlobIntegrityTests
+Strict compile failed pre-existing CA1068 (CancellationToken not last in AtomicFileOps).
+Diagnostic compile with TreatWarningsAsErrors=false: warning retained, 6/7 focused regressions FAILED as expected.
+
+Fixed source:
+dotnet run --project tests/MhwModManager.IntegrationTests -c Release -- -class '*BlobIntegrityTests'
+9/9 PASS; no analyzer relaxation.
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Verify-Release.ps1
+Exit 0; 25/25 PASS. Core tests exact cached; Automation 20/20; Integration 88/88; self-test 11/11.
+Strict solution build 0 warnings / 0 errors. Handoff baseline and 4 negative fixtures PASS.
+Functions 613; changed/new 4; trace gaps 0; explicit call sites 6492; uncovered 0; parse errors 0.
+613 fingerprints promoted by normal successful gate.
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Build-Release.ps1
+Exit 0; strict solution/App build, full test suites, self-test and self-contained win-x64 ReadyToRun publish PASS.
+ReadyToRun fallback False.
+Local release SHA256 B21BF02973C110D1D028045DBFE1CF64A3AB6DB7BD8F006A75C15EAB1439A36D.
+No manual cache promotion. Hosted gate still required for canonical closure.
