@@ -1,12 +1,13 @@
 {
   "name": "heaven-agent-control",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Local control plane for the MHW coding-agent swarm.",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check agentctl.mjs",
+    "check": "node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/prompt-templates.mjs",
+    "test": "node --test test/*.test.mjs",
     "status": "node agentctl.mjs status",
     "snapshot": "node agentctl.mjs snapshot"
   }
