@@ -143,4 +143,31 @@ $sequencePublishFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current 
 Assert-Equal 'fixture-publish' $sequencePublishFailure.Error 'publish failure propagated'
 Assert-Equal 'create|upload|verify|refresh|publish' $sequencePublishFailure.Events 'publish failure avoids unsafe automatic deletion'
 
+$noisySequence=Invoke-UpdaterDraftPublication -ExpectedSourceSha $current `
+  -CreateDraft {'create-output'} `
+  -UploadAssets {'upload-output'} `
+  -VerifyDraft {'verify-output'} `
+  -RefreshMain {$current} `
+  -DeleteDraft {'delete-output'} `
+  -PublishDraft {'publish-output'}
+Assert-Equal 1 @($noisySequence).Count 'publication callback output suppression'
+Assert-Equal $true $noisySequence.Published 'publication callback output suppression result'
+
+$script:UpdaterRefreshCleanupCount=0
+$multiRefreshError=''
+try {
+  [void](Invoke-UpdaterDraftPublication -ExpectedSourceSha $current `
+    -CreateDraft {} `
+    -UploadAssets {} `
+    -VerifyDraft {} `
+    -RefreshMain {@($current,$previous)} `
+    -DeleteDraft {$script:UpdaterRefreshCleanupCount++} `
+    -PublishDraft {})
+}
+catch {
+  $multiRefreshError=$_.Exception.Message
+}
+Assert-Equal 1 $script:UpdaterRefreshCleanupCount 'ambiguous final main refresh cleanup'
+Assert-Equal $true ($multiRefreshError -like 'Final updater publication main refresh returned *') 'ambiguous final main refresh rejection'
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
