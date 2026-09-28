@@ -1,3 +1,13 @@
+## Current updater next steps — 2026-09-28
+
+1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
+2. Commit/push the local-verification continuity checkpoint and integrate C12 through the repository workflow.
+3. Run/inspect the exact-main Windows Release Gate and require successful immutable updater release publication with the exact two assets, tag target, sizes, and SHA-256 digests.
+4. Run disposable installed-client old→new and fault-injected rollback, proving exact restarted build identity/health acknowledgement and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+5. Only then mark the automatic updater end-to-end complete.
+
+The preceding exact-main run **36428542918** passed all verifier/build/package/policy stages and failed only before first release creation because empty release-list output was not normalized. No release/tag was created by that failed run. Local C12 build **230** ZIP SHA-256: `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`. Preserve the permanent recursive continuity constitution and active Learned Rules.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.

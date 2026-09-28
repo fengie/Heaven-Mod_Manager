@@ -1,3 +1,11 @@
+# Updater C12 first-publication repair — current verification
+
+Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.
+
+On isolated branch `agent/auto-updater-publication-fix-20260928`, the new policy test passed on Windows PowerShell 5.1.26100.8737 and .NET SDK 10.0.401. Cases cover empty CLI output, JSON `[]`, valid single release, malformed JSON/object, JSON null row, and missing required field. `git diff --check` passed.
+
+Not yet run on C12: full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows gate, GitHub publication, disposable old→new update, or injected rollback. Do not reuse run 36428542918 as verification for the changed C12 files. The current release collection is empty; no tag/release/assets were created by the failed run.
+
 # Updater C11b publication policy — exact local Windows verification — 2026-09-28
 
 Exact integrated updater source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d` on `agent/auto-updater-20260928`.
@@ -807,3 +815,17 @@ Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
 - Real loopback TLS + SocketsHttpHandler regression proves GitHub-style HTTPS 302 handling clears Authorization before a simulated release-asset host while the SHA-256 verified download succeeds.
 - Useful failed fixture preserved: first TLS-server run failed with Windows Schannel `AuthenticationException` because the generated server key was ephemeral. The fixture now re-imports a persisted user-key certificate and validates that exact certificate thumbprint; CA5359 was not suppressed and certificate validation was not weakened to an always-true callback.
 - No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.
+
+
+## Updater C12 first-publication discovery repair — local release closure
+
+Exact code commit: `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2` on `agent/auto-updater-publication-fix-20260928`.
+
+- Hosted run **36428542918** on `a83dc6e047ccf98e896f10c25772df99b95426d1` passed verification/build/package/policy, then failed before release creation because empty release inventory was not normalized before strict `tagName` access.
+- C12 adds fail-closed release-list normalization/shape validation; updater runtime/package/auth semantics are unchanged.
+- Windows policy test and `git diff --check`: **PASS**.
+- `Verify-Release.ps1`: **25/25 PASS**; FunctionVerifier **727/727**, **7749 / 0 uncovered**, zero trace gaps/parse errors.
+- Core **79/79**, Automation **24/24**, Integration/fault injection **173/173**, self-test **11/11**.
+- Strict solution/App builds **PASS, 0 warnings / 0 errors**; ReadyToRun app and self-contained updater-helper publish **PASS**.
+- `Build-Release.ps1`: **PASS**; local updater build **230**; ZIP SHA-256 `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`.
+- This is local exact-input evidence only. Hosted exact-main publication and disposable installed-client old-to-new/rollback closure remain pending.
