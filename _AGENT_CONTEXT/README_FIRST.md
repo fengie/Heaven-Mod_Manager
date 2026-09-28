@@ -42,6 +42,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md` — background-task, staging, close/cancel, and mutation-coordination risks.
 - `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` — broad failure-mode and scale coverage gaps.
 - `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md` — reparse containment, CAS integrity, and native replacement semantics.
+- `_AGENT_CONTEXT/CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md` — current-source CAS root/leaf reparse identity and legacy hardlink aliasing after content-hash hardening.
 - `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md` — migration retry/ownership/cleanup/fidelity risks.
 - `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — verifier, stage-cache, CI and supply-chain trust gaps.
 - `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` — share-boundary sanitization and credential handling.
