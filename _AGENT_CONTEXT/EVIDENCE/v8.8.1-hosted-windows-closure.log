@@ -1,0 +1,57 @@
+﻿MHW Manual Mod Manager v8.8.1 hosted Windows closure
+source_sha=2a0acd9951d67b724a43ef79ec7078d3cc412ddc
+run_id=36454116911
+runner_os=Windows
+runner_arch=X64
+dotnet_sdk=10.0.401
+
+=== VERIFICATION REPORT ===
+# MHW Manual Mod Manager verification report
+
+Generated: 2026-09-28T16:55:54.7506248+00:00
+SDK: 10.0.401
+Overall: **PASS** - 25 passed / 0 failed
+
+| Group | Stage | Result | Exit | Seconds | Detail | Log |
+|---|---|---:|---:|---:|---|---|
+| Harness | PowerShell syntax sweep | PASS | 0 | 0 | All active PowerShell scripts parsed successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\powershell-syntax-20260928-165230.log |
+| Harness | Report serialization preflight | PASS | 0 | 0.038 | Plain PowerShell object-array report serialization round-tripped successfully. | D:\a\mhw-mods\mhw-mods\BuildLogs\harness-report-preflight-20260928-165230.log |
+| Harness | Agent handoff continuity preflight | PASS | 0 | 1.473 | Required continuity context/manifest is present and propagates to the next agent. | D:\a\mhw-mods\mhw-mods\BuildLogs\agent-handoff-preflight-20260928-165230.log |
+| Restore | Solution restore | PASS | 0 | 23.878 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\restore-20260928-165230-Solution_restore.log |
+| Verification | Function fingerprint scan | PASS | 0 | 11.605 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-scan-20260928-165230-Function_fingerprint_scan.log |
+| Compile | Relaxed whole solution | PASS | 0 | 58.838 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-relaxed-20260928-165230-Relaxed_whole_solution.log |
+| Strict compile/analyzers | Core | PASS | 0 | 3.29 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Core.log |
+| Strict compile/analyzers | Storage | PASS | 0 | 3.476 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Storage.log |
+| Strict compile/analyzers | Filesystem | PASS | 0 | 3.533 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Filesystem.log |
+| Strict compile/analyzers | Mhw | PASS | 0 | 3.629 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Mhw.log |
+| Strict compile/analyzers | Diagnostics | PASS | 0 | 3.679 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Diagnostics.log |
+| Strict compile/analyzers | Automation | PASS | 0 | 3.849 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Automation.log |
+| Strict compile/analyzers | UnitTests | PASS | 0 | 3.092 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-UnitTests.log |
+| Strict compile/analyzers | AutomationTests | PASS | 0 | 3.223 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-AutomationTests.log |
+| Strict compile/analyzers | IntegrationTests | PASS | 0 | 2.447 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-IntegrationTests.log |
+| Strict compile/analyzers | Benchmarks | PASS | 0 | 1.579 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-Benchmarks.log |
+| Strict compile/analyzers | SelfTest | PASS | 0 | 2.108 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-SelfTest.log |
+| Strict compile/analyzers | FunctionVerifier | PASS | 0 | 1.432 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-FunctionVerifier.log |
+| Strict compile/analyzers | App | PASS | 0 | 2.35 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260928-165230-App.log |
+| Compile | Strict whole solution | PASS | 0 | 5.684 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\compile-final-20260928-165230-Strict_whole_solution.log |
+| Tests | Core unit tests | PASS | 0 | 6.494 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\test-20260928-165230-Core_unit_tests.log |
+| Tests | Automation unit tests | PASS | 0 | 8.441 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\test-20260928-165230-Automation_unit_tests.log |
+| Tests | Integration + fault injection | PASS | 0 | 39.731 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\test-20260928-165230-Integration___fault_injection.log |
+| Tests | Full automation self-test | PASS | 0 | 3.875 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\selftest-20260928-165230-Full_automation_self-test.log |
+| Verification | Promote verified function fingerprints | PASS | 0 | 1.864 | ok | D:\a\mhw-mods\mhw-mods\BuildLogs\function-confirm-20260928-165230-Promote_verified_function_fingerprints.log |
+
+
+
+=== RELEASE BUILD REPORT ===
+Version: 8.8.1
+Source SHA: 2a0acd9951d67b724a43ef79ec7078d3cc412ddc
+Updater build number: 56
+SDK: 10.0.401
+ReadyToRun fallback used: False
+Release folder: D:\a\mhw-mods\mhw-mods\release\MHW-Manual-Mod-Manager-v8.8.1
+Artifact: D:\a\mhw-mods\mhw-mods\artifacts\MHW-Manual-Mod-Manager-v8.8.1-win-x64.zip
+SHA256: AEC2CFF72B6A7973FDD59A363F27FA54077F21B405885A70A58378B4BEB610CE
+Product manifest SHA256: 916D929CB95E05C1141932672510179F036738984274AA064412516E74BF62E5
+Update manifest: D:\a\mhw-mods\mhw-mods\artifacts\update-manifest.json
+Master transcript: D:\a\mhw-mods\mhw-mods\BuildLogs\build-release-20260928-165555.log
+
