@@ -4,6 +4,8 @@
 
 Implementation candidate on `agent/crash-bisector-evidence-integrity-20260928`.
 
+Exact implementation commit locally verified: `a7b33431ea274b9be5c27abdacbef632521d4d1d`.
+
 Canonical `main` inspected before work: `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
 
 This checkpoint closes only CB-01 from `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md`: automatic bisection must validate its experimental control and positive condition before narrowing can produce a persistent confirmed culprit.

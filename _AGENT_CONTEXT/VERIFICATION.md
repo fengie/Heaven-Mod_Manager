@@ -1,3 +1,18 @@
+# Crash-bisector validated-control support candidate — exact local Windows verification — 2026-09-28
+
+Exact implementation commit: `a7b33431ea274b9be5c27abdacbef632521d4d1d` on `agent/crash-bisector-evidence-integrity-20260928`, based on canonical main `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
+
+Regression-first characterization before the fix ran the AutomationTests executable and produced 26 total / 3 expected failures, proving the old engine skipped empty-control and full-suspect preflight. Exact committed source then passed on heaven2 / Windows / .NET SDK 10.0.401:
+- `scripts/Verify-Release.ps1`: **25/25 PASS**;
+- FunctionVerifier: **728/728 promoted**, **7780 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Automation unit tests: **26/26 PASS**;
+- Integration + fault injection: **177/177 PASS**;
+- automation self-test: **11/11 PASS**;
+- strict whole-solution compile/analyzers: PASS, 0 warnings / 0 errors;
+- handoff continuity preflight and negative fixtures: PASS.
+
+This checkpoint closes only CB-01: the bisector now requires a clean empty control and a reproducing full suspect set before narrowing can return `Isolated=true`. No hosted GitHub Actions gate or real MHW crash reproduction is claimed. See `CRASH_BISECTOR_VALIDATED_CONTROL_CHECKPOINT_2026-09-28.md` for residual CB-02 through CB-08 boundaries.
+
 # Updater C12 first-publication repair — current verification
 
 Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.
