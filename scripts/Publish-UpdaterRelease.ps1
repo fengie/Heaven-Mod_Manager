@@ -126,6 +126,17 @@ try {
     "Source: $ExpectedSourceSha",
     "Artifact SHA-256: $($manifest.sha256)"
   ) -join [Environment]::NewLine
+
+  # Re-check main immediately before the irreversible client-visible publication.
+  # A concurrent push after the earlier policy calculation must not publish stale bytes.
+  & git fetch origin main
+  if($LASTEXITCODE -ne 0){throw 'Failed to refresh origin/main immediately before updater publication.'}
+  $remoteMainBeforePublish=(& git rev-parse origin/main).Trim()
+  if(-not [string]::Equals($remoteMainBeforePublish,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
+    Write-Host "::notice::Skipping updater publication because main advanced to $remoteMainBeforePublish after the publication preflight."
+    exit 0
+  }
+
   # gh stages the release as a draft, uploads all assets, then publishes it.
   # We never pass --clobber; an existing tag/release/assets fail closed above.
   & gh release create $tag $artifact $manifestFile --repo $Repository --target $ExpectedSourceSha --title "MHW Manual Mod Manager updater build $ExpectedBuildNumber" --notes $notes --latest=false
