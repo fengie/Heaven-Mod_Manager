@@ -1,0 +1,17 @@
+{
+  "id": "chatgpt-final-v3-search-014",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3",
+    "pattern": "HEAVEN_V3_SEARCH_NEEDLE",
+    "mode": "content",
+    "regex": false,
+    "case_sensitive": true,
+    "glob": "*",
+    "max_results": 20
+  },
+  "created_at": "2026-09-28T19:52:01Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
