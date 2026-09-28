@@ -318,7 +318,7 @@ While this audit was being written, hosted Windows Release Gate `36367883836` co
 
 Canonical `main` then advanced to `e5325317cb7005bdf9d3082a033ab95e666ebbf9` through `Persist hosted Windows verification evidence [skip ci]`. That commit changed only promoted verification cache/evidence files (`.verification/function-status.json`, `.verification/stage-status.json`, and the hosted closure log); it changed none of the production or test bodies inspected by this audit.
 
-This support branch was reconciled on top of `e5325317cb7005bdf9d3082a033ab95e666ebbf9` without overwriting its evidence. The CAS **content-integrity/concurrency** checkpoint is therefore closed by hosted evidence; the filesystem-identity findings below remain a separate future boundary and must not be described as part of that closed gate.
+This support branch was reconciled on top of `e5325317cb7005bdf9d3082a033ab95e666ebbf9` without overwriting its evidence. The hosted **content-integrity/concurrency reproduction boundary** is closed by that evidence, but the repository's overall CAS checkpoint remains open until the separately required fresh local Windows verification passes. The filesystem-identity findings below remain a separate future boundary and must not be described as part of the hosted-green repair gate.
 
 ## Parallel-agent integration notes
 
