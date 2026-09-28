@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1527-locate-worker-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'HeavenBridge|worker_v2|heaven-bridge' } | Select-Object ProcessId,Name,CommandLine | ConvertTo-Json -Depth 4",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-28T19:27:00Z",
+  "priority": "highest"
+}
