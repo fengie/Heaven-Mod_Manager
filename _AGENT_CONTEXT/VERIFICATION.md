@@ -1,3 +1,11 @@
+# Updater C12 first-publication repair — current verification
+
+Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.
+
+On isolated branch `agent/auto-updater-publication-fix-20260928`, the new policy test passed on Windows PowerShell 5.1.26100.8737 and .NET SDK 10.0.401. Cases cover empty CLI output, JSON `[]`, valid single release, malformed JSON/object, JSON null row, and missing required field. `git diff --check` passed.
+
+Not yet run on C12: full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows gate, GitHub publication, disposable old→new update, or injected rollback. Do not reuse run 36428542918 as verification for the changed C12 files. The current release collection is empty; no tag/release/assets were created by the failed run.
+
 # Updater C11b publication policy — exact local Windows verification — 2026-09-28
 
 Exact integrated updater source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d` on `agent/auto-updater-20260928`.

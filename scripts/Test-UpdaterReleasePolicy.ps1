@@ -39,4 +39,20 @@ try{
 }catch{$threw=$true}
 Assert-Equal $true $threw 'older build rejection'
 
+$emptyList=ConvertFrom-UpdaterReleaseList -Json ''
+Assert-Equal 0 $emptyList.Releases.Count 'empty release-list stdout'
+
+$emptyJsonList=ConvertFrom-UpdaterReleaseList -Json '[]'
+Assert-Equal 0 $emptyJsonList.Releases.Count 'empty JSON release list'
+
+$singleRelease=ConvertFrom-UpdaterReleaseList -Json '[{"tagName":"updater-main-42","isDraft":false,"isImmutable":true}]'
+Assert-Equal 1 $singleRelease.Releases.Count 'single release list'
+Assert-Equal 'updater-main-42' $singleRelease.Releases[0].tagName 'release tag'
+
+foreach($invalidJson in @('{}','null','not-json','[null]','[{"isDraft":false,"isImmutable":true}]')){
+  $rejected=$false
+  try{[void](ConvertFrom-UpdaterReleaseList -Json $invalidJson)}catch{$rejected=$true}
+  Assert-Equal $true $rejected "invalid release-list rejection: $invalidJson"
+}
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green

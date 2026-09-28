@@ -1,3 +1,13 @@
+## Current updater next steps — 2026-09-28
+
+1. Finish continuity metadata for C12; inspect the complete branch diff and run handoff/syntax/policy checks.
+2. Run `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1`; verify ZIP contents and manifest/artifact SHA identity.
+3. Commit/push this coherent branch checkpoint and open a PR without changing the clean canonical main worktree.
+4. Integrate only after checks; run and inspect the exact main Windows Release Gate, including immutable updater release/tag/two asset digest verification.
+5. Run disposable installed-client old→new and fault-injected rollback, proving exact restarted build identity and unchanged Mods/State/unknown-file sentinel hashes.
+
+C11b is integrated on `main` at task start SHA `a83dc6e047ccf98e896f10c25772df99b95426d1`; hosted run 36428542918 passed all checks up to publication and failed on empty release-list handling. See `AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md`. Preserve the permanent recursive continuity constitution and active Learned Rules.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
