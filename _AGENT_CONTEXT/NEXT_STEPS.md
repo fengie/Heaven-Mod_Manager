@@ -1,8 +1,8 @@
 # v8.8.4 final support reconciliation — current next steps
 
-1. Re-fetch `origin/main` immediately before canonical push. If it advanced beyond `317ba6c86d54012a65a41772109a72566d29c0a9`, inspect/reconcile the new commits and rerun any checks invalidated by that reconciliation; never overwrite concurrent work.
-2. Push the verified v8.8.4 state to canonical `main`, fetch again, and prove remote `origin/main` equals the pushed HEAD.
-3. Inspect the exact-main hosted Windows Release Gate. Local closure applies to source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; do not call hosted closure until CI passes the final canonical commit.
+1. Canonical v8.8.4 was pushed after a final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source.
+2. Inspect the exact-main hosted Windows Release Gate. Local closure applies to product/source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; do not call hosted closure until CI passes canonical main.
+3. If hosted evidence passes, persist it without changing product source and re-verify the resulting remote HEAD.
 4. Keep follow-ups independent: remove legacy CAS hardlink aliasing; establish writer orphanhood/exclusive ownership before recovery takeover; span updater ownership across supported Windows sessions; leave broader preview redirect/image-content policy and active Updater/Agent-Control/frontend/game-profile lanes separate.
 5. Preserve and recursively propagate the continuity constitution and active Learned Rules.
 

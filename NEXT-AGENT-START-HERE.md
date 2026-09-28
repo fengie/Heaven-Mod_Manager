@@ -4,7 +4,7 @@ Canonical `origin/main` advanced during integration to `317ba6c86d54012a65a41772
 
 v8.8.4 recovers two production/test slices: hardened save-snapshot retention and remote-preview network egress. The snapshot branch was not accepted verbatim: database `root_path` values cannot expand recursive-delete authority outside direct children of `SnapshotRoot`, and over-limit metadata is retired only after owned payload deletion succeeds. Remote preview transport is HTTPS-only, no-auto-redirect, proxy-bypassed, and rejects any non-public DNS result before connecting.
 
-Unique research lanes for legacy CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session lock scope are preserved as audits plus LR-012/LR-013/LR-014; stale routing/cache snapshots were skipped. Active Updater, Agent Control v2, frontend/UI, and game-profile implementation lanes remain separate. Full exact-tree v8.8.4 verification below is the promotion gate; re-fetch `origin/main` again immediately before push.
+Unique research lanes for legacy CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session lock scope are preserved as audits plus LR-012/LR-013/LR-014; stale routing/cache snapshots were skipped. Active Updater, Agent Control v2, frontend/UI, and game-profile implementation lanes remain separate. Exact local v8.8.4 release verification is closed at product/source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; canonical main was pushed after the final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source. Hosted exact-main verification remains pending.
 
 ---
 
