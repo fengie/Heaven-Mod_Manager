@@ -1,0 +1,13 @@
+{
+  "id": "controller-20260928-1550-find-mhw-fast",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:50:00Z",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; Get-Command mhw-fast -All | Select-Object Name,CommandType,Source,Definition,Path | ConvertTo-Json -Depth 4; where.exe mhw-fast 2>$null; Get-ChildItem -Path $env:USERPROFILE -Filter 'mhw-fast*' -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 30 FullName | ConvertTo-Json -Depth 2",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
