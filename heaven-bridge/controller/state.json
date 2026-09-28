@@ -2,7 +2,7 @@
   "schema": "permanent-dev-controller-v1",
   "controller": "single-logical-controller",
   "cycle_id": "2026-09-28T15:26-04:00-cycle-1",
-  "updated_at": "2026-09-28T19:35:00Z",
+  "updated_at": "2026-09-28T19:38:00Z",
   "selected_task": {
     "priority": "P1",
     "target": "PR #90 v8.8.5 persisted game-profile ID containment",
@@ -18,27 +18,43 @@
     "Updated CURRENT_REVISION candidate metadata for v8.8.5 (commit e25b68da3685585fafa8809eedb452a04ea99c82).",
     "Queued exact-head full reverify job controller-20260928-1548-pr90-final-verify on heaven.",
     "Queued focused post-metadata gate controller-20260928-1551-pr90-postmeta-fastgate.",
-    "Observed independent bridge hardening lane commit cc57944870ecf8816ddcdc0b162e6d81f0157aab syncing repository worker to live v2 implementation; did not duplicate that lane."
+    "Observed independent bridge hardening lane commit cc57944870ecf8816ddcdc0b162e6d81f0157aab syncing repository worker to live v2 implementation; did not duplicate that lane.",
+    "Exact-head final verifier controller-20260928-1548-pr90-final-verify completed on e25b68da3685585fafa8809eedb452a04ea99c82 with Verify-Release 25/25 PASS.",
+    "Final evidence: FunctionVerifier 749/749 promoted; 7,942 explicit call sites; 0 uncovered/trace/parse gaps; Core 88/88; Automation 31/31; Integration 205/205; self-test 11/11; relaxed+strict whole-solution builds/analyzers PASS with 0 warnings/errors; handoff continuity and all 8 negative fixtures PASS/fail-closed.",
+    "Confirmed canonical main remains fd2866efafcc0dd845353a6c0e78931f13ec5040; PR #90 is 12 ahead / 0 behind and mergeable.",
+    "Marked PR #90 ready for review and posted exact verification evidence; did not merge because no reviews are recorded."
   ],
   "current_pr": {
     "number": 90,
     "branch": "agent/game-profile-id-containment-v8.8.5-reconcile",
     "head_sha": "e25b68da3685585fafa8809eedb452a04ea99c82",
-    "draft": true,
+    "draft": false,
     "mergeable": true,
     "safe_to_merge": false,
-    "reason_not_mergeable_yet": "Exact e25b68d full verification result still pending; do not infer green from prior head."
+    "reason_not_mergeable_yet": "Exact current-main verification is green, but no PR review is recorded; review/integration gate remains.",
+    "verification": {
+      "head_sha": "e25b68da3685585fafa8809eedb452a04ea99c82",
+      "base_sha": "fd2866efafcc0dd845353a6c0e78931f13ec5040",
+      "verify_release": "25/25 PASS",
+      "functions": "749/749 promoted",
+      "explicit_call_sites": 7942,
+      "uncovered_call_sites": 0,
+      "trace_gaps": 0,
+      "parse_errors": 0,
+      "core": "88/88 PASS",
+      "automation": "31/31 PASS",
+      "integration": "205/205 PASS",
+      "self_test": "11/11 PASS",
+      "strict_builds": "PASS, 0 warnings / 0 errors"
+    }
   },
   "pending_jobs": [
-    "controller-20260928-1548-pr90-final-verify",
     "controller-20260928-1551-pr90-postmeta-fastgate"
   ],
   "next_cycle_start": [
-    "Read this state file and live PR #90 head first.",
-    "Read both pending bridge results if present.",
-    "If exact current PR head is not the verified head, rerun verification.",
-    "If verification is 25/25, update PR evidence/status and evaluate integration against live main without bypassing draft/review gates.",
-    "If verification fails, fix the specific failure and rerun before unrelated work.",
-    "Re-query open PRs and active bridge jobs before dispatching new work to prevent duplicate ownership."
+    "Recover live open PRs/issues and bridge jobs; do not duplicate the independent Heaven Local Bridge hardening lane.",
+    "PR #90 is exact-head green and ready for review but unreviewed; do not merge until the review/integration gate is satisfied.",
+    "Select the highest-value unowned P0/P1/P2 task and execute it.",
+    "If PR #90 receives a review or main moves, re-evaluate integration/reverification immediately."
   ]
 }
