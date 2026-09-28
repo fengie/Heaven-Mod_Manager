@@ -1,3 +1,25 @@
+# Concurrent canonical-main evidence reconciled
+
+The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
+# v8.8.3 archive failure-cleanup ? locally release-verified
+
+Exact release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release **25/25**; functions **738/738**; call sites **7,850 / 0 uncovered**; Core **79/79**; Automation **29/29**; Integration **181/181**; self-test **11/11**; strict builds/analyzers PASS. Build-Release passed win-x64 ReadyToRun plus updater-helper publish, updater build **320**, ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+
+The LR-011 repair is implemented without broadening into LR-008 publication staging. Exact-main hosted verification remains pending after integration. The later evidence/cache commit is metadata-only relative to this verified source.
+
+---
+
+# v8.8.3 archive failure-cleanup candidate ? 2026-09-28
+
+Implementation checkpoint `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928` closes the narrow LR-011 source defect: `ArchiveInspector` best-effort-cleans its owned current output for every exceptional payload-copy exit and never lets cleanup failure replace the primary exception; `SmartInboxService` re-checks cancellation before recoverable I/O handling. Deterministic regressions cover ordinary I/O cleanup, cleanup-failure preservation of cancellation/budget failures, and prevention of later Smart Inbox processing after cancellation.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**, Integration **181/181**, Automation **29/29**. Full release verification/build and hosted exact-main closure remain pending. LR-008 whole-import staging/publication is deliberately not changed. No new company-trainer rule is needed because LR-011 already captures the reusable cleanup-dominance invariant.
+
+---
+
 # v8.8.2 current integration state — 2026-09-28
 
 Canonical pre-harvest main was `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; during verification it advanced to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`, which is being reconciled without overwriting concurrent work. Shipped product source did not change in that concurrent delta.

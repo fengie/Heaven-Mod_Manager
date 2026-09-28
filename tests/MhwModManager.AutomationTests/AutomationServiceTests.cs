@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
@@ -229,6 +230,52 @@ public sealed class AutomationServiceTests : IDisposable
         var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,categories,inbox,mods);
         var result=await service.ProcessAsync(TestContext.Current.CancellationToken);
         Assert.Equal(1,result.Imported);Assert.True(Directory.Exists(Path.Combine(mods,"Sample Armor")));Assert.True(Directory.Exists(Path.Combine(inbox,"Processed")));
+    }
+
+    [Fact]
+    public async Task SmartInboxRequestedCancellationStopsBeforeLaterItemsAfterRecoverableIoFailure()
+    {
+        var db=await CreateDbAsync("inbox-cancel-dominance.db");
+        var mods=Path.Combine(root,"Mods-cancel-dominance");
+        var inbox=Path.Combine(root,"Inbox-cancel-dominance");
+        var state=Path.Combine(root,"state-cancel-dominance");
+        Directory.CreateDirectory(inbox);
+
+        var first=Path.Combine(inbox,"A-first.zip");
+        using(var zip=ZipFile.Open(first,ZipArchiveMode.Create))
+        {
+            var entry=zip.CreateEntry("nativePC/first.bin",CompressionLevel.NoCompression);
+            await using var stream=entry.Open();
+            await stream.WriteAsync(new byte[256*1024],TestContext.Current.CancellationToken);
+        }
+
+        var later=Path.Combine(inbox,"B-later");
+        Directory.CreateDirectory(Path.Combine(later,"nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(later,"nativePC","later.tex"),"LATER",TestContext.Current.CancellationToken);
+
+        using var cts=CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        var inspector=new MhwModManager.Filesystem.ArchiveInspector((point,_)=>
+        {
+            if(point==MhwModManager.Filesystem.ArchiveExtractionFaultPoint.BeforePayloadWrite)
+            {
+                cts.Cancel();
+                throw new IOException("injected recoverable I/O after cancellation");
+            }
+        });
+        var hash=new MhwModManager.Filesystem.HashingService();
+        var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);
+        var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);
+        var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
+        var categories=new AutoCategoryService(db);
+        var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
+        var service=new SmartInboxService(db,inspector,catalog,nexus,categories,inbox,mods);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>service.ProcessAsync(cts.Token));
+
+        Assert.True(File.Exists(first));
+        Assert.True(Directory.Exists(later));
+        Assert.False(Directory.Exists(Path.Combine(mods,"B-later")));
+        Assert.False(Directory.Exists(Path.Combine(inbox,"Processed")));
     }
 
     [Fact]

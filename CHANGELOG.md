@@ -1,3 +1,11 @@
+# v8.8.3 ? Archive streaming failure-cleanup hardening
+
+- Attempt owned current-output cleanup for every exceptional archive payload-copy exit after file creation, including ordinary streamed I/O failures.
+- Preserve the primary cancellation, budget, or I/O exception when best-effort cleanup itself fails; log the cleanup failure as secondary diagnostics.
+- Re-check Smart Inbox cancellation before treating I/O, access, or archive-data exceptions as recoverable item failures, preventing canceled runs from continuing to later items.
+- Add deterministic fault-injection regressions for ordinary I/O cleanup, cleanup-failure exception dominance, and Smart Inbox cancellation dominance.
+- Keep whole-import staging/publication residue under LR-008 as a separate future boundary.
+
 # v8.8.2 — Integrated support safety hardening
 
 - Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.
