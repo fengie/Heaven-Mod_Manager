@@ -318,10 +318,32 @@ public static class UpdateHealthProtocol
         }
     }
 
+    public static IReadOnlyList<string> StripHealthArguments(IReadOnlyList<string> args)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"count={args.Count}");
+        var cleaned = new List<string>(args.Count);
+        for (var i = 0; i < args.Count; i++)
+        {
+            if (!IsHealthArgumentName(args[i]))
+            {
+                cleaned.Add(args[i]);
+                continue;
+            }
+
+            if (i + 1 < args.Count && !IsHealthArgumentName(args[i + 1])) i++;
+        }
+        return cleaned;
+    }
+
+    private static bool IsHealthArgumentName(string value) =>
+        string.Equals(value, TokenArgument, StringComparison.Ordinal)
+        || string.Equals(value, FileArgument, StringComparison.Ordinal)
+        || string.Equals(value, AttemptArgument, StringComparison.Ordinal);
+
     private static string? GetArgument(IReadOnlyList<string> args, string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"name={name}");
-        for (var i = 0; i + 1 < args.Count; i++)
+        for (var i = args.Count - 2; i >= 0; i--)
             if (string.Equals(args[i], name, StringComparison.Ordinal))
                 return args[i + 1];
         return null;

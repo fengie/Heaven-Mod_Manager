@@ -130,7 +130,7 @@ internal static class Program
             UseShellExecute = false,
             WorkingDirectory = request.InstallRoot
         };
-        foreach (var argument in request.RestartArguments)
+        foreach (var argument in UpdateHealthProtocol.StripHealthArguments(request.RestartArguments))
             start.ArgumentList.Add(argument);
         if (includeHealthArguments)
         {

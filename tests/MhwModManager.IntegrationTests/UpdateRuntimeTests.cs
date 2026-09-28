@@ -86,6 +86,55 @@ public sealed class UpdateRuntimeTests : IDisposable
     }
 
     [Fact]
+    public void Restart_argument_sanitizer_removes_stale_health_protocol_values()
+    {
+        var input = new[]
+        {
+            "--profile", "main",
+            UpdateHealthProtocol.TokenArgument, "stale-token",
+            UpdateHealthProtocol.FileArgument, "stale-health.json",
+            "--safe-mode",
+            UpdateHealthProtocol.AttemptArgument, "stale-attempt",
+            "tail"
+        };
+
+        var cleaned = UpdateHealthProtocol.StripHealthArguments(input);
+
+        Assert.Equal(4, cleaned.Count);
+        Assert.Equal("--profile", cleaned[0]);
+        Assert.Equal("main", cleaned[1]);
+        Assert.Equal("--safe-mode", cleaned[2]);
+        Assert.Equal("tail", cleaned[3]);
+    }
+
+    [Fact]
+    public async Task Startup_health_acknowledgement_prefers_latest_appended_health_triplet()
+    {
+        var staleHealth = Path.Combine(root, "stale-health.json");
+        var currentHealth = Path.Combine(root, "current-health.json");
+        var identity = new UpdateBuildIdentity(
+            1, UpdateProtocol.Channel, "8.8.0", "abcdef1234567890", 42, DateTimeOffset.UtcNow);
+        var args = new[]
+        {
+            UpdateHealthProtocol.TokenArgument, "stale-token",
+            UpdateHealthProtocol.FileArgument, staleHealth,
+            UpdateHealthProtocol.AttemptArgument, "stale-attempt",
+            UpdateHealthProtocol.TokenArgument, "current-token",
+            UpdateHealthProtocol.FileArgument, currentHealth,
+            UpdateHealthProtocol.AttemptArgument, "current-attempt"
+        };
+
+        await UpdateHealthProtocol.AcknowledgeIfRequestedAsync(args, identity, null, TestToken);
+
+        Assert.False(File.Exists(staleHealth));
+        var record = JsonSerializer.Deserialize<UpdateStartupHealth>(
+            await File.ReadAllTextAsync(currentHealth, TestToken), UpdateProtocol.Json);
+        Assert.NotNull(record);
+        Assert.Equal("current-token", record.Token);
+        Assert.Equal("current-attempt", record.AttemptId);
+    }
+
+    [Fact]
     public async Task Health_wait_rejects_wrong_build_and_accepts_exact_build()
     {
         var health = Path.Combine(root, "health-wait.json");
