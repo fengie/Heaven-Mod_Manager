@@ -603,6 +603,86 @@ public sealed class HardeningTests : IDisposable
         Assert.False(File.Exists(output));
     }
     [Fact]
+    public async Task Archive_extraction_stream_io_failure_removes_owned_partial_file()
+    {
+        var zip=Path.Combine(root,"io-failure.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/io.bin",CompressionLevel.NoCompression);
+            await using var stream=entry.Open();
+            await stream.WriteAsync(new byte[256*1024],TestToken);
+        }
+
+        var destination=Path.Combine(root,"io-failure-extract");
+        var output=Path.Combine(destination,"nativePC","io.bin");
+        var inspector=new ArchiveInspector((point,_)=>
+        {
+            if(point==ArchiveExtractionFaultPoint.BeforePayloadWrite)
+                throw new IOException("injected payload write failure");
+        });
+
+        var ex=await Assert.ThrowsAsync<IOException>(
+            ()=>inspector.ExtractSafelyAsync(zip,destination,root,TestToken));
+
+        Assert.Contains("injected payload write failure",ex.Message,StringComparison.Ordinal);
+        Assert.False(File.Exists(output));
+    }
+
+    [Fact]
+    public async Task Archive_extraction_cleanup_failure_preserves_primary_cancellation()
+    {
+        var zip=Path.Combine(root,"cancel-cleanup-failure.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/cancel.bin",CompressionLevel.NoCompression);
+            await using var stream=entry.Open();
+            await stream.WriteAsync(new byte[256*1024],TestToken);
+        }
+
+        var destination=Path.Combine(root,"cancel-cleanup-failure-extract");
+        var output=Path.Combine(destination,"nativePC","cancel.bin");
+        using var cts=CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var inspector=new ArchiveInspector((point,_)=>
+        {
+            if(point==ArchiveExtractionFaultPoint.BeforePayloadWrite)cts.Cancel();
+            if(point==ArchiveExtractionFaultPoint.BeforeOwnedOutputCleanup)
+                throw new IOException("injected cleanup failure");
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            ()=>inspector.ExtractSafelyAsync(zip,destination,root,cts.Token));
+
+        Assert.True(File.Exists(output));
+    }
+
+    [Fact]
+    public async Task Archive_extraction_cleanup_failure_preserves_primary_budget_failure()
+    {
+        var zip=Path.Combine(root,"budget-cleanup-failure.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/budget.bin",CompressionLevel.NoCompression);
+            await using var stream=entry.Open();
+            await stream.WriteAsync(new byte[256*1024],TestToken);
+        }
+
+        var destination=Path.Combine(root,"budget-cleanup-failure-extract");
+        var output=Path.Combine(destination,"nativePC","budget.bin");
+        var limits=new ArchiveExtractionLimits(512L*1024,64L*1024);
+        var inspector=new ArchiveInspector((point,_)=>
+        {
+            if(point==ArchiveExtractionFaultPoint.BeforeOwnedOutputCleanup)
+                throw new IOException("injected cleanup failure");
+        });
+
+        var ex=await Assert.ThrowsAsync<InvalidDataException>(
+            ()=>inspector.ExtractSafelyAsync(zip,destination,root,limits,TestToken));
+
+        Assert.Contains("actual-output",ex.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(output));
+    }
+
+    [Fact]
     public async Task Archive_extraction_rejects_junction_ancestor_above_destination()
     {
         if(!OperatingSystem.IsWindows())return;

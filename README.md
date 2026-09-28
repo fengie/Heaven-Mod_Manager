@@ -1,4 +1,10 @@
-# v8.8.2 Universal Mod Manager
+# v8.8.3 Universal Mod Manager
+
+## v8.8.3 ? archive streaming failure-cleanup hardening
+
+Archive extraction now treats the currently-created output file as owned cleanup state for every payload-copy failure, not only cancellation and output-budget exceptions. Cleanup remains best-effort: if deletion itself fails, the original cancellation, safety failure, or I/O exception stays authoritative and the secondary cleanup error is logged instead of replacing it.
+
+Smart Inbox now re-checks requested cancellation before classifying filesystem errors as recoverable per-item failures, so a cleanup/write error cannot downgrade a canceled run into ?skip and continue.? Whole-import catalog-invisible staging and process-death residue remain a separate LR-008 follow-up; v8.8.3 deliberately does not broaden this low-level repair into publication redesign.
 
 ## v8.8.2 — integrated safety and diagnostics hardening
 
