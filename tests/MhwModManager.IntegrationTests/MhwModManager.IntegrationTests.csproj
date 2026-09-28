@@ -9,6 +9,7 @@
     <ProjectReference Include="../../src/MhwModManager.Core/MhwModManager.Core.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Storage/MhwModManager.Storage.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Filesystem/MhwModManager.Filesystem.csproj" />
+    <ProjectReference Include="../../src/MhwModManager.Diagnostics/MhwModManager.Diagnostics.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Updater/MhwModManager.Updater.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Updater.Helper/MhwModManager.Updater.Helper.csproj"
                       ReferenceOutputAssembly="false" />
