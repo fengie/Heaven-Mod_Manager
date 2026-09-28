@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-final-v3-locktests-023",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git -C 'C:\\Users\\Xxkan\\HeavenBridgeRepo' pull --rebase origin heaven-bridge; python 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\test_worker.py'",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-28T19:58:31Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
