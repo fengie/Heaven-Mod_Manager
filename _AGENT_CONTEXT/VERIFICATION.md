@@ -1,6 +1,6 @@
 # Active CAS integrity checkpoint
 
-CAS integrity local Windows gates passed for source 8334d725f6bdb73661e2f3ed71a04189db76950b, but hosted Windows Release Gate 36366784304 on exact canonical commit 797991231819d8e5693efd671e5352fd447902a0 failed the release integration suite at 87/88. The failure is a real transient Windows sharing race in concurrent CAS publication verification, not CI noise. Branch agent/cas-integrity-20260927 contains the repair candidate and stronger coverage; fresh exact verification is pending. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
+CAS integrity local Windows gates passed for the pre-repair source `8334d725f6bdb73661e2f3ed71a04189db76950b`, but hosted run `36366784304` exposed the concurrent publication sharing race. The repair candidate `d001870d4cd3549841d8511392ae7885f174bca2` has now passed hosted Windows Release Gate `36367883836` completely: repository verifier 25/25, Integration 89/89, release build/publish PASS, release SHA-256 `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`. Fresh local Windows verification for the repair is still required and is pending because `heaven2` is offline. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
 
 Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
@@ -18,9 +18,13 @@ Finish the exact Windows gates before taking recursive scanner/adoption/Smart In
 - failure: `System.IO.IOException` / Windows `ERROR_SHARING_VIOLATION` while opening the hash-named CAS destination in `BlobStore.VerifyExistingAsync`
 - production repair commit: `3810c6b8c5baf1f7aff3b22952e137796dddaa8f`
 - strengthened regression commit: `cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3`
-- fresh focused/local/release/hosted verification: **PENDING**
+- hosted repair verification: **PASS**, run `36367883836`, exact candidate `d001870d4cd3549841d8511392ae7885f174bca2`
+- verifier: **25/25 PASS**; Integration/fault injection: **89/89 PASS**; release ReadyToRun publish: **PASS**
+- release SHA-256: `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`
+- workflow evidence/cache persistence: `e5325317cb7005bdf9d3082a033ab95e666ebbf9`
+- fresh local Windows verification for this repair: **PENDING — authorized runner `heaven2` offline**
 
-The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. The previous local Windows green evidence does not apply to the repair candidate.
+The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. The previous local Windows green evidence does not apply to the repair candidate. Hosted evidence now applies exactly to `d001870d4cd3549841d8511392ae7885f174bca2`, but the repository's separately required fresh local Windows run remains outstanding.
 
 ---
 # Native ReplaceFileW failure-postcondition closure — 2026-09-27

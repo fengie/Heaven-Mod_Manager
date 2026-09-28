@@ -52,3 +52,25 @@ Root cause: concurrent capture losers correctly refuse to trust a filename after
 Repair candidate production commit `3810c6b8c5baf1f7aff3b22952e137796dddaa8f` keeps `FileShare.Read` and adds a bounded, cancellation-aware exponential backoff only for Win32 sharing/lock violations (32/33). Hash mismatch remains `InvalidDataException` and is never retried; other I/O failures still surface normally. Test commit `cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3` strengthens the same-digest race to 32 callers across 6 publication repetitions, verifies the surviving CAS object's SHA-256, asserts exactly one CAS file and no capture staging, restores and checks bytes, and adds canceled-capture staging cleanup coverage.
 
 The earlier local Windows green evidence applies to production source `8334d725f6bdb73661e2f3ed71a04189db76950b`, not this repair candidate. Fresh focused tests, full local Windows verification/build, and an exact hosted Windows Release Gate are required before closure. Do not manually promote caches.
+
+
+## Hosted repair gate passed; local repair verification still required
+
+Exact hosted candidate `d001870d4cd3549841d8511392ae7885f174bca2` passed Windows Release Gate `36367883836`.
+
+- repository verifier: **25/25 PASS**
+- function verification after promotion: **613/613**, explicit call sites **6494**, uncovered **0**, trace gaps **0**, parse errors **0**
+- Core: **79/79 PASS**
+- Automation: **20/20 PASS**
+- Integration/fault injection: **89/89 PASS**
+- full automation self-test: PASS
+- strict Filesystem/Integration/App and whole-solution build/analyzers: PASS
+- win-x64 ReadyToRun restore/publish: PASS; fallback **False**
+- release SHA-256: `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`
+- workflow artifact: `10947819450`
+- promoted evidence/cache persistence: `e5325317cb7005bdf9d3082a033ab95e666ebbf9`
+- canonical evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log`
+
+This closes the hosted reproduction boundary that failed in run `36366784304`; the strengthened many-caller convergence regression passes on the hosted Windows environment that exposed the race.
+
+The CAS checkpoint is still **not fully closed** because the user's required fresh local Windows verification for the repair has not run. The authorized Desktop Commander device `heaven2` is offline, so no local result is claimed. When that runner is available, run the focused `BlobIntegrityTests`, then the exact repository `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` against the hosted-green source. If those pass without production-source changes, record exact local results and close this checkpoint. Do not begin recursive scanner/adoption/Smart Inbox or any other deferred feature before then.
