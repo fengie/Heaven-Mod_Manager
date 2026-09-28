@@ -30,6 +30,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 support research: added AUTO_UPDATER_RELEASE_SECURITY_AUDIT.md defining exact-release publication, tool-root user-data preservation, external-helper apply, update journaling/rollback, staging integrity, and end-to-end fault-test requirements; documentation only, current archive resource/cancellation production priority unchanged.",
     "2026-09-28 integration: added shared SafeRecursiveTraversal and migrated ModScanner, unmanaged adoption, and Smart Inbox recursive source traversal to fail closed on root/descendant reparse points while preserving safe-tree classification order.",
     "2026-09-28 integration: hardened archive extraction with an explicit trusted root and component-by-component prevalidation so ancestor/descendant junctions are rejected before redirected directory/file creation.",
     "2026-09-28 integration: added Windows junction/root/cycle and archive physical-root regressions; combined local suites pass Automation 24/24 and Integration 96/96.",
@@ -145,7 +146,8 @@
     "_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/AUTO_UPDATER_RELEASE_SECURITY_AUDIT.md"
   ],
   "latestSupportIntegration": {
     "baselineMain": "2d6969c7d94438dd64a540dab93fc9a910a8458b",
@@ -159,7 +161,9 @@
     "hostedRun": "36392282315",
     "hostedEvidenceCommit": "a94066004660e4d542f5d4a528c7e5e22bdea9cb",
     "hostedVerificationStatus": "closed: Windows Release Gate passed 25/25",
-    "learnedRulesIntegrated": ["LR-010"]
+    "learnedRulesIntegrated": [
+      "LR-010"
+    ]
   },
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",
