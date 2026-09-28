@@ -1,12 +1,12 @@
 ## Current updater next steps — 2026-09-28
 
-1. Finish continuity metadata for C12; inspect the complete branch diff and run handoff/syntax/policy checks.
-2. Run `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1`; verify ZIP contents and manifest/artifact SHA identity.
-3. Commit/push this coherent branch checkpoint and open a PR without changing the clean canonical main worktree.
-4. Integrate only after checks; run and inspect the exact main Windows Release Gate, including immutable updater release/tag/two asset digest verification.
-5. Run disposable installed-client old→new and fault-injected rollback, proving exact restarted build identity and unchanged Mods/State/unknown-file sentinel hashes.
+1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
+2. Commit/push the local-verification continuity checkpoint and integrate C12 through the repository workflow.
+3. Run/inspect the exact-main Windows Release Gate and require successful immutable updater release publication with the exact two assets, tag target, sizes, and SHA-256 digests.
+4. Run disposable installed-client old→new and fault-injected rollback, proving exact restarted build identity/health acknowledgement and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+5. Only then mark the automatic updater end-to-end complete.
 
-C11b is integrated on `main` at task start SHA `a83dc6e047ccf98e896f10c25772df99b95426d1`; hosted run 36428542918 passed all checks up to publication and failed on empty release-list handling. See `AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md`. Preserve the permanent recursive continuity constitution and active Learned Rules.
+The preceding exact-main run **36428542918** passed all verifier/build/package/policy stages and failed only before first release creation because empty release-list output was not normalized. No release/tag was created by that failed run. Local C12 build **230** ZIP SHA-256: `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`. Preserve the permanent recursive continuity constitution and active Learned Rules.
 
 # Active updater continuation — 2026-09-28
 
