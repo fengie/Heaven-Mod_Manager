@@ -228,3 +228,26 @@ A fresh successor must:
 6. explicitly require their successor to inherit, preserve, and recursively propagate the same system to the agent after them.
 
 **Do not break the chain.**
+
+
+## Post-reconciliation full Windows verification addendum
+
+After the branch was reconciled with canonical `main` through `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`, the exact branch head `1cb2cc1dd613cd96bd75af1f3e405795c05d5d18` was verified again on **heaven2 / Windows / .NET SDK 10.0.401**.
+
+The first `scripts/Verify-Release.ps1` invocation correctly completed compilation and the Core/Automation suites but reported **23/25** because Remote Desktop Commander's shell environment omitted the conventional `OS=Windows_NT` marker; the two Windows-gated stages were reported as skipped/failed with exit 9001. This is an execution-environment marker issue, not a product failure. The host was independently confirmed as `Win32NT` / `Microsoft Windows 10.0.26200` using `Environment.OSVersion.Platform` and `RuntimeInformation.OSDescription`.
+
+The verifier was then rerun in a child PowerShell process with only `$env:OS='Windows_NT'` restored. The normal repository verifier produced:
+
+- **25/25 PASS**;
+- FunctionVerifier inventory **728/728**, with exactly **1** changed function requiring fresh verification before promotion;
+- **0** trace gaps, **0** uncovered explicit call sites, **0** parse errors, **7,780** explicit call sites;
+- Core unit tests **79/79 PASS**;
+- Automation unit tests **26/26 PASS**;
+- Integration + fault injection **177/177 PASS**;
+- full automation self-test **11/11 PASS**;
+- relaxed and strict whole-solution builds PASS with **0 warnings / 0 errors**;
+- continuity preflight and negative continuity fixtures PASS.
+
+The verifier's normal local promotion regenerated `.verification/function-status.json` and `.verification/stage-status.json` for this branch. Those generated cache/log deltas are **not** committed here because canonical main had just refreshed verification evidence concurrently and committing an all-functions timestamp rewrite would create a high-contention cache conflict. No cache was manually edited or promoted. Integration should run the normal exact-head verifier/gate and persist whatever canonical cache/evidence that integration workflow produces.
+
+This addendum does not claim a hosted Windows Release Gate or a release artifact. The remaining CB-02 through CB-08 boundaries are unchanged.
