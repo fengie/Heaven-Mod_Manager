@@ -10,6 +10,7 @@ public static class UpdateProtocol
     public const int ProductManifestSchemaVersion = 1;
     public const int BuildIdentitySchemaVersion = 1;
     public const int InstallMarkerSchemaVersion = 1;
+    public const int LaunchStateSchemaVersion = 1;
     public const string ProductId = "fengie/mhw-mods:MHW-Manual-Mod-Manager";
     public const int UpdaterProtocolVersion = 1;
     public const string Channel = "main";

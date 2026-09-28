@@ -28,21 +28,14 @@ internal static class Program
             var phase = await ReadJournalPhaseAsync(request.JournalPath);
             if (phase == UpdateJournalPhase.Confirmed)
             {
+                UpdateLaunchStateStore.DeleteBestEffort(request, message => Log(logPath, message));
                 Log(logPath, "helper found already-confirmed update; nothing to do");
                 return 0;
             }
             if (phase == UpdateJournalPhase.AppliedAwaitingHealth)
             {
                 Log(logPath, "helper resuming post-apply health confirmation");
-                if (await UpdateHealthProtocol.WaitForHealthyAsync(
-                        request.HealthFile, request.HealthToken, request.Manifest, null,
-                        TimeSpan.FromSeconds(1), CancellationToken.None))
-                {
-                    await installer.ConfirmAsync(request, CancellationToken.None);
-                    Log(logPath, "helper confirmed previously healthy update");
-                    return 0;
-                }
-                return await LaunchAndConfirmAsync(installer, request, logPath);
+                return await ResumeAndConfirmAsync(installer, request, logPath);
             }
 
             try
@@ -55,7 +48,7 @@ internal static class Program
                 if (await ReadJournalPhaseAsync(request.JournalPath) == UpdateJournalPhase.RolledBack)
                 {
                     Log(logPath, "helper rollback completed after apply failure; restarting previous application");
-                    StartApplication(request, includeHealthArguments: false);
+                    StartApplication(request, includeHealthArguments: false, attemptId: null).Dispose();
                 }
                 return 2;
             }
@@ -84,13 +77,36 @@ internal static class Program
         string logPath)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
-        var coordinator = new UpdateRestartCoordinator(
-            healthy => StartApplication(request, healthy),
-            process => StopProcessAsync(process, logPath),
-            message => Log(logPath, message));
+        var coordinator = CreateRestartCoordinator(request, logPath);
         return await coordinator.RunAsync(installer, request, TimeSpan.FromSeconds(90));
     }
-    private static Process StartApplication(UpdateApplyRequest request, bool includeHealthArguments)
+
+    private static async Task<int> ResumeAndConfirmAsync(
+        UpdateInstaller installer,
+        UpdateApplyRequest request,
+        string logPath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
+        var coordinator = CreateRestartCoordinator(request, logPath);
+        return await coordinator.ResumeAsync(installer, request, TimeSpan.FromSeconds(90));
+    }
+
+    private static UpdateRestartCoordinator CreateRestartCoordinator(
+        UpdateApplyRequest request,
+        string logPath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new UpdateRestartCoordinator(
+            attemptId => StartApplication(request, includeHealthArguments: true, attemptId),
+            () => StartApplication(request, includeHealthArguments: false, attemptId: null),
+            process => StopProcessAsync(process, logPath),
+            message => Log(logPath, message));
+    }
+
+    private static Process StartApplication(
+        UpdateApplyRequest request,
+        bool includeHealthArguments,
+        string? attemptId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"health={includeHealthArguments}");
         var executable = UpdatePathSafety.CombineUnderRoot(
@@ -108,10 +124,14 @@ internal static class Program
             start.ArgumentList.Add(argument);
         if (includeHealthArguments)
         {
+            if (string.IsNullOrWhiteSpace(attemptId))
+                throw new InvalidOperationException("Updater target launch requires a health attempt id.");
             start.ArgumentList.Add(UpdateHealthProtocol.TokenArgument);
             start.ArgumentList.Add(request.HealthToken);
             start.ArgumentList.Add(UpdateHealthProtocol.FileArgument);
             start.ArgumentList.Add(request.HealthFile);
+            start.ArgumentList.Add(UpdateHealthProtocol.AttemptArgument);
+            start.ArgumentList.Add(attemptId);
         }
         return Process.Start(start)
                ?? throw new InvalidOperationException("Failed to start MHW Manual Mod Manager after update.");

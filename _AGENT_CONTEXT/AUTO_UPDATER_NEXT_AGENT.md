@@ -35,3 +35,19 @@ Commit and push each coherent tested checkpoint. Update this checklist and CURRE
 - Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
 - Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
 - Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.
+
+## Checkpoint C4 — durable target launch recovery
+- DONE: launch attempt is persisted before target start and completed with exact PID/process-start identity after launch.
+- DONE: health acknowledgement requires the exact launch attempt and PID when known.
+- DONE: restarted helper attaches to the existing tracked target; ambiguous pre-PID launch state never causes a duplicate relaunch or speculative rollback.
+- DONE: real external-helper-process resume regression.
+- Exact focused evidence before checkpoint commit: **47/47 PASS** on Windows x64 / .NET SDK 10.0.401; strict whole-solution build **0 warnings / 0 errors**.
+- The updater remains INCOMPLETE and is not release-gate verified after these source changes.
+
+### Next bounded work
+1. Fix rollback restart identity so a renamed/moved target executable cannot prevent restart of the restored previous build. Add a regression with different old/new executable paths.
+2. Enforce authenticated GitHub HTTPS/API-host trust before attaching the bearer token, with redirect/token-leak coverage.
+3. Cross-check exact build identity across update manifest, staged install marker, and shipped build-identity metadata before live mutation.
+4. Then resume filesystem collision-race/LR-003 review and WPF integration; keep packaging/publication as later independently verified checkpoints.
+
+Preserve and recursively propagate the continuity constitution to the successor, and require that successor to pass it to the agent after them.

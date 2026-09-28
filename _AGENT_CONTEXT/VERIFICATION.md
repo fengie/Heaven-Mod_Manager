@@ -653,3 +653,17 @@ The workflow persisted promoted verification/cache evidence normally. No cache w
 - Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
 - Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
 - Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.
+
+## Checkpoint C4 — crash-safe target launch identity
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+
+Changed production behavior: helper restart recovery now persists a target launch attempt before process start, records PID plus exact process start identity, binds startup health to launch attempt/PID, and resumes the tracked launch without spawning a duplicate. Ambiguous process identity remains fail-closed.
+
+Verification actually performed on the working tree before checkpoint commit:
+- focused updater suite (UpdateInstallerTests|UpdateRuntimeTests|UpdaterCoreTests): **47/47 PASS**;
+- strict whole-solution build (dotnet build MhwModManager.sln -c Release -warnaserror): **PASS, 0 warnings / 0 errors**;
+- real helper-process regression launches the built MHW Mod Manager Updater.dll and confirms an existing launch without starting a duplicate target.
+
+Useful failed attempt preserved: the first real-helper regression run failed because the test harness resolved the fixture as ...\\bin\\bin\\net10... instead of ...\\bin\\Release\\net10.... The harness path was corrected; the same updater code then passed. This was not production updater failure evidence.
+
+This is focused/local Windows evidence only. Verify-Release.ps1, Build-Release.ps1, hosted Windows Release Gate, publication checks, and live old→new/rollback closure have **not** yet been run for this changed source. Do not promote prior release verification to C4.

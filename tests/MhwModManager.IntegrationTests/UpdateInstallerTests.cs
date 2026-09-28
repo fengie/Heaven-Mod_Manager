@@ -146,12 +146,14 @@ public sealed class UpdateInstallerTests : IDisposable
         var installer = new UpdateInstaller();
         await installer.ApplyAsync(fixture.Request, TestToken);
         var previousLaunched = false;
-        var coordinator = new UpdateRestartCoordinator(health =>
-        {
-            if (health) throw new System.ComponentModel.Win32Exception("injected launch failure");
-            previousLaunched = true;
-            return Process.GetCurrentProcess();
-        }, _ => throw new InvalidOperationException("No target process was started."));
+        var coordinator = new UpdateRestartCoordinator(
+            _ => throw new System.ComponentModel.Win32Exception("injected launch failure"),
+            () =>
+            {
+                previousLaunched = true;
+                return Process.GetCurrentProcess();
+            },
+            _ => throw new InvalidOperationException("No target process was started."));
 
         Assert.Equal(5, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(100)));
         Assert.True(previousLaunched);
@@ -164,16 +166,204 @@ public sealed class UpdateInstallerTests : IDisposable
         var fixture = await CreateFixtureAsync();
         var installer = new UpdateInstaller();
         await installer.ApplyAsync(fixture.Request, TestToken);
-        var coordinator = new UpdateRestartCoordinator(health =>
-        {
-            Assert.True(health);
-            return Process.GetCurrentProcess();
-        }, _ => Task.FromResult(false));
+        var coordinator = new UpdateRestartCoordinator(
+            _ => Process.GetCurrentProcess(),
+            () => throw new InvalidOperationException("Previous application must not launch while target exit is unproven."),
+            _ => Task.FromResult(false));
 
         Assert.Equal(4, await coordinator.RunAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(30)));
         Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
         Assert.Equal(UpdateJournalPhase.AppliedAwaitingHealth, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
         Assert.True(Directory.Exists(fixture.Request.BackupRoot));
+    }
+
+    [Fact]
+    public async Task Resume_ambiguous_launch_with_matching_health_confirms_without_duplicate_start()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var launch = await UpdateLaunchStateStore.BeginAsync(fixture.Request, TestToken);
+        await WriteJsonAsync(
+            fixture.Request.HealthFile,
+            new UpdateStartupHealth(
+                fixture.Request.HealthToken,
+                launch.AttemptId,
+                Environment.ProcessId,
+                fixture.Request.Manifest.BuildNumber,
+                fixture.Request.Manifest.SourceSha,
+                DateTimeOffset.UtcNow));
+
+        var targetLaunches = 0;
+        var previousLaunches = 0;
+        var coordinator = new UpdateRestartCoordinator(
+            _ =>
+            {
+                targetLaunches++;
+                return Process.GetCurrentProcess();
+            },
+            () =>
+            {
+                previousLaunches++;
+                return Process.GetCurrentProcess();
+            },
+            _ => Task.FromResult(true));
+
+        Assert.Equal(
+            0,
+            await coordinator.ResumeAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(250)));
+        Assert.Equal(0, targetLaunches);
+        Assert.Equal(0, previousLaunches);
+        Assert.Equal(
+            UpdateJournalPhase.Confirmed,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.False(Directory.Exists(fixture.Request.BackupRoot));
+        Assert.False(File.Exists(UpdateLaunchStateStore.GetPath(fixture.Request)));
+    }
+
+    [Fact]
+    public async Task Helper_process_resume_confirms_existing_launch_without_duplicate_target()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        var helperRequest = fixture.Request with { CurrentProcessId = 0 };
+        await installer.ApplyAsync(helperRequest, TestToken);
+        var launch = await UpdateLaunchStateStore.BeginAsync(helperRequest, TestToken);
+        await WriteJsonAsync(
+            helperRequest.HealthFile,
+            new UpdateStartupHealth(
+                helperRequest.HealthToken,
+                launch.AttemptId,
+                Environment.ProcessId,
+                helperRequest.Manifest.BuildNumber,
+                helperRequest.Manifest.SourceSha,
+                DateTimeOffset.UtcNow));
+        var requestPath = Path.Combine(updaterTestRoot, "helper-request.json");
+        await UpdateRequestStore.WriteAsync(requestPath, helperRequest, TestToken);
+
+        var repositoryRoot = FindRepositoryRoot();
+        var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name ?? "Release";
+        var helperDll = Path.Combine(
+            repositoryRoot,
+            "src",
+            "MhwModManager.Updater.Helper",
+            "bin",
+            configuration,
+            "net10.0-windows10.0.19041.0",
+            "MHW Mod Manager Updater.dll");
+        Assert.True(File.Exists(helperDll), $"Updater helper fixture is missing: {helperDll}");
+
+        var start = new ProcessStartInfo("dotnet")
+        {
+            UseShellExecute = false,
+            WorkingDirectory = repositoryRoot,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        start.ArgumentList.Add(helperDll);
+        start.ArgumentList.Add("--request");
+        start.ArgumentList.Add(requestPath);
+
+        using var helper = Process.Start(start)
+            ?? throw new InvalidOperationException("Could not start updater helper fixture.");
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(20));
+        await helper.WaitForExitAsync(timeout.Token);
+        var stdout = await helper.StandardOutput.ReadToEndAsync(TestToken);
+        var stderr = await helper.StandardError.ReadToEndAsync(TestToken);
+
+        Assert.True(
+            helper.ExitCode == 0,
+            $"Updater helper exit={helper.ExitCode}{Environment.NewLine}stdout:{Environment.NewLine}{stdout}{Environment.NewLine}stderr:{Environment.NewLine}{stderr}");
+        Assert.Equal(
+            UpdateJournalPhase.Confirmed,
+            (await ReadJournalAsync(helperRequest.JournalPath)).Phase);
+        Assert.False(Directory.Exists(helperRequest.BackupRoot));
+        Assert.False(File.Exists(UpdateLaunchStateStore.GetPath(helperRequest)));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+    }
+
+    [Fact]
+    public async Task Resume_ambiguous_launch_without_health_never_starts_duplicate_or_rolls_back()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        await UpdateLaunchStateStore.BeginAsync(fixture.Request, TestToken);
+
+        var targetLaunches = 0;
+        var previousLaunches = 0;
+        var coordinator = new UpdateRestartCoordinator(
+            _ =>
+            {
+                targetLaunches++;
+                return Process.GetCurrentProcess();
+            },
+            () =>
+            {
+                previousLaunches++;
+                return Process.GetCurrentProcess();
+            },
+            _ => Task.FromResult(true));
+
+        Assert.Equal(
+            4,
+            await coordinator.ResumeAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(40)));
+        Assert.Equal(0, targetLaunches);
+        Assert.Equal(0, previousLaunches);
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.Equal(
+            UpdateJournalPhase.AppliedAwaitingHealth,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(Directory.Exists(fixture.Request.BackupRoot));
+        Assert.True(File.Exists(UpdateLaunchStateStore.GetPath(fixture.Request)));
+    }
+
+    [Fact]
+    public async Task Resume_tracked_live_process_uses_exact_attempt_without_relaunch()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var launch = await UpdateLaunchStateStore.BeginAsync(fixture.Request, TestToken);
+        using var target = Process.Start(new ProcessStartInfo(
+            "powershell.exe",
+            "-NoProfile -Command Start-Sleep -Seconds 5")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true
+        }) ?? throw new InvalidOperationException("Could not start tracked target fixture.");
+        launch = await UpdateLaunchStateStore.RecordStartedAsync(fixture.Request, launch, target, TestToken);
+        await WriteJsonAsync(
+            fixture.Request.HealthFile,
+            new UpdateStartupHealth(
+                fixture.Request.HealthToken,
+                launch.AttemptId,
+                target.Id,
+                fixture.Request.Manifest.BuildNumber,
+                fixture.Request.Manifest.SourceSha,
+                DateTimeOffset.UtcNow));
+
+        var targetLaunches = 0;
+        var coordinator = new UpdateRestartCoordinator(
+            _ =>
+            {
+                targetLaunches++;
+                return Process.GetCurrentProcess();
+            },
+            () => throw new InvalidOperationException("Previous app must not restart after successful health."),
+            _ => Task.FromResult(true));
+
+        Assert.Equal(
+            0,
+            await coordinator.ResumeAsync(installer, fixture.Request, TimeSpan.FromMilliseconds(250)));
+        Assert.Equal(0, targetLaunches);
+        Assert.Equal(
+            UpdateJournalPhase.Confirmed,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+
+        if (!target.HasExited) target.Kill(entireProcessTree: true);
     }
 
     [Fact]
@@ -359,6 +549,18 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("UNKNOWN", await File.ReadAllTextAsync(Path.Combine(installRoot, "notes.txt"), TestToken));
         var marker = await ReadMarkerAsync(Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName));
         Assert.Equal(1, marker.Build.BuildNumber);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "MhwModManager.sln")))
+                return current.FullName;
+            current = current.Parent;
+        }
+        throw new DirectoryNotFoundException("Could not locate repository root from integration-test output.");
     }
 
     private static async Task<ProductFileEntry> EntryAsync(string root, string relative)

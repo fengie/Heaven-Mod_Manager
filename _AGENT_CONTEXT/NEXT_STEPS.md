@@ -4,6 +4,8 @@ The user selected automatic updates as the current production boundary. Older ar
 
 The updater is INCOMPLETE and NOT release-gate verified. Preserve the permanent continuity constitution and active Learned Rules; require the successor to preserve and recursively propagate them to the agent after them.
 
+Current updater checkpoint C4 is complete with **47/47 focused Windows tests** and a strict solution build at **0 warnings / 0 errors**. Durable launch-attempt/PID tracking closes the duplicate-target resume gap and includes a real external-helper-process regression. For this user-selected updater boundary, the exact next work is: (1) previous-build executable identity for rollback restart, (2) authenticated GitHub HTTPS/API-host enforcement, (3) exact cross-file build identity agreement. The archive-budget recommendation immediately below remains a separate historical default outside this selected updater task.
+
 ---
 # Current next step — archive streaming cancellation/resource budgeting
 

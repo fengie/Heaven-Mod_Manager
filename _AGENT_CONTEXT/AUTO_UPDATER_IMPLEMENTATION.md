@@ -141,3 +141,15 @@ Verification for this checkpoint:
 - Helper uses the coordinator and returns explicit process-stop success instead of swallowing stop failure and continuing mutation.
 - Focused updater tests: 41/41 PASS; strict helper build: zero warnings/errors. Tests cover launch failure restoring previous bytes and stop refusal preserving the new bytes plus backup.
 - Remaining: real helper-process crash/restart coverage, durable target PID tracking before resumed health recovery, filesystem collision races, WPF/packaging/publication integration, and all release gates.
+
+## Checkpoint C4 — crash-safe target launch identity
+- Added durable target-launch state written before process creation, then completed with exact PID + process start time immediately after launch.
+- Startup-health acknowledgement is now bound to launch attempt + PID as well as token/build/source identity.
+- Helper resume attaches to the exact tracked process instead of launching a duplicate. If a helper dies after recording the attempt but before recording PID, recovery remains fail-closed: it waits for that attempt's health and otherwise preserves backup/journal rather than guessing whether a target was started.
+- PID reuse or inability to prove process identity is treated as ambiguous recovery and does not authorize rollback/live mutation.
+- Added a real external-helper regression that launches MHW Mod Manager Updater.dll and proves an interrupted launch can be confirmed without relaunching the target.
+- Windows x64 / .NET SDK 10.0.401 focused updater suite: **47/47 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- One preceding regression run failed because the test harness constructed bin\\bin instead of bin\\Release for the helper fixture; the production updater was not implicated. The corrected harness passed.
+- Full release verification remains pending for these changed production inputs.
+- The runtime/recovery support audit has been harvested into this branch. Its duplicate-launch P1 is closed by C4; remaining P1s are rollback executable identity, authenticated GitHub host enforcement, and exact build-metadata agreement.

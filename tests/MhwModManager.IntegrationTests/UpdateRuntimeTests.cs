@@ -69,7 +69,8 @@ public sealed class UpdateRuntimeTests : IDisposable
         var args = new[]
         {
             UpdateHealthProtocol.TokenArgument, "token-42",
-            UpdateHealthProtocol.FileArgument, health
+            UpdateHealthProtocol.FileArgument, health,
+            UpdateHealthProtocol.AttemptArgument, "attempt-42"
         };
 
         await UpdateHealthProtocol.AcknowledgeIfRequestedAsync(args, identity, null, TestToken);
@@ -78,6 +79,8 @@ public sealed class UpdateRuntimeTests : IDisposable
             await File.ReadAllTextAsync(health, TestToken), UpdateProtocol.Json);
         Assert.NotNull(record);
         Assert.Equal("token-42", record.Token);
+        Assert.Equal("attempt-42", record.AttemptId);
+        Assert.Equal(Environment.ProcessId, record.ProcessId);
         Assert.Equal(42, record.BuildNumber);
         Assert.Equal(identity.SourceSha, record.SourceSha);
     }
@@ -93,22 +96,80 @@ public sealed class UpdateRuntimeTests : IDisposable
         await File.WriteAllTextAsync(
             health,
             JsonSerializer.Serialize(
-                new UpdateStartupHealth("token", 41, target.SourceSha, DateTimeOffset.UtcNow),
+                new UpdateStartupHealth("token", "attempt", Environment.ProcessId, 41, target.SourceSha, DateTimeOffset.UtcNow),
                 UpdateProtocol.Json),
             TestToken);
 
         Assert.False(await UpdateHealthProtocol.WaitForHealthyAsync(
-            health, "token", target, null, TimeSpan.FromMilliseconds(300), TestToken));
+            health, "token", "attempt", Environment.ProcessId, target, null,
+            TimeSpan.FromMilliseconds(300), TestToken));
 
         await File.WriteAllTextAsync(
             health,
             JsonSerializer.Serialize(
-                new UpdateStartupHealth("token", 42, target.SourceSha, DateTimeOffset.UtcNow),
+                new UpdateStartupHealth("token", "attempt", Environment.ProcessId, 42, target.SourceSha, DateTimeOffset.UtcNow),
                 UpdateProtocol.Json),
             TestToken);
 
         Assert.True(await UpdateHealthProtocol.WaitForHealthyAsync(
-            health, "token", target, null, TimeSpan.FromSeconds(1), TestToken));
+            health, "token", "attempt", Environment.ProcessId, target, null,
+            TimeSpan.FromSeconds(1), TestToken));
+    }
+
+    [Fact]
+    public async Task Health_wait_rejects_wrong_attempt_and_process_identity()
+    {
+        var health = Path.Combine(root, "health-identity.json");
+        var target = new UpdateManifest(
+            1, UpdateProtocol.Channel, "8.8.0", "abcdef1234567890", 42,
+            "update.zip", 1, new string('A', 64), new string('B', 64),
+            "app.exe", 1, DateTimeOffset.UtcNow);
+        await File.WriteAllTextAsync(
+            health,
+            JsonSerializer.Serialize(
+                new UpdateStartupHealth(
+                    "token", "attempt-a", Environment.ProcessId, 42, target.SourceSha, DateTimeOffset.UtcNow),
+                UpdateProtocol.Json),
+            TestToken);
+
+        Assert.False(await UpdateHealthProtocol.WaitForHealthyAsync(
+            health, "token", "attempt-b", Environment.ProcessId, target, null,
+            TimeSpan.FromMilliseconds(150), TestToken));
+        Assert.False(await UpdateHealthProtocol.WaitForHealthyAsync(
+            health, "token", "attempt-a", Environment.ProcessId + 100000, target, null,
+            TimeSpan.FromMilliseconds(150), TestToken));
+    }
+
+    [Fact]
+    public async Task Launch_state_round_trip_preserves_exact_process_identity()
+    {
+        var request = new UpdateApplyRequest(
+            new UpdateManifest(
+                1, UpdateProtocol.Channel, "8.8.0", "abcdef1234567890", 42,
+                "update.zip", 10, new string('A', 64), new string('B', 64),
+                "app.exe", 1, DateTimeOffset.UtcNow),
+            @"C:\fixture",
+            Path.Combine(root, "stage"),
+            Path.Combine(root, "backup"),
+            Path.Combine(root, "journal"),
+            Path.Combine(root, "pending"),
+            Path.Combine(root, "health"),
+            "token",
+            1234,
+            []);
+
+        var launch = await UpdateLaunchStateStore.BeginAsync(request, TestToken);
+        using var current = Process.GetCurrentProcess();
+        var started = await UpdateLaunchStateStore.RecordStartedAsync(request, launch, current, TestToken);
+        var loaded = await UpdateLaunchStateStore.ReadAsync(request, TestToken);
+
+        Assert.NotNull(loaded);
+        Assert.Equal(started.AttemptId, loaded.AttemptId);
+        Assert.Equal(Environment.ProcessId, loaded.ProcessId);
+        Assert.NotNull(loaded.ProcessStartUtc);
+        using var reopened = UpdateLaunchStateStore.TryOpenTrackedProcess(loaded);
+        Assert.NotNull(reopened);
+        Assert.Equal(Environment.ProcessId, reopened.Id);
     }
 
     [Fact]
