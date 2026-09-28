@@ -1,0 +1,10 @@
+{
+  "id": "chatgpt-desktop-v2-switch-b87187",
+  "source": "chatgpt-heaven-bridge-v1",
+  "action": "python",
+  "payload": "import os,subprocess,pathlib;text='\\nimport os, subprocess, time\\nfrom pathlib import Path\\ntime.sleep(6)\\nold_pid = int(os.environ[\"OLD_WORKER_PID\"])\\ntry:\\n    subprocess.run([\"taskkill\",\"/PID\",str(old_pid),\"/F\"], capture_output=True, text=True, timeout=20)\\nexcept Exception:\\n    pass\\nstartup = Path(os.environ[\"APPDATA\"]) / \"Microsoft/Windows/Start Menu/Programs/Startup/HeavenBridgeWorker.vbs\"\\nstartup.write_text(\\'Set sh = CreateObject(\"WScript.Shell\")\\\\nsh.Run sh.ExpandEnvironmentStrings(\"pythonw.exe \"\"%USERPROFILE%\\\\\\\\.mhw-local-tools\\\\\\\\heaven-desktop-worker.py\"\"\"), 0, False\\\\n\\', encoding=\"ascii\")\\nworker = Path.home()/\".mhw-local-tools\"/\"heaven-desktop-worker.py\"\\nsubprocess.Popen([\"pythonw.exe\", str(worker)], creationflags=getattr(subprocess,\"CREATE_NO_WINDOW\",0)|getattr(subprocess,\"DETACHED_PROCESS\",0)|getattr(subprocess,\"CREATE_NEW_PROCESS_GROUP\",0), close_fds=True)\\n';p=pathlib.Path.home()/'.mhw-local-tools'/'switch-heaven-worker.py';p.write_text(text,encoding='utf-8');env=os.environ.copy();env['OLD_WORKER_PID']=str(os.getppid());flags=getattr(subprocess,'CREATE_NO_WINDOW',0)|getattr(subprocess,'DETACHED_PROCESS',0)|getattr(subprocess,'CREATE_NEW_PROCESS_GROUP',0);subprocess.Popen(['pythonw.exe',str(p)],env=env,creationflags=flags,close_fds=True);print('switch scheduled from pid',os.getppid())",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 60,
+  "created_at": "2026-09-28T15:10:00-04:00",
+  "priority": "highest"
+}
