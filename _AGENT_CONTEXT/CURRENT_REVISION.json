@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/cas-integrity-20260927",
   "currentVersion": "8.8.0",
-  "nextMilestone": "CAS integrity corrupt-existing-object checkpoint",
+  "nextMilestone": "CAS integrity exact Windows gate closure",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "replacefilew-failure-postconditions-closed-hosted-windows-verified",
+  "status": "cas-integrity-implemented-focused-windows-tests-passed-full-gate-pending",
   "verificationAppliesToCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationRun": "36342205103",
-  "candidateSourceCommit": "6d52ede722f18fcdbe727ec44e027de3e1c69fb1",
-  "verificationScopeNote": "Native ReplaceFileW failure-postcondition boundary CLOSED. Hosted Windows Release Gate 36342205103 verified final exact commit 17abfb05d83ff38040eb9356d34fbb3131644801 on Windows X64 / .NET SDK 10.0.401. Repository verifier passed 25/25; 612/612 production function fingerprints were verified/promoted; explicit call sites 6480 with 0 uncovered; trace gaps 0; parse errors 0; Core 79/79; Automation 20/20; Integration/fault injection 79/79; strict solution/analyzers PASS; win-x64 ReadyToRun self-contained publish PASS with fallback False. Release SHA-256 B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468. Workflow evidence/cache persistence commit 689a17ce5dff18bd0bf1201205446edd51ada8b5. IAtomicReplaceBackend now characterizes documented 1175/1176/1177 postconditions; 1176/1177 preserve staged recovery bytes and remain fail-closed RecoveryRequired/Writing rather than deleting or guessing. No cache was manually promoted.",
+  "candidateSourceCommit": "Resolve current branch HEAD for this checkpoint; source base 23ddc6a9dc788bf864e84161c41ea3283a4fcef7",
+  "verificationScopeNote": "Historical closed verification fields below remain historical. CAS production changes are not covered by that evidence. Focused Windows BlobIntegrityTests 9/9 PASS with normal strict analyzers; full local and hosted gates pending. See CAS_INTEGRITY_CHECKPOINT.md.",
   "lastClosedVerification": {
     "functionInventoryTotal": 612,
     "functionsVerified": 612,
@@ -28,6 +28,7 @@
     "releaseArtifactSha256": "B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468"
   },
   "candidateChanges": [
+    "CAS capture verifies existing/concurrent winning object before trust; restore verifies staged bytes before publication; prior AtomicFileOps CA1068 corrected; nine focused Windows cases pass.",
     "Follow-up support integration exact commit 027b6d9dc9b049d9e9857e5a0e4d021e31adf443 passed hosted Windows Release Gate 36343967045; evidence/cache persistence commit dadbe73a48567b17c9814c483f654be00d1d810f; release SHA-256 DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6.",
     "Follow-up support integration: harvested later documentation-only PRs #14, #15, #16, and #18 without merging stale branch-local continuity snapshots.",
     "Added launch-health/game-build revalidation, mod-lifecycle referential integrity, crash-bisector diagnosis evidence, and import-publication/catalog-visibility audits.",
@@ -101,7 +102,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Re-check canonical main and continuity before source edits. Next independently verifiable boundary: CAS integrity corrupt-existing-object trust. Add focused tests proving a hash-named CAS file with wrong bytes is never trusted by BlobStore capture/restore or deployment/recovery; define the smallest fail-closed repair/rejection behavior before production changes. Keep recursive scanner/adoption/Smart Inbox reparse traversal and all other audit findings separate. Preserve and recursively propagate the continuity constitution.",
+  "nextRequiredAction": "Complete exact Windows verification and release gates for CAS checkpoint; then recursive source reparse traversal separately. Preserve and recursively propagate continuity.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -122,7 +123,8 @@
     "_AGENT_CONTEXT/LAUNCH_HEALTH_REVALIDATION_AUDIT.md",
     "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md",
     "_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md",
-    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md",
+    "_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "689a17ce5dff18bd0bf1201205446edd51ada8b5",

@@ -22,7 +22,8 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
 
     /// <summary>
     /// Copies into a private temp file while calculating SHA-256 + XXH3 in the same pass.
-    /// If the CAS already contains the resulting hash, the temp is discarded.
+    /// If the CAS already contains the resulting hash, validate its bytes before discarding the temp.
+    /// Corrupt existing objects are rejected, never silently trusted or overwritten.
     /// </summary>
     public async Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default)
     {
@@ -64,6 +65,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
 
             if (File.Exists(dest))
             {
+                await VerifyExistingAsync(dest, shaHex, ct);
                 File.Delete(temp);
             }
             else
@@ -71,7 +73,8 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
                 try { File.Move(temp, dest, false); }
                 catch (IOException) when (File.Exists(dest))
                 {
-                    // Another bounded capture of byte-identical data won the race.
+                    // A name appearing concurrently is not proof of byte-identical content.
+                    await VerifyExistingAsync(dest, shaHex, ct);
                     File.Delete(temp);
                 }
             }
@@ -103,6 +106,16 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
         var source = PathFor(sha);
         if (!File.Exists(source)) throw new InvalidDataException($"Required blob is missing: {sha}");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await AtomicFileOps.ReplaceFromAsync(source, destination, ct, atomicReplaceBackend);
+        await AtomicFileOps.ReplaceFromAsync(source, destination, atomicReplaceBackend, sha, ct);
+    }
+
+    private static async Task VerifyExistingAsync(string path, string expectedSha256, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+            1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        var actual = Convert.ToHexString(await SHA256.HashDataAsync(input, ct));
+        if (!StringComparer.OrdinalIgnoreCase.Equals(actual, expectedSha256))
+            throw new InvalidDataException($"CAS integrity failure: existing blob does not match SHA-256 {expectedSha256}.");
     }
 }

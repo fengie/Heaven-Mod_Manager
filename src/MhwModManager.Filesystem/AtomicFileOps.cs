@@ -1,6 +1,7 @@
 using MhwModManager.Core;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace MhwModManager.Filesystem;
 
@@ -19,8 +20,9 @@ public static class AtomicFileOps
     public static async Task ReplaceFromAsync(
         string source,
         string destination,
-        CancellationToken ct = default,
-        IAtomicReplaceBackend? replaceBackend = null)
+        IAtomicReplaceBackend? replaceBackend = null,
+        string? expectedSha256 = null,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; destination={destination}");
         var dir = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException($"Destination has no parent directory: {destination}");
@@ -31,12 +33,21 @@ public static class AtomicFileOps
         {
             await using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize,
                              FileOptions.Asynchronous | FileOptions.SequentialScan))
-            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, BufferSize,
+            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, BufferSize,
                              FileOptions.Asynchronous | FileOptions.SequentialScan))
             {
                 await input.CopyToAsync(output, BufferSize, ct);
                 await output.FlushAsync(ct);
                 output.Flush(true);
+                if (expectedSha256 is not null)
+                {
+                    // Validate the private staged bytes, not a source path that could change
+                    // between a separate validation and copy. Publication has not begun yet.
+                    output.Position = 0;
+                    var actual = Convert.ToHexString(await SHA256.HashDataAsync(output, ct));
+                    if (!StringComparer.OrdinalIgnoreCase.Equals(actual, expectedSha256))
+                        throw new InvalidDataException($"CAS integrity failure: staged replacement does not match SHA-256 {expectedSha256}.");
+                }
             }
 
             ct.ThrowIfCancellationRequested();

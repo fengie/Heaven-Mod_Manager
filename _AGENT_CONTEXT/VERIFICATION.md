@@ -1,3 +1,10 @@
+# Active CAS integrity checkpoint
+
+Capture now rejects corrupt existing objects; restore validates private staged bytes before publication. Nine focused Windows regressions pass. Full verification is pending; prior green evidence does not cover these source changes. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for design, reproduced failures, branch review, limits, and exact continuation.
+
+Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+
+---
 # Native ReplaceFileW failure-postcondition closure — 2026-09-27
 
 The LR-003 native replacement boundary is **CLOSED and hosted-Windows verified**.
@@ -586,3 +593,4 @@ This commit integrated documentation/continuity only. The exact Windows gate nev
 - release artifact SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
 
 The workflow persisted promoted verification/cache evidence normally. No cache was manually promoted. Any future production-source change starts a new exact verification boundary.
+

@@ -1,3 +1,10 @@
+# Active CAS integrity checkpoint
+
+Capture now rejects corrupt existing objects; restore validates private staged bytes before publication. Nine focused Windows regressions pass. Full verification is pending; prior green evidence does not cover these source changes. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for design, reproduced failures, branch review, limits, and exact continuation.
+
+Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+
+---
 # NEXT AGENT — START HERE
 
 ## Permanent recursive continuity obligation — read before any edit
@@ -172,3 +179,4 @@ Before your task ends:
 - explicitly require your successor to pass this same continuity system to the agent after them.
 
 **Do not break the chain.**
+

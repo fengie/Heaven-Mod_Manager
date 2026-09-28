@@ -49,7 +49,8 @@
     "_AGENT_CONTEXT/LAUNCH_HEALTH_REVALIDATION_AUDIT.md",
     "_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md",
     "_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md",
-    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md"
+    "_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md",
+    "_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -58,7 +59,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Treat GitHub main as canonical. Before edits inspect actual main, git status when a checkout is available, and relevant history/diffs; then read NEXT-AGENT-START-HERE.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, active LR-001 through LR-009, SUPPORT_BRANCH_INTEGRATION_2026-09-27.md, and the remaining README_FIRST order. Native ReplaceFileW failure-postcondition characterization is closed and the next recommended independently verifiable production boundary remains CAS integrity: corrupt existing hash-named object trust in BlobStore. Keep recursive reparse traversal, launch-health revalidation, mod retirement, crash-bisector diagnosis evidence, import publication, migration, async lifetime, diagnostics, networking, backup, and Smart Pack as separate boundaries. Preserve exact verification/transaction/recovery invariants, update durable handoff state, run the handoff validator/negative fixtures through the normal verification path, and explicitly require your successor to recursively propagate this same constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md and the permanent continuity constitution before edits. CAS integrity is implemented and focused-tested; close its exact Windows gates before the next separate recursive-source-containment boundary. Read CAS_INTEGRITY_CHECKPOINT.md. Preserve active Learned Rules, exact evidence, and transaction/recovery invariants. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

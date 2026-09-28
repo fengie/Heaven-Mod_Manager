@@ -1,3 +1,10 @@
+# Active CAS integrity checkpoint
+
+Capture now rejects corrupt existing objects; restore validates private staged bytes before publication. Nine focused Windows regressions pass. Full verification is pending; prior green evidence does not cover these source changes. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for design, reproduced failures, branch review, limits, and exact continuation.
+
+Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+
+---
 # Next steps
 
 ## Follow-up support integration — CLOSED
@@ -138,3 +145,4 @@ Historical failed planner runs `36335255922` and `36335692754` remain useful evi
 Before every future handoff, update the durable repository context, report verification only for exact inputs actually checked, commit/push meaningful checkpoints, and explicitly require your **successor** to inherit and recursively propagate the permanent continuity constitution to the **agent after them**.
 
 **Do not break the chain.**
+
