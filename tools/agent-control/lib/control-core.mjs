@@ -120,6 +120,13 @@ export function isIntegrationEligible(agent) {
   return agent?.status === "done" && agent?.exitCode === 0 && agent?.completionEvidence === "authoritative-exit";
 }
 
+export function classifyAuthoritativeExit(agent, exitCode) {
+  if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
+    return "stopped";
+  }
+  return exitCode === 0 ? "done" : "failed";
+}
+
 export function machinePolicy(state, machine) {
   const key = String(machine || "").trim().toLowerCase();
   return state.settings?.machinePolicies?.[key] || null;
