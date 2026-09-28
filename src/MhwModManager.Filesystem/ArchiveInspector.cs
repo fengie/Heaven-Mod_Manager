@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -7,6 +8,7 @@ namespace MhwModManager.Filesystem;
 
 public sealed record ArchiveEntryInfo(string Key,long Size,bool IsDirectory);
 public sealed record ArchiveInspection(IReadOnlyList<ArchiveEntryInfo> Entries,bool HasNativePc,bool HasGameRoot,bool HasSuspiciousPaths,long ExpandedBytes,string? CommonWrapper);
+public sealed record ArchiveExtractionLimits(long MaxDeclaredExpandedBytes,long MaxActualOutputBytes);
 
 public sealed class ArchiveInspector
 {
@@ -45,13 +47,27 @@ public sealed class ArchiveInspector
     public async Task ExtractSafelyAsync(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
-        await Task.Run(() => ExtractSafely(archivePath,destination,trustedRoot,ct), ct);
+        await ExtractSafelyAsync(
+            archivePath,
+            destination,
+            trustedRoot,
+            new ArchiveExtractionLimits(MaxExpandedBytes,MaxExpandedBytes),
+            ct).ConfigureAwait(false);
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
-    public void ExtractSafely(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
+    public async Task ExtractSafelyAsync(
+        string archivePath,
+        string destination,
+        string trustedRoot,
+        ArchiveExtractionLimits limits,
+        CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
+        ArgumentNullException.ThrowIfNull(limits);
+        if(limits.MaxDeclaredExpandedBytes<=0)throw new ArgumentOutOfRangeException(nameof(limits),"Declared expansion budget must be positive.");
+        if(limits.MaxActualOutputBytes<=0)throw new ArgumentOutOfRangeException(nameof(limits),"Actual output budget must be positive.");
+
         var trusted=Path.GetFullPath(trustedRoot).TrimEnd(Path.DirectorySeparatorChar);
         var destinationFull=Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar);
         var trustedPrefix=trusted+Path.DirectorySeparatorChar;
@@ -61,24 +77,73 @@ public sealed class ArchiveInspector
         EnsureSafeDirectoryPath(trusted,destinationFull);
         var root=destinationFull+Path.DirectorySeparatorChar;
         using var archive=ArchiveFactory.OpenArchive(archivePath);
-        long total=0;
+        long declaredTotal=0;
+        long actualTotal=0;
         int count=0;
         foreach(var e in archive.Entries.Where(x=>!x.IsDirectory))
         {
             ct.ThrowIfCancellationRequested();
             count++;
-            total=checked(total+e.Size);
-            if(count>MaxEntries||total>MaxExpandedBytes)throw new InvalidDataException("Archive expansion safety limit exceeded.");
+            declaredTotal=checked(declaredTotal+e.Size);
+            if(count>MaxEntries||declaredTotal>limits.MaxDeclaredExpandedBytes)
+                throw new InvalidDataException("Archive expansion safety limit exceeded.");
             var key=(e.Key??"").Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
-            if (!PathRules.IsSafeArchiveRelativePath(key)) throw new InvalidDataException($"Unsafe archive path: {e.Key}");
+            if(!PathRules.IsSafeArchiveRelativePath(key))throw new InvalidDataException($"Unsafe archive path: {e.Key}");
             var dest=Path.GetFullPath(Path.Combine(destinationFull,key));
             if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Archive path traversal detected.");
-            var parent = Path.GetDirectoryName(dest)!;
+            var parent=Path.GetDirectoryName(dest)!;
             EnsureSafeDirectoryPath(trusted,parent);
-            e.WriteToFile(dest,new ExtractionOptions{ExtractFullPath=false,Overwrite=false});
+
+            var createdOutput=false;
+            try
+            {
+                using var source=await e.OpenEntryStreamAsync(ct).ConfigureAwait(false);
+                await using var output=new FileStream(
+                    dest,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    128*1024,
+                    FileOptions.Asynchronous|FileOptions.SequentialScan);
+                createdOutput=true;
+                var buffer=ArrayPool<byte>.Shared.Rent(128*1024);
+                try
+                {
+                    while(true)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var read=await source.ReadAsync(buffer.AsMemory(0,buffer.Length),ct).ConfigureAwait(false);
+                        if(read==0)break;
+                        if(read>limits.MaxActualOutputBytes-actualTotal)
+                            throw new InvalidDataException("Archive actual-output safety limit exceeded.");
+                        await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
+                        actualTotal+=read;
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
+            catch(OperationCanceledException) when(createdOutput)
+            {
+                File.Delete(dest);
+                throw;
+            }
+            catch(InvalidDataException) when(createdOutput)
+            {
+                File.Delete(dest);
+                throw;
+            }
         }
     }
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
+    public void ExtractSafely(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
+        ExtractSafelyAsync(archivePath,destination,trustedRoot,ct).GetAwaiter().GetResult();
+    }
     private static void EnsureSafeDirectoryPath(string root,string directory)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
