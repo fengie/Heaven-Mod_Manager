@@ -1,148 +1,112 @@
 # Agent Control Plane Architecture
 
-## Goal
+## Purpose
 
-Turn the existing repo-native agent doctrine into a fleet with one authoritative runtime representation.
+Heaven Agent Control is the local runtime layer above the repository's existing governance, training, continuity, review, and release doctrine.
 
-The repository already has strong training, continuity, verification, role, and integration doctrine. The missing layer is runtime orchestration.
-
-## Runtime model
+Its job is not to replace GitHub or repository truth. Its job is to turn that truth into a recoverable engineering organization that remains useful when ChatGPT is closed.
 
 ```text
-User / ChatGPT
-      |
-      v
-Agent Control Plane
-  |-- Task registry
-  |-- Worker registry
-  |-- Mutable-boundary leases
-  |-- Agent process registry
-  |-- Branch/worktree registry
-  |-- Event/history log
-  |-- Integration queue
-      |
-      +--> Codex worker in isolated worktree
-      +--> Reviewer/Test worker
-      +--> Integration worker
+Operator / future clients
+        |
+        v
+Command Center + agentctl CLI
+        |
+        v
+Control-plane API
+  |-- mission / recommendations / command resolution
+  |-- task graph / ownership / leases
+  |-- agent lifecycle / heartbeats / takeover
+  |-- workflow presets / prompt provenance
+  |-- review + integration queue
+  |-- release evidence gate
+  |-- machine policy / capacity
+  |-- notifications / events / search
+  |-- improvement proposals
+        |
+        +--> isolated local worker process + Git worktree
 ```
 
-## State
+Canonical GitHub state and repository continuity remain authoritative engineering truth.
+## Durable runtime state
 
-`data/control-plane.json` is local runtime state and is intentionally gitignored.
+`data/control-plane.json` is local operational state and is gitignored. Writes retain a backup copy; if both primary and backup state are unreadable, the controller enters degraded read-only mode and blocks dispatch.
 
-It contains:
+The registry includes:
 
-- `tasks[]` — requested objective, role, priority, dependencies, machine, branch and lifecycle state.
-- `agents[]` — PID/session, task, role, branch, worktree, output paths and status.
-- `leases[]` — one named mutable boundary → one managed owner at a time.
-- `events[]` — bounded recent audit/history events.
+- `tasks[]`: objective, role, ownership, dependencies, branch/base SHA, acceptance criteria, verification obligations, evidence, blockers, and next action.
+- `agents[]`: task/role, machine, branch/worktree, owner session, PID, exact base/current SHA, heartbeat/activity, prompt provenance, logs, completion evidence, review state, and lifecycle status.
+- `leases[]`: mutable boundary, owner, task, acquisition/heartbeat/expiry state, and disposition.
+- `events[]`: explainable operator/controller actions and their evidence.
+- `notifications[]`: actionable failures, stale workers, review/integration state, and other operator-relevant events.
+- `improvements[]`: governed Agent Manager improvement proposals and implementation linkage.
+- `promptHistory[]`: exact template/version/hash provenance for dispatched work.
 
-Git remains the durable engineering source of truth. Runtime state is operational metadata, not a replacement for repository continuity documents.
+Runtime state is not a substitute for repository continuity. A meaningful implementation must still leave durable Git/continuity evidence.
+## Lifecycle and recovery
 
-## Lease semantics
+Active states include reserved, starting, running, waiting, blocked, stale, and stopping. Terminal/uncertain states remain distinct: done, failed, stopped, interrupted, and orphaned are not interchangeable.
 
-A lease protects a mutable implementation boundary.
+A controller restart never treats a persisted PID as durable process identity. Workers from another controller session are reconciled as interrupted/orphaned unless ownership and completion can be proven.
 
-Examples:
+A last-message file is evidence only; it cannot promote interrupted work to successful completion.
 
-- `updater-release-pipeline`
-- `main-window-shell`
-- `archive-extraction`
-- `agent-control-plane`
+Takeover generation preserves the smallest useful continuation packet: role, scope, branch, base/current SHA, task state, findings/evidence, blockers, constraints, and next action. Preserve-and-stop writes takeover state before attempting process termination.
 
-If the boundary is omitted, the controller creates an isolated per-agent lease tied to the worker branch.
+Stop and Emergency Stop release mutable ownership only after process termination is proven for a worker owned by the current controller session.
 
-Explicit multi-agent deploys with one named boundary receive numbered sub-boundaries so the controller does not immediately deadlock a requested support fan-out.
+## Workflows and command resolution
 
-The current controller releases a lease when its managed process ends. Future versions should support renewable TTL leases and explicit transfer.
+The workflow library is centralized in `lib/control-core.mjs`; prompt roles/sections are centralized and versioned in `lib/prompt-templates.mjs`.
 
-## Worker scheduling
+One-click presets include Usual Swarm, Support Current Programmer, Integration, Review, Release, Bug Hunt, UI/UX, Updater Hardening, Verification, Research, Continuity, Cleanup, and Self-Improve.
 
-v0.2 registers the controller host as one local worker with:
+Usual Swarm targets 1 Manager + 1 Primary Programmer + 4 distinct support lanes, but fills only missing useful work. Support lanes are deliberately different and task-sensitive.
 
-- hostname
-- platform/architecture
-- CPU count
-- free/total RAM
-- configured capacity
-- active slots
-- heartbeat timestamp
+Natural-language commands resolve to a governed workflow or a recommendation-only action. Unknown commands are staged for explicit bounded deployment instead of silently spawning work.
+## Autonomy and emergency control
 
-Placement currently accepts only `auto`, `local`, or the controller hostname. A request for another machine fails instead of pretending the task was deployed.
+Autonomy levels are explicit:
 
-### Next worker layer
+- **Observe**: monitoring only.
+- **Assist**: recommendations and previews; operator initiates meaningful work.
+- **Coordinate**: bounded support/review/test coordination while integration stays approval-gated.
+- **Engineering Autopilot**: safe routine coordination, stale replacement, verification, integration preparation, and continuity maintenance within repository policy.
 
-Add a small worker daemon on Heaven/Heaven2 that registers with the controller and periodically heartbeats:
+Operational controls include pause/resume dispatch, drain, read-only mode, per-agent stop, preserve-and-stop, stop swarm, and Emergency Stop.
 
-```text
-worker_id
-machine
-capabilities
-models
-active_slots
-cpu
-memory
-last_heartbeat
-```
+Emergency Stop first blocks new dispatch, then attempts to stop only workers whose ownership this controller can prove. Unknown/orphaned work is preserved rather than killed by stale PID.
 
-Then the scheduler can choose machines by capacity and policy.
+## Machine policy
 
-## Integration queue
+Machine placement fails closed when a requested runtime is not actually connected.
 
-Terminal managed agents are compared against their base branch.
+- **heaven**: background worker by default; no repository clone/fetch/pull/push/remotes/credentials/worktree/repository mutation without explicit per-task authorization; foreground UI is disallowed by policy.
+- **heaven2**: primary development machine; repository development is permitted when genuinely required, but responsiveness should be preserved and routine scouting should not consume it unnecessarily.
 
-The queue records:
+The current release has local execution plus policy-aware visibility of configured machines. A true authenticated remote worker daemon/scheduler is a future boundary, not a fabricated capability.
+## Review, integration, release, and search
 
-- branch
-- base
-- ahead/behind counts
-- agent/task
-- completion state
-- last output
+Completed work does not become canonical automatically. Integration candidates retain branch/base/current SHA, ahead/behind state, completion evidence, review verdict, task evidence, and eligibility.
 
-This queue is intentionally not an automatic merger. It is the input to reviewer/integration agents and the repository's exact-SHA verification gates.
+The release gate aggregates evidence without turning unknowns into passes. It checks canonical-source identity, stored verification applicability, unresolved integration candidates, uncertain workers, artifact provenance, and rollback/update proof.
 
-## Observability
+Global search covers runtime tasks, agents, events, improvement proposals, repository commit subjects, and continuity text.
 
-The UI currently reports:
+## Self-improvement
 
-- running agents
-- worker capacity
-- active leases
-- candidate branches
-- success rate
-- average runtime in the API snapshot
-- managed task/agent lifecycle
-- discovered swarm branches
-- recent controller events
+Feature requests can be captured as structured improvement proposals. Starting a proposal uses the governed Self-Improve workflow: isolated implementation, tests, independent review, compatibility consideration, and an upgrade candidate.
 
-Future telemetry should add:
+v0.4 deliberately stops before self-installation. Transactional Agent Manager update staging, migration backup, startup health verification, and automatic rollback require their own implementation/review boundary before they can be enabled.
 
-- token/cost accounting
-- duplicate-work rate
-- reverted-change rate
-- verification failure rate
-- manager interventions
-- stale-branch age
-- time-to-review
-- time-to-merge
-- prompt/role effectiveness
+## API/client boundary
 
-## ChatGPT integration
+The browser command center and `agentctl.mjs` both use the same local HTTP API. This keeps future desktop, phone, CLI, ChatGPT, and automation clients from coupling to internal process objects.
 
-The included private plugin is skills-only and uses Remote Desktop Commander to reach the authorized Heaven machine.
+The HTTP server is unauthenticated by design only because it is loopback-only. Startup refuses non-loopback binding. Authenticated remote/mobile control must be introduced as a separate threat-modeled boundary.
 
-This avoids falsely claiming that ChatGPT cloud can reach Heaven's localhost interface.
+## Verification
 
-A future native MCP mode can replace the bridge once the controller has an authenticated, intentionally exposed Streamable HTTP endpoint.
+`npm run check` syntax-checks the server, CLI, workflow core, and prompt engine. `npm test` covers prompt provenance, state migration, swarm deduplication, command interpretation, machine policy, integration eligibility, recommendation ordering, takeover state, non-loopback refusal, corrupt-state fail-closed recovery, restart uncertainty, and command-center contracts.
 
-## Safety decisions
-
-1. No automatic merge in v0.2.
-2. No force-updating main.
-3. One worktree per deployed worker.
-4. Named leases prevent silent managed collisions.
-5. Unknown remote workers fail closed.
-6. Controller state is local operational data; Git remains canonical engineering state.
-7. External Git branches are observable but not falsely treated as live managed processes.
-8. Stopping a managed agent targets only its recorded process tree.
+Real Windows/MHW/package/release validation remains evidence-specific; ordinary JavaScript tests do not claim those platform outcomes.

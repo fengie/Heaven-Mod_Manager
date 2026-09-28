@@ -290,12 +290,24 @@ export function interpretCommand(command) {
     [/agent manager.*better|improve agent manager|self improve/, "self-improve"]
   ];
   const match = rules.find(([regex]) => regex.test(lower));
+  const recommendationOnly = /check everyone|what should i do|what.*next|recommend.*action|show.*status/.test(lower);
+  if (recommendationOnly) {
+    return {
+      command: text,
+      action: "recommend",
+      workflowId: null,
+      confidence: "high",
+      needsClarification: false,
+      explanation: "Refresh current mission, blockers, worker state, integration candidates, and the highest-value next actions without dispatching work."
+    };
+  }
   return {
     command: text,
+    action: match ? "workflow" : "custom",
     workflowId: match?.[1] || null,
     confidence: match ? "high" : "low",
     needsClarification: !match,
-    explanation: match ? `Mapped to the ${WORKFLOW_PRESETS.find(item => item.id === match[1])?.label} workflow.` : "No safe predefined workflow matched. The command can be stored as a custom objective without automatic dispatch."
+    explanation: match ? `Mapped to the ${WORKFLOW_PRESETS.find(item => item.id === match[1])?.label} workflow.` : "No safe predefined workflow matched. The command can be staged as a bounded custom objective without automatic dispatch."
   };
 }
 
