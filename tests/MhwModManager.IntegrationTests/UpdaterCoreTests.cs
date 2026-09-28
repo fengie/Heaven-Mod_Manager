@@ -126,6 +126,34 @@ public sealed class UpdaterCoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Artifact_download_requests_octet_stream_from_release_asset_api()
+    {
+        Directory.CreateDirectory(root);
+        var bytes = Encoding.UTF8.GetBytes("VERIFIED");
+        var manifest = Manifest(11) with
+        {
+            ArtifactSize = bytes.Length,
+            Sha256 = Convert.ToHexString(SHA256.HashData(bytes))
+        };
+        var candidate = new UpdateCandidate(manifest,
+            new Uri("https://api.github.com/assets/artifact"), new Uri("https://api.github.com/assets/manifest"));
+        var sawBinaryAccept = false;
+        using var http = new HttpClient(new FakeHandler(request =>
+        {
+            sawBinaryAccept = request.Headers.Accept.Any(x =>
+                string.Equals(x.MediaType, "application/octet-stream", StringComparison.OrdinalIgnoreCase));
+            return BytesResponse(bytes);
+        }));
+        var source = new GitHubUpdateSource(http);
+        var destination = Path.Combine(root, "update.zip");
+
+        await source.DownloadArtifactAsync(candidate, "fixture-token", destination, TestToken);
+
+        Assert.True(sawBinaryAccept);
+        Assert.Equal(bytes, await File.ReadAllBytesAsync(destination, TestToken));
+    }
+
+    [Fact]
     public async Task Artifact_download_accepts_exact_length_and_sha256()
     {
         Directory.CreateDirectory(root);
