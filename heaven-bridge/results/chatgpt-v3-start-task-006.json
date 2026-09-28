@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-v3-start-task-006",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:47:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:46:48.711406+00:00",
+  "finished_at": "2026-09-28T19:46:52.420642+00:00",
+  "stdout": "\n\nProcessId       : 87700\nParentProcessId : 100876\nCreationDate    : 9/28/2026 3:09:21 PM\nCommandLine     : pythonw.exe C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py\n\nProcessId       : 7100\nParentProcessId : 87700\nCreationDate    : 9/28/2026 3:46:48 PM\nCommandLine     : powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"Start-ScheduledTask -TaskName \n                  'HeavenLocalBridge'; Start-Sleep -Seconds 3; Get-CimInstance Win32_Process | Where-Object { \n                  $_.CommandLine -like '*heaven-desktop-worker.py*' } | Select-Object \n                  ProcessId,ParentProcessId,CreationDate,CommandLine | Format-List\"\n\n\n\n",
+  "stderr": "",
+  "host": "heaven",
+  "action": "proc_run"
+}
