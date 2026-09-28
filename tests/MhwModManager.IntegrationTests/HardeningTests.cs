@@ -550,6 +550,35 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Archive_extraction_cancellation_interrupts_single_entry_and_removes_partial_file()
+    {
+        var zip=Path.Combine(root,"cancel-large.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/large.bin",CompressionLevel.SmallestSize);
+            await using var stream=entry.Open();
+            var block=new byte[1024*1024];
+            for(var i=0;i<128;i++)await stream.WriteAsync(block,TestToken);
+        }
+
+        var destination=Path.Combine(root,"cancel-extract");
+        var output=Path.Combine(destination,"nativePC","large.bin");
+        using var cts=CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var task=new ArchiveInspector().ExtractSafelyAsync(zip,destination,root,cts.Token);
+        var deadline=Stopwatch.StartNew();
+        while(!task.IsCompleted&&deadline.Elapsed<TimeSpan.FromSeconds(10))
+        {
+            if(File.Exists(output)&&new FileInfo(output).Length>=1024*1024)break;
+            await Task.Delay(5,TestToken);
+        }
+
+        Assert.False(task.IsCompleted);
+        Assert.True(File.Exists(output));
+        cts.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>task);
+        Assert.False(File.Exists(output));
+    }
+    [Fact]
     public async Task Archive_extraction_rejects_junction_ancestor_above_destination()
     {
         if(!OperatingSystem.IsWindows())return;
