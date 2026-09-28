@@ -403,15 +403,37 @@ def start_session(p):
         "proc": proc, "out_f": out_f, "err_f": err_f,
         "stdout_path": stdout_path, "stderr_path": stderr_path,
         "shell": shell, "command": command, "cwd": str(cwd), "started_at": now(),
+        "started_monotonic": time.monotonic(), "last_activity": time.monotonic(),
+        "idle_timeout": max(60, min(int(p.get("idle_timeout_seconds") or SESSION_IDLE_TIMEOUT), 86400)),
+        "max_lifetime": max(60, min(int(p.get("max_lifetime_seconds") or SESSION_MAX_LIFETIME), 7 * 86400)),
     }
     return session_snapshot(sid, SESSIONS[sid])
 
+def terminate_process_tree(proc, force=True):
+    if proc.poll() is not None:
+        return
+    if os.name == "nt":
+        args = ["taskkill.exe", "/PID", str(proc.pid), "/T"]
+        if force:
+            args.append("/F")
+        subprocess.run(args, capture_output=True, text=True,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    else:
+        proc.kill() if force else proc.terminate()
+
 def cleanup_finished_sessions():
-    for sid, s in list(SESSIONS.items()):
-        if s["proc"].poll() is not None:
-            try: s["out_f"].flush()
+    t = time.monotonic()
+    for sid, sess in list(SESSIONS.items()):
+        proc = sess["proc"]
+        expired = (t - sess.get("last_activity", t) > sess.get("idle_timeout", SESSION_IDLE_TIMEOUT)
+                   or t - sess.get("started_monotonic", t) > sess.get("max_lifetime", SESSION_MAX_LIFETIME))
+        if expired and proc.poll() is None:
+            terminate_process_tree(proc, True)
+            audit("session_timeout", session_id=sid, pid=proc.pid)
+        if proc.poll() is not None:
+            try: sess["out_f"].flush()
             except Exception: pass
-            try: s["err_f"].flush()
+            try: sess["err_f"].flush()
             except Exception: pass
 
 def run_job(job):
@@ -582,9 +604,9 @@ def run_job(job):
         if not command.strip():
             raise ValueError("params.command is required")
         timeout = max(1, min(int(p.get("timeout_seconds") or 1800), MAX_TIMEOUT))
-        data = run_capture(shell_argv(p.get("shell"), command), expand_path(p.get("cwd")), timeout)
+        data = run_capture(shell_argv(p.get("shell"), command), ensure_allowed(expand_path(p.get("cwd"))), timeout, env=build_env(p))
         data.update({"host": host, "action": action})
-        return data
+        return persist_command_output(str(job.get("id") or uuid.uuid4().hex), data)
 
     if action == "proc_start":
         data = start_session(p)
@@ -595,6 +617,7 @@ def run_job(job):
         if sid not in SESSIONS:
             raise ValueError("unknown session_id")
         s = SESSIONS[sid]
+        s["last_activity"] = time.monotonic()
         try: s["out_f"].flush()
         except Exception: pass
         try: s["err_f"].flush()
@@ -609,6 +632,7 @@ def run_job(job):
         if sid not in SESSIONS:
             raise ValueError("unknown session_id")
         s = SESSIONS[sid]
+        s["last_activity"] = time.monotonic()
         if s["proc"].poll() is not None:
             raise ValueError("session process already exited")
         value = str(p.get("input") if p.get("input") is not None else "")
@@ -624,12 +648,9 @@ def run_job(job):
             raise ValueError("unknown session_id")
         s = SESSIONS[sid]
         if s["proc"].poll() is None:
-            if bool(p.get("force", False)):
-                s["proc"].kill()
-            else:
-                s["proc"].terminate()
+            terminate_process_tree(s["proc"], bool(p.get("force", True)))
             try: s["proc"].wait(timeout=5)
-            except subprocess.TimeoutExpired: s["proc"].kill()
+            except subprocess.TimeoutExpired: terminate_process_tree(s["proc"], True)
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
                 "data": session_snapshot(sid, s)}
 
@@ -644,6 +665,27 @@ def run_job(job):
         result.update({"host": host, "action": action})
         return result
 
+    if action == "job_output_read":
+        target_job = str(p.get("job_id") or "")
+        if not safe_id(target_job):
+            raise BridgeError("INVALID_JOB_ID", "job_id is invalid")
+        stream = str(p.get("stream") or "stdout").lower()
+        if stream not in ("stdout", "stderr"):
+            raise BridgeError("INVALID_STREAM", "stream must be stdout or stderr")
+        target = JOB_OUTPUT_DIR / f"{target_job}.{stream}.log"
+        if not target.exists():
+            raise BridgeError("OUTPUT_NOT_FOUND", "persisted job output was not found")
+        total = target.stat().st_size
+        offset = max(0, min(int(p.get("offset_bytes") or 0), total))
+        length = max(1, min(int(p.get("length_bytes") or 262144), MAX_BINARY_CHUNK))
+        with target.open("rb") as of:
+            of.seek(offset)
+            raw = of.read(length)
+        return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                "data": {"job_id": target_job, "stream": stream, "offset_bytes": offset, "length_bytes": len(raw),
+                         "total_bytes": total, "next_offset": offset + len(raw), "eof": offset + len(raw) >= total,
+                         "content": raw.decode("utf-8", errors="replace")}}
+
     # Legacy / escape-hatch execution.
     payload = job.get("payload")
     if not isinstance(payload, str) or not payload.strip():
@@ -651,34 +693,37 @@ def run_job(job):
     cwd = expand_path(job.get("cwd"))
     timeout = max(1, min(int(job.get("timeout_seconds") or 1800), MAX_TIMEOUT))
     if action in ("powershell", "cmd", "python"):
-        result = run_capture(shell_argv(action, payload), cwd, timeout)
+        result = run_capture(shell_argv(action, payload), ensure_allowed(cwd), timeout, env=build_env(p))
     else:
-        result = run_capture(["codex", "exec", "--skip-git-repo-check", "-"], cwd, timeout, stdin=payload)
+        codex = shutil.which("codex.cmd") or shutil.which("codex") or "codex"
+        result = run_capture([codex, "exec", "--skip-git-repo-check", "-"], ensure_allowed(cwd), timeout, stdin=payload, env=build_env(p))
     result.update({"host": host, "action": action})
-    return result
+    return persist_command_output(str(job.get("id") or uuid.uuid4().hex), result)
 
 def publish_result(job_id, job, result):
     RESULTS.mkdir(parents=True, exist_ok=True)
     target = RESULTS / f"{job_id}.json"
-    body = {
-        "id": job_id,
-        "source": job.get("source"),
-        "created_at": job.get("created_at"),
-        **result,
-    }
-    target.write_text(json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
-    for attempt in range(6):
+    body = {"id": job_id, "source": job.get("source"), "created_at": job.get("created_at"),
+            "worker_version": WORKER_VERSION, **result}
+    tmp = RESULTS / f".{job_id}.{uuid.uuid4().hex}.tmp"
+    tmp.write_text(json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
+    os.replace(tmp, target)
+    for attempt in range(8):
         try:
             git("add", str(target.relative_to(ROOT)))
             git("commit", "-m", f"heaven bridge result {job_id}", check=False)
-            git("pull", "--rebase", "origin", BRANCH)
+            pull = git("pull", "--rebase", "origin", BRANCH, check=False)
+            if pull.returncode != 0:
+                git("rebase", "--abort", check=False)
+                time.sleep(min(30, 2 ** attempt))
+                continue
             pushed = git("push", "origin", BRANCH, check=False)
             if pushed.returncode == 0:
                 return
-            time.sleep(1 + attempt)
+            time.sleep(min(30, 2 ** attempt))
         except Exception as e:
             log(f"publish retry {attempt + 1} for {job_id}: {e}")
-            time.sleep(1 + attempt)
+            time.sleep(min(30, 2 ** attempt))
     raise RuntimeError(f"could not publish result for {job_id}")
 
 def process_once():
@@ -696,13 +741,21 @@ def process_once():
             source = job.get("source")
             if source not in (SOURCE, LEGACY_SOURCE):
                 continue
-            log(f"starting {job_id} ({job.get('action') or job.get('kind') or 'codex'})")
+            rate_limit_check()
+            digest = verify_job(job, job_id)
+            action_name = str(job.get("action") or job.get("kind") or "codex")
+            log(f"starting {job_id} ({action_name})")
+            audit("job_start", job_id=job_id, action=action_name, job_hash=digest)
             result = run_job(job)
+            result["job_hash"] = digest
+            mark_processed(job_id, digest)
             publish_result(job_id, job, result)
+            audit("job_finish", job_id=job_id, action=action_name, status=result.get("status"))
             log(f"finished {job_id}: {result['status']}")
             return True
         except Exception as e:
             log(f"job {job_id} error: {e}")
+            error = e.as_dict() if isinstance(e, BridgeError) else {"code": "INTERNAL_ERROR", "message": str(e), "details": {}}
             failure = {
                 "status": "error",
                 "exit_code": 1,
@@ -710,9 +763,11 @@ def process_once():
                 "finished_at": now(),
                 "host": os.environ.get("COMPUTERNAME", "heaven"),
                 "action": str(job.get("action") or job.get("kind") or "unknown") if "job" in locals() else "unknown",
+                "error": error,
                 "stdout": "",
-                "stderr": repr(e),
+                "stderr": "",
             }
+            audit("job_error", job_id=job_id, code=error.get("code"), action=failure["action"])
             try:
                 publish_result(job_id, job if "job" in locals() else {}, failure)
                 return True
@@ -723,7 +778,10 @@ def process_once():
 def main():
     STATE.mkdir(parents=True, exist_ok=True)
     SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
-    log(f"worker starting protocol={SOURCE}")
+    JOB_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    log(f"worker starting protocol={SOURCE} worker_version={WORKER_VERSION}")
+    audit("worker_start", protocol=SOURCE, worker_version=WORKER_VERSION)
     while True:
         try:
             cleanup_finished_sessions()
