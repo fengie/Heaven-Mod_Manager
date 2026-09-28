@@ -2,6 +2,7 @@ import importlib.util
 import os
 import tempfile
 import threading
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -142,6 +143,37 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel"):
             self.assertIn(action, result["data"]["actions"])
+
+    def test_publish_write_is_serialized_by_git_lock(self):
+        wrote = threading.Event()
+
+        class FakeGitResult:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        def fake_write(path, payload):
+            wrote.set()
+
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "ROOT", Path(td)), \
+             patch.object(hb, "atomic_write_text", side_effect=fake_write), \
+             patch.object(hb, "git", return_value=FakeGitResult()):
+            hb.GIT_LOCK.acquire()
+            try:
+                thread = threading.Thread(
+                    target=hb.publish_json,
+                    args=("heaven-bridge/status/test.json", {"ok": True}, "test publish"),
+                    daemon=True,
+                )
+                thread.start()
+                time.sleep(0.05)
+                self.assertFalse(wrote.is_set(), "relay file was written while another publisher held GIT_LOCK")
+            finally:
+                hb.GIT_LOCK.release()
+            thread.join(timeout=1)
+            self.assertFalse(thread.is_alive())
+            self.assertTrue(wrote.is_set())
 
 
 if __name__ == "__main__":
