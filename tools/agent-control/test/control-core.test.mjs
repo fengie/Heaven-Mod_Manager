@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { renderAgentPrompt } from "../lib/prompt-templates.mjs";
 import {
   applyPreLaunchFailure,
+  autonomyPermissionDecision,
   defaultControlState,
   deploymentBatchCapacity,
   migrateControlState,
@@ -14,7 +15,8 @@ import {
   classifyAuthoritativeExit,
   isIntegrationEligible,
   recommendNextActions,
-  takeoverContext
+  takeoverContext,
+  workflowPermission
 } from "../lib/control-core.mjs";
 
 function state() {
@@ -197,6 +199,43 @@ test("natural language command bar maps common operator language", () => {
   assert.equal(interpretCommand("test everything").workflowId, "verification");
   assert.equal(interpretCommand("make the agent manager better").workflowId, "self-improve");
   assert.equal(interpretCommand("do something unusual").needsClarification, true);
+});
+
+test("autonomy profiles enforce declared permissions and workflow requirements", () => {
+  const current = state();
+
+  current.settings.autonomyLevel = "observe";
+  assert.equal(autonomyPermissionDecision(current, "preview").allowed, false);
+  assert.equal(autonomyPermissionDecision(current, "dispatch-support").allowed, false);
+
+  current.settings.autonomyLevel = "assist";
+  assert.equal(autonomyPermissionDecision(current, "preview").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "recommend").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "dispatch-support").allowed, false);
+
+  current.settings.autonomyLevel = "coordinate";
+  assert.equal(autonomyPermissionDecision(current, "dispatch-support").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "request-review").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "run-tests").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "prepare-integration").allowed, false);
+  assert.equal(autonomyPermissionDecision(current, "maintain-continuity").allowed, false);
+
+  current.settings.autonomyLevel = "engineering-autopilot";
+  assert.equal(autonomyPermissionDecision(current, "prepare-integration").allowed, true);
+  assert.equal(autonomyPermissionDecision(current, "maintain-continuity").allowed, true);
+
+  current.settings.autonomyLevel = "unexpected-level";
+  const unknown = autonomyPermissionDecision(current, "preview");
+  assert.equal(unknown.allowed, false);
+  assert.match(unknown.reason, /fails closed/i);
+
+  assert.equal(workflowPermission("usual-swarm"), "dispatch-support");
+  assert.equal(workflowPermission("review"), "request-review");
+  assert.equal(workflowPermission("verification"), "run-tests");
+  assert.equal(workflowPermission("integration"), "prepare-integration");
+  assert.equal(workflowPermission("continuity"), "maintain-continuity");
+  assert.equal(workflowPermission("self-improve"), "prepare-integration");
+  assert.equal(workflowPermission("unknown-workflow"), null);
 });
 
 test("heaven repository writes fail closed without per-task authorization", () => {
