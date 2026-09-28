@@ -190,4 +190,15 @@ catch {
 Assert-Equal 1 $script:UpdaterRefreshCleanupCount 'ambiguous final main refresh cleanup'
 Assert-Equal $true ($multiRefreshError -like 'Final updater publication main refresh returned *') 'ambiguous final main refresh rejection'
 
+
+# Regression for the escaped retry-path propagation race: both the immediate
+# post-publication verification and an already-immutable release retry must use
+# the authoritative Git REST ref. The one remaining local current-build tag
+# check is deliberately the pre-publication orphan-tag refusal.
+$publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
+$restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
+Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
+$localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
+Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green

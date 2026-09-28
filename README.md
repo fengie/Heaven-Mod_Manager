@@ -1,3 +1,11 @@
+# v8.8.2 Universal Mod Manager
+
+## Immutable-release retry verification — 2026-09-28
+
+v8.8.2 closes the retry half of the updater tag-propagation race. When an updater workflow sees that its exact immutable release already exists, it now verifies the release tag through GitHub's authoritative Git REST ref instead of requiring the tag to have propagated to Git transport first. The same exact ref-name, direct-commit, 40-hex SHA, source-SHA, immutable-release, and release-asset checks still apply.
+
+The pre-publication orphan-tag guard remains intentionally local/Git-based because that check answers a different question: whether the workflow's fetched repository already contains a current-build tag without a published release.
+
 # v8.8.1 Universal Mod Manager
 
 ## v8.8.1 — updater publication verification hardening

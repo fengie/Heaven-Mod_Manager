@@ -1,3 +1,10 @@
+# v8.8.2 — Immutable updater retry verification
+
+- Fix updater publication retries falsely failing when an already-immutable release is visible through GitHub APIs before its tag is advertised through Git transport.
+- Reuse the authoritative REST tag-ref parser for both immediate post-publication verification and already-published immutable-release retries.
+- Add a focused regression that permits only the pre-publication orphan-tag guard to depend on the locally fetched current-build tag.
+- Preserve exact source-SHA, direct-commit ref, immutable release, exact two-asset, size, digest, stale-main, monotonic-build, and no-clobber checks.
+
 # v8.8.1 — Updater publication verification hardening
 
 - Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.
