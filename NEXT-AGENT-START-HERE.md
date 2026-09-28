@@ -4,7 +4,11 @@ Recursive source reparse containment and archive extraction physical-root contai
 
 Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` first. Older text below that names recursive source reparse containment as the next boundary is historical and superseded by this section. Hosted Windows Release Gate **36392282315** passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8` and persisted evidence/cache state in `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The hosted release artifact SHA-256 is `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. The strongest independently reproduced unimplemented production boundary is now archive extraction streaming cancellation / actual-output resource budgeting in `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`.
 
-Active Learned Rules are now **LR-001 through LR-010**. Preserve the permanent continuity constitution and require your successor to propagate it again.
+Active canonical-main Learned Rules are LR-001 through LR-010. This support branch adds **LR-012 — recovery must prove writer orphanhood before takeover**; LR-011 is deliberately reserved by parallel PR #33 to avoid a numbering collision.
+
+**New P1 support finding:** `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md` runtime-reproduces a live-peer recovery race: executor B can roll back executor A while A is still alive after a live-file write, then A can resume, report success, and commit metadata expecting bytes B already reverted. No production fix is included here. Keep the eventual workspace-ownership/lease checkpoint separate from active PR #35 archive streaming, PR #34 diagnostics share safety, PR #33 migration hardlink work, and PR #32 updater research.
+
+Preserve the permanent continuity constitution and require your successor to propagate it again.
 
 ---
 
@@ -27,7 +31,7 @@ Before modifying this project:
 2. read `_AGENT_TRAINING/README.md` and the company-doctrine sections relevant to the task;
 3. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 4. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-010);
+5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (canonical LR-001 through LR-010 plus this branch's LR-012; LR-011 is reserved by parallel PR #33);
 6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`, then the 2026-09-27 historical inventory as needed;
 7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 

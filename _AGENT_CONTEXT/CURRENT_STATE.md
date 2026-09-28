@@ -12,6 +12,12 @@ Hosted Windows Release Gate `36392282315` passed exact production integration co
 
 See `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`.
 
+## Latest deployment multi-instance ownership audit — P1 runtime-confirmed / documentation only
+
+A Windows/heaven2 probe against canonical `4fd61dd33609a7c55e5aedbaad026266a410f942` proved that `RecoverIncompleteAsync` can mistake a **still-live peer deployment** for an abandoned operation. Writer A paused after writing MOD bytes while its journal remained `Writing`; executor B recovered that active operation back to ORIGINAL; A then resumed, returned success, and committed a manifest expecting the MOD hash. The final invariant reproduced twice: expected live `MOD`, actual `ORIGINAL`. No production source or retained test changed in this support checkpoint. Read `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md` and LR-012. Active PR #33 reserves LR-011, so the new recovery-ownership rule deliberately uses LR-012.
+
+This finding is independent of active PR #35 archive streaming hardening, PR #34 support-bundle sanitation, PR #33 migration/CAS hardlink work, and PR #32 updater research. A future fix should establish a workspace-scoped cross-process owner before mutation/recovery; SQLite busy/transaction locks are not a domain lease.
+
 # CAS integrity checkpoint — CLOSED
 
 The CAS byte-integrity/concurrency repair is closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**, verifier **25/25**, functions **613/613**, call sites **6494 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.

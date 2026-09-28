@@ -30,6 +30,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 support audit: runtime-reproduced a P1 deployment multi-instance ownership race where RecoverIncompleteAsync can roll back a still-live peer after its file write, after which the peer resumes, returns success, and commits a manifest expecting reverted bytes; documentation/governance only, no production fix.",
     "2026-09-28 integration: added shared SafeRecursiveTraversal and migrated ModScanner, unmanaged adoption, and Smart Inbox recursive source traversal to fail closed on root/descendant reparse points while preserving safe-tree classification order.",
     "2026-09-28 integration: hardened archive extraction with an explicit trusted root and component-by-component prevalidation so ancestor/descendant junctions are rejected before redirected directory/file creation.",
     "2026-09-28 integration: added Windows junction/root/cycle and archive physical-root regressions; combined local suites pass Automation 24/24 and Integration 96/96.",
@@ -112,7 +113,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it; read ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "nextRequiredAction": "Do not duplicate active PR #35 archive streaming work. Preserve the runtime-confirmed deployment multi-instance ownership finding as a separate future workspace-lease/recovery-ownership checkpoint; read DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md. Preserve and recursively propagate continuity, canonical LR-001 through LR-010, the PR #33 LR-011 reservation, and this branch's LR-012.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -145,7 +146,9 @@
     "_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md",
+    "_AGENT_CONTEXT/EVIDENCE/deployment-multi-instance-live-peer-recovery-probe.md"
   ],
   "latestSupportIntegration": {
     "baselineMain": "2d6969c7d94438dd64a540dab93fc9a910a8458b",
@@ -159,7 +162,9 @@
     "hostedRun": "36392282315",
     "hostedEvidenceCommit": "a94066004660e4d542f5d4a528c7e5e22bdea9cb",
     "hostedVerificationStatus": "closed: Windows Release Gate passed 25/25",
-    "learnedRulesIntegrated": ["LR-010"]
+    "learnedRulesIntegrated": [
+      "LR-010"
+    ]
   },
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",
@@ -260,5 +265,17 @@
     "residualRisk": "CAS filesystem identity/reparse/hardlink policy and digest namespace validation remain separate audited boundaries."
   },
   "replaceFileWImplementationCommit": "6d52ede722f18fcdbe727ec44e027de3e1c69fb1",
-  "replaceFileWFinalTestCommit": "17abfb05d83ff38040eb9356d34fbb3131644801"
+  "replaceFileWFinalTestCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
+  "latestSupportAudit": {
+    "audit": "_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md",
+    "canonicalBase": "4fd61dd33609a7c55e5aedbaad026266a410f942",
+    "branch": "agent/support-multi-instance-mutation-audit-20260928",
+    "severity": "P1 runtime-confirmed",
+    "finding": "A second live executor can recover/rollback an active peer after its file write; the peer can then resume, return success, and commit metadata expecting the reverted bytes.",
+    "runtimeEvidence": "_AGENT_CONTEXT/EVIDENCE/deployment-multi-instance-live-peer-recovery-probe.md",
+    "productionSourceChanged": false,
+    "testsChanged": false,
+    "learnedRule": "LR-012",
+    "parallelRuleReservation": "LR-011 is reserved by active PR #33"
+  }
 }

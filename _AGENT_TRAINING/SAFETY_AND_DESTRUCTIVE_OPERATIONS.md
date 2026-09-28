@@ -32,6 +32,8 @@ Backups must be identifiable, scoped, integrity-checked when needed, and retaine
 ## Crash recovery
 Design recovery for the states that can actually exist after interruption. Recovery must be idempotent or explicitly detect non-retryable ambiguity.
 
+Durable `in progress` state describes protocol state, not writer liveness. Before recovery rolls back, replays, resets, or otherwise takes ownership of an incomplete operation, establish exclusive mutation ownership or prove the previous writer is gone. Database busy/transaction locks protect individual database operations; they do not automatically serialize a larger filesystem-plus-database state machine across processes. Test both live-peer exclusion and abandoned-owner takeover.
+
 ## Migration
 A restartable migration must prove ownership before deleting/resetting destination state, validate reused artifacts rather than trusting existence, distinguish cleanup attempted from cleanup completed, converge on retry or emit a precise recovery action, and preserve the authoritative source until completion is proven.
 

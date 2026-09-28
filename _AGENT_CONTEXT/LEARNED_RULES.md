@@ -177,3 +177,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant report:** _AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-012 — recovery must prove writer orphanhood before takeover
+
+- **Rule ID:** LR-012
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** crash recovery, durable journals, multi-process mutation, startup reconciliation, filesystem/database protocols
+- **Rule:** Durable incomplete state is not proof that its writer is dead. Before a recovery path rolls back, replays, resets, or otherwise takes ownership of an in-progress operation, it must first establish exclusive mutation ownership or prove the prior writer is no longer live.
+- **Trigger / evidence:** A Windows runtime probe against canonical `4fd61dd33609a7c55e5aedbaad026266a410f942` paused DeploymentExecutor A after it wrote MOD bytes but before its journal advanced from Writing. Live executor B called `RecoverIncompleteAsync`, rolled A's active operation back to ORIGINAL, then A resumed, returned success, and committed a manifest expecting the MOD hash. The final live-byte invariant failed twice: expected MOD, actual ORIGINAL.
+- **Rationale:** Journals encode protocol state, not process liveness. SQLite transaction/busy semantics can serialize individual database operations while allowing two processes to interleave the larger filesystem+database state machine.
+- **Enforcement:** High-risk recovery must have an explicit ownership model. Test live-peer exclusion, abandoned-owner takeover, different-workspace concurrency, and recovery after abrupt death. Do not use an in-progress row, busy timeout, or ordinary database lock as a substitute for a process/workspace lease.
+- **Relevant audit:** `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md`
+- **Numbering note:** LR-011 is reserved by parallel PR #33 for immutable content-store byte ownership; this audit deliberately uses LR-012 to avoid a parallel-rule collision.
+- **Supersedes:** none
+- **Superseded by:** none

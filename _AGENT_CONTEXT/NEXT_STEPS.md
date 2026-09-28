@@ -2,9 +2,11 @@
 
 The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
 
-The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work.
+The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work. **Parallel note:** PR #35 already owns that implementation lane; do not duplicate it while the PR remains active.
 
-Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-010.
+A separate P1 support audit has now runtime-reproduced a **deployment multi-instance ownership failure**: a second live manager/executor can run startup recovery against an active peer after its file write, restore the before-bytes, and then allow the original writer to resume, report success, and commit a manifest expecting the now-reverted bytes. Read `DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md`. Keep its future fix as an independent workspace-lease/recovery-ownership checkpoint; do not fold it into archive, diagnostics, updater, or migration-hardlink work.
+
+Older sections below that call recursive source reparse containment “next” are historical and superseded. Canonical-main Learned Rules are LR-001 through LR-010; this support branch adds LR-012, while parallel PR #33 reserves LR-011.
 
 ---
 

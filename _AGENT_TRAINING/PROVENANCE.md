@@ -18,5 +18,6 @@ The trainer's rules are generic. This file preserves lightweight provenance show
 | Integration state must record reviewed/merged/rejected/superseded work | `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` |
 | CI must verify the artifact users receive, not merely an intermediate build | `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` and release-gate evidence |
 | Continuity must survive agent loss and missing chat | `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, handoff validator, negative continuity fixtures |
+| Recovery must prove writer orphanhood before takeover | LR-012; `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md` runtime reproduction |
 
 When new projects provide equivalent or stronger evidence, extend or refine this map without putting transient project state into the generic rule bodies.

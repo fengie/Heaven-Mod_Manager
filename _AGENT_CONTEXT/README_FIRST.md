@@ -63,6 +63,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
 - `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` — runtime-reproduced single-entry cancellation failure plus archive byte/disk-budget hardening guidance.
+- `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md` — runtime-reproduced live-peer recovery race where a second manager instance can roll back an active deployment, after which the writer commits stale manifest/live state.
 
 ## Critical rule
 
