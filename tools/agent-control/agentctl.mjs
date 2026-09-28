@@ -56,6 +56,13 @@ Commands:
   routing-clear
   autonomy
   autonomy-set LEVEL
+  autopilot
+  autopilot-start --task "big direction" [--base main] [--max-repairs 3] [--max-iterations 40]
+  autopilot-start --task-file C:\\path\\direction.txt [options]
+  autopilot-pause
+  autopilot-resume
+  autopilot-stop
+  autopilot-step
   deploy --role support --task "..." [options]
   deploy --role support --task-file C:\\path\\task.txt [options]
   review <agent-id> [--task "..."] [--task-file C:\\path\\review.txt]
@@ -150,6 +157,28 @@ try {
       method: "POST",
       body: JSON.stringify({ autonomyLevel: level, reason: "agentctl-autonomy-set" })
     }));
+  } else if (command === "autopilot") {
+    print(await request("/api/autopilot"));
+  } else if (command === "autopilot-start") {
+    const objective = readTask(flags);
+    if (!objective) throw new Error("--task or --task-file is required.");
+    print(await request("/api/autopilot/start", {
+      method: "POST",
+      body: JSON.stringify({
+        objective,
+        baseBranch: flags.base || "main",
+        maxRepairLoops: flags["max-repairs"] === undefined ? undefined : Number(flags["max-repairs"]),
+        maxIterations: flags["max-iterations"] === undefined ? undefined : Number(flags["max-iterations"])
+      })
+    }));
+  } else if (command === "autopilot-pause") {
+    print(await request("/api/autopilot/pause", { method: "POST", body: JSON.stringify({ reason: "agentctl-pause" }) }));
+  } else if (command === "autopilot-resume") {
+    print(await request("/api/autopilot/resume", { method: "POST", body: JSON.stringify({ reason: "agentctl-resume" }) }));
+  } else if (command === "autopilot-stop") {
+    print(await request("/api/autopilot/stop", { method: "POST", body: JSON.stringify({ reason: "agentctl-stop" }) }));
+  } else if (command === "autopilot-step") {
+    print(await request("/api/autopilot/step", { method: "POST", body: "{}" }));
   } else if (command === "deploy") {
     const task = readTask(flags);
     if (!task) throw new Error("--task or --task-file is required.");

@@ -7,6 +7,7 @@ import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
 import { renderAgentPrompt } from "./lib/prompt-templates.mjs";
+import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
   STATE_VERSION,
   AUTONOMY_PROFILES,
@@ -27,6 +28,7 @@ import {
   recommendNextActions,
   roleCatalog,
   takeoverContext,
+  workflowLeasePreflight,
   workflowPermission
 } from "./lib/control-core.mjs";
 
@@ -52,6 +54,8 @@ const SESSION_ID = randomUUID();
 const children = new Map();
 let degradedReason = null;
 let deployMutex = Promise.resolve();
+let autopilotTickRunning = false;
+const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
 
 const rolePresets = roleCatalog();
 
@@ -1325,6 +1329,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     repositoryContext,
     telemetry: telemetry(state, queue),
     settings: state.settings,
+    autopilot: state.autopilot,
     autonomyProfiles: AUTONOMY_PROFILES,
     workflows: WORKFLOW_PRESETS,
     workers,
@@ -1402,6 +1407,29 @@ async function executeWorkflow(workflowId, body = {}) {
       requireReconciledOwnership: workflowId === "usual-swarm" || Boolean(body.requireReconciledOwnership)
     });
     if (plan.blocked?.length) return { plan, created: [], blocked: plan.blocked };
+
+    const capacityState = refreshState();
+    const capacity = deploymentBatchCapacity(capacityState, plan.steps.length, MAX_ACTIVE_AGENTS);
+    if (!capacity.allowed) {
+      return {
+        plan,
+        created: [],
+        blocked: [{
+          error: `Workflow requires ${plan.steps.length} free worker slots but only ${capacity.available} are available. No workers were launched.`
+        }]
+      };
+    }
+
+    const leasePreflight = workflowLeasePreflight(capacityState, plan.steps);
+    if (!leasePreflight.allowed) {
+      return {
+        plan,
+        created: [],
+        blocked: [{
+          error: `${leasePreflight.reason} No workers were launched.`
+        }]
+      };
+    }
 
     const created = [];
     const blocked = [];
@@ -1744,6 +1772,308 @@ async function searchControlPlane(query) {
   return { query: q, results: results.slice(0, 80) };
 }
 
+function autopilotRoutingCurrent(state, now = Date.now()) {
+  const manifest = state.settings?.routingManifest;
+  if (!manifest || !Array.isArray(manifest.assignments)) return false;
+  const observedAt = Date.parse(manifest.observedAt || "");
+  const expiresAt = Date.parse(manifest.expiresAt || "");
+  return Number.isFinite(observedAt) && Number.isFinite(expiresAt)
+    && observedAt <= now && expiresAt > now;
+}
+
+function persistAutopilotPhase(phase, reason, patch = {}) {
+  const state = loadState();
+  state.autopilot = transitionAutopilot(state.autopilot, phase, { reason, patch });
+  addEvent(state, "autopilot.transition", `Autopilot -> ${phase}`, {
+    reason,
+    evidence: { runId: state.autopilot.runId, iteration: state.autopilot.iteration }
+  });
+  saveState(state);
+  return state.autopilot;
+}
+
+function patchAutopilot(patch = {}) {
+  const state = loadState();
+  state.autopilot = normalizeAutopilotState({ ...state.autopilot, ...patch, updatedAt: isoNow() });
+  saveState(state);
+  return state.autopilot;
+}
+
+function gateAutopilot(reason, error = null) {
+  const state = loadState();
+  state.autopilot = transitionAutopilot(state.autopilot, "safety-gate", {
+    reason,
+    patch: {
+      enabled: false,
+      paused: false,
+      lastError: error ? String(error.message || error) : null
+    }
+  });
+  addEvent(state, "autopilot.safety-gate", "Autopilot stopped at a governed safety gate", {
+    reason,
+    evidence: { runId: state.autopilot.runId, error: state.autopilot.lastError }
+  });
+  addNotification(state, {
+    severity: "warning",
+    title: "Autopilot safety gate",
+    message: `${reason}. Review the evidence before resuming.`,
+    action: { type: "inspect-autopilot" },
+    dedupeKey: `autopilot-gate:${state.autopilot.runId}:${reason}`
+  });
+  saveState(state);
+  return state.autopilot;
+}
+
+function startAutopilot(body = {}) {
+  const objective = String(body.objective || "").trim();
+  if (!objective) throw new Error("Autopilot objective is required.");
+  if (os.hostname().toLowerCase() !== "heaven2") {
+    const error = new Error("Engineering autopilot must run from heaven2, the control/credential authority.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const state = loadState();
+  assertMutationsAllowed(state);
+  if (state.autopilot?.enabled) {
+    const error = new Error("An autopilot run is already active or paused. Resume or stop it before starting a new big direction.");
+    error.statusCode = 409;
+    throw error;
+  }
+  state.settings.autonomyLevel = "engineering-autopilot";
+  const now = isoNow();
+  state.autopilot = normalizeAutopilotState({
+    enabled: true,
+    paused: false,
+    objective,
+    phase: "sync-plan",
+    iteration: 0,
+    repairLoops: 0,
+    maxRepairLoops: body.maxRepairLoops === undefined ? 3 : Number(body.maxRepairLoops),
+    maxIterations: body.maxIterations === undefined ? 40 : Number(body.maxIterations),
+    runId: randomUUID(),
+    baseBranch: String(body.baseBranch || "main").trim() || "main",
+    startedAt: now,
+    updatedAt: now,
+    lastTransitionAt: now,
+    stopReason: null,
+    lastError: null,
+    lastCanonicalMainSha: null,
+    lastTruthAt: null
+  });
+  addEvent(state, "autopilot.started", "Engineering autopilot started", {
+    reason: "operator-direction",
+    evidence: { runId: state.autopilot.runId, objective }
+  });
+  saveState(state);
+  return state.autopilot;
+}
+
+function pauseAutopilot(reason = "operator-pause") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  state.autopilot = normalizeAutopilotState({ ...state.autopilot, paused: true, updatedAt: isoNow() });
+  addEvent(state, "autopilot.paused", "Engineering autopilot paused", { reason });
+  saveState(state);
+  return state.autopilot;
+}
+
+function resumeAutopilot(reason = "operator-resume") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  if (!state.autopilot?.objective) throw new Error("No autopilot objective exists to resume.");
+  state.settings.autonomyLevel = "engineering-autopilot";
+  const phase = state.autopilot.phase === "safety-gate" || state.autopilot.phase === "waiting-for-direction"
+    ? "sync-plan"
+    : state.autopilot.phase;
+  state.autopilot = normalizeAutopilotState({
+    ...state.autopilot,
+    enabled: true,
+    paused: false,
+    phase,
+    stopReason: null,
+    lastError: null,
+    updatedAt: isoNow()
+  });
+  addEvent(state, "autopilot.resumed", "Engineering autopilot resumed", { reason });
+  saveState(state);
+  return state.autopilot;
+}
+
+function stopAutopilot(reason = "operator-stop") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  state.autopilot = transitionAutopilot(state.autopilot, "waiting-for-direction", {
+    reason,
+    patch: { enabled: false, paused: false }
+  });
+  addEvent(state, "autopilot.stopped", "Engineering autopilot stopped", { reason });
+  saveState(state);
+  return state.autopilot;
+}
+
+async function reconcileAutopilotTruth() {
+  if (os.hostname().toLowerCase() !== "heaven2") {
+    throw new Error("Autopilot truth reconciliation is restricted to heaven2.");
+  }
+  const output = await git(["ls-remote", "origin", "refs/heads/main"]);
+  const canonicalMainSha = String(output || "").trim().split(/\s+/)[0] || null;
+  if (!canonicalMainSha || !/^[0-9a-f]{40}$/i.test(canonicalMainSha)) {
+    throw new Error("Could not establish canonical origin/main SHA.");
+  }
+  const state = refreshState();
+  const routingCurrent = autopilotRoutingCurrent(state);
+  const updated = loadState();
+  updated.autopilot = normalizeAutopilotState({
+    ...updated.autopilot,
+    lastCanonicalMainSha: canonicalMainSha,
+    lastTruthAt: isoNow()
+  });
+  saveState(updated);
+  return { canonicalMainSha, routingCurrent };
+}
+
+function autopilotCandidate(state) {
+  return state.agents.find(agent => agent.id === state.autopilot?.candidateAgentId) || null;
+}
+
+async function dispatchAutopilotImplementation(state) {
+  assertAutonomyPermission(state, "dispatch-support", "autopilot implementation dispatch");
+  const result = await executeWorkflow("usual-swarm", {
+    objective: state.autopilot.objective,
+    baseBranch: state.autopilot.baseBranch || "main",
+    requireReconciledOwnership: true
+  });
+  if (result.blocked?.length) {
+    throw new Error(`Autopilot swarm dispatch blocked: ${JSON.stringify(result.blocked)}`);
+  }
+
+  const refreshed = refreshState();
+  const createdMain = result.created.find(agent => agent.role === "main") || null;
+  const activeMain = refreshed.agents.find(agent =>
+    agent.role === "main"
+    && coreIsActiveStatus(agent.status)
+    && agent.task === state.autopilot.objective
+  ) || null;
+  const programmer = createdMain || activeMain;
+  if (!programmer) {
+    throw new Error("Routing ownership did not provide a managed primary programmer. Refusing to duplicate an externally owned main lane.");
+  }
+  return programmer;
+}
+
+async function dispatchAutopilotVerification(state) {
+  assertAutonomyPermission(state, "run-tests", "autopilot verification dispatch");
+  const candidate = autopilotCandidate(state);
+  if (!candidate) throw new Error("Autopilot candidate is missing before verification.");
+  return withDeployLock(() => deployOne({
+    role: "test",
+    task: [
+      `Independently verify candidate ${candidate.id} on branch ${candidate.branchName}.`,
+      "Run the strongest targeted check/test/lint/type/build gates applicable to the change.",
+      "Record structured task evidence with type=verification, exact sourceSha, command, and result=pass or fail before exiting.",
+      `Use the task id in your assignment and POST that evidence to http://127.0.0.1:${PORT}/api/tasks/<task-id>/evidence before exiting.`
+    ].join("\n"),
+    baseBranch: candidate.branchName,
+    boundary: `autopilot:verify:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
+    priority: 92,
+    machine: "auto",
+    targetAgentId: candidate.id,
+    verification: ["A pass requires structured verification evidence, not prose output."]
+  }));
+}
+
+async function dispatchAutopilotReview(state) {
+  assertAutonomyPermission(state, "request-review", "autopilot review dispatch");
+  const candidate = autopilotCandidate(state);
+  if (!candidate) throw new Error("Autopilot candidate is missing before review.");
+  const task = [
+    `Independently review candidate ${candidate.id} on branch ${candidate.branchName}.`,
+    "Inspect implementation, verification evidence, safety, regressions, ownership, docs and version consistency.",
+    `Before exiting, record an explicit review verdict for candidate ${candidate.id}: approved, changes-requested, or rejected, with structured evidence.`,
+    `POST the verdict to http://127.0.0.1:${PORT}/api/integration/${encodeURIComponent(candidate.id)}/review-verdict as JSON with verdict, reason, and evidence.`
+  ].join("\n");
+  return withDeployLock(() => deployReview(candidate.id, {
+    task,
+    boundary: `autopilot:review:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
+    priority: 93,
+    machine: "auto"
+  }));
+}
+
+async function dispatchAutopilotRepair(state) {
+  assertAutonomyPermission(state, "dispatch-support", "autopilot repair dispatch");
+  const candidate = autopilotCandidate(state);
+  if (!candidate) throw new Error("Autopilot candidate is missing before repair.");
+  const evidence = candidate.reviewEvidence ? JSON.stringify(candidate.reviewEvidence) : "No structured reviewEvidence payload was attached.";
+  return withDeployLock(() => deployOne({
+    role: "main",
+    task: [
+      `Repair candidate ${candidate.id} on branch ${candidate.branchName}.`,
+      `Review verdict: ${candidate.reviewVerdict || "verification failure"}.`,
+      `Structured review evidence: ${evidence}`,
+      "Keep the repair bounded, rerun focused checks, update docs/version when required, and do not merge or publish."
+    ].join("\n"),
+    baseBranch: candidate.branchName,
+    boundary: `autopilot:repair:${state.autopilot.runId}:${state.autopilot.repairLoops + 1}`,
+    priority: 96,
+    machine: "auto"
+  }));
+}
+
+async function autopilotStep() {
+  if (autopilotTickRunning) return null;
+  autopilotTickRunning = true;
+  try {
+    let state = refreshState();
+    if (!state.autopilot?.enabled || state.autopilot?.paused) return state.autopilot || null;
+
+    const truth = await reconcileAutopilotTruth();
+    state = refreshState();
+    const capacityAvailable = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length < MAX_ACTIVE_AGENTS;
+    const decision = decideAutopilotAction(state, {
+      routingCurrent: truth.routingCurrent,
+      capacityAvailable
+    });
+
+    if (decision.kind === "idle" || decision.kind === "wait") return { autopilot: state.autopilot, decision };
+    if (decision.kind === "gate") return { autopilot: gateAutopilot(decision.reason), decision };
+    if (decision.kind === "transition") {
+      return { autopilot: persistAutopilotPhase(decision.phase, decision.reason, decision.patch || {}), decision };
+    }
+    if (decision.kind === "integration-gate") {
+      const candidate = autopilotCandidate(state);
+      if (candidate) buildTakeoverForAgent(candidate.id, { persist: true });
+      return {
+        autopilot: persistAutopilotPhase("waiting-for-direction", decision.reason, { enabled: false, paused: false }),
+        decision
+      };
+    }
+
+    let agent;
+    if (decision.kind === "dispatch-implementation") agent = await dispatchAutopilotImplementation(state);
+    else if (decision.kind === "dispatch-verification") agent = await dispatchAutopilotVerification(state);
+    else if (decision.kind === "dispatch-review") agent = await dispatchAutopilotReview(state);
+    else if (decision.kind === "dispatch-repair") agent = await dispatchAutopilotRepair(state);
+    else return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
+
+    const patch = {};
+    if (decision.kind === "dispatch-implementation") patch.implementationAgentId = agent.id;
+    if (decision.kind === "dispatch-verification") patch.verificationAgentId = agent.id;
+    if (decision.kind === "dispatch-review") patch.reviewAgentId = agent.id;
+    if (decision.kind === "dispatch-repair") patch.repairAgentId = agent.id;
+    return { autopilot: patchAutopilot(patch), decision, agentId: agent.id };
+  } catch (error) {
+    try {
+      return { autopilot: gateAutopilot("autopilot-runtime-error", error), error: error.message || String(error) };
+    } catch {
+      return { error: error.message || String(error) };
+    }
+  } finally {
+    autopilotTickRunning = false;
+  }
+}
+
 function sendJson(res, status, value) {
   const body = JSON.stringify(value, null, 2);
   res.writeHead(status, {
@@ -1906,6 +2236,34 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, await previewWorkflow(workflowId, body));
       }
       return sendJson(res, 201, await executeWorkflow(workflowId, body));
+    }
+
+    if (req.method === "GET" && pathname === "/api/autopilot") {
+      return sendJson(res, 200, refreshState().autopilot);
+    }
+
+    if (req.method === "POST" && pathname === "/api/autopilot/start") {
+      const body = await readJson(req);
+      return sendJson(res, 200, startAutopilot(body));
+    }
+
+    if (req.method === "POST" && pathname === "/api/autopilot/pause") {
+      const body = await readJson(req);
+      return sendJson(res, 200, pauseAutopilot(body.reason || "operator-pause"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/autopilot/resume") {
+      const body = await readJson(req);
+      return sendJson(res, 200, resumeAutopilot(body.reason || "operator-resume"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/autopilot/stop") {
+      const body = await readJson(req);
+      return sendJson(res, 200, stopAutopilot(body.reason || "operator-stop"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/autopilot/step") {
+      return sendJson(res, 200, await autopilotStep());
     }
 
     if (req.method === "GET" && pathname === "/api/control/routing-manifest") {
@@ -2122,3 +2480,8 @@ server.listen(PORT, HOST, () => {
   console.log(`Worktrees: ${WORKTREE_ROOT}`);
   console.log(`Capacity: ${MAX_ACTIVE_AGENTS} active agents`);
 });
+
+const autopilotTimer = setInterval(() => {
+  void autopilotStep();
+}, AUTOPILOT_TICK_MS);
+autopilotTimer.unref?.();

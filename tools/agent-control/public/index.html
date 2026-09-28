@@ -166,6 +166,22 @@
 
         <section class="card section">
           <div class="section-title">
+            <h2>Engineering autopilot</h2>
+            <span class="pill" id="autopilotStatus">waiting-for-direction</span>
+          </div>
+          <label for="autopilotObjective">Big direction</label>
+          <textarea id="autopilotObjective" style="min-height:82px" placeholder="Set the high-level direction; routine implement → verify → review → repair cycles will advance until a governed gate."></textarea>
+          <div class="role-grid">
+            <button class="primary" id="autopilotStart">Start</button>
+            <button id="autopilotPause">Pause</button>
+            <button id="autopilotResume">Resume</button>
+            <button class="danger" id="autopilotStop">Stop</button>
+          </div>
+          <div class="tiny" id="autopilotMeta">Autopilot never auto-merges or publishes. Stale routing, missing structured evidence, exhausted repair budget, and safety boundaries stop the loop.</div>
+        </section>
+
+        <section class="card section">
+          <div class="section-title">
             <h2>Worker pool</h2>
             <span class="pill" id="workerSummary">0 workers</span>
           </div>
@@ -375,6 +391,17 @@
       $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} running`;
       $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
 
+      const autopilot = snapshot.autopilot || {};
+      $("autopilotStatus").textContent = autopilot.paused ? `${autopilot.phase || "unknown"} · paused` : (autopilot.phase || "waiting-for-direction");
+      $("autopilotMeta").textContent = [
+        autopilot.enabled ? "enabled" : "stopped",
+        `iteration ${autopilot.iteration ?? 0}/${autopilot.maxIterations ?? "—"}`,
+        `repairs ${autopilot.repairLoops ?? 0}/${autopilot.maxRepairLoops ?? "—"}`,
+        autopilot.stopReason ? `gate: ${autopilot.stopReason}` : null,
+        autopilot.lastCanonicalMainSha ? `main ${autopilot.lastCanonicalMainSha.slice(0,12)}` : null
+      ].filter(Boolean).join(" · ");
+      if (!$("autopilotObjective").value && autopilot.objective) $("autopilotObjective").value = autopilot.objective;
+
       renderWorkers(snapshot);
       renderAgents(snapshot);
       renderLeases(snapshot);
@@ -392,6 +419,18 @@
         $("connection").textContent = "Offline";
         toast(error.message);
       }
+    }
+
+    async function autopilotAction(action) {
+      try {
+        const body = action === "start"
+          ? { objective: $("autopilotObjective").value.trim() }
+          : { reason: `ui-${action}` };
+        if (action === "start" && !body.objective) return toast("Set a big direction first.");
+        await api(`/api/autopilot/${action}`, { method:"POST", body:JSON.stringify(body) });
+        toast(`Autopilot ${action} requested.`);
+        await refresh();
+      } catch (error) { toast(error.message); }
     }
 
     async function deploy(role) {
@@ -460,6 +499,10 @@
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
+    $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
+    $("autopilotPause").addEventListener("click", () => autopilotAction("pause"));
+    $("autopilotResume").addEventListener("click", () => autopilotAction("resume"));
+    $("autopilotStop").addEventListener("click", () => autopilotAction("stop"));
 
     refresh();
     setInterval(() => refresh(false), 4000);

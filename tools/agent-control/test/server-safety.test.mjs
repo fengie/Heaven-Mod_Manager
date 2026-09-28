@@ -335,3 +335,37 @@ test("broad workflow execution fails closed until a routing manifest is current"
   assert.equal(reconciled.body.blocked.length, 0);
   assert.equal(reconciled.body.plan.ownership.reconciled, true);
 });
+
+test("engineering autopilot exposes governed control routes and a periodic internal loop", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  for (const route of [
+    "/api/autopilot",
+    "/api/autopilot/start",
+    "/api/autopilot/pause",
+    "/api/autopilot/resume",
+    "/api/autopilot/stop",
+    "/api/autopilot/step"
+  ]) {
+    assert.match(source, new RegExp(route.replaceAll("/", "\\/")));
+  }
+  assert.match(source, /setInterval\(\(\) => \{\s*void autopilotStep\(\)/);
+  assert.match(source, /git\(\["ls-remote", "origin", "refs\/heads\/main"\]\)/);
+  const autopilotCore = fs.readFileSync(path.resolve(HERE, "..", "lib", "autopilot-core.mjs"), "utf8");
+  assert.match(autopilotCore, /operator-integration-approval-required/);
+});
+
+test("workflow execution preflights the full plan before launching its first worker", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function executeWorkflow");
+  const end = source.indexOf("function buildTakeoverForAgent", start);
+  const block = source.slice(start, end);
+  const capacityAt = block.indexOf("deploymentBatchCapacity");
+  const leaseAt = block.indexOf("workflowLeasePreflight");
+  const loopAt = block.indexOf("for (const work of plan.steps)");
+  const deployAt = block.indexOf("await deployOne");
+  assert.ok(capacityAt >= 0);
+  assert.ok(leaseAt > capacityAt);
+  assert.ok(loopAt > leaseAt);
+  assert.ok(deployAt > leaseAt);
+  assert.match(block, /No workers were launched/);
+});

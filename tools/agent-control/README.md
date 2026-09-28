@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.4.0 does
+## What v0.4.1 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -25,6 +25,10 @@ This is the execution layer that sits above the repository's existing agent doct
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Remote Desktop Commander.
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
+- Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
+- Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
+- Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
+- Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 
 ## Important limitation
 
@@ -68,6 +72,11 @@ node .\agentctl.mjs routing-set --file C:\Temp\routing.json
 node .\agentctl.mjs routing-clear
 node .\agentctl.mjs autonomy
 node .\agentctl.mjs autonomy-set coordinate
+node .\agentctl.mjs autopilot
+node .\agentctl.mjs autopilot-start --task "Build the current big direction" --max-repairs 3
+node .\agentctl.mjs autopilot-pause
+node .\agentctl.mjs autopilot-resume
+node .\agentctl.mjs autopilot-stop
 node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928
 node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90
 node .\agentctl.mjs review <agent-id>
@@ -111,6 +120,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_WORKTREE_ROOT` — default `%USERPROFILE%\agent-worktrees`
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
+- `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
 - `CODEX_EXE` — optional explicit path to `codex.exe`; otherwise the newest ChatGPT Codex install is discovered automatically.
 
 ## Safety / isolation
@@ -128,7 +138,9 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - Broad `usual-swarm` execution requires current reconciled ownership context.
 - An authoritative routing manifest fills only manager-declared open slots; claimed external ownership counts as occupied, while stale/superseded claims do not block a lane forever.
 - Autonomy permissions are checked server-side before workflow execution, direct deployment, review dispatch, persisted takeover/evidence mutation, integration verdict mutation, and self-improvement execution.
-- The controller does not merge branches automatically.
+- Engineering autopilot is control-authority-bound to `heaven2`; it rechecks remote `main` with `git ls-remote` and requires a current routing manifest before advancing.
+- Autopilot stops at stale ownership, missing structured verification/review evidence, worker-capacity or lease preflight failure, exhausted repair budget, degraded/read-only/emergency state, and the final integration approval boundary.
+- The controller does not merge, release, or publish branches automatically.
 - Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
 
 ## ChatGPT plugin
@@ -137,4 +149,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin therefore tells ChatGPT how to locate `agentctl.mjs`, start the controller when needed, write task text to a temporary file, deploy agents, inspect the snapshot, read logs, stop workers, and launch reviewers through the authorized Heaven machine.
 
-See `CONTROL_PLANE.md` for the current v0.4 architecture and remaining multi-machine/autonomy work.
+See `CONTROL_PLANE.md` for the current v0.4.1 architecture, engineering-autopilot state machine, and remaining remote-worker transport work.

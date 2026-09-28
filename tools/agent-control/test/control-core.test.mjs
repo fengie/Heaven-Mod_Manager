@@ -16,6 +16,7 @@ import {
   isIntegrationEligible,
   recommendNextActions,
   takeoverContext,
+  workflowLeasePreflight,
   workflowPermission
 } from "../lib/control-core.mjs";
 
@@ -53,7 +54,8 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 3);
+  assert.equal(migrated.version, 4);
+  assert.equal(migrated.autopilot.phase, "waiting-for-direction");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
   assert.equal(migrated.controller.sessionId, "new-session");
@@ -349,4 +351,28 @@ test("takeover context is concise and carries exact branch state", () => {
   assert.equal(handoff.currentSha, "def");
   assert.deepEqual(handoff.unresolved, ["Windows process test"]);
   assert.match(handoff.constraints.join(" "), /Do not duplicate/i);
+});
+
+test("workflow lease preflight rejects active and duplicate mutable boundaries before launch", () => {
+  const current = state();
+  current.leases.push({ id: "lease-1", boundary: "shared-api", status: "active" });
+
+  const activeConflict = workflowLeasePreflight(current, [
+    { role: "support", boundary: "shared-api" },
+    { role: "test", boundary: "verification" }
+  ]);
+  assert.equal(activeConflict.allowed, false);
+  assert.equal(activeConflict.boundary, "shared-api");
+
+  const duplicatePlan = workflowLeasePreflight(state(), [
+    { role: "support", boundary: "same-boundary" },
+    { role: "test", boundary: "same-boundary" }
+  ]);
+  assert.equal(duplicatePlan.allowed, false);
+  assert.equal(duplicatePlan.boundary, "same-boundary");
+
+  assert.deepEqual(workflowLeasePreflight(state(), [
+    { role: "support", boundary: "one" },
+    { role: "test", boundary: "two" }
+  ]), { allowed: true, boundary: null, reason: null });
 });

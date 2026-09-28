@@ -36,6 +36,7 @@ It contains:
 - `agents[]` — PID/session, task, role, branch, worktree, output paths and status.
 - `leases[]` — one named mutable boundary → one managed owner at a time.
 - `events[]` — bounded recent audit/history events.
+- `autopilot` — durable big-direction orchestration state: phase, iteration/repair budgets, candidate/verification/review/repair worker IDs, last canonical-main observation, transition time, and governed stop reason.
 
 Git remains the durable engineering source of truth. Runtime state is operational metadata, not a replacement for repository continuity documents.
 
@@ -58,7 +59,7 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.4.0 registers the controller host as one local worker with:
+v0.4.1 registers the controller host as one local worker with:
 
 - hostname
 - platform/architecture
@@ -101,6 +102,26 @@ The declared profiles map to concrete permissions:
 Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; evidence/persisted-takeover mutation requires `maintain-continuity`; integration verdict mutation and self-improvement execution require `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
 
 The default is `assist`, so a fresh controller can inspect, recommend, and preview without launching agents. The operator must explicitly raise autonomy before dispatch. Safety controls remain outside this restriction so pause/drain/emergency-stop/owned-worker stop and autonomy changes cannot be blocked by the current profile.
+
+## Engineering autopilot
+
+v0.4.1 adds a durable control loop for routine engineering work. A user supplies one high-level objective, and the controller advances only from authoritative state/evidence through:
+
+```text
+sync-plan -> implement -> verify -> review
+                         ^          |
+                         |          v
+                    reverify <- repair
+                                   |
+                                   v
+integration-ready -> continuity -> operator integration gate
+```
+
+The loop is restart-resumable because its phase and worker references live in `control-plane.json`, not in chat history. It never treats last-message prose as proof. Verification requires structured task evidence; review requires an explicit structured verdict. Failed verification/review routes through a bounded repair budget.
+
+Every active cycle observes canonical `origin/main` without mutating shared refs and requires a freshness-scoped routing manifest before dispatch. The controller must run on `heaven2`, which remains the control/credential authority. Heavy/background work may move to `heaven` only when remote worker transport is actually connected and policy-safe; the controller does not pretend unsupported remote execution exists.
+
+The first implementation intentionally stops before merge/release/publish and preserves a takeover artifact at the integration boundary.
 
 ## Integration queue
 
@@ -153,7 +174,7 @@ A future native MCP mode can replace the bridge once the controller has an authe
 
 ## Safety decisions
 
-1. No automatic merge in v0.2.
+1. No automatic merge, release, or publish in v0.4.1.
 2. No force-updating main.
 3. One worktree per deployed worker.
 4. Named leases prevent silent managed collisions.

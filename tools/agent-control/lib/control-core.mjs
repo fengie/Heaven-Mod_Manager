@@ -1,6 +1,7 @@
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
+import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned"]);
 
@@ -118,6 +119,7 @@ export function defaultControlState({ sessionId, hostname }) {
       machinePolicies: structuredClone(DEFAULT_MACHINE_POLICIES),
       routingManifest: null
     },
+    autopilot: defaultAutopilotState(),
     agents: [],
     tasks: [],
     leases: [],
@@ -142,6 +144,7 @@ export function migrateControlState(parsed, context) {
       ...(parsed.settings || {}),
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) }
     },
+    autopilot: normalizeAutopilotState(parsed.autopilot),
     agents: Array.isArray(parsed.agents) ? parsed.agents : [],
     tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
     leases: Array.isArray(parsed.leases) ? parsed.leases : [],
@@ -292,6 +295,30 @@ export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) 
     available,
     allowed: count <= available
   };
+}
+
+export function workflowLeasePreflight(state, steps = []) {
+  const occupied = new Set(
+    (state?.leases || [])
+      .filter(lease => lease?.status === "active")
+      .map(lease => String(lease?.boundary || "").trim())
+      .filter(Boolean)
+  );
+
+  for (const work of Array.isArray(steps) ? steps : []) {
+    const boundary = String(work?.boundary || "").trim();
+    if (!boundary) continue;
+    if (occupied.has(boundary)) {
+      return {
+        allowed: false,
+        boundary,
+        reason: `Mutable boundary "${boundary}" is already leased or duplicated in this workflow.`
+      };
+    }
+    occupied.add(boundary);
+  }
+
+  return { allowed: true, boundary: null, reason: null };
 }
 
 function activeLaneSet(state, now = Date.now()) {
