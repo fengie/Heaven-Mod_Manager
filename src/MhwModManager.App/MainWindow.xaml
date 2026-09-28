@@ -211,7 +211,7 @@
                                 <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
                                 <Border Margin="12,5,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Top">
                                     <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold">
-                                        <Run Text="{Binding InstalledCount,Mode=OneWay}"/><Run Text=" logical mods"/>
+                                        <Run Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
                                     </TextBlock>
                                 </Border>
                             </StackPanel>

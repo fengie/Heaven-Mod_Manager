@@ -210,7 +210,7 @@ Fresh evidence:
 - `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-current-mods.png`
 - `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-current-mods-wide.png`
 
-The existing Game Settings off-screen capture limitation remains unchanged; no dialog behavior was modified. The only fresh visual nit observed was singular copy (`1 logical mods`), which is non-blocking and was not used to justify semantic or layout churn.
+The existing Game Settings off-screen capture limitation remains unchanged; no dialog behavior was modified. Final self-review found and fixed the singular Mods badge copy (`1 logical mods` -> `1 logical mod`) with a presentation-only count label; strict build and all 79/24/177 tests were rerun green, and fresh UI Automation confirmed `1 logical mod` is visible on the real WPF Mods page.
 
 No updater algorithm, release/install behavior, backend/filesystem semantics, CI/CD, packaging, security architecture, deployment logic, or test-infrastructure ownership was changed by this continuation. No new project-agnostic engineering lesson was discovered that warranted modifying `_AGENT_TRAINING/`.
 

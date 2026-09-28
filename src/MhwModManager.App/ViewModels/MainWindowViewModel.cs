@@ -74,6 +74,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string HeaderSummary=>$"{EnabledCount} enabled • {FullyEffectiveCount} fully effective • {ComposedCount} composed • {BlockerCount} choice(s) • {IssueCount} suspect(s) • {RevalidationCount} revalidate";
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public int InstalledCount=>Mods.Count;
+    public string InstalledCountLabel=>$"{InstalledCount} logical {(InstalledCount==1?"mod":"mods")}";
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
     public int EnabledCount=>Mods.Count(x=>x.StagedEnabled!=false);
     public int StagedCount=>Mods.Count(x=>x.HasStagedChanges);
@@ -272,6 +273,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(EnabledViewLabel));
         OnPropertyChanged(nameof(StagedViewLabel));
         OnPropertyChanged(nameof(UpdatesViewLabel));
+        OnPropertyChanged(nameof(InstalledCountLabel));
         OnPropertyChanged(nameof(IssuesViewLabel));
         OnPropertyChanged(nameof(RevalidateViewLabel));
         OnPropertyChanged(nameof(SupersededViewLabel));
