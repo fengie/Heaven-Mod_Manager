@@ -143,8 +143,11 @@ internal static class Program
             start.ArgumentList.Add(UpdateHealthProtocol.AttemptArgument);
             start.ArgumentList.Add(attemptId);
         }
-        return Process.Start(start)
-               ?? throw new InvalidOperationException("Failed to start MHW Manual Mod Manager after update.");
+        return ProcessDebug.Start(
+            start,
+            includeHealthArguments
+                ? "restart updated MHW Manual Mod Manager"
+                : "restart previous MHW Manual Mod Manager after rollback");
     }
 
     private static async Task<bool> StopProcessAsync(Process process, string logPath)

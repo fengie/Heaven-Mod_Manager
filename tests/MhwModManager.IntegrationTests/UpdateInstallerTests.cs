@@ -84,6 +84,32 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Unowned_file_created_after_preflight_is_never_overwritten()
+    {
+        var fixture = await CreateFixtureAsync();
+        var raced = false;
+        var installer = new UpdateInstaller((point, path) =>
+        {
+            if (!raced
+                && point == UpdateApplyFaultPoint.BeforeFileApply
+                && string.Equals(path, "new.dll", StringComparison.OrdinalIgnoreCase))
+            {
+                File.WriteAllText(Path.Combine(installRoot, "new.dll"), "USER-RACE");
+                raced = true;
+            }
+        });
+
+        await Assert.ThrowsAsync<IOException>(() => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.True(raced);
+        await AssertOldInstallRestoredAsync();
+        Assert.Equal("USER-RACE",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
+        Assert.Equal(UpdateJournalPhase.RolledBack,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
     public async Task Recovery_rejects_journal_for_a_different_update_before_mutation()
     {
         var fixture = await CreateFixtureAsync();

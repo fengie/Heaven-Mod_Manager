@@ -36,20 +36,24 @@ public sealed class UpdateInstaller(
         var backupManifest = await CreateBackupAsync(request, context.OldManifest, ct);
         await WriteJournalAsync(request, UpdateJournalPhase.BackupCreated, null, ct);
         injectFault(UpdateApplyFaultPoint.AfterBackup, null);
+        var oldByPath = context.OldManifest.Files.ToDictionary(
+            x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path),
+            StringComparer.OrdinalIgnoreCase);
+        var publishedNewPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             await WriteJournalAsync(request, UpdateJournalPhase.Applying, null, ct);
             foreach (var entry in context.NewManifest.Files)
             {
                 ct.ThrowIfCancellationRequested();
+                var relative = UpdatePathSafety.NormalizeRelativeFilePath(entry.Path);
+                var previouslyOwned = oldByPath.ContainsKey(relative);
                 injectFault(UpdateApplyFaultPoint.BeforeFileApply, entry.Path);
-                await ApplyOwnedFileAsync(request, entry, ct);
+                await ApplyOwnedFileAsync(request, entry, previouslyOwned, ct);
+                if (!previouslyOwned) publishedNewPaths.Add(relative);
                 injectFault(UpdateApplyFaultPoint.AfterFileApply, entry.Path);
             }
 
-            var oldByPath = context.OldManifest.Files.ToDictionary(
-                x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path),
-                StringComparer.OrdinalIgnoreCase);
             var newPaths = context.NewManifest.Files
                 .Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -75,7 +79,8 @@ public sealed class UpdateInstaller(
             {
                 // User cancellation stops forward work, never the recovery it requires.
                 using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-                await RollbackFromBackupAsync(request, context.NewManifest, recovery.Token);
+                await RollbackFromBackupAsync(
+                    request, context.NewManifest, recovery.Token, publishedNewPaths);
             }
             catch (Exception rollbackError)
             {
@@ -227,15 +232,25 @@ public sealed class UpdateInstaller(
         return manifest;
     }
 
-    private static async Task ApplyOwnedFileAsync(UpdateApplyRequest request, ProductFileEntry entry, CancellationToken ct)
+    private static async Task ApplyOwnedFileAsync(
+        UpdateApplyRequest request,
+        ProductFileEntry entry,
+        bool previouslyOwned,
+        CancellationToken ct)
     {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"path={entry.Path}");
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"path={entry.Path}; previouslyOwned={previouslyOwned}");
         var relative = UpdatePathSafety.NormalizeRelativeFilePath(entry.Path);
         var source = UpdatePathSafety.CombineUnderRoot(request.StagingRoot, relative);
         var destination = UpdatePathSafety.CombineUnderRoot(request.InstallRoot, relative);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(request.InstallRoot,
             Path.GetDirectoryName(destination) ?? request.InstallRoot);
-        await AtomicFileOps.ReplaceFromAsync(source, destination, expectedSha256: entry.Sha256, ct: ct);
+        await AtomicFileOps.ReplaceFromAsync(
+            source,
+            destination,
+            expectedSha256: entry.Sha256,
+            ct: ct,
+            requireDestinationAbsent: !previouslyOwned);
     }
 
     private async Task RemoveStaleOwnedFileAsync(
@@ -316,7 +331,8 @@ public sealed class UpdateInstaller(
     private async Task RollbackFromBackupAsync(
         UpdateApplyRequest request,
         ProductFileManifest newManifest,
-        CancellationToken ct)
+        CancellationToken ct,
+        HashSet<string>? publishedNewPaths = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"backup={request.BackupRoot}");
         var rollbackPath = Path.Combine(request.BackupRoot, "rollback-files.json");
@@ -370,6 +386,7 @@ public sealed class UpdateInstaller(
             ct.ThrowIfCancellationRequested();
             var relative = UpdatePathSafety.NormalizeRelativeFilePath(entry.Path);
             if (backupPaths.Contains(relative)) continue;
+            if (publishedNewPaths is not null && !publishedNewPaths.Contains(relative)) continue;
             var destination = UpdatePathSafety.CombineUnderRoot(request.InstallRoot, relative);
             if (!File.Exists(destination)) continue;
             UpdatePathSafety.EnsureExistingComponentsNotReparse(request.InstallRoot, destination);

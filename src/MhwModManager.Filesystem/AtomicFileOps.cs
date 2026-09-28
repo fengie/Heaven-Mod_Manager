@@ -22,6 +22,7 @@ public static class AtomicFileOps
         string destination,
         IAtomicReplaceBackend? replaceBackend = null,
         string? expectedSha256 = null,
+        bool requireDestinationAbsent = false,
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; destination={destination}");
@@ -51,7 +52,14 @@ public static class AtomicFileOps
             }
 
             ct.ThrowIfCancellationRequested();
-            if (File.Exists(destination))
+            if (requireDestinationAbsent)
+            {
+                // Publish with a single no-overwrite rename. Do not pre-check
+                // File.Exists here: another actor may create the destination
+                // between a check and publication.
+                File.Move(temp, destination, false);
+            }
+            else if (File.Exists(destination))
             {
                 if (OperatingSystem.IsWindows())
                 {
