@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-v3-runtime-info-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:43:01Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:41:58.538596+00:00",
+  "finished_at": "2026-09-28T19:41:58.783591+00:00",
+  "stdout": "                \"data\": {\"worker_version\": 2, \"protocol\": SOURCE, \"actions\": sorted(DIRECT_ACTIONS)}}\n\n\nFullName      : C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py\nLength        : 21593\nLastWriteTime : 9/28/2026 3:08:23 PM\n\n\n\n",
+  "stderr": "",
+  "host": "heaven",
+  "action": "proc_run"
+}
