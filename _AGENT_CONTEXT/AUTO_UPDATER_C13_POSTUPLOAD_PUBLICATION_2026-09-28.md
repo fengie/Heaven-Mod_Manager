@@ -13,7 +13,7 @@ The publisher previously re-fetched `origin/main` before invoking one `gh releas
 ## Change
 - Added `scripts/UpdaterReleasePublication.ps1` with a deterministic publication sequencer.
 - Publication now creates a draft with no assets, uploads the exact ZIP and `update-manifest.json` without clobbering, verifies draft identity and server-side asset sizes/SHA-256 digests, refreshes `origin/main` after upload, withdraws the draft/tag if `main` advanced, and only then publishes the draft.
-- Pre-publication failures during upload, draft verification, or final-main refresh attempt deterministic draft/tag cleanup.
+- Pre-publication failures after confirmed draft creation (upload, draft verification, or final-main refresh) attempt deterministic draft/tag cleanup. A create-command failure is treated as response-ambiguous: no publish occurs and the operator must inspect possible private draft state before retry rather than guessing with destructive cleanup.
 - Once the publish call begins, automatic cleanup is disabled because a nonzero client result is state-ambiguous: the release may already have become immutable.
 - Existing post-publication immutable/tag/source/asset verification remains in place.
 - Added fault-injection coverage for success ordering, main advance during upload, upload failure, draft-verification failure, final-main refresh failure, cleanup failure, and publish-command ambiguity.
