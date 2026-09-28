@@ -63,6 +63,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
 - `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` — runtime-reproduced single-entry cancellation failure plus archive byte/disk-budget hardening guidance.
+- `_AGENT_CONTEXT/GAME_PROFILE_ID_PATH_CONTAINMENT_AUDIT_2026-09-28.md` — documentation-only audit of persisted `GameProfile.Id` as an unchecked per-game workspace/state pathname component; regression-first repair remains open.
 
 ## Critical rule
 
