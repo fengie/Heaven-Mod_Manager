@@ -32,8 +32,12 @@ At the final pre-edit GitHub check:
 | #58 | Updater post-upload stale-main publication window | `ce2c1fef491a06f26f76d4cba0201af76c68196c` | active updater production lane |
 | #59 | Agent Control v2 engineering control plane | `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5` | active control-plane production lane |
 | #62 | Persisted game-profile ID path-containment audit | `3fe92bd111dc4a02c8d3dc9b0120ecf6761f041a` | active support lane |
+| #64 | Launch observation persistence atomicity audit | `90be320306122e39c5669449305452a373324eaa` | active support lane; specializes SQLite D2 |
+| #65 | Updater publication verification race closure | `98115515b2dc5fb256560c50ed8c40d08abb21f6` | active updater integration lane; incorporates #58 and says it supersedes #58 once merged |
+| #66 | Agent Control v2 safety invariant audit | `0d48692749e3b25bf32c179e114323e4f45d05bd` | active support review of #59; no competing implementation |
+| #68 | Archive streaming failure-cleanup semantics audit | `e24444c0c9867dda0dcf8b22db3f613878ae7478` | active support lane; separate from integrated #61 provenance |
 
-Stored PR heads are a checkpoint, not durable authority. The active set changed repeatedly during this support task, so successors must re-query live GitHub before selecting work.
+Stored PR heads are a checkpoint, not durable authority. The active set changed repeatedly during this support task: #64/#65/#66/#68 appeared during finalization, and #58 advanced. Successors must re-query live GitHub before selecting work. In particular, do not duplicate #65's updater integration, #66's review of #59, #64's launch-observation audit, or #68's archive-cleanup audit.
 
 ## Verification truth preserved
 
@@ -78,7 +82,7 @@ Because this is continuity/documentation-only work, it claims no product-runtime
 
 ## Successor handoff
 
-Start from live canonical `main`, then re-query open PRs. Do not resume the old C12 branch merely because historical top sections still describe it. At this checkpoint PR #58 owns the current updater publication work; #55 owns frontend UX; #59 owns Agent Control v2; #62 owns the game-profile ID containment audit.
+Start from live canonical `main`, then re-query open PRs. Do not resume the old C12 branch merely because historical top sections still describe it. At this checkpoint updater work is split between #58 and the newer #65 integration (which states it supersedes #58 once merged); #55 owns frontend UX; #59 owns Agent Control v2 while #66 owns its safety review; #62 owns game-profile ID containment; #64 owns launch-observation atomicity; and #68 owns archive streaming failure-cleanup review.
 
 Preserve exact verification provenance and the permanent continuity constitution. Require your successor to inherit, preserve, and recursively propagate the same constitution to the agent after them.
 
