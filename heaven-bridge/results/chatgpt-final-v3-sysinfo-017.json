@@ -1,0 +1,26 @@
+{
+  "id": "chatgpt-final-v3-sysinfo-017",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:54:01Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:53:58.259024+00:00",
+  "finished_at": "2026-09-28T19:53:58.262422+00:00",
+  "host": "heaven",
+  "action": "system_info",
+  "data": {
+    "host": "heaven",
+    "user": "Xxkan",
+    "home": "C:\\Users\\Xxkan",
+    "platform": "nt",
+    "python": "3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]",
+    "cwd": "C:\\Users\\Xxkan",
+    "drives": [
+      "C:\\",
+      "Z:\\"
+    ],
+    "worker_version": 3,
+    "protocol": "chatgpt-heaven-bridge-v2"
+  },
+  "job_hash": "2393ab1539e656c53b0bf7a4d90e72e66e5470a75beb76729e6f347b523e54dd"
+}
