@@ -12,6 +12,7 @@ import {
   AUTONOMY_PROFILES,
   WORKFLOW_PRESETS,
   canUseMachineForRepositoryWrite,
+  classifyAuthoritativeExit,
   buildTaskGraph,
   defaultControlState,
   deriveMission,
@@ -779,18 +780,24 @@ async function deployOne({
   children.set(id, child);
 
   child.on("exit", async (code, signal) => {
+    // Collect asynchronous Git evidence before opening the authoritative state
+    // mutation. Never carry a whole-registry snapshot across an await.
+    let currentSha = null;
+    try { currentSha = await git(["rev-parse", branchName]); } catch {}
+
     const current = loadState();
     const item = current.agents.find(candidate => candidate.id === id);
-    if (item) {
+    const ownsExit = item?.ownerSessionId === SESSION_ID && item?.pid === child.pid;
+    if (item && ownsExit) {
       item.exitCode = code;
       item.signal = signal || null;
-      item.status = code === 0 ? "done" : (item.status === "stopping" ? "stopped" : "failed");
+      item.status = classifyAuthoritativeExit(item, code);
       item.finishedAt = isoNow();
       item.updatedAt = isoNow();
       item.heartbeatAt = item.finishedAt;
       item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
-      item.completionEvidence = "authoritative-exit";
-      try { item.currentSha = await git(["rev-parse", item.branchName]); } catch {}
+      item.completionEvidence = item.status === "stopped" ? "verified-operator-stop" : "authoritative-exit";
+      item.currentSha = currentSha || item.currentSha || null;
       releaseLeaseForAgent(current, item, `authoritative-process-exit:${code ?? "unknown"}`);
       updateTaskForAgent(current, item);
       addEvent(current, "agent.exited", `${id} exited with ${code ?? "unknown"}`, {
@@ -799,7 +806,15 @@ async function deployOne({
         reason: "authoritative-child-exit-event",
         evidence: { exitCode: code, signal: signal || null, currentSha: item.currentSha || null }
       });
-      if (code === 0) {
+      if (item.status === "stopped") {
+        addNotification(current, {
+          severity: "info",
+          title: "Agent stopped",
+          message: `${item.roleLabel || id} exited after an operator stop request and is not eligible for integration.`,
+          action: { type: "inspect-agent", agentId: id },
+          dedupeKey: `stopped:${id}`
+        });
+      } else if (item.status === "done") {
         addNotification(current, {
           severity: "success",
           title: "Agent work finished",
@@ -900,6 +915,7 @@ async function stopAgent(id) {
     throw new Error(`Cannot prove a clean stop for ${id}; the process was already absent. Lease preserved for recovery.`);
   }
 
+  agent.stopRequestedAt ||= isoNow();
   agent.status = "stopping";
   agent.updatedAt = isoNow();
   updateTaskForAgent(state, agent);
