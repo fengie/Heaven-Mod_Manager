@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "heaven-agent-control",
+  "version": "0.2.0",
+  "description": "Operate the user's local MHW programming-agent control plane from ChatGPT.",
+  "author": {
+    "name": "fengie"
+  },
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Heaven Agent Control",
+        "shortDescription": "Track and deploy the MHW agent swarm",
+        "longDescription": "Inspect the MHW swarm, deploy isolated coding agents, inspect leases and integration candidates, read outputs, stop workers, and launch reviewers through the Heaven control plane.",
+        "developerName": "fengie",
+        "category": "Productivity",
+        "capabilities": ["Interactive"],
+        "defaultPrompt": [
+          "Show me the current MHW agent swarm.",
+          "Deploy one support agent for my current MHW task.",
+          "Show me which completed agent branches are ready for review."
+        ]
+      }
+    }
+  }
+}
