@@ -108,7 +108,14 @@ try{
   $dirtyTracked=@(& git diff HEAD --name-only -- | Where-Object {
     -not $_.Replace('\','/').StartsWith('.verification/',[StringComparison]::OrdinalIgnoreCase)
   })
-  $dirtyUntracked=@(& git ls-files --others --exclude-standard)
+  $dirtyUntracked=@(& git ls-files --others --exclude-standard | Where-Object {
+    $normalized=$_.Replace('\','/')
+    $generated=$normalized.StartsWith('BuildLogs/',[StringComparison]::OrdinalIgnoreCase) -or
+      $normalized.StartsWith('artifacts/',[StringComparison]::OrdinalIgnoreCase) -or
+      $normalized.StartsWith('release/',[StringComparison]::OrdinalIgnoreCase) -or
+      [string]::Equals($normalized,'MHW-DEBUG-ALL.log',[StringComparison]::OrdinalIgnoreCase)
+    -not $generated
+  })
   $dirtyInputs=@($dirtyTracked+$dirtyUntracked | Sort-Object -Unique)
   if($dirtyInputs.Count -gt 0){
     throw "Release build requires an exact committed checkout. Dirty paths: $($dirtyInputs -join ', ')"
