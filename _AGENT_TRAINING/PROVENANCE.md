@@ -20,3 +20,5 @@ The trainer's rules are generic. This file preserves lightweight provenance show
 | Continuity must survive agent loss and missing chat | `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, handoff validator, negative continuity fixtures |
 
 When new projects provide equivalent or stronger evidence, extend or refine this map without putting transient project state into the generic rule bodies.
+
+- 2026-09-28 updater publication tag-propagation incident: immutable GitHub Releases were successfully published, but immediate Git transport fetch lagged. This motivated the CI/release doctrine to verify newly created irreversible publication state through the authoritative control-plane API while retaining fail-closed exact identity checks.
