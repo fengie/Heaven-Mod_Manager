@@ -1,0 +1,44 @@
+name: Agent Control PR Gate
+
+on:
+  pull_request:
+    paths:
+      - "tools/agent-control/**"
+      - ".github/workflows/agent-control-pr-gate.yml"
+  push:
+    branches:
+      - "feature/agent-control-plane-v2-20260928"
+    paths:
+      - "tools/agent-control/**"
+      - ".github/workflows/agent-control-pr-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  node-verification:
+    name: Node verification (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    defaults:
+      run:
+        working-directory: tools/agent-control
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Syntax checks
+        run: npm run check
+
+      - name: Deterministic Agent Control tests
+        run: npm test
