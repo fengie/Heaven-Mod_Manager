@@ -12,6 +12,7 @@ import {
   AUTONOMY_PROFILES,
   WORKFLOW_PRESETS,
   applyPreLaunchFailure,
+  autonomyPermissionDecision,
   canUseMachineForRepositoryWrite,
   classifyAuthoritativeExit,
   buildTaskGraph,
@@ -25,7 +26,8 @@ import {
   planWorkflow,
   recommendNextActions,
   roleCatalog,
-  takeoverContext
+  takeoverContext,
+  workflowPermission
 } from "./lib/control-core.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -138,6 +140,26 @@ function assertMutationsAllowed(state, { dispatch = false, safetyControl = false
   if (!safetyControl && state.settings?.readOnly) throw new Error("Control plane is in read-only monitoring mode.");
   if (dispatch && state.settings?.emergencyStop) throw new Error("Emergency stop is active; autonomous dispatch is disabled.");
   if (dispatch && (state.settings?.dispatchPaused || state.settings?.draining)) throw new Error("Dispatch is paused.");
+}
+
+function assertAutonomyPermission(state, permission, action = permission) {
+  const decision = autonomyPermissionDecision(state, permission);
+  if (decision.allowed) return decision;
+  const error = new Error(
+    `Autonomy level "${decision.level}" does not permit ${action}; required permission "${permission}".`
+  );
+  error.statusCode = 403;
+  throw error;
+}
+
+function assertWorkflowAutonomy(state, workflowId) {
+  const permission = workflowPermission(workflowId);
+  if (!permission) {
+    const error = new Error(`Workflow "${workflowId}" has no autonomy permission mapping and fails closed.`);
+    error.statusCode = 403;
+    throw error;
+  }
+  return assertAutonomyPermission(state, permission, `workflow execution "${workflowId}"`);
 }
 
 async function withDeployLock(fn) {
@@ -1322,6 +1344,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
 
 async function deployReview(targetAgentId, body = {}) {
   const state = refreshState();
+  assertAutonomyPermission(state, "request-review", "review dispatch");
   const target = state.agents.find(agent => agent.id === targetAgentId);
   if (!target) throw new Error("Target agent not found.");
 
@@ -1356,6 +1379,7 @@ async function deployReview(targetAgentId, body = {}) {
 
 async function previewWorkflow(workflowId, body = {}) {
   const state = refreshState();
+  assertAutonomyPermission(state, "preview", `workflow preview "${workflowId}"`);
   const repositoryContext = readRepositoryContext();
   const mission = String(body.objective || "").trim() || deriveMission(state, repositoryContext);
   return planWorkflow(workflowId, {
@@ -1372,6 +1396,7 @@ async function executeWorkflow(workflowId, body = {}) {
   return withDeployLock(async () => {
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
+    assertWorkflowAutonomy(state, workflowId);
     const plan = await previewWorkflow(workflowId, {
       ...body,
       requireReconciledOwnership: workflowId === "usual-swarm" || Boolean(body.requireReconciledOwnership)
@@ -1413,8 +1438,11 @@ async function executeWorkflow(workflowId, body = {}) {
   });
 }
 
-function buildTakeoverForAgent(id, { persist = false } = {}) {
+function buildTakeoverForAgent(id, { persist = false, safetyControl = false } = {}) {
   const state = refreshState();
+  if (persist && !safetyControl) {
+    assertAutonomyPermission(state, "maintain-continuity", "persisted takeover state");
+  }
   const agent = state.agents.find(item => item.id === id);
   if (!agent) throw new Error("Agent not found.");
   const task = state.tasks.find(item => item.id === agent.taskId) || null;
@@ -1441,7 +1469,7 @@ function buildTakeoverForAgent(id, { persist = false } = {}) {
 }
 
 async function preserveAndStop(id) {
-  const preserved = buildTakeoverForAgent(id, { persist: true });
+  const preserved = buildTakeoverForAgent(id, { persist: true, safetyControl: true });
   const agent = await stopAgent(id);
   return { ...preserved, agent };
 }
@@ -1451,6 +1479,7 @@ function createImprovementProposal(body = {}) {
   if (!request) throw new Error("Improvement request is required.");
   const state = loadState();
   assertMutationsAllowed(state);
+  assertAutonomyPermission(state, "recommend", "improvement proposal creation");
   const proposal = {
     id: `improvement-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     request,
@@ -1475,6 +1504,7 @@ function createImprovementProposal(body = {}) {
 function recordTaskEvidence(taskId, body = {}) {
   const state = loadState();
   assertMutationsAllowed(state);
+  assertAutonomyPermission(state, "maintain-continuity", "task evidence mutation");
   const task = state.tasks.find(item => item.id === taskId);
   if (!task) throw new Error("Task not found.");
   const evidence = {
@@ -1506,6 +1536,7 @@ function setReviewVerdict(agentId, body = {}) {
   }
   const state = loadState();
   assertMutationsAllowed(state);
+  assertAutonomyPermission(state, "prepare-integration", "integration review verdict");
   const agent = state.agents.find(item => item.id === agentId);
   if (!agent) throw new Error("Candidate agent not found.");
   agent.reviewVerdict = verdict;
@@ -1524,6 +1555,7 @@ function setReviewVerdict(agentId, body = {}) {
 function updateRoutingManifest(body = {}) {
   const state = loadState();
   assertMutationsAllowed(state, { safetyControl: true });
+  assertAutonomyPermission(state, "preview", "routing manifest update");
 
   if (body.clear === true) {
     state.settings.routingManifest = null;
@@ -1938,6 +1970,7 @@ const server = http.createServer(async (req, res) => {
         const count = Math.max(1, Math.min(MAX_DEPLOY_COUNT, Number(body.count || 1)));
         const capacityState = refreshState();
         assertMutationsAllowed(capacityState, { dispatch: true });
+        assertAutonomyPermission(capacityState, "dispatch-support", "direct deployment");
         const capacity = deploymentBatchCapacity(capacityState, count, MAX_ACTIVE_AGENTS);
         if (!capacity.allowed) {
           throw new Error(`Requested deployment batch of ${count} exceeds available worker capacity (${capacity.available} free of ${capacity.maximum}; ${capacity.active} active). No workers were launched.`);
@@ -2071,7 +2104,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && serveStatic(res, pathname)) return;
     return sendJson(res, 404, { error: "Not found." });
   } catch (error) {
-    return sendJson(res, 500, { error: error.message || String(error) });
+    const statusCode = Number(error?.statusCode);
+    return sendJson(res, Number.isInteger(statusCode) && statusCode >= 400 && statusCode <= 599 ? statusCode : 500, {
+      error: error.message || String(error)
+    });
   }
 });
 
