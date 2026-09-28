@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1549-v3-binread-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_read_binary",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\blob.bin",
+    "offset": 0,
+    "length": 64
+  },
+  "created_at": "2026-09-28T19:47:40Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
