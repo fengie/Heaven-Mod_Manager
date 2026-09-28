@@ -1,3 +1,13 @@
+## Current updater next steps — 2026-09-28
+
+1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
+2. Commit/push the local-verification continuity checkpoint and integrate C12 through the repository workflow.
+3. Run/inspect the exact-main Windows Release Gate and require successful immutable updater release publication with the exact two assets, tag target, sizes, and SHA-256 digests.
+4. Run disposable installed-client old→new and fault-injected rollback, proving exact restarted build identity/health acknowledgement and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+5. Only then mark the automatic updater end-to-end complete.
+
+The preceding exact-main run **36428542918** passed all verifier/build/package/policy stages and failed only before first release creation because empty release-list output was not normalized. No release/tag was created by that failed run. Local C12 build **230** ZIP SHA-256: `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`. Preserve the permanent recursive continuity constitution and active Learned Rules.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
@@ -7,13 +17,25 @@ The updater implementation is locally release-verified through C11b but is NOT y
 Updater checkpoints C4-C11b are integrated through exact commit `08054d96a8ba84819b6dfd775d56f9eeabc7986d`. C11b adds deterministic immutable private GitHub Release publication policy, exact two-asset verification, stale-main/evidence-only/monotonic-build refusal, final pre-publication `origin/main` revalidation, and closes the remaining updater metadata/rollback native-replacement fixtures. Exact local heaven/Windows/.NET 10.0.401 evidence: `Verify-Release.ps1` **25/25**, functions **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict analyzers/build, app ReadyToRun publish, updater-helper publish, package verifier and publication-policy tests PASS. `Build-Release.ps1` produced updater build **227** and ZIP SHA-256 `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`. No release was published from the updater branch. Exact next work: integrate this verified source to eligible `main`, run/inspect the hosted Windows gate and immutable `updater-main-<build>` release, then run disposable real old→new and injected-rollback end-to-end tests with seeded user-data hash checks and exact restart identity. The archive-budget recommendation immediately below remains separate historical guidance outside this selected updater task.
 
 ---
-# Current next step — archive streaming cancellation/resource budgeting
+# Archive streaming integration status — IMPLEMENTED / LOCAL RELEASE-VERIFIED / EXACT-MAIN HOSTED GATE PENDING
 
-The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
+Archive streaming cancellation and actual-output budgeting are no longer a future implementation candidate. PR #57 merged the production/test slice to canonical `main` at `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
 
-The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work.
+Current source now:
 
-Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-010.
+- streams each archive entry through an async cancellation-aware read/write loop;
+- counts actual decompressed bytes and fails before a write would exceed the operation budget;
+- removes the currently owned partial output file on cancellation or actual-output-budget failure;
+- preserves the existing trusted-root/path/reparse checks;
+- includes focused regressions for single-entry mid-copy cancellation and actual-output budgeting.
+
+PR #57 records fresh local heaven2/Windows verification on integration head `fd8b48fc92e6f5e64591fd1938b7ccce5ac94083` after rebasing onto then-current main base `8d5cc311ed13f5cb7f0df1f9e7c3e8bf9fcaec82`: verifier **25/25**, functions **728/728**, call sites **7,772 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration/fault injection **177/177**, self-test **11/11**, strict build/analyzers PASS, `Build-Release.ps1` PASS, ReadyToRun/updater-helper packaging PASS; artifact SHA-256 `AC3571853650CFA91243199B23A44007488F9244780FCBD18A7A38552B652734`.
+
+Do **not** relabel that integration-head evidence as an exact-main hosted result. At the 2026-09-28 support checkpoint, exact merge commit `a8b581...` had no GitHub workflow run or combined status. The repository's prior last-closed exact verification remains authoritative until a normal Windows Release Gate on canonical main or an eligible exact descendant records newer evidence.
+
+Read `ARCHIVE_STREAMING_INTEGRATION_PROVENANCE_AUDIT_2026-09-28.md` before reopening this boundary. Remaining disk free-space reserve/compression-ratio policy is separate future work, not evidence that the streaming cancellation/output-budget implementation is still missing.
+
+The active automatic-updater milestone remains the current selected production boundary.
 
 ---
 

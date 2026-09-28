@@ -23,7 +23,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         var releases = await JsonSerializer.DeserializeAsync<List<GitHubReleaseDto>>(stream, UpdateProtocol.Json, ct) ?? [];
         var release = releases
-            .Where(r => !r.Draft)
+            .Where(r => !r.Draft && !r.Prerelease && r.Immutable)
             .Select(r => (Release: r, Build: ParseBuildNumber(r.TagName)))
             .Where(x => x.Build > current.BuildNumber)
             .OrderByDescending(x => x.Build)
