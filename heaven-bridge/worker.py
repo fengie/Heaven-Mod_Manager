@@ -695,7 +695,14 @@ def run_job(job):
     if action in ("powershell", "cmd", "python"):
         result = run_capture(shell_argv(action, payload), ensure_allowed(cwd), timeout, env=build_env(p))
     else:
-        codex = shutil.which("codex.cmd") or shutil.which("codex") or "codex"
+        codex = shutil.which("codex.cmd") or shutil.which("codex")
+        if not codex:
+            candidates = []
+            appdata = os.environ.get("APPDATA")
+            if appdata:
+                candidates.append(Path(appdata) / "npm" / "codex.cmd")
+            candidates.append(Path.home() / "AppData" / "Roaming" / "npm" / "codex.cmd")
+            codex = next((str(candidate) for candidate in candidates if candidate.exists()), "codex")
         result = run_capture([codex, "exec", "--skip-git-repo-check", "-"], ensure_allowed(cwd), timeout, stdin=payload, env=build_env(p))
     result.update({"host": host, "action": action})
     return persist_command_output(str(job.get("id") or uuid.uuid4().hex), result)
