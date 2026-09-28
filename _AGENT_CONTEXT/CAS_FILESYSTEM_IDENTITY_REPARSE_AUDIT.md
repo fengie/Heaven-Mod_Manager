@@ -312,6 +312,14 @@ Not performed:
 - no hosted Windows Release Gate for this documentation-only branch;
 - no verification cache promotion.
 
+## Post-selection canonical reconciliation
+
+While this audit was being written, hosted Windows Release Gate `36367883836` completed **successfully** for exact CAS repair source `d001870d4cd3549841d8511392ae7885f174bca2`.
+
+Canonical `main` then advanced to `e5325317cb7005bdf9d3082a033ab95e666ebbf9` through `Persist hosted Windows verification evidence [skip ci]`. That commit changed only promoted verification cache/evidence files (`.verification/function-status.json`, `.verification/stage-status.json`, and the hosted closure log); it changed none of the production or test bodies inspected by this audit.
+
+This support branch was reconciled on top of `e5325317cb7005bdf9d3082a033ab95e666ebbf9` without overwriting its evidence. The CAS **content-integrity/concurrency** checkpoint is therefore closed by hosted evidence; the filesystem-identity findings below remain a separate future boundary and must not be described as part of that closed gate.
+
 ## Parallel-agent integration notes
 
 The active CAS production/gate checkpoint remains authoritative for:
