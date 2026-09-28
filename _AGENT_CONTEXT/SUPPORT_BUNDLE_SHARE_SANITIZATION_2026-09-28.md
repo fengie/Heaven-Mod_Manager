@@ -1,11 +1,11 @@
 # Support-bundle share sanitization checkpoint — 2026-09-28
 
-**Support lane:** diagnostics share-boundary privacy under LR-006  
-**Canonical repository:** `fengie/mhw-mods`  
-**Canonical main selected:** `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`  
-**Canonical main reconciled before verification:** `92cad66dd743c5c67e1441ad77161ccf6e531c34`  
-**Working branch:** `agent/support-bundle-share-sanitization-20260928`  
-**Reconciled implementation head:** `79345ec2b428b46e2851155838f4926d66e1ee80`  
+**Support lane:** diagnostics share-boundary privacy under LR-006
+**Canonical repository:** `fengie/mhw-mods`
+**Canonical main selected:** `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`
+**Canonical main reconciled before verification:** `92cad66dd743c5c67e1441ad77161ccf6e531c34`
+**Working branch:** `agent/support-bundle-share-sanitization-20260928`
+**Reconciled implementation head:** `79345ec2b428b46e2851155838f4926d66e1ee80`
 **Production source changed:** yes, diagnostics export only
 
 ## Why this task was selected
@@ -175,3 +175,24 @@ Any successor must explicitly require its own successor to inherit, preserve, an
 continuity system to the agent after them.
 
 **Do not break the chain.**
+
+## Programmer reconciliation and v8.8.2 release closure — 2026-09-28
+
+While this candidate was being integrated, canonical main advanced to `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, which independently integrated the updater REST tag-verification race fix and used version 8.8.1. The privacy branch was merged forward normally; both release-note streams were preserved, and this shipped privacy boundary advanced to version **8.8.2** instead of colliding with 8.8.1.
+
+Exact reconciled source checkpoint: `828054cc02b47684e24765c215ae5fde5135e6f1`. Release identity is synchronized across `VERSION.txt`, `Directory.Build.props`, README/CHANGELOG, startup diagnostics, structured logger identity, Nexus user agent, and continuity current-version fields.
+
+Fresh heaven2 / Windows / .NET SDK 10.0.401 evidence on that exact source:
+
+- updater publication policy: **PASS**;
+- focused `SupportBundlePrivacyTests`: **1/1 passed**;
+- `Verify-Release.ps1`: **25/25 passed**;
+- FunctionVerifier: **735/735 verified**, **7,821 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core **79/79**, Automation **24/24**, Integration/fault injection **178/178**, self-test **11/11**;
+- strict per-project and whole-solution builds/analyzers: **0 warnings / 0 errors**;
+- `Build-Release.ps1`: **PASS**, including win-x64 ReadyToRun app publish and self-contained updater-helper publish;
+- updater package build **297**, source `828054c...`, ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
+The normal verifier-generated function/stage caches are being persisted with this handoff; no manual cache promotion occurred. Hosted exact-main verification/publication is intentionally not claimed until the PR is integrated and the exact main SHA is observed.
+
+The next independent diagnostics privacy checkpoint remains DB-backed/free-form share-boundary sanitization with canaries across every textual ZIP entry. Keep protected credential storage/provider redesign separate.

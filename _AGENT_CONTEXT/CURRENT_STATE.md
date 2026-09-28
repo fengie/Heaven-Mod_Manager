@@ -1,3 +1,11 @@
+## Current v8.8.2 support-bundle privacy candidate — local release-verified — 2026-09-28
+
+Canonical main was re-established at `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, which already contains the updater REST tag-verification hardening and v8.8.1 metadata. The support-bundle privacy branch was merged forward normally and advanced to **v8.8.2**. Exact candidate source `828054cc02b47684e24765c215ae5fde5135e6f1` fixes the confirmed P1 raw structured-log share leak while preserving full-fidelity local logs.
+
+Exact heaven2/Windows/.NET 10.0.401 local closure: publication-policy PASS; focused privacy **1/1**; verifier **25/25**; FunctionVerifier **735/735**, **7,821 / 0 uncovered**, **0 trace/parse gaps**; Core **79/79**; Automation **24/24**; Integration **178/178**; self-test **11/11**; strict builds/analyzers PASS; ReadyToRun app and updater-helper publish PASS; Build-Release PASS; updater build **297**; ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
+Integration/hosted exact-main closure must still be checked against current GitHub state; do not relabel the local result as hosted evidence. Detailed handoff: `_AGENT_CONTEXT/SUPPORT_BUNDLE_SHARE_SANITIZATION_2026-09-28.md`.
+
 ## Current updater publication repair — 2026-09-28
 
 Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.

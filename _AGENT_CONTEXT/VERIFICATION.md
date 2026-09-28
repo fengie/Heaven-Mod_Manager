@@ -1,3 +1,19 @@
+# v8.8.2 support-bundle privacy candidate — exact local Windows verification — 2026-09-28
+
+Exact source: `828054cc02b47684e24765c215ae5fde5135e6f1` on heaven2 / Windows / .NET SDK 10.0.401, after normal reconciliation with canonical main `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`.
+
+- updater publication policy: PASS;
+- focused `SupportBundlePrivacyTests`: **1/1 PASS**;
+- `Verify-Release.ps1`: **25/25 PASS**;
+- FunctionVerifier: **735/735 verified**, **7,821 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core **79/79**, Automation **24/24**, Integration/fault injection **178/178**, self-test **11/11**;
+- strict per-project + whole-solution builds/analyzers: PASS, 0 warnings / 0 errors;
+- `Build-Release.ps1`: PASS;
+- win-x64 ReadyToRun app publish and self-contained updater-helper publish: PASS;
+- updater build **297**, ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
+This is local exact-source evidence. Hosted exact-main verification/publication is not claimed here.
+
 # Updater C12 first-publication repair — current verification
 
 Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.

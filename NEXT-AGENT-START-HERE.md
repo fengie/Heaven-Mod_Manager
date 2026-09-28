@@ -1,3 +1,15 @@
+# Current v8.8.2 support-bundle privacy handoff — 2026-09-28
+
+The newest locally release-verified candidate is `agent/support-bundle-share-sanitization-20260928` at exact source `828054cc02b47684e24765c215ae5fde5135e6f1`, reconciled onto canonical main `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. It fixes the confirmed P1 raw structured-log share-boundary leak, includes the updater REST tag-verification prerequisite already integrated on main, and advances the shipped release identity to **v8.8.2**.
+
+Fresh heaven2/Windows/.NET 10.0.401 evidence: updater publication policy PASS; privacy regression 1/1; verifier **25/25**; functions **735/735**, **7,821 / 0 uncovered**; Core **79/79**; Automation **24/24**; Integration **178/178**; self-test **11/11**; strict builds/analyzers and `Build-Release.ps1` PASS; ReadyToRun app/updater-helper publish PASS; updater build **297**; ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
+First re-check whether PR #79 / source `828054c...` is already an ancestor of current `origin/main`. If not, integrate it through the repository workflow. If yes, inspect the exact-main hosted Windows gate/publication before claiming hosted closure. After this boundary closes, the next independent diagnostics privacy checkpoint is DB-backed/free-form share export sanitization with canaries across every textual ZIP entry; keep protected credential storage/provider redesign separate.
+
+Read `_AGENT_CONTEXT/SUPPORT_BUNDLE_SHARE_SANITIZATION_2026-09-28.md` and its evidence record first. Preserve the permanent continuity constitution and active Learned Rules, and require the successor to propagate them recursively.
+
+---
+
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.

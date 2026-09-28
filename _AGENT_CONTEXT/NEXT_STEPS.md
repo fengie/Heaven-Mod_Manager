@@ -1,3 +1,13 @@
+## Current v8.8.2 privacy next steps — 2026-09-28
+
+1. Persist the normal verifier-generated v8.8.2 function/stage cache and exact local evidence for source `828054cc02b47684e24765c215ae5fde5135e6f1`.
+2. Re-fetch canonical main. If source `828054c...` is not already integrated, merge PR #79 only after confirming no newer release-version collision or conflicting privacy work.
+3. Inspect the exact-main Windows Release Gate and immutable updater publication for the resulting main SHA; claim hosted closure only for the exact SHA actually verified.
+4. After this share-boundary slice is closed, independently sanitize DB-backed/free-form support-export text and add canaries over **every textual ZIP entry**.
+5. Keep protected provider credential storage/network redesign separate from that DB-backed export checkpoint.
+
+Local exact-source closure is green: policy PASS; privacy 1/1; verifier 25/25; functions 735/735 with 7,821 / 0 uncovered; Core 79/79; Automation 24/24; Integration 178/178; self-test 11/11; strict builds, ReadyToRun app/helper publish, and Build-Release PASS; updater build 297; ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.

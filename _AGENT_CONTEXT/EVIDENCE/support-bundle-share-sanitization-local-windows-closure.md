@@ -1,10 +1,10 @@
 # Support-bundle share sanitization — local Windows closure
 
-Date: 2026-09-28  
-Branch: `agent/support-bundle-share-sanitization-20260928`  
-Exact verified source/continuity checkpoint: `1654ef63cafd280a303b82b052087e25d2b59970`  
-Verifier-generated cache persistence child: `98fbaf4e191e58efbdd88e3a6c71a493b3352048`  
-Machine: `heaven2` / Windows  
+Date: 2026-09-28
+Branch: `agent/support-bundle-share-sanitization-20260928`
+Exact verified source/continuity checkpoint: `1654ef63cafd280a303b82b052087e25d2b59970`
+Verifier-generated cache persistence child: `98fbaf4e191e58efbdd88e3a6c71a493b3352048`
+Machine: `heaven2` / Windows
 .NET SDK: `10.0.401`
 
 ## Scope verified
@@ -94,3 +94,23 @@ already exact-verified production checkpoint.
 
 Preserve this evidence with the specialized audit and require the successor to preserve and recursively propagate
 the continuity system to the agent after them.
+
+## v8.8.2 reconciled release evidence — 2026-09-28
+
+Canonical main moved during integration to `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, bringing the updater REST tag-verification hardening and v8.8.1 metadata. The privacy candidate was merged forward and assigned **v8.8.2**.
+
+Exact source checkpoint: `828054cc02b47684e24765c215ae5fde5135e6f1` on heaven2 / Windows / .NET SDK 10.0.401.
+
+- updater publication policy: PASS;
+- focused privacy regression: **1/1**;
+- verifier: **25/25**;
+- functions: **735/735**, call sites **7,821 / 0 uncovered**, trace gaps / parse errors **0 / 0**;
+- Core **79/79**, Automation **24/24**, Integration **178/178**, self-test **11/11**;
+- strict builds/analyzers: PASS, 0 warnings / 0 errors;
+- Build-Release: PASS;
+- ReadyToRun app publish: PASS;
+- updater-helper publish: PASS;
+- updater build: **297**;
+- ZIP SHA-256: `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+
+This is local exact-source evidence only. Do not relabel it as hosted exact-main evidence after merge.
