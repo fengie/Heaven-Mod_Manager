@@ -174,3 +174,49 @@ Hosted Windows Release Gate `36343967045` verified that exact commit on Windows 
 The workflow persisted exact evidence/promoted-cache state in commit `dadbe73a48567b17c9814c483f654be00d1d810f`. The integration commit changed documentation/continuity only; no production C#, tests, verification scripts, workflows, or pre-existing verification-cache semantics were modified by the support harvest itself.
 
 The current canonical handoff commit is the commit containing this closure note; retrieve the exact current SHA from `main`. Support branches were deliberately preserved as historical evidence and were not deleted.
+
+
+---
+
+## CAS support-audit harvest — 2026-09-27 late pass
+
+### Canonical baseline
+
+This pass re-established remote canonical `main` at `265d58d6a9d4ffb6ab62cde987ba6ad335eae05a`. The active CAS production source had already passed hosted Windows Release Gate `36367883836`; the separately required fresh local Windows verification was still pending because the authorized runner was not executing commands. This pass therefore integrated **documentation/research only** and did not alter or claim closure of the active CAS gate.
+
+### Inventory and disposition
+
+| Branch / PR | Fork relationship to current main | Actual changed scope | Disposition |
+| --- | --- | --- | --- |
+| `agent/support-cas-filesystem-identity-audit-20260927` / PR #23 | diverged; merge base `e5325317cb7005bdf9d3082a033ab95e666ebbf9`; 5 commits ahead, 1 behind when inventoried | `CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md` plus branch-local README/manifest linkage | **Integrate audit.** Broader current-source authority for CAS root/hash-leaf physical identity, reparse policy, trust-anchor choice, and legacy hardlink-alias risk. Rebuild canonical linkage from current main rather than replaying branch-local snapshots. |
+| `agent/support-cas-digest-namespace-audit-20260927` / PR #25 | diverged; merge base `d001870d4cd3549841d8511392ae7885f174bca2`; 4 commits ahead, 2 behind when inventoried | digest namespace audit plus branch-local README/manifest linkage | **Integrate audit.** Independent SHA-token/path-namespace boundary: exact 64-hex normalization, malformed persisted/legacy identifiers, and traversal-safe regression fixtures. |
+| `agent/support-recursive-source-containment-audit-20260927` / PR #22 | diverged; merge base `d001870d4cd3549841d8511392ae7885f174bca2`; 1 commit ahead, 2 behind when inventoried | standalone recursive-source containment audit | **Integrate.** Independent future boundary for ModScanner, unmanaged adoption, and Smart Inbox; no production changes. |
+| `agent/support-cas-reparse-policy-audit-20260927` / PR #24 | ahead of `265d58d...` by 3 commits when inventoried | standalone narrower CAS root/hash-leaf reparse audit | **Skip as redundant.** Its substantive root-junction/hash-leaf policy and Windows fixture guidance is already covered by the broader filesystem-identity audit. No production/test delta exists to salvage, and keeping both as canonical authorities would create duplicate guidance. |
+
+### Integration decisions
+
+- No production C#, tests, schemas, workflows, verification scripts, or promoted caches are integrated by this pass.
+- The active CAS byte-integrity/concurrency behavior and exact hosted evidence remain unchanged.
+- The three accepted audits are linked from `README_FIRST.md` and required by `handoff-manifest.json`.
+- The CAS reparse-policy duplicate is deliberately not added as a second canonical authority.
+- These audits define **future independent checkpoints** only. The fresh local Windows CAS verification remains the immediate required action before any production implementation begins.
+- Support branches are preserved as historical evidence; none are deleted.
+
+### Verification honesty
+
+Performed through the connected GitHub repository surface:
+
+- re-established canonical remote main and inspected branch-vs-main merge bases/ahead-behind/file scopes;
+- read the actual new audit contents and reconciled overlap;
+- confirmed the accepted work is documentation/research only;
+- rebuilt canonical continuity linkage rather than importing stale branch-local handoff files.
+
+Not performed in this pass:
+
+- no local `git status` because the authorized Windows runner advertised online but did not execute terminal/ping calls;
+- no local PowerShell handoff validator;
+- no local .NET tests/build;
+- no fresh local Windows CAS gate;
+- no verification-cache promotion.
+
+The successor must still finish the exact fresh local Windows CAS closure before starting the production checkpoints described by these audits, preserve the permanent continuity constitution and active Learned Rules, and explicitly require its successor to recursively propagate them to the agent after them. **Do not break the chain.**
