@@ -1,3 +1,16 @@
+## v8.8.2 updater immutable-release retry repair — 2026-09-28
+
+Canonical main base: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. PR #78/v8.8.1 fixed immediate post-publication tag verification but merged while its focused review still identified a retry-path gap: an already-existing immutable release continued to require `git show-ref` / `git rev-list` visibility for the current build tag.
+
+Branch `agent/updater-existing-release-rest-ref-20260928` now contains exact shipped code/version/docs checkpoint `454ed4d9c3a8b19d033b744dd3faac21cb8c6901`:
+- existing immutable-release retries query `repos/<repo>/git/ref/tags/<tag>` and validate the exact ref/direct-commit/40-hex SHA through `Get-UpdaterTagCommitFromRefJson`;
+- immediate post-publication verification remains REST-based;
+- the pre-publication orphan-tag guard remains local-Git-based by design;
+- `Test-UpdaterReleasePolicy.ps1` adds a regression requiring two authoritative current-build REST checks and exactly one local current-build tag check;
+- app/release identity is synchronized to **8.8.2** in `VERSION.txt`, `Directory.Build.props`, `README.md`, and `CHANGELOG.md`.
+
+Verification status: implementation inspected and checkpoint pushed; exact-head PR gate has **not yet run/passed** for this candidate. Do not reuse the v8.8.1/stale-head green run as v8.8.2 evidence.
+
 ## Current updater publication repair — 2026-09-28
 
 Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.

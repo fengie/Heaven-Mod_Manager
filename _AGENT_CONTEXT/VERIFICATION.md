@@ -1,3 +1,16 @@
+# v8.8.2 immutable-release retry repair — verification pending
+
+Exact canonical base: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. Exact shipped code/version/docs checkpoint: `454ed4d9c3a8b19d033b744dd3faac21cb8c6901` on `agent/updater-existing-release-rest-ref-20260928`.
+
+Implemented:
+- replaced the existing immutable-release retry path's current-build `git show-ref` / `git rev-list` dependency with GitHub REST `git/ref/tags/<tag>` verification;
+- reused `Get-UpdaterTagCommitFromRefJson` for exact ref name, direct commit target, and valid 40-hex SHA validation;
+- retained exact expected-source comparison and all immutable release/asset checks;
+- added a policy-source regression requiring two current-build REST ref checks (existing-release retry + immediate post-publication) and exactly one local current-build tag check (pre-publication orphan-tag refusal);
+- synchronized shipped release identity/docs to v8.8.2.
+
+Actually verified so far for this exact candidate: repository/GitHub source inspection and successful commit/push only. **No exact-head Updater Publication PR Gate, full Verify-Release, Build-Release, or exact-main Windows Release Gate is claimed yet.** Prior v8.8.1/stale-head results do not verify these changed inputs.
+
 # Updater C12 first-publication repair — current verification
 
 Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.

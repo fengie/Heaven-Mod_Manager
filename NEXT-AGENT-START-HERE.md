@@ -1,3 +1,15 @@
+# Current updater handoff — v8.8.2 immutable-release retry repair — 2026-09-28
+
+Canonical main at this checkpoint: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (v8.8.1 updater REST tag verification integrated). A focused review found that the **already-existing immutable release retry path** still used locally fetched Git tag visibility and could reproduce the same propagation-lag false negative after publication.
+
+Active repair branch: `agent/updater-existing-release-rest-ref-20260928`. Exact shipped code/version/docs checkpoint: `454ed4d9c3a8b19d033b744dd3faac21cb8c6901`, version **8.8.2**. The retry path now verifies `refs/tags/<tag>` through GitHub's authoritative Git REST ref and reuses the existing fail-closed ref parser. The immediate post-publication path continues to use REST verification. The pre-publication orphan-tag refusal deliberately remains a local Git check because it guards a different pre-publication condition. A focused source regression requires exactly those two current-build REST checks and permits only one local current-build tag check.
+
+No exact-head hosted verification is claimed yet for v8.8.2. Next: open/update the repair PR, require the **Updater Publication PR Gate** on the exact head, integrate only after it is green, then require the exact-main **Windows Release Gate** through immutable tag/source/asset verification. After hosted publication closure, finish disposable old→new and injected rollback E2E with seeded user-data hashes and exact restart/health identity.
+
+You inherit the repository's permanent continuity constitution and active Learned Rules. Preserve them and explicitly require your successor to inherit, preserve, and recursively propagate the same system to the agent after them. **Do not break the chain.**
+
+---
+
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.

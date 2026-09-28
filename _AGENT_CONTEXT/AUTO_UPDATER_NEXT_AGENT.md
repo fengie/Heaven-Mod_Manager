@@ -1,3 +1,15 @@
+# v8.8.2 retry-path continuation — 2026-09-28
+
+The remaining publication-gate defect after v8.8.1 is isolated on `agent/updater-existing-release-rest-ref-20260928`. Canonical base: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; exact code/version/docs checkpoint: `454ed4d9c3a8b19d033b744dd3faac21cb8c6901`.
+
+The existing immutable-release retry path no longer requires the current-build tag to be immediately visible through Git transport. It uses the same authoritative REST ref validation as the immediate post-publication path. The pre-publication orphan-tag check intentionally remains local Git. Version/docs are synchronized to **8.8.2**.
+
+Next: exact-head Updater Publication PR Gate → integrate → exact-main Windows Release Gate with immutable tag/source/assets → disposable old→new and injected rollback E2E. Do not claim closure before those proofs.
+
+Preserve the permanent continuity constitution and active Learned Rules; require the successor to recursively propagate them to the agent after them.
+
+---
+
 # Updater: exact continuation checklist
 
 ## Current canonical updater state — 2026-09-28

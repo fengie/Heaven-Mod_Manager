@@ -1,3 +1,15 @@
+## Current updater next steps — v8.8.2 retry-path closure — 2026-09-28
+
+1. Exact code/version/docs checkpoint `454ed4d9c3a8b19d033b744dd3faac21cb8c6901` is pushed on `agent/updater-existing-release-rest-ref-20260928`.
+2. Open/update the focused PR and require the **Updater Publication PR Gate** to pass on the exact current head.
+3. Reconcile any concurrent canonical-main movement without dropping the REST retry fix, regression, or v8.8.2 version/docs synchronization.
+4. Integrate only after the exact-head PR gate is green.
+5. Require the resulting exact-main **Windows Release Gate** to finish green through immutable release, exact tag/source identity, and exact two-asset size/SHA-256 verification.
+6. Run disposable installed-client old→new and injected rollback tests with seeded `Mods`, `State`, and unknown-file hashes plus exact restarted-build/health identity.
+7. Only then call the automatic updater end-to-end complete.
+
+Do not weaken the local pre-publication orphan-tag refusal: only the post-publication and existing-immutable-release verification paths should avoid Git-transport propagation dependence.
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
