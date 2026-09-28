@@ -83,6 +83,62 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Recovery_rejects_journal_for_a_different_update_before_mutation()
+    {
+        var fixture = await CreateFixtureAsync();
+        await WriteJsonAsync(fixture.Request.JournalPath,
+            new UpdateJournal(UpdateJournalPhase.Applying, 999, "other-source", DateTimeOffset.UtcNow));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => new UpdateInstaller().ApplyAsync(fixture.Request, TestToken));
+        await AssertOldInstallRestoredAsync();
+        Assert.False(Directory.Exists(fixture.Request.BackupRoot));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Interrupted_metadata_publication_recovers_before_install_validation(bool markerWasPublished)
+    {
+        var fixture = await CreateFixtureAsync();
+        var interrupted = new UpdateInstaller((point, _) =>
+        {
+            if (point == UpdateApplyFaultPoint.AfterBackup)
+                throw new InjectedUpdateFailureException("simulate process interruption after backup");
+        });
+        await Assert.ThrowsAsync<InjectedUpdateFailureException>(() => interrupted.ApplyAsync(fixture.Request, TestToken));
+        File.Copy(Path.Combine(fixture.Request.StagingRoot, "app.exe"), Path.Combine(installRoot, "app.exe"), true);
+        File.Copy(Path.Combine(fixture.Request.StagingRoot, UpdateProtocol.ProductManifestFileName),
+            Path.Combine(installRoot, UpdateProtocol.ProductManifestFileName), true);
+        if (markerWasPublished)
+            File.Copy(Path.Combine(fixture.Request.StagingRoot, UpdateProtocol.InstallMarkerFileName),
+                Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName), true);
+        await WriteJsonAsync(fixture.Request.JournalPath,
+            new UpdateJournal(UpdateJournalPhase.Applying, fixture.Request.Manifest.BuildNumber,
+                fixture.Request.Manifest.SourceSha, DateTimeOffset.UtcNow));
+
+        var resumed = new UpdateInstaller();
+        await resumed.ApplyAsync(fixture.Request, TestToken);
+        Assert.Equal(UpdateJournalPhase.AppliedAwaitingHealth, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        await resumed.RollbackAsync(fixture.Request, TestToken);
+        await AssertOldInstallRestoredAsync();
+    }
+
+    [Fact]
+    public async Task Corrupt_backup_blocks_rollback_before_any_live_file_changes()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Request.BackupRoot, "stale.dll"), "CORRUPT", TestToken);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => installer.RollbackAsync(fixture.Request, TestToken));
+
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.Equal("NEW-LIB", await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
+        Assert.Equal(UpdateJournalPhase.AppliedAwaitingHealth, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
     public async Task Modified_stale_owned_file_is_preserved_instead_of_deleted()
     {
         var fixture = await CreateFixtureAsync();

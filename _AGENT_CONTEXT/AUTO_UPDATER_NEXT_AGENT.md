@@ -15,7 +15,7 @@
 - Full release gates have not run for these changed inputs. Verification caches have not been manually promoted.
 
 ## Next steps, in order
-1. Repair interrupted-apply recovery: inspect the journal before validating potentially half-written installed metadata. Preserve and authenticate backup metadata; never recreate/delete the only recovery backup before recovery succeeds. Add deterministic interruption tests around both metadata writes.
+1. DONE (focused Windows tests): journal-first interrupted-metadata recovery, identity mismatch rejection, and whole-backup validation before mutation. Focused updater suite now 39/39. Full release gate still pending.
 2. Repair helper restart/health failures: start failure must enter recovery; rollback must require proof the new process exited. Test actual helper processes, not only JSON argument round trips.
 3. Review all mutation paths for physical containment, collision races, rollback idempotency, and native partial-replace failures under LR-003. No exploit reproduction is needed; use defensive fault fixtures.
 4. Wire WPF startup acknowledgement, background check/stage, safe operation-aware handoff, helper copying, and small update status/manual-check UI.

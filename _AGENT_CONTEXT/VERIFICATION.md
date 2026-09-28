@@ -640,3 +640,10 @@ This commit integrated documentation/continuity only. The exact Windows gate nev
 - release artifact SHA-256: `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`.
 
 The workflow persisted promoted verification/cache evidence normally. No cache was manually promoted. Any future production-source change starts a new exact verification boundary.
+
+## Checkpoint C2 — interrupted metadata recovery
+- Journal identity is checked before normal installed metadata validation. Applying/BackupCreated/RollbackRequired recover first using a separate bounded recovery token, then reload the restored installation.
+- Rollback prevalidates all backup bytes, previous marker/product-manifest agreement and previous ownership before mutating the live tree.
+- Three new journal/metadata regressions failed on the preceding checkpoint and passed after repair. Added corrupt-backup regression proves new live files remain untouched if recovery material is corrupt.
+- Focused updater tests: 39/39 PASS (Windows x64, SDK 10.0.401). Full release verification remains pending.
+- Next: helper start/stop failure recovery; see AUTO_UPDATER_NEXT_AGENT.md. Successor must preserve and recursively propagate continuity.

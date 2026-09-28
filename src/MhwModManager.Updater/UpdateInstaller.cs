@@ -15,16 +15,22 @@ public sealed class UpdateInstaller(
     public async Task ApplyAsync(UpdateApplyRequest request, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
-        var context = await ValidateAndLoadAsync(request, ct);
+        ValidateRequestPaths(request);
         var journal = await ReadJournalAsync(request.JournalPath, ct);
-        if (journal is not null && journal.TargetBuildNumber == request.Manifest.BuildNumber
-            && journal.Phase is UpdateJournalPhase.BackupCreated
+        if (journal is not null && (journal.TargetBuildNumber != request.Manifest.BuildNumber
+            || !string.Equals(journal.TargetSourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidDataException("Recovery journal belongs to a different update; preserve its backup for recovery.");
+        if (journal is not null && journal.Phase is UpdateJournalPhase.BackupCreated
                 or UpdateJournalPhase.Applying
                 or UpdateJournalPhase.RollbackRequired)
         {
             writeLog($"update recovery rollback resumed phase={journal.Phase}");
-            await RollbackFromBackupAsync(request, context.NewManifest, ct);
+            // Installed metadata can be half-published. Recover from the validated
+            // backup before attempting normal installed-version validation.
+            using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            await RollbackAsync(request, recovery.Token);
         }
+        var context = await ValidateAndLoadAsync(request, ct);
 
         injectFault(UpdateApplyFaultPoint.BeforeBackup, null);
         var backupManifest = await CreateBackupAsync(request, context.OldManifest, ct);
@@ -97,11 +103,13 @@ public sealed class UpdateInstaller(
     public async Task RollbackAsync(UpdateApplyRequest request, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
-        var stagedManifest = await LoadProductManifestAsync(request.StagingRoot, ct, isRoot: true);
+        ValidateRequestPaths(request);
+        var stagedManifest = await UpdatePackageVerifier.VerifyAsync(
+            request.StagingRoot, request.Manifest.ProductManifestSha256, ct);
         await RollbackFromBackupAsync(request, stagedManifest, ct);
     }
 
-    private static async Task<ApplyContext> ValidateAndLoadAsync(UpdateApplyRequest request, CancellationToken ct)
+    private static void ValidateRequestPaths(UpdateApplyRequest request)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"install={request.InstallRoot}");
         request.Manifest.Validate();
@@ -119,7 +127,12 @@ public sealed class UpdateInstaller(
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, request.JournalPath);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, request.PendingPath);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, request.HealthFile);
+    }
 
+    private static async Task<ApplyContext> ValidateAndLoadAsync(UpdateApplyRequest request, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"install={request.InstallRoot}");
+        ValidateRequestPaths(request);
         var markerPath = Path.Combine(request.InstallRoot, UpdateProtocol.InstallMarkerFileName);
         if (!File.Exists(markerPath))
             throw new InvalidOperationException("This installation has no updater install marker; destructive self-apply is disabled.");
@@ -301,6 +314,37 @@ public sealed class UpdateInstaller(
                                    await File.ReadAllTextAsync(rollbackPath, ct), UpdateProtocol.Json)
                                ?? throw new InvalidDataException("Rollback manifest is empty.");
         rollbackManifest.Validate();
+
+        // Prove the entire recovery set before deleting or restoring any live file.
+        foreach (var entry in rollbackManifest.Files)
+        {
+            var source = UpdatePathSafety.CombineUnderRoot(request.BackupRoot, entry.Path);
+            UpdatePathSafety.EnsureExistingComponentsNotReparse(request.BackupRoot, source);
+            var destination = UpdatePathSafety.CombineUnderRoot(request.InstallRoot, entry.Path);
+            UpdatePathSafety.EnsureExistingComponentsNotReparse(request.InstallRoot, destination);
+            if (!File.Exists(source) || new FileInfo(source).Length != entry.Size
+                || !string.Equals(await UpdatePackageVerifier.HashFileAsync(source, ct), entry.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException($"Rollback backup is incomplete or modified: {entry.Path}");
+        }
+        var backupMarkerPath = Path.Combine(request.BackupRoot, UpdateProtocol.InstallMarkerFileName);
+        var backupMarker = JsonSerializer.Deserialize<ReleaseInstallMarker>(
+            await File.ReadAllTextAsync(backupMarkerPath, ct), UpdateProtocol.Json)
+            ?? throw new InvalidDataException("Rollback install marker is empty.");
+        backupMarker.Validate();
+        var backupProductPath = Path.Combine(request.BackupRoot, UpdateProtocol.ProductManifestFileName);
+        if (backupMarker.Build.BuildNumber >= request.Manifest.BuildNumber
+            || !string.Equals(await UpdatePackageVerifier.HashFileAsync(backupProductPath, ct),
+                backupMarker.ProductManifestSha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Rollback metadata does not describe the previous installation.");
+        var previousManifest = await LoadProductManifestAsync(backupProductPath, ct);
+        var previousPaths = previousManifest.Files.Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        previousPaths.Add(UpdateProtocol.ProductManifestFileName);
+        previousPaths.Add(UpdateProtocol.InstallMarkerFileName);
+        if (rollbackManifest.Files.Any(x => !previousPaths.Contains(UpdatePathSafety.NormalizeRelativeFilePath(x.Path)))
+            || !rollbackManifest.Files.Any(x => x.Path == UpdateProtocol.ProductManifestFileName)
+            || !rollbackManifest.Files.Any(x => x.Path == UpdateProtocol.InstallMarkerFileName))
+            throw new InvalidDataException("Rollback manifest contains files outside previous ownership or omits metadata.");
 
         var backupPaths = rollbackManifest.Files
             .Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))

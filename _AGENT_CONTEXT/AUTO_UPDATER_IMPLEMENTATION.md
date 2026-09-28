@@ -128,3 +128,10 @@ Verification for this checkpoint:
 - strict whole-solution build before final checkpoint cleanup: **PASS, 0 warnings / 0 errors**
 - real disposable filesystem tests prove user `Mods`, `State`, and unknown files survive successful updates and injected rollback paths.
 - fault injection currently covers after-file replacement and after-stale-owned deletion; further fault points remain to be exercised before final closure.
+
+## Checkpoint C2 — interrupted metadata recovery
+- Journal identity is checked before normal installed metadata validation. Applying/BackupCreated/RollbackRequired recover first using a separate bounded recovery token, then reload the restored installation.
+- Rollback prevalidates all backup bytes, previous marker/product-manifest agreement and previous ownership before mutating the live tree.
+- Three new journal/metadata regressions failed on the preceding checkpoint and passed after repair. Added corrupt-backup regression proves new live files remain untouched if recovery material is corrupt.
+- Focused updater tests: 39/39 PASS (Windows x64, SDK 10.0.401). Full release verification remains pending.
+- Next: helper start/stop failure recovery; see AUTO_UPDATER_NEXT_AGENT.md. Successor must preserve and recursively propagate continuity.
