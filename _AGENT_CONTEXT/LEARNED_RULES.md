@@ -161,3 +161,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Integration numbering note:** The crash support branch proposed LR-007 in parallel. Canonical integration preserves the earlier coordinated LR-007 entity-retirement and LR-008 import-publication assignments, so crash diagnosis is renumbered to LR-009 without changing its rule.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-010 — a containment check after mutation is not fail-closed
+
+- **Rule ID:** LR-010
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** filesystem safety guards, archive/import extraction, nested directory creation, and any mutation gated by topology/authority validation
+- **Rule:** When a safety check exists to prevent writes/deletes outside an allowed boundary, perform the relevant validation **before** the mutation it is meant to authorize. Throwing after a redirected create/write/delete has already occurred is detection, not containment. For nested path creation, validate existing components before descending/creating deeper components and re-check newly created components where practical.
+- **Trigger / evidence:** Heavy archive stress testing reproduced a destination descendant junction where ArchiveInspector called Directory.CreateDirectory(parent) first and only then checked ancestors for reparses. Extraction threw, but external\created had already been created through the junction. The regression Archive_extraction_rejects_descendant_junction_before_creating_external_parent failed on that side effect and passed only after directory creation became component-by-component and prevalidated.
+- **Rationale:** A fail-closed API must prevent the forbidden state transition, not merely report it afterward. Cleanup cannot retroactively make the original external mutation safe and may itself fail.
+- **Enforcement:** In destructive/safety-sensitive code review, identify the first externally visible mutation and prove every authority/containment/precondition check required for that mutation happens before it. Add regression assertions for absence of forbidden side effects, not only for the expected exception/error result. Preserve explicit TOCTOU limitations when path-based validation cannot make the check+use atomic.
+- **Relevant report:** _AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md
+- **Supersedes:** none
+- **Superseded by:** none
