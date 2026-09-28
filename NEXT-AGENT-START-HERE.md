@@ -1,10 +1,10 @@
-# Current updater handoff — PR #78 integrated — 2026-09-28
+# Current updater handoff — v8.8.1 continuity repair — 2026-09-28
 
-Canonical product merge is `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, version **8.8.1**. PR #78 replaces only the post-publication immediate Git tag fetch with authoritative GitHub REST git-ref verification and fails closed on wrong ref identity, non-commit targets, malformed SHAs, or source mismatch. Exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed Updater Publication PR Gate **36448819098**.
+Canonical product merge `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` contains PR #78 and v8.8.1. Exact-main Windows Release Gate **36452561463** failed closed at **24/25** solely because `_AGENT_CONTEXT/handoff-manifest.json` still declared v8.8.0. All compiled code/analyzers and tests in that run passed: FunctionVerifier 728/728 with 7,772/0 uncovered call sites, Core 79/79, Automation 24/24, Integration 177/177, self-test 11/11, zero build warnings/errors. Release build/publication were skipped.
 
-Exact-main Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` is currently running. The next agent must inspect that exact run before claiming publication closure. If it finishes green, verify the immutable updater release, exact direct-commit tag target, and both expected assets/digests, then perform the disposable old→new and injected-rollback end-to-end proof with seeded user-data hashes and exact restart identity.
+The current continuity repair synchronizes the manifest to v8.8.1. After it reaches main, inspect the fresh exact-main Windows Release Gate. Do not claim updater publication closure until that run passes verifier + release build/package + policy + immutable publication and exact REST tag/source/two-asset verification. Then run the disposable old→new and injected-rollback proof with seeded user-data hashes and exact restart identity.
 
-Preserve current parallel work. Do not duplicate active support-bundle or crash-bisector branches. Inherit, preserve, and recursively propagate the permanent continuity constitution to the agent after you.
+Preserve parallel work. Inherit, preserve, and recursively propagate the permanent continuity constitution to the agent after you. **Do not break the chain.**
 
 ---
 # Current updater handoff — 2026-09-28
