@@ -87,6 +87,95 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
   assert.ok(!support.some(item => item.lane === "architecture"));
 });
 
+test("authoritative routing manifest fills declared missing slots instead of inventing a second swarm", () => {
+  const current = state();
+  current.settings.routingManifest = {
+    source: "github:issue-60",
+    mode: "authoritative",
+    observedAt: "2026-09-28T16:00:00.000Z",
+    expiresAt: "2026-09-28T17:00:00.000Z",
+    assignments: [
+      { slotId: "manager", role: "manager", task: "Coordinate", status: "claimed", owner: "manager-session" },
+      { slotId: "main", role: "main", task: "Agent Control v2", status: "claimed", branch: "feature/agent-control-plane-v2-20260928" },
+      { slotId: "support-1", role: "support", lane: "safety", task: "Safety re-review", status: "claimed", branch: "agent/support-safety" },
+      { slotId: "support-2", role: "support", lane: "workflow", task: "Product workflow audit", status: "claimed", branch: "agent/support-workflow" },
+      { slotId: "support-3", role: "support", lane: "frontend", task: "Frontend finalization", status: "claimed", branch: "ui/frontend" },
+      { slotId: "support-4", role: "support", lane: "updater", task: "Updater publication closure", status: "open", boundary: "support:updater", machine: "heaven" }
+    ]
+  };
+
+  const plan = planWorkflow("usual-swarm", {
+    state: current,
+    mission: "Continue the live repository swarm",
+    machine: "heaven2",
+    requireReconciledOwnership: true,
+    now: Date.parse("2026-09-28T16:30:00.000Z")
+  });
+
+  assert.equal(plan.blocked.length, 0);
+  assert.equal(plan.steps.length, 1);
+  assert.equal(plan.steps[0].lane, "updater");
+  assert.equal(plan.steps[0].task, "Updater publication closure");
+  assert.equal(plan.steps[0].machine, "heaven");
+  assert.equal(plan.ownership.reconciled, true);
+  assert.equal(plan.ownership.source, "github:issue-60");
+});
+
+test("routing overlay counts external role and support-lane ownership", () => {
+  const current = state();
+  current.settings.routingManifest = {
+    source: "github",
+    mode: "overlay",
+    observedAt: "2026-09-28T16:00:00.000Z",
+    expiresAt: "2026-09-28T17:00:00.000Z",
+    assignments: [
+      { role: "main", status: "claimed", branch: "feature/external-main" },
+      { role: "support", lane: "architecture", status: "claimed", branch: "support/external-architecture" }
+    ]
+  };
+  const plan = planWorkflow("usual-swarm", {
+    state: current,
+    mission: "Fix updater rollback",
+    machine: "heaven2",
+    now: Date.parse("2026-09-28T16:30:00.000Z")
+  });
+  assert.equal(plan.steps.filter(item => item.role === "main").length, 0);
+  assert.ok(!plan.steps.some(item => item.lane === "architecture"));
+});
+
+test("stale external ownership does not occupy a lane forever", () => {
+  const current = state();
+  current.settings.routingManifest = {
+    source: "github",
+    mode: "overlay",
+    observedAt: "2026-09-28T16:00:00.000Z",
+    expiresAt: "2026-09-28T17:00:00.000Z",
+    assignments: [
+      { role: "support", lane: "architecture", status: "superseded", branch: "support/old" }
+    ]
+  };
+  const plan = planWorkflow("usual-swarm", {
+    state: current,
+    mission: "Fix updater rollback",
+    machine: "heaven2",
+    now: Date.parse("2026-09-28T16:30:00.000Z")
+  });
+  assert.ok(plan.steps.some(item => item.lane === "architecture"));
+});
+
+test("automatic broad swarm dispatch fails closed without fresh ownership context", () => {
+  const plan = planWorkflow("usual-swarm", {
+    state: state(),
+    mission: "Continue work",
+    machine: "heaven2",
+    requireReconciledOwnership: true,
+    now: Date.parse("2026-09-28T16:30:00.000Z")
+  });
+  assert.equal(plan.steps.length, 0);
+  assert.match(plan.blocked[0], /requires a current routing manifest/i);
+  assert.equal(plan.ownership.reconciled, false);
+});
+
 test("support current programmer blocks cleanly without a primary", () => {
   const plan = planWorkflow("support-current", {
     state: state(),
