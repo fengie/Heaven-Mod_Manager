@@ -1,4 +1,10 @@
-# v8.8.0 Universal Mod Manager
+# v8.8.1 Universal Mod Manager
+
+## v8.8.1 — Support-bundle privacy hardening
+
+Shareable support bundles now sanitize recent structured JSONL logs at export time instead of copying them verbatim. Secret-like fields and assignments, known local roots, and residual absolute Windows paths are redacted in the ZIP while full-fidelity local logs remain unchanged. Generated bundles include `CONTENTS-AND-PRIVACY.txt`, and a regression test verifies path/credential canaries do not cross the support boundary.
+
+This is a focused LR-006 improvement, not full diagnostic-secret closure: DB-backed free-form support exports, startup/manual-share artifacts, settings allowlisting/default-redact policy, and protected provider credential storage remain separate follow-up work.
 
 ## Repair revision — 2026-09-27
 

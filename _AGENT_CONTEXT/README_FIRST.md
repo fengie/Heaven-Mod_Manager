@@ -1,4 +1,4 @@
-# READ THIS FIRST — MHW Manual Mod Manager v8.8.0
+# READ THIS FIRST — MHW Manual Mod Manager v8.8.1
 
 **Newest archive-streaming integration status:** canonical `main` now includes PR #57 at merge commit `a8b581176aac0e6bcf09c049285ed40f4b2b392c`, implementing streamed archive extraction cancellation plus actual-output budgeting and regressions. PR #57 records a fresh full local Windows verification on integration head `fd8b48fc92e6f5e64591fd1938b7ccce5ac94083`: verifier 25/25, functions 728/728, 7,772 explicit call sites / 0 uncovered, Core 79/79, Automation 24/24, Integration 177/177, self-test 11/11, strict builds, ReadyToRun/updater-helper packaging, and Build-Release PASS; artifact SHA-256 `AC3571853650CFA91243199B23A44007488F9244780FCBD18A7A38552B652734`. At the 2026-09-28 support checkpoint, exact merge commit `a8b581...` had no hosted workflow/status record, so do not promote last-closed exact verification on that basis. Read `_AGENT_CONTEXT/ARCHIVE_STREAMING_INTEGRATION_PROVENANCE_AUDIT_2026-09-28.md`. The automatic-updater boundary remains separately active.
 

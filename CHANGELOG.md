@@ -1,3 +1,11 @@
+# v8.8.1 — Support-bundle privacy hardening
+
+- Sanitize recent structured JSONL logs when exporting user-shareable support bundles instead of copying them verbatim.
+- Recursively redact secret-like JSON fields and secret-like string assignments, known local roots, and residual absolute Windows paths from exported log text.
+- Preserve full-fidelity local logs unchanged and add `CONTENTS-AND-PRIVACY.txt` to explain the bundle boundary.
+- Add a generated-bundle path/credential canary regression proving sensitive values do not cross the support ZIP boundary.
+- Keep remaining LR-006 work separate: DB-backed free-form exports, startup/manual-share artifacts, settings allowlisting/default-redact policy, and protected credential storage.
+
 # v8.8.0 — Function verification cache and call-error hardening
 
 ## Repair audit — 2026-09-27

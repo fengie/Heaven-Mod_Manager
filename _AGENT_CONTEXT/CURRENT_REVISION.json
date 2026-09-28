@@ -4,7 +4,7 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "agent/auto-updater-publication-fix-20260928",
-  "currentVersion": "8.8.0",
+  "currentVersion": "8.8.1",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
   "nextMilestone": "complete verified automatic updater; see AUTO_UPDATER_NEXT_AGENT.md",
