@@ -101,6 +101,14 @@
             <Setter Property="Background" Value="#2B1719"/>
             <Setter Property="BorderBrush" Value="#5A2A2E"/>
         </Style>
+        <Style x:Key="EmptyStatePanel" TargetType="Border">
+            <Setter Property="Background" Value="#EE0A0D11"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Padding" Value="32"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
 
         <!-- Buttons -->
         <Style x:Key="BaseButton" TargetType="Button">
@@ -167,6 +175,11 @@
             <Setter Property="Foreground" Value="#FFD7D7"/>
             <Setter Property="Background" Value="#2B1719"/>
             <Setter Property="BorderBrush" Value="#5A2A2E"/>
+        </Style>
+        <Style x:Key="AttentionButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Foreground" Value="#24180A"/>
+            <Setter Property="Background" Value="{StaticResource Warn}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Warn}"/>
         </Style>
 
         <!-- Inputs -->

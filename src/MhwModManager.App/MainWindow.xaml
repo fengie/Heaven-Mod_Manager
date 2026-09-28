@@ -482,7 +482,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Report game crash" Command="{Binding ReportGameCrashCommand}" ToolTip="Rank mods from the last modded launch against the previous successful launch."/>
-                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Use after ERR12 / graphics-device / renderer failure. Texture-heavy newly changed mods receive additional suspicion weight."/>
+                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource AttentionButton}" ToolTip="Use after ERR12 / graphics-device / renderer failure. Texture-heavy newly changed mods receive additional suspicion weight."/>
                         </StackPanel>
                     </Grid>
 
@@ -509,10 +509,19 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Good}" FontSize="11" Text="No suspect mods are currently flagged.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IssueCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
 
-                    <DataGrid Grid.Row="2" Margin="0,0,0,14" ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <Grid Grid.Row="2" Margin="0,0,0,14">
+                    <DataGrid ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Unresolved conflicts">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="TYPE" Binding="{Binding Kind}" Width="145"/>
                             <DataGridTextColumn Header="PROVIDERS" Binding="{Binding Providers}" Width="2*"/>
@@ -522,7 +531,25 @@
                             <DataGridTextColumn Header="CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Border Grid.Row="3" Style="{StaticResource Card}" Padding="14">
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers><DataTrigger Binding="{Binding BlockerCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="No unresolved conflict choices" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                            <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="The current staged setup does not need a manual winner decision."/>
+                        </StackPanel>
+                    </Border>
+                    </Grid>
+                    <Border Grid.Row="3" Padding="14">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                <Style.Triggers><DataTrigger Binding="{Binding SelectedConflict}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <StackPanel>
                             <TextBlock Text="Choose one effective mod" FontWeight="SemiBold"/>
                             <TextBlock Text="Choose only if these are true alternatives. If the detector missed a main + optional/component relationship, use 'Make main + chain others' to teach it permanently; source folders are never merged or moved." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
@@ -560,7 +587,7 @@
                     <Border Grid.Row="1" Margin="0,20,0,12" Style="{StaticResource Card}" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding NewProfileName}" ToolTip="Profile name"/>
+                            <TextBox Text="{Binding NewProfileName}" AutomationProperties.Name="New profile name" ToolTip="Name for the loadout you are about to save."/>
                             <Button Grid.Column="1" Margin="8,0,0,0" Content="Save current" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                 <Button Content="Stage selected" Command="{Binding StageProfileCommand}"/>
@@ -568,13 +595,27 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <DataGrid Grid.Row="2" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
-                            <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
-                            <DataGridTextColumn Header="UPDATED" Binding="{Binding UpdatedAt}" Width="220"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Saved profiles">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
+                                <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
+                                <DataGridTextColumn Header="UPDATED" Binding="{Binding UpdatedAt}" Width="220"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding Profiles.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No saved profiles yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Name the current loadout above, then choose Save current."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </TabItem>
 
@@ -593,14 +634,28 @@
                             <Button Content="Export support bundle" Command="{Binding ExportSupportCommand}"/>
                         </StackPanel>
                     </Grid>
-                    <DataGrid Grid.Row="1" Margin="0,20,0,10" ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
-                            <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="120"/>
-                            <DataGridTextColumn Header="OPERATION" Binding="{Binding Description}" Width="2.5*"/>
-                            <DataGridTextColumn Header="TRANSACTION ID" Binding="{Binding Id}" Width="250"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="1" Margin="0,20,0,10">
+                        <DataGrid ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
+                                <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="120"/>
+                                <DataGridTextColumn Header="OPERATION" Binding="{Binding Description}" Width="2.5*"/>
+                                <DataGridTextColumn Header="TRANSACTION ID" Binding="{Binding Id}" Width="250"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding ActivityRows.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No activity recorded yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Transactions, recovery operations, and diagnostics will appear here."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                     <TextBlock Grid.Row="2" Foreground="{StaticResource Muted}" FontSize="11" Text="Support bundles contain logs, state summaries, and diagnostics—not your mod blobs or large game assets."/>
                 </Grid>
             </TabItem>
@@ -638,15 +693,29 @@
                                    Text="Shared textures, base resources, patches, and family components often overlap intentionally. Select a row and use Explain selected to see why one provider wins—or why the manager refuses to guess."/>
                     </Border>
 
-                    <DataGrid Grid.Row="2" ItemsSource="{Binding OverlapRows}" SelectedItem="{Binding SelectedOverlap,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="ASSET" Binding="{Binding DisplayName}" Width="2*"/>
-                            <DataGridTextColumn Header="PROVIDERS" Binding="{Binding ProviderCount}" Width="90"/>
-                            <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="140"/>
-                            <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="3*"/>
-                            <DataGridTextColumn Header="DETAIL" Binding="{Binding Detail}" Width="3*"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding OverlapRows}" SelectedItem="{Binding SelectedOverlap,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Asset overlaps">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ASSET" Binding="{Binding DisplayName}" Width="2*"/>
+                                <DataGridTextColumn Header="PROVIDERS" Binding="{Binding ProviderCount}" Width="90"/>
+                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="140"/>
+                                <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="3*"/>
+                                <DataGridTextColumn Header="DETAIL" Binding="{Binding Detail}" Width="3*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding OverlapCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No shared assets detected" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="There is nothing to explain here for the current staged setup."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
                     <Border Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource Card}" Padding="14">
                         <Grid>

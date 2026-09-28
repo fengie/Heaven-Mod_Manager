@@ -19,13 +19,22 @@ public sealed class GameProfileEditorWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={profile.Id}");
         original=profile;
-        Title="Configure game";Width=640;Height=510;WindowStartupLocation=WindowStartupLocation.CenterOwner;ResizeMode=ResizeMode.NoResize;
-        var root=new Grid{Margin=new Thickness(24)};
-        for(var i=0;i<7;i++)root.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});
+        Title=$"Game settings — {profile.DisplayName}";
+        Width=680;Height=600;MinWidth=580;MinHeight=540;
+        WindowStartupLocation=WindowStartupLocation.CenterOwner;
+        ResizeMode=ResizeMode.CanResizeWithGrip;
+        var root=new Grid{Margin=new Thickness(28)};
+        for(var i=0;i<8;i++)root.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});
         root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});
         root.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});
         Content=root;
         var row=0;
+        var heading=new StackPanel();
+        heading.Children.Add(new TextBlock{Text="Game settings",FontSize=24,FontWeight=FontWeights.SemiBold});
+        var subtitle=new TextBlock{Text="Change the user-facing profile details and integration paths. Detected installation fields stay read-only.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)};
+        subtitle.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
+        heading.Children.Add(subtitle);
+        Grid.SetRow(heading,row++);root.Children.Add(heading);
         nameBox=AddField(root,ref row,"Display name",profile.DisplayName,false);
         _=AddField(root,ref row,"Game root",profile.GameRoot,true);
         _=AddField(root,ref row,"Executable",profile.ExecutableRelativePath,true);
@@ -38,14 +47,28 @@ public sealed class GameProfileEditorWindow : Window
         AddLabeled(root,ref row,"Save file (optional)",savePanel);
 
         var hint=new TextBlock{Text=profile.IsMonsterHunterWorld
-            ?"MHW uses the enhanced adapter. Its nativePC deployment target is fixed for safety."
-            :"Generic mode deploys package files into the configured target. Leave it blank only for games whose mods belong directly in the game root.",TextWrapping=TextWrapping.Wrap,Opacity=.72,Margin=new Thickness(0,14,0,0)};
-        Grid.SetRow(hint,row++);root.Children.Add(hint);
+            ?"Monster Hunter: World uses the enhanced adapter. Its nativePC deployment target is locked for safety."
+            :"Generic profiles deploy package files into the configured target. Leave the target blank only when mods belong directly in the game root.",TextWrapping=TextWrapping.Wrap};
+        hint.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
+        var hintCard=new Border{Margin=new Thickness(0,14,0,0),Padding=new Thickness(12),CornerRadius=new CornerRadius(8),BorderThickness=new Thickness(1)};
+        hintCard.SetResourceReference(Border.BackgroundProperty,"Panel2");
+        hintCard.SetResourceReference(Border.BorderBrushProperty,"Border");
+        hintCard.Child=hint;
+        Grid.SetRow(hintCard,row++);root.Children.Add(hintCard);
 
-        var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,24,0,0)};
+        var footer=new Grid{Margin=new Thickness(0,22,0,0)};
+        footer.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
+        footer.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
+        var keyHint=new TextBlock{Text="Enter saves  •  Esc cancels",VerticalAlignment=VerticalAlignment.Center,FontSize=11};
+        keyHint.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
+        footer.Children.Add(keyHint);
+        var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right};
         var cancel=new Button{Content="Cancel",Padding=new Thickness(18,7,18,7),Margin=new Thickness(0,0,8,0),IsCancel=true};
-        var save=new Button{Content="Save",Padding=new Thickness(20,7,20,7),IsDefault=true};
-        buttons.Children.Add(cancel);buttons.Children.Add(save);Grid.SetRow(buttons,8);root.Children.Add(buttons);
+        var save=new Button{Content="Save settings",Padding=new Thickness(20,7,20,7),IsDefault=true};
+        save.SetResourceReference(Button.StyleProperty,"PrimaryButton");
+        buttons.Children.Add(cancel);buttons.Children.Add(save);
+        Grid.SetColumn(buttons,1);footer.Children.Add(buttons);
+        Grid.SetRow(footer,9);root.Children.Add(footer);
         save.Click+=(_,_)=>Save();
     }
 
@@ -58,7 +81,12 @@ public sealed class GameProfileEditorWindow : Window
 
     private static void AddLabeled(Grid root,ref int row,string label,UIElement control)
     {
-        var panel=new StackPanel{Margin=new Thickness(0,7,0,0)};panel.Children.Add(new TextBlock{Text=label,Margin=new Thickness(0,0,0,4),Opacity=.72});panel.Children.Add(control);Grid.SetRow(panel,row++);root.Children.Add(panel);
+        var panel=new StackPanel{Margin=new Thickness(0,8,0,0)};
+        var labelText=new TextBlock{Text=label,Margin=new Thickness(2,0,0,5),FontSize=11,FontWeight=FontWeights.SemiBold};
+        labelText.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
+        panel.Children.Add(labelText);
+        panel.Children.Add(control);
+        Grid.SetRow(panel,row++);root.Children.Add(panel);
     }
 
     private void BrowseSave()
