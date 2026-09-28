@@ -1,18 +1,20 @@
-# Updater v8.8.1 REST tag-verification integration — current verification
+# Updater v8.8.1 exact-main gate — 24/25, handoff metadata mismatch — 2026-09-28
 
-Canonical product merge: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78). Exact PR head: `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23`.
+Canonical product merge: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78).
 
-Verified evidence:
-- Updater Publication PR Gate **36448819098**: **PASS** on exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23`.
-- PR-focused checks recorded on the branch: `scripts/Test-UpdaterReleasePolicy.ps1` PASS, `scripts/Test-AgentHandoff.ps1` PASS, `git diff --check` PASS.
-- The branch also carried prior local Windows evidence for the same code change: full `Verify-Release.ps1` **25/25** and `Build-Release.ps1` PASS on heaven2.
+Windows Release Gate **36452561463** on exact main:
+- repository verification: **24/25**;
+- sole failure: agent handoff continuity preflight — manifest version `8.8.0` did not match `VERSION.txt` `8.8.1`;
+- FunctionVerifier: **728/728** known-good, **7,772 explicit call sites / 0 uncovered**, 0 trace gaps, 0 parse errors;
+- relaxed and strict whole-solution/project builds: **PASS, 0 warnings / 0 errors**;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- Integration/fault injection: **177/177 PASS**;
+- self-test: **11/11 PASS**;
+- release build/package, updater policy, and immutable publication: **SKIPPED** because verification failed closed;
+- evidence artifact: `windows-release-evidence-9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, artifact ID **10984049619**, uploaded artifact SHA-256 `d230c93ff5ac5b8745bb46cd6f4a3dd1f037b00d3d92a782830416d586fdaaac`.
 
-Exact-main status:
-- Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`: **IN PROGRESS** at this checkpoint.
-- Do not reuse the PR gate or earlier branch-local evidence as exact-main publication closure.
-- Earlier main runs **36442433856** and **36443919632** successfully published immutable updater releases, then failed only because immediate Git transport could not fetch the just-created tag. GitHub REST git-ref state confirmed the published tags were direct commit refs, motivating the narrow verifier repair.
-
-Remaining closure: exact-main gate green through immutable publication and tag/source/asset verification, followed by disposable old→new and injected-rollback proof with seeded user-data preservation.
+This continuity branch changes `_AGENT_CONTEXT/handoff-manifest.json` to 8.8.1 and updates handoff truth. No product C# or updater publication logic changes are part of the repair. A fresh exact-main gate is required after integration; do not promote run 36452561463 to release/publication closure.
 
 ---
 # Updater C12 first-publication repair — current verification
