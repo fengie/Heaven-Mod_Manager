@@ -41,3 +41,14 @@ The successor must read AGENTS.md, inherit and preserve the permanent continuity
 ## Local full-gate checkpoint
 
 Exact source 8334d725f6bdb73661e2f3ed71a04189db76950b passed both local Windows gates; evidence is EVIDENCE/cas-integrity-local-windows.log. The 25-stage verifier passed, including 88 integration tests and 11 self-tests; release ReadyToRun publishing passed. Generated caches were promoted only by the successful normal pipeline. Hosted canonical verification remains pending.
+
+
+## Hosted failure and concurrency repair candidate
+
+Hosted Windows Release Gate `36366784304` ran exact canonical commit `797991231819d8e5693efd671e5352fd447902a0`. The repository verification gate passed, but the release-build integration suite finished 87/88 because `BlobIntegrityTests.Concurrent_valid_captures_converge_and_restore_the_expected_bytes` hit `ERROR_SHARING_VIOLATION` opening the newly published hash-named object in `BlobStore.VerifyExistingAsync`.
+
+Root cause: concurrent capture losers correctly refuse to trust a filename after their `File.Move(temp, dest, false)` loses the race, but Windows can briefly expose the destination pathname while the winning rename still owns delete/rename access. `VerifyExistingAsync` intentionally opens with `FileShare.Read`, so that transient rename handle can reject the immediate read open. Changing verification to share delete/write would weaken the stable-object integrity boundary and is not accepted.
+
+Repair candidate production commit `3810c6b8c5baf1f7aff3b22952e137796dddaa8f` keeps `FileShare.Read` and adds a bounded, cancellation-aware exponential backoff only for Win32 sharing/lock violations (32/33). Hash mismatch remains `InvalidDataException` and is never retried; other I/O failures still surface normally. Test commit `cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3` strengthens the same-digest race to 32 callers across 6 publication repetitions, verifies the surviving CAS object's SHA-256, asserts exactly one CAS file and no capture staging, restores and checks bytes, and adds canceled-capture staging cleanup coverage.
+
+The earlier local Windows green evidence applies to production source `8334d725f6bdb73661e2f3ed71a04189db76950b`, not this repair candidate. Fresh focused tests, full local Windows verification/build, and an exact hosted Windows Release Gate are required before closure. Do not manually promote caches.
