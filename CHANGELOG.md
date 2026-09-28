@@ -1,3 +1,10 @@
+# v8.8.5 — Persisted game-profile ID containment
+
+- Reject persisted or upserted game-profile IDs unless they are the exact canonical single-segment manager form.
+- Enforce lexical containment for generic-game workspace and Next-state roots before creating manager-owned directories.
+- Add regressions proving traversal, separator, uppercase, and noncanonical IDs cannot escape workspace/state roots or rewrite hostile registry input during read.
+- Reconcile the containment fix onto current v8.8.4 main without merging stale divergent release history from PR #89.
+
 # v8.8.4 — Support recovery hardening
 
 - Reconcile `save_snapshots` retention with the SQLite index while limiting recursive deletion to verified direct children of the manager-owned snapshot root.
