@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-v3-unittest-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:39:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:39:18.170333+00:00",
+  "finished_at": "2026-09-28T19:39:19.390886+00:00",
+  "stdout": "Already up to date.\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\ntest_binary_copy_delete_roundtrip (test_worker.HeavenBridgeWorkerTests.test_binary_copy_delete_roundtrip) ... ok\ntest_dangerous_root_delete_rejected (test_worker.HeavenBridgeWorkerTests.test_dangerous_root_delete_rejected) ... ok\ntest_expired_job_rejected (test_worker.HeavenBridgeWorkerTests.test_expired_job_rejected) ... ok\ntest_hash_ignores_auth (test_worker.HeavenBridgeWorkerTests.test_hash_ignores_auth) ... ok\ntest_health_capabilities (test_worker.HeavenBridgeWorkerTests.test_health_capabilities) ... ok\ntest_invalid_base64_has_structured_code (test_worker.HeavenBridgeWorkerTests.test_invalid_base64_has_structured_code) ... ok\ntest_replay_mismatch_rejected (test_worker.HeavenBridgeWorkerTests.test_replay_mismatch_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.024s\n\nOK\n",
+  "host": "heaven",
+  "action": "proc_run"
+}
