@@ -139,6 +139,8 @@ Good checkpoint moments include:
 
 Do not create meaningless timer-based commits. Create enough durable checkpoints that interruption cannot erase substantial work or knowledge.
 
+For long-running agent/tool sessions, bias toward short-interval, focused checkpoint commits and pushes after each small verified unit. A stream/session cancellation must not be able to erase a long stretch of completed engineering work. The checkpoints must still be coherent and meaningful; this is not permission for empty timer-based commits.
+
 ## 7. Automatic preservation mode
 
 If usable context, token/session budget, Work/Codex allowance, execution time, or tool availability becomes dangerously low:
