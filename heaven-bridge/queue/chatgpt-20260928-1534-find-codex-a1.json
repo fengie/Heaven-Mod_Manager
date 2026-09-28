@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1534-find-codex-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$a=@(); $a += (Get-Command codex -All -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source); $a += (Get-ChildItem \"$env:APPDATA\\npm\" -Filter 'codex*' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName); $a | Where-Object { $_ } | Sort-Object -Unique",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-28T19:34:00Z",
+  "priority": "highest"
+}
