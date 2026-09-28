@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text.Json;
 using MhwModManager.Core;
