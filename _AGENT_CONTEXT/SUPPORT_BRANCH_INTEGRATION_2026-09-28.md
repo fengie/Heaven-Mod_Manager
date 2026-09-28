@@ -87,3 +87,15 @@ Pre-integration canonical baseline: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (
 | `ui/frontend-responsive-polish-20260928` / #55 | Frontend responsive UX | **Left active/unresolved**; separate production lane |
 
 Shipped v8.8.2 scope is deliberately limited to crash-bisector preflight, duplicate-cleanup ordinary-failure compensation, and support-bundle structured-log sanitization. The game-profile ID and launch-observation findings remain regression-first implementation follow-ups; duplicate cleanup is not yet crash-durable; broader LR-006 diagnostics sanitization remains open.
+
+## Second-harvest combined verification
+
+Exact locally verified integration source: `242645818b03cdc1fa6940ee9a8b4e61ffce54ae`.
+
+- `scripts/Verify-Release.ps1`: **25/25 PASS**; FunctionVerifier **736/736**, **7,842 / 0 uncovered**, 0 trace gaps, 0 parse errors.
+- Core **79/79**; Automation **28/28**; Integration/fault injection **178/178**; self-test **11/11**; strict builds/analyzers **0 warnings / 0 errors**.
+- `scripts/Build-Release.ps1`: **PASS**; ReadyToRun app and updater helper publish PASS; updater build **309**.
+- Local v8.8.2 ZIP SHA-256: `E77D72230B4221DA9BCB99298141F878DDEA58DD85996E231177DB9540AEB7A4`.
+- Handoff preflight passed and all eight adversarial negative fixtures failed closed.
+
+During verification canonical `main` advanced from `9dd9176` to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`; that delta changes the hosted-evidence path/version and continuity metadata only. It is reconciled before push, and the v8.8.2 hosted workflow is updated to write v8.8.2 evidence. Exact-main hosted verification remains pending until the canonical push completes and the workflow runs.

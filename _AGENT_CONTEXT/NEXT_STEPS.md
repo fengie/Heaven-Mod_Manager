@@ -1,3 +1,13 @@
+# v8.8.2 next steps — current
+
+1. Finish reconciling the metadata-only concurrent `main` advance, run the handoff/verification checks on the reconciled tree, commit intended continuity/evidence, and push canonical `main` without force.
+2. Verify remote `main` resolves to the pushed commit and inspect its exact-main hosted Windows Release Gate; do not relabel local evidence as hosted evidence.
+3. Re-query live PRs before assigning work. Do not duplicate Agent Control v2 or frontend lanes.
+4. Remaining audited support boundaries include persisted game-profile ID path-containment repair, launch-observation persistence atomicity, duplicate-cleanup crash-durable reconciliation, broader LR-006 diagnostic export hardening, and remaining crash-bisector evidence/provenance work.
+5. Preserve the permanent continuity constitution and active Learned Rules and require the successor to propagate them recursively.
+
+---
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.

@@ -1,3 +1,15 @@
+# v8.8.2 support integration — current handoff
+
+The second 2026-09-28 support harvest is integrated on the current integration branch and reconciles canonical `main` through `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`. Exact locally release-verified product source is `242645818b03cdc1fa6940ee9a8b4e61ffce54ae`.
+
+v8.8.2 combines crash-bisector control/full-suspect preflight, duplicate-cleanup ordinary delete-failure compensation, and support-bundle structured-log export sanitization. It also integrates profile-save rollback proof, adversarial continuity fixtures, and durable game-profile ID path-containment / launch-observation atomicity audits. See `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`.
+
+Local Windows evidence: `Verify-Release.ps1` 25/25; functions 736/736, 7,842 call sites / 0 uncovered; Core 79/79; Automation 28/28; Integration 178/178; self-test 11/11; strict analyzers 0 warnings/errors; `Build-Release.ps1` PASS; updater build 309; ZIP SHA-256 `E77D72230B4221DA9BCB99298141F878DDEA58DD85996E231177DB9540AEB7A4`.
+
+After canonical integration, inspect the exact-main hosted Windows Release Gate before promoting hosted verification. Re-query live PRs first; Agent Control v2 and frontend remain separate active lanes. Preserve and recursively propagate the continuity constitution and active Learned Rules.
+
+---
+
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.
