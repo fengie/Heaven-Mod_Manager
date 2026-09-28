@@ -276,6 +276,8 @@
     "productionSourceChanged": false,
     "testsChanged": false,
     "learnedRule": "LR-012",
-    "parallelRuleReservation": "LR-011 is reserved by active PR #33"
+    "parallelRuleReservation": "LR-011 is reserved by active PR #33",
+    "pullRequest": 38,
+    "firstAuditCommit": "15d40e3123fbc7cf47f3b2b03db52778b4670f0b"
   }
 }

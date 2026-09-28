@@ -160,7 +160,7 @@ The generic trainer is updated with the reusable rule: durable “in progress”
 
 ## Parallel-agent integration notes
 
-PRs #32-#35 and #37 remain separate active implementation/audit lanes. PR #36 created a 30-open-PR disposition ledger while this audit was running; PR #37 appeared afterward, and once this PR exists the ledger must be refreshed again before being treated as current inventory.
+PRs #32-#35 and #37 remain separate active implementation/audit lanes. This audit is PR **#38**. PR #36 created a 30-open-PR disposition ledger before PRs #37 and #38 appeared, so that ledger must be refreshed before being treated as current inventory.
 
 This audit should be integrated as research/continuity without overwriting newer verification state. Its future production checkpoint should remain separate from archive streaming, support-bundle sanitation, updater work, and the migration hardlink repair.
 
