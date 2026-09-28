@@ -176,3 +176,31 @@ test("authoritative exit gathers async evidence before fresh state mutation", ()
   assert.match(handler, /ownerSessionId === SESSION_ID/);
   assert.match(handler, /item\?\.pid === child\.pid/);
 });
+
+
+test("pre-launch setup is completed before worker spawn and has convergence cleanup", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function deployOne({");
+  const end = source.indexOf('child.on("exit"', start);
+  assert.ok(start >= 0 && end > start, "deployOne implementation must exist");
+  const deploy = source.slice(start, end);
+  const findCodexAt = deploy.indexOf("codex = findCodex()");
+  const promptWriteAt = deploy.indexOf("fs.writeFileSync(promptPath");
+  const spawnAt = deploy.indexOf("child = spawn(codex");
+  assert.ok(findCodexAt >= 0 && promptWriteAt > findCodexAt);
+  assert.ok(spawnAt > promptWriteAt, "fallible prompt/Codex setup must finish before spawning a worker");
+  assert.match(deploy, /reason: "pre-launch-setup-failed"/);
+  assert.match(source, /applyPreLaunchFailure\(failed,/);
+});
+
+test("counted deploy preflights whole-batch capacity before launching the first worker", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const route = source.slice(
+    source.indexOf('if (req.method === "POST" && pathname === "/api/deploy")'),
+    source.indexOf("const reviewMatch", source.indexOf('pathname === "/api/deploy"'))
+  );
+  const preflightAt = route.indexOf("deploymentBatchCapacity");
+  const firstDeployAt = route.indexOf("await deployOne");
+  assert.ok(preflightAt >= 0 && firstDeployAt > preflightAt);
+  assert.match(route, /No workers were launched/);
+});
