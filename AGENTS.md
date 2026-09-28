@@ -17,7 +17,7 @@ Before modifying code or durable project state:
 11. Keep one independently verifiable architecture/source boundary at a time.
 12. Update durable handoff/context as you work, not only at the end.
 13. At meaningful checkpoints, ask whether new reusable engineering knowledge belongs in `_AGENT_TRAINING/`; update it when the lesson is generalized, meaningful, understood, non-duplicate, and operational.
-14. Commit and push meaningful checkpoints; do not leave expensive discoveries only in chat or local state.
+14. Commit and push meaningful checkpoints; do not leave expensive discoveries only in chat or local state. During long-running agent/tool sessions, keep those checkpoints short-interval and small enough that a stream/session cancellation cannot erase a substantial block of finished work.
 15. Run the handoff/verification checks appropriate to the change and report verification only for exact inputs actually checked.
 16. Explicitly pass this continuity obligation to your successor, and require that successor to pass it to the agent after them.
 
