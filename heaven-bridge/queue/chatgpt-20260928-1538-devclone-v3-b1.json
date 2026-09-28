@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1538-devclone-v3-b1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$d='C:\\Users\\Xxkan\\HeavenBridgeDevV3-1538'; git clone --branch heaven-bridge --single-branch https://github.com/fengie/mhw-mods.git $d; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $d status --short --branch",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-28T19:38:30Z",
+  "priority": "highest"
+}
