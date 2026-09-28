@@ -1,3 +1,12 @@
+## Updater REST tag verification integrated — 2026-09-28
+
+Canonical product merge is `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78), version **8.8.1**. The post-publication verifier no longer treats immediate Git transport tag propagation as authoritative: it reads `git/ref/tags/<tag>` through GitHub REST and fails closed unless the exact ref exists, targets a direct commit, exposes a valid 40-hex SHA, and matches the expected source commit.
+
+Exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed **Updater Publication PR Gate 36448819098**. The exact-main **Windows Release Gate 36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` is currently running; do not claim exact-main publication closure until it finishes green and the immutable tag/source/assets are inspected. Earlier Windows runs **36442433856** and **36443919632** had already published immutable updater releases but failed afterward because Git transport could not immediately fetch the newly created tag.
+
+Next priority: inspect 36452561463; if green, verify the immutable release/tag/two assets against `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, then run the disposable installed-client old→new and injected-rollback proof with seeded `Mods`, `State`, and unknown-file hashes plus exact restarted build identity/health acknowledgement.
+
+---
 ## Current updater publication repair — 2026-09-28
 
 Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.
