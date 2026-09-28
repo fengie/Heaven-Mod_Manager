@@ -1362,7 +1362,9 @@ async function previewWorkflow(workflowId, body = {}) {
     state,
     mission,
     baseBranch: body.baseBranch || "main",
-    machine: body.machine || "auto"
+    machine: body.machine || "auto",
+    requireReconciledOwnership: Boolean(body.requireReconciledOwnership),
+    now: Date.now()
   });
 }
 
@@ -1370,7 +1372,10 @@ async function executeWorkflow(workflowId, body = {}) {
   return withDeployLock(async () => {
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
-    const plan = await previewWorkflow(workflowId, body);
+    const plan = await previewWorkflow(workflowId, {
+      ...body,
+      requireReconciledOwnership: workflowId === "usual-swarm" || Boolean(body.requireReconciledOwnership)
+    });
     if (plan.blocked?.length) return { plan, created: [], blocked: plan.blocked };
 
     const created = [];
@@ -1514,6 +1519,69 @@ function setReviewVerdict(agentId, body = {}) {
   });
   saveState(state);
   return agent;
+}
+
+function updateRoutingManifest(body = {}) {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+
+  if (body.clear === true) {
+    state.settings.routingManifest = null;
+    addEvent(state, "routing.manifest-cleared", "Routing manifest cleared", {
+      reason: body.reason || "operator-clear"
+    });
+    saveState(state);
+    return null;
+  }
+
+  if (!Array.isArray(body.assignments)) throw new Error("Routing manifest assignments must be an array.");
+  const observedAt = body.observedAt ? new Date(body.observedAt) : new Date();
+  if (!Number.isFinite(observedAt.getTime())) throw new Error("Routing manifest observedAt must be a valid timestamp.");
+  const ttlMinutes = Math.max(1, Math.min(24 * 60, Number(body.ttlMinutes || 30)));
+  const expiresAt = body.expiresAt ? new Date(body.expiresAt) : new Date(observedAt.getTime() + ttlMinutes * 60_000);
+  if (!Number.isFinite(expiresAt.getTime()) || expiresAt <= observedAt) throw new Error("Routing manifest expiresAt must be after observedAt.");
+
+  const assignments = body.assignments.map((assignment, index) => {
+    const role = String(assignment?.role || "support").trim();
+    if (!rolePresets[role]) throw new Error(`Routing assignment ${index + 1} uses unknown role "${role}".`);
+    return {
+      slotId: String(assignment?.slotId || `slot-${index + 1}`).trim(),
+      role,
+      lane: assignment?.lane ? String(assignment.lane).trim() : null,
+      task: String(assignment?.task || assignment?.objective || "").trim(),
+      boundary: assignment?.boundary ? String(assignment.boundary).trim() : null,
+      machine: assignment?.machine ? String(assignment.machine).trim().toLowerCase() : "auto",
+      priority: assignment?.priority === undefined ? null : normalizePriority(assignment.priority),
+      status: String(assignment?.status || (assignment?.owner || assignment?.branch ? "claimed" : "open")).trim().toLowerCase(),
+      owner: assignment?.owner ? String(assignment.owner).trim() : null,
+      branch: assignment?.branch ? String(assignment.branch).trim() : null,
+      mode: assignment?.mode ? String(assignment.mode).trim() : null,
+      dependencies: Array.isArray(assignment?.dependencies) ? assignment.dependencies.map(value => String(value).trim()).filter(Boolean) : []
+    };
+  });
+
+  const mode = String(body.mode || "authoritative").trim().toLowerCase();
+  if (!["authoritative", "overlay"].includes(mode)) throw new Error("Routing manifest mode must be authoritative or overlay.");
+
+  state.settings.routingManifest = {
+    source: String(body.source || "operator").trim(),
+    mode,
+    observedAt: observedAt.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    assignments
+  };
+  addEvent(state, "routing.manifest-updated", "Routing manifest updated", {
+    reason: body.reason || "operator-update",
+    evidence: {
+      source: state.settings.routingManifest.source,
+      mode,
+      assignments: assignments.length,
+      observedAt: state.settings.routingManifest.observedAt,
+      expiresAt: state.settings.routingManifest.expiresAt
+    }
+  });
+  saveState(state);
+  return state.settings.routingManifest;
 }
 
 function updateControlSettings(body = {}) {
@@ -1806,6 +1874,15 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, await previewWorkflow(workflowId, body));
       }
       return sendJson(res, 201, await executeWorkflow(workflowId, body));
+    }
+
+    if (req.method === "GET" && pathname === "/api/control/routing-manifest") {
+      return sendJson(res, 200, refreshState().settings.routingManifest || null);
+    }
+
+    if (req.method === "POST" && pathname === "/api/control/routing-manifest") {
+      const body = await readJson(req);
+      return sendJson(res, 200, updateRoutingManifest(body));
     }
 
     if (req.method === "POST" && pathname === "/api/control/settings") {
