@@ -1,4 +1,4 @@
-# READ THIS FIRST — MHW Manual Mod Manager v8.8.0
+# READ THIS FIRST — MHW Manual Mod Manager v8.8.2
 
 **Newest archive-streaming integration status:** canonical `main` now includes PR #57 at merge commit `a8b581176aac0e6bcf09c049285ed40f4b2b392c`, implementing streamed archive extraction cancellation plus actual-output budgeting and regressions. PR #57 records a fresh full local Windows verification on integration head `fd8b48fc92e6f5e64591fd1938b7ccce5ac94083`: verifier 25/25, functions 728/728, 7,772 explicit call sites / 0 uncovered, Core 79/79, Automation 24/24, Integration 177/177, self-test 11/11, strict builds, ReadyToRun/updater-helper packaging, and Build-Release PASS; artifact SHA-256 `AC3571853650CFA91243199B23A44007488F9244780FCBD18A7A38552B652734`. At the 2026-09-28 support checkpoint, exact merge commit `a8b581...` had no hosted workflow/status record, so do not promote last-closed exact verification on that basis. Read `_AGENT_CONTEXT/ARCHIVE_STREAMING_INTEGRATION_PROVENANCE_AUDIT_2026-09-28.md`. The automatic-updater boundary remains separately active.
 
@@ -45,8 +45,11 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` — recursive traversal stress evidence.
 - `_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md` — archive trusted-root/fail-before-mutation stress evidence.
 - `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` — specialized SQLite atomicity findings already canonical before this integration.
+- `_AGENT_CONTEXT/GAME_PROFILE_ID_PATH_CONTAINMENT_AUDIT_2026-09-28.md` — documentation-only audit of malformed persisted game-profile IDs escaping manager-owned workspace/state roots; repair remains regression-first.
 - `_AGENT_CONTEXT/LAUNCH_OBSERVATION_ATOMICITY_AUDIT_2026-09-28.md` — specialized launch-history/trust all-or-nothing, cancellation, idempotency, and diagnosis-evidence audit.
 - `_AGENT_CONTEXT/PROFILE_SAVE_TRANSACTION_ATOMICITY_CHECKPOINT_2026-09-28.md` — Windows fault-injection proof that existing-profile save replacement rolls back profile metadata and membership atomically when the replacement insert fails.
+- `_AGENT_CONTEXT/CRASH_BISECTOR_CONTROL_PREFLIGHT_CHECKPOINT_2026-09-28.md` — v8.8.2 control/full-suspect preflight implementation and branch verification evidence; residual diagnosis-evidence risks remain separate.
+- `_AGENT_CONTEXT/DUPLICATE_CLEANUP_NORMAL_FAILURE_RECOVERY_2026-09-28.md` — v8.8.2 ordinary delete-failure compensation checkpoint; abrupt process-death recovery remains open.
 - `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md` — canonical ownership audit plus independent support re-audit.
 - `_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md` — background-task, staging, close/cancel, and mutation-coordination risks.
 - `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` — broad failure-mode and scale coverage gaps.

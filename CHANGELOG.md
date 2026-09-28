@@ -1,3 +1,11 @@
+# v8.8.2 — Integrated support safety hardening
+
+- Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.
+- Compensate ordinary duplicate-cleanup database-delete failures by reconciling durable row state and restoring the archived source only when safe; abrupt process-death recovery remains separate.
+- Sanitize recent structured JSONL logs at support-bundle export, recursively redacting secret-like fields/assignments and absolute Windows paths while leaving local logs unchanged.
+- Add generated support-bundle privacy canaries, profile-save rollback fault injection, and stronger adversarial handoff-continuity fixtures.
+- Preserve new audits for persisted game-profile ID path containment and launch-observation persistence atomicity as regression-first follow-up boundaries.
+
 # v8.8.1 — Updater publication verification hardening
 
 - Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.

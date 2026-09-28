@@ -65,3 +65,25 @@ Hosted Windows Release Gate `36392282315` passed exact production integration co
 LR-010 was added: a containment check after mutation is not fail-closed. The generic company safety doctrine also records the generalized pre-mutation validation lesson and the independent stream-level cancellation/resource-budget lesson.
 
 The successor must inspect current `origin/main` before acting, preserve exact verification provenance, and inherit/preserve/recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. **Do not break the chain.**
+
+
+## Second support harvest — v8.8.2 integration
+
+Pre-integration canonical baseline: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (v8.8.1 updater REST-tag verification). The clean canonical checkout on `heaven2` was fetched/pruned and fast-forwarded before integration. Branch-local verification caches and stale routing snapshots were not imported.
+
+| Branch / PR | Purpose | Disposition |
+| --- | --- | --- |
+| `agent/support-game-profile-id-containment-audit-20260928` / #62 | Persisted `GameProfile.Id` workspace/state path-containment audit | **Partially integrated**: durable audit preserved; stale point-in-time routing edits skipped |
+| `agent/support-launch-observation-atomicity-audit-20260928` / #64 | Launch-history/trust persistence atomicity audit | **Partially integrated**: specialized audit + discovery registration preserved; stale reconciliation snapshots skipped |
+| `agent/support-profile-save-atomicity-20260928` / #69 | Fault-injection proof of existing profile-save transaction rollback | **Integrated**: regression + checkpoint + SQLite audit link |
+| `agent/support-continuity-adversarial-fixtures-20260928` / #74 | Handoff validator semantic hardening | **Integrated**: validator, eight-fixture negative suite, checkpoint/discovery registration |
+| `agent/support-crash-bisector-control-preflight-20260928` / #76 | Validate empty control and full suspect set before bisection | **Integrated selectively**: production/tests/checkpoint; branch merge commits and verification caches were not replayed |
+| `agent/crash-bisector-evidence-integrity-20260928` / #73 | Alternate CB-01 implementation | **Superseded** by #76; its stale cache/handoff deltas were not imported |
+| `agent/duplicate-cleanup-normal-failure-recovery-20260928` / #71 | Compensate DB-delete failure after duplicate archive move | **Integrated**: narrow production compensation + real SQLite trigger regression + checkpoint |
+| `agent/support-bundle-share-sanitization-20260928` / #79 | Sanitize recent structured logs at support-bundle export | **Integrated selectively**: production/test/docs/evidence; branch-local `.verification` cache commit skipped |
+| `agent/support-live-routing-reconciliation-20260928` / #70 | Point-in-time routing snapshot | **Skipped as stale**: snapshot predates current canonical v8.8.1 state and active lanes changed repeatedly |
+| updater PRs #65/#77/#78 | Updater publication/tag verification | **Already canonical / superseded** by `9dd9176`; no duplicate integration |
+| `feature/agent-control-plane-v2-20260928` / #59 | Agent Control v2 | **Left active/unresolved**; separate production lane, not a support-harvest merge |
+| `ui/frontend-responsive-polish-20260928` / #55 | Frontend responsive UX | **Left active/unresolved**; separate production lane |
+
+Shipped v8.8.2 scope is deliberately limited to crash-bisector preflight, duplicate-cleanup ordinary-failure compensation, and support-bundle structured-log sanitization. The game-profile ID and launch-observation findings remain regression-first implementation follow-ups; duplicate cleanup is not yet crash-durable; broader LR-006 diagnostics sanitization remains open.

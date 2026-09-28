@@ -1,4 +1,10 @@
-# v8.8.1 Universal Mod Manager
+# v8.8.2 Universal Mod Manager
+
+## v8.8.2 — integrated safety and diagnostics hardening
+
+This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.
+
+It also adds the profile-save rollback regression, adversarial continuity-validator fixtures, and durable audits for persisted game-profile path containment and launch-observation atomicity. Duplicate cleanup crash-durable reconciliation, broader diagnostic export sanitization, remaining crash-bisector evidence risks, game-profile ID repair, and launch-observation transaction repair remain explicit follow-ups.
 
 ## v8.8.1 — updater publication verification hardening
 
