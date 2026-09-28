@@ -1,13 +1,13 @@
 # v8.8.2 support integration — exact local Windows verification
 
-Exact product/docs integration source verified: `242645818b03cdc1fa6940ee9a8b4e61ffce54ae` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.
+Exact product/docs integration source verified: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.
 
 - `scripts/Verify-Release.ps1`: 25/25 PASS.
 - FunctionVerifier: 736/736 promoted; 7,842 explicit call sites / 0 uncovered; 0 trace gaps; 0 parse errors.
 - Core: 79/79; Automation: 28/28; Integration/fault injection: 178/178; self-test: 11/11.
 - Strict project and whole-solution builds/analyzers: PASS, 0 warnings / 0 errors.
 - `scripts/Build-Release.ps1`: PASS; ReadyToRun app and updater-helper publish PASS.
-- Updater build 309; artifact `MHW-Manual-Mod-Manager-v8.8.2-win-x64.zip`; SHA-256 `E77D72230B4221DA9BCB99298141F878DDEA58DD85996E231177DB9540AEB7A4`.
+- Updater build 315; artifact `MHW-Manual-Mod-Manager-v8.8.2-win-x64.zip`; SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
 - Handoff preflight accepted the v8.8.2 manifest and all eight adversarial negative fixtures failed closed.
 
 This is local exact-source evidence. Hosted exact-main verification remains pending until canonical integration/push. Branch-local support-agent caches were not reused as canonical proof.

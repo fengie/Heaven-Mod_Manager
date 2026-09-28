@@ -2,7 +2,7 @@
 
 Canonical pre-harvest main was `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; during verification it advanced to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`, which is being reconciled without overwriting concurrent work. Shipped product source did not change in that concurrent delta.
 
-Exact locally release-verified v8.8.2 source: `242645818b03cdc1fa6940ee9a8b4e61ffce54ae`. `Verify-Release.ps1` passed 25/25 with functions 736/736 and 7,842/0 uncovered call sites; Core 79/79; Automation 28/28; Integration 178/178; self-test 11/11; strict analyzers green. `Build-Release.ps1` passed with updater build 309 and ZIP SHA-256 `E77D72230B4221DA9BCB99298141F878DDEA58DD85996E231177DB9540AEB7A4`.
+Exact locally release-verified v8.8.2 source: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`. `Verify-Release.ps1` passed 25/25 with functions 736/736 and 7,842/0 uncovered call sites; Core 79/79; Automation 28/28; Integration 178/178; self-test 11/11; strict analyzers green. `Build-Release.ps1` passed with updater build 315 and ZIP SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
 
 Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` for exact branch dispositions and residuals. Exact-main hosted verification is pending until canonical push and workflow completion.
 

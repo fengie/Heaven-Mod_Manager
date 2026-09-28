@@ -90,12 +90,12 @@ Shipped v8.8.2 scope is deliberately limited to crash-bisector preflight, duplic
 
 ## Second-harvest combined verification
 
-Exact locally verified integration source: `242645818b03cdc1fa6940ee9a8b4e61ffce54ae`.
+Exact locally verified integration source: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`.
 
 - `scripts/Verify-Release.ps1`: **25/25 PASS**; FunctionVerifier **736/736**, **7,842 / 0 uncovered**, 0 trace gaps, 0 parse errors.
 - Core **79/79**; Automation **28/28**; Integration/fault injection **178/178**; self-test **11/11**; strict builds/analyzers **0 warnings / 0 errors**.
 - `scripts/Build-Release.ps1`: **PASS**; ReadyToRun app and updater helper publish PASS; updater build **309**.
-- Local v8.8.2 ZIP SHA-256: `E77D72230B4221DA9BCB99298141F878DDEA58DD85996E231177DB9540AEB7A4`.
+- Local v8.8.2 ZIP SHA-256: `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
 - Handoff preflight passed and all eight adversarial negative fixtures failed closed.
 
 During verification canonical `main` advanced from `9dd9176` to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`; that delta changes the hosted-evidence path/version and continuity metadata only. It is reconciled before push, and the v8.8.2 hosted workflow is updated to write v8.8.2 evidence. Exact-main hosted verification remains pending until the canonical push completes and the workflow runs.
