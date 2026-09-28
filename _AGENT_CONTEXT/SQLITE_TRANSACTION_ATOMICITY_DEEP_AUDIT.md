@@ -445,3 +445,11 @@ Existing coverage already exercises deployment crash windows comprehensively and
 - The first production fixes worth scheduling from this audit are D1 (duplicate cleanup recovery), D2 (launch observation atomicity/idempotency), D3 (snapshot prune lifecycle), and D4 (migration status closure), each as a separate checkpoint with focused fault injection.
 - Before any write-side repository extraction, reread this document and `STORAGE_TRANSACTION_BOUNDARY_AUDIT.md`; if the helper participates in a listed aggregate transaction, it must share the caller-owned connection/transaction.
 - Do not break the chain.
+
+---
+
+## 2026-09-28 specialized D1 follow-up — duplicate cleanup cancellation/recovery
+
+`_AGENT_CONTEXT/DUPLICATE_CLEANUP_RECOVERY_AUDIT_2026-09-28.md` specializes D1 against canonical task-lock base `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`. It confirms from current control flow that the move→delete split is reachable not only through process death/DB failure but also through ordinary user cancellation: both Cleanup and Inbox expose cancellation, while `ArchiveSafeAsync` passes the same token into the DB delete after `Directory.Move` has already succeeded. The follow-up defines deterministic post-move cancellation/DB-failure/restart fixtures and a narrow recoverable operation protocol. It does not change production code and does not replace LR-007 semantic-retirement work.
+
+The successor implementing D1 must preserve this audit's transaction/recovery authority, compose with the canonical retirement boundary rather than duplicating it, and recursively pass the permanent continuity constitution to the agent after them.
