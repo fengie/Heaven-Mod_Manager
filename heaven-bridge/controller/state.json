@@ -1,0 +1,44 @@
+{
+  "schema": "permanent-dev-controller-v1",
+  "controller": "single-logical-controller",
+  "cycle_id": "2026-09-28T15:26-04:00-cycle-1",
+  "updated_at": "2026-09-28T19:35:00Z",
+  "selected_task": {
+    "priority": "P1",
+    "target": "PR #90 v8.8.5 persisted game-profile ID containment",
+    "reason": "Draft PR was mergeable but had no hosted CI and had never been reverified on current main."
+  },
+  "actions": [
+    "Ran scripts/Verify-Release.ps1 on heaven via Heaven Local Bridge against exact head bc927218df9ebacc350b52c94ce691a4aa86df7f.",
+    "Found real IntegrationTests compile failure: MultiGameTests imported MhwModManager.App without project reference.",
+    "Found handoff-manifest currentVersion 8.8.4 vs VERSION.txt 8.8.5.",
+    "Added MhwModManager.App project reference to IntegrationTests (commit 7fbbbd88837f9a600e5bf4cfab13f79e857160c7).",
+    "Updated _AGENT_CONTEXT/handoff-manifest.json currentVersion to 8.8.5 (commit 9bf048a8e49038d29b11123ebbee494b5125c477).",
+    "Reverified exact 9bf048a8e49038d29b11123ebbee494b5125c477: builds green, Core 88/88, Automation 31/31, Integration 205/205, self-test 11/11; only failure was CURRENT_REVISION currentVersion 8.8.4.",
+    "Updated CURRENT_REVISION candidate metadata for v8.8.5 (commit e25b68da3685585fafa8809eedb452a04ea99c82).",
+    "Queued exact-head full reverify job controller-20260928-1548-pr90-final-verify on heaven.",
+    "Queued focused post-metadata gate controller-20260928-1551-pr90-postmeta-fastgate.",
+    "Observed independent bridge hardening lane commit cc57944870ecf8816ddcdc0b162e6d81f0157aab syncing repository worker to live v2 implementation; did not duplicate that lane."
+  ],
+  "current_pr": {
+    "number": 90,
+    "branch": "agent/game-profile-id-containment-v8.8.5-reconcile",
+    "head_sha": "e25b68da3685585fafa8809eedb452a04ea99c82",
+    "draft": true,
+    "mergeable": true,
+    "safe_to_merge": false,
+    "reason_not_mergeable_yet": "Exact e25b68d full verification result still pending; do not infer green from prior head."
+  },
+  "pending_jobs": [
+    "controller-20260928-1548-pr90-final-verify",
+    "controller-20260928-1551-pr90-postmeta-fastgate"
+  ],
+  "next_cycle_start": [
+    "Read this state file and live PR #90 head first.",
+    "Read both pending bridge results if present.",
+    "If exact current PR head is not the verified head, rerun verification.",
+    "If verification is 25/25, update PR evidence/status and evaluate integration against live main without bypassing draft/review gates.",
+    "If verification fails, fix the specific failure and rerun before unrelated work.",
+    "Re-query open PRs and active bridge jobs before dispatching new work to prevent duplicate ownership."
+  ]
+}
