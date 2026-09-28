@@ -1,0 +1,19 @@
+{
+  "id": "chatgpt-20260928-1529-worker-info-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:29:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:27:33.198842+00:00",
+  "finished_at": "2026-09-28T19:27:33.198842+00:00",
+  "host": "heaven",
+  "action": "fs_info",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\relay\\heaven-bridge\\worker.ps1",
+    "exists": true,
+    "is_file": true,
+    "is_dir": false,
+    "size": 8254,
+    "modified": "2026-09-28T18:46:43.669178+00:00"
+  }
+}
