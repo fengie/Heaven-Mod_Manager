@@ -1,0 +1,76 @@
+name: Updater Publication PR Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/Publish-UpdaterRelease.ps1'
+      - 'scripts/UpdaterReleasePublication.ps1'
+      - 'scripts/UpdaterReleasePolicy.ps1'
+      - 'scripts/Test-UpdaterReleasePolicy.ps1'
+      - '.github/workflows/updater-publication-pr-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  publication-policy:
+    name: Verify updater publication exact source
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      MHW_UPDATE_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+      MHW_UPDATE_BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: Check out exact pull request head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Assert exact checked-out source
+        shell: powershell
+        run: |
+          $head=(git rev-parse HEAD).Trim()
+          if ($head -ne '${{ github.event.pull_request.head.sha }}') {
+            throw "Checked-out source $head does not match PR head ${{ github.event.pull_request.head.sha }}."
+          }
+
+      - name: Run updater publication policy and fault tests
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
+
+      - name: Run exact repository verification gate
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Verify-Release.ps1"
+
+      - name: Run exact release build and package gate
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Build-Release.ps1"
+
+      - name: Run continuity handoff check
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-AgentHandoff.ps1"
+
+      - name: Preserve PR verification evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            BuildLogs/**
+            artifacts/**
+            release/**
+            .verification/function-status.json
+            .verification/stage-status.json
+            MHW-DEBUG-ALL.log
