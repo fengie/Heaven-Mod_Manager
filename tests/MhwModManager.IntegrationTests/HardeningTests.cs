@@ -579,6 +579,30 @@ public sealed class HardeningTests : IDisposable
         Assert.False(File.Exists(output));
     }
     [Fact]
+    public async Task Archive_extraction_enforces_actual_output_budget_and_removes_owned_partial_file()
+    {
+        var zip=Path.Combine(root,"budget.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/budget.bin",CompressionLevel.SmallestSize);
+            await using var stream=entry.Open();
+            var block=new byte[1024*1024];
+            await stream.WriteAsync(block,TestToken);
+            await stream.WriteAsync(block,TestToken);
+        }
+
+        var destination=Path.Combine(root,"budget-extract");
+        var output=Path.Combine(destination,"nativePC","budget.bin");
+        var limits=new ArchiveExtractionLimits(4L*1024*1024,192L*1024);
+        var inspector=new ArchiveInspector();
+
+        var ex=await Assert.ThrowsAsync<InvalidDataException>(
+            ()=>inspector.ExtractSafelyAsync(zip,destination,root,limits,TestToken));
+
+        Assert.Contains("actual-output",ex.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(output));
+    }
+    [Fact]
     public async Task Archive_extraction_rejects_junction_ancestor_above_destination()
     {
         if(!OperatingSystem.IsWindows())return;
