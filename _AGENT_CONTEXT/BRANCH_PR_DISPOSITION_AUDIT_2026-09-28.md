@@ -5,7 +5,7 @@
 - Repository: `fengie/mhw-mods`
 - Canonical branch: `main`
 - Canonical HEAD inspected: `4fd61dd33609a7c55e5aedbaad026266a410f942`
-- Open PRs inspected: 26
+- Open PRs inspected: 30
 - Durable machine-readable ledger: `_AGENT_CONTEXT/BRANCH_DISPOSITION_LEDGER.json`
 
 This support checkpoint is documentation/coordination only. It does not modify production C#, tests, workflows, verification scripts, promoted caches, or historical verification claims.
@@ -82,7 +82,7 @@ The missing piece was discoverable current state, not lack of historical evidenc
 ## Verification performed
 
 - GitHub remote `main` comparison resolved to exact HEAD `4fd61dd33609a7c55e5aedbaad026266a410f942`.
-- Enumerated 26 open PRs.
+- Enumerated 30 open PRs.
 - Compared open PR heads against current `main`; active PRs #32-#35 were ahead / zero behind, while historical lanes were divergent by the recorded counts.
 - Re-read the canonical 2026-09-27 and 2026-09-28 integration records and reconciled their explicit dispositions.
 - No product test/build result is claimed by this documentation-only checkpoint.
