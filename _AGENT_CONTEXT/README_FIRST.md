@@ -46,6 +46,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md` — current-source CAS root/hash-leaf physical identity, reparse policy, and legacy hardlink-alias findings after content-integrity hardening.
 - `_AGENT_CONTEXT/CAS_DIGEST_NAMESPACE_VALIDATION_AUDIT.md` — SHA-256 identifier/path namespace validation, malformed legacy/persisted digest handling, and regression-first guidance.
 - `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` — ModScanner, unmanaged-adoption, and Smart Inbox recursive reparse traversal findings and test contract.
+- `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_PHYSICAL_ROOT_AUDIT.md` — runtime-reproduced archive/import destination-root ancestor-junction escape and test-first closure guidance.
 - `_AGENT_CONTEXT/LEGACY_MIGRATION_RECOVERY_AUDIT.md` — migration retry/ownership/cleanup/fidelity risks.
 - `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — verifier, stage-cache, CI and supply-chain trust gaps.
 - `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` — share-boundary sanitization and credential handling.
