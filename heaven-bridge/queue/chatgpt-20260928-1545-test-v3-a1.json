@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1545-test-v3-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$d='C:\\Users\\Xxkan\\HeavenBridgeDevV3-1538'; python -m py_compile \"$d\\heaven-bridge\\worker.py\"; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -m unittest -v \"$d\\heaven-bridge\\test_worker.py\"; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; [scriptblock]::Create((Get-Content -Raw \"$d\\heaven-bridge\\bootstrap.ps1\")) | Out-Null; Write-Output 'BOOTSTRAP_PARSE_OK'; git -C $d diff --check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $d status --short",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-28T19:45:00Z",
+  "priority": "highest"
+}
