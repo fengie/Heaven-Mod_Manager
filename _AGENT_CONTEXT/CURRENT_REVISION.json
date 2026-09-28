@@ -133,7 +133,7 @@
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
-  "closureEvidenceCommit": "689a17ce5dff18bd0bf1201205446edd51ada8b5",
+  "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",
   "architectureAuditBaseCommit": "0129607a0558da6a596e1688a04f3051e5f6ce40",
   "governanceCheckpointBaseCommit": "4d1896b3ad812a396c3918e1fed7a7aea9b9562d",
   "governanceScopeNote": "Governance-only checkpoint CLOSED. Exact governance commit 73f1298455ec4c651e211488ececf9803504e60d passed hosted Windows Release Gate 36333960215. The changed Test-AgentHandoff.ps1 passed; Test-AgentHandoff-NegativeFixtures.ps1 accepted the baseline fixture and rejected all four broken recursive-continuity fixtures; no verification cache was manually promoted. Workflow evidence/cache persistence commit 6bc50de3f07015b63c58ac6bfba3b7bfce9a104c contains the exact hosted closure evidence. No production C# changed.",
