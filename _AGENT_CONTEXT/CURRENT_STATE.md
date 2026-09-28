@@ -2,7 +2,7 @@
 
 Canonical `main` at this checkpoint: `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
 
-The older C12 publication-repair section below is preserved as historical provenance, but it is no longer sufficient routing authority. PR #58 owns the live updater post-upload publication lane. Other currently owned lanes are PR #55 (frontend UX), PR #59 (Agent Control v2), and support PR #62 (persisted game-profile ID containment).
+The older C12 publication-repair section below is preserved as historical provenance, but it is no longer sufficient routing authority. Live updater work is owned by PR #58 plus newer integration PR #65 (which states it supersedes #58 once merged). Other owned lanes at the final snapshot are PR #55 (frontend UX), PR #59 (Agent Control v2), PR #66 (its safety review), PR #62 (persisted game-profile ID containment), PR #64 (launch-observation atomicity), and PR #68 (archive streaming failure-cleanup semantics).
 
 Archive streaming cancellation / actual-output budgeting is implemented on main; PR #61 repaired its verification provenance. Historical exact verification claims remain bound to their recorded SHAs/runs.
 
