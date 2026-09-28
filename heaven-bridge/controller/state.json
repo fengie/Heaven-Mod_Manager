@@ -2,7 +2,7 @@
   "schema": "permanent-dev-controller-v1",
   "controller": "single-logical-controller",
   "cycle_id": "2026-09-28T15:39-04:00-cycle-2",
-  "updated_at": "2026-09-28T19:44:00Z",
+  "updated_at": "2026-09-28T19:45:00Z",
   "selected_task": {
     "priority": "P1",
     "target": "PR #59 Agent Control v2/autopilot canonical lane reconciliation",
@@ -16,7 +16,10 @@
     "Found verified Codex install at C:\\Users\\Xxkan\\AppData\\Roaming\\npm\\codex.cmd.",
     "Patched heaven-bridge/worker.py to fall back to APPDATA/npm and user Roaming npm Codex path on future worker restarts (commit 0c15ab1cb7919985a5d89d31137ab4c7b5ddd53d); stale-write conflict was detected and reconciled before patching.",
     "Retried same logical Agent Control task through explicit Codex path; provider/default model failed with usage-limit error, classified as provider/quota failure rather than code failure.",
-    "Failed over same logical task/iteration to approved local mhw-fast route via controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast."
+    "Failed over same logical task/iteration to approved local mhw-fast route via controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast.",
+    "Approved local-route failover attempt using `-m mhw-fast` failed because Codex with a ChatGPT account rejects `mhw-fast` as a model; this was classified as routing/configuration failure, not a code repair failure.",
+    "Inspected `codex exec --help`: local routes use `--oss/--local-provider` or named `--profile`; no matching profile declaration was returned by non-secret config pattern inspection.",
+    "Queued controller-20260928-1550-find-mhw-fast to locate the actual `mhw-fast` executable/alias without reading auth/secrets."
   ],
   "current_pr": {
     "number": 59,
@@ -28,25 +31,25 @@
     "reason_not_mergeable_yet": "Reconciliation with current main, exact-head verification, and independent review remain required."
   },
   "pending_jobs": [
-    "controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast"
+    "controller-20260928-1550-find-mhw-fast"
   ],
   "next_cycle_start": [
-    "Read the mhw-fast reconciliation result and live PR #59/main before any further edits.",
-    "If the worker pushed a new #59 head, verify exact head and inspect conflicts/diff; do not merge before independent review.",
-    "If mhw-fast is blocked, preserve the exact blocker and choose the next unowned P0/P1/P2 task without retry loops.",
-    "Check whether bridge worker has restarted onto the Codex-path fallback patch before relying on action=codex."
+    "Read result controller-20260928-1550-find-mhw-fast first.",
+    "If a real local mhw-fast command/route is found, resume the SAME logical PR #59 reconciliation task once; do not create duplicate work.",
+    "If no usable local route exists and default Codex quota is still blocked, record the blocker and immediately select the next highest-value unowned task executable without Codex.",
+    "Before touching #59 again, refresh origin/main and PR #59 head/ownership because other agents may have moved them."
   ],
   "active_work": [
     {
-      "owner": "single autonomous controller / Main Programmer continuation",
-      "boundary": "PR #59 existing Agent Control lane",
-      "job": "controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast"
+      "owner": "single autonomous controller",
+      "boundary": "local Agent Control execution routing recovery",
+      "job": "controller-20260928-1550-find-mhw-fast"
     }
   ],
   "unfinished_work": [
+    "Resolve an executable local agent route for PR #59 or record provider blockage and move to next unblocked P1.",
     "Complete PR #59 reconciliation on current main without regressing hot release/continuity files.",
-    "Run Agent Control npm check/tests on exact reconciled head.",
-    "Obtain independent review before integration.",
-    "Verify the Codex discovery fallback after the bridge worker next restarts."
+    "Run exact-head Agent Control verification and obtain independent review before integration.",
+    "Verify bridge Codex PATH fallback after next worker restart."
   ]
 }
