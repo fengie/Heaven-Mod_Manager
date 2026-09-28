@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-final-v3-search-014",
-  "state": "running",
+  "state": "completed",
   "action": "fs_search",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T19:52:13.203029+00:00"
+  "updated_at": "2026-09-28T19:52:45.623317+00:00",
+  "exit_code": 0
 }
