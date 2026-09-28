@@ -178,10 +178,6 @@ try{
   if($helperFiles.Count -lt 2){throw "Updater helper invocation closure is unexpectedly incomplete."}
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-UPDATER' -Message ("HelperClosureFiles="+$helperFiles.Count)
 
-  # Promote function fingerprints only after the complete Windows build/test/publish path has succeeded.
-  # Any exception before this point preserves the previously verified=true cache.
-  Require-Stage 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionConfirmReport) (Join-Path $logRoot ("build-function-confirm-"+$stamp+".log"))
-
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message ('Copying documentation to '+$publish)
   Copy-Item .\README.md,.\CHANGELOG.md,.\VERSION.txt,.\VALIDATION.md -Destination $publish
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Copying docs directory.'
@@ -273,6 +269,11 @@ try{
   $updateManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $updateManifestPath -Encoding UTF8
 
   & (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $zip -ManifestPath $updateManifestPath -ExpectedSourceSha $sourceSha -ExpectedBuildNumber $buildNumber
+
+  # Verification promotion belongs after every release-producing check. If updater
+  # metadata, compression, or final package verification fails, preserve the
+  # previous verified cache rather than promoting a release that did not finish.
+  Require-Stage 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionConfirmReport) (Join-Path $logRoot ("build-function-confirm-"+$stamp+".log"))
 
   @(
     ('Version: '+$appVersion),
