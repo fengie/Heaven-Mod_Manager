@@ -1,3 +1,6 @@
+[CmdletBinding()]
+param([switch]$NoRestart)
+
 $ErrorActionPreference = 'Stop'
 
 $RepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'
@@ -11,24 +14,27 @@ $StartupLauncher = Join-Path $StartupDir 'HeavenBridgeWorker.cmd'
 $TaskName = 'HeavenLocalBridge'
 
 function Invoke-GitRetry {
-    param([string[]]$Args, [int]$Attempts = 5)
+    param(
+        [Parameter(Mandatory=$true)][string[]]$GitArgs,
+        [int]$Attempts = 5
+    )
     for ($i = 0; $i -lt $Attempts; $i++) {
-        & git @Args
+        & git @GitArgs
         if ($LASTEXITCODE -eq 0) { return }
         Start-Sleep -Seconds ([Math]::Min(20, [Math]::Pow(2, $i)))
     }
-    throw "git failed after $Attempts attempts: git $($Args -join ' ')"
+    throw "git failed after $Attempts attempts: git $($GitArgs -join ' ')"
 }
 
 if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
-    Invoke-GitRetry @('clone','--branch',$Branch,'--single-branch',$RepoUrl,$RepoRoot)
+    Invoke-GitRetry -GitArgs @('clone','--branch',$Branch,'--single-branch',$RepoUrl,$RepoRoot)
 } else {
-    Invoke-GitRetry @('-C',$RepoRoot,'fetch','origin',$Branch)
+    Invoke-GitRetry -GitArgs @('-C',$RepoRoot,'fetch','origin',$Branch)
     & git -C $RepoRoot checkout $Branch
     if ($LASTEXITCODE -ne 0) {
         & git -C $RepoRoot checkout -B $Branch "origin/$Branch"
     }
-    Invoke-GitRetry @('-C',$RepoRoot,'pull','--rebase','origin',$Branch)
+    Invoke-GitRetry -GitArgs @('-C',$RepoRoot,'pull','--rebase','origin',$Branch)
 }
 
 New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
@@ -56,6 +62,11 @@ try {
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Description 'Heaven Local Bridge worker' -Force | Out-Null
 } catch {
     Write-Warning "Scheduled Task install failed; Startup launcher remains available: $($_.Exception.Message)"
+}
+
+if ($NoRestart) {
+    Write-Output "HEAVEN_BRIDGE_INSTALLED_NO_RESTART runtime=$RuntimeWorker"
+    exit 0
 }
 
 # Replace only bridge-worker processes, not unrelated Python processes.
