@@ -441,3 +441,21 @@ The successor must:
 8. before finishing, explicitly require its own successor to inherit, preserve, and recursively propagate the same continuity constitution to the agent after them.
 
 **Do not break the chain.**
+
+
+---
+
+## Late upstream reconciliation
+
+Before PR creation, canonical `main` advanced from task-lock base `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d` to `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`.
+
+The intervening changes update verification evidence/cache state and add the separate archive-streaming failure-cleanup audit, research note, and **LR-011 — cleanup must not replace primary failure or cancellation semantics**. They do not modify `DuplicateCleanupService`, its UI call sites, `CatalogService`, or the existing duplicate-analysis test inspected here.
+
+LR-011 is compatible with and relevant to a future D1 implementation but does not subsume this audit:
+
+- LR-011 governs preserving a primary cancellation/failure when subordinate cleanup itself fails;
+- this audit governs ensuring a post-move cancellation/failure has a durable compensation/recovery path in the first place.
+
+A future implementation should obey both: once a move has happened, attempt bounded compensation/recovery without allowing a secondary recovery exception to erase the primary cancellation/failure outcome.
+
+No new Learned Rule is proposed by this branch, avoiding duplication and numbering collision.
