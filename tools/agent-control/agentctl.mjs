@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 const BASE = process.env.AGENT_CONTROL_URL || "http://127.0.0.1:7331";
 
 function parseFlags(args) {
@@ -8,6 +10,7 @@ function parseFlags(args) {
       out._.push(value);
       continue;
     }
+
     const key = value.slice(2);
     const next = args[i + 1];
     if (next && !next.startsWith("--")) {
@@ -40,15 +43,53 @@ function usage() {
 
 Commands:
   status
+  snapshot
   list
-  deploy --role support --task "..." [--count 1] [--base main] [--model MODEL]
+  tasks
+  leases
+  workers
+  queue
+  branches
+  sync
+  deploy --role support --task "..." [options]
+  deploy --role support --task-file C:\\path\\task.txt [options]
+  review <agent-id> [--task "..."] [--task-file C:\\path\\review.txt]
   stop <agent-id>
   log <agent-id>
 
+Deploy options:
+  --count N
+  --base BRANCH
+  --model MODEL
+  --boundary NAME
+  --priority 0-100
+  --machine auto|HOSTNAME
+  --depends TASK_ID[,TASK_ID...]
+
 Examples:
-  node agentctl.mjs list
+  node agentctl.mjs snapshot
   node agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928
+  node agentctl.mjs deploy --role main --task-file C:\\Temp\\task.txt --boundary updater-ui --priority 90
+  node agentctl.mjs review support-20260928...
 `);
+}
+
+function readTask(flags) {
+  if (flags["task-file"]) {
+    return fs.readFileSync(String(flags["task-file"]), "utf8").trim();
+  }
+  return String(flags.task || flags.t || "").trim();
+}
+
+function dependencies(flags) {
+  return String(flags.depends || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function print(value) {
+  console.log(JSON.stringify(value, null, 2));
 }
 
 const flags = parseFlags(process.argv.slice(2));
@@ -58,31 +99,64 @@ try {
   if (!command || command === "help" || command === "--help") {
     usage();
   } else if (command === "status") {
-    console.log(JSON.stringify(await request("/api/status"), null, 2));
+    print(await request("/api/status"));
+  } else if (command === "snapshot") {
+    print(await request("/api/snapshot"));
   } else if (command === "list") {
-    console.log(JSON.stringify(await request("/api/agents"), null, 2));
+    print(await request("/api/agents"));
+  } else if (command === "tasks") {
+    print(await request("/api/tasks"));
+  } else if (command === "leases") {
+    print(await request("/api/leases"));
+  } else if (command === "workers") {
+    print(await request("/api/workers"));
+  } else if (command === "queue") {
+    print(await request("/api/integration"));
+  } else if (command === "branches") {
+    print(await request("/api/branches"));
+  } else if (command === "sync") {
+    print(await request("/api/sync", { method: "POST", body: "{}" }));
   } else if (command === "deploy") {
-    const task = flags.task || flags.t;
-    if (!task) throw new Error("--task is required.");
-    const result = await request("/api/deploy", {
+    const task = readTask(flags);
+    if (!task) throw new Error("--task or --task-file is required.");
+
+    print(await request("/api/deploy", {
       method: "POST",
       body: JSON.stringify({
         role: flags.role || "support",
         task,
         count: Number(flags.count || 1),
         baseBranch: flags.base || "main",
-        model: flags.model || ""
+        model: flags.model || "",
+        boundary: flags.boundary || "",
+        priority: flags.priority === undefined ? 50 : Number(flags.priority),
+        machine: flags.machine || "auto",
+        dependencies: dependencies(flags)
       })
-    });
-    console.log(JSON.stringify(result, null, 2));
+    }));
+  } else if (command === "review") {
+    const id = flags._[1];
+    if (!id) throw new Error("Agent id is required.");
+    const task = readTask(flags);
+
+    print(await request(`/api/agents/${encodeURIComponent(id)}/review`, {
+      method: "POST",
+      body: JSON.stringify({
+        task: task || undefined,
+        model: flags.model || "",
+        boundary: flags.boundary || "",
+        priority: flags.priority === undefined ? undefined : Number(flags.priority),
+        machine: flags.machine || "auto"
+      })
+    }));
   } else if (command === "stop") {
     const id = flags._[1];
     if (!id) throw new Error("Agent id is required.");
-    console.log(JSON.stringify(await request(`/api/agents/${encodeURIComponent(id)}/stop`, { method: "POST" }), null, 2));
+    print(await request(`/api/agents/${encodeURIComponent(id)}/stop`, { method: "POST" }));
   } else if (command === "log") {
     const id = flags._[1];
     if (!id) throw new Error("Agent id is required.");
-    console.log(JSON.stringify(await request(`/api/agents/${encodeURIComponent(id)}/log`), null, 2));
+    print(await request(`/api/agents/${encodeURIComponent(id)}/log`));
   } else {
     usage();
     process.exitCode = 2;

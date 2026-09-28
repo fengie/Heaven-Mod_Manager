@@ -3,88 +3,89 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Heaven Agent Control</title>
+  <title>Heaven Agent Control Plane</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0a0d12;
-      --panel: #10151d;
-      --panel-2: #151b24;
-      --line: #26303e;
-      --text: #eef3f8;
-      --muted: #8d99a8;
-      --accent: #86b7ff;
-      --good: #7ee787;
-      --warn: #f2cc60;
-      --bad: #ff7b72;
-      --radius: 16px;
+      --bg:#080b10; --panel:#10151d; --panel2:#151b24; --line:#26303e;
+      --text:#eef3f8; --muted:#8d99a8; --accent:#86b7ff; --good:#7ee787;
+      --warn:#f2cc60; --bad:#ff7b72; --radius:16px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin:0; min-height:100vh; color:var(--text);
+      font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       background:
         radial-gradient(circle at 20% -10%, rgba(88,166,255,.14), transparent 28%),
         radial-gradient(circle at 100% 0, rgba(126,231,135,.08), transparent 24%),
         var(--bg);
-      color: var(--text);
     }
-    button, input, textarea { font: inherit; }
-    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 56px; }
-    header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 22px; }
-    h1 { font-size: clamp(26px, 4vw, 40px); margin: 0; letter-spacing: -.035em; }
-    .eyebrow { color: var(--accent); font-weight: 800; letter-spacing: .18em; font-size: 11px; text-transform: uppercase; }
-    .sub { color: var(--muted); margin-top: 7px; max-width: 700px; }
-    .pill { border: 1px solid var(--line); background: rgba(16,21,29,.8); border-radius: 999px; padding: 8px 11px; color: var(--muted); }
-    .grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 18px; align-items: start; }
-    .card { background: rgba(16,21,29,.88); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 18px 70px rgba(0,0,0,.24); }
-    .composer { padding: 18px; position: sticky; top: 16px; }
-    .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-    .section-title h2 { font-size: 15px; margin: 0; }
-    label { display: block; color: var(--muted); font-size: 12px; font-weight: 700; margin: 13px 0 6px; }
-    textarea, input {
-      width: 100%; color: var(--text); background: #0c1118; border: 1px solid var(--line);
-      border-radius: 11px; padding: 11px 12px; outline: none;
+    button,input,textarea,select { font:inherit; }
+    .shell { width:min(1320px,calc(100% - 28px)); margin:0 auto; padding:26px 0 54px; }
+    header { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
+    h1 { font-size:clamp(26px,4vw,40px); margin:0; letter-spacing:-.035em; }
+    .eyebrow { color:var(--accent); font-weight:800; letter-spacing:.18em; font-size:11px; text-transform:uppercase; }
+    .sub { color:var(--muted); margin-top:7px; max-width:780px; }
+    .pill { border:1px solid var(--line); background:rgba(16,21,29,.8); border-radius:999px; padding:8px 11px; color:var(--muted); }
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .grid { display:grid; grid-template-columns:minmax(310px,.85fr) minmax(0,1.85fr); gap:18px; align-items:start; }
+    .card { background:rgba(16,21,29,.9); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 18px 70px rgba(0,0,0,.24); }
+    .composer { padding:18px; position:sticky; top:14px; }
+    .section { padding:16px; margin-bottom:16px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .section-title h2 { font-size:15px; margin:0; }
+    label { display:block; color:var(--muted); font-size:12px; font-weight:700; margin:12px 0 6px; }
+    textarea,input,select {
+      width:100%; color:var(--text); background:#0c1118; border:1px solid var(--line);
+      border-radius:11px; padding:10px 11px; outline:none;
     }
-    textarea:focus, input:focus { border-color: #4b78b5; box-shadow: 0 0 0 3px rgba(88,166,255,.08); }
-    textarea { min-height: 150px; resize: vertical; }
-    .row { display: grid; grid-template-columns: 1fr 92px; gap: 10px; }
-    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 14px; }
+    textarea:focus,input:focus,select:focus { border-color:#4b78b5; box-shadow:0 0 0 3px rgba(88,166,255,.08); }
+    textarea { min-height:135px; resize:vertical; }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .row3 { display:grid; grid-template-columns:1fr 100px 100px; gap:9px; }
+    .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
     button {
-      border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
-      border-radius: 11px; padding: 10px 12px; cursor: pointer; transition: .14s ease;
+      border:1px solid var(--line); background:var(--panel2); color:var(--text);
+      border-radius:11px; padding:10px 12px; cursor:pointer; transition:.14s ease;
     }
-    button:hover { transform: translateY(-1px); border-color: #3d4d62; }
-    button.primary { background: #1f6feb; border-color: #2f81f7; font-weight: 800; }
-    button.danger { color: #ffb3ad; }
-    button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-    .stat { padding: 13px 14px; }
-    .stat strong { display: block; font-size: 24px; line-height: 1; margin-top: 3px; }
-    .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
-    .agents { padding: 16px; }
-    .agent-list { display: grid; gap: 10px; }
-    .agent { border: 1px solid var(--line); border-radius: 13px; padding: 14px; background: rgba(10,13,18,.55); }
-    .agent-top { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
-    .agent-name { display: flex; gap: 9px; align-items: center; font-weight: 800; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 4px rgba(141,153,168,.07); flex: 0 0 auto; }
-    .dot.running { background: var(--good); box-shadow: 0 0 0 4px rgba(126,231,135,.08); }
-    .dot.failed { background: var(--bad); }
-    .dot.stopping { background: var(--warn); }
-    .meta { color: var(--muted); font-size: 12px; margin-top: 5px; overflow-wrap: anywhere; }
-    .task { margin: 11px 0; white-space: pre-wrap; }
-    .branch { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #c9d1d9; background: #0c1118; border: 1px solid var(--line); border-radius: 8px; padding: 4px 7px; font-size: 11px; }
-    .agent-actions { display: flex; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
-    .log { margin-top: 10px; display: none; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 280px; overflow: auto; padding: 11px; border-radius: 10px; border: 1px solid var(--line); background: #070a0f; color: #c7d0da; font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .empty { text-align: center; color: var(--muted); padding: 48px 20px; }
-    .toast { position: fixed; right: 18px; bottom: 18px; background: #161d27; border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; max-width: min(420px, calc(100% - 36px)); opacity: 0; transform: translateY(8px); pointer-events: none; transition: .18s ease; }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .tiny { color: var(--muted); font-size: 11px; margin-top: 10px; }
-    @media (max-width: 820px) {
-      .grid { grid-template-columns: 1fr; }
-      .composer { position: static; }
-      header { flex-direction: column; }
+    button:hover { transform:translateY(-1px); border-color:#3d4d62; }
+    button.primary { background:#1f6feb; border-color:#2f81f7; font-weight:800; }
+    button.danger { color:#ffb3ad; }
+    button.good { color:#a8f0ae; }
+    button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; margin-bottom:16px; }
+    .stat { padding:13px 14px; }
+    .stat strong { display:block; font-size:23px; line-height:1; margin-top:4px; }
+    .stat span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
+    .agent-list,.queue-list,.lease-list,.branch-list { display:grid; gap:9px; }
+    .agent,.queue-item,.lease,.worker,.branch-item { border:1px solid var(--line); border-radius:13px; padding:13px; background:rgba(10,13,18,.55); }
+    .agent-top,.item-top { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; }
+    .agent-name,.item-name { display:flex; gap:9px; align-items:center; font-weight:800; }
+    .dot { width:9px; height:9px; border-radius:50%; background:var(--muted); box-shadow:0 0 0 4px rgba(141,153,168,.07); flex:0 0 auto; }
+    .dot.running { background:var(--good); box-shadow:0 0 0 4px rgba(126,231,135,.08); }
+    .dot.failed { background:var(--bad); }
+    .dot.stopping,.dot.candidate { background:var(--warn); }
+    .meta { color:var(--muted); font-size:12px; margin-top:4px; overflow-wrap:anywhere; }
+    .task { margin:10px 0; white-space:pre-wrap; }
+    .tag { display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#c9d1d9; background:#0c1118; border:1px solid var(--line); border-radius:8px; padding:4px 7px; font-size:11px; overflow-wrap:anywhere; }
+    .actions { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+    .log { margin-top:10px; display:none; white-space:pre-wrap; overflow-wrap:anywhere; max-height:320px; overflow:auto; padding:10px; border-radius:10px; border:1px solid var(--line); background:#070a0f; color:#c7d0da; font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .metricline { display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
+    .metricline strong { color:var(--text); }
+    .empty { text-align:center; color:var(--muted); padding:28px 16px; }
+    .tiny { color:var(--muted); font-size:11px; margin-top:9px; }
+    .toast { position:fixed; right:18px; bottom:18px; background:#161d27; border:1px solid var(--line); border-radius:11px; padding:12px 14px; max-width:min(460px,calc(100% - 36px)); opacity:0; transform:translateY(8px); pointer-events:none; transition:.18s ease; z-index:20; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .progress { height:7px; border-radius:999px; background:#080b10; border:1px solid var(--line); overflow:hidden; margin-top:9px; }
+    .progress > span { display:block; height:100%; background:linear-gradient(90deg,#2f81f7,#7ee787); }
+    @media (max-width:960px) {
+      .grid { grid-template-columns:1fr; }
+      .composer { position:static; }
+      .stats { grid-template-columns:repeat(2,1fr); }
+      .split { grid-template-columns:1fr; }
+      header { flex-direction:column; }
+      .toolbar { justify-content:flex-start; }
     }
   </style>
 </head>
@@ -92,23 +93,47 @@
   <div class="shell">
     <header>
       <div>
-        <div class="eyebrow">Heaven Swarm</div>
+        <div class="eyebrow">MHW Swarm · Control Plane</div>
         <h1>Agent Control</h1>
-        <div class="sub">Deploy isolated Codex workers, see what each one is doing, inspect outputs, and stop a runaway worker without touching the updater's checkout.</div>
+        <div class="sub">One runtime view of tasks, workers, branch leases, agents, outputs, and integration candidates. Managed agents always receive isolated Git worktrees.</div>
       </div>
-      <div class="pill" id="connection">Connecting…</div>
+      <div class="toolbar">
+        <div class="pill" id="connection">Connecting…</div>
+        <button id="refresh">Refresh</button>
+        <button id="sync">Sync Git</button>
+      </div>
     </header>
 
     <div class="grid">
-      <section class="card composer">
-        <div class="section-title"><h2>Deploy agents</h2><span class="pill" id="repoPill">repo</span></div>
-        <label for="task">Task</label>
-        <textarea id="task" placeholder="Example: Audit the updater rollback path for race conditions. Commit and push any verified fixes."></textarea>
+      <aside class="card composer">
+        <div class="section-title"><h2>Deploy</h2><span class="pill" id="repoPill">repo</span></div>
 
-        <div class="row">
+        <label for="task">Objective</label>
+        <textarea id="task" placeholder="Example: Audit updater rollback for race conditions. Commit and push any verified fixes."></textarea>
+
+        <div class="row2">
           <div>
             <label for="baseBranch">Base branch</label>
             <input id="baseBranch" value="main" spellcheck="false" />
+          </div>
+          <div>
+            <label for="machine">Worker</label>
+            <select id="machine"><option value="auto">Auto / local</option></select>
+          </div>
+        </div>
+
+        <label for="boundary">Mutable boundary lease <span style="font-weight:400">(optional)</span></label>
+        <input id="boundary" placeholder="Example: updater-release-pipeline" spellcheck="false" />
+        <div class="tiny">Leave blank for an isolated per-agent lease. Name a boundary when you want collision prevention across related work.</div>
+
+        <div class="row3">
+          <div>
+            <label for="model">Model override</label>
+            <input id="model" placeholder="Codex default" spellcheck="false" />
+          </div>
+          <div>
+            <label for="priority">Priority</label>
+            <input id="priority" type="number" min="0" max="100" value="50" />
           </div>
           <div>
             <label for="count">Count</label>
@@ -116,50 +141,89 @@
           </div>
         </div>
 
-        <label for="model">Model override <span style="font-weight:400">(optional)</span></label>
-        <input id="model" placeholder="Use Codex default" spellcheck="false" />
-
         <label>One-click role</label>
         <div class="role-grid">
-          <button class="primary deploy" data-role="support">Deploy Support</button>
-          <button class="deploy" data-role="reviewer">Deploy Reviewer</button>
-          <button class="deploy" data-role="main">Deploy Main</button>
-          <button class="deploy" data-role="manager">Deploy Manager</button>
+          <button class="primary deploy" data-role="support">Support</button>
+          <button class="deploy" data-role="reviewer">Reviewer</button>
+          <button class="deploy" data-role="test">Test</button>
+          <button class="deploy" data-role="main">Main</button>
+          <button class="deploy" data-role="manager">Manager</button>
+          <button class="deploy" data-role="integration">Integration</button>
+          <button class="deploy" data-role="recovery">Recovery</button>
+          <button class="deploy" data-role="release">Release</button>
         </div>
-        <div class="tiny">Each deployment gets its own Git worktree and branch. Maximum 8 agents per click.</div>
-      </section>
+        <div class="tiny">Controller capacity is enforced before launch. This v1 schedules on its local host only; multi-machine registration is the next layer.</div>
+      </aside>
 
-      <section>
+      <main>
         <div class="stats">
           <div class="card stat"><span>Running</span><strong id="running">0</strong></div>
-          <div class="card stat"><span>Completed</span><strong id="completed">0</strong></div>
-          <div class="card stat"><span>Total</span><strong id="total">0</strong></div>
+          <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
+          <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
+          <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
+          <div class="card stat"><span>Total agents</span><strong id="total">0</strong></div>
         </div>
-        <div class="card agents">
+
+        <section class="card section">
           <div class="section-title">
-            <h2>Agents</h2>
-            <button id="refresh">Refresh</button>
+            <h2>Worker pool</h2>
+            <span class="pill" id="workerSummary">0 workers</span>
+          </div>
+          <div id="workers"></div>
+        </section>
+
+        <section class="card section">
+          <div class="section-title">
+            <h2>Managed agents</h2>
+            <span class="pill" id="agentSummary">0</span>
           </div>
           <div class="agent-list" id="agents"></div>
+        </section>
+
+        <div class="split">
+          <section class="card section">
+            <div class="section-title"><h2>Mutable-boundary leases</h2><span class="pill" id="leaseSummary">0 active</span></div>
+            <div class="lease-list" id="leaseList"></div>
+          </section>
+
+          <section class="card section">
+            <div class="section-title"><h2>Integration queue</h2><span class="pill" id="queueSummary">0 candidates</span></div>
+            <div class="queue-list" id="queue"></div>
+          </section>
         </div>
-      </section>
+
+        <section class="card section">
+          <div class="section-title"><h2>Observed swarm branches</h2><span class="pill" id="branchSummary">0</span></div>
+          <div class="branch-list" id="branches"></div>
+          <div class="tiny">Branch discovery can show work produced outside this control plane. It cannot enumerate unrelated ChatGPT web conversations because ChatGPT does not expose a general active-chat registry.</div>
+        </section>
+      </main>
     </div>
   </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
     const $ = id => document.getElementById(id);
-    const state = { agents: [], busy: false };
+    const state = { snapshot:null, busy:false };
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
-    const fmt = value => value ? new Date(value).toLocaleString() : "";
+    const fmt = value => value ? new Date(value).toLocaleString() : "—";
+    const age = ms => {
+      if (ms == null) return "—";
+      const s = Math.max(0, Math.round(ms / 1000));
+      if (s < 60) return `${s}s`;
+      const m = Math.round(s / 60);
+      if (m < 60) return `${m}m`;
+      return `${Math.round(m / 60)}h`;
+    };
     const toast = message => {
       $("toast").textContent = message;
       $("toast").classList.add("show");
       clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+      window.__toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
     };
 
-    async function api(path, options = {}) {
+    async function api(path, options={}) {
       const response = await fetch(path, {
         ...options,
         headers: { "Content-Type":"application/json", ...(options.headers || {}) }
@@ -173,19 +237,40 @@
       if (["running","starting"].includes(status)) return "running";
       if (status === "failed") return "failed";
       if (status === "stopping") return "stopping";
+      if (status === "candidate") return "candidate";
       return "";
     }
 
-    function render() {
-      const agents = state.agents;
-      const running = agents.filter(a => ["running","starting","stopping"].includes(a.status)).length;
-      const completed = agents.filter(a => ["done","finished","stopped"].includes(a.status)).length;
-      $("running").textContent = running;
-      $("completed").textContent = completed;
-      $("total").textContent = agents.length;
+    function renderWorkers(snapshot) {
+      const workers = snapshot.workers || [];
+      $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
+      $("machine").innerHTML = '<option value="auto">Auto / local</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
+      if (!workers.length) {
+        $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
+        return;
+      }
 
+      $("workers").innerHTML = workers.map(w => {
+        const pct = w.capacity ? Math.min(100, Math.round((w.running / w.capacity) * 100)) : 0;
+        const freeGb = w.freeMemoryBytes ? (w.freeMemoryBytes / 1073741824).toFixed(1) : "—";
+        return `<div class="worker">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot running"></span>${escapeHtml(w.name)} <span class="meta">· ${escapeHtml(w.status)}</span></div>
+              <div class="meta">${escapeHtml(w.platform)} / ${escapeHtml(w.arch)} · ${escapeHtml(w.cpus || "—")} CPU threads · ${freeGb} GB free RAM</div>
+            </div>
+            <span class="tag">${w.running}/${w.capacity} slots</span>
+          </div>
+          <div class="progress"><span style="width:${pct}%"></span></div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderAgents(snapshot) {
+      const agents = snapshot.agents || [];
+      $("agentSummary").textContent = `${agents.length} tracked`;
       if (!agents.length) {
-        $("agents").innerHTML = '<div class="empty">No managed agents yet. Give them a task and deploy one.</div>';
+        $("agents").innerHTML = '<div class="empty">No managed agents yet. Give the swarm an objective and deploy one.</div>';
         return;
       }
 
@@ -193,30 +278,116 @@
         <article class="agent">
           <div class="agent-top">
             <div>
-              <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span style="color:var(--muted);font-weight:500">· ${escapeHtml(a.status)}</span></div>
-              <div class="meta">${escapeHtml(a.id)} · PID ${escapeHtml(a.pid || "—")} · ${escapeHtml(fmt(a.startedAt))}</div>
+              <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}</span></div>
+              <div class="meta">${escapeHtml(a.id)} · ${escapeHtml(a.machine || "—")} · PID ${escapeHtml(a.pid || "—")} · ${fmt(a.startedAt)}</div>
             </div>
-            <span class="branch">${escapeHtml(a.baseBranch)} → ${escapeHtml(a.branchName)}</span>
+            <span class="tag">P${escapeHtml(a.priority)} · ${escapeHtml(a.boundary)}</span>
           </div>
           <div class="task">${escapeHtml(a.task)}</div>
-          ${a.lastMessage ? `<div class="meta"><strong style="color:var(--text)">Last answer:</strong> ${escapeHtml(a.lastMessage.slice(0, 420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
-          <div class="agent-actions">
+          <div class="meta"><span class="tag">${escapeHtml(a.baseBranch)} → ${escapeHtml(a.branchName)}</span></div>
+          ${a.lastMessage ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last output:</strong> ${escapeHtml(a.lastMessage.slice(0,420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
+          <div class="actions">
             <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : ""}
-            <button onclick="copyText('${escapeHtml(a.branchName).replace(/'/g,"\\'")}')">Copy branch</button>
+            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
+            <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
           </div>
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
         </article>
       `).join("");
     }
 
-    async function refresh() {
+    function renderLeases(snapshot) {
+      const leases = snapshot.leases || [];
+      const active = leases.filter(l => l.status === "active");
+      $("leaseSummary").textContent = `${active.length} active`;
+      const visible = leases.slice(0,20);
+      if (!visible.length) {
+        $("leaseList").innerHTML = '<div class="empty">No leases yet.</div>';
+        return;
+      }
+
+      $("leaseList").innerHTML = visible.map(l => `
+        <div class="lease">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot ${l.status === "active" ? "running" : ""}"></span>${escapeHtml(l.boundary)}</div>
+              <div class="meta">${escapeHtml(l.ownerAgentId)} · ${escapeHtml(l.status)} · ${fmt(l.acquiredAt)}</div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderQueue(snapshot) {
+      const queue = snapshot.integrationQueue || [];
+      const candidates = queue.filter(q => q.state === "candidate");
+      $("queueSummary").textContent = `${candidates.length} candidates`;
+      if (!queue.length) {
+        $("queue").innerHTML = '<div class="empty">No completed branches yet.</div>';
+        return;
+      }
+
+      $("queue").innerHTML = queue.slice(0,20).map(q => `
+        <div class="queue-item">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot ${statusClass(q.state)}"></span>${escapeHtml(q.state)}</div>
+              <div class="meta">${escapeHtml(q.agentId)} · ${escapeHtml(q.status)}</div>
+            </div>
+            <span class="tag">${q.ahead ?? "?"} ahead / ${q.behind ?? "?"} behind</span>
+          </div>
+          <div class="task">${escapeHtml(q.task)}</div>
+          <div class="meta">${escapeHtml(q.branchName)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderBranches(snapshot) {
+      const branches = snapshot.observedBranches || [];
+      $("branchSummary").textContent = `${branches.length} observed`;
+      if (!branches.length) {
+        $("branches").innerHTML = '<div class="empty">No agent/support/feature branches found on origin.</div>';
+        return;
+      }
+
+      $("branches").innerHTML = branches.slice(0,40).map(b => `
+        <div class="branch-item">
+          <div class="item-top">
+            <div>
+              <div class="item-name">${escapeHtml(b.branchName)}</div>
+              <div class="meta">${escapeHtml(b.sha)} · ${fmt(b.committedAt)} ${b.managed ? `· managed by ${escapeHtml(b.agentId)}` : "· external/observed"}</div>
+            </div>
+            <span class="tag">${escapeHtml(b.status)}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function render(snapshot) {
+      const t = snapshot.telemetry || {};
+      $("running").textContent = t.running ?? 0;
+      $("leases").textContent = t.activeLeases ?? 0;
+      $("candidates").textContent = t.integrationCandidates ?? 0;
+      $("success").textContent = t.successRate == null ? "—" : `${t.successRate}%`;
+      $("total").textContent = t.total ?? 0;
+
+      const controller = snapshot.controller || {};
+      $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} running`;
+      $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
+
+      renderWorkers(snapshot);
+      renderAgents(snapshot);
+      renderLeases(snapshot);
+      renderQueue(snapshot);
+      renderBranches(snapshot);
+    }
+
+    async function refresh(sync=false) {
       try {
-        const [status, agents] = await Promise.all([api("/api/status"), api("/api/agents")]);
-        state.agents = agents;
-        $("connection").textContent = `${status.host} · ${status.running} running`;
-        $("repoPill").textContent = status.repo.split(/[\\\\/]/).pop();
-        render();
+        const snapshot = await api(sync ? "/api/sync" : "/api/snapshot", sync ? {method:"POST",body:"{}"} : {});
+        state.snapshot = snapshot;
+        render(snapshot);
+        if (sync) toast("Git state synchronized.");
       } catch (error) {
         $("connection").textContent = "Offline";
         toast(error.message);
@@ -225,19 +396,23 @@
 
     async function deploy(role) {
       const task = $("task").value.trim();
-      if (!task) return toast("Give the agent a task first.");
+      if (!task) return toast("Give the agent an objective first.");
       if (state.busy) return;
       state.busy = true;
-      document.querySelectorAll(".deploy").forEach(b => b.disabled = true);
+      document.querySelectorAll(".deploy").forEach(button => button.disabled = true);
+
       try {
         const result = await api("/api/deploy", {
-          method: "POST",
-          body: JSON.stringify({
+          method:"POST",
+          body:JSON.stringify({
             role,
             task,
-            count: Number($("count").value || 1),
-            baseBranch: $("baseBranch").value.trim() || "main",
-            model: $("model").value.trim()
+            count:Number($("count").value || 1),
+            baseBranch:$("baseBranch").value.trim() || "main",
+            model:$("model").value.trim(),
+            boundary:$("boundary").value.trim(),
+            priority:Number($("priority").value || 50),
+            machine:$("machine").value || "auto"
           })
         });
         toast(`Deployed ${result.agents.length} ${role} agent${result.agents.length === 1 ? "" : "s"}.`);
@@ -246,14 +421,22 @@
         toast(error.message);
       } finally {
         state.busy = false;
-        document.querySelectorAll(".deploy").forEach(b => b.disabled = false);
+        document.querySelectorAll(".deploy").forEach(button => button.disabled = false);
       }
     }
 
     async function stopAgent(id) {
       try {
-        await api(`/api/agents/${id}/stop`, { method:"POST" });
+        await api(`/api/agents/${id}/stop`, {method:"POST",body:"{}"});
         toast("Stop signal sent.");
+        await refresh();
+      } catch (error) { toast(error.message); }
+    }
+
+    async function reviewAgent(id) {
+      try {
+        await api(`/api/agents/${id}/review`, {method:"POST",body:"{}"});
+        toast("Reviewer deployed.");
         await refresh();
       } catch (error) { toast(error.message); }
     }
@@ -263,7 +446,7 @@
         const data = await api(`/api/agents/${id}/log`);
         const rawId = decodeURIComponent(id);
         const box = document.getElementById(`log-${rawId}`);
-        box.textContent = data.lastMessage ? `FINAL MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
+        box.textContent = data.lastMessage ? `FINAL / LAST MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
         box.style.display = box.style.display === "block" ? "none" : "block";
         button.textContent = box.style.display === "block" ? "Hide log" : "View log";
       } catch (error) { toast(error.message); }
@@ -275,9 +458,11 @@
     }
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
-    $("refresh").addEventListener("click", refresh);
+    $("refresh").addEventListener("click", () => refresh(false));
+    $("sync").addEventListener("click", () => refresh(true));
+
     refresh();
-    setInterval(refresh, 3000);
+    setInterval(() => refresh(false), 4000);
   </script>
 </body>
 </html>

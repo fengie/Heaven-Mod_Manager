@@ -1,12 +1,13 @@
 {
   "name": "heaven-agent-control",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "Local one-click control panel for isolated Codex agents on heaven.",
+  "description": "Local control plane for the MHW coding-agent swarm.",
   "scripts": {
     "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check agentctl.mjs",
     "status": "node agentctl.mjs status",
-    "list": "node agentctl.mjs list"
+    "snapshot": "node agentctl.mjs snapshot"
   }
 }
