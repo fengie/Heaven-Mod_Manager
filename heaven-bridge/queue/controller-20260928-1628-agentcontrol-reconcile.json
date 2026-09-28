@@ -1,0 +1,10 @@
+{
+  "id": "controller-20260928-1628-agentcontrol-reconcile",
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "host": "heaven",
+  "created_at": "2026-09-28T20:28:00Z",
+  "command": "powershell.exe",
+  "args": ["-NoProfile", "-Command", "$ErrorActionPreference='Stop'; $repo=Join-Path $env:TEMP 'mhw-agentcontrol-cycle3'; if(Test-Path $repo){Remove-Item -Recurse -Force $repo}; git clone --no-checkout https://github.com/fengie/mhw-mods.git $repo; Set-Location $repo; git fetch origin main feature/agent-control-plane-v2-20260928; git worktree add -B controller-agentcontrol-cycle3 (Join-Path $env:TEMP 'mhw-agentcontrol-cycle3-wt') origin/feature/agent-control-plane-v2-20260928; Set-Location (Join-Path $env:TEMP 'mhw-agentcontrol-cycle3-wt'); git merge --no-edit origin/main; if($LASTEXITCODE -ne 0){ git status --short; exit $LASTEXITCODE }; if(Test-Path 'Agent Control/package.json'){ Push-Location 'Agent Control'; npm run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; npm test; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Pop-Location }; git status --short; git rev-parse HEAD"],
+  "purpose": "Reconcile canonical PR #59 Agent Control lane with current authoritative main in an isolated heaven worktree and run exact-head checks. Do not push or expose credentials. Preserve conflict evidence if blocked."
+}
