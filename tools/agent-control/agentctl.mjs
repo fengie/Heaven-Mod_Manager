@@ -51,6 +51,9 @@ Commands:
   queue
   branches
   sync
+  routing
+  routing-set --file C:\\path\\routing.json
+  routing-clear
   deploy --role support --task "..." [options]
   deploy --role support --task-file C:\\path\\task.txt [options]
   review <agent-id> [--task "..."] [--task-file C:\\path\\review.txt]
@@ -116,6 +119,21 @@ try {
     print(await request("/api/branches"));
   } else if (command === "sync") {
     print(await request("/api/sync", { method: "POST", body: "{}" }));
+  } else if (command === "routing") {
+    print(await request("/api/control/routing-manifest"));
+  } else if (command === "routing-set") {
+    const file = String(flags.file || "").trim();
+    if (!file) throw new Error("--file is required.");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    print(await request("/api/control/routing-manifest", {
+      method: "POST",
+      body: JSON.stringify(manifest)
+    }));
+  } else if (command === "routing-clear") {
+    print(await request("/api/control/routing-manifest", {
+      method: "POST",
+      body: JSON.stringify({ clear: true, reason: "agentctl-routing-clear" })
+    }));
   } else if (command === "deploy") {
     const task = readTask(flags);
     if (!task) throw new Error("--task or --task-file is required.");
