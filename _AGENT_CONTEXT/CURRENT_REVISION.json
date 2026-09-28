@@ -8,12 +8,12 @@
   "nextMilestone": "CAS integrity exact Windows gate closure",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "cas-integrity-local-windows-gates-passed-hosted-pending",
+  "status": "cas-integrity-hosted-race-repair-implemented-reverification-pending",
   "verificationAppliesToCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationRun": "36342205103",
-  "candidateSourceCommit": "8334d725f6bdb73661e2f3ed71a04189db76950b",
-  "verificationScopeNote": "CAS source 8334d725f6bdb73661e2f3ed71a04189db76950b passed local Verify-Release 25/25 and Build-Release including ReadyToRun publish. Historical hosted fields remain historical until fresh canonical gate closes. See EVIDENCE/cas-integrity-local-windows.log.",
+  "candidateSourceCommit": "cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3",
+  "verificationScopeNote": "CAS source 8334d725f6bdb73661e2f3ed71a04189db76950b passed local gates, but hosted run 36366784304 on canonical 797991231819d8e5693efd671e5352fd447902a0 failed the 88-test integration suite at 87/88 due to a transient Windows sharing violation in concurrent CAS publication verification. Production repair 3810c6b8c5baf1f7aff3b22952e137796dddaa8f plus test stress cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3 require fresh focused, full local Windows, release, and hosted verification. No new verification is claimed yet.",
   "lastClosedVerification": {
     "functionInventoryTotal": 612,
     "functionsVerified": 612,
@@ -102,7 +102,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Complete exact Windows verification and release gates for CAS checkpoint; then recursive source reparse traversal separately. Preserve and recursively propagate continuity.",
+  "nextRequiredAction": "Verify the CAS sharing-violation repair: focused BlobIntegrityTests, exact full local Windows Verify-Release and Build-Release, then exact hosted Windows Release Gate. Close only after all are green; then take recursive source reparse traversal separately. Preserve and recursively propagate continuity.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
