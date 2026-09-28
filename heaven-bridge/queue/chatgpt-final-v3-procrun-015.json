@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-final-v3-procrun-015",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output 'PROC_V3_OK'; Write-Output $env:COMPUTERNAME",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-28T19:53:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
