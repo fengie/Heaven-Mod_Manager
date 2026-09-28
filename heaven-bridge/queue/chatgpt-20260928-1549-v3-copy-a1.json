@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260928-1549-v3-copy-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_copy",
+  "params": {
+    "source": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\needle_v3.txt",
+    "destination": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\copied_v3.txt",
+    "recursive": false,
+    "overwrite": true
+  },
+  "created_at": "2026-09-28T19:47:40Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
