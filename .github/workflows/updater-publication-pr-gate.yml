@@ -1,0 +1,33 @@
+name: Updater Publication PR Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/Publish-UpdaterRelease.ps1'
+      - 'scripts/UpdaterReleasePublication.ps1'
+      - 'scripts/UpdaterReleasePolicy.ps1'
+      - 'scripts/Test-UpdaterReleasePolicy.ps1'
+      - '.github/workflows/updater-publication-pr-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  publication-policy:
+    name: Verify updater publication sequencing
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out pull request revision
+        uses: actions/checkout@v7
+
+      - name: Run updater publication policy and fault tests
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
+
+      - name: Run continuity handoff check
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-AgentHandoff.ps1"
