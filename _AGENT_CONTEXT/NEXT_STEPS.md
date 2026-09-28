@@ -4,6 +4,10 @@ CAS integrity remains the only active production checkpoint. Hosted Windows Rele
 
 Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
+## Newly integrated support research
+
+Documentation-only CAS support work has been harvested from PRs #23, #25, and #22. Read the new filesystem-identity, digest-namespace, and recursive-source-containment audits before starting those later checkpoints. PR #24 was skipped as redundant with the broader filesystem-identity audit. The immediate action remains unchanged: finish the fresh local Windows CAS gate first; do not start any of these production changes early.
+
 ---
 # Next steps
 
