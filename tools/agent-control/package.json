@@ -1,0 +1,12 @@
+{
+  "name": "heaven-agent-control",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Local one-click control panel for isolated Codex agents on heaven.",
+  "scripts": {
+    "start": "node server.mjs",
+    "status": "node agentctl.mjs status",
+    "list": "node agentctl.mjs list"
+  }
+}
