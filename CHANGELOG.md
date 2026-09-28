@@ -1,3 +1,9 @@
+# v8.8.3 — Persisted game-profile path containment
+
+- Reject persisted or upserted game profile IDs unless they are the exact canonical manager ID and a single safe path segment.
+- Re-check generic-game workspace and state roots lexically before any manager-owned directory creation.
+- Preserve malformed registry files unchanged on read instead of silently normalizing or rebinding game/workspace identity.
+- Add hostile-registry and canonical-ID regressions that prove traversal/separator IDs cannot create escaped Mods, Inbox, archive, Next, database, or blob paths.
 # v8.8.2 — Integrated support safety hardening
 
 - Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.

@@ -1,5 +1,10 @@
-# v8.8.2 Universal Mod Manager
+# v8.8.3 Universal Mod Manager
 
+## v8.8.3 — persisted game-profile path containment
+
+Persisted game profile IDs are now treated as path authority, not trusted text. Registry load/upsert rejects IDs that are not the exact canonical single-segment manager form, and generic-game workspace/state paths are independently checked to stay under their manager-owned roots before any directories are created. Malformed or tampered profile state is ignored without rewriting the registry, preventing traversal/separator IDs from redirecting Mods, Inbox, archive, Next, database, or blob storage outside their intended roots.
+
+Focused regressions cover canonical-ID validation, hostile persisted registry entries, unchanged registry bytes on read, and absence of escaped workspace side effects. Existing valid profile/workspace naming is preserved; this is not a StorageKey migration.
 ## v8.8.2 — integrated safety and diagnostics hardening
 
 This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.

@@ -618,7 +618,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
 
     private static HttpClient CreateHttpClient(){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.2");return h;}
+        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.3");return h;}
     private static string? GetString(JsonElement e,string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
