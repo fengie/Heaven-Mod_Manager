@@ -1,5 +1,11 @@
 # Deep SQLite / transaction atomicity audit — 2026-09-27
 
+## 2026-09-28 follow-up — profile save fault regression closed
+
+Missing-regression item 8 is now covered by `tests/MhwModManager.AutomationTests/ProfileRepositoryAtomicityTests.cs`. A Windows/.NET 10.0.401 SQLite trigger fault aborts `ProfileRepository.SaveCurrentAsync` during replacement insertion after the existing profile row/update and membership delete have executed inside the transaction. The focused test passes **1/1** and the full Automation test project passes **25/25**, proving rollback restores the previous profile id, timestamp, membership, enabled flag, and priority. No production source changed. See `_AGENT_CONTEXT/PROFILE_SAVE_TRANSACTION_ATOMICITY_CHECKPOINT_2026-09-28.md`.
+
+The remaining D1-D4 consistency defects and other missing regressions in this audit are unchanged; this follow-up does not claim they are closed.
+
 ## Scope and verification honesty
 
 This is the independent follow-up requested by the Support Agent 1 SQLite/transaction assignment. It cross-checks the earlier `STORAGE_TRANSACTION_BOUNDARY_AUDIT.md` against canonical source rather than assuming that document is exhaustive.
