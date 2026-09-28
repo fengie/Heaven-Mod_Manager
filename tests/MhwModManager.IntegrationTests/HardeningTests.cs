@@ -550,6 +550,31 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Archive_extraction_rejects_junction_ancestor_above_destination()
+    {
+        if(!OperatingSystem.IsWindows())return;
+        var workspace=Path.Combine(root,"archive-anchor");
+        var external=Path.Combine(root,"archive-anchor-target");
+        Directory.CreateDirectory(workspace);
+        Directory.CreateDirectory(external);
+        var modsRoot=Path.Combine(workspace,"Mods");
+        CreateDirectoryJunction(modsRoot,external);
+
+        var zip=Path.Combine(workspace,"fixture.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/x.tex");
+            await using var writer=new StreamWriter(entry.Open());
+            await writer.WriteAsync("payload".AsMemory(),TestToken);
+        }
+
+        var destination=Path.Combine(modsRoot,"fixture.importing");
+        var inspector=new ArchiveInspector();
+        Assert.Throws<InvalidDataException>(()=>inspector.ExtractSafely(zip,destination,TestToken));
+        Assert.False(File.Exists(Path.Combine(external,"fixture.importing","nativePC","x.tex")));
+    }
+
+    [Fact]
     public async Task Sqlite_integrity_and_wal_survive_parallel_reads()
     {
         var (_, db, _, _) = await CreateAsync("db");
