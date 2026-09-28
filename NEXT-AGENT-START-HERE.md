@@ -1,3 +1,19 @@
+# LIVE ROUTING OVERRIDE — 2026-09-28
+
+Canonical GitHub `main` at this reconciliation checkpoint is `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`. The older C12 branch instructions immediately below are historical for routing: **do not resume that isolated branch by default**.
+
+Current owned lanes at this checkpoint:
+- PR #55 — frontend UX/responsive workflows;
+- PR #58 — updater post-upload stale-main publication window (**current updater owner**);
+- PR #59 — Agent Control v2 engineering control plane;
+- PR #62 — persisted game-profile ID path-containment audit.
+
+Archive streaming cancellation / actual-output budgeting is already implemented on `main`, and PR #61 has repaired the distinction between its local integration-head verification and hosted exact-main evidence.
+
+This repository is changing concurrently. Treat PR numbers/heads here as a checkpoint only and **re-query live GitHub before selecting work**. Read `_AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md`. Preserve the permanent recursive continuity constitution and explicitly pass it to your successor.
+
+---
+
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.
