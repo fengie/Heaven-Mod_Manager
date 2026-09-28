@@ -13,6 +13,7 @@ The trainer's rules are generic. This file preserves lightweight provenance show
 | Shareable diagnostics need export-boundary sanitization | LR-006; diagnostics privacy audit |
 | Entity deletion must retire live semantic references | LR-007; mod lifecycle referential-integrity audit |
 | In-progress imports must stay invisible until commit-on-success | LR-008; import publication/catalog visibility audit |
+| Cancellation/resource budgets must be enforced inside the actual streaming I/O boundary | `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` runtime reproduction |
 | Automated diagnosis must validate controls before durable blame | LR-009; crash-bisector evidence audit |
 | Integration state must record reviewed/merged/rejected/superseded work | `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` |
 | CI must verify the artifact users receive, not merely an intermediate build | `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` and release-gate evidence |
