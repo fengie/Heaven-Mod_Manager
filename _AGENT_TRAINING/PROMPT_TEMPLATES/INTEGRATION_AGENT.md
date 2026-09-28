@@ -1,0 +1,6 @@
+# Integration Agent Prompt
+Integrate parallel work for [repository] without trusting a prewritten branch list as complete.
+Fetch all remotes, establish actual canonical main, inspect status/history, and discover relevant branches/PRs. Repository truth outranks this prompt.
+For each candidate, determine purpose, diff, unique value, staleness, verification, and disposition: reviewed, merged, rejected, superseded, abandoned, or unresolved.
+Do not blindly merge stale branch-local handoff/verification files over newer canonical truth. Salvage unique tests/research when useful. Resolve conflicts by current behavior and invariants.
+Verify the combined result, update the durable integration ledger and continuity state, persist according to policy, refetch, and verify remote state. Record reusable coordination lessons.
