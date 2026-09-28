@@ -9,7 +9,7 @@
   "companyTrainingStatus": "active-living-system",
   "nextMilestone": "integrate v8.8.2 support-bundle privacy hardening, inspect exact-main hosted closure, then harden DB-backed share exports",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.0 Windows-verified release",
+  "immediateParentRevision": "v8.8.1 updater publication verification integration",
   "status": "support-bundle-v8.8.2-local-release-verified-integration-hosted-closure-pending",
   "verificationAppliesToCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
   "lastClosedVerificationCommit": "d66bff290f197236ec43c9b37d2b015ab2ee5fe8",
