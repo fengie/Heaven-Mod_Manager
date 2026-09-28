@@ -1,6 +1,7 @@
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Storage;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace MhwModManager.IntegrationTests;
@@ -71,13 +72,37 @@ public sealed class BlobIntegrityTests : IDisposable
     public async Task Concurrent_valid_captures_converge_and_restore_the_expected_bytes()
     {
         var (db, blobs, source, hash) = await CreateAsync();
-        File.Delete(blobs.PathFor(hash));
-        var results = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => blobs.CaptureAsync(source, TestToken)));
-        Assert.All(results, result => Assert.Equal(hash, result));
-        Assert.Equal("1", await ScalarAsync(db, "SELECT COUNT(*) FROM blobs"));
+        var casPath = blobs.PathFor(hash);
+
+        for (var repetition = 0; repetition < 6; repetition++)
+        {
+            File.Delete(casPath);
+            var results = await Task.WhenAll(Enumerable.Range(0, 32).Select(_ => blobs.CaptureAsync(source, TestToken)));
+
+            Assert.All(results, result => Assert.Equal(hash, result));
+            Assert.Equal("1", await ScalarAsync(db, "SELECT COUNT(*) FROM blobs"));
+            Assert.Equal([hash], Directory.EnumerateFiles(blobs.Root).Select(Path.GetFileName).ToArray());
+            await using var cas = new FileStream(casPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            Assert.Equal(hash, Convert.ToHexString(await SHA256.HashDataAsync(cas, TestToken)).ToLowerInvariant());
+            Assert.Empty(Directory.EnumerateFiles(blobs.Root, ".capture-*.tmp"));
+        }
+
         var destination = Path.Combine(root, "destination");
         await blobs.RestoreAsync(hash.ToUpperInvariant(), destination, TestToken);
         Assert.Equal("CORRECT", await File.ReadAllTextAsync(destination, TestToken));
+    }
+
+    [Fact]
+    public async Task Canceled_capture_does_not_publish_or_leave_private_staging()
+    {
+        var (_, blobs, source, hash) = await CreateAsync();
+        File.Delete(blobs.PathFor(hash));
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => blobs.CaptureAsync(source, canceled.Token));
+
+        Assert.False(File.Exists(blobs.PathFor(hash)));
         Assert.Empty(Directory.EnumerateFiles(blobs.Root, ".capture-*.tmp"));
     }
 
