@@ -9,11 +9,15 @@ namespace MhwModManager.Updater;
 public sealed class UpdateInstaller(
     Action<UpdateApplyFaultPoint, string?>? faultInjector = null,
     Action<string>? log = null,
-    IAtomicReplaceBackend? applyReplaceBackend = null)
+    IAtomicReplaceBackend? applyReplaceBackend = null,
+    IAtomicReplaceBackend? metadataReplaceBackend = null,
+    IAtomicReplaceBackend? rollbackReplaceBackend = null)
 {
     private readonly Action<UpdateApplyFaultPoint, string?> injectFault = faultInjector ?? ((_, _) => { });
     private readonly Action<string> writeLog = log ?? (_ => { });
     private readonly IAtomicReplaceBackend? liveApplyReplaceBackend = applyReplaceBackend;
+    private readonly IAtomicReplaceBackend? liveMetadataReplaceBackend = metadataReplaceBackend;
+    private readonly IAtomicReplaceBackend? liveRollbackReplaceBackend = rollbackReplaceBackend;
 
     public async Task ApplyAsync(UpdateApplyRequest request, CancellationToken ct)
     {
@@ -68,8 +72,8 @@ public sealed class UpdateInstaller(
                 injectFault(UpdateApplyFaultPoint.AfterStaleOwnedRemoval, pair.Key);
             }
 
-            await PublishProductManifestAsync(request, ct);
-            await PublishInstallMarkerAsync(request, ct);
+            await PublishProductManifestAsync(request, liveMetadataReplaceBackend, ct);
+            await PublishInstallMarkerAsync(request, liveMetadataReplaceBackend, ct);
             injectFault(UpdateApplyFaultPoint.BeforeInstalledVerification, null);
             await VerifyInstalledOwnedFilesAsync(request, context.NewManifest, ct);
             await WriteJournalAsync(request, UpdateJournalPhase.AppliedAwaitingHealth, null, ct);
@@ -127,7 +131,21 @@ public sealed class UpdateInstaller(
         ValidateRequestPaths(request);
         var stagedManifest = await UpdatePackageVerifier.VerifyAsync(
             request.StagingRoot, request.Manifest.ProductManifestSha256, ct);
-        await RollbackFromBackupAsync(request, stagedManifest, ct);
+        try
+        {
+            await RollbackFromBackupAsync(request, stagedManifest, ct);
+        }
+        catch (Exception rollbackError) when (IsAmbiguousNativeReplaceFailure(rollbackError))
+        {
+            await WriteJournalBestEffortAsync(
+                request,
+                UpdateJournalPhase.RollbackRequired,
+                $"rollback={rollbackError.Message}");
+            writeLog(
+                $"update rollback replacement failed ambiguously error={((Win32Exception)rollbackError).NativeErrorCode}; " +
+                "preserving backup and replacement evidence for deterministic recovery");
+            throw;
+        }
     }
 
     private static void ValidateRequestPaths(UpdateApplyRequest request)
@@ -288,22 +306,37 @@ public sealed class UpdateInstaller(
         File.Delete(destination);
     }
 
-    private static async Task PublishProductManifestAsync(UpdateApplyRequest request, CancellationToken ct)
+    private static async Task PublishProductManifestAsync(
+        UpdateApplyRequest request,
+        IAtomicReplaceBackend? replaceBackend,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var source = Path.Combine(request.StagingRoot, UpdateProtocol.ProductManifestFileName);
         var destination = Path.Combine(request.InstallRoot, UpdateProtocol.ProductManifestFileName);
         await AtomicFileOps.ReplaceFromAsync(
-            source, destination, expectedSha256: request.Manifest.ProductManifestSha256, ct: ct);
+            source,
+            destination,
+            replaceBackend: replaceBackend,
+            expectedSha256: request.Manifest.ProductManifestSha256,
+            ct: ct);
     }
 
-    private static async Task PublishInstallMarkerAsync(UpdateApplyRequest request, CancellationToken ct)
+    private static async Task PublishInstallMarkerAsync(
+        UpdateApplyRequest request,
+        IAtomicReplaceBackend? replaceBackend,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var source = Path.Combine(request.StagingRoot, UpdateProtocol.InstallMarkerFileName);
         var destination = Path.Combine(request.InstallRoot, UpdateProtocol.InstallMarkerFileName);
         var expected = await UpdatePackageVerifier.HashFileAsync(source, ct);
-        await AtomicFileOps.ReplaceFromAsync(source, destination, expectedSha256: expected, ct: ct);
+        await AtomicFileOps.ReplaceFromAsync(
+            source,
+            destination,
+            replaceBackend: replaceBackend,
+            expectedSha256: expected,
+            ct: ct);
     }
 
     private static async Task VerifyInstalledOwnedFilesAsync(
@@ -426,7 +459,12 @@ public sealed class UpdateInstaller(
             var destination = UpdatePathSafety.CombineUnderRoot(request.InstallRoot, entry.Path);
             UpdatePathSafety.EnsureExistingComponentsNotReparse(
                 request.InstallRoot, Path.GetDirectoryName(destination) ?? request.InstallRoot);
-            await AtomicFileOps.ReplaceFromAsync(source, destination, expectedSha256: entry.Sha256, ct: ct);
+            await AtomicFileOps.ReplaceFromAsync(
+                source,
+                destination,
+                replaceBackend: liveRollbackReplaceBackend,
+                expectedSha256: entry.Sha256,
+                ct: ct);
         }
 
         await VerifyRollbackBytesAsync(request.InstallRoot, rollbackManifest, ct);
