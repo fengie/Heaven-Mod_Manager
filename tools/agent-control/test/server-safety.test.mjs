@@ -67,6 +67,37 @@ function getJson(port, pathname = "/api/snapshot") {
   });
 }
 
+function postJson(port, pathname, value = {}) {
+  const payload = JSON.stringify(value);
+  return new Promise((resolve, reject) => {
+    const request = http.request({
+      host: "127.0.0.1",
+      port,
+      path: pathname,
+      method: "POST",
+      timeout: 1500,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(payload)
+      }
+    }, response => {
+      let body = "";
+      response.setEncoding("utf8");
+      response.on("data", chunk => { body += chunk; });
+      response.on("end", () => {
+        try {
+          resolve({ status: response.statusCode, body: JSON.parse(body) });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    request.on("timeout", () => request.destroy(new Error("timeout")));
+    request.on("error", reject);
+    request.end(payload);
+  });
+}
+
 async function waitForSnapshot(port, timeoutMs = 5000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
@@ -203,4 +234,43 @@ test("counted deploy preflights whole-batch capacity before launching the first 
   const firstDeployAt = route.indexOf("await deployOne");
   assert.ok(preflightAt >= 0 && firstDeployAt > preflightAt);
   assert.match(route, /No workers were launched/);
+});
+
+
+test("broad workflow execution fails closed until a routing manifest is current", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-routing-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const blocked = await postJson(port, "/api/workflows/usual-swarm/execute", {
+    objective: "Continue current repository work"
+  });
+  assert.equal(blocked.status, 201);
+  assert.equal(blocked.body.created.length, 0);
+  assert.match(blocked.body.blocked[0], /current routing manifest/i);
+
+  const manifest = await postJson(port, "/api/control/routing-manifest", {
+    source: "test-routing-board",
+    mode: "authoritative",
+    ttlMinutes: 30,
+    assignments: [
+      { slotId: "manager", role: "manager", status: "claimed", owner: "manager" },
+      { slotId: "main", role: "main", status: "claimed", branch: "feature/main" },
+      { slotId: "support-1", role: "support", lane: "safety", status: "claimed", branch: "support/safety" }
+    ]
+  });
+  assert.equal(manifest.status, 200);
+  assert.equal(manifest.body.source, "test-routing-board");
+  assert.equal(manifest.body.mode, "authoritative");
+
+  const reconciled = await postJson(port, "/api/workflows/usual-swarm/execute", {
+    objective: "Continue current repository work"
+  });
+  assert.equal(reconciled.status, 201);
+  assert.equal(reconciled.body.created.length, 0);
+  assert.equal(reconciled.body.blocked.length, 0);
+  assert.equal(reconciled.body.plan.ownership.reconciled, true);
 });
