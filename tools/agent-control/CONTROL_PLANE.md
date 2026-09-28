@@ -58,7 +58,7 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.2 registers the controller host as one local worker with:
+v0.3.1 registers the controller host as one local worker with:
 
 - hostname
 - platform/architecture
@@ -146,3 +146,5 @@ A future native MCP mode can replace the bridge once the controller has an authe
 6. Controller state is local operational data; Git remains canonical engineering state.
 7. External Git branches are observable but not falsely treated as live managed processes.
 8. Stopping a managed agent targets only its recorded process tree.
+9. Operator stop intent is terminal: a zero exit after a stop request is recorded as `stopped`, not successful completion.
+10. Child-exit Git evidence is collected before authoritative registry mutation so a stale whole-state snapshot is never saved after an asynchronous yield.
