@@ -55,10 +55,7 @@ public sealed class ArchiveInspector
         if(!destinationFull.Equals(trusted,StringComparison.OrdinalIgnoreCase) && !destinationFull.StartsWith(trustedPrefix,StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Extraction destination is outside the trusted root.");
         if(!Directory.Exists(trusted))throw new InvalidDataException("Trusted extraction root does not exist.");
-        EnsureNoReparsePoint(trusted,Path.GetDirectoryName(destinationFull)??trusted);
-        if (Directory.Exists(destinationFull) && IsReparsePoint(destinationFull))
-            throw new InvalidDataException("Extraction destination is a reparse point.");
-        Directory.CreateDirectory(destinationFull);
+        EnsureSafeDirectoryPath(trusted,destinationFull);
         var root=destinationFull+Path.DirectorySeparatorChar;
         using var archive=ArchiveFactory.OpenArchive(archivePath);
         long total=0;
@@ -74,25 +71,36 @@ public sealed class ArchiveInspector
             var dest=Path.GetFullPath(Path.Combine(destinationFull,key));
             if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Archive path traversal detected.");
             var parent = Path.GetDirectoryName(dest)!;
-            Directory.CreateDirectory(parent);
-            EnsureNoReparsePoint(trusted,parent);
+            EnsureSafeDirectoryPath(trusted,parent);
             e.WriteToFile(dest,new ExtractionOptions{ExtractFullPath=false,Overwrite=false});
         }
     }
 
-    private static void EnsureNoReparsePoint(string root,string directory)
+    private static void EnsureSafeDirectoryPath(string root,string directory)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var current=Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar);
         var stop=Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
+        var target=Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar);
         var stopPrefix=stop+Path.DirectorySeparatorChar;
-        while(current.Equals(stop,StringComparison.OrdinalIgnoreCase) || current.StartsWith(stopPrefix,StringComparison.OrdinalIgnoreCase))
+        if(!target.Equals(stop,StringComparison.OrdinalIgnoreCase) && !target.StartsWith(stopPrefix,StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Extraction directory is outside the trusted root.");
+
+        if(IsReparsePoint(stop))throw new InvalidDataException($"Extraction path traverses a reparse point: {stop}");
+        if(target.Equals(stop,StringComparison.OrdinalIgnoreCase))return;
+
+        var relative=Path.GetRelativePath(stop,target);
+        var current=stop;
+        foreach(var segment in relative.Split(Path.DirectorySeparatorChar,StringSplitOptions.RemoveEmptyEntries))
         {
-            if(Directory.Exists(current) && IsReparsePoint(current))throw new InvalidDataException($"Extraction path traverses a reparse point: {current}");
-            if(current.Equals(stop,StringComparison.OrdinalIgnoreCase))break;
-            var parent=Directory.GetParent(current)?.FullName;
-            if(parent is null)break;
-            current=parent.TrimEnd(Path.DirectorySeparatorChar);
+            current=Path.Combine(current,segment);
+            if(Directory.Exists(current))
+            {
+                if(IsReparsePoint(current))throw new InvalidDataException($"Extraction path traverses a reparse point: {current}");
+                continue;
+            }
+
+            Directory.CreateDirectory(current);
+            if(IsReparsePoint(current))throw new InvalidDataException($"Extraction path traverses a reparse point: {current}");
         }
     }
 
