@@ -9,6 +9,7 @@ $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 $Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 . (Join-Path $PSScriptRoot 'UpdaterReleasePolicy.ps1')
+. (Join-Path $PSScriptRoot 'UpdaterReleasePublication.ps1')
 
 if([string]::IsNullOrWhiteSpace($ManifestPath)){
   $ManifestPath=Join-Path $Root 'artifacts\update-manifest.json'
@@ -130,20 +131,53 @@ try {
     "Artifact SHA-256: $($manifest.sha256)"
   ) -join [Environment]::NewLine
 
-  # Re-check main immediately before the irreversible client-visible publication.
-  # A concurrent push after the earlier policy calculation must not publish stale bytes.
-  & git fetch origin main
-  if($LASTEXITCODE -ne 0){throw 'Failed to refresh origin/main immediately before updater publication.'}
-  $remoteMainBeforePublish=(& git rev-parse origin/main).Trim()
-  if(-not [string]::Equals($remoteMainBeforePublish,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
-    Write-Host "::notice::Skipping updater publication because main advanced to $remoteMainBeforePublish after the publication preflight."
+  # Keep the release non-client-visible while assets are uploaded and verified.
+  # Re-check main only after the potentially long upload window, immediately before publish.
+  $publication=Invoke-UpdaterDraftPublication -ExpectedSourceSha $ExpectedSourceSha `
+    -CreateDraft {
+      & gh release create $tag --repo $Repository --target $ExpectedSourceSha --title "MHW Manual Mod Manager updater build $ExpectedBuildNumber" --notes $notes --draft --latest=false
+      if($LASTEXITCODE -ne 0){throw "Failed to create updater draft release $tag."}
+    } `
+    -UploadAssets {
+      # Never pass --clobber. This draft is new and exact asset names are verified below.
+      & gh release upload $tag $artifact $manifestFile --repo $Repository
+      if($LASTEXITCODE -ne 0){throw "Failed to upload updater draft assets for $tag."}
+    } `
+    -VerifyDraft {
+      $draftViewJson=& gh release view $tag --repo $Repository --json tagName,isDraft,isImmutable,databaseId
+      if($LASTEXITCODE -ne 0){throw "Updater draft release $tag could not be inspected."}
+      $draftView=$draftViewJson | ConvertFrom-Json
+      if([string]$draftView.tagName -ne $tag -or -not [bool]$draftView.isDraft){
+        throw "Updater draft release $tag has unexpected identity/draft state."
+      }
+      $draftId=[long]$draftView.databaseId
+      if($draftId -le 0){throw "Updater draft release $tag has no valid database id."}
+      $draftApi=& gh api "repos/$Repository/releases/$draftId"
+      if($LASTEXITCODE -ne 0){throw "Updater draft release $tag assets could not be verified."}
+      $draftRelease=$draftApi | ConvertFrom-Json
+      if(-not [bool]$draftRelease.draft -or [string]$draftRelease.tag_name -ne $tag){
+        throw "Updater draft release $tag changed state or identity before publication."
+      }
+      Assert-UpdaterReleaseAssets -Release $draftRelease -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+    } `
+    -RefreshMain {
+      & git fetch origin main
+      if($LASTEXITCODE -ne 0){throw 'Failed to refresh origin/main after updater asset upload.'}
+      return (& git rev-parse origin/main).Trim()
+    } `
+    -DeleteDraft {
+      & gh release delete $tag --repo $Repository --cleanup-tag --yes
+      if($LASTEXITCODE -ne 0){throw "Failed to withdraw updater draft release $tag."}
+    } `
+    -PublishDraft {
+      & gh release edit $tag --repo $Repository --draft=false
+      if($LASTEXITCODE -ne 0){throw "Failed to publish updater draft release $tag; publication state must be inspected before retry."}
+    }
+
+  if(-not $publication.Published){
+    Write-Host "::notice::Skipping updater publication because main advanced to $($publication.RemoteMainSha) during draft asset upload."
     exit 0
   }
-
-  # gh stages the release as a draft, uploads all assets, then publishes it.
-  # We never pass --clobber; an existing tag/release/assets fail closed above.
-  & gh release create $tag $artifact $manifestFile --repo $Repository --target $ExpectedSourceSha --title "MHW Manual Mod Manager updater build $ExpectedBuildNumber" --notes $notes --latest=false
-  if($LASTEXITCODE -ne 0){throw "Failed to create immutable updater release $tag."}
 
   $releaseViewJson=& gh release view $tag --repo $Repository --json tagName,isDraft,isImmutable
   if($LASTEXITCODE -ne 0){throw "Published updater release $tag could not be inspected for immutability."}
