@@ -59,6 +59,8 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         var parent = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException("Download destination has no parent.");
         Directory.CreateDirectory(parent);
         using var request = CreateRequest(HttpMethod.Get, candidate.ArtifactApiUri.ToString(), token);
+        request.Headers.Accept.Clear();
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         await EnsureSuccessAsync(response, ct);
         if (response.Content.Headers.ContentLength is long declared && declared != manifest.ArtifactSize)
