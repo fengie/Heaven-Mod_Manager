@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-final-v3-locktests-023",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T19:58:52.934153+00:00"
+  "updated_at": "2026-09-28T19:59:03.215492+00:00",
+  "exit_code": 0
 }
