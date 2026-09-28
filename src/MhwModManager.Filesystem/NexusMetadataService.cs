@@ -416,6 +416,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
 
     private static IEnumerable<string> EnumerateJsonImageUrls(JsonElement element,HashSet<string> keys)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         switch(element.ValueKind)
         {
             case JsonValueKind.Object:
