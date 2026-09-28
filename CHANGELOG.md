@@ -1,3 +1,10 @@
+# v8.8.4 — Atomic launch-observation persistence
+
+- Persist each observed launch row and all enabled-mod trust deltas in one SQLite transaction.
+- Capture one pre-launch mod/build snapshot so history and trust cannot describe different launch state.
+- Make exact launch-ID replay idempotent and fail closed on conflicting immutable evidence.
+- Preserve authoritative launch evidence after the external outcome is known even if the user cancellation token is later canceled.
+- Add deterministic SQLite fault regressions for first/later trust-write failure, replay, snapshot identity, and exact failed-launch diagnosis linkage.
 # v8.8.3 ? Archive streaming failure-cleanup hardening
 
 - Attempt owned current-output cleanup for every exceptional archive payload-copy exit after file creation, including ordinary streamed I/O failures.
@@ -6,7 +13,7 @@
 - Add deterministic fault-injection regressions for ordinary I/O cleanup, cleanup-failure exception dominance, and Smart Inbox cancellation dominance.
 - Keep whole-import staging/publication residue under LR-008 as a separate future boundary.
 
-# v8.8.2 — Integrated support safety hardening
+# v8.8.2 â€” Integrated support safety hardening
 
 - Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.
 - Compensate ordinary duplicate-cleanup database-delete failures by reconciling durable row state and restoring the archived source only when safe; abrupt process-death recovery remains separate.
@@ -14,15 +21,15 @@
 - Add generated support-bundle privacy canaries, profile-save rollback fault injection, and stronger adversarial handoff-continuity fixtures.
 - Preserve new audits for persisted game-profile ID path containment and launch-observation persistence atomicity as regression-first follow-up boundaries.
 
-# v8.8.1 — Updater publication verification hardening
+# v8.8.1 â€” Updater publication verification hardening
 
 - Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.
 - Fail closed unless the published ref name is exact, its target is a direct commit, its SHA is a valid 40-hex identifier, and it matches the expected source commit.
 - Add regression coverage for empty, malformed, wrong-tag, non-commit, and malformed-SHA ref responses while preserving the existing pre-publication local checks.
 
-# v8.8.0 — Function verification cache and call-error hardening
+# v8.8.0 â€” Function verification cache and call-error hardening
 
-## Repair audit — 2026-09-27
+## Repair audit â€” 2026-09-27
 
 - Fix generic-mode `nativePC` file exclusion and recapture missing CAS blobs on rescan.
 - Avoid entering/flushing the watcher trace when no events or overflow are pending.
@@ -59,7 +66,7 @@
 - `Verify-Release.ps1` and `Build-Release.ps1` now scan function fingerprints before compilation and promote the cache only after every required verification stage passes. Failed builds preserve the last known-good cache.
 - Added source-level verification documentation and agent handoff context.
 
-# v8.7.0 — Universal game support
+# v8.7.0 â€” Universal game support
 
 - Promotes the existing game-profile scaffolding into a real generic multi-game architecture.
 - Adds best-effort installed-game discovery for Steam, Epic Games Store, and GOG plus the existing manual executable picker.
@@ -70,7 +77,7 @@
 - Keeps MHW semantic armor/family/texture intelligence behind the enhanced MHW profile instead of applying it to unknown games.
 - Nexus domain is profile-scoped instead of conceptually MHW-only.
 
-# 8.6.27 — Visual Source Fallback
+# 8.6.27 â€” Visual Source Fallback
 
 - Fixed libraries showing `No visual available` when Nexus archives contain no screenshots and no API key is configured.
 - Imports Vortex-style `pictureUrl` / image URL fields from local sidecar metadata.
@@ -78,13 +85,13 @@
 - Visual sync now reports local, sidecar/Vortex, public Nexus, and authenticated API visual counts separately.
 - Accepts local GIF previews and rejects unsupported remote media types instead of saving them with a misleading `.jpg` extension.
 
-## 8.6.26 — App compile cleanup
+## 8.6.26 â€” App compile cleanup
 
 - Fixed `CS0103` in `ViewModels/Rows.cs` where the new visual gallery code referenced `File.Exists` without `System.IO`.
 - Removed the remaining CA1869 test warning by caching test JSON serializer options.
 - No behavior changes to deployment, family inference, conflict resolution, visuals, updates, or issue fallback.
 
-## 8.6.25 — UX, overlap explorer, dry-run planning and background hardening
+## 8.6.25 â€” UX, overlap explorer, dry-run planning and background hardening
 
 - Added smart mod-library views: **All**, **Enabled**, **Staged**, **Updates**, **Issues**, **Revalidate**, and **Superseded**. Search composes with the active view.
 - Added **Preview changes**: a true planner dry run that captures/indexes newly-enabled sources, builds the same deployment plan as Apply, reports add/replace/remove/restore counts, and redirects to **Needs attention** if a blocking choice remains. It never writes `nativePC`.
@@ -96,7 +103,7 @@
 - Clicking through visual-heavy libraries reuses persisted gallery metadata before recursively rescanning large source folders.
 - See `RESEARCH-UX-ROBUSTNESS.md` for the Vortex/MO2/Fluffy UX patterns used in this pass.
 
-## 8.6.24 — Visual library, Nexus/Vortex artwork and automatic update checks
+## 8.6.24 â€” Visual library, Nexus/Vortex artwork and automatic update checks
 
 - Mod rows now show cached thumbnails; selecting a mod expands a visual gallery of Nexus artwork, FOMOD/Vortex installer images, and screenshots found inside the source package.
 - Nexus v3 `thumbnail_url` / `picture_url` / `image_url` artwork is cached under `State\Next\PreviewCache\Nexus` and refreshed automatically during metadata sync.
@@ -106,7 +113,7 @@
 - Nexus metadata/artwork refreshes automatically while the app is open; update chains are checked daily and logical mods get an `Update available` badge. Updates are detected automatically but never silently installed/deployed.
 - Manual **Sync metadata + visuals** forces an immediate refresh.
 
-## 8.6.23 — Mod issue fallback / suspect tracker
+## 8.6.23 â€” Mod issue fallback / suspect tracker
 
 - Added persistent per-mod issue suspect records for startup crashes, general game crashes, GPU/graphics crashes, and crash-bisector isolation.
 - Automatic startup failures compare the failing launch against the previous successful modded launch and mark likely changed/enabled mods.
@@ -118,7 +125,7 @@
 - Database schema bumped to v5 with `mod_issue_suspects`.
 
 
-## 8.6.22 — Shared texture resources + texture safety gate
+## 8.6.22 â€” Shared texture resources + texture safety gate
 - Treat shared body/skin textures embedded inside broader armor/outfit packages as one shared resource provider instead of a whole-mod conflict.
 - Keep dedicated independent texture/recolor packs blocking unless lineage or an explicit provider rule proves they are related.
 - Add pre-launch/Health validation for enabled MHW `.tex` sources: missing/unreadable sources, post-index size changes, truncated files, and invalid TEX signatures are surfaced before launch.
@@ -286,10 +293,10 @@
 - Added root-launcher syntax preflight so a broken verifier is detected before execution with a direct parser error instead of a cascade of misleading failures.
 - `Test Everything.bat`, `Verify.bat`, and `Build.bat` now preserve the real exit code.
 
-# v8.5.0 — Compatibility intelligence / hands-off resolver
+# v8.5.0 â€” Compatibility intelligence / hands-off resolver
 
 - Added Nexus-aware provenance and lineage. Local sidecars/folder metadata work offline; optional live Nexus v3 enrichment can identify Main, Optional, Update, archived/old versions, upload time, and version chains.
-- Nexus evidence outranks filename heuristics for automatic main → optional → update precedence and supersession.
+- Nexus evidence outranks filename heuristics for automatic main â†’ optional â†’ update precedence and supersession.
 - Logical mods now expose an internal configuration drawer while preserving one-click family enable/disable. Physical source packages remain immutable.
 - Added atomic MHW asset-bundle grouping for model/material/physics/game-data conflicts so direct-alternative choices select a coherent logical mod rather than mixing unrelated structural providers file-by-file.
 - Replaced pairwise conflict spam with one-of-N choice cards grouped by atomic asset bundle. Selecting a logical winner stages competing logical alternatives OFF; no live files change until Apply safely.
@@ -302,7 +309,7 @@
 - Startup now counts unadopted live files and surfaces the count on the Dashboard.
 - Added intelligence regression coverage for Nexus optional/update precedence, version supersession, independent texture alternatives, HPN dedicated/newer texture providers, structural atomic bundles, and superseded-source exclusion.
 
-# v8.4.0 — Logical mod families / direct-replacement-only choices
+# v8.4.0 â€” Logical mod families / direct-replacement-only choices
 
 - Collapsed recognizable main + Top/Waist/Legs/No Cape/Open Top/optional/patch/fix/update packages into one logical library row while preserving every physical source folder.
 - A logical-family toggle expands to all underlying source packages at planning/apply time; no source folder is rewritten or deleted.
@@ -315,9 +322,9 @@
 - Rare direct collisions between two components inside one logical family are surfaced as a component-level pick instead of inventing an unsafe binary merge/order.
 - Added logical-family regression tests for HPN multipart groups, alternatives, HPN texture revisions, unrelated HPN armors, and structural version separation.
 
-# v8.3.1 — Smart composition / provider precedence
+# v8.3.1 â€” Smart composition / provider precedence
 
-- Added deterministic provider ordering for intentional MHW overwrite workflows: main/base → optional component → patch/fix/update.
+- Added deterministic provider ordering for intentional MHW overwrite workflows: main/base â†’ optional component â†’ patch/fix/update.
 - Dedicated texture/skin packs now beat stale incidental texture copies embedded in armor packages while every source mod remains enabled.
 - Related texture revisions use Nexus-style upload timestamps, date/version labels, explicit Updated/Fix wording, and finally file revision time before falling back to configured priority.
 - HPN/UHPN/HHPN `mod_hepsy` resources receive lineage-aware texture revision handling without applying timestamp ordering to structural files.
@@ -325,10 +332,10 @@
 - Same-label structural packages (for example multiple `Fatalis Patch` archives) no longer auto-order merely because one is smaller/newer.
 - `Alternative` / `Alt` / `Variant` naming alone is intentionally not enough to auto-order structural files.
 - Added Nexus archive suffix metadata detection for newly discovered local mod folders.
-- Added regression coverage for HPN optional components, dedicated texture providers, v1→v2 texture updates, explicit resource pins, ambiguous alternatives, and same-label patches.
+- Added regression coverage for HPN optional components, dedicated texture providers, v1â†’v2 texture updates, explicit resource pins, ambiguous alternatives, and same-label patches.
 - Source mods remain immutable. The manager still performs a virtual merge into one final deployment tree; format-aware binary splicing is not attempted.
 
-# v8.3.0 — Automatic compatibility composition
+# v8.3.0 â€” Automatic compatibility composition
 
 - Added research-backed automatic base/option/patch inference. High-confidence families are composed without human conflict prompts.
 - Overlay chains now resolve 3+ providers (`base -> option -> hotfix`) when every provider is ordered.
@@ -371,7 +378,7 @@
 - Fixed the last xUnit1051 integration-test call by passing `TestContext.Current.CancellationToken` into synchronous archive extraction.
 - Preserves the all-project compile/analyzer sweep and automatic BuildLogs introduced in 8.1.5.
 
-# v8.1.5 — All-errors compile sweep + Diagnostics/Integration fixes
+# v8.1.5 â€” All-errors compile sweep + Diagnostics/Integration fixes
 
 - `Verify-Release.ps1` now performs a relaxed whole-solution dependency build followed by a strict per-project compiler/analyzer sweep. Analyzer errors in one project no longer prevent the verifier from exposing analyzer errors in downstream projects.
 - Every compile sweep writes a transcript, summary, relaxed binlog, final binlog, and one binlog per project under `BuildLogs\`.
@@ -381,7 +388,7 @@
 - Proactively made process launching disposable-safe and invariant-culture conflict-rule timestamps in the WPF app.
 - Version bumped to 8.1.5.
 
-# v8.1.4 — Compile Fix 4
+# v8.1.4 â€” Compile Fix 4
 
 - Fixed the two remaining `ArchiveInspector` CA1822 warnings while preserving it as an injectable service.
 - `Verify-Release.ps1` now automatically writes timestamped text transcripts and MSBuild `.binlog` files to `BuildLogs\`.
@@ -428,7 +435,7 @@ This release is a production-hardening pass over the C#/.NET 10 v8 rewrite. It d
 ## Performance / responsiveness
 - Removed SQLite shared-cache usage; retained WAL with pooled connection-per-operation and short transactions.
 - Added indexed conflict-rule lookups and sparse incompatibility adjacency instead of repeated raw-rule scans.
-- Removed a hidden O(paths²) planner lookup by indexing decisions by normalized path.
+- Removed a hidden O(pathsÂ²) planner lookup by indexing decisions by normalized path.
 - Restricted planner snapshot file loading to staged-enabled mods.
 - Added indexed `mod_file_armor` metadata so outfit coverage avoids wildcard path scans.
 - Batched/versioned the 663-row armor catalog import instead of repeating hundreds of DB operations every startup.
@@ -468,10 +475,10 @@ This release is a production-hardening pass over the C#/.NET 10 v8 rewrite. It d
 - Added safe archive inspection, armor coverage, diagnostics/support bundles and manager-controlled Safe Mode.
 - Added unit/integration/benchmark projects and documented failure invariants.
 
-## 8.6.0 — Automation + reliability
+## 8.6.0 â€” Automation + reliability
 
 - Added `MhwModManager.Automation` as a separately testable convenience/orchestration layer.
-- Added Smart Inbox (`Inbox\` → automatic safe import → `Inbox\Processed\`).
+- Added Smart Inbox (`Inbox\` â†’ automatic safe import â†’ `Inbox\Processed\`).
 - Added automatic content-derived categories and dependency checks.
 - Added rolling pre-launch save/mod/deployment snapshots and Last Known Good tracking.
 - Added `JUST PLAY`: auto-apply staged changes, adopt safe unmanaged `nativePC` files, snapshot, health gate, launch observation, trust history, and Last Known Good recording.
@@ -483,7 +490,7 @@ This release is a production-hardening pass over the C#/.NET 10 v8 rewrite. It d
 - Verification now creates per-stage logs plus final Markdown/JSON reports with failure excerpts.
 - Added `Test Everything.bat` as a one-click full test entry point.
 
-8.6.7 — Startup diagnostic trace
+8.6.7 â€” Startup diagnostic trace
 - Added verifier-style startup text and JSON diagnostics under StartupLogs.
 - Records path discovery, service composition, database init, migration, catalog/armor import, intelligence, recovery, automation maintenance, main-window construction, and watchdog startup.
 - Startup maintenance attempts each safe substage independently and aggregates failures after collecting diagnostics.

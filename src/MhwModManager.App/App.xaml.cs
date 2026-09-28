@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
@@ -68,7 +68,7 @@ public sealed partial class App:Application, IDisposable
 
         try
         {
-            splash.SetDetail("Locating the active game and its isolated state database…");
+            splash.SetDetail("Locating the active game and its isolated state databaseâ€¦");
             var paths=startup.Run("bootstrap.paths.discover",AppPaths.Discover);
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
@@ -113,7 +113,7 @@ public sealed partial class App:Application, IDisposable
             var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
             var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
-            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
+            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
             var installRoot=startup.Run("services.updater-install-root",UpdateClientService.GetInstallRoot);
             var buildIdentity=startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
@@ -131,7 +131,7 @@ public sealed partial class App:Application, IDisposable
             Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
                 timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
 
-            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
+            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePCâ€¦":"Validating the isolated game workspaceâ€¦");
             var migration=paths.Game.IsMonsterHunterWorld
                 ? await startup.RunAsync("startup.migration",async ct=>await telemetry.TrackAsync("startup.migration",async(_,innerCt)=>
                     await Task.Run(()=>migrator.MigrateIfNeededAsync(innerCt),innerCt),ct:ct))
@@ -146,27 +146,27 @@ public sealed partial class App:Application, IDisposable
                 return;
             }
 
-            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor index…":"Refreshing the local mod catalog…");
+            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor indexâ€¦":"Refreshing the local mod catalogâ€¦");
             await startup.RunAsync("startup.catalog.refresh",async ct=>await telemetry.TrackAsync("startup.catalog.refresh",async(_,innerCt)=>await catalog.RefreshFoldersAsync(innerCt),ct:ct));
             if(paths.Game.IsMonsterHunterWorld)
                 await startup.RunAsync("startup.armor-index.import",async ct=>await telemetry.TrackAsync("startup.armor-index.import",async(_,innerCt)=>await ArmorCatalogLoader.ImportAsync(db,Path.Combine(AppContext.BaseDirectory,"data","Armor Database.csv"),innerCt),ct:ct));
 
-            splash.SetDetail("Learning mod lineage and checking the game build…");
+            splash.SetDetail("Learning mod lineage and checking the game buildâ€¦");
             await startup.RunAsync("startup.intelligence.nexus",async ct=>await telemetry.TrackAsync("startup.intelligence.nexus",async(_,innerCt)=>await nexus.RefreshAsync(innerCt),ct:ct));
             var buildResult=await startup.RunAsync("startup.intelligence.game-build",async ct=>await telemetry.TrackAsync("startup.intelligence.game-build",async(_,innerCt)=>await gameBuild.CheckAsync(innerCt),ct:ct));
             startup.Info("startup.intelligence.game-build.result",$"Changed={buildResult.Changed}");
             var impact=await startup.RunAsync("startup.intelligence.game-impact",ct=>gameImpact.BuildAsync(buildResult.Changed,ct));
             if(buildResult.Changed)await startup.RunAsync("startup.intelligence.timeline",ct=>timeline.RecordAsync("game.update",AutomationSeverity.Warning,impact.Message,impact,ct));
 
-            splash.SetDetail("Checking for an interrupted transaction…");
+            splash.SetDetail("Checking for an interrupted transactionâ€¦");
             await startup.RunAsync("startup.recovery",async ct=>await telemetry.TrackAsync("startup.recovery",async(_,innerCt)=>await executor.RecoverIncompleteAsync(innerCt),ct:ct));
 
-            splash.SetDetail("Running automatic inbox/category/dependency maintenance…");
+            splash.SetDetail("Running automatic inbox/category/dependency maintenanceâ€¦");
             var maintenance=await startup.RunAsync("startup.automation",async ct=>await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>await automation.RunStartupMaintenanceAsync(innerCt),ct:ct));
             logger.Information("Startup automation: {Summary}",maintenance.Summary);
             startup.Info("startup.automation.summary",maintenance.Summary);
 
-            splash.SetDetail("Preparing the main window and loading indexed state…");
+            splash.SetDetail("Preparing the main window and loading indexed stateâ€¦");
             var window=startup.Run("ui.main-window.construct",()=>new MainWindow());
             MainWindow=window;
             await startup.RunAsync("ui.main-window.initialize",_=>window.InitializeAsync());

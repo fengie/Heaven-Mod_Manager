@@ -1,4 +1,4 @@
-using MhwModManager.Core;
+﻿using MhwModManager.Core;
 using System.Globalization;
 using MhwModManager.Storage;
 
@@ -11,9 +11,25 @@ public sealed class ModTrustService(ManagerDatabase db)
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var c = await db.OpenAsync(ct);
         await using var tx = (Microsoft.Data.Sqlite.SqliteTransaction)await c.BeginTransactionAsync(ct);
+        await ApplyLaunchAsync(c, tx, enabledModIds, success, rollback, DateTimeOffset.UtcNow, ct);
+        await tx.CommitAsync(ct);
+    }
+
+    internal static async Task ApplyLaunchAsync(
+        Microsoft.Data.Sqlite.SqliteConnection connection,
+        Microsoft.Data.Sqlite.SqliteTransaction transaction,
+        IEnumerable<string> enabledModIds,
+        bool success,
+        bool rollback,
+        DateTimeOffset observedAt,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var observedAtText = observedAt.ToString("O", CultureInfo.InvariantCulture);
         foreach (var id in enabledModIds.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            await using var cmd = c.CreateCommand(); cmd.Transaction = tx;
+            await using var cmd = connection.CreateCommand();
+            cmd.Transaction = transaction;
             cmd.CommandText = """
             INSERT INTO mod_trust(mod_id,successful_launches,failed_launches,rollback_count,last_success_at,last_failure_at)
             VALUES($m,$s,$f,$r,$ls,$lf)
@@ -24,12 +40,14 @@ public sealed class ModTrustService(ManagerDatabase db)
               last_success_at=COALESCE(excluded.last_success_at,last_success_at),
               last_failure_at=COALESCE(excluded.last_failure_at,last_failure_at)
             """;
-            cmd.Parameters.AddWithValue("$m", id); cmd.Parameters.AddWithValue("$s", success ? 1 : 0); cmd.Parameters.AddWithValue("$f", success ? 0 : 1); cmd.Parameters.AddWithValue("$r", rollback ? 1 : 0);
-            cmd.Parameters.AddWithValue("$ls", success ? DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture) : DBNull.Value);
-            cmd.Parameters.AddWithValue("$lf", success ? DBNull.Value : DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            cmd.Parameters.AddWithValue("$m", id);
+            cmd.Parameters.AddWithValue("$s", success ? 1 : 0);
+            cmd.Parameters.AddWithValue("$f", success ? 0 : 1);
+            cmd.Parameters.AddWithValue("$r", rollback ? 1 : 0);
+            cmd.Parameters.AddWithValue("$ls", success ? observedAtText : DBNull.Value);
+            cmd.Parameters.AddWithValue("$lf", success ? DBNull.Value : observedAtText);
             await cmd.ExecuteNonQueryAsync(ct);
         }
-        await tx.CommitAsync(ct);
     }
 
     public async Task<TrustSnapshot?> GetAsync(string modId, CancellationToken ct = default)

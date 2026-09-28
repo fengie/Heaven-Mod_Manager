@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.3</Version>
-    <InformationalVersion>8.8.3-archive-cleanup-hardening</InformationalVersion>
+    <Version>8.8.4</Version>
+    <InformationalVersion>8.8.4-launch-observation-atomicity</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

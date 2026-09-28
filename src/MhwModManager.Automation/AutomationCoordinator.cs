@@ -1,6 +1,4 @@
-using System.Diagnostics;
-using System.Globalization;
-using System.Text.Json;
+﻿using System.Diagnostics;
 using MhwModManager.Core;
 using MhwModManager.Diagnostics;
 using MhwModManager.Filesystem;
@@ -19,13 +17,14 @@ public sealed class AutomationCoordinator(
     AutoCategoryService categories,
     DependencyDoctorService dependencies,
     LaunchHealthGateService gate,
-    ModTrustService trust,
     ModIssueFallbackService issues,
     UnmanagedAdoptionService adoption,
     string gameRoot,
     GameProfile? game = null,
     StartupDiagnosticSession? startupDiagnostics = null)
 {
+    private readonly LaunchObservationRepository launchObservations = new(db);
+
     public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -139,7 +138,7 @@ public sealed class AutomationCoordinator(
             UnifiedDebugLog.Write("AUTOMATION", $"Update diff BEGIN older={pair.older}; newer={pair.newer}");
             var diff=await updateDiff.CompareAsync(pair.older,pair.newer,ct);
             var severity=diff.StructuralChanged>0?AutomationSeverity.Warning:AutomationSeverity.Info;
-            await timeline.RecordAsync("update.diff",severity,$"Update diff {pair.older} → {pair.newer}: +{diff.Added} / -{diff.Removed} / {diff.Changed} changed ({diff.StructuralChanged} structural, {diff.TextureChanged} texture).",diff,ct);
+            await timeline.RecordAsync("update.diff",severity,$"Update diff {pair.older} â†’ {pair.newer}: +{diff.Added} / -{diff.Removed} / {diff.Changed} changed ({diff.StructuralChanged} structural, {diff.TextureChanged} texture).",diff,ct);
             UnifiedDebugLog.Write("AUTOMATION", $"Update diff PASS older={pair.older}; newer={pair.newer}; added={diff.Added}; removed={diff.Removed}; changed={diff.Changed}");
         }
     }
@@ -168,7 +167,10 @@ public sealed class AutomationCoordinator(
             return new(false,false,null,TimeSpan.Zero,"Launch blocked: "+string.Join(" | ",health.Findings.Where(x=>x.Severity==AutomationSeverity.Blocker).Select(x=>x.Summary)));
         }
         var exe=game?.ExecutablePath??Path.Combine(gameRoot,"MonsterHunterWorld.exe");
-        var enabled=(await db.GetModsAsync(ct)).Where(x=>x.Enabled).Select(x=>x.Id).ToArray();
+        var mods=await db.GetModsAsync(ct);
+        var state=mods.ToDictionary(x=>x.Id,x=>new ModState(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
+        var enabled=state.Where(x=>x.Value.Enabled).Select(x=>x.Key).ToArray();
+        var build=await db.GetGameBuildFingerprintAsync(ct);
         var launchId=Guid.NewGuid().ToString("N"); var startedAt=DateTimeOffset.UtcNow; var sw=Stopwatch.StartNew();
         using var process=ProcessDebug.Start(new ProcessStartInfo(exe){WorkingDirectory=gameRoot,UseShellExecute=true}, $"mhw-launch-{mode}");
         if(process is null)
@@ -177,9 +179,20 @@ public sealed class AutomationCoordinator(
             return new(false,false,null,TimeSpan.Zero,$"Windows did not start {game?.DisplayName??"Monster Hunter: World"}.");
         }
         var delay=Task.Delay(startupWindow,ct); var exit=process.WaitForExitAsync(ct); var finished=await Task.WhenAny(delay,exit);
+        if(finished.IsCanceled&&!process.HasExited)
+            ct.ThrowIfCancellationRequested();
         var survived=finished==delay&&!process.HasExited; int? exitCode=process.HasExited?process.ExitCode:null; sw.Stop();
-        await trust.RecordLaunchAsync(enabled,survived,false,ct);
-        await RecordLaunchAsync(launchId,startedAt,mode,survived,exitCode,sw.Elapsed,ct);
+        await launchObservations.PersistAsync(new(
+            launchId,
+            startedAt,
+            DateTimeOffset.UtcNow,
+            mode,
+            build?.Sha256,
+            survived,
+            exitCode,
+            survived,
+            state,
+            $"Observed for {sw.Elapsed.TotalSeconds:F1}s"));
         if(survived)
         {
             await issues.RecordSuccessfulLaunchAsync(enabled,ct);
@@ -196,12 +209,4 @@ public sealed class AutomationCoordinator(
         return new(true,survived,exitCode,sw.Elapsed,survived?$"{game?.DisplayName??"Monster Hunter: World"} launched and survived the startup observation window.":$"{game?.DisplayName??"Monster Hunter: World"} exited during startup; automatic crash diagnosis can use mods changed since the last known good launch.");
     }
 
-    private async Task RecordLaunchAsync(string id,DateTimeOffset startedAt,LaunchMode mode,bool success,int? exitCode,TimeSpan elapsed,CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var build=await db.GetGameBuildFingerprintAsync(ct); var mods=await db.GetModsAsync(ct); var state=mods.ToDictionary(x=>x.Id,x=>new ModState(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
-        await using var c=await db.OpenAsync(ct);await using var cmd=c.CreateCommand();
-        cmd.CommandText="INSERT INTO launch_history(id,started_at,ended_at,mode,game_build_sha256,success,exit_code,startup_survived,state_json,details) VALUES($i,$s,$e,$m,$g,$ok,$x,$v,$j,$d)";
-        cmd.Parameters.AddWithValue("$i",id);cmd.Parameters.AddWithValue("$s",startedAt.ToString("O",CultureInfo.InvariantCulture));cmd.Parameters.AddWithValue("$e",DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture));cmd.Parameters.AddWithValue("$m",mode.ToString());cmd.Parameters.AddWithValue("$g",(object?)build?.Sha256??DBNull.Value);cmd.Parameters.AddWithValue("$ok",success?1:0);cmd.Parameters.AddWithValue("$x",(object?)exitCode??DBNull.Value);cmd.Parameters.AddWithValue("$v",success?1:0);cmd.Parameters.AddWithValue("$j",JsonSerializer.Serialize(state,AutomationJson.Options));cmd.Parameters.AddWithValue("$d",$"Observed for {elapsed.TotalSeconds:F1}s");await cmd.ExecuteNonQueryAsync(ct);
-    }
 }

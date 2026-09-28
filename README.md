@@ -1,23 +1,28 @@
-# v8.8.3 Universal Mod Manager
+# v8.8.4 Universal Mod Manager
 
+## v8.8.4 — atomic launch-observation evidence
+
+Launch startup evidence is now persisted as one authoritative SQLite transaction: the `launch_history` row and every enabled-mod trust delta commit together or not at all. The persisted history state and trust targets come from the same immutable pre-launch mod snapshot and build fingerprint, exact launch-ID replay is idempotent, and conflicting replay fails closed instead of double-counting trust.
+
+Once the startup outcome is known, authoritative persistence no longer accepts the user's cancellation token; user cancellation still applies before an outcome is established and to later optional work. Focused fault tests cover failure before the first trust write, failure after an earlier trust write, exact/conflicting replay, snapshot identity, and failed-launch diagnosis by exact launch ID.
 ## v8.8.3 ? archive streaming failure-cleanup hardening
 
 Archive extraction now treats the currently-created output file as owned cleanup state for every payload-copy failure, not only cancellation and output-budget exceptions. Cleanup remains best-effort: if deletion itself fails, the original cancellation, safety failure, or I/O exception stays authoritative and the secondary cleanup error is logged instead of replacing it.
 
 Smart Inbox now re-checks requested cancellation before classifying filesystem errors as recoverable per-item failures, so a cleanup/write error cannot downgrade a canceled run into ?skip and continue.? Whole-import catalog-invisible staging and process-death residue remain a separate LR-008 follow-up; v8.8.3 deliberately does not broaden this low-level repair into publication redesign.
 
-## v8.8.2 — integrated safety and diagnostics hardening
+## v8.8.2 â€” integrated safety and diagnostics hardening
 
 This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.
 
 It also adds the profile-save rollback regression, adversarial continuity-validator fixtures, and durable audits for persisted game-profile path containment and launch-observation atomicity. Duplicate cleanup crash-durable reconciliation, broader diagnostic export sanitization, remaining crash-bisector evidence risks, game-profile ID repair, and launch-observation transaction repair remain explicit follow-ups.
 
-## v8.8.1 — updater publication verification hardening
+## v8.8.1 â€” updater publication verification hardening
 
 The automatic-updater release gate now verifies a newly published updater tag through GitHub's authoritative REST git-ref API instead of requiring immediate Git transport propagation. The check fails closed unless the exact expected tag exists, points directly to a commit, and resolves to the exact source SHA being published. This prevents a successfully published immutable release from being reported as failed solely because the Git tag has not propagated to fetch transport yet.
 
 
-## Repair revision — 2026-09-27
+## Repair revision â€” 2026-09-27
 
 Read `REPAIR-NOTES.md` for the current repairs and validation. This revision fixes
 generic scanning, missing-blob recapture, idle watcher logging, verification cache
@@ -26,7 +31,7 @@ or errors; all 158 tests and 11 self-test checks pass on the Linux validation ho
 Windows UI/locking/release validation remains required via `Test Everything.bat`
 and `Build.bat`. The six unchanged previously checked Windows stages are preserved.
 
-## v8.8.0 — incremental function verification and call-error observation
+## v8.8.0 â€” incremental function verification and call-error observation
 
 v8.8.0 keeps the v8.7 universal-game architecture and adds a verification layer designed for safe iterative development. Every explicit production executable body (methods, constructors, operators, local functions, explicit accessors, and expression-bodied properties/indexers) receives a stable syntax fingerprint. The verifier keeps a boolean `verified` checklist, preserves unchanged known-good functions as checked, and marks changed/new functions as unchecked. A scan safely persists those exact booleans immediately; only a complete build/test/self-test pass can promote changed/new fingerprints to full-release confirmation.
 
@@ -48,13 +53,13 @@ Generic profiles deliberately avoid guessing game-specific semantics: exact-path
 
 Basic mod artwork no longer depends on a Nexus API key. The manager uses local screenshots/FOMOD images first, Vortex-style `pictureUrl` metadata next, then a throttled public Nexus main-image fallback when a Nexus mod ID is known. Authenticated Nexus remains optional and is used for richer metadata/update checks.
 
-## 8.6.26 — App compile cleanup
+## 8.6.26 â€” App compile cleanup
 
 - Fixes WPF App compilation by fully qualifying `System.IO.File.Exists` in visual-row thumbnail/gallery code.
 - Reuses one `JsonSerializerOptions` instance in automation tests to eliminate CA1869.
 - Preserves all v8.6.25 UX, overlap explorer, dry-run, thumbnail, update, issue-tracking and family behavior unchanged.
 
-## 8.6.25 — UX, overlap explorer, dry-run planning and background hardening
+## 8.6.25 â€” UX, overlap explorer, dry-run planning and background hardening
 
 - Added smart mod-library views: **All**, **Enabled**, **Staged**, **Updates**, **Issues**, **Revalidate**, and **Superseded**. Search composes with the active view.
 - Added **Preview changes**: a true planner dry run that captures/indexes newly-enabled sources, builds the same deployment plan as Apply, reports add/replace/remove/restore counts, and redirects to **Needs attention** if a blocking choice remains. It never writes `nativePC`.
@@ -66,7 +71,7 @@ Basic mod artwork no longer depends on a Nexus API key. The manager uses local s
 - Clicking through visual-heavy libraries reuses persisted gallery metadata before recursively rescanning large source folders.
 - See `RESEARCH-UX-ROBUSTNESS.md` for the Vortex/MO2/Fluffy UX patterns used in this pass.
 
-## 8.6.24 — Visual library, Nexus/Vortex artwork and automatic update checks
+## 8.6.24 â€” Visual library, Nexus/Vortex artwork and automatic update checks
 
 - Mod rows now show cached thumbnails; selecting a mod expands a visual gallery of Nexus artwork, FOMOD/Vortex installer images, and screenshots found inside the source package.
 - Nexus v3 `thumbnail_url` / `picture_url` / `image_url` artwork is cached under `State\Next\PreviewCache\Nexus` and refreshed automatically during metadata sync.
@@ -76,7 +81,7 @@ Basic mod artwork no longer depends on a Nexus API key. The manager uses local s
 - Nexus metadata/artwork refreshes automatically while the app is open; update chains are checked daily and logical mods get an `Update available` badge. Updates are detected automatically but never silently installed/deployed.
 - Manual **Sync metadata + visuals** forces an immediate refresh.
 
-## 8.6.23 — Mod issue fallback / suspect tracker
+## 8.6.23 â€” Mod issue fallback / suspect tracker
 
 - Added persistent per-mod issue suspect records for startup crashes, general game crashes, GPU/graphics crashes, and crash-bisector isolation.
 - Automatic startup failures compare the failing launch against the previous successful modded launch and mark likely changed/enabled mods.
@@ -88,7 +93,7 @@ Basic mod artwork no longer depends on a Nexus API key. The manager uses local s
 - Database schema bumped to v5 with `mod_issue_suspects`.
 
 
-## 8.6.22 — Shared texture resources + texture safety gate
+## 8.6.22 â€” Shared texture resources + texture safety gate
 - Treat shared body/skin textures embedded inside broader armor/outfit packages as one shared resource provider instead of a whole-mod conflict.
 - Keep dedicated independent texture/recolor packs blocking unless lineage or an explicit provider rule proves they are related.
 - Add pre-launch/Health validation for enabled MHW `.tex` sources: missing/unreadable sources, post-index size changes, truncated files, and invalid TEX signatures are surfaced before launch.
@@ -100,7 +105,7 @@ Basic mod artwork no longer depends on a Nexus API key. The manager uses local s
 Unrelated texture replacements remain real choices even when they touch a shared `mod_*` namespace. A resource namespace alone, or generic words such as `recolor`, `armor`, or a color name, cannot establish family lineage. Conversely, providers already proven to share one logical family no longer conflict with themselves on texture paths: explicit saved overlay rules win first, then family priority provides the deterministic internal fallback.
 
 ## Manual family chaining (v8.6.20)
-When automatic family inference misses a relationship, select the conflict in **Needs attention** and click **Make main + chain others** on the package that should be the main mod. The manager persists the relationship as a manual family, marks the selected root as Main and the other packages as Optional, and writes an explicit ordered precedence chain (Main → Optional 1 → Optional 2 → …). Optional layers are ordered by your current priorities so shared base files still resolve deterministically. **Choose only** remains available for true mutually-exclusive alternatives. Source folders are not moved or merged.
+When automatic family inference misses a relationship, select the conflict in **Needs attention** and click **Make main + chain others** on the package that should be the main mod. The manager persists the relationship as a manual family, marks the selected root as Main and the other packages as Optional, and writes an explicit ordered precedence chain (Main â†’ Optional 1 â†’ Optional 2 â†’ â€¦). Optional layers are ordered by your current priorities so shared base files still resolve deterministically. **Choose only** remains available for true mutually-exclusive alternatives. Source folders are not moved or merged.
 
 ## Family-safe conflict resolution (v8.6.19)
 
@@ -140,7 +145,7 @@ Use `OPEN MASTER DEBUG LOG.bat` to open it immediately. The logger is best-effor
 
 v8.6.7 treats the folder library as immutable source material and builds a higher-level compatibility graph above it. Main packages, optional components, patches, updates, texture revisions, Nexus lineage, superseded versions, atomic model/material/physics bundles, unmanaged live files, and game-build changes all feed one resolver. The normal UI shows logical/effective mods rather than raw file-conflict noise.
 
-The intended result is hands-off: high-confidence `MAIN → OPTIONAL → UPDATE/FIX` relationships compose automatically; identical/shared resources are deduplicated; known newer texture providers win only their overlapping paths; old revisions are archived; multipart packages remain one toggle with an internal configuration drawer. A human choice is reserved for independent logical mods that directly replace the same non-mergeable asset and cannot be safely ordered.
+The intended result is hands-off: high-confidence `MAIN â†’ OPTIONAL â†’ UPDATE/FIX` relationships compose automatically; identical/shared resources are deduplicated; known newer texture providers win only their overlapping paths; old revisions are archived; multipart packages remain one toggle with an internal configuration drawer. A human choice is reserved for independent logical mods that directly replace the same non-mergeable asset and cannot be safely ordered.
 
 ### Nexus lineage (optional)
 
@@ -202,7 +207,7 @@ The main goal is not more features; it is proving that the features already pres
 - safer `ReplaceFileW`-based existing-file replacement;
 - connection-per-operation SQLite/WAL instead of shared-cache coupling;
 - one-pass/indexed conflict analysis and sparse incompatibility lookup;
-- no hidden O(paths²) decision lookup in the planner;
+- no hidden O(pathsÂ²) decision lookup in the planner;
 - XXH3 verification of metadata cache hits so same-size/same-timestamp source edits are detected;
 - indexed armor-component coverage instead of wildcard path scans;
 - batched/versioned armor DB startup import;
@@ -246,8 +251,8 @@ This source package was assembled in a Linux execution container without a local
 
 Every application launch writes a verifier-style startup trace under `StartupLogs` beside the manager (or under `%LOCALAPPDATA%\MhwModManager\StartupLogs` if the manager directory is not writable). Each launch produces:
 
-- `startup-YYYYMMDD-HHMMSS-fff.log` — human-readable ordered stages with START/PASSED/FAILED, elapsed time, context, and full exceptions.
-- `startup-YYYYMMDD-HHMMSS-fff.json` — machine-readable stage results for debugging/comparison.
+- `startup-YYYYMMDD-HHMMSS-fff.log` â€” human-readable ordered stages with START/PASSED/FAILED, elapsed time, context, and full exceptions.
+- `startup-YYYYMMDD-HHMMSS-fff.json` â€” machine-readable stage results for debugging/comparison.
 
 The trace covers path discovery, database initialization, service composition, migration, catalog refresh, armor import, Nexus/game-build intelligence, recovery, each startup-automation substage, main-window creation, and watchdog startup. Startup maintenance attempts independent safe substages even after one fails so the report captures more than the first error. The failure dialog prints both log paths. `Open Startup Logs.bat` opens the folder directly.
 
@@ -276,15 +281,15 @@ When installed, the script uses `dotnet-stack`, `dotnet-counters`, `dotnet-trace
 
 ## Source layout
 
-- `src/MhwModManager.App` — WPF/MVVM shell
-- `src/MhwModManager.Core` — domain, rules, conflict engine, planner
-- `src/MhwModManager.Storage` — SQLite/WAL, schema, profiles, v7 migration
-- `src/MhwModManager.Filesystem` — CAS/hashing/scanning/archive/deployment/recovery/Restart Manager
-- `src/MhwModManager.Mhw` — game discovery and armor catalog
-- `src/MhwModManager.Diagnostics` — telemetry, health, exception policy, support bundle
-- `tests/` — deterministic/unit + Windows filesystem/failure-injection integration tests
-- `benchmarks/` — realistic planner stress fixtures
-- `docs/` — architecture, failure modes, migration, schema, diagnostics and bug audit
+- `src/MhwModManager.App` â€” WPF/MVVM shell
+- `src/MhwModManager.Core` â€” domain, rules, conflict engine, planner
+- `src/MhwModManager.Storage` â€” SQLite/WAL, schema, profiles, v7 migration
+- `src/MhwModManager.Filesystem` â€” CAS/hashing/scanning/archive/deployment/recovery/Restart Manager
+- `src/MhwModManager.Mhw` â€” game discovery and armor catalog
+- `src/MhwModManager.Diagnostics` â€” telemetry, health, exception policy, support bundle
+- `tests/` â€” deterministic/unit + Windows filesystem/failure-injection integration tests
+- `benchmarks/` â€” realistic planner stress fixtures
+- `docs/` â€” architecture, failure modes, migration, schema, diagnostics and bug audit
 ## v8.6 automation workflow
 
 The default workflow is now intended to be almost hands-free. Drop archives/folders into `Inbox\` or keep using `Mods\`; startup maintenance imports safe inbox content, learns lineage, assigns categories, and archives safe disabled duplicates/superseded revisions. The main action is **JUST PLAY**: it applies staged changes, adopts trackable loose `nativePC` files, snapshots the MHW save and manager state, runs the health/dependency/conflict gate, launches the game, and records a Last Known Good setup when startup survives.
