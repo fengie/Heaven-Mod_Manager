@@ -221,18 +221,44 @@
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
                                 <DockPanel>
-                                    <StackPanel DockPanel.Dock="Top" Margin="18,22,18,14">
-                                        <TextBlock Text="WORKSPACE" Style="{StaticResource Eyebrow}"/>
+                                    <StackPanel DockPanel.Dock="Top" Margin="14,18,14,12">
+                                        <TextBlock Margin="4,0,0,0" Text="WORKSPACE" Style="{StaticResource Eyebrow}"/>
+                                        <Border Margin="0,10,0,0" Style="{StaticResource SubtleCard}" Padding="10">
+                                            <StackPanel>
+                                                <TextBlock Text="ACTIVE GAME" Style="{StaticResource Eyebrow}"/>
+                                                <ComboBox Margin="0,7,0,0" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" AutomationProperties.Name="Active game" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
+                                                <Grid Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                    <Button Margin="0,0,4,0" Padding="8,5" Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource PrimaryButton}"/>
+                                                    <Button Grid.Column="1" Margin="4,0,0,0" Padding="8,5" Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
+                                                </Grid>
+                                                <Grid Margin="0,5,0,0">
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                    <Button Margin="0,0,4,0" Padding="8,5" Content="Scan" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
+                                                    <Button Grid.Column="1" Margin="4,0,0,0" Padding="8,5" Content="+ Add game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
-                                    <Border DockPanel.Dock="Bottom" Margin="14,8,14,16" Padding="10" Background="#0A0E13" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="7">
-                                        <StackPanel>
-                                            <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
-                                            <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
-                                            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply staged"/>
-                                            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <StackPanel IsItemsHost="True" Margin="10,0,10,12" KeyboardNavigation.TabIndex="1"/>
+                                    <StackPanel DockPanel.Dock="Bottom" Margin="14,8,14,16">
+                                        <TextBlock Margin="4,0,0,5" Text="SESSION" Style="{StaticResource Eyebrow}"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                            <Button Margin="0,0,4,0" Padding="8,5" Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" ToolTip="Undo the last committed deployment. Ctrl+Z."/>
+                                            <Button Grid.Column="1" Margin="4,0,0,0" Padding="8,5" Content="Health" Command="{Binding HealthCommand}" Style="{StaticResource QuietButton}" ToolTip="Review deployment and game health."/>
+                                        </Grid>
+                                        <Border Margin="0,9,0,0" Padding="10" Background="#0A0E13" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="7">
+                                            <StackPanel>
+                                                <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
+                                                <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
+                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply staged"/>
+                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                    <ScrollViewer Margin="10,0,6,12" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True" Margin="0,0,4,0" KeyboardNavigation.TabIndex="1"/>
+                                    </ScrollViewer>
                                 </DockPanel>
                             </Border>
                             <Border Grid.Column="1" Background="{StaticResource Bg}">

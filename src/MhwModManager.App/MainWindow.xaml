@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}"
-        Width="1500" Height="920" MinWidth="1180" MinHeight="720"
+        Width="1480" Height="900" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
@@ -11,7 +11,7 @@
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="76"/>
+            <RowDefinition Height="70"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
@@ -36,26 +36,19 @@
                                 <TextBlock Text="v8.8.0" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="{Binding HeaderSummary}"/>
+                        <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="Safe staging, clear conflicts, confident launches."/>
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
-                    <ComboBox Width="230" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
-                    <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
-                    <Button Content="Scan games" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
-                    <Button Content="+ Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
-                    <Button Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
-                </StackPanel>
+                <Border Grid.Column="1" Margin="24,0" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,5" CornerRadius="12" Background="#0A0E13" BorderBrush="{StaticResource Border}" BorderThickness="1">
+                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding HeaderSummary}" TextTrimming="CharacterEllipsis"/>
+                </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" ToolTip="Undo the last committed deployment. Ctrl+Z."/>
-                    <Button Content="Health" Command="{Binding HealthCommand}" Style="{StaticResource QuietButton}"/>
-                    <Border Width="1" Height="28" Background="{StaticResource Border}" Margin="8,0,10,0"/>
-                    <Button Content="Import" Command="{Binding ImportArchiveCommand}"/>
+                    <Button Content="Import" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Import a mod archive into this game's managed library."/>
                     <Button Content="JUST PLAY" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Automatic save backup + health gate + launch observation + last-known-good tracking."/>
-                    <Button Content="Vanilla" Command="{Binding LaunchSafeModeCommand}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
-                    <Button Content="Apply changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"/>
+                    <Button Content="Vanilla" Command="{Binding LaunchSafeModeCommand}" Style="{StaticResource QuietButton}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
+                    <Button Content="Apply changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" ToolTip="Apply staged mod changes transactionally. Ctrl+Enter."/>
                 </StackPanel>
             </Grid>
         </Border>
