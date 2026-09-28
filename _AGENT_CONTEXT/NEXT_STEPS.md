@@ -133,6 +133,7 @@ Keep these separate and consult their specialized audits before implementation:
 - mod retirement / same-ID re-import lifecycle closure; read `MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` and centralize live semantic retirement separately from historical evidence;
 - crash-bisector diagnosis evidence integrity; read `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` and validate baseline + full-candidate reproduction before persistent blame;
 - catalog-invisible import publication; read `IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and stage outside catalog-visible roots until commit-on-success.
+- archive extraction resource/cancellation hardening; read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. A Windows runtime probe confirmed that canceling during a single 1 GiB entry can still finish the full write and return success. Keep this separate from the active recursive-reparse boundary.
 
 ## Verification truth
 

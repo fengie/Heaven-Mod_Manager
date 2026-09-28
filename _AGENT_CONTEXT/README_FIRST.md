@@ -58,6 +58,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` — mod retirement, stale live references, same-path identity reuse, and delete/re-import integrity.
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
+- `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` — runtime-reproduced single-entry cancellation failure plus archive byte/disk-budget hardening guidance.
 
 ## Critical rule
 

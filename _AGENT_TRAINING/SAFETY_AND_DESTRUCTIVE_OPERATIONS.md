@@ -35,6 +35,9 @@ A restartable migration must prove ownership before deleting/resetting destinati
 ## Publication
 Do work in a catalog-invisible or otherwise non-public staging area. Make visibility an explicit commit-on-success step. Cleanup is not a publication guarantee because cleanup can fail or be skipped by process death.
 
+## Resource and cancellation boundaries
+An outer cancellation token or metadata preflight does not bound long-running inner I/O by itself. Pass cancellation into the actual read/write/decompression loop, meter the resources actually consumed there, and fail before the next write would cross the operation budget. Declared sizes, compression ratios, and free-space checks are useful preflight signals but are not substitutes for stream-level enforcement. A cancellation regression should interrupt work mid-unit and assert the operation does not report success or continue to full mutation afterward.
+
 ## Identity retirement
 Deleting a row/object is not enough when semantic references survive outside formal foreign keys. Inventory live references, define history-retention policy, and test identity reuse.
 
