@@ -1,6 +1,6 @@
 # v8.8.2 support-bundle privacy candidate — exact local Windows verification — 2026-09-28
 
-Exact source: `828054cc02b47684e24765c215ae5fde5135e6f1` on heaven2 / Windows / .NET SDK 10.0.401, after normal reconciliation with canonical main `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`.
+Exact source: `62670f11e640cf38b34f4722fd5e2501628bfcfb` on heaven2 / Windows / .NET SDK 10.0.401, after normal reconciliation with canonical main `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`.
 
 - updater publication policy: PASS;
 - focused `SupportBundlePrivacyTests`: **1/1 PASS**;
@@ -10,7 +10,7 @@ Exact source: `828054cc02b47684e24765c215ae5fde5135e6f1` on heaven2 / Windows / 
 - strict per-project + whole-solution builds/analyzers: PASS, 0 warnings / 0 errors;
 - `Build-Release.ps1`: PASS;
 - win-x64 ReadyToRun app publish and self-contained updater-helper publish: PASS;
-- updater build **297**, ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+- updater build **303**, ZIP SHA-256 `228F5B9C77E090F05170B2CCA39455DF377F7970C82127566AFFD1FB875652A3`.
 
 This is local exact-source evidence. Hosted exact-main verification/publication is not claimed here.
 

@@ -196,3 +196,21 @@ Fresh heaven2 / Windows / .NET SDK 10.0.401 evidence on that exact source:
 The normal verifier-generated function/stage caches are being persisted with this handoff; no manual cache promotion occurred. Hosted exact-main verification/publication is intentionally not claimed until the PR is integrated and the exact main SHA is observed.
 
 The next independent diagnostics privacy checkpoint remains DB-backed/free-form share-boundary sanitization with canaries across every textual ZIP entry. Keep protected credential storage/provider redesign separate.
+
+## Final pre-integration exact-source closure after hosted-evidence reconciliation
+
+Canonical main was rechecked at `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`. Its intervening changes were v8.8.1 hosted-evidence/continuity synchronization only. They were merged normally; the Windows gate evidence path/title was advanced to v8.8.2, and the privacy candidate was reverified at exact source `62670f11e640cf38b34f4722fd5e2501628bfcfb`.
+
+Fresh heaven2 / Windows / .NET SDK 10.0.401 results for that exact source:
+
+- updater publication policy: **PASS**;
+- focused support-bundle privacy regression: **1/1 PASS**;
+- `Verify-Release.ps1`: **25/25 PASS**;
+- FunctionVerifier: **735/735 verified**, **7,821 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core **79/79**, Automation **24/24**, Integration/fault injection **178/178**, self-test **11/11**;
+- strict builds/analyzers: **PASS, 0 warnings / 0 errors**;
+- `Build-Release.ps1`: **PASS**, including win-x64 ReadyToRun app and updater-helper publish;
+- updater package build **303**, source `62670f11e640cf38b34f4722fd5e2501628bfcfb`;
+- ZIP SHA-256 `228F5B9C77E090F05170B2CCA39455DF377F7970C82127566AFFD1FB875652A3`.
+
+Any following cache/evidence-only child commit is not a new production verification target. Hosted exact-main closure still requires the actual integrated main SHA and its Windows gate/publication result.

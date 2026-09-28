@@ -114,3 +114,17 @@ Exact source checkpoint: `828054cc02b47684e24765c215ae5fde5135e6f1` on heaven2 /
 - ZIP SHA-256: `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
 
 This is local exact-source evidence only. Do not relabel it as hosted exact-main evidence after merge.
+
+## Final exact-source closure after main evidence reconciliation
+
+Exact source: `62670f11e640cf38b34f4722fd5e2501628bfcfb`, based on canonical main `2a0acd9951d67b724a43ef79ec7078d3cc412ddc` after reconciling v8.8.1 hosted-evidence metadata.
+
+- verifier: **25/25 PASS**;
+- FunctionVerifier: **735/735**, **7,821 / 0 uncovered**, trace/parse gaps **0 / 0**;
+- Core **79/79**, Automation **24/24**, Integration **178/178**, self-test **11/11**;
+- strict builds/analyzers: PASS;
+- ReadyToRun app/helper publish and Build-Release: PASS;
+- updater build **303**;
+- ZIP SHA-256: `228F5B9C77E090F05170B2CCA39455DF377F7970C82127566AFFD1FB875652A3`.
+
+This supersedes the earlier 828054c local package identity for pre-integration decisions; it remains local exact-source evidence, not hosted exact-main evidence.

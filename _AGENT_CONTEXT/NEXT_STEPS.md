@@ -1,12 +1,12 @@
 ## Current v8.8.2 privacy next steps — 2026-09-28
 
-1. Persist the normal verifier-generated v8.8.2 function/stage cache and exact local evidence for source `828054cc02b47684e24765c215ae5fde5135e6f1`.
-2. Re-fetch canonical main. If source `828054c...` is not already integrated, merge PR #79 only after confirming no newer release-version collision or conflicting privacy work.
+1. **DONE locally:** exact v8.8.2 source `62670f11e640cf38b34f4722fd5e2501628bfcfb` is release-verified and its normal verifier-generated cache/evidence is ready to persist.
+2. Re-fetch canonical main. If source `62670f1...` is not already integrated, merge PR #79 only after confirming no newer release-version collision or conflicting privacy work.
 3. Inspect the exact-main Windows Release Gate and immutable updater publication for the resulting main SHA; claim hosted closure only for the exact SHA actually verified.
 4. After this share-boundary slice is closed, independently sanitize DB-backed/free-form support-export text and add canaries over **every textual ZIP entry**.
 5. Keep protected provider credential storage/network redesign separate from that DB-backed export checkpoint.
 
-Local exact-source closure is green: policy PASS; privacy 1/1; verifier 25/25; functions 735/735 with 7,821 / 0 uncovered; Core 79/79; Automation 24/24; Integration 178/178; self-test 11/11; strict builds, ReadyToRun app/helper publish, and Build-Release PASS; updater build 297; ZIP SHA-256 `97A81911C31DD8526598A6F845BACE47D3404F5DFB4C70A3C2FF1A80B9C237FA`.
+Local exact-source closure is green: policy PASS; privacy 1/1; verifier 25/25; functions 735/735 with 7,821 / 0 uncovered; Core 79/79; Automation 24/24; Integration 178/178; self-test 11/11; strict builds, ReadyToRun app/helper publish, and Build-Release PASS; updater build 303; ZIP SHA-256 `228F5B9C77E090F05170B2CCA39455DF377F7970C82127566AFFD1FB875652A3`.
 
 ## Current updater next steps — 2026-09-28
 
