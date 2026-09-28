@@ -67,7 +67,9 @@ public sealed class UpdateInstaller(
             await WriteJournalBestEffortAsync(request, UpdateJournalPhase.RollbackRequired, applyError.Message);
             try
             {
-                await RollbackFromBackupAsync(request, context.NewManifest, ct);
+                // User cancellation stops forward work, never the recovery it requires.
+                using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+                await RollbackFromBackupAsync(request, context.NewManifest, recovery.Token);
             }
             catch (Exception rollbackError)
             {
@@ -151,6 +153,17 @@ public sealed class UpdateInstaller(
         if (!newManifest.Files.Any(x =>
                 string.Equals(UpdatePathSafety.NormalizeRelativeFilePath(x.Path), exe, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidDataException("Staged product manifest does not own the declared restart executable.");
+
+        var ownedPaths = oldManifest.Files.Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in newManifest.Files)
+        {
+            var relative = UpdatePathSafety.NormalizeRelativeFilePath(entry.Path);
+            var destination = UpdatePathSafety.CombineUnderRoot(request.InstallRoot, relative);
+            UpdatePathSafety.EnsureExistingComponentsNotReparse(request.InstallRoot, destination);
+            if (Directory.Exists(destination) || (!ownedPaths.Contains(relative) && File.Exists(destination)))
+                throw new IOException($"Update would overwrite an unowned path: {entry.Path}");
+        }
 
         return new ApplyContext(marker, oldManifest, newManifest);
     }

@@ -52,6 +52,37 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Cancellation_after_first_replacement_restores_exact_previous_payload()
+    {
+        var fixture = await CreateFixtureAsync();
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var installer = new UpdateInstaller((point, _) =>
+        {
+            if (point == UpdateApplyFaultPoint.AfterFileApply) cancellation.Cancel();
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => installer.ApplyAsync(fixture.Request, cancellation.Token));
+
+        await AssertOldInstallRestoredAsync();
+        Assert.False(File.Exists(Path.Combine(installRoot, "new.dll")));
+        Assert.Equal(UpdateJournalPhase.RolledBack, (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
+    public async Task Incoming_file_collision_with_unknown_user_file_fails_before_mutation()
+    {
+        var fixture = await CreateFixtureAsync();
+        await File.WriteAllTextAsync(Path.Combine(installRoot, "new.dll"), "USER-OWNED", TestToken);
+
+        await Assert.ThrowsAsync<IOException>(() => new UpdateInstaller().ApplyAsync(fixture.Request, TestToken));
+
+        await AssertOldInstallRestoredAsync();
+        Assert.Equal("USER-OWNED", await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
+        Assert.False(Directory.Exists(fixture.Request.BackupRoot));
+    }
+
+    [Fact]
     public async Task Modified_stale_owned_file_is_preserved_instead_of_deleted()
     {
         var fixture = await CreateFixtureAsync();

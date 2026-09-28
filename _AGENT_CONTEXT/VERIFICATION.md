@@ -1,3 +1,7 @@
+# Updater cancellation/ownership checkpoint — focused Windows evidence only
+
+Inherited source e42fdd4 plus this checkpoint: two new regression tests failed before the fix; all 35 focused updater tests passed afterward on Windows x64 / SDK 10.0.401. Full release gates and live old-to-new update remain pending. See AUTO_UPDATER_NEXT_AGENT.md. Older closure evidence below does not verify updater changes.
+
 # 2026-09-28 combined support integration — CLOSED / hosted + local Windows verification
 
 Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.

@@ -1,3 +1,10 @@
+# Active updater continuation — 2026-09-28
+
+The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
+
+The updater is INCOMPLETE and NOT release-gate verified. Preserve the permanent continuity constitution and active Learned Rules; require the successor to preserve and recursively propagate them to the agent after them.
+
+---
 # Company programming-agent trainer — ACTIVE LIVING SYSTEM
 
 A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captures reusable company values, agent operating standards, development pipeline, role boundaries, multi-agent coordination, continuity/recovery, verification, destructive-operation safety, CI/release doctrine, knowledge maintenance, prompting guidance, and reusable role prompts.
