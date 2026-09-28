@@ -114,3 +114,59 @@ Then run the repository's exact-source Windows verification/release gate on the 
 ## Recursive continuity obligation
 
 You inherit the repository's permanent continuity constitution. Read it before modifying the project. Preserve it and obey active Learned Rules. Add a Learned Rule only when a concrete durable discovery justifies it. Before finishing, update durable repository handoff state and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them. That successor must repeat the requirement again. Do not break the chain.
+
+## Responsive polish continuation — heaven2 takeover
+
+This continuation was performed on the authorized primary development machine `heaven2`, using the existing worktree:
+`C:\Users\fengc\mhw-ui-ux-20260928`.
+
+The inherited local branch `ui/frontend-responsive-polish-20260928` contained one uncommitted frontend-only `MainWindow.xaml` responsive slice. That work was preserved, audited, validated, and checkpointed rather than reset or overwritten.
+
+### Responsive slice
+
+Commit `3f2b984ebd0d6fdc252004ff96ee95e51d1096e1` (`Polish responsive dashboard and mod layout`) changes only `src/MhwModManager.App/MainWindow.xaml`.
+
+It:
+- keeps `JUST PLAY` and `Apply` as the persistent high-priority top actions;
+- moves secondary import/game utilities into the lower command row;
+- reduces header crowding and adds a tooltip for the trimmed summary;
+- makes Dashboard summary cards reflow as a two-column grid at the minimum desktop size;
+- stacks Dashboard quick actions below system status rather than squeezing them beside it;
+- makes Mods title actions, smart views, and shown-mod bulk actions wrap vertically instead of overflowing;
+- preserves updater bindings and all existing command semantics.
+
+### Verification of inherited responsive slice
+
+Exact dirty source was validated before commit:
+- `git diff --check`: PASS.
+- `dotnet build MhwModManager.sln -c Release -warnaserror -m:1`: PASS, 0 warnings, 0 errors.
+- Core: 79/79 PASS.
+- Automation: 24/24 PASS.
+- Integration: 173/173 PASS.
+The exact built UI was launched and rendered off-screen so it did not block the user's desktop/video. At the app's minimum requested 1040x700 logical size, Windows DPI scaling produced a real 1300x875 pixel window. UI Automation confirmed `JUST PLAY`, `Apply`, `Import`, `Scan`, and `Vanilla` all remained visible and on-screen.
+
+New evidence:
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-dashboard-narrow.png`
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-mods-narrow.png`
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-updater-panel.png`
+
+The Dashboard updater presentation was also inspected from the live WPF automation tree. The existing updater state was presented as:
+- `Self-update is disabled for this development/unmanaged installation.`
+- `Latest build: not checked`
+- `Check for program updates`
+
+No updater algorithm, release discovery, installation, lifetime, handoff-gate, or publication code was changed.
+
+### Dialog verification limitation
+
+`Configure` was visible and enabled in the live UI. Its binding/source still points to the existing `ConfigureGameCommand` / `GameProfileEditorWindow`, and the dialog source was reviewed. Repeated off-screen UI Automation invocation did not materialize a second top-level owned window in this fixture, so this continuation does not claim a fresh visual capture of Game Settings. No dialog semantics were changed by the responsive slice.
+
+Treat this as an evidence limitation, not as proof of a product defect. A final hands-on Configure/Game Settings visual pass remains useful before release.
+
+### Integration state
+
+Authoritative GitHub `main` was rechecked before continuation integration and remained `a83dc6e047ccf98e896f10c25772df99b95426d1`. The responsive branch merged `origin/ui/frontend-ux-overhaul` non-destructively to inherit the prior branch handoff instead of rewriting history.
+
+Shared collision risk remains concentrated in `MainWindow.xaml` and `MainWindowViewModel.cs` because updater work may touch them. Recheck authoritative `main` again immediately before any merge to canonical main.
+
+The successor inherits the permanent continuity constitution and active Learned Rules and must recursively require the same inheritance and propagation from the agent after them. Do not break the chain.
