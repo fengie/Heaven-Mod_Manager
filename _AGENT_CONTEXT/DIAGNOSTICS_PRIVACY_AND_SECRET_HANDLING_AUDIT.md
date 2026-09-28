@@ -5,6 +5,20 @@
 **Branch:** `agent/support-8-diagnostics-privacy-audit-20260927`  
 **Production source changed:** no
 
+## Implementation status — 2026-09-28
+
+The confirmed P1 raw-structured-log export defect now has an isolated implementation candidate on
+`agent/support-bundle-share-sanitization-20260928`. Reconciled implementation head
+`79345ec2b428b46e2851155838f4926d66e1ee80` replaces raw JSONL copying with recursive export-time
+sanitization, preserves full-fidelity local logs, adds an in-archive privacy notice, and adds a generated-bundle
+path/credential canary regression. On heaven2/Windows/.NET 10.0.401 after merging current main
+`92cad66dd743c5c67e1441ad77161ccf6e531c34`, strict IntegrationTests Release build passed with 0 warnings/errors
+and the focused privacy regression passed 1/1. See
+`_AGENT_CONTEXT/SUPPORT_BUNDLE_SHARE_SANITIZATION_2026-09-28.md`.
+
+This is **not full LR-006 closure**. DB-backed free-form support exports, startup/manual-share artifacts, default-redact
+settings policy, and protected provider credential storage remain separate follow-ups.
+
 ## Why this lane was selected
 
 At the inspected canonical commit, parallel support work already owns Windows filesystem safety, async/cancellation/shutdown races, broad test/performance gaps, CI/supply-chain verification, MainWindow architecture, multi-source acquisition/bulk fill, and MHW semantic coverage. A state-backup/portability branch also exists.
