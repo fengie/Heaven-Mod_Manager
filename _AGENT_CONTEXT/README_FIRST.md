@@ -63,6 +63,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
 - `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` — runtime-reproduced single-entry cancellation failure plus archive byte/disk-budget hardening guidance.
+- `_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md` — updater single-writer audit: the current `Local\\` named semaphore is session-scoped and does not serialize one writable installation across Windows sessions; see LR-011.
 
 ## Critical rule
 
