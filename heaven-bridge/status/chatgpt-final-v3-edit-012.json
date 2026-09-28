@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-final-v3-edit-012",
-  "state": "running",
+  "state": "completed",
   "action": "fs_edit",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T19:51:37.922887+00:00"
+  "updated_at": "2026-09-28T19:51:45.222710+00:00",
+  "exit_code": 0
 }
