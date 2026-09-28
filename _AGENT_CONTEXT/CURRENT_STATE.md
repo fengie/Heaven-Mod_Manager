@@ -4,6 +4,10 @@ Capture rejects corrupt existing objects and restore validates private staged by
 
 Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
+## Latest CAS support-audit harvest — documentation only
+
+Integrated durable research from PRs #23, #25, and #22: CAS filesystem identity/reparse safety, CAS digest namespace validation, and recursive source reparse containment. PR #24 was reviewed but skipped as redundant with the broader filesystem-identity audit; its root/hash-leaf fixture guidance was already covered there. No production C#, tests, verification scripts, workflows, or verification caches changed, and this harvest does **not** close the outstanding fresh local Windows CAS verification.
+
 ---
 # Native ReplaceFileW failure-postcondition boundary — CLOSED / hosted Windows verified
 
