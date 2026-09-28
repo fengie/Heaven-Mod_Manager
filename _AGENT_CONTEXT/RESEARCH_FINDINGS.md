@@ -206,3 +206,37 @@ Post-audit revalidation: canonical main advanced to `0e561f3c059475ad443a79ac4a2
 
 
 Integration note: PlannerSnapshotRepository subsequently closed at `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3` / run `36336190920`; the UI audit remains documentation-only and does not change that verified production state.
+
+## 2026-09-28 launch observation persistence atomicity support audit
+
+A specialized support audit re-checked the durable evidence path after
+`AutomationCoordinator.LaunchAndObserveAsync` observes a game-process result.
+
+Confirmed from the current source transaction boundaries:
+
+- the launch-wide `mod_trust` batch commits before a separate
+  `launch_history` insert, so a failure/cancellation window can persist trust without
+  the launch row that explains it;
+- the same user-cancellable token remains active after the external launch outcome is
+  already known, so cancellation can discard or split authoritative evidence;
+- aggregate trust counters have no launch ID, so the current split protocol cannot
+  safely replay a partially persisted observation without double counting;
+- trust targets are captured before process start while `launch_history.state_json`
+  is re-read after the observation window. The normal WPF `RunBusy` gate reduces
+  ordinary UI concurrency, so this last item is documented as a service-contract risk
+  rather than a reproduced UI race.
+
+The narrow repair is an operation-level launch-observation persistence command using one
+immutable launch snapshot and one SQLite transaction for the history row plus trust
+deltas, with exact launch-ID replay semantics. Downstream timeline, issue, and
+last-known-good effects remain separate.
+
+No production source or tests changed in this support checkpoint, and no runtime
+fault-injection result is claimed. Full findings and the exact regression matrix are in
+`_AGENT_CONTEXT/LAUNCH_OBSERVATION_ATOMICITY_AUDIT_2026-09-28.md`.
+
+The broad `SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` remains the repository-wide
+transaction authority; the new document is the specialized authority for its D2 launch
+observation finding. Preserve the permanent continuity constitution and recursively pass
+it to the next successor.
+
