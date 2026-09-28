@@ -2,7 +2,7 @@
 
 This branch is the evidence-backed continuation of ui/frontend-ux-overhaul. Read _AGENT_CONTEXT/UI_FRONTEND_UX_2026-09-28.md before the canonical updater history below.
 
-It has reconciled current origin/main at 8d5cc311ed13f5cb7f0df1f9e7c3e8bf9fcaec82. Re-fetch and re-check authoritative GitHub main before any further edit or integration because the repository is actively changing.
+It has reconciled current origin/main at a8b581176aac0e6bcf09c049285ed40f4b2b392c. Re-fetch and re-check authoritative GitHub main before any further edit or integration because the repository is actively changing.
 
 Preserve updater implementation and lifetime semantics when resolving shared WPF files. This branch owns frontend presentation only; exact-source release verification belongs to the final integrated candidate.
 

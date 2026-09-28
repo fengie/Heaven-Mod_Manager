@@ -189,3 +189,29 @@ Exact post-merge verification on `heaven2`:
 - Integration: 175/175 PASS.
 
 The Integration count increased from 173 to 175 because the reconciled updater branch added two upstream regression tests. The frontend source itself was unchanged by this reconciliation, so the fresh Dashboard/Mods visual evidence above still maps to the same WPF frontend code.
+
+### Final reconciliation through archive-cancellation main
+
+Authoritative GitHub `main` advanced to `a8b581176aac0e6bcf09c049285ed40f4b2b392c`. This branch merged that state non-destructively in `2d4c43049fd0bcad9d8f4030c1864b6cc30f9d11`.
+
+The incoming delta touched only `src/MhwModManager.Filesystem/ArchiveInspector.cs` and `tests/MhwModManager.IntegrationTests/HardeningTests.cs`. It did not touch frontend/WPF files, so there was no frontend/updater collision and no UI semantic resolution was required.
+
+Exact merged-source verification on `heaven2`:
+- strict Release solution build: PASS, 0 warnings / 0 errors;
+- Core: 79/79 PASS;
+- Automation: 24/24 PASS;
+- Integration: 177/177 PASS;
+- the Integration count increased by two because of the newly integrated archive regressions.
+
+Fresh exact-source WPF verification was performed off-screen to avoid interrupting the user's desktop. A requested 1040x700 logical window rendered at 1300x875 physical pixels under current DPI scaling; UI Automation confirmed `JUST PLAY`, `Apply`, `Import`, `Scan`, and `Vanilla` remained visible and on-screen. A requested 1480x900 wide pass rendered at 1850x1125 and kept the mod row, state/effect/category/source hierarchy, search/smart views, bulk actions, and staged-action band legible without overlap.
+
+Fresh evidence:
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-current-dashboard.png`
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-current-mods.png`
+- `C:\Users\fengc\AppData\Local\Temp\mhw-ui-final-current-mods-wide.png`
+
+The existing Game Settings off-screen capture limitation remains unchanged; no dialog behavior was modified. The only fresh visual nit observed was singular copy (`1 logical mods`), which is non-blocking and was not used to justify semantic or layout churn.
+
+No updater algorithm, release/install behavior, backend/filesystem semantics, CI/CD, packaging, security architecture, deployment logic, or test-infrastructure ownership was changed by this continuation. No new project-agnostic engineering lesson was discovered that warranted modifying `_AGENT_TRAINING/`.
+
+The successor inherits the permanent continuity constitution and active Learned Rules and must require the same recursive propagation from the agent after them. Re-check authoritative GitHub `main` immediately before integration because this repository remains actively multi-agent.
