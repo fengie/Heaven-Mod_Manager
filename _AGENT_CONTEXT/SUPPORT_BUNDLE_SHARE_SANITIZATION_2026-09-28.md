@@ -94,16 +94,45 @@ checkout remained untouched:
 
 No failed attempt is being represented as passing evidence.
 
-## Not yet verified at this checkpoint record
+## Full local Windows verification closure
 
-At the time this document was written:
+After the focused test and continuity record were in place, the branch was reconciled to canonical main
+`0b4e70ce27b44a4debb69702d6a38bbabe42d7c0`, producing exact source/continuity checkpoint
+`1654ef63cafd280a303b82b052087e25d2b59970`.
 
-- the repository-wide `Verify-Release.ps1` gate had not yet been run for this branch;
-- `Build-Release.ps1` / ReadyToRun packaging had not yet been run for this branch;
-- no hosted Windows workflow result applied to this support branch;
-- DB-backed support-export sanitization beyond the narrow changes above had not been tested.
+The first repository-verifier invocation returned **23/25** because the Remote Desktop Commander shell omitted the
+normal Windows `OS=Windows_NT` process marker; the report identified only the Windows-required Integration and
+self-test stages as skipped. The verifier correctly refused function-cache promotion. No product/test failure was
+reclassified as passing.
 
-Later PR/check evidence may add stronger verification without changing the scope claims in this document.
+The tree was restored to exact checkpoint `1654ef63...` and the **unchanged verifier** was rerun with only the
+standard process-local `OS=Windows_NT` marker restored. That run passed:
+
+- repository verifier **25/25**;
+- function fingerprints **735/735 verified**, **7,821 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core **79/79**;
+- Automation **24/24**;
+- Integration/fault injection **178/178**;
+- automation self-test **11/11**;
+- strict whole-solution and per-project analyzers/builds with **0 warnings / 0 errors**;
+- handoff continuity preflight, negative continuity fixtures, verification-cache regressions, and report serialization preflight.
+
+`Build-Release.ps1` then passed on the same exact source checkpoint, including win-x64 compile/analyzers,
+self-contained ReadyToRun app publish, updater-helper publish, tests, self-test, and final function confirmation.
+It produced updater build **281** and ZIP SHA-256
+`2CAEA5C0B9BF913D43D5F97178B0340C07C22412D0E85993FF91C0F3D1EB3ECF`.
+
+The normal verifier-generated `.verification/function-status.json` and `.verification/stage-status.json` state
+was preserved in child commit `98fbaf4e191e58efbdd88e3a6c71a493b3352048`; no manual cache promotion was performed.
+
+Durable local evidence summary:
+`_AGENT_CONTEXT/EVIDENCE/support-bundle-share-sanitization-local-windows-closure.md`.
+
+## Not verified / intentionally still open
+
+- No hosted Windows workflow result is claimed by this document.
+- DB-backed support-export sanitization beyond the narrow changes above has not been implemented/tested.
+- Startup/master-log manual-share flows and protected provider credential storage remain separate boundaries.
 
 ## Existing strengths preserved
 
