@@ -8,11 +8,15 @@ Canonical `main` inspected before this audit:
 
 `d001870d4cd3549841d8511392ae7885f174bca2`
 
+Canonical `main` rechecked and merged after hosted CAS repair evidence advanced:
+
+`265d58d6a9d4ffb6ab62cde987ba6ad335eae05a`
+
 Audit branch:
 
 `agent/support-cas-reparse-policy-audit-20260927`
 
-The active product boundary remains the exact CAS concurrency/sharing-violation re-verification described by `CAS_INTEGRITY_CHECKPOINT.md`. That boundary must close green before a new CAS containment production change begins.
+The active product boundary remains the exact CAS concurrency/sharing-violation re-verification described by `CAS_INTEGRITY_CHECKPOINT.md`. Hosted Windows Release Gate `36367883836` is now green for exact candidate `d001870d4cd3549841d8511392ae7885f174bca2`; the checkpoint remains open only for the required fresh local Windows verification. Do not begin a CAS containment production change until that local closure is recorded.
 
 ## Why this is an independent support task
 
@@ -139,7 +143,7 @@ The next CAS fixture should follow that honesty standard.
 
 ## Exact Windows regression/fault-test design
 
-These tests should be introduced **after the active sharing-violation CAS candidate closes its current full gate**, so failures belong to a new exact verification boundary.
+These tests should be introduced **after the required fresh local Windows verification closes the active CAS checkpoint**, so failures belong to a new exact verification boundary. The hosted repair gate is already green.
 
 ### 1. Root junction — capture must reject before external publication
 
@@ -248,7 +252,7 @@ This is lower priority because existing corrupt-object tests and staged-byte has
 
 ## Minimal future production checkpoint
 
-Once the current CAS race candidate is fully green, take the tests above first and make the smallest production correction that satisfies the chosen contract.
+Once the current CAS race checkpoint is fully closed by the outstanding local Windows gate, take the tests above first and make the smallest production correction that satisfies the chosen contract.
 
 A reasonable first checkpoint to evaluate:
 
@@ -295,7 +299,8 @@ Connector/static verification against canonical GitHub state:
 - read the repository continuity/start/handoff files and active CAS checkpoint;
 - inspected the actual current `BlobStore`, `AtomicFileOps`, CAS test assertions, live-junction test helper/assertions, migration hardlink body, and broad filesystem audit;
 - checked current Microsoft primary documentation for ordinary reparse processing, explicit reparse-point open semantics, junctions, and hardlinks;
-- rechecked canonical `main` before branch creation.
+- rechecked canonical `main` before branch creation;
+- observed `main` advance to `265d58d6a9d4ffb6ab62cde987ba6ad335eae05a`, inspected the new hosted-green/local-pending CAS evidence, and merged that current main into this branch without force-pushing.
 
 Not executed in this environment:
 
@@ -323,7 +328,7 @@ Before integrating:
 
 ## Recommended next independent checkpoint
 
-**After the active CAS sharing-violation repair passes focused, full local Windows, release, and hosted gates:** add the real Windows root-junction and matching-byte hash-leaf-symlink tests above as a test-first CAS physical-containment checkpoint. Characterize current behavior first, then implement only the smallest fail-closed root/leaf guard needed by those tests.
+**After the outstanding focused/local `Verify-Release.ps1` and `Build-Release.ps1` checks close the already-hosted-green CAS repair:** add the real Windows root-junction and matching-byte hash-leaf-symlink tests above as a test-first CAS physical-containment checkpoint. Characterize current behavior first, then implement only the smallest fail-closed root/leaf guard needed by those tests.
 
 Do not combine that checkpoint with migration hardlink policy or recursive source/live traversal.
 
