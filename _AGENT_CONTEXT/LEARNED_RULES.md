@@ -177,3 +177,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant report:** _AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-011 — mutation ownership must span every session that can reach the same installation
+
+- **Rule ID:** LR-011
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** Windows named synchronization, self-update, recovery, and any single-writer mutation protocol
+- **Rule:** A synchronization primitive that protects a shared mutation target must live in a namespace/identity visible to every supported process that can mutate that target. On Windows, a `Local\` named semaphore/mutex is session-scoped and therefore cannot prove machine-wide or cross-session single-writer ownership of a shared installation.
+- **Trigger / evidence:** At canonical main `a83dc6e047ccf98e896f10c25772df99b95426d1`, `UpdateMutexLease.Acquire` names its semaphore `Local\MHWMM.Update.<install-hash>`, while the updater helper relies on that lease as the sole serialization guard around apply/recovery. The current `Concurrent_update_attempt_is_serialized` test covers only same-session contention. Microsoft documents `Local\` as the per-session kernel-object namespace and `Global\` as the cross-session namespace.
+- **Rationale:** Durable journals and rollback logic do not make concurrent writers safe. If two supported processes can reach the same mutation target but acquire different lock objects, each can legitimately enter code that assumes exclusive ownership.
+- **Enforcement:** For update/deployment locks, define the supported ownership scope first; fail closed if that ownership primitive cannot be established; add cross-process and, where relevant, cross-session coverage; preserve crash/abandon recovery semantics. If cross-account shared installs are supported, define synchronization-object ACL or filesystem-lock behavior explicitly instead of assuming a global name alone solves access control.
+- **Relevant audit:** `_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md`
+- **Supersedes:** none
+- **Superseded by:** none
+
