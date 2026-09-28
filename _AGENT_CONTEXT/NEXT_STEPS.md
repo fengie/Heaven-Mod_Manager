@@ -1,3 +1,13 @@
+# v8.8.4 final support reconciliation — current next steps
+
+1. Run `git diff --check`, handoff validation and all adversarial negative fixtures, then `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` on the exact reconciled v8.8.4 tree.
+2. Record exact results and artifact identity without manually promoting support-branch or v8.8.3 verification caches.
+3. Fetch `origin/main` again immediately before push. If it advanced beyond `317ba6c86d54012a65a41772109a72566d29c0a9`, inspect/reconcile the new commits and rerun invalidated checks rather than overwriting concurrent work.
+4. Push only the coherent verified squash commit to canonical `main`, fetch again, and prove remote `origin/main` equals the pushed HEAD. Then inspect the exact-main hosted Windows Release Gate.
+5. Keep follow-ups independent: remove legacy CAS hardlink aliasing; establish writer orphanhood/exclusive ownership before recovery takeover; span updater ownership across supported Windows sessions; leave broader preview redirect/image-content policy and active Updater/Agent-Control/frontend/game-profile lanes separate.
+
+---
+
 # v8.8.3 current next steps ? local release gate closed
 
 1. Integrate exact locally release-verified checkpoint `26485dad2c931544728d108de9da66446dedf0a6` through the repository workflow without replaying stale branch-local continuity snapshots over newer main.

@@ -23,6 +23,9 @@ A safety check that runs only after the forbidden side effect can occur is not f
 ## Native and external operations
 A failed native/system call does not necessarily mean no state changed. Model documented partial-failure postconditions and inspect actual resulting state before cleanup or rollback.
 
+## Mutation ownership scope
+A single-writer guard must be visible to every supported process, account/session, or host that can mutate the protected target. Name/namespace scope is part of the safety proof: for example, Windows `Local\` kernel objects are session-scoped. Fail closed if required ownership cannot be established, and test both contention and abandoned-owner recovery.
+
 ## Atomicity
 Prefer same-filesystem staging where atomic rename/replace semantics require it, transactional metadata changes, commit-on-success publication, and recovery journals when file and database state cross atomicity boundaries. Do not claim atomicity where the platform does not provide it.
 
@@ -32,8 +35,12 @@ Backups must be identifiable, scoped, integrity-checked when needed, and retaine
 ## Crash recovery
 Design recovery for the states that can actually exist after interruption. Recovery must be idempotent or explicitly detect non-retryable ambiguity.
 
+Durable `in progress` state describes protocol state, not writer liveness. Before recovery rolls back, replays, resets, or otherwise takes ownership of an incomplete operation, establish exclusive mutation ownership or prove the previous writer is gone. Database busy/transaction locks protect individual database operations; they do not automatically serialize a larger filesystem-plus-database state machine across processes. Test both live-peer exclusion and abandoned-owner takeover.
+
 ## Migration
 A restartable migration must prove ownership before deleting/resetting destination state, validate reused artifacts rather than trusting existence, distinguish cleanup attempted from cleanup completed, converge on retry or emit a precise recovery action, and preserve the authoritative source until completion is proven.
+
+Content-addressed or otherwise immutable destination data must also have an explicit ownership model after migration. A one-time digest check does not make the destination immutable if its bytes remain hardlinked or otherwise aliased to a pathname that another owner can still modify. Prefer independently owned verified bytes, or prove and enforce immutability across every retained alias for the object's lifetime.
 
 ## Publication
 Do work in a catalog-invisible or otherwise non-public staging area. Make visibility an explicit commit-on-success step. Cleanup is not a publication guarantee because cleanup can fail or be skipped by process death.

@@ -1,3 +1,10 @@
+# v8.8.4 — Support recovery hardening
+
+- Reconcile `save_snapshots` retention with the SQLite index while limiting recursive deletion to verified direct children of the manager-owned snapshot root.
+- Remove malformed, outside-root, missing, and reparse payload rows without following those paths; for valid over-limit snapshots, delete the payload first and retire its row only after deletion succeeds.
+- Harden untrusted remote-preview egress to HTTPS-only public destinations, disable automatic redirects/proxy routing for preview fetches, and isolate Nexus API traffic behind a no-redirect client.
+- Preserve runtime evidence and reusable doctrine for legacy-migration CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session ownership without importing stale support routing or verification caches.
+
 # v8.8.3 ? Archive streaming failure-cleanup hardening
 
 - Attempt owned current-output cleanup for every exceptional archive payload-copy exit after file creation, including ordinary streamed I/O failures.

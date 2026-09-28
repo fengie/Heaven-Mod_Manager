@@ -1,4 +1,11 @@
-# v8.8.3 Universal Mod Manager
+# v8.8.4 Universal Mod Manager
+
+## v8.8.4 — support recovery hardening
+
+This release rebases the final support harvest onto canonical v8.8.3 archive-cleanup main. Save-snapshot retention now limits recursive deletion to verified direct children of the manager-owned `SnapshotRoot`; malformed/outside/missing/reparse rows are de-indexed without following their paths, and over-limit rows are retired only after their owned payload directory is successfully deleted. Failed cleanup therefore remains indexed for retry.
+
+Remote previews derived from imported metadata are HTTPS-only and use a fail-closed egress boundary: automatic redirects are disabled, preview transport bypasses proxies, every DNS answer must be public, and the socket connects to the validated address. Nexus API traffic uses a separate no-redirect client so its custom API-key header cannot follow a redirect to another origin.
+
 
 ## v8.8.3 ? archive streaming failure-cleanup hardening
 

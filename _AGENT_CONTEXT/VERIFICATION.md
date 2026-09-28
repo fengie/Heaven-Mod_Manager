@@ -1,3 +1,17 @@
+# v8.8.4 final support reconciliation — verification in progress
+
+Final reconciliation base: canonical `origin/main` `317ba6c86d54012a65a41772109a72566d29c0a9` on `heaven2` / Windows / .NET SDK 10.0.401. This base already contains the v8.8.3 archive-cleanup release and hosted evidence. The support harvest is being reapplied as one squash candidate so none of that newer canonical work is reverted.
+
+Pre-rebase targeted support evidence:
+- snapshot-hardened Automation strict build: **0 warnings / 0 errors**; direct xUnit v3 **30/30 PASS**;
+- remote-preview-integrated Integration strict build: **0 warnings / 0 errors**; direct xUnit v3 **196/196 PASS**;
+- an initial fresh-worktree Automation build with `--no-restore` failed only because `project.assets.json` did not yet exist; restore followed and the unchanged strict build/tests passed;
+- an earlier zero-test `dotnet test` invocation is not counted as verification.
+
+These are useful slice checks but are not the final exact-tree claim. The v8.8.4 handoff/release gates below must run after this reconciliation.
+
+---
+
 # Reconciled canonical-main hosted evidence
 
 Inherited v8.8.2 hosted Windows closure: source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, run `36455992975`, 25/25, release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. Keep this distinct from v8.8.3 local release evidence at `26485dad2c931544728d108de9da66446dedf0a6`.

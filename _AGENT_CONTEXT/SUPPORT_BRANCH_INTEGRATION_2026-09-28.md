@@ -99,3 +99,28 @@ Exact locally verified integration source: `dbfaccba6ec15ed1c509ba47194c3e98c4b0
 - Handoff preflight passed and all eight adversarial negative fixtures failed closed.
 
 During verification canonical `main` advanced from `9dd9176` to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`; that delta changes the hosted-evidence path/version and continuity metadata only. It is reconciled before push, and the v8.8.2 hosted workflow is updated to write v8.8.2 evidence. Exact-main hosted verification remains pending until the canonical push completes and the workflow runs.
+
+## Final reconciliation — v8.8.4 support recovery hardening
+
+Initial final-harvest inventory began from `86d6f9cb07fa15574aad4cc6b0c9cfd84d011c07`. Before promotion, canonical `origin/main` advanced to `317ba6c86d54012a65a41772109a72566d29c0a9` with the complete v8.8.3 archive-streaming cleanup release and hosted evidence. The candidate was therefore rebuilt from `317ba6c` by squash-merging only the reviewed harvest; newer archive code, tests, verification state, and evidence were preserved. Candidate support refs were re-inventoried with patch-equivalence, unique commits, changed-file lists, and direct diff review; unmerged ancestry alone was never treated as a merge requirement.
+
+| Branch | Disposition |
+| --- | --- |
+| `agent/support-save-snapshot-prune-integrity-20260928` | **Integrated manually/hardened.** The finding and regression were valid, but the branch implementation was not accepted verbatim: persisted `root_path` may not authorize recursive deletion outside an enumerated direct child of `SnapshotRoot`, and over-limit metadata is retired only after owned payload deletion succeeds. Added an outside-root sentinel regression. |
+| `agent/support-remote-preview-egress-hardening-20260928` | **Integrated selectively.** Production egress policy, network regressions, specialized audit, and local evidence preserved; stale branch handoff/cache state skipped. Current v8.8.3 identity was preserved during conflict resolution. |
+| `agent/support-legacy-migration-hardlink-runtime-20260928` | **Documentation/research integrated selectively.** Runtime audit + raw evidence + generalized immutable-byte-ownership doctrine preserved as LR-012; stale routing snapshots skipped. |
+| `agent/support-multi-instance-mutation-audit-20260928` | **Documentation/research integrated selectively.** Deterministic live-peer recovery audit + evidence + writer-orphanhood doctrine preserved as LR-013; stale routing snapshots skipped. |
+| `agent/support-updater-cross-session-ownership-audit-20260928` | **Documentation/research integrated selectively.** Cross-session single-writer audit preserved as LR-014; stale updater routing edits skipped. |
+| support-bundle share-safety / CAS-reparse / diagnostic-privacy historical refs | **Skipped as superseded/redundant.** Their useful behavior/findings are already represented by newer canonical implementations/audits and prior integration ledgers. |
+| continuity-drift / live-routing / PR-disposition snapshot branches | **Skipped as stale point-in-time coordination state.** Current Git/PR state and canonical continuity outrank snapshots. |
+| older updater C9/C10/WPF/packaging support audits | **Skipped as superseded by later canonical updater implementation and verification records.** |
+| Agent Control v2, frontend/UI, updater implementation, game-profile implementation lanes | **Left separate/active.** They are independently owned production lanes, not support-harvest material. |
+
+Conflict decisions:
+- Save-snapshot support code was repaired rather than blindly cherry-picked because its DB-provided path/deletion ordering weakened the existing containment/cleanup invariants.
+- Remote-preview `NexusMetadataService.cs` overlap was resolved against current v8.8.3 source; the obsolete shared HTTP client was removed and the new split clients retained, with User-Agent synchronized to v8.8.3.
+- Parallel Learned Rule numbering collided with canonical LR-011. Canonical assignments are LR-012 immutable content-store byte ownership, LR-013 writer-orphanhood before recovery takeover, and LR-014 cross-session mutation ownership.
+
+Targeted Windows verification on the pre-rebase combined support source: Automation strict build PASS + **30/30**, Integration strict build PASS + **196/196**. The v8.8.4 exact-tree verifier/release packaging and final remote-main verification remain the promotion gate. No support-branch `.verification` cache was imported as canonical proof, and no published history was rewritten.
+
+The successor must inspect live `origin/main` and open work before acting, preserve exact verification provenance, inherit the permanent continuity constitution and active Learned Rules, and recursively propagate them to the agent after them. **Do not break the chain.**

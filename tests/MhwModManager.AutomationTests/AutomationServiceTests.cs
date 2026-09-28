@@ -30,6 +30,79 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveSnapshotPruneKeepsDatabaseIndexAlignedWithPayloads()
+    {
+        var db=await CreateDbAsync("backup-prune.db");
+        var stateRoot=Path.Combine(root,"backup-prune-state");
+        var game=GameProfile.Generic("backup-prune","Backup Prune",Path.Combine(root,"backup-prune-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var seeded=new List<(string Id,string Root)>();
+        var start=DateTimeOffset.UtcNow.AddHours(-3);
+        for(var i=0;i<30;i++)
+        {
+            var created=start.AddMinutes(i);
+            var id=created.ToString("yyyyMMdd-HHmmss-fff",System.Globalization.CultureInfo.InvariantCulture);
+            var snapshotRoot=Path.Combine(service.SnapshotRoot,id);
+            Directory.CreateDirectory(snapshotRoot);
+            await File.WriteAllTextAsync(Path.Combine(snapshotRoot,"snapshot.json"),"{}",TestContext.Current.CancellationToken);
+            await InsertSaveSnapshotAsync(db,id,created,snapshotRoot,TestContext.Current.CancellationToken);
+            seeded.Add((id,snapshotRoot));
+        }
+
+        var staleCreated=DateTimeOffset.UtcNow.AddMinutes(-1);
+        var staleId=staleCreated.ToString("yyyyMMdd-HHmmss-fff",System.Globalization.CultureInfo.InvariantCulture);
+        var staleRoot=Path.Combine(service.SnapshotRoot,staleId);
+        await InsertSaveSnapshotAsync(db,staleId,staleCreated,staleRoot,TestContext.Current.CancellationToken);
+
+        var result=await service.CreateAsync("prune-integrity",TestContext.Current.CancellationToken);
+        Assert.True(result.Success);
+
+        var indexed=new List<(string Id,string Root)>();
+        await using(var c=await db.OpenAsync(TestContext.Current.CancellationToken))
+        {
+            await using var cmd=c.CreateCommand();
+            cmd.CommandText="SELECT id,root_path FROM save_snapshots ORDER BY created_at DESC,id DESC";
+            await using var reader=await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+            while(await reader.ReadAsync(TestContext.Current.CancellationToken))
+                indexed.Add((reader.GetString(0),reader.GetString(1)));
+        }
+
+        Assert.Equal(30,indexed.Count);
+        Assert.DoesNotContain(indexed,x=>x.Id==staleId);
+        Assert.DoesNotContain(indexed,x=>x.Id==seeded[0].Id);
+        Assert.False(Directory.Exists(seeded[0].Root));
+        Assert.All(indexed,x=>Assert.True(Directory.Exists(x.Root),$"Indexed snapshot payload is missing: {x.Root}"));
+    }
+
+    [Fact]
+    public async Task SaveSnapshotPruneNeverDeletesDatabasePathsOutsideSnapshotRoot()
+    {
+        var db=await CreateDbAsync("backup-prune-containment.db");
+        var stateRoot=Path.Combine(root,"backup-prune-containment-state");
+        var game=GameProfile.Generic("backup-prune-containment","Backup Prune Containment",Path.Combine(root,"backup-prune-containment-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        var outside=Path.Combine(root,"outside-snapshot-root");
+        Directory.CreateDirectory(outside);
+        var sentinel=Path.Combine(outside,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"keep",TestContext.Current.CancellationToken);
+        var created=DateTimeOffset.UtcNow.AddDays(-1);
+        var id=created.ToString("yyyyMMdd-HHmmss-fff",System.Globalization.CultureInfo.InvariantCulture);
+        await InsertSaveSnapshotAsync(db,id,created,outside,TestContext.Current.CancellationToken);
+
+        var result=await service.CreateAsync("containment",TestContext.Current.CancellationToken);
+        Assert.True(result.Success);
+        Assert.True(Directory.Exists(outside));
+        Assert.True(File.Exists(sentinel));
+
+        await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT COUNT(*) FROM save_snapshots WHERE id=$i";
+        cmd.Parameters.AddWithValue("$i",id);
+        Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+    }
+
+    [Fact]
     public async Task UpdateDiffCountsStructuralAndTextureChanges()
     {
         var db=await CreateDbAsync("diff.db");
@@ -458,6 +531,14 @@ public sealed class AutomationServiceTests : IDisposable
         await service.RecordSuccessfulLaunchAsync(["culprit"],TestContext.Current.CancellationToken);
         var issue=Assert.Single(await service.GetActiveAsync(TestContext.Current.CancellationToken));
         Assert.True(issue.Confirmed);Assert.Equal(99,issue.Score);
+    }
+
+    private static async Task InsertSaveSnapshotAsync(ManagerDatabase db,string id,DateTimeOffset created,string snapshotRoot,CancellationToken ct)
+    {
+        await db.ExecuteAsync(
+            "INSERT INTO save_snapshots(id,created_at,reason,root_path,save_source,mod_state_json,game_build_sha256,manifest_json,success) VALUES($i,$t,'seed',$p,NULL,'{}',NULL,'{}',1)",
+            new Dictionary<string,object?>{{"$i",id},{"$t",created.ToString("O",System.Globalization.CultureInfo.InvariantCulture)},{"$p",snapshotRoot}},
+            ct);
     }
 
     private static async Task InsertLaunchAsync(ManagerDatabase db,string id,DateTimeOffset started,bool success,IReadOnlyDictionary<string,ModState> state)

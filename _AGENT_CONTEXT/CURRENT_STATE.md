@@ -1,3 +1,11 @@
+# v8.8.4 final support reconciliation — 2026-09-28
+
+Canonical base is `317ba6c86d54012a65a41772109a72566d29c0a9` (v8.8.3 archive-streaming cleanup plus hosted evidence). The v8.8.4 candidate preserves that entire baseline and adds only the final support harvest: save-snapshot retention with manager-owned delete containment and delete-then-retire ordering; HTTPS/public-only remote-preview egress with redirects disabled; three unique ownership/recovery audits; LR-012 through LR-014; and corresponding continuity/release identity.
+
+The pre-rebase support candidate passed Automation **30/30** and Integration **196/196** with strict builds. Those runs established the support slices themselves, but final promotion requires rerunning the repository gates on this reconciled v8.8.4 exact tree.
+
+---
+
 # Concurrent canonical-main evidence reconciled
 
 The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.

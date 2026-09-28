@@ -1,3 +1,13 @@
+# v8.8.4 final support reconciliation — current handoff
+
+Canonical `origin/main` advanced during integration to `317ba6c86d54012a65a41772109a72566d29c0a9`, which already contains the v8.8.3 archive-streaming cleanup release. The v8.8.4 candidate was rebuilt from that exact head by squash-merging only reviewed support-harvest results, so the newer archive code, tests, verification state, and evidence are preserved.
+
+v8.8.4 recovers two production/test slices: hardened save-snapshot retention and remote-preview network egress. The snapshot branch was not accepted verbatim: database `root_path` values cannot expand recursive-delete authority outside direct children of `SnapshotRoot`, and over-limit metadata is retired only after owned payload deletion succeeds. Remote preview transport is HTTPS-only, no-auto-redirect, proxy-bypassed, and rejects any non-public DNS result before connecting.
+
+Unique research lanes for legacy CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session lock scope are preserved as audits plus LR-012/LR-013/LR-014; stale routing/cache snapshots were skipped. Active Updater, Agent Control v2, frontend/UI, and game-profile implementation lanes remain separate. Full exact-tree v8.8.4 verification below is the promotion gate; re-fetch `origin/main` again immediately before push.
+
+---
+
 # v8.8.3 archive streaming failure-cleanup ? local Windows release closure
 
 Exact locally release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. `Verify-Release.ps1` passed **25/25**, FunctionVerifier **738/738** with **7,850 / 0 uncovered** call sites, Core **79/79**, Automation **29/29**, Integration **181/181**, self-test **11/11**, and strict builds/analyzers. `Build-Release.ps1` passed win-x64 ReadyToRun and updater-helper publish; updater build **320**; ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.

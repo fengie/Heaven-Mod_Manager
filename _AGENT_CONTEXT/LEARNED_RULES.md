@@ -194,3 +194,53 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant audit:** `_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md`
 - **Supersedes:** none
 - **Superseded by:** none
+---
+
+## LR-012 — immutable content stores require independent byte ownership
+
+- **Rule ID:** LR-012
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** content-addressed storage, migrations, hardlinks/aliases, immutable artifact publication
+- **Rule:** Do not call a content-addressed or immutable destination verified merely because its digest is correct at publication time if it still aliases bytes writable through another pathname or ownership domain. Either give the destination independent byte ownership or enforce immutability across every alias for the full lifetime of the object.
+- **Trigger / evidence:** A real-Windows v7 → v8 migration probe proved `LegacyV7Migrator` can verify a hash-named CAS object and mark migration complete while the CAS pathname remains an NTFS hardlink to retained legacy bytes. Mutating the legacy pathname later changed the CAS digest; current restore integrity checks then correctly failed closed before live publication.
+- **Rationale:** Point-in-time digest verification proves bytes, not ownership. A retained alias can invalidate durable verification after completion.
+- **Enforcement:** For immutable/content-addressed publication, test post-publication mutation through every retained alias. Prefer independently owned verified bytes when another pathname remains mutable; otherwise explicitly enforce alias immutability.
+- **Relevant audit:** `_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md`
+- **Integration numbering note:** the support branch proposed LR-011, but canonical LR-011 already belongs to cleanup/cancellation semantics; this rule is renumbered to LR-012.
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-013 — recovery must prove writer orphanhood before takeover
+
+- **Rule ID:** LR-013
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** crash recovery, durable journals, multi-process mutation, startup reconciliation, filesystem/database protocols
+- **Rule:** Durable incomplete state is not proof that its writer is dead. Before recovery rolls back, replays, resets, or otherwise takes ownership of an in-progress operation, it must establish exclusive mutation ownership or prove the prior writer is no longer live.
+- **Trigger / evidence:** A deterministic Windows probe paused DeploymentExecutor A after it wrote MOD bytes but before its journal advanced from Writing. Live executor B recovered the same operation back to ORIGINAL; A then resumed, returned success, and committed a manifest expecting MOD. The final live-byte invariant failed twice.
+- **Rationale:** Journals encode protocol state, not process liveness. SQLite transaction/busy semantics do not serialize the larger filesystem+database state machine across processes.
+- **Enforcement:** High-risk recovery needs an explicit ownership model. Test live-peer exclusion, abandoned-owner takeover, independent-workspace concurrency, and abrupt-death recovery.
+- **Relevant audit:** `_AGENT_CONTEXT/DEPLOYMENT_MULTI_INSTANCE_MUTATION_OWNERSHIP_AUDIT_2026-09-28.md`
+- **Integration numbering note:** support branches reserved LR-011/LR-012 in parallel; canonical numbering preserves LR-011 and assigns this rule LR-013.
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-014 — mutation ownership must span every supported session that can reach the target
+
+- **Rule ID:** LR-014
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** Windows named synchronization, self-update, recovery, and single-writer mutation protocols
+- **Rule:** A synchronization primitive protecting a shared mutation target must live in a namespace/identity visible to every supported process that can mutate that target. On Windows, a `Local\` named semaphore or mutex is session-scoped and cannot prove cross-session single-writer ownership of a shared installation.
+- **Trigger / evidence:** The updater uses `Local\MHWMM.Update.<install-hash>` as its serialization guard. Existing regression coverage proves same-session contention only; Windows kernel-object namespace semantics make that guard distinct across interactive sessions.
+- **Rationale:** Durable journals and rollback do not make concurrent writers safe. Two supported writers that acquire different lock objects can both enter code assuming exclusivity.
+- **Enforcement:** Define lock scope from the mutation authority, fail closed if the required ownership primitive cannot be established, test cross-process and relevant cross-session contention, and preserve deterministic crash/abandon recovery. Define ACL/filesystem-lock behavior explicitly for cross-account shared installs.
+- **Relevant audit:** `_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md`
+- **Integration numbering note:** the support branch proposed LR-011 in parallel; canonical numbering assigns LR-014.
+- **Supersedes:** none
+- **Superseded by:** none

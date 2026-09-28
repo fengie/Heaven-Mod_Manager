@@ -41,7 +41,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         };
         await File.WriteAllTextAsync(Path.Combine(root, "snapshot.json"), JsonSerializer.Serialize(metadata, AutomationJson.Options), ct);
         await RecordSnapshotAsync(id, reason, root, source, state, build?.Sha256, manifest, ct);
-        Prune(30);
+        await PruneAsync(30, ct);
         return new(true, id, root, source, copied, source is null ? $"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured." : $"{game.DisplayName} save + mod/deployment snapshot created.");
     }
 
@@ -107,13 +107,101 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         await output.FlushAsync(ct);
     }
 
-    private void Prune(int keep)
+    private async Task PruneAsync(int keep, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!Directory.Exists(SnapshotRoot)) return;
-        foreach (var dir in Directory.EnumerateDirectories(SnapshotRoot).OrderByDescending(x => x, StringComparer.OrdinalIgnoreCase).Skip(keep))
+        ArgumentOutOfRangeException.ThrowIfNegative(keep);
+
+        var fullSnapshotRoot = Path.GetFullPath(SnapshotRoot)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var directories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (Directory.Exists(SnapshotRoot))
         {
-            try { Directory.Delete(dir, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            foreach (var dir in Directory.EnumerateDirectories(SnapshotRoot))
+                directories.Add(Path.GetFullPath(dir)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         }
+
+        var snapshots = new List<(string Id, string RootPath)>();
+        await using (var c = await db.OpenAsync(ct))
+        {
+            await using var cmd = c.CreateCommand();
+            cmd.CommandText = "SELECT id,root_path FROM save_snapshots ORDER BY created_at DESC,id DESC";
+            await using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct)) snapshots.Add((r.GetString(0), r.GetString(1)));
+        }
+
+        var retained = 0;
+        foreach (var snapshot in snapshots)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!TryNormalizeOwnedSnapshotDirectory(fullSnapshotRoot, snapshot.RootPath, out var fullPath)
+                || !directories.Contains(fullPath))
+            {
+                await DeleteSnapshotRecordAsync(snapshot.Id, ct);
+                continue;
+            }
+
+            try
+            {
+                if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+                {
+                    await DeleteSnapshotRecordAsync(snapshot.Id, ct);
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            if (retained++ < keep) continue;
+
+            try
+            {
+                Directory.Delete(fullPath, true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            await DeleteSnapshotRecordAsync(snapshot.Id, ct);
+            directories.Remove(fullPath);
+        }
+    }
+
+    private static bool TryNormalizeOwnedSnapshotDirectory(string fullSnapshotRoot, string candidate, out string fullPath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        fullPath = string.Empty;
+        try
+        {
+            var normalized = Path.GetFullPath(candidate)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var parent = Path.GetDirectoryName(normalized);
+            if (parent is null
+                || !string.Equals(
+                    parent.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    fullSnapshotRoot,
+                    StringComparison.OrdinalIgnoreCase))
+                return false;
+            fullPath = normalized;
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
+    }
+
+    private async Task DeleteSnapshotRecordAsync(string id, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "DELETE FROM save_snapshots WHERE id=$i";
+        cmd.Parameters.AddWithValue("$i", id);
+        await cmd.ExecuteNonQueryAsync(ct);
     }
 }
