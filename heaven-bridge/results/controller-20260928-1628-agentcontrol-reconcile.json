@@ -1,0 +1,20 @@
+{
+  "id": "controller-20260928-1628-agentcontrol-reconcile",
+  "source": null,
+  "created_at": "2026-09-28T20:28:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-28T20:28:25.810873+00:00",
+  "finished_at": "2026-09-28T20:28:25.810873+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "INVALID_PROTOCOL",
+    "message": "unsupported source/protocol",
+    "details": {
+      "source": null
+    }
+  },
+  "stderr": "unsupported source/protocol",
+  "stdout": ""
+}
