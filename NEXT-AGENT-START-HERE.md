@@ -2,11 +2,15 @@
 
 Canonical GitHub `main` at this reconciliation checkpoint is `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`. The older C12 branch instructions immediately below are historical for routing: **do not resume that isolated branch by default**.
 
-Current owned lanes at this checkpoint:
+Current owned lanes at the final snapshot:
 - PR #55 — frontend UX/responsive workflows;
-- PR #58 — updater post-upload stale-main publication window (**current updater owner**);
+- PR #58 — updater post-upload stale-main publication window;
+- PR #65 — updater publication verification-race integration; it states it supersedes #58 once merged;
 - PR #59 — Agent Control v2 engineering control plane;
-- PR #62 — persisted game-profile ID path-containment audit.
+- PR #66 — independent safety review of #59;
+- PR #62 — persisted game-profile ID path-containment audit;
+- PR #64 — launch-observation persistence atomicity audit;
+- PR #68 — archive streaming failure-cleanup semantics audit.
 
 Archive streaming cancellation / actual-output budgeting is already implemented on `main`, and PR #61 has repaired the distinction between its local integration-head verification and hosted exact-main evidence.
 
