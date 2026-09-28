@@ -15,6 +15,7 @@ import {
   classifyAuthoritativeExit,
   buildTaskGraph,
   defaultControlState,
+  deploymentBatchCapacity,
   deriveMission,
   interpretCommand,
   isActiveStatus as coreIsActiveStatus,
@@ -514,6 +515,45 @@ function acquireLease(state, { boundary, agentId, taskId, branchName }) {
   return lease;
 }
 
+function failReservedDeployment({ taskId, leaseId, error, reason, worktree = null, branchName = null }) {
+  const failed = loadState();
+  const taskItem = failed.tasks.find(item => item.id === taskId);
+  if (taskItem) {
+    taskItem.status = "failed";
+    taskItem.finishedAt = isoNow();
+    taskItem.updatedAt = isoNow();
+    taskItem.error = error?.message || String(error);
+    taskItem.retainedWorktree = worktree && fs.existsSync(worktree) ? worktree : null;
+    taskItem.retainedBranch = branchName || taskItem.branchName || null;
+    taskItem.nextAction = taskItem.retainedWorktree
+      ? "Inspect or remove the retained pre-launch worktree after preserving any useful evidence."
+      : null;
+  }
+  const leaseItem = failed.leases.find(item => item.id === leaseId);
+  if (leaseItem && leaseItem.status === "active") {
+    leaseItem.status = "released";
+    leaseItem.releasedAt = isoNow();
+    leaseItem.releaseReason = reason;
+  }
+  addEvent(failed, "task.failed", `Deployment failed before a worker process was launched for ${taskId}`, {
+    taskId,
+    reason,
+    evidence: {
+      error: error?.message || String(error),
+      retainedWorktree: taskItem?.retainedWorktree || null,
+      retainedBranch: taskItem?.retainedBranch || branchName || null
+    }
+  });
+  addNotification(failed, {
+    severity: "error",
+    title: "Agent deployment failed before launch",
+    message: error?.message || String(error),
+    action: { type: "inspect-task", taskId },
+    dedupeKey: `prelaunch-failed:${taskId}`
+  });
+  saveState(failed);
+}
+
 function assertWorkerPlacement(state, machine, { repositoryWriteAuthorized = false } = {}) {
   const requested = String(machine || "auto").trim().toLowerCase();
   const hostname = os.hostname().toLowerCase();
@@ -646,26 +686,75 @@ async function deployOne({
   try {
     await git(["worktree", "add", "-b", branchName, worktree, baseRef]);
   } catch (error) {
-    const failed = loadState();
-    const taskItem = failed.tasks.find(item => item.id === taskId);
-    if (taskItem) {
-      taskItem.status = "failed";
-      taskItem.finishedAt = isoNow();
-      taskItem.updatedAt = isoNow();
-      taskItem.error = error.message || String(error);
-    }
-    const leaseItem = failed.leases.find(item => item.id === lease.id);
-    if (leaseItem) {
-      leaseItem.status = "released";
-      leaseItem.releasedAt = isoNow();
-      leaseItem.releaseReason = "worktree-create-failed";
-    }
-    addEvent(failed, "task.failed", `Failed to create worktree for ${taskId}`, { taskId });
-    saveState(failed);
+    failReservedDeployment({
+      taskId,
+      leaseId: lease.id,
+      error,
+      reason: "worktree-create-failed",
+      branchName
+    });
     throw error;
   }
 
-  const codex = findCodex();
+  let codex;
+  let prompt;
+  let logFd = null;
+  try {
+    codex = findCodex();
+    prompt = buildPrompt({
+      role,
+      task,
+      baseBranch: base,
+      baseSha,
+      branchName,
+      taskId,
+      boundary: mutableBoundary,
+      priority: normalizedPriority,
+      dependencies: taskRecord.dependencies,
+      lane,
+      machine: assignedMachine,
+      repositoryWriteAuthorized,
+      acceptanceCriteria: taskRecord.acceptanceCriteria,
+      verification: taskRecord.verification,
+      additionalConstraints
+    });
+    fs.writeFileSync(promptPath, prompt.rendered, "utf8");
+    logFd = fs.openSync(logPath, "a");
+
+    const promptedState = loadState();
+    const promptedTask = promptedState.tasks.find(item => item.id === taskId);
+    if (promptedTask) {
+      promptedTask.status = "starting";
+      promptedTask.promptTemplateId = prompt.templateId;
+      promptedTask.promptTemplateVersion = prompt.templateVersion;
+      promptedTask.promptHash = prompt.sha256;
+      promptedTask.updatedAt = isoNow();
+    }
+    promptedState.promptHistory.unshift({
+      taskId,
+      agentId: id,
+      templateId: prompt.templateId,
+      templateVersion: prompt.templateVersion,
+      sha256: prompt.sha256,
+      promptPath,
+      createdAt: isoNow()
+    });
+    saveState(promptedState);
+  } catch (error) {
+    if (logFd !== null) {
+      try { fs.closeSync(logFd); } catch {}
+    }
+    failReservedDeployment({
+      taskId,
+      leaseId: lease.id,
+      error,
+      reason: "pre-launch-setup-failed",
+      worktree,
+      branchName
+    });
+    throw error;
+  }
+
   const args = [
     "exec",
     "--json",
@@ -676,53 +765,29 @@ async function deployOne({
   if (model && model.trim()) args.push("-m", model.trim());
   args.push("-");
 
-  const logFd = fs.openSync(logPath, "a");
-  const child = spawn(codex, args, {
-    cwd: worktree,
-    stdio: ["pipe", logFd, logFd],
-    windowsHide: true,
-    detached: false,
-    env: { ...process.env }
-  });
-
-  const prompt = buildPrompt({
-    role,
-    task,
-    baseBranch: base,
-    baseSha,
-    branchName,
-    taskId,
-    boundary: mutableBoundary,
-    priority: normalizedPriority,
-    dependencies: taskRecord.dependencies,
-    lane,
-    machine: assignedMachine,
-    repositoryWriteAuthorized,
-    acceptanceCriteria: taskRecord.acceptanceCriteria,
-    verification: taskRecord.verification,
-    additionalConstraints
-  });
-  fs.writeFileSync(promptPath, prompt.rendered, "utf8");
-
-  const promptedState = loadState();
-  const promptedTask = promptedState.tasks.find(item => item.id === taskId);
-  if (promptedTask) {
-    promptedTask.status = "starting";
-    promptedTask.promptTemplateId = prompt.templateId;
-    promptedTask.promptTemplateVersion = prompt.templateVersion;
-    promptedTask.promptHash = prompt.sha256;
-    promptedTask.updatedAt = isoNow();
+  let child;
+  try {
+    child = spawn(codex, args, {
+      cwd: worktree,
+      stdio: ["pipe", logFd, logFd],
+      windowsHide: true,
+      detached: false,
+      env: { ...process.env }
+    });
+  } catch (error) {
+    if (logFd !== null) {
+      try { fs.closeSync(logFd); } catch {}
+    }
+    failReservedDeployment({
+      taskId,
+      leaseId: lease.id,
+      error,
+      reason: "spawn-threw-before-process-launch",
+      worktree,
+      branchName
+    });
+    throw error;
   }
-  promptedState.promptHistory.unshift({
-    taskId,
-    agentId: id,
-    templateId: prompt.templateId,
-    templateVersion: prompt.templateVersion,
-    sha256: prompt.sha256,
-    promptPath,
-    createdAt: isoNow()
-  });
-  saveState(promptedState);
 
   child.stdin.end(prompt.rendered);
   fs.closeSync(logFd);
@@ -1801,6 +1866,12 @@ const server = http.createServer(async (req, res) => {
       const body = await readJson(req);
       const result = await withDeployLock(async () => {
         const count = Math.max(1, Math.min(MAX_DEPLOY_COUNT, Number(body.count || 1)));
+        const capacityState = refreshState();
+        assertMutationsAllowed(capacityState, { dispatch: true });
+        const capacity = deploymentBatchCapacity(capacityState, count, MAX_ACTIVE_AGENTS);
+        if (!capacity.allowed) {
+          throw new Error(`Requested deployment batch of ${count} exceeds available worker capacity (${capacity.available} free of ${capacity.maximum}; ${capacity.active} active). No workers were launched.`);
+        }
         const created = [];
         for (let index = 0; index < count; index += 1) {
           const explicitBoundary = String(body.boundary || "").trim();
