@@ -41,8 +41,23 @@ public sealed record UpdateBuildIdentity(
     long BuildNumber,
     DateTimeOffset BuiltUtc)
 {
-    public string DisplayId => $"{ProductVersion} â€¢ build {BuildNumber} â€¢ {ShortSha}";
-    public string ShortSha => SourceSha.Length <= 12 ? SourceSha : SourceSha[..12];
+    public string DisplayId
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"{ProductVersion} â€¢ build {BuildNumber} â€¢ {ShortSha}";
+        }
+    }
+
+    public string ShortSha
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return SourceSha.Length <= 12 ? SourceSha : SourceSha[..12];
+        }
+    }
 
     public static UpdateBuildIdentity Load(string installRoot)
     {

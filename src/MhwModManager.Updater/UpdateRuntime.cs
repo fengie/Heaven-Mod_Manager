@@ -107,7 +107,11 @@ public sealed record UpdateTargetLaunchState(
 
 public static class UpdateLaunchStateStore
 {
-    public static string GetPath(UpdateApplyRequest request) => request.JournalPath + ".launch.json";
+    public static string GetPath(UpdateApplyRequest request)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return request.JournalPath + ".launch.json";
+    }
 
     public static async Task<UpdateTargetLaunchState> BeginAsync(UpdateApplyRequest request, CancellationToken ct)
     {
