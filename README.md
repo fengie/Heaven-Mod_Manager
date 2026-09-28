@@ -1,10 +1,16 @@
-# v8.8.3 Universal Mod Manager
+# v8.8.4 Universal Mod Manager
 
-## v8.8.3 — persisted game-profile path containment
+## v8.8.4 - persisted game-profile ID path containment
 
-Persisted game profile IDs are now treated as path authority, not trusted text. Registry load/upsert rejects IDs that are not the exact canonical single-segment manager form, and generic-game workspace/state paths are independently checked to stay under their manager-owned roots before any directories are created. Malformed or tampered profile state is ignored without rewriting the registry, preventing traversal/separator IDs from redirecting Mods, Inbox, archive, Next, database, or blob storage outside their intended roots.
+Persisted game profile IDs are now validated as path authority before registry trust: only the exact canonical single-segment manager form is accepted on load/upsert. Generic-game workspace and state roots also receive an independent lexical containment check before manager-owned directories are created, so tampered traversal/separator IDs cannot redirect Mods, Inbox, archive, Next, database, or blob storage outside their intended roots.
 
-Focused regressions cover canonical-ID validation, hostile persisted registry entries, unchanged registry bytes on read, and absence of escaped workspace side effects. Existing valid profile/workspace naming is preserved; this is not a StorageKey migration.
+Hostile-registry regressions prove invalid persisted IDs are ignored without rewriting the registry or creating escaped workspace/state side effects. Existing valid profile/workspace identity is preserved; this is not a StorageKey migration. v8.8.4 is reconciled on top of the canonical v8.8.3 archive streaming cleanup release.
+## v8.8.3 ? archive streaming failure-cleanup hardening
+
+Archive extraction now treats the currently-created output file as owned cleanup state for every payload-copy failure, not only cancellation and output-budget exceptions. Cleanup remains best-effort: if deletion itself fails, the original cancellation, safety failure, or I/O exception stays authoritative and the secondary cleanup error is logged instead of replacing it.
+
+Smart Inbox now re-checks requested cancellation before classifying filesystem errors as recoverable per-item failures, so a cleanup/write error cannot downgrade a canceled run into ?skip and continue.? Whole-import catalog-invisible staging and process-death residue remain a separate LR-008 follow-up; v8.8.3 deliberately does not broaden this low-level repair into publication redesign.
+
 ## v8.8.2 — integrated safety and diagnostics hardening
 
 This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.

@@ -1,12 +1,29 @@
-# v8.8.3 game-profile ID containment candidate — 2026-09-28
+# v8.8.4 reconciliation state - verification pending
 
-Exact locally release-verified source is `e5eb300223c01800e3a7652ce4ffe303cbc168c5` on `agent/game-profile-id-containment-v2-20260928`, incorporating canonical main `86d6f9cb07fa15574aad4cc6b0c9cfd84d011c07`.
+The branch combines canonical v8.8.3 archive streaming cleanup (`main` at `8702934aabd6fb73bb95d29068e00169b35c2170`) with the game-profile ID path-containment repair. Product paths do not overlap, but release metadata, continuity files, and verification caches did and were reconciled deliberately. Release identity is now v8.8.4.
 
-Persisted/upserted `GameProfile.Id` values now must be canonical single-segment manager IDs before registry trust, and generic workspace/state paths are rechecked for lexical containment before directory creation. Hostile persisted IDs are ignored without rewriting the registry or creating escaped workspace/state paths.
+Full exact-source v8.8.4 verification is pending; older component-local evidence remains historical only.
 
-Local Windows release closure: Verify-Release 25/25; 737/737 function fingerprints; 7,863 explicit call sites / 0 uncovered; Core 88/88; Automation 28/28; Integration 184/184; self-test 11/11; strict/relaxed builds 0 warnings/errors; Build-Release PASS; updater build 324; artifact SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+---
+# Concurrent canonical-main evidence reconciled
 
-Integration plus exact-main hosted Windows verification remain pending. Launch-observation atomicity and archive-streaming cleanup now have active branches; avoid duplicate ownership.
+The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
+# v8.8.3 archive failure-cleanup ? locally release-verified
+
+Exact release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release **25/25**; functions **738/738**; call sites **7,850 / 0 uncovered**; Core **79/79**; Automation **29/29**; Integration **181/181**; self-test **11/11**; strict builds/analyzers PASS. Build-Release passed win-x64 ReadyToRun plus updater-helper publish, updater build **320**, ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+
+The LR-011 repair is implemented without broadening into LR-008 publication staging. Exact-main hosted verification remains pending after integration. The later evidence/cache commit is metadata-only relative to this verified source.
+
+---
+
+# v8.8.3 archive failure-cleanup candidate ? 2026-09-28
+
+Implementation checkpoint `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928` closes the narrow LR-011 source defect: `ArchiveInspector` best-effort-cleans its owned current output for every exceptional payload-copy exit and never lets cleanup failure replace the primary exception; `SmartInboxService` re-checks cancellation before recoverable I/O handling. Deterministic regressions cover ordinary I/O cleanup, cleanup-failure preservation of cancellation/budget failures, and prevention of later Smart Inbox processing after cancellation.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**, Integration **181/181**, Automation **29/29**. Full release verification/build and hosted exact-main closure remain pending. LR-008 whole-import staging/publication is deliberately not changed. No new company-trainer rule is needed because LR-011 already captures the reusable cleanup-dominance invariant.
 
 ---
 

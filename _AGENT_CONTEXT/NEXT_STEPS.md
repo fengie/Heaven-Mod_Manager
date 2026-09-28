@@ -1,11 +1,28 @@
-# v8.8.3 immediate next steps
+# v8.8.4 reconciliation next steps
 
-1. Integrate `agent/game-profile-id-containment-v2-20260928`, preserving concurrent main evidence/cache work. Verified product source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`.
-2. Run/inspect the exact-main hosted Windows Release Gate after integration and persist the exact main SHA, workflow run, promoted verification cache, updater build, and artifact digest.
-3. Re-query open PRs/branches before taking another task. At this handoff, launch-observation atomicity and archive-streaming cleanup have active branches; Agent Control v2 and frontend are also active.
-4. From the remaining unowned audited work, prefer the highest severity/data-integrity boundary; likely candidates include duplicate-cleanup crash-durable reconciliation, broader LR-006 diagnostic export hardening, or remaining crash-bisector evidence boundaries, subject to the fresh ownership check.
+1. Commit the reconciled v8.8.4 source checkpoint.
+2. Run focused game-profile regressions plus full `Verify-Release.ps1` and `Build-Release.ps1` on that exact commit.
+3. Persist promoted cache and exact local Windows closure evidence in a separate handoff commit, push, and open/integrate the PR.
+4. After integration, inspect the exact-main hosted Windows Release Gate; do not relabel branch-local evidence as hosted evidence.
 
-Do not start a second large task until the v8.8.3 branch is integrated or clearly handed to the integration lane.
+---
+# v8.8.3 current next steps ? local release gate closed
+
+1. Integrate exact locally release-verified checkpoint `26485dad2c931544728d108de9da66446dedf0a6` through the repository workflow without replaying stale branch-local continuity snapshots over newer main.
+2. Inspect/run the exact-main hosted Windows Release Gate and persist its evidence before calling v8.8.3 fully closed.
+3. Keep LR-008 whole-import staging/publication separate from this completed LR-011 repair.
+4. Re-query live PR ownership. If no new owner exists after this lane closes, the highest-safety queued implementation candidate remains persisted game-profile ID path containment; launch-observation atomicity is another P1 boundary but should stay independent.
+5. Preserve the permanent continuity constitution and active Learned Rules and require recursive propagation.
+
+---
+
+# v8.8.3 current next steps ? archive failure-cleanup candidate
+
+1. Run `scripts/Verify-Release.ps1` on exact candidate `5688fe91c03b56b651a3e9d94d7111b974693ab9` plus current continuity inputs with the Windows marker restored for Remote Desktop Commander.
+2. Run `scripts/Build-Release.ps1`; record exact artifact/build identity and SHA-256.
+3. Commit/push verification and continuity evidence, integrate through the repository workflow, then inspect the exact-main hosted Windows gate before calling v8.8.3 closed.
+4. Keep LR-008 whole-import staging/publication separate. After this lane closes, re-query live ownership; absent a new owner, the strongest queued P1 candidate is persisted game-profile ID path containment.
+5. Preserve the permanent continuity constitution and active Learned Rules and require the successor to propagate them recursively.
 
 ---
 

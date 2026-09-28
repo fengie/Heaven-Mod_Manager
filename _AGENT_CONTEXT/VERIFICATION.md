@@ -1,16 +1,43 @@
-# v8.8.3 game-profile ID containment local verification — 2026-09-28
+# v8.8.4 combined-tree verification - pending
 
-Exact source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`; branch `agent/game-profile-id-containment-v2-20260928`; heaven2 / Windows / .NET SDK 10.0.401.
+Canonical v8.8.3 archive cleanup and the profile-ID containment repair have been reconciled, but no v8.8.4 combined-tree pass is claimed yet. The earlier archive and profile-local gates apply only to their exact source commits. Rerun focused tests, `Verify-Release.ps1`, and `Build-Release.ps1` after the reconciliation source commit is created.
 
-- Focused before release gate: `GameProfileTests` 18/18 PASS; `MultiGameTests` 12/12 PASS.
-- `scripts/Verify-Release.ps1`: 25/25 PASS; FunctionVerifier 737/737; 7,863 explicit call sites; 0 uncovered; 0 trace gaps; 0 parse errors.
-- Core 88/88 PASS; Automation 28/28 PASS; Integration/fault injection 184/184 PASS; self-test 11/11 PASS.
-- Strict and relaxed builds/analyzers: 0 warnings, 0 errors.
-- `scripts/Build-Release.ps1`: PASS through win-x64 ReadyToRun app publish, updater-helper publish, package verification, and fingerprint promotion.
-- Updater build 324; ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
-- Initial failed characterization: handoff preflight caught stale v8.8.2 metadata after the version bump. Metadata was repaired and the full gate rerun; no pass was claimed from the failed run.
+---
+# Reconciled canonical-main hosted evidence
 
-Hosted exact-main verification remains pending until integration.
+Inherited v8.8.2 hosted Windows closure: source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, run `36455992975`, 25/25, release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. Keep this distinct from v8.8.3 local release evidence at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
+# v8.8.3 archive failure-cleanup ? exact local Windows release verification
+
+Exact repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6` on `agent/archive-streaming-cleanup-lr011-20260928`. Host: heaven2 / Windows; .NET SDK 10.0.401.
+
+- `Verify-Release.ps1`: **25/25 PASS**.
+- FunctionVerifier: **738/738** promoted; **7,850** explicit call sites; **0 uncovered**, **0 trace gaps**, **0 parse errors**.
+- Core: **79/79**; Automation: **29/29**; Integration/fault injection: **181/181**; self-test: **11/11**.
+- Relaxed/strict project and whole-solution builds/analyzers: PASS, **0 warnings / 0 errors**.
+- Agent-handoff preflight and all eight negative fixtures: PASS/fail-closed as designed.
+- `Build-Release.ps1`: PASS; app win-x64 ReadyToRun PASS; updater-helper self-contained publish PASS.
+- Updater build: **320**; artifact `MHW-Manual-Mod-Manager-v8.8.3-win-x64.zip`; SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+- Exact-main hosted Windows verification: **pending** until integration.
+
+The subsequent evidence/cache-persistence commit changes no production source and is not independently relabeled as full-gated. Detailed closure: `_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md`.
+
+---
+
+# v8.8.3 archive failure-cleanup candidate ? focused Windows evidence
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`.
+
+- `git diff --check`: PASS after removing an edit-side BOM/EOF artifact.
+- Strict whole-solution `dotnet build MhwModManager.sln -c Release --no-restore -warnaserror`: PASS, **0 warnings / 0 errors**.
+- xUnit v3 executable runner, Integration: **181/181 passed**.
+- xUnit v3 executable runner, Automation: **29/29 passed**.
+- Two direct `dotnet test` attempts before the executable-runner invocation returned **Zero tests ran / exit 5** in this local MTP/xUnit-v3 setup; they are recorded as tooling-invocation failures, not test-pass evidence.
+- Full repository verifier, release build/package, and hosted exact-main gate: **pending** at this checkpoint.
+
+No verification cache or prior hosted evidence is promoted by this focused checkpoint.
 
 ---
 

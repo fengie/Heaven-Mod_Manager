@@ -1,9 +1,18 @@
-# v8.8.3 — Persisted game-profile path containment
+# v8.8.4 - Persisted game-profile ID path containment
 
-- Reject persisted or upserted game profile IDs unless they are the exact canonical manager ID and a single safe path segment.
-- Re-check generic-game workspace and state roots lexically before any manager-owned directory creation.
-- Preserve malformed registry files unchanged on read instead of silently normalizing or rebinding game/workspace identity.
-- Add hostile-registry and canonical-ID regressions that prove traversal/separator IDs cannot create escaped Mods, Inbox, archive, Next, database, or blob paths.
+- Reject persisted or upserted game profile IDs unless they are the exact canonical manager ID and one safe path segment.
+- Re-check generic-game workspace and state roots lexically before manager-owned directory creation.
+- Ignore malformed registry entries without rewriting the registry or creating escaped Mods/Inbox/archive/Next/database/blob paths.
+- Add canonical-ID and hostile persisted-state regressions while preserving valid profile/workspace identity.
+- Reconcile on top of the canonical v8.8.3 archive streaming failure-cleanup release.
+# v8.8.3 ? Archive streaming failure-cleanup hardening
+
+- Attempt owned current-output cleanup for every exceptional archive payload-copy exit after file creation, including ordinary streamed I/O failures.
+- Preserve the primary cancellation, budget, or I/O exception when best-effort cleanup itself fails; log the cleanup failure as secondary diagnostics.
+- Re-check Smart Inbox cancellation before treating I/O, access, or archive-data exceptions as recoverable item failures, preventing canceled runs from continuing to later items.
+- Add deterministic fault-injection regressions for ordinary I/O cleanup, cleanup-failure exception dominance, and Smart Inbox cancellation dominance.
+- Keep whole-import staging/publication residue under LR-008 as a separate future boundary.
+
 # v8.8.2 — Integrated support safety hardening
 
 - Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.

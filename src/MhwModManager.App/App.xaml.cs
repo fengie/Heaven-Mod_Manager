@@ -28,8 +28,8 @@ public sealed partial class App:Application, IDisposable
         UnifiedDebugLog.Configure(bootstrapRoot);
         MasterDebugLog.InstallGlobalExceptionHooks();
         WpfMasterTracing.Install();
-        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.3 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
-        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.3 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
+        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.4 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
+        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.4 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
         try
         {
             base.OnStartup(e);

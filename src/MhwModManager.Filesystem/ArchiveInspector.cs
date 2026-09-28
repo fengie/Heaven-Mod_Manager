@@ -10,8 +10,22 @@ public sealed record ArchiveEntryInfo(string Key,long Size,bool IsDirectory);
 public sealed record ArchiveInspection(IReadOnlyList<ArchiveEntryInfo> Entries,bool HasNativePc,bool HasGameRoot,bool HasSuspiciousPaths,long ExpandedBytes,string? CommonWrapper);
 public sealed record ArchiveExtractionLimits(long MaxDeclaredExpandedBytes,long MaxActualOutputBytes);
 
+public enum ArchiveExtractionFaultPoint
+{
+    BeforePayloadWrite,
+    BeforeOwnedOutputCleanup
+}
+
 public sealed class ArchiveInspector
 {
+    private readonly Action<ArchiveExtractionFaultPoint,string> injectFault;
+
+    public ArchiveInspector(Action<ArchiveExtractionFaultPoint,string>? faultInjector=null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        injectFault=faultInjector??((_,_)=>{});
+    }
+
     public const int MaxEntries = 200_000;
     public const long MaxExpandedBytes = 200L * 1024 * 1024 * 1024;
 
@@ -116,6 +130,7 @@ public sealed class ArchiveInspector
                         if(read==0)break;
                         if(read>limits.MaxActualOutputBytes-actualTotal)
                             throw new InvalidDataException("Archive actual-output safety limit exceeded.");
+                        injectFault(ArchiveExtractionFaultPoint.BeforePayloadWrite,dest);
                         await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
                         actualTotal+=read;
                     }
@@ -125,16 +140,28 @@ public sealed class ArchiveInspector
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
             }
-            catch(OperationCanceledException) when(createdOutput)
+            catch(Exception primaryFailure) when(createdOutput)
             {
-                File.Delete(dest);
+                TryDeleteOwnedOutput(dest,primaryFailure);
                 throw;
             }
-            catch(InvalidDataException) when(createdOutput)
-            {
-                File.Delete(dest);
-                throw;
-            }
+        }
+    }
+
+    private void TryDeleteOwnedOutput(string path,Exception primaryFailure)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}; primary={primaryFailure.GetType().Name}");
+        try
+        {
+            injectFault(ArchiveExtractionFaultPoint.BeforeOwnedOutputCleanup,path);
+            File.Delete(path);
+        }
+        catch(Exception cleanupFailure)
+        {
+            MasterDebugLog.Write(
+                "ARCHIVE-CLEANUP",
+                $"Failed to remove owned partial archive output '{path}'. The primary {primaryFailure.GetType().Name} remains authoritative.",
+                cleanupFailure);
         }
     }
 

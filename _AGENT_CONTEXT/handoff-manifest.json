@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.3",
+  "currentVersion": "8.8.4",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.2 support safety integration",
+  "immediateParentRevision": "v8.8.3 archive streaming failure-cleanup hardening",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -56,7 +56,6 @@
     "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md",
     "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md",
     "_AGENT_CONTEXT/GAME_PROFILE_ID_PATH_CONTAINMENT_AUDIT_2026-09-28.md",
-    "_AGENT_CONTEXT/EVIDENCE/game-profile-id-containment-v8.8.3-local-windows-closure.md",
     "_AGENT_CONTEXT/LAUNCH_OBSERVATION_ATOMICITY_AUDIT_2026-09-28.md",
     "_AGENT_CONTEXT/PROFILE_SAVE_TRANSACTION_ATOMICITY_CHECKPOINT_2026-09-28.md",
     "_AGENT_CONTEXT/CRASH_BISECTOR_CONTROL_PREFLIGHT_CHECKPOINT_2026-09-28.md",
@@ -89,7 +88,10 @@
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CANDIDATE_ADVERSARIAL_REVIEW.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md",
+    "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -98,7 +100,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.3 game-profile ID path containment is locally release-verified at e5eb300223c01800e3a7652ce4ffe303cbc168c5 on branch agent/game-profile-id-containment-v2-20260928: Verify-Release 25/25, functions 737/737 with 7863 explicit call sites and 0 uncovered, Core 88/88, Automation 28/28, Integration 184/184, self-test 11/11, Build-Release PASS, updater build 324, ZIP SHA-256 75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7. Integrate without overwriting concurrent work, then inspect the exact-main hosted Windows Release Gate and preserve its provenance. At handoff time launch-observation atomicity and archive-streaming cleanup have active branches; Agent Control v2 and frontend are also active, so do not duplicate those lanes. Re-query ownership before taking the highest-priority unowned audited boundary. Preserve the continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them.",
+  "nextAgentObligation": "Current branch reconciles the persisted game-profile ID containment repair on canonical main 8702934aabd6fb73bb95d29068e00169b35c2170, which already contains the v8.8.3 archive streaming cleanup. Release identity is v8.8.4. Before integration, run focused profile tests, Verify-Release, and Build-Release on the exact reconciliation commit; the older e5eb300 v8.8.3 containment evidence does not prove the combined tree. Then persist exact evidence/cache, push, and integrate through the repository workflow before inspecting exact-main hosted Windows evidence. Preserve the continuity constitution and active Learned Rules and recursively propagate them.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

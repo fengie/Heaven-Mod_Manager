@@ -1,14 +1,27 @@
-# v8.8.3 programmer handoff — persisted game-profile ID path containment
+# v8.8.4 profile-containment reconciliation - verification pending
 
-Game-profile ID path containment is implemented on `agent/game-profile-id-containment-v2-20260928`. Exact locally release-verified source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`, after incorporating canonical main `86d6f9cb07fa15574aad4cc6b0c9cfd84d011c07`.
+Canonical `main` advanced to `8702934aabd6fb73bb95d29068e00169b35c2170` with the v8.8.3 archive streaming cleanup while the profile-ID lane was being verified. This branch now reconciles that canonical product code with the persisted game-profile ID containment repair and bumps shipped release identity to v8.8.4.
 
-The repair rejects noncanonical persisted/upserted profile IDs before registry trust, independently checks generic workspace/state roots before creating manager-owned directories, and adds hostile-registry/no-escaped-side-effect regressions. It preserves valid IDs and is not a StorageKey migration.
+Do not treat the earlier `e5eb300223c01800e3a7652ce4ffe303cbc168c5` v8.8.3 containment gate as proof for this combined tree. Focused tests, full `Verify-Release.ps1`, and `Build-Release.ps1` must be rerun on the exact reconciliation commit before integration.
 
-Local heaven2/Windows/.NET 10.0.401 closure: Verify-Release 25/25; FunctionVerifier 737/737 with 7,863 explicit call sites and 0 uncovered; Core 88/88; Automation 28/28; Integration 184/184; self-test 11/11; Build-Release PASS; updater build 324; ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+---
+# v8.8.3 archive streaming failure-cleanup ? local Windows release closure
 
-Next: integrate this branch without clobbering concurrent work, then inspect/persist the exact-main hosted Windows Release Gate. Re-query ownership before selecting more work. Launch-observation atomicity and archive-streaming cleanup acquired active branches during this run; Agent Control v2 and frontend are also active.
+Exact locally release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. `Verify-Release.ps1` passed **25/25**, FunctionVerifier **738/738** with **7,850 / 0 uncovered** call sites, Core **79/79**, Automation **29/29**, Integration **181/181**, self-test **11/11**, and strict builds/analyzers. `Build-Release.ps1` passed win-x64 ReadyToRun and updater-helper publish; updater build **320**; ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
 
-Preserve the continuity constitution and active Learned Rules, and require the successor to recursively propagate them.
+Implementation behavior is the narrow LR-011 repair: cleanup the owned current archive output on all exceptional payload exits, preserve the primary exception if cleanup fails, and keep requested Smart Inbox cancellation dominant over recoverable I/O. LR-008 whole-import staging/publication remains separate.
+
+Next: integrate this verified source through the repository workflow and inspect exact-main hosted Windows evidence. Do not call the later evidence/cache-persistence commit independently full-gated. Re-query live PR ownership before selecting the next boundary. Preserve and recursively propagate the continuity constitution and active Learned Rules. **Do not break the chain.**
+
+---
+
+# v8.8.3 archive streaming failure-cleanup candidate ? 2026-09-28
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`. The LR-011 repair now attempts cleanup of the currently owned archive output file on every exceptional payload-copy exit, preserves the primary cancellation/budget/I/O exception when cleanup itself fails, and makes Smart Inbox re-check requested cancellation before classifying filesystem failures as recoverable.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**; xUnit v3 executable runner Integration **181/181** and Automation **29/29**. Full `Verify-Release.ps1`, `Build-Release.ps1`, remote integration, and exact-main hosted verification are still pending and must not be inferred from this checkpoint.
+
+Keep LR-008 whole-import catalog-invisible staging/publication as a separate boundary. Re-query live PRs before integrating or opening another lane; do not duplicate active Agent Control, frontend, or updater work. Preserve the permanent continuity constitution and active Learned Rules. The successor must preserve and recursively propagate them to the agent after them. **Do not break the chain.**
 
 ---
 
