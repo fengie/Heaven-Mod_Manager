@@ -8,6 +8,14 @@ Older sections below that call recursive source reparse containment “next” a
 
 ---
 
+## Parallel updater lane — design audit only
+
+A separate support audit now exists at `_AGENT_CONTEXT/AUTO_UPDATER_RELEASE_SECURITY_AUDIT.md`. It does **not** replace the archive streaming cancellation/resource-budget priority above. Use it when implementing the auto-updater: preserve `Mods`/`State` under the tool root, publish immutable exact-artifact metadata, stage/verify before mutation, apply through an external helper only after safe shutdown, journal/rollback interrupted updates, and prove user-data preservation with fault-injection tests.
+
+Keep updater work independently verifiable from archive hardening.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
