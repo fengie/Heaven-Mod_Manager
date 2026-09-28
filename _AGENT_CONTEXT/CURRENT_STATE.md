@@ -4,6 +4,12 @@ A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captu
 
 This is a documentation/governance layer only; it does not change MHW product behavior or inherit/replace product verification. Future agents must read `_AGENT_TRAINING/README.md` during startup and evaluate reusable lessons for trainer updates at meaningful checkpoints. Project-specific architecture, current bugs, verification, branches, and next steps remain in `_AGENT_CONTEXT/`.
 
+# Auto-updater release/security support audit — documentation only
+
+A new independent support audit at canonical base `4fd61dd33609a7c55e5aedbaad026266a410f942` defines the release, trust, user-data preservation, external-helper, journaling, rollback, and end-to-end test invariants required before an automatic updater is safe to ship. The strongest constraint is that `AppPaths.Discover` defaults persistent `Mods`/`State` workspaces under the executable/tool root, so an updater must never recursively replace or clean the whole install root. The current Windows gate builds and hashes a portable ZIP but does not yet expose a stable updater feed/release manifest in the inspected workflow. Read `_AGENT_CONTEXT/AUTO_UPDATER_RELEASE_SECURITY_AUDIT.md`.
+
+This checkpoint changes documentation/continuity only. It does not supersede archive streaming cancellation/actual-output resource budgeting as the current next production boundary, and it adds no new Learned Rule because the generic updater/release doctrine already exists in `_AGENT_TRAINING/CI_RELEASE_ENGINEERING.md`.
+
 # 2026-09-28 support integration — CLOSED / hosted Windows verified
 
 Canonical main now contains the recursive-source reparse hardening, its adversarial parity/root/cycle follow-up, archive extraction trusted-root physical containment, the associated Windows regressions, three independent support audits, and the durable LR-010 fail-before-mutation rule. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun release publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
