@@ -1,6 +1,6 @@
 # Crash-bisector validated-control support candidate — exact local Windows verification — 2026-09-28
 
-Exact implementation commit: `a7b33431ea274b9be5c27abdacbef632521d4d1d` on `agent/crash-bisector-evidence-integrity-20260928`, based on canonical main `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
+Exact implementation commit: `a7b33431ea274b9be5c27abdacbef632521d4d1d`. After concurrent main advanced, the branch reconciled canonical `main` `151a370ef6c0b3d4e6b1d8a306576af1ae231c40` at merge commit `2085e059401e935eb4827149560d1044dd7d9840`; the concurrent main changes did not touch the crash-bisector production/test boundary. The full local verifier was rerun on that reconciled commit and remained 25/25 green.
 
 Regression-first characterization before the fix ran the AutomationTests executable and produced 26 total / 3 expected failures, proving the old engine skipped empty-control and full-suspect preflight. Exact committed source then passed on heaven2 / Windows / .NET SDK 10.0.401:
 - `scripts/Verify-Release.ps1`: **25/25 PASS**;
