@@ -575,6 +575,33 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Archive_extraction_rejects_descendant_junction_before_creating_external_parent()
+    {
+        if(!OperatingSystem.IsWindows())return;
+        var workspace=Path.Combine(root,"archive-descendant");
+        var external=Path.Combine(root,"archive-descendant-target");
+        var modsRoot=Path.Combine(workspace,"Mods");
+        var destination=Path.Combine(modsRoot,"fixture.importing");
+        var native=Path.Combine(destination,"nativePC");
+        Directory.CreateDirectory(native);
+        Directory.CreateDirectory(external);
+        CreateDirectoryJunction(Path.Combine(native,"redirect"),external);
+
+        var zip=Path.Combine(workspace,"fixture.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var entry=archive.CreateEntry("nativePC/redirect/created/x.tex");
+            await using var writer=new StreamWriter(entry.Open());
+            await writer.WriteAsync("payload".AsMemory(),TestToken);
+        }
+
+        var inspector=new ArchiveInspector();
+        Assert.Throws<InvalidDataException>(()=>inspector.ExtractSafely(zip,destination,modsRoot,TestToken));
+        Assert.False(Directory.Exists(Path.Combine(external,"created")));
+        Assert.False(File.Exists(Path.Combine(external,"created","x.tex")));
+    }
+
+    [Fact]
     public async Task Sqlite_integrity_and_wal_survive_parallel_reads()
     {
         var (_, db, _, _) = await CreateAsync("db");
