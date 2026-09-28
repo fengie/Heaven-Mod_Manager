@@ -192,9 +192,13 @@ try {
     throw "Updater release $tag was not immutable and is not accepted as a safe publication."
   }
 
-  & git fetch origin "refs/tags/$tag:refs/tags/$tag"
-  if($LASTEXITCODE -ne 0){throw "Published updater tag $tag could not be fetched for verification."}
-  $publishedSha=(& git rev-list -n 1 "refs/tags/$tag").Trim()
+  # GitHub's release API may expose the just-created tag before Git transport does.
+  # Verify the published tag through the authoritative REST ref instead of treating
+  # immediate fetch propagation lag as a failed release.
+  $publishedRefOutput=@(& gh api "repos/$Repository/git/ref/tags/$tag")
+  if($LASTEXITCODE -ne 0){throw "Published updater tag $tag could not be inspected for verification."}
+  $publishedRefJson=$publishedRefOutput -join [Environment]::NewLine
+  $publishedSha=Get-UpdaterTagCommitFromRefJson -Json $publishedRefJson -ExpectedTag $tag
   if($publishedSha -ne $ExpectedSourceSha){throw "Published updater tag $tag points to $publishedSha instead of $ExpectedSourceSha."}
 
   $publishedApi=& gh api "repos/$Repository/releases/tags/$tag"

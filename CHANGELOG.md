@@ -1,3 +1,9 @@
+# v8.8.1 — Updater publication verification hardening
+
+- Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.
+- Fail closed unless the published ref name is exact, its target is a direct commit, its SHA is a valid 40-hex identifier, and it matches the expected source commit.
+- Add regression coverage for empty, malformed, wrong-tag, non-commit, and malformed-SHA ref responses while preserving the existing pre-publication local checks.
+
 # v8.8.0 — Function verification cache and call-error hardening
 
 ## Repair audit — 2026-09-27

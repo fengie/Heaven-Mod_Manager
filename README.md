@@ -1,4 +1,9 @@
-# v8.8.0 Universal Mod Manager
+# v8.8.1 Universal Mod Manager
+
+## v8.8.1 — updater publication verification hardening
+
+The automatic-updater release gate now verifies a newly published updater tag through GitHub's authoritative REST git-ref API instead of requiring immediate Git transport propagation. The check fails closed unless the exact expected tag exists, points directly to a commit, and resolves to the exact source SHA being published. This prevents a successfully published immutable release from being reported as failed solely because the Git tag has not propagated to fetch transport yet.
+
 
 ## Repair revision — 2026-09-27
 

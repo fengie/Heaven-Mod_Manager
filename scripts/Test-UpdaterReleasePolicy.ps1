@@ -56,6 +56,22 @@ foreach($invalidJson in @('{}','null','not-json','[null]','[{"isDraft":false,"is
   Assert-Equal $true $rejected "invalid release-list rejection: $invalidJson"
 }
 
+$tagRefJson='{"ref":"refs/tags/updater-main-42","object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}'
+Assert-Equal $current (Get-UpdaterTagCommitFromRefJson -Json $tagRefJson -ExpectedTag 'updater-main-42') 'published tag REST commit identity'
+
+foreach($invalidTagRef in @(
+  '',
+  'null',
+  'not-json',
+  '{"ref":"refs/tags/updater-main-41","object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}',
+  '{"ref":"refs/tags/updater-main-42"}',
+  '{"ref":"refs/tags/updater-main-42","object":{"type":"tag","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}',
+  '{"ref":"refs/tags/updater-main-42","object":{"type":"commit","sha":"abc"}}'
+)){
+  $rejected=$false
+  try{[void](Get-UpdaterTagCommitFromRefJson -Json $invalidTagRef -ExpectedTag 'updater-main-42')}catch{$rejected=$true}
+  Assert-Equal $true $rejected "invalid published tag REST ref rejection: $invalidTagRef"
+}
 
 function Invoke-PublicationSequenceFixture {
   param(
