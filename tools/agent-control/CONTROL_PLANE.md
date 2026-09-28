@@ -58,7 +58,7 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.3.1 registers the controller host as one local worker with:
+v0.3.2 registers the controller host as one local worker with:
 
 - hostname
 - platform/architecture
@@ -148,3 +148,5 @@ A future native MCP mode can replace the bridge once the controller has an authe
 8. Stopping a managed agent targets only its recorded process tree.
 9. Operator stop intent is terminal: a zero exit after a stop request is recorded as `stopped`, not successful completion.
 10. Child-exit Git evidence is collected before authoritative registry mutation so a stale whole-state snapshot is never saved after an asynchronous yield.
+11. Counted deploys reserve capacity as a batch and fail before the first launch when the full request cannot fit.
+12. Failures after task/lease reservation but before worker launch converge to a failed task and released lease, while retaining created worktree/branch evidence for explicit cleanup.
