@@ -1,5 +1,8 @@
 using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using MhwModManager.Updater;
@@ -146,6 +149,126 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(bytes, await File.ReadAllBytesAsync(destination, TestToken));
     }
 
+    [Theory]
+    [InlineData("https://example.invalid/assets/artifact")]
+    [InlineData("http://api.github.com/assets/artifact")]
+    [InlineData("https://api.github.com:444/assets/artifact")]
+    [InlineData("https://user@api.github.com/assets/artifact")]
+    public async Task Authenticated_download_rejects_untrusted_uri_before_transport(string uri)
+    {
+        Directory.CreateDirectory(root);
+        var bytes = Encoding.UTF8.GetBytes("DATA");
+        var manifest = Manifest(11) with
+        {
+            ArtifactSize = bytes.Length,
+            Sha256 = Convert.ToHexString(SHA256.HashData(bytes))
+        };
+        var sent = false;
+        using var http = new HttpClient(new FakeHandler(_ =>
+        {
+            sent = true;
+            return BytesResponse(bytes);
+        }));
+        var source = new GitHubUpdateSource(http);
+        var candidate = new UpdateCandidate(
+            manifest, new Uri(uri), new Uri("https://api.github.com/assets/manifest"));
+
+        var ex = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            source.DownloadArtifactAsync(
+                candidate, "fixture-token", Path.Combine(root, "untrusted.zip"), TestToken));
+
+        Assert.Contains("api.github.com", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(sent);
+    }
+
+    [Fact]
+    public async Task Approved_api_host_receives_bearer_authentication()
+    {
+        Directory.CreateDirectory(root);
+        var bytes = Encoding.UTF8.GetBytes("AUTH");
+        var manifest = Manifest(11) with
+        {
+            ArtifactSize = bytes.Length,
+            Sha256 = Convert.ToHexString(SHA256.HashData(bytes))
+        };
+        string? scheme = null;
+        string? parameter = null;
+        using var http = new HttpClient(new FakeHandler(request =>
+        {
+            scheme = request.Headers.Authorization?.Scheme;
+            parameter = request.Headers.Authorization?.Parameter;
+            return BytesResponse(bytes);
+        }));
+        var source = new GitHubUpdateSource(http);
+        var candidate = new UpdateCandidate(
+            manifest,
+            new Uri("https://api.github.com/repos/fengie/mhw-mods/releases/assets/123"),
+            new Uri("https://api.github.com/assets/manifest"));
+
+        await source.DownloadArtifactAsync(
+            candidate, "fixture-token", Path.Combine(root, "authorized.zip"), TestToken);
+
+        Assert.Equal("Bearer", scheme);
+        Assert.Equal("fixture-token", parameter);
+    }
+
+    [Fact]
+    public async Task Dotnet_redirect_clears_bearer_before_release_asset_host()
+    {
+        Directory.CreateDirectory(root);
+        var bytes = Encoding.UTF8.GetBytes("CDN!");
+        await using var server = new RedirectTlsServer(bytes);
+        using var handler = new SocketsHttpHandler
+        {
+            AllowAutoRedirect = true,
+            MaxAutomaticRedirections = 3
+        };
+        handler.SslOptions.RemoteCertificateValidationCallback = (_, certificate, _, _) =>
+            certificate is not null
+            && string.Equals(
+                certificate.GetCertHashString(),
+                server.CertificateThumbprint,
+                StringComparison.OrdinalIgnoreCase);
+        handler.SslOptions.ApplicationProtocols = [SslApplicationProtocol.Http11];
+        handler.ConnectCallback = async (_, ct) =>
+        {
+            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                await socket.ConnectAsync(IPAddress.Loopback, server.Port, ct);
+                return new NetworkStream(socket, ownsSocket: true);
+            }
+            catch
+            {
+                socket.Dispose();
+                throw;
+            }
+        };
+        using var http = new HttpClient(handler);
+        var source = new GitHubUpdateSource(http);
+        var manifest = Manifest(11) with
+        {
+            ArtifactSize = bytes.Length,
+            Sha256 = Convert.ToHexString(SHA256.HashData(bytes))
+        };
+        var candidate = new UpdateCandidate(
+            manifest,
+            new Uri("https://api.github.com/repos/fengie/mhw-mods/releases/assets/123"),
+            new Uri("https://api.github.com/assets/manifest"));
+
+        await source.DownloadArtifactAsync(
+            candidate, "fixture-token", Path.Combine(root, "redirect.zip"), TestToken);
+        await server.Completion.WaitAsync(TimeSpan.FromSeconds(5), TestToken);
+
+        Assert.Equal(2, server.Requests.Count);
+        Assert.Contains("Host: api.github.com", server.Requests[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "Authorization: Bearer fixture-token", server.Requests[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "Host: release-assets.example", server.Requests[1], StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Authorization:", server.Requests[1], StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public async Task Package_verifier_rejects_wrong_product_manifest_hash()
     {
@@ -214,6 +337,99 @@ public sealed class UpdaterCoreTests : IDisposable
         {
             Content = new ByteArrayContent(bytes)
         };
+
+    private sealed class RedirectTlsServer : IAsyncDisposable
+    {
+        private readonly TcpListener listener;
+        private readonly X509Certificate2 certificate;
+        private readonly byte[] payload;
+        private readonly CancellationTokenSource stop = new(TimeSpan.FromSeconds(15));
+        private readonly Task serverTask;
+
+        public RedirectTlsServer(byte[] payload)
+        {
+            this.payload = payload;
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest(
+                "CN=localhost", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using var ephemeral = request.CreateSelfSigned(
+                DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(10));
+            certificate = X509CertificateLoader.LoadPkcs12(
+                ephemeral.Export(X509ContentType.Pfx),
+                password: null,
+                X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.PersistKeySet);
+            listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            Port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            serverTask = ServeAsync();
+        }
+
+        public int Port { get; }
+
+        public string CertificateThumbprint => certificate.Thumbprint;
+
+        public List<string> Requests { get; } = [];
+
+        public Task Completion => serverTask;
+
+        private async Task ServeAsync()
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                using var client = await listener.AcceptTcpClientAsync(stop.Token);
+                await using var ssl = new SslStream(client.GetStream(), leaveInnerStreamOpen: false);
+                await ssl.AuthenticateAsServerAsync(
+                    new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = certificate,
+                        ApplicationProtocols = [SslApplicationProtocol.Http11]
+                    },
+                    stop.Token);
+
+                using var reader = new StreamReader(
+                    ssl, Encoding.ASCII, detectEncodingFromByteOrderMarks: false, 4096, leaveOpen: true);
+                var requestText = new StringBuilder();
+                while (true)
+                {
+                    var line = await reader.ReadLineAsync(stop.Token);
+                    if (line is null) break;
+                    requestText.AppendLine(line);
+                    if (line.Length == 0) break;
+                }
+                Requests.Add(requestText.ToString());
+
+                if (i == 0)
+                {
+                    var redirect = Encoding.ASCII.GetBytes(
+                        "HTTP/1.1 302 Found\r\n" +
+                        "Location: https://release-assets.example/asset\r\n" +
+                        "Content-Length: 0\r\n" +
+                        "Connection: close\r\n\r\n");
+                    await ssl.WriteAsync(redirect, stop.Token);
+                }
+                else
+                {
+                    var header = Encoding.ASCII.GetBytes(
+                        $"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {payload.Length}\r\nConnection: close\r\n\r\n");
+                    await ssl.WriteAsync(header, stop.Token);
+                    await ssl.WriteAsync(payload, stop.Token);
+                }
+                await ssl.FlushAsync(stop.Token);
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            listener.Stop();
+            stop.Cancel();
+            try { await serverTask; }
+            catch (Exception ex) when (ex is OperationCanceledException or SocketException)
+            {
+            }
+            stop.Dispose();
+            certificate.Dispose();
+        }
+    }
 
     private sealed class FakeHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {

@@ -163,3 +163,13 @@ Verification for this checkpoint:
 - Focused updater tests: **48/48 PASS** on Windows x64 / .NET SDK 10.0.401.
 - Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
 - Full release verification remains pending. Remaining support-audit P1s: authenticated GitHub host enforcement and exact cross-file build identity agreement.
+
+## Checkpoint C6 — authenticated GitHub origin boundary
+- Authenticated updater requests now fail closed unless the URI is HTTPS, exact api.github.com, default port, and has no user-info.
+- The bearer token is attached only after that origin validation.
+- Added regressions proving off-host, HTTP, alternate-port, and user-info URIs fail before transport; approved API requests receive the bearer token.
+- Added a real loopback TLS redirect fixture using SocketsHttpHandler. It proves the first GitHub API request carries Authorization while the redirected release-asset-host request does not.
+- This matches Microsoft .NET 10 behavior (Authorization cleared on auto-redirect; HTTPS-to-HTTP not followed) and GitHub release-asset API behavior (200 or 302).
+- First redirect-fixture attempt failed because Windows Schannel does not support the generated ephemeral server key in this context. The fixture was repaired by pinning/re-importing a persisted user-key certificate; no analyzer or TLS validation rule was weakened.
+- Focused updater tests: **54/54 PASS**. Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Full release verification remains pending. Remaining runtime-audit P1: exact build identity agreement across update manifest, install marker, and shipped build identity.

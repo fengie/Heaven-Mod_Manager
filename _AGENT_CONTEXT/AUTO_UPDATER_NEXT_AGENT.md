@@ -57,3 +57,9 @@ Preserve and recursively propagate the continuity constitution to the successor,
 - DONE: rollback restart loads the restored old marker instead of reusing the new manifest executable.
 - DONE: renamed-executable rollback regression; focused suite **48/48 PASS**, strict solution build **0 warnings / 0 errors** on .NET 10.0.401.
 - Next: authenticated GitHub HTTPS/API-host enforcement before attaching credentials; then exact update/marker/build-identity agreement.
+
+## Checkpoint C6 — GitHub credential origin
+- DONE: bearer-token requests restricted to HTTPS exact api.github.com/default port/no user-info before Authorization is attached.
+- DONE: real .NET TLS redirect regression proves Authorization is cleared before the release-asset host.
+- Focused updater suite: **54/54 PASS**; strict solution build: **0 warnings / 0 errors** on .NET 10.0.401.
+- Next: exact build identity agreement across update-manifest.json, release-install.json, and build-identity.json before live mutation.

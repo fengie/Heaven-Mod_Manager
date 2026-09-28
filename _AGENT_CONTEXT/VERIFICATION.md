@@ -674,3 +674,12 @@ Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
 - Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
 - Regression updates a disposable install from old-manager.exe to new-manager.exe, forces target launch failure, verifies rollback restores old-manager.exe/removes new-manager.exe, reloads the restored release marker, and passes old-manager.exe to previous-build restart.
 - No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.
+
+## Checkpoint C6 — authenticated GitHub origin / redirect credential safety
+Environment: Windows x64 on heaven2, .NET SDK 10.0.401.
+- Focused updater tests: **54/54 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- Direct URI regressions prove off-host, HTTP, alternate-port and user-info candidates are rejected before transport; approved api.github.com requests carry the expected bearer token.
+- Real loopback TLS + SocketsHttpHandler regression proves GitHub-style HTTPS 302 handling clears Authorization before a simulated release-asset host while the SHA-256 verified download succeeds.
+- Useful failed fixture preserved: first TLS-server run failed with Windows Schannel `AuthenticationException` because the generated server key was ephemeral. The fixture now re-imports a persisted user-key certificate and validates that exact certificate thumbprint; CA5359 was not suppressed and certificate validation was not weakened to an always-true callback.
+- No full Verify-Release / Build-Release / hosted release gate is claimed for these changed inputs.

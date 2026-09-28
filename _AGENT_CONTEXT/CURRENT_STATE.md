@@ -4,7 +4,7 @@ The user selected automatic updates as the current production boundary. Older ar
 
 The updater is INCOMPLETE and NOT release-gate verified. Preserve the permanent continuity constitution and active Learned Rules; require the successor to preserve and recursively propagate them to the agent after them.
 
-Checkpoints C4-C5 are complete on the working updater branch: crash/restart recovery tracks exact launch attempt/PID/start identity without duplicate relaunch, and rollback restart now loads the restored previous release marker so executable renames cannot strand a successfully restored old build. Windows/.NET 10.0.401 focused updater tests are **48/48 PASS** and the strict whole-solution build is **0 warnings / 0 errors**. This remains focused local evidence only; no full release gate applies to these changed inputs yet. The next bounded updater work is authenticated GitHub HTTPS/API-host enforcement, then exact staged build-metadata agreement.
+Checkpoints C4-C6 are complete on the working updater branch: crash-safe launch recovery prevents duplicate relaunch, rollback restart uses the restored previous release executable identity, and bearer-token GitHub requests are restricted to HTTPS exact api.github.com before Authorization is attached with a real TLS redirect regression proving no token reaches the asset host. Windows/.NET 10.0.401 focused updater tests are **54/54 PASS** and the strict whole-solution build is **0 warnings / 0 errors**. This remains focused local evidence only; no full release gate applies to these changed inputs yet. The next bounded updater work is exact build identity agreement across update manifest, install marker, and shipped build identity.
 
 ---
 # Company programming-agent trainer — ACTIVE LIVING SYSTEM

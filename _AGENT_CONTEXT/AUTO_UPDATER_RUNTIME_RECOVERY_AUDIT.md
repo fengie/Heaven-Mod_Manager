@@ -18,7 +18,7 @@ The senior branch has a strong safety baseline: explicit product ownership, veri
 
 While this audit was being written, the senior branch advanced from 2 to 4 commits ahead of `main`. Its new Checkpoint C2 now states that journal identity is checked before interrupted-metadata recovery and adds identity-mismatch regressions. That supersedes the lower-priority journal/source-SHA finding below; it is retained only as historical review context and should **not** be re-opened unless a newer regression disproves C2.
 
-Checkpoint C4 closes the duplicate-launch P1. Checkpoint C5 now also closes rollback executable identity by restoring the previous release marker and choosing that marker's owned executable path after rollback. The remaining live P1 findings are authenticated GitHub host enforcement and exact cross-file build identity agreement.
+Checkpoint C4 closes duplicate-launch recovery; C5 closes rollback executable identity; C6 closes authenticated GitHub host enforcement and redirect token leakage. The only remaining live P1 finding from this audit is exact cross-file build identity agreement.
 
 ---
 
@@ -118,6 +118,10 @@ Create an old fixture whose executable path differs from the target manifest. Fo
 ---
 
 ## P1 — Authenticated GitHub requests do not enforce an HTTPS/API-host allowlist before attaching the bearer token
+
+### CLOSED by Checkpoint C6 — authenticated origin enforcement + real redirect proof
+
+Authenticated updater requests now reject any non-HTTPS URI, any host other than exact `api.github.com`, non-default ports, and user-info **before** creating a request with the bearer token. Windows/.NET 10.0.401 regressions prove rejected off-host/insecure candidates never reach transport and approved API requests receive the token. A real loopback TLS redirect fixture exercises `SocketsHttpHandler`: the first `api.github.com` request carries `Authorization: Bearer`, GitHub-style `302` follows to a simulated release-asset host, and the redirected request contains no Authorization header. This matches Microsoft .NET 10 redirect documentation and GitHub's documented release-asset `200`/`302` behavior. Focused updater suite: **54/54 PASS**; strict solution build: **0 warnings / 0 errors**. The first TLS-fixture attempt failed because Windows Schannel rejected an ephemeral server key; the fixture was corrected to re-import a persisted user key rather than weakening certificate validation.
 
 ### Observed code path
 

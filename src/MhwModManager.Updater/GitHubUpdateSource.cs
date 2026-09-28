@@ -110,12 +110,26 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
     private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string token)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"method={method}");
-        var request = new HttpRequestMessage(method, uri);
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out var requestUri))
+            throw new InvalidDataException("GitHub updater API URI is not absolute.");
+        ValidateAuthenticatedApiUri(requestUri);
+        var request = new HttpRequestMessage(method, requestUri);
         request.Headers.UserAgent.ParseAdd("MHW-Manual-Mod-Manager-Updater/1");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
         return request;
+    }
+
+    private static void ValidateAuthenticatedApiUri(Uri uri)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"host={uri.Host}");
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(uri.IdnHost, "api.github.com", StringComparison.OrdinalIgnoreCase)
+            || !uri.IsDefaultPort
+            || !string.IsNullOrEmpty(uri.UserInfo))
+            throw new InvalidDataException(
+                "Authenticated updater requests are restricted to https://api.github.com.");
     }
 
     private async Task<byte[]> DownloadBytesAsync(Uri uri, string token, int maxBytes, CancellationToken ct)
