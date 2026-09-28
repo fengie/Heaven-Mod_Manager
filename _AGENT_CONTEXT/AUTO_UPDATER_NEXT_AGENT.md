@@ -135,11 +135,18 @@ Preserve the permanent continuity constitution and active Learned Rules, and req
 - Failed attempts and repairs are documented in `AUTO_UPDATER_C11_PACKAGING_2026-09-28.md`.
 - No immutable release/publication or end-to-end closure is claimed.
 
-### Next bounded work — C11b publication only
-1. Extend the existing Windows workflow so only eligible exact `main` builds may publish.
-2. Create immutable tag/release `updater-main-<build-number>`; fail closed if tag, release, or assets already exist.
-3. Upload exactly the verified updater ZIP and `update-manifest.json`; never overwrite.
-4. Add publication-negative, stale-build, and evidence-only-change coverage.
-5. Then run hosted Windows closure and disposable real old→new plus injected rollback tests.
+## Checkpoint C11b — immutable publication policy and final race closure
+- Integrated exact source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d`.
+- Adds deterministic ZIP/build timestamps derived from the exact commit; exact source/checkout guards; immutable `updater-main-<build>` publication; exact two-asset release verification; monotonic build, stale-main, evidence-only, orphan-tag, draft-release, and no-clobber refusal; plus a second `origin/main` fetch immediately before irreversible publication so a concurrent main push cannot expose stale updater bytes.
+- Carries the remaining updater-specific LR-003 metadata/rollback replacement fixtures from support PR #48.
+- Exact local heaven/Windows/.NET 10.0.401 evidence: publication-policy PASS; handoff PASS; strict build **0 warnings / 0 errors**; Integration **173/173**; `Verify-Release.ps1` **25/25**; FunctionVerifier **727/727**, **7749** explicit call sites / **0** uncovered, **0** trace gaps/parse errors; Core **79/79**; Automation **24/24**; self-test **11/11**; ReadyToRun app publish PASS; updater-helper publish PASS; package verifier PASS; `Build-Release.ps1` PASS.
+- Local updater build **227**; ZIP SHA-256 `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`.
+- No GitHub Release was published from the updater branch.
 
-Keep C11b publication separate from C11a generation and unrelated hardening. Preserve and recursively propagate the continuity constitution again.
+### Remaining final closure only
+1. Integrate the verified updater source to eligible exact `main` without weakening the publication gate.
+2. Run/inspect the hosted Windows gate on that exact main SHA and verify the immutable `updater-main-<build>` tag/release plus exact ZIP and `update-manifest.json` assets.
+3. Run disposable real old→new update and injected rollback end-to-end tests with seeded user-data hashes and exact restart identity.
+4. Only after those are independently green call the automatic updater end-to-end complete.
+
+Preserve and recursively propagate the continuity constitution and active Learned Rules again.

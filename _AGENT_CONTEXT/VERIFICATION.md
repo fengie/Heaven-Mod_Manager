@@ -1,3 +1,28 @@
+# Updater C11b publication policy — exact local Windows verification — 2026-09-28
+
+Exact integrated updater source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d` on `agent/auto-updater-20260928`.
+
+Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
+- `scripts/Test-UpdaterReleasePolicy.ps1`: PASS;
+- `scripts/Test-AgentHandoff.ps1`: PASS;
+- strict whole-solution build/analyzers: **PASS, 0 warnings / 0 errors**;
+- Integration/fault injection: **173/173 PASS**;
+- `scripts/Verify-Release.ps1`: **25/25 PASS** after restoring the standard process-local `OS=Windows_NT` marker omitted by Remote Desktop Commander;
+- FunctionVerifier: **727/727 promoted**, **7749 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
+- Core: **79/79 PASS**;
+- Automation: **24/24 PASS**;
+- automation self-test: **11/11 PASS**;
+- App win-x64 strict analyzers + ReadyToRun self-contained publish: PASS;
+- updater-helper self-contained publish: PASS;
+- updater package verification: PASS;
+- `Build-Release.ps1`: PASS;
+- updater build: **227**;
+- updater ZIP SHA-256: `09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C`.
+
+C11b includes deterministic immutable publication policy, exact two-asset verification, monotonic build/stale-main/evidence-only refusal, no-clobber behavior, final `origin/main` revalidation immediately before irreversible publication, and updater metadata/rollback native replacement fail-closed coverage. No GitHub Release was published from the updater branch. Remaining closure requires eligible `main`, hosted Windows publication verification, and disposable real old-to-new plus injected rollback tests with seeded user-data preservation.
+
+---
+
 # Updater C11a packaging — exact clean-checkout Windows verification — 2026-09-28
 
 Exact committed packaging checkpoint: `2e136cc22f570a94db8da67c91aa755d4c7a3ce6`.
