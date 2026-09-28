@@ -72,7 +72,8 @@ export function defaultControlState({ sessionId, hostname }) {
       dispatchPaused: false,
       readOnly: false,
       emergencyStop: false,
-      machinePolicies: structuredClone(DEFAULT_MACHINE_POLICIES)
+      machinePolicies: structuredClone(DEFAULT_MACHINE_POLICIES),
+      routingManifest: null
     },
     agents: [],
     tasks: [],
@@ -198,6 +199,44 @@ function activeAgents(state, role = null) {
   return state.agents.filter(agent => isActiveStatus(agent.status) && (!role || agent.role === role));
 }
 
+const OCCUPIED_ROUTING_STATUSES = new Set(["claimed", "assigned", "active", "running", "blocked", "review", "verification"]);
+const OPEN_ROUTING_STATUSES = new Set(["open", "missing", "unassigned"]);
+
+export function routingManifestStatus(state, now = Date.now()) {
+  const manifest = state.settings?.routingManifest;
+  if (!manifest || !Array.isArray(manifest.assignments)) {
+    return { available: false, current: false, reason: "routing-manifest-unavailable", manifest: null };
+  }
+  const observedAt = Date.parse(manifest.observedAt || "");
+  const expiresAt = Date.parse(manifest.expiresAt || "");
+  const timestamp = Number(now);
+  if (!Number.isFinite(observedAt) || !Number.isFinite(expiresAt)) {
+    return { available: true, current: false, reason: "routing-manifest-missing-freshness", manifest };
+  }
+  if (expiresAt <= timestamp) {
+    return { available: true, current: false, reason: "routing-manifest-expired", manifest };
+  }
+  return { available: true, current: true, reason: null, manifest };
+}
+
+function routingAssignmentOccupied(assignment) {
+  const status = String(assignment?.status || "").trim().toLowerCase();
+  if (["stale", "superseded", "closed", "done", "abandoned"].includes(status)) return false;
+  if (OCCUPIED_ROUTING_STATUSES.has(status)) return true;
+  if (OPEN_ROUTING_STATUSES.has(status)) return false;
+  return Boolean(assignment?.owner || assignment?.branch);
+}
+
+function currentRoutingAssignments(state, now = Date.now()) {
+  const routing = routingManifestStatus(state, now);
+  return routing.current ? routing.manifest.assignments : [];
+}
+
+function roleIsOccupied(state, role, now = Date.now()) {
+  if (activeAgents(state, role).length) return true;
+  return currentRoutingAssignments(state, now).some(item => item.role === role && routingAssignmentOccupied(item));
+}
+
 export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) {
   const count = Math.max(1, Math.floor(Number(requestedCount) || 1));
   const maximum = Math.max(0, Math.floor(Number(maxActiveAgents) || 0));
@@ -212,8 +251,12 @@ export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) 
   };
 }
 
-function activeLaneSet(state) {
-  return new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
+function activeLaneSet(state, now = Date.now()) {
+  const lanes = new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
+  for (const assignment of currentRoutingAssignments(state, now)) {
+    if (assignment?.lane && routingAssignmentOccupied(assignment)) lanes.add(assignment.lane);
+  }
+  return lanes;
 }
 
 export function deriveMission(state, repositoryContext = {}) {
@@ -261,20 +304,58 @@ function newestCandidate(state) {
   return state.agents.find(agent => isIntegrationEligible(agent)) || state.agents.find(agent => agent.status === "done") || null;
 }
 
-export function planWorkflow(workflowId, { state, mission, baseBranch = "main", machine = "auto" }) {
+export function planWorkflow(workflowId, {
+  state,
+  mission,
+  baseBranch = "main",
+  machine = "auto",
+  requireReconciledOwnership = false,
+  now = Date.now()
+}) {
   const workflow = WORKFLOW_PRESETS.find(item => item.id === workflowId);
   if (!workflow) throw new Error(`Unknown workflow preset: ${workflowId}`);
   const objective = String(mission || deriveMission(state)).trim();
   const steps = [];
-  const lanes = activeLaneSet(state);
+  const routing = routingManifestStatus(state, now);
+  const assignments = routing.current ? routing.manifest.assignments : [];
+  const lanes = activeLaneSet(state, now);
   const activeManagers = activeAgents(state, "manager");
   const activeProgrammers = activeAgents(state, "main");
 
   if (workflowId === "usual-swarm") {
-    if (!activeManagers.length) steps.push(step({ role: "manager", task: `Coordinate this mission: ${objective}`, boundary: "swarm-coordination", priority: 90, machine, mode: "coordination" }));
-    if (!activeProgrammers.length) steps.push(step({ role: "main", task: objective, boundary: `implementation:${slug(objective)}`, priority: 85, machine }));
-    for (const lane of supportLanesFor(objective)) {
-      if (!lanes.has(lane.id)) steps.push(step({ role: "support", task: `${lane.title}. ${lane.focus} Primary mission: ${objective}`, lane: lane.id, boundary: `support:${lane.id}:${slug(objective)}`, priority: 65, machine, mode: "support" }));
+    if (requireReconciledOwnership && !routing.current) {
+      return {
+        workflow,
+        mission: objective,
+        baseBranch,
+        steps: [],
+        blocked: [`Broad swarm dispatch requires a current routing manifest (${routing.reason}). Refresh repository/manager ownership or explicitly use a narrower workflow.`],
+        ownership: { reconciled: false, reason: routing.reason }
+      };
+    }
+
+    if (routing.current && routing.manifest.mode === "authoritative") {
+      for (const assignment of assignments) {
+        if (routingAssignmentOccupied(assignment)) continue;
+        const status = String(assignment?.status || "open").toLowerCase();
+        if (!OPEN_ROUTING_STATUSES.has(status) && status !== "") continue;
+        steps.push(step({
+          role: assignment.role || "support",
+          task: assignment.task || assignment.objective || objective,
+          lane: assignment.lane || null,
+          boundary: assignment.boundary || `routing:${assignment.slotId || slug(assignment.lane || assignment.role || "slot")}`,
+          priority: Number.isFinite(Number(assignment.priority)) ? Number(assignment.priority) : 70,
+          machine: assignment.machine || machine,
+          mode: assignment.mode || (assignment.role === "manager" ? "coordination" : "implementation"),
+          dependencies: Array.isArray(assignment.dependencies) ? assignment.dependencies : []
+        }));
+      }
+    } else {
+      if (!roleIsOccupied(state, "manager", now)) steps.push(step({ role: "manager", task: `Coordinate this mission: ${objective}`, boundary: "swarm-coordination", priority: 90, machine, mode: "coordination" }));
+      if (!roleIsOccupied(state, "main", now)) steps.push(step({ role: "main", task: objective, boundary: `implementation:${slug(objective)}`, priority: 85, machine }));
+      for (const lane of supportLanesFor(objective)) {
+        if (!lanes.has(lane.id)) steps.push(step({ role: "support", task: `${lane.title}. ${lane.focus} Primary mission: ${objective}`, lane: lane.id, boundary: `support:${lane.id}:${slug(objective)}`, priority: 65, machine, mode: "support" }));
+      }
     }
   } else if (workflowId === "support-current") {
     const target = activeProgrammers[0];
@@ -321,7 +402,21 @@ export function planWorkflow(workflowId, { state, mission, baseBranch = "main", 
     steps.push(step({ role: "main", task: `Improve the Agent Manager itself through the governed proposal → isolated implementation → test → review → upgrade-candidate pipeline. Requested improvement: ${objective}`, lane: "agent-manager-self-improve", boundary: "agent-control-self-improvement", priority: 80, machine }));
   }
 
-  return { workflow, mission: objective, baseBranch, steps, blocked: [] };
+  return {
+    workflow,
+    mission: objective,
+    baseBranch,
+    steps,
+    blocked: [],
+    ownership: {
+      reconciled: routing.current,
+      reason: routing.reason,
+      source: routing.current ? routing.manifest.source || null : null,
+      mode: routing.current ? routing.manifest.mode || "overlay" : null,
+      observedAt: routing.current ? routing.manifest.observedAt || null : null,
+      expiresAt: routing.current ? routing.manifest.expiresAt || null : null
+    }
+  };
 }
 
 export function interpretCommand(command) {
