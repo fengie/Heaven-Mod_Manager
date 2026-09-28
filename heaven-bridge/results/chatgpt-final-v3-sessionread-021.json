@@ -1,0 +1,30 @@
+{
+  "id": "chatgpt-final-v3-sessionread-021",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:57:45Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:57:55.553591+00:00",
+  "finished_at": "2026-09-28T19:57:55.560726+00:00",
+  "host": "heaven",
+  "action": "proc_read",
+  "data": {
+    "session_id": "1cb5e452dbed4654",
+    "pid": 45500,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-28T19:53:55.426810+00:00",
+    "last_activity_at": "2026-09-28T19:57:55.553591+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 300,
+    "max_runtime_seconds": 900,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1cb5e452dbed4654.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1cb5e452dbed4654.err.log",
+    "stdout": "PS C:\\Users\\Xxkan> Write-Output 'SESSION_V3_OK'; $x=40+2; Write-Output \"ANSWER=$x\"\r\nSESSION_V3_OK\r\nANSWER=42\r\nPS C:\\Users\\Xxkan> ",
+    "stderr": ""
+  },
+  "job_hash": "5c99ad10037f5a8d005c5163d3fe73799216f942abd1732de26965979c3bd81c"
+}
