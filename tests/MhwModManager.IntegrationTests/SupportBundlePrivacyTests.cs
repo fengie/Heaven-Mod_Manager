@@ -55,7 +55,7 @@ public sealed class SupportBundlePrivacyTests : IDisposable
         Assert.Contains("NEXUS_KEY_CANARY_789",await File.ReadAllTextAsync(logPath,TestToken));
 
         using var archive=ZipFile.OpenRead(zip);
-        var logEntry=Assert.Single(archive.Entries.Where(x=>x.Name=="manager-privacy-canary.jsonl"));
+        var logEntry=Assert.Single(archive.Entries,x=>x.Name=="manager-privacy-canary.jsonl");
         using var logReader=new StreamReader(logEntry.Open());
         var exportedLine=await logReader.ReadLineAsync(TestToken);
         Assert.NotNull(exportedLine);
@@ -75,7 +75,7 @@ public sealed class SupportBundlePrivacyTests : IDisposable
         Assert.Equal("<redacted>",properties.GetProperty("Nested").GetProperty("apiKey").GetString());
         Assert.Equal(@"nativePC\foo.tex",properties.GetProperty("ManagedPath").GetString());
 
-        var notice=Assert.Single(archive.Entries.Where(x=>x.Name=="CONTENTS-AND-PRIVACY.txt"));
+        var notice=Assert.Single(archive.Entries,x=>x.Name=="CONTENTS-AND-PRIVACY.txt");
         using var noticeReader=new StreamReader(notice.Open());
         var noticeText=await noticeReader.ReadToEndAsync(TestToken);
         Assert.Contains("sanitized during export",noticeText,StringComparison.OrdinalIgnoreCase);
