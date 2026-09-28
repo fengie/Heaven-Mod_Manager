@@ -7,7 +7,7 @@
   "currentVersion": "8.8.0",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "parallel active lanes: PR #58 owns updater post-upload publication; PR #55 owns frontend UX; PR #59 owns Agent Control v2; support PR #62 owns persisted game-profile ID containment. Re-query live GitHub before selecting independent support work.",
+  "nextMilestone": "parallel ownership is active and fast-moving: updater lanes #58/#65, frontend #55, Agent Control #59 with review #66, plus support #62/#64/#68. Re-query live GitHub before selecting independent work; #65 states it supersedes #58 once merged.",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
   "status": "parallel-active-lanes; archive-streaming-integrated-provenance-repaired; live-pr-requery-required",
@@ -286,7 +286,7 @@
     {
       "pr": 58,
       "lane": "updater post-upload stale-main publication window",
-      "head": "ce2c1fef491a06f26f76d4cba0201af76c68196c",
+      "head": "5e7966851b39ac0869f603e583bb58e24e984116",
       "kind": "production"
     },
     {
@@ -300,8 +300,32 @@
       "lane": "persisted game-profile ID path-containment audit",
       "head": "3fe92bd111dc4a02c8d3dc9b0120ecf6761f041a",
       "kind": "support"
+    },
+    {
+      "pr": 64,
+      "lane": "launch observation persistence atomicity audit",
+      "head": "90be320306122e39c5669449305452a373324eaa",
+      "kind": "support"
+    },
+    {
+      "pr": 65,
+      "lane": "updater publication verification race closure",
+      "head": "98115515b2dc5fb256560c50ed8c40d08abb21f6",
+      "kind": "production-integration"
+    },
+    {
+      "pr": 66,
+      "lane": "Agent Control v2 safety invariant audit",
+      "head": "0d48692749e3b25bf32c179e114323e4f45d05bd",
+      "kind": "support-review"
+    },
+    {
+      "pr": 68,
+      "lane": "archive streaming failure-cleanup semantics audit",
+      "head": "e24444c0c9867dda0dcf8b22db3f613878ae7478",
+      "kind": "support"
     }
   ],
   "currentRoutingAudit": "_AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md",
-  "nextAgentObligation": "Inspect live canonical main and re-query open PRs before acting; this repository is changing concurrently. At this checkpoint main is 3d24155823b278662cc2aa9ecf9f1bb1a4d7353d. Do not resume the old isolated C12 branch merely because historical text still describes it: PR #58 owns the current updater post-upload publication lane. Do not duplicate PR #55 (frontend UX), PR #59 (Agent Control v2), or PR #62 (persisted game-profile ID containment) while active. Archive streaming cancellation/output budgeting is implemented and PR #61 has repaired its verification provenance. Read _AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md. Preserve exact verification provenance and the permanent continuity constitution; explicitly require your successor to recursively propagate it to the agent after them. Do not break the chain."
+  "nextAgentObligation": "Inspect live canonical main and re-query open PRs before acting; the active set changed repeatedly during this reconciliation. At the stored checkpoint main is 3d24155823b278662cc2aa9ecf9f1bb1a4d7353d. Do not resume the old isolated C12 branch by default. Updater publication is owned by #58 and the newer #65 integration (which states it supersedes #58 once merged); #55 owns frontend UX; #59 owns Agent Control v2 and #66 its safety review; #62 owns persisted game-profile ID containment; #64 owns launch-observation atomicity; #68 owns archive streaming failure-cleanup semantics. Archive streaming cancellation/output budgeting is implemented and #61 repaired its verification provenance. Read _AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md. Preserve exact verification provenance and the permanent continuity constitution; explicitly require your successor to recursively propagate it to the agent after them. Do not break the chain."
 }
