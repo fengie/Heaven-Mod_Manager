@@ -1,3 +1,13 @@
+# Branch-specific frontend continuation — `ui/frontend-ux-overhaul`
+
+If this checkout is `ui/frontend-ux-overhaul`, read `_AGENT_CONTEXT/UI_FRONTEND_UX_2026-09-28.md` before the canonical updater history below. This branch has already merged current `origin/main` at `a83dc6e047ccf98e896f10c25772df99b95426d1`, but repository state can change at any time: fetch and re-check live `origin/main` before editing or integrating.
+
+Preserve updater implementation/lifetime semantics when resolving shared WPF files. The UI checkpoint is evidence-backed and pushed; exact-source function promotion and release verification still belong to the final integration candidate, not this feature branch.
+
+You inherit the permanent continuity constitution and active Learned Rules. Before finishing, update durable handoff state and explicitly require your successor to inherit, preserve, and recursively propagate those rules to the agent after them. Do not break the chain.
+
+---
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
