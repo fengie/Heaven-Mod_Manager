@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 
 import { renderAgentPrompt } from "../lib/prompt-templates.mjs";
 import {
+  applyPreLaunchFailure,
   defaultControlState,
+  deploymentBatchCapacity,
   migrateControlState,
   planWorkflow,
   interpretCommand,
@@ -136,6 +138,53 @@ test("operator stop intent dominates an authoritative zero exit", () => {
     exitCode: 0,
     completionEvidence: "verified-operator-stop"
   }), false);
+});
+
+test("counted deployment is rejected before partial launch when capacity is insufficient", () => {
+  const current = state();
+  for (let i = 0; i < 7; i += 1) {
+    current.agents.push({ id: `active-${i}`, role: "support", status: "running" });
+  }
+  const capacity = deploymentBatchCapacity(current, 2, 8);
+  assert.deepEqual(capacity, {
+    count: 2,
+    active: 7,
+    maximum: 8,
+    available: 1,
+    allowed: false
+  });
+});
+
+test("pre-launch failure releases reservation and preserves retained worktree evidence", () => {
+  const current = state();
+  current.tasks.push({
+    id: "task-prelaunch",
+    status: "starting",
+    branchName: "agent/control-test"
+  });
+  current.leases.push({
+    id: "lease-prelaunch",
+    taskId: "task-prelaunch",
+    status: "active"
+  });
+
+  const result = applyPreLaunchFailure(current, {
+    taskId: "task-prelaunch",
+    leaseId: "lease-prelaunch",
+    error: "codex missing",
+    reason: "pre-launch-setup-failed",
+    at: "2026-09-28T16:30:00.000Z",
+    retainedWorktree: "C:\\agent-worktrees\\support-test",
+    retainedBranch: "agent/control-test"
+  });
+
+  assert.equal(result.task.status, "failed");
+  assert.equal(result.task.error, "codex missing");
+  assert.equal(result.task.retainedWorktree, "C:\\agent-worktrees\\support-test");
+  assert.match(result.task.nextAction, /retained pre-launch worktree/i);
+  assert.equal(result.lease.status, "released");
+  assert.equal(result.lease.releaseReason, "pre-launch-setup-failed");
+  assert.equal(result.lease.releasedAt, "2026-09-28T16:30:00.000Z");
 });
 
 test("recommendations prioritize uncertain worker reconciliation", () => {
