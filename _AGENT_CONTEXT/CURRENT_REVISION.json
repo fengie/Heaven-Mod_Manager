@@ -122,7 +122,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Commit/push and integrate the locally release-verified C12 repair at code commit 9234c61c47f9ebc82b3a6ce546799ccaa6f395a2, then run/inspect the exact-main Windows Release Gate and verify the immutable updater tag/release plus exact ZIP and update-manifest assets/digests. After hosted publication is green, run disposable real old-to-new and injected rollback end-to-end tests with seeded Mods/State/unknown-file hashes and exact restart/health identity. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "nextRequiredAction": "Require PR #65 hosted verification green on its final head, recheck current main, integrate the C13 post-upload sequencing plus REST tag-ref repair, then require the exact-main Windows Release Gate itself green through immutable tag/source/asset verification. Close/supersede PR #58 afterward. Then run disposable real old-to-new and injected rollback end-to-end tests with seeded Mods/State/unknown-file hashes and exact restart/health identity. Preserve and recursively propagate continuity and LR-001 through LR-011.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

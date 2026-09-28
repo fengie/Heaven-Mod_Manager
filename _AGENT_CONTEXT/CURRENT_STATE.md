@@ -98,7 +98,7 @@ That support-integration pass preserved CAS integrity as the next boundary at th
 
 Recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox was the next boundary at this historical checkpoint and is now integrated and hosted-Windows verified. The current separate candidate is archive streaming cancellation/resource budgeting.
 
-The successor inherits the permanent continuity constitution and active LR-001 through LR-010, and must explicitly require its own successor to recursively propagate them to the agent after them.
+The successor inherits the permanent continuity constitution and active LR-001 through LR-011, and must explicitly require its own successor to recursively propagate them to the agent after them.
 
 **Do not break the chain.**
 

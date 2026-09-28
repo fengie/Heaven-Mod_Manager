@@ -1,7 +1,7 @@
 # Updater: exact continuation checklist
 
 ## Current canonical updater state — 2026-09-28
-- Canonical `main` reached `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d` while the current integration work was in progress; always fetch again before integration because parallel agents are active.
+- Canonical `main` advanced to `151a370ef6c0b3d4e6b1d8a306576af1ae231c40` while the current integration work was in progress; the delta after local code verification was verification-cache/evidence plus archive audit/learned-rule documentation only. Always fetch again before integration because parallel agents are active.
 - C12 is integrated and first-publication succeeded. Immutable releases `updater-main-43` and `updater-main-44` exist for exact commits `8d5cc311ed13f5cb7f0df1f9e7c3e8bf9fcaec82` and `a8b581176aac0e6bcf09c049285ed40f4b2b392c`.
 - Hosted Windows Release Gate runs **36442433856** and **36443919632** passed verification/build/package/policy, published those immutable releases, then failed only because Git transport could not immediately fetch the just-created tag. GitHub REST git-ref inspection confirms both tags resolve directly to the expected source commits.
 - PR #58 / `agent/auto-updater-postupload-publication-20260928` implements the residual post-upload stale-main protection: draft, upload, verify assets, refresh main, withdraw on stale main, then publish. PR #65 / `agent/updater-publication-verification-20260928` contains that work and additionally replaces post-publication Git-fetch verification with fail-closed GitHub REST tag-ref validation.
