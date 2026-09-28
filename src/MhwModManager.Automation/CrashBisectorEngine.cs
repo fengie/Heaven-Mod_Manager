@@ -13,11 +13,13 @@ public sealed class CrashBisectorEngine
         var remaining = suspects.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToList();
         var probes = 0;
 
+        ct.ThrowIfCancellationRequested();
         var control = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         probes++;
         if (await reproducesCrash(control, ct))
             return new(false, remaining, probes, "The current control state reproduces the failure, so the diagnosis baseline is invalid and no culprit can be isolated.");
 
+        ct.ThrowIfCancellationRequested();
         var full = remaining.ToHashSet(StringComparer.OrdinalIgnoreCase);
         probes++;
         if (!await reproducesCrash(full, ct))
