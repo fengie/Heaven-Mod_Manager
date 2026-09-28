@@ -1,60 +1,52 @@
 {
   "schema": "permanent-dev-controller-v1",
   "controller": "single-logical-controller",
-  "cycle_id": "2026-09-28T15:26-04:00-cycle-1",
-  "updated_at": "2026-09-28T19:38:00Z",
+  "cycle_id": "2026-09-28T15:39-04:00-cycle-2",
+  "updated_at": "2026-09-28T19:44:00Z",
   "selected_task": {
     "priority": "P1",
-    "target": "PR #90 v8.8.5 persisted game-profile ID containment",
-    "reason": "Draft PR was mergeable but had no hosted CI and had never been reverified on current main."
+    "target": "PR #59 Agent Control v2/autopilot canonical lane reconciliation",
+    "reason": "Core dev-controller infrastructure; existing branch is materially stale relative to current main and has no fresh owner movement."
   },
   "actions": [
-    "Ran scripts/Verify-Release.ps1 on heaven via Heaven Local Bridge against exact head bc927218df9ebacc350b52c94ce691a4aa86df7f.",
-    "Found real IntegrationTests compile failure: MultiGameTests imported MhwModManager.App without project reference.",
-    "Found handoff-manifest currentVersion 8.8.4 vs VERSION.txt 8.8.5.",
-    "Added MhwModManager.App project reference to IntegrationTests (commit 7fbbbd88837f9a600e5bf4cfab13f79e857160c7).",
-    "Updated _AGENT_CONTEXT/handoff-manifest.json currentVersion to 8.8.5 (commit 9bf048a8e49038d29b11123ebbee494b5125c477).",
-    "Reverified exact 9bf048a8e49038d29b11123ebbee494b5125c477: builds green, Core 88/88, Automation 31/31, Integration 205/205, self-test 11/11; only failure was CURRENT_REVISION currentVersion 8.8.4.",
-    "Updated CURRENT_REVISION candidate metadata for v8.8.5 (commit e25b68da3685585fafa8809eedb452a04ea99c82).",
-    "Queued exact-head full reverify job controller-20260928-1548-pr90-final-verify on heaven.",
-    "Queued focused post-metadata gate controller-20260928-1551-pr90-postmeta-fastgate.",
-    "Observed independent bridge hardening lane commit cc57944870ecf8816ddcdc0b162e6d81f0157aab syncing repository worker to live v2 implementation; did not duplicate that lane.",
-    "Exact-head final verifier controller-20260928-1548-pr90-final-verify completed on e25b68da3685585fafa8809eedb452a04ea99c82 with Verify-Release 25/25 PASS.",
-    "Final evidence: FunctionVerifier 749/749 promoted; 7,942 explicit call sites; 0 uncovered/trace/parse gaps; Core 88/88; Automation 31/31; Integration 205/205; self-test 11/11; relaxed+strict whole-solution builds/analyzers PASS with 0 warnings/errors; handoff continuity and all 8 negative fixtures PASS/fail-closed.",
-    "Confirmed canonical main remains fd2866efafcc0dd845353a6c0e78931f13ec5040; PR #90 is 12 ahead / 0 behind and mergeable.",
-    "Marked PR #90 ready for review and posted exact verification evidence; did not merge because no reviews are recorded."
+    "Closed Cycle 1 with PR #90 exact-head green evidence and moved it to ready-for-review without bypassing the no-review merge gate.",
+    "Read issue #60 live swarm board and PR #59 ownership/status before touching Agent Control.",
+    "Claimed continuation of the existing Main Programmer lane on issue #60; no competing branch created.",
+    "Dispatched isolated heaven reconciliation job controller-20260928-1542-agentcontrol-reconcile; it failed immediately because bridge v3 service PATH could not resolve Codex.",
+    "Found verified Codex install at C:\\Users\\Xxkan\\AppData\\Roaming\\npm\\codex.cmd.",
+    "Patched heaven-bridge/worker.py to fall back to APPDATA/npm and user Roaming npm Codex path on future worker restarts (commit 0c15ab1cb7919985a5d89d31137ab4c7b5ddd53d); stale-write conflict was detected and reconciled before patching.",
+    "Retried same logical Agent Control task through explicit Codex path; provider/default model failed with usage-limit error, classified as provider/quota failure rather than code failure.",
+    "Failed over same logical task/iteration to approved local mhw-fast route via controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast."
   ],
   "current_pr": {
-    "number": 90,
-    "branch": "agent/game-profile-id-containment-v8.8.5-reconcile",
-    "head_sha": "e25b68da3685585fafa8809eedb452a04ea99c82",
-    "draft": false,
+    "number": 59,
+    "branch": "feature/agent-control-plane-v2-20260928",
+    "head_sha": "06f8085f54833d24b4c42e77e22f6c09f1f621b7",
+    "draft": true,
     "mergeable": true,
     "safe_to_merge": false,
-    "reason_not_mergeable_yet": "Exact current-main verification is green, but no PR review is recorded; review/integration gate remains.",
-    "verification": {
-      "head_sha": "e25b68da3685585fafa8809eedb452a04ea99c82",
-      "base_sha": "fd2866efafcc0dd845353a6c0e78931f13ec5040",
-      "verify_release": "25/25 PASS",
-      "functions": "749/749 promoted",
-      "explicit_call_sites": 7942,
-      "uncovered_call_sites": 0,
-      "trace_gaps": 0,
-      "parse_errors": 0,
-      "core": "88/88 PASS",
-      "automation": "31/31 PASS",
-      "integration": "205/205 PASS",
-      "self_test": "11/11 PASS",
-      "strict_builds": "PASS, 0 warnings / 0 errors"
-    }
+    "reason_not_mergeable_yet": "Reconciliation with current main, exact-head verification, and independent review remain required."
   },
   "pending_jobs": [
-    "controller-20260928-1551-pr90-postmeta-fastgate"
+    "controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast"
   ],
   "next_cycle_start": [
-    "Recover live open PRs/issues and bridge jobs; do not duplicate the independent Heaven Local Bridge hardening lane.",
-    "PR #90 is exact-head green and ready for review but unreviewed; do not merge until the review/integration gate is satisfied.",
-    "Select the highest-value unowned P0/P1/P2 task and execute it.",
-    "If PR #90 receives a review or main moves, re-evaluate integration/reverification immediately."
+    "Read the mhw-fast reconciliation result and live PR #59/main before any further edits.",
+    "If the worker pushed a new #59 head, verify exact head and inspect conflicts/diff; do not merge before independent review.",
+    "If mhw-fast is blocked, preserve the exact blocker and choose the next unowned P0/P1/P2 task without retry loops.",
+    "Check whether bridge worker has restarted onto the Codex-path fallback patch before relying on action=codex."
+  ],
+  "active_work": [
+    {
+      "owner": "single autonomous controller / Main Programmer continuation",
+      "boundary": "PR #59 existing Agent Control lane",
+      "job": "controller-20260928-1545-agentcontrol-reconcile-c-mhw-fast"
+    }
+  ],
+  "unfinished_work": [
+    "Complete PR #59 reconciliation on current main without regressing hot release/continuity files.",
+    "Run Agent Control npm check/tests on exact reconciled head.",
+    "Obtain independent review before integration.",
+    "Verify the Codex discovery fallback after the bridge worker next restarts."
   ]
 }
