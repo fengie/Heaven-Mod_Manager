@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260928-1549-v3-binread-a1",
-  "state": "running",
+  "state": "completed",
   "action": "fs_read_binary",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T19:49:12.535256+00:00"
+  "updated_at": "2026-09-28T19:49:25.366568+00:00",
+  "exit_code": 0
 }
