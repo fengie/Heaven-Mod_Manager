@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.0",
+  "currentVersion": "8.8.2",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.0 FunctionVerification",
+  "immediateParentRevision": "v8.8.1 updater publication verification",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -89,7 +89,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Current C12 continuation supersedes the older C11b pending-integration note: canonical origin/main at task start was a83dc6e047ccf98e896f10c25772df99b95426d1; isolated branch agent/auto-updater-publication-fix-20260928 fixes the first-publication empty release-list failure from hosted gate 36428542918. Focused Windows policy/syntax/handoff checks pass; full verifier/build, hosted publication, and disposable old-to-new/rollback proof remain pending in AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md. Read AGENTS.md, _AGENT_TRAINING/README.md, AUTO_UPDATER_IMPLEMENTATION.md, AUTO_UPDATER_NEXT_AGENT.md, AUTO_UPDATER_RUNTIME_RECOVERY_AUDIT.md, and the permanent continuity constitution before edits. The active automatic-updater branch is agent/auto-updater-20260928 at locally release-verified C11b source 08054d96a8ba84819b6dfd775d56f9eeabc7986d. C9-C11b close updater-native LR-003 recovery, WPF/client lifetime integration, deterministic package generation, immutable exact-main publication policy, final pre-publication main-race revalidation, and metadata/rollback native replacement gaps. Exact local heaven Windows evidence: Verify-Release 25/25, FunctionVerifier 727/727 with 7749 explicit call sites and zero uncovered/trace/parse gaps, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, ReadyToRun app publish, updater-helper publish, package verifier, publication policy, and Build-Release PASS; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C. No release was published from this branch. Next integrate the exact verified source to eligible main, inspect hosted Windows publication and immutable tag/assets, then run disposable real old-to-new and injected rollback end-to-end tests with seeded user-data hashes and exact restart identity. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "v8.8.2 closes the remaining immutable-release retry tag-propagation false negative: both immediate post-publication and already-existing immutable-release retries verify the exact current-build tag through GitHub's authoritative REST git ref, while the pre-publication orphan-tag refusal remains local Git. Exact shipped code/version/docs checkpoint 454ed4d9c3a8b19d033b744dd3faac21cb8c6901; branch agent/updater-existing-release-rest-ref-20260928. PR Gate run 36453130099 proved focused updater policy/fault tests, strict builds, Core 79/79, Automation 24/24, Integration 177/177, and self-test 11/11, but correctly failed handoff continuity because this manifest still declared 8.8.0. This checkpoint repairs the manifest to 8.8.2; require a fresh exact-head Updater Publication PR Gate, then integrate and require the exact-main Windows Release Gate through immutable tag/source/asset verification. After hosted publication closure, run disposable old-to-new and injected rollback E2E with seeded user-data hashes and exact restart/health identity. Preserve all active Learned Rules and recursively propagate the continuity constitution to the successor and the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

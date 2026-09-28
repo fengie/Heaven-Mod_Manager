@@ -1,3 +1,20 @@
+# v8.8.2 PR Gate attempt 1 — classified continuity-version failure
+
+Exact PR head: `2b612d427a958c2720cf6375c671e7719c4e7ef7`. Updater Publication PR Gate run **36453130099**.
+
+Actual results:
+- focused updater publication policy/fault tests: **PASS**;
+- strict whole-solution build: **PASS**, 0 warnings / 0 errors;
+- Core unit tests: **79/79 PASS**;
+- Automation unit tests: **24/24 PASS**;
+- Integration + fault injection: **177/177 PASS**;
+- full automation self-test: **11/11 PASS**;
+- Verify-Release aggregate: **24 PASS / 1 FAIL**;
+- sole failure: Agent handoff continuity preflight rejected `_AGENT_CONTEXT/handoff-manifest.json` because it declared version `8.8.0` while `VERSION.txt` is `8.8.2`;
+- exact release build/package and final continuity steps were skipped because the verifier correctly returned nonzero.
+
+Classification: **introduced continuity metadata omission**, not a product/runtime regression. The manifest is repaired to 8.8.2 in the next checkpoint. A fresh exact-head hosted gate is mandatory; do not treat run 36453130099 as green closure evidence.
+
 # v8.8.2 immutable-release retry repair — verification pending
 
 Exact canonical base: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. Exact shipped code/version/docs checkpoint: `454ed4d9c3a8b19d033b744dd3faac21cb8c6901` on `agent/updater-existing-release-rest-ref-20260928`.
