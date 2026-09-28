@@ -63,3 +63,20 @@ Preserve and recursively propagate the continuity constitution to the successor,
 - DONE: real .NET TLS redirect regression proves Authorization is cleared before the release-asset host.
 - Focused updater suite: **54/54 PASS**; strict solution build: **0 warnings / 0 errors** on .NET 10.0.401.
 - Next: exact build identity agreement across update-manifest.json, release-install.json, and build-identity.json before live mutation.
+
+## Checkpoint C7 — exact published build identity
+- DONE at exact production/test commit `f70fea687be362fb0869390b119f77417d9bf707`: `build-identity.json` is required updater-owned payload and validated as a published identity.
+- Installed, staged, and rollback product manifests must own `build-identity.json`; release markers must exactly match their shipped identity, including timestamp, and marker/build channels must agree.
+- Target `update-manifest.json`, staged `release-install.json`, and staged `build-identity.json` must agree on channel, product version, source SHA, and build number before backup/live mutation.
+- Strong regression keeps bytes cryptographically self-consistent while making the semantic source identity disagree; apply fails before backup.
+- Focused updater suite: **57/57 PASS** on Windows x64 / .NET SDK 10.0.401.
+- Strict whole-solution build: **0 warnings / 0 errors**.
+- No full Verify-Release/Build-Release/hosted release gate applies to these changed updater inputs yet.
+
+### Next bounded work
+1. Review updater mutation paths for collision races, physical-containment TOCTOU, rollback idempotency, and LR-003 native partial-replace failure handling. Add defensive fault fixtures; do not broaden into unrelated hardening.
+2. Wire WPF startup acknowledgement, background check/stage, operation-aware handoff, helper copying, and minimal status/manual-check UI.
+3. Then extend Build-Release and the existing Windows Release Gate for exact updater metadata/artifact generation and immutable verified publication.
+4. Only after those independently green checkpoints, run the full release gates and disposable real old→new plus injected-rollback end-to-end tests.
+
+Preserve and recursively propagate the continuity constitution and active Learned Rules to the successor, and require that successor to pass them to the agent after them.

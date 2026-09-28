@@ -18,7 +18,7 @@ The senior branch has a strong safety baseline: explicit product ownership, veri
 
 While this audit was being written, the senior branch advanced from 2 to 4 commits ahead of `main`. Its new Checkpoint C2 now states that journal identity is checked before interrupted-metadata recovery and adds identity-mismatch regressions. That supersedes the lower-priority journal/source-SHA finding below; it is retained only as historical review context and should **not** be re-opened unless a newer regression disproves C2.
 
-Checkpoint C4 closes duplicate-launch recovery; C5 closes rollback executable identity; C6 closes authenticated GitHub host enforcement and redirect token leakage. The only remaining live P1 finding from this audit is exact cross-file build identity agreement.
+Checkpoints C4-C7 now close all four P1 findings from this runtime/recovery audit: duplicate-launch recovery, rollback executable identity, authenticated GitHub origin/redirect credential safety, and exact cross-file build identity agreement. Remaining updater work is outside this support audit: mutation-race/LR-003 review, WPF/client integration, verified packaging/publication, and full end-to-end release closure.
 
 ---
 
@@ -160,6 +160,10 @@ This closes a requirement already identified by the release/security audit: fixe
 ---
 
 ## P1 — Target build metadata is not fully cross-checked across update manifest, install marker, and shipped build identity
+
+### CLOSED by Checkpoint C7 — exact three-way published build identity
+
+Published `build-identity.json` is now a required updater-owned file. Installed, staged, and rollback copies must be owned by `product-files.json`; published identity validates schema/channel/product/source/build; `release-install.json` must exactly match its nested/shipped identity; and the target `update-manifest.json` must agree on channel, product version, source SHA, and build number before backup/live mutation. The strongest Windows regression mutates staged `build-identity.json`, recomputes the product-file entry and manifest SHA, updates `release-install.json` to the same inconsistent identity/hash, and updates the requested product-manifest SHA so all byte-level checks remain valid; apply still fails before backup because the semantic target identity differs. Additional regressions cover product-version and nested-channel disagreement. Focused updater suite: **57/57 PASS**; strict solution build: **0 warnings / 0 errors** on .NET SDK 10.0.401.
 
 ### Observed code path
 

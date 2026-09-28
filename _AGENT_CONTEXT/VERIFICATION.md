@@ -1,3 +1,17 @@
+# Updater C7 exact published build identity — focused Windows evidence only
+
+Exact production/test commit: `f70fea687be362fb0869390b119f77417d9bf707`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.
+
+- Focused updater tests (`UpdateInstallerTests|UpdateRuntimeTests|UpdaterCoreTests`): **57/57 PASS**.
+- Strict whole-solution `dotnet build MhwModManager.sln -c Release -warnaserror --no-restore`: **PASS, 0 warnings / 0 errors**.
+- New regressions prove staged marker product-version disagreement, nested build-channel disagreement, and a cryptographically self-consistent staged build-identity/source disagreement all fail before backup/live mutation.
+- No repository-wide `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, immutable publication test, or live disposable old→new update is claimed for this updater source.
+- Verification caches were not manually promoted.
+
+The updater remains INCOMPLETE. Next bounded evidence should target updater collision-race/LR-003 mutation behavior, then WPF integration, before packaging/publication and full end-to-end closure.
+
+---
+
 # Updater cancellation/ownership checkpoint — focused Windows evidence only
 
 Inherited source e42fdd4 plus this checkpoint: two new regression tests failed before the fix; all 35 focused updater tests passed afterward on Windows x64 / SDK 10.0.401. Full release gates and live old-to-new update remain pending. See AUTO_UPDATER_NEXT_AGENT.md. Older closure evidence below does not verify updater changes.

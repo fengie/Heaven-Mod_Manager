@@ -173,3 +173,18 @@ Verification for this checkpoint:
 - First redirect-fixture attempt failed because Windows Schannel does not support the generated ephemeral server key in this context. The fixture was repaired by pinning/re-importing a persisted user-key certificate; no analyzer or TLS validation rule was weakened.
 - Focused updater tests: **54/54 PASS**. Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
 - Full release verification remains pending. Remaining runtime-audit P1: exact build identity agreement across update manifest, install marker, and shipped build identity.
+
+## Checkpoint C7 — exact published build identity
+- Exact production/test commit: `f70fea687be362fb0869390b119f77417d9bf707`.
+- `UpdateBuildIdentity.ValidatePublished` now validates schema, channel, product version, source SHA, and positive build number for packaged identities.
+- `build-identity.json` is required to be owned by the installed, staged, and rollback product manifests.
+- Installed/staged/rollback release markers are cross-checked against the shipped build identity; target update manifest agreement is enforced before backup/live mutation.
+- Release marker nested build channel must agree with marker channel; update manifest now rejects a missing product version.
+- The strongest regression changes staged build identity, recomputes its product-file hash and product-manifest SHA, updates release-install metadata consistently, and still proves semantic target mismatch fails before backup.
+- Additional regressions cover staged marker product-version and nested-channel disagreement.
+- Windows x64 / .NET SDK 10.0.401 focused updater suite: **57/57 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- This is focused local evidence only. Full repository Verify-Release, Build-Release, hosted Windows Release Gate, publication tests, and live disposable old→new/rollback tests remain pending for the updater branch.
+- Next independent boundary: updater collision-race/LR-003 mutation review, then WPF integration.
+
+The successor inherits the permanent continuity constitution and active Learned Rules, must preserve them, and must require its own successor to recursively propagate them again.
