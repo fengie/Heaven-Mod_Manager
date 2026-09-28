@@ -22,6 +22,21 @@ public sealed class GameProfileTests
         Assert.Throws<ArgumentException>(()=>GameProfile.Generic("bad","Bad",Path.GetTempPath(),"Bad.exe",@"..\Elsewhere"));
     }
 
+    [Theory]
+    [InlineData("safe-game",true)]
+    [InlineData("game2",true)]
+    [InlineData(@"..\..\escaped",false)]
+    [InlineData(@"bad\child",false)]
+    [InlineData("bad/child",false)]
+    [InlineData("Not Canonical",false)]
+    [InlineData("UPPERCASE",false)]
+    [InlineData(".",false)]
+    [InlineData("",false)]
+    public void Canonical_profile_id_requires_exact_normalized_single_segment(string id,bool expected)
+    {
+        Assert.Equal(expected,GameProfile.IsCanonicalId(id));
+    }
+
     [Fact]
     public void Generic_conflict_engine_never_guesses_same_path_texture_winner()
     {

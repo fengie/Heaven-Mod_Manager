@@ -378,8 +378,16 @@ public sealed record AppPaths(
         }
         else
         {
-            workspace=Path.Combine(tool,"Games",active.Id);
-            mods=Path.Combine(workspace,"Mods");inbox=Path.Combine(workspace,"Inbox");archive=Path.Combine(workspace,"Mods Archive");next=Path.Combine(state,"Games",active.Id,"Next");
+            if(!GameProfile.IsCanonicalId(active.Id))throw new InvalidDataException("The active game profile ID is not a canonical storage identifier.");
+            var gamesRoot=Path.GetFullPath(Path.Combine(tool,"Games"));
+            var stateGamesRoot=Path.GetFullPath(Path.Combine(state,"Games"));
+            workspace=Path.GetFullPath(Path.Combine(gamesRoot,active.Id));
+            next=Path.GetFullPath(Path.Combine(stateGamesRoot,active.Id,"Next"));
+            var gamesPrefix=gamesRoot.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar)+Path.DirectorySeparatorChar;
+            var stateGamesPrefix=stateGamesRoot.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar)+Path.DirectorySeparatorChar;
+            if(!workspace.StartsWith(gamesPrefix,StringComparison.OrdinalIgnoreCase)||!next.StartsWith(stateGamesPrefix,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("The active game profile workspace escaped the manager-owned game roots.");
+            mods=Path.Combine(workspace,"Mods");inbox=Path.Combine(workspace,"Inbox");archive=Path.Combine(workspace,"Mods Archive");
         }
         Directory.CreateDirectory(mods);Directory.CreateDirectory(inbox);Directory.CreateDirectory(archive);Directory.CreateDirectory(next);
         return new(tool,workspace,mods,inbox,archive,state,next,Path.Combine(next,"manager.db"),Path.Combine(next,"Blobs"),active.GameRoot,active);

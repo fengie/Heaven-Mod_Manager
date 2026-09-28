@@ -130,7 +130,7 @@ public sealed partial class GameProfileRegistry
     {
         try
         {
-            if(string.IsNullOrWhiteSpace(profile.Id)||string.IsNullOrWhiteSpace(profile.DisplayName)||string.IsNullOrWhiteSpace(profile.GameRoot)||!Path.IsPathRooted(profile.GameRoot))return false;
+            if(!GameProfile.IsCanonicalId(profile.Id)||string.IsNullOrWhiteSpace(profile.DisplayName)||string.IsNullOrWhiteSpace(profile.GameRoot)||!Path.IsPathRooted(profile.GameRoot))return false;
             _=GameProfile.NormalizeRelative(profile.ExecutableRelativePath,false);_=GameProfile.NormalizeRelative(profile.ModRootRelativePath,true);
             var root=Path.GetFullPath(profile.GameRoot).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar;
             var exe=Path.GetFullPath(Path.Combine(profile.GameRoot,profile.ExecutableRelativePath));var live=Path.GetFullPath(profile.LiveModRoot);
