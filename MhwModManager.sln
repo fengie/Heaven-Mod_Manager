@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.SelfTest", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.FunctionVerifier", "tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj", "{A4444444-4444-4444-8444-444444444444}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.Updater", "src\MhwModManager.Updater\MhwModManager.Updater.csproj", "{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,5 +88,9 @@ Global
 		{A4444444-4444-4444-8444-444444444444}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4444444-4444-4444-8444-444444444444}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4444444-4444-4444-8444-444444444444}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

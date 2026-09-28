@@ -1,0 +1,109 @@
+# Automatic updater implementation checkpoint
+
+## Canonical starting truth
+
+- Repository: `fengie/mhw-mods`
+- Selected branch: `agent/auto-updater-20260928`
+- Canonical `origin/main` at start: `4fd61dd33609a7c55e5aedbaad026266a410f942`
+- Working tree was clean before updater implementation began.
+- The parallel `agent/support-auto-updater-release-security-audit-20260928` branch was inspected first. It contains audit/continuity documentation only; it does not contain updater production code.
+- The updater is the user-selected production boundary for this assignment even though older continuity text still names archive resource budgeting as the default next boundary.
+
+## Durable architecture decisions
+
+1. Semantic product version remains separate from continuous build identity.
+2. Every eligible published build carries product version, exact source SHA, monotonic GitHub run/build number, and build timestamp.
+3. Publication uses durable immutable GitHub Release assets in the existing private repository, not Actions artifacts as the client feed.
+4. Release tags use `updater-main-<build-number>`. Clients select the highest build number greater than the installed build, so stale release creation cannot make a client downgrade.
+5. Private-repository access is authenticated locally. No PAT/token is embedded in source, Git history, application binaries, logs, or support bundles.
+6. The client first checks the `MHW_MOD_MANAGER_GITHUB_TOKEN` process environment for controlled/test use, then Windows Credential Manager target `MhwModManager/GitHubUpdater/fengie/mhw-mods`.
+7. Downloaded release ZIP bytes are streamed to disk, bounded, length-checked, and SHA-256 verified before publication into staging.
+8. ZIP extraction is staged under LocalAppData, never into the live installation.
+9. Staging rejects traversal/rooted/drive/device/ADS-like paths, case collisions, symbolic-link archive entries, reparse traversal, excessive entry count, and excessive actual streamed output.
+10. `product-files.json` is the explicit application-owned payload boundary. User/runtime roots and unknown files are not updater-owned.
+11. At minimum `Mods`, `State`, `Inbox`, `Mods Archive`, `Games`, support material, BuildLogs, and the mutable root `MHW-DEBUG-ALL.log` are excluded from updater ownership.
+12. A packaged-install marker is required before self-apply. Repository/development release layouts are not eligible for destructive self-update.
+13. Live replacement will be delegated to a separate helper copied to a LocalAppData execution directory before application shutdown.
+14. The helper will own the update mutex, PID wait, backup, apply, installed-byte verification, restart, health acknowledgement, commit, and deterministic rollback.
+15. The previous payload remains available until the new application reaches the defined startup-health checkpoint.
+16. Network/auth/update errors are non-fatal to normal application startup and must never expose credentials.
+
+## Checkpoint A implemented
+
+New project: `src/MhwModManager.Updater`.
+
+Implemented components:
+
+- `UpdateModels.cs`
+  - protocol constants;
+  - exact build identity;
+  - update manifest validation;
+  - product-file manifest validation;
+  - candidate/staging/apply/journal models;
+  - GitHub release wire models.
+- `UpdatePathSafety.cs`
+  - normalized relative paths;
+  - rooted/drive/ADS/traversal/Windows-device rejection;
+  - protected user/runtime roots;
+  - lexical containment;
+  - existing-component reparse rejection;
+  - component-by-component directory creation with containment checks;
+  - development-layout recognition.
+- `WindowsCredentialStore.cs`
+  - local environment override;
+  - Windows generic Credential Manager lookup;
+  - no secret logging.
+- `GitHubUpdateSource.cs`
+  - authenticated private GitHub release discovery;
+  - highest-build selection;
+  - manifest/release/asset agreement;
+  - bounded streaming artifact download;
+  - exact size and SHA-256 verification;
+  - temporary-file publication only after verification.
+- `UpdatePackageStager.cs`
+  - LocalAppData staging;
+  - resource-bounded streaming ZIP extraction;
+  - symlink/reparse/traversal/collision rejection;
+  - exact product manifest SHA-256 verification;
+  - exact staged file-set and per-file size/hash verification;
+  - atomic pending-state JSON publication.
+## Tests and evidence for Checkpoint A
+
+Focused updater tests were added to `MhwModManager.IntegrationTests`.
+
+Current focused result:
+
+- `dotnet test tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter FullyQualifiedName~UpdaterCoreTests`
+- **20/20 PASS**
+
+The focused suite covers:
+
+- traversal, rooted/drive, ADS, and Windows device-name rejection;
+- protected user/runtime ownership rejection;
+- unsupported manifest schema;
+- oversized manifest artifact budget;
+- same/older build -> no update;
+- highest newer build selection despite stale release ordering;
+- wrong artifact SHA-256 rejection without destination publication;
+- exact artifact length/hash success;
+- product-manifest hash mismatch;
+- unknown staged-file rejection.
+
+The first focused run caught a real Windows bug: after successful download verification the temporary ZIP stream remained open when rename publication was attempted. The regression failed with a Windows sharing violation. `GitHubUpdateSource` now disposes the output stream before `File.Move`; the same test then passed.
+
+Strict compile after the repair:
+
+- `dotnet build MhwModManager.sln -c Release -warnaserror`
+- **PASS — 0 warnings / 0 errors**
+
+This is not yet a release-gate claim. Production source changed and still requires the full repository verifier, complete test suites, exact Windows release build/gate, publication tests, helper/update integration tests, and live disposable old-to-new/rollback evidence before closure.
+
+## Next exact implementation boundary
+
+Build the external apply/rollback helper and its deterministic journal first against disposable install roots. Prove user/unknown-file preservation, stale-owned-file retirement, current-process wait, concurrent serialization, injected partial-apply rollback, restart arguments, and post-start health acknowledgement before wiring automatic restart into WPF.
+
+After that boundary is independently green, implement client coordination/UI/startup health integration, then CI updater packaging/publication, then the full end-to-end disposable installation test.
+
+## Continuity
+
+This updater lane inherits the permanent continuity constitution and active Learned Rules. The successor must read, preserve, and recursively propagate those rules to the agent after them. Do not weaken verification or filesystem/recovery invariants to make updater work pass.
