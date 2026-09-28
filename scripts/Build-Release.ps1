@@ -96,6 +96,21 @@ try{
   $selfTestOutput = Join-Path $Root 'BuildLogs'
   Require-Stage 'Automation self-test' @('run','-c','Release','--project','.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-build','--',$selfTestOutput) (Join-Path $logRoot ("build-selftest-"+$stamp+".log"))
   $appVersion=(Get-Content (Join-Path $Root 'VERSION.txt') -Raw).Trim()
+  $sourceSha=$env:MHW_UPDATE_SOURCE_SHA
+  if([string]::IsNullOrWhiteSpace($sourceSha)){$sourceSha=$env:GITHUB_SHA}
+  if([string]::IsNullOrWhiteSpace($sourceSha)){$sourceSha=(& git rev-parse HEAD).Trim()}
+  if($sourceSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw "Updater source SHA is malformed: $sourceSha"}
+  $buildNumberText=$env:MHW_UPDATE_BUILD_NUMBER
+  if([string]::IsNullOrWhiteSpace($buildNumberText)){$buildNumberText=$env:GITHUB_RUN_NUMBER}
+  if([string]::IsNullOrWhiteSpace($buildNumberText)){$buildNumberText=(& git rev-list --count HEAD).Trim()}
+  [long]$buildNumber=0
+  if(-not [long]::TryParse($buildNumberText,[ref]$buildNumber) -or $buildNumber -le 0){
+    throw "Updater build number must be a positive integer. Value: $buildNumberText"
+  }
+  $buildIdentityUtc=[DateTimeOffset]::UtcNow.ToString('o')
+  $updateChannel='main'
+  $executableRelativePath='MHW Mod Manager.exe'
+  Write-MhwMasterDebug -Root $Root -Area 'BUILD-UPDATER' -Message ("SourceSha="+$sourceSha+"; BuildNumber="+$buildNumber+"; ProductVersion="+$appVersion)
   $releaseName="MHW-Manual-Mod-Manager-v$appVersion"
   $publish=Join-Path $Root ("release\"+$releaseName)
   $publishForMasterCopy=$publish
@@ -148,6 +163,21 @@ try{
     ) | Set-Content (Join-Path $publish 'PUBLISH FALLBACK.txt') -Encoding UTF8
   }
 
+  $helperPublish=Join-Path $publish 'UpdaterHelper'
+  New-Item -ItemType Directory -Force $helperPublish | Out-Null
+  $helperPublishLog=Join-Path $logRoot ("build-publish-updater-helper-"+$stamp+".log")
+  Require-Stage 'Updater helper win-x64 self-contained publish' @(
+    'publish','.\src\MhwModManager.Updater.Helper\MhwModManager.Updater.Helper.csproj',
+    '-c','Release','-r','win-x64','--self-contained','true',
+    '-p:PublishSingleFile=false','-p:PublishTrimmed=false','-p:PublishReadyToRun=false',
+    '-p:DebugType=None',
+    '-o',$helperPublish) $helperPublishLog
+  $helperExe=Join-Path $helperPublish 'MHW Mod Manager Updater.exe'
+  if(-not (Test-Path -LiteralPath $helperExe -PathType Leaf)){throw "Updater helper publish did not produce $helperExe"}
+  $helperFiles=@(Get-ChildItem -LiteralPath $helperPublish -Recurse -File)
+  if($helperFiles.Count -lt 2){throw "Updater helper invocation closure is unexpectedly incomplete."}
+  Write-MhwMasterDebug -Root $Root -Area 'BUILD-UPDATER' -Message ("HelperClosureFiles="+$helperFiles.Count)
+
   # Promote function fingerprints only after the complete Windows build/test/publish path has succeeded.
   # Any exception before this point preserves the previously verified=true cache.
   Require-Stage 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionConfirmReport) (Join-Path $logRoot ("build-function-confirm-"+$stamp+".log"))
@@ -163,8 +193,7 @@ try{
   if(Test-Path '.\Open Startup Logs.bat'){Copy-Item '.\Open Startup Logs.bat' -Destination $publish -Force}
   if(Test-Path '.\OPEN MASTER DEBUG LOG.bat'){Copy-Item '.\OPEN MASTER DEBUG LOG.bat' -Destination $publish -Force}
   if(Test-Path '.\RUN BUILT APP.bat'){Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Root RUN BUILT APP.bat retained at project root for unified source-state launch.'}
-  if(Test-Path $MasterDebug){Copy-Item $MasterDebug (Join-Path $publish 'MHW-DEBUG-ALL.log') -Force}
-  Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Copying root helpers, master debug log, and armor database.'
+  Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Copying root helpers and armor database; runtime debug logs remain CI/local evidence only.'
   New-Item -ItemType Directory -Force (Join-Path $publish 'data')|Out-Null
   Copy-Item '.\data\Armor Database.csv' (Join-Path $publish 'data\Armor Database.csv') -Force
   @(
@@ -175,6 +204,49 @@ try{
   )|Set-Content (Join-Path $publish 'KEEP MODS AND STATE.txt') -Encoding UTF8
 
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Writing KEEP MODS AND STATE instructions.'
+
+  $buildIdentity=[ordered]@{
+    schemaVersion=1
+    channel=$updateChannel
+    productVersion=$appVersion
+    sourceSha=$sourceSha
+    buildNumber=$buildNumber
+    builtUtc=$buildIdentityUtc
+  }
+  $buildIdentityPath=Join-Path $publish 'build-identity.json'
+  $buildIdentity | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $buildIdentityPath -Encoding UTF8
+
+  $protectedRoots=@('Mods','State','Inbox','Mods Archive','Games','Support Bundles','BuildLogs')
+  $productEntries=New-Object System.Collections.Generic.List[object]
+  foreach($file in Get-ChildItem -LiteralPath $publish -Recurse -File | Sort-Object FullName){
+    $relative=$file.FullName.Substring($publish.Length).TrimStart('\','/').Replace('\','/')
+    if($relative -ieq 'product-files.json' -or $relative -ieq 'release-install.json'){continue}
+    $first=$relative.Split('/')[0]
+    if($protectedRoots -contains $first){throw "Release payload unexpectedly contains protected user/runtime root: $relative"}
+    if($relative -ieq 'MHW-DEBUG-ALL.log'){throw 'Release payload unexpectedly contains mutable MHW-DEBUG-ALL.log.'}
+    $productEntries.Add([pscustomobject][ordered]@{
+      path=$relative
+      size=[long]$file.Length
+      sha256=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
+    })
+  }
+  $productManifest=[ordered]@{schemaVersion=1;files=$productEntries.ToArray()}
+  $productManifestPath=Join-Path $publish 'product-files.json'
+  $productManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $productManifestPath -Encoding UTF8
+  $productManifestHash=(Get-FileHash -LiteralPath $productManifestPath -Algorithm SHA256).Hash
+
+  $releaseInstall=[ordered]@{
+    schemaVersion=1
+    productId='fengie/mhw-mods:MHW-Manual-Mod-Manager'
+    channel=$updateChannel
+    build=$buildIdentity
+    executableRelativePath=$executableRelativePath
+    productManifestSha256=$productManifestHash
+  }
+  $releaseInstallPath=Join-Path $publish 'release-install.json'
+  $releaseInstall | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $releaseInstallPath -Encoding UTF8
+  Write-MhwMasterDebug -Root $Root -Area 'BUILD-UPDATER' -Message ("ProductManifestSha256="+$productManifestHash+"; OwnedFiles="+$productEntries.Count)
+
   $art=Join-Path $Root 'artifacts';New-Item -ItemType Directory -Force $art|Out-Null
   $zip=Join-Path $art ($releaseName+'-win-x64.zip')
   Remove-Item $zip -Force -ErrorAction SilentlyContinue
@@ -182,17 +254,43 @@ try{
   Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $zip -CompressionLevel Optimal
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Computing SHA256.'
   $hash=(Get-FileHash $zip -Algorithm SHA256).Hash
+  $zipInfo=Get-Item -LiteralPath $zip
+  $updateManifestPath=Join-Path $art 'update-manifest.json'
+  $updateManifest=[ordered]@{
+    schemaVersion=1
+    channel=$updateChannel
+    productVersion=$appVersion
+    sourceSha=$sourceSha
+    buildNumber=$buildNumber
+    artifactName=$zipInfo.Name
+    artifactSize=[long]$zipInfo.Length
+    sha256=$hash
+    productManifestSha256=$productManifestHash
+    executableRelativePath=$executableRelativePath
+    minimumUpdaterProtocol=1
+    publishedUtc=[DateTimeOffset]::UtcNow.ToString('o')
+  }
+  $updateManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $updateManifestPath -Encoding UTF8
+
+  & (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $zip -ManifestPath $updateManifestPath -ExpectedSourceSha $sourceSha -ExpectedBuildNumber $buildNumber
+
   @(
     ('Version: '+$appVersion),
+    ('Source SHA: '+$sourceSha),
+    ('Updater build number: '+$buildNumber),
     ('SDK: '+$version),
     ('ReadyToRun fallback used: '+$usedFallback),
     ('Release folder: '+$publish),
     ('Artifact: '+$zip),
     ('SHA256: '+$hash),
+    ('Product manifest SHA256: '+$productManifestHash),
+    ('Update manifest: '+$updateManifestPath),
     ('Master transcript: '+$masterLog)
   )|Set-Content $reportPath -Encoding UTF8
   Write-Host "PASS: $zip" -ForegroundColor Green
   Write-Host "SHA256: $hash" -ForegroundColor Green
+  Write-Host "Updater build: $buildNumber / $sourceSha" -ForegroundColor Green
+  Write-Host "Update manifest: $updateManifestPath" -ForegroundColor Green
   Write-Host "Build report: $reportPath" -ForegroundColor Green
   Write-MhwMasterDebug -Root $Root -Area 'BUILD' -Message ("Artifact="+$zip+"; SHA256="+$hash+"; Report="+$reportPath)
   $buildSucceeded=$true
@@ -203,7 +301,4 @@ try{
   Pop-Location
   if($transcriptStarted){try{Stop-Transcript|Out-Null}catch{}}
   Stop-MhwMasterDebugSession -Root $Root -Area 'BUILD' -Summary ($(if($buildSucceeded){'PASS'}else{'FAIL'}))
-  if($publishForMasterCopy -and (Test-Path $publishForMasterCopy) -and (Test-Path $MasterDebug)){
-    try{Copy-Item $MasterDebug (Join-Path $publishForMasterCopy 'MHW-DEBUG-ALL.log') -Force}catch{}
-  }
 }
