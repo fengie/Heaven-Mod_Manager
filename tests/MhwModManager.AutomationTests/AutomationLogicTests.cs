@@ -48,4 +48,49 @@ public sealed class AutomationLogicTests
         var result=await engine.RunAsync(["a","b"],(enabled,_)=>Task.FromResult(enabled.Contains("a")&&enabled.Contains("b")),TestContext.Current.CancellationToken);
         Assert.False(result.Isolated); Assert.Equal(2,result.Suspects.Count);
     }
+
+    [Fact]
+    public async Task CrashBisectorRejectsBadControlBeforeNarrowing()
+    {
+        var engine=new CrashBisectorEngine();
+        var probes=new List<IReadOnlySet<string>>();
+        var result=await engine.RunAsync(
+            ["a","b","c","d"],
+            (enabled,_)=>
+            {
+                probes.Add(enabled.ToHashSet(StringComparer.OrdinalIgnoreCase));
+                return Task.FromResult(true);
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.Isolated);
+        Assert.Equal(4,result.Suspects.Count);
+        Assert.Equal(1,result.Probes);
+        Assert.Single(probes);
+        Assert.Empty(probes[0]);
+        Assert.Contains("control",result.Message,StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CrashBisectorRejectsCleanFullSetBeforeNarrowing()
+    {
+        var engine=new CrashBisectorEngine();
+        var probes=new List<IReadOnlySet<string>>();
+        var result=await engine.RunAsync(
+            ["a","b","c","d"],
+            (enabled,_)=>
+            {
+                probes.Add(enabled.ToHashSet(StringComparer.OrdinalIgnoreCase));
+                return Task.FromResult(false);
+            },
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.Isolated);
+        Assert.Equal(4,result.Suspects.Count);
+        Assert.Equal(2,result.Probes);
+        Assert.Equal(2,probes.Count);
+        Assert.Empty(probes[0]);
+        Assert.Equal(4,probes[1].Count);
+        Assert.Contains("full current suspect set",result.Message,StringComparison.OrdinalIgnoreCase);
+    }
 }
