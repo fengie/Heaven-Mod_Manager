@@ -30,6 +30,7 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "2026-09-28 support audit at canonical main a83dc6e047ccf98e896f10c25772df99b95426d1: confirmed the updater Local\\\\MHWMM.Update.<hash> semaphore is Windows-session scoped, so it cannot prove cross-session single-writer ownership for one writable installation; documented the future narrow ownership checkpoint and appended LR-011. No production source/tests/workflows/cache changed.",
     "2026-09-28 updater C11b closure: exact commit 08054d96a8ba84819b6dfd775d56f9eeabc7986d integrates immutable exact-main publication policy, deterministic artifacts, final pre-publication main race recheck, and updater metadata/rollback native replacement coverage; local heaven Windows verification passed Verify-Release 25/25, functions 727/727, Core 79/79, Automation 24/24, Integration 173/173, self-test 11/11, strict analyzers, ReadyToRun app/helper publish, package and publication-policy checks, Build-Release; updater build 227 ZIP SHA-256 09ADF5E9B6C7C832633D7E5BA7C4DD2AA3EAB29F347E540B79542B731CD3665C; hosted main publication and disposable end-to-end remain pending.",
     "2026-09-28 updater C11a packaging: exact commit 2e136cc22f570a94db8da67c91aa755d4c7a3ce6 generates build identity, product ownership, install marker, update manifest, complete self-contained helper closure, and post-build package verification; clean-checkout Windows release run passed Core 79/79, Automation 24/24, Integration 170/170, self-test 11/11, analyzers/app/helper publish/package verifier; ZIP SHA-256 8A65C28FD55C7FFE7638457BE11C6AF5C9EC71A3BE2E45EF70E3261B6E077B74; immutable publication and end-to-end update remain pending.",
     "2026-09-28 updater C10 hardening: WPF/client lifetime integration plus malformed health-argument rejection, complete product-owned UpdaterHelper closure copying, and atomic foreground-operation/handoff exclusion; final heaven/Windows/.NET 10.0.401 evidence 74/74 focused updater/handoff, 170/170 full integration, strict build 0 warnings/errors at fdff9ed940b8801c1b17bedb6e6de523d7b807a6; full release gate and C11 packaging/publication pending.",
@@ -97,6 +98,7 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "Updater cross-session ownership support checkpoint changes documentation/continuity only; production C#, updater runtime behavior, tests, workflows, release scripts, journal/recovery behavior, and verification caches remain unchanged.",
     "Follow-up support integration changes documentation/continuity only; production source, tests, verification scripts, workflows, and promoted caches remain unchanged.",
     "Fail-closed rollback/recovery semantics were preserved: 1176/1177 do not auto-commit or destructively guess.",
     "CAS integrity, migration, async, diagnostics, networking, backup, and Smart Pack were not redesigned; recursive scanner/adoption/Smart Inbox traversal was deliberately hardened in this integration.",
@@ -156,7 +158,8 @@
     "_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md"
   ],
   "latestSupportIntegration": {
     "baselineMain": "2d6969c7d94438dd64a540dab93fc9a910a8458b",
