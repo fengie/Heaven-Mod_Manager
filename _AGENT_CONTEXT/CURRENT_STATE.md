@@ -1,3 +1,11 @@
+# v8.8.3 archive failure-cleanup ? locally release-verified
+
+Exact release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release **25/25**; functions **738/738**; call sites **7,850 / 0 uncovered**; Core **79/79**; Automation **29/29**; Integration **181/181**; self-test **11/11**; strict builds/analyzers PASS. Build-Release passed win-x64 ReadyToRun plus updater-helper publish, updater build **320**, ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+
+The LR-011 repair is implemented without broadening into LR-008 publication staging. Exact-main hosted verification remains pending after integration. The later evidence/cache commit is metadata-only relative to this verified source.
+
+---
+
 # v8.8.3 archive failure-cleanup candidate ? 2026-09-28
 
 Implementation checkpoint `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928` closes the narrow LR-011 source defect: `ArchiveInspector` best-effort-cleans its owned current output for every exceptional payload-copy exit and never lets cleanup failure replace the primary exception; `SmartInboxService` re-checks cancellation before recoverable I/O handling. Deterministic regressions cover ordinary I/O cleanup, cleanup-failure preservation of cancellation/budget failures, and prevention of later Smart Inbox processing after cancellation.

@@ -1,6 +1,6 @@
-# IMPLEMENTATION STATUS ? v8.8.3 candidate
+# IMPLEMENTATION STATUS ? v8.8.3 locally release-verified
 
-The narrow repair recommended by this audit is implemented at `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`. `ArchiveInspector` now attempts cleanup of the currently owned output on every exceptional payload-copy exit, cleanup failure is logged as secondary without replacing the primary exception, and `SmartInboxService` preserves requested cancellation before recoverable-I/O handling. Focused Windows evidence: strict solution build 0 warnings/errors, Integration 181/181, Automation 29/29. Full release verification/build and hosted exact-main closure are pending. LR-008 whole-destination publication/staging remains intentionally separate.
+The narrow LR-011 repair recommended by this audit is locally release-verified at exact repository checkpoint `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release passed 25/25 with 738/738 functions, 7,850/0 uncovered call sites, Core 79/79, Automation 29/29, Integration 181/181, self-test 11/11, and strict builds/analyzers. Build-Release passed ReadyToRun and updater-helper publication; updater build 320; ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`. Exact-main hosted Windows verification remains pending. LR-008 whole-destination publication/staging remains intentionally separate. See `_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md`.
 
 ---
 

@@ -1,3 +1,20 @@
+# v8.8.3 archive failure-cleanup ? exact local Windows release verification
+
+Exact repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6` on `agent/archive-streaming-cleanup-lr011-20260928`. Host: heaven2 / Windows; .NET SDK 10.0.401.
+
+- `Verify-Release.ps1`: **25/25 PASS**.
+- FunctionVerifier: **738/738** promoted; **7,850** explicit call sites; **0 uncovered**, **0 trace gaps**, **0 parse errors**.
+- Core: **79/79**; Automation: **29/29**; Integration/fault injection: **181/181**; self-test: **11/11**.
+- Relaxed/strict project and whole-solution builds/analyzers: PASS, **0 warnings / 0 errors**.
+- Agent-handoff preflight and all eight negative fixtures: PASS/fail-closed as designed.
+- `Build-Release.ps1`: PASS; app win-x64 ReadyToRun PASS; updater-helper self-contained publish PASS.
+- Updater build: **320**; artifact `MHW-Manual-Mod-Manager-v8.8.3-win-x64.zip`; SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+- Exact-main hosted Windows verification: **pending** until integration.
+
+The subsequent evidence/cache-persistence commit changes no production source and is not independently relabeled as full-gated. Detailed closure: `_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md`.
+
+---
+
 # v8.8.3 archive failure-cleanup candidate ? focused Windows evidence
 
 Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`.
