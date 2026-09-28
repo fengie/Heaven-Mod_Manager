@@ -1,0 +1,346 @@
+{
+  "id": "controller-20260928-1548-codex-profiles",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:48:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:43:10.421642+00:00",
+  "finished_at": "2026-09-28T19:43:10.427057+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\.codex",
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-secrets"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\ambient-suggestions"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\cache"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\node_repl"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\pets"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\plugins"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\sessions"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\skills"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread-writer-locks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\tmp"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\vendor_imports"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json",
+        "size": 8575,
+        "modified": "2026-09-28T18:56:18.815150+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json.bak",
+        "size": 8575,
+        "modified": "2026-09-28T18:56:18.815150+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-provisioning-b7e2f259929ab66a.guard",
+        "size": 0,
+        "modified": "2026-09-27T09:31:31.763474+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox_migration",
+        "size": 3,
+        "modified": "2026-09-27T09:33:10.627891+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\auth.json",
+        "size": 3938,
+        "modified": "2026-09-27T09:31:41.943566+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\cap_sid",
+        "size": 1173,
+        "modified": "2026-09-28T18:59:21.073010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\chrome-native-hosts-v2.json",
+        "size": 2059,
+        "modified": "2026-09-27T09:37:52.083570+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\config.toml",
+        "size": 2999,
+        "modified": "2026-09-28T19:08:40.129099+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite",
+        "size": 32768,
+        "modified": "2026-09-27T09:51:52.167550+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-28T19:42:12.158584+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-wal",
+        "size": 144232,
+        "modified": "2026-09-28T19:42:12.329807+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\installation_id",
+        "size": 36,
+        "modified": "2026-09-27T09:31:30.715606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite",
+        "size": 1236992,
+        "modified": "2026-09-28T19:42:12.176265+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-28T19:38:49.257670+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-wal",
+        "size": 94792,
+        "modified": "2026-09-28T19:42:49.264777+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite",
+        "size": 45056,
+        "modified": "2026-09-28T19:21:27.584896+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-28T19:42:12.166170+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-wal",
+        "size": 12392,
+        "modified": "2026-09-28T19:42:12.167175+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\models_cache.json",
+        "size": 353668,
+        "modified": "2026-09-28T19:42:45.746290+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite",
+        "size": 4096,
+        "modified": "2026-09-27T09:31:30.702907+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-27T09:31:52.180647+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-wal",
+        "size": 230752,
+        "modified": "2026-09-28T19:42:15.120528+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\session_index.jsonl",
+        "size": 244,
+        "modified": "2026-09-28T19:12:27.730483+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite",
+        "size": 376832,
+        "modified": "2026-09-28T19:41:51.011020+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-28T19:42:12.138799+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-wal",
+        "size": 255472,
+        "modified": "2026-09-28T19:42:15.119014+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite",
+        "size": 4255744,
+        "modified": "2026-09-28T19:21:47.723126+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-28T19:42:12.333350+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-wal",
+        "size": 354352,
+        "modified": "2026-09-28T19:42:15.113452+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\deny_read_acl_state.json",
+        "size": 22,
+        "modified": "2026-09-28T18:59:20.766375+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox-d1a6cc441dee3701.log",
+        "size": 1750,
+        "modified": "2026-09-27T09:31:46.635628+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox.2026-09-27.log",
+        "size": 9314,
+        "modified": "2026-09-27T09:34:55.812832+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox.2026-09-28.log",
+        "size": 105334,
+        "modified": "2026-09-28T19:11:27.844543+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\setup_marker.json",
+        "size": 255,
+        "modified": "2026-09-27T09:31:46.635628+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex-command-runner-0.158.0-alpha.2.1.exe",
+        "size": 8201008,
+        "modified": "2026-09-28T13:34:08.346905+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex-command-runner-0.158.0.exe",
+        "size": 8205616,
+        "modified": "2026-09-28T18:59:21.714489+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex.exe",
+        "size": 321953584,
+        "modified": "2026-09-28T13:40:13.647383+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\plugins.sha",
+        "size": 41,
+        "modified": "2026-09-27T09:31:40.491492+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\plugins.sync.lock",
+        "size": 0,
+        "modified": "2026-09-27T09:31:30.781722+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\rollout-maintenance.lock",
+        "size": 0,
+        "modified": "2026-09-27T09:31:44.184250+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db",
+        "size": 4096,
+        "modified": "2026-09-27T09:31:30.890258+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db-shm",
+        "size": 32768,
+        "modified": "2026-09-27T09:31:30.901811+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db-wal",
+        "size": 889952,
+        "modified": "2026-09-27T09:37:03.821556+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread-writer-locks\\.coordination.lock",
+        "size": 0,
+        "modified": "2026-09-28T12:11:42.800517+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\vendor_imports\\skills-curated-cache.json",
+        "size": 1267,
+        "modified": "2026-09-27T11:27:36.415874+00:00"
+      }
+    ]
+  }
+}
