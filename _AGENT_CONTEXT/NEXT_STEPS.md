@@ -1,13 +1,14 @@
-## Current updater next steps — post-PR #78 integration — 2026-09-28
+## Current updater next steps — v8.8.1 handoff repair — 2026-09-28
 
-1. **DONE:** integrate PR #78 at canonical product merge `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; release identity is synchronized at **v8.8.1** in `VERSION.txt`, `Directory.Build.props`, `README.md`, and `CHANGELOG.md`.
+1. **DONE:** PR #78 is integrated at `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` with v8.8.1 version/README/CHANGELOG metadata and authoritative GitHub REST tag verification.
 2. **DONE:** exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed Updater Publication PR Gate **36448819098**.
-3. **IN PROGRESS:** inspect exact-main Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. Require repository verification, release build/package, policy tests, immutable publication, exact REST tag target, and exact two-asset digest/size verification to finish green.
-4. After that gate is green, verify the published release/tag/assets directly against `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`.
-5. Run disposable real installed-client old→new plus fault-injected rollback. Seed and hash `Mods`, `State`, and unknown files; prove exact restarted build identity and startup health acknowledgement.
-6. Only then mark the automatic updater end-to-end complete.
+3. **FAILED CLOSED / ROOT CAUSE FIXED ON THIS BRANCH:** exact-main Windows Release Gate **36452561463** was 24/25 because `handoff-manifest.json` remained `8.8.0`; all compile/analyzer/test stages passed. Release build/publication did not run.
+4. Merge the v8.8.1 continuity/manifest repair, then require the next exact-main Windows Release Gate to finish green through verifier, release build/package, policy, immutable publication, exact REST tag target, and two-asset digest/size verification.
+5. Verify the published immutable release/tag/assets directly against that exact product source.
+6. Run disposable old→new plus fault-injected rollback with seeded `Mods`, `State`, and unknown-file hashes; prove exact restarted build identity and startup health acknowledgement.
+7. Only then mark automatic updater end-to-end complete.
 
-Do not reopen the now-fixed Git-transport propagation symptom unless new evidence contradicts the REST-ref result. Preserve the permanent recursive continuity constitution and pass it to the next agent.
+Preserve the permanent recursive continuity constitution and pass it to the next agent.
 
 ---
 ## Current updater next steps — 2026-09-28
