@@ -123,7 +123,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         await File.WriteAllTextAsync(path,JsonSerializer.Serialize(counts,IndentedJson),ct);
     }
 
-    private async Task WritePrivacyNoticeAsync(string path,CancellationToken ct)
+    private static async Task WritePrivacyNoticeAsync(string path,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await File.WriteAllLinesAsync(path,
@@ -139,8 +139,8 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
     private async Task CopySanitizedStructuredLogAsync(string source,string destination,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await using var input=new StreamReader(source);
-        await using var output=new StreamWriter(destination,false);
+        using var input=new StreamReader(source);
+        using var output=new StreamWriter(destination,false);
         while(await input.ReadLineAsync(ct) is { } line)
         {
             ct.ThrowIfCancellationRequested();
@@ -195,7 +195,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         return WindowsAbsolutePathPattern.Replace(sanitized,"<absolute-path>");
     }
 
-    private IReadOnlyList<(string Value,string Replacement)> SensitiveRoots()
+    private (string Value,string Replacement)[] SensitiveRoots()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var roots=new List<(string Value,string Replacement)>
