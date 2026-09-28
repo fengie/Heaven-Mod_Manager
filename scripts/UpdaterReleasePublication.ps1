@@ -17,11 +17,11 @@ function Invoke-UpdaterDraftPublication {
   $publicationAttempted=$false
 
   try {
-    $null=& $CreateDraft
+    $null = & $CreateDraft
     $draftCreated=$true
 
-    $null=& $UploadAssets
-    $null=& $VerifyDraft
+    $null = & $UploadAssets
+    $null = & $VerifyDraft
 
     $refreshOutput=@(& $RefreshMain)
     if($refreshOutput.Count -ne 1){
@@ -35,7 +35,7 @@ function Invoke-UpdaterDraftPublication {
 
     if(-not [string]::Equals($remoteMain,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
       $cleanupAttempted=$true
-      $null=& $DeleteDraft
+      $null = & $DeleteDraft
       $draftCreated=$false
       return [pscustomobject]@{
         Published=$false
@@ -48,7 +48,7 @@ function Invoke-UpdaterDraftPublication {
     # published the immutable release even if the client process reports failure.
     # Never automatically delete after crossing this boundary.
     $publicationAttempted=$true
-    $null=& $PublishDraft
+    $null = & $PublishDraft
     $draftCreated=$false
 
     return [pscustomobject]@{
@@ -62,7 +62,7 @@ function Invoke-UpdaterDraftPublication {
     if($draftCreated -and -not $publicationAttempted -and -not $cleanupAttempted){
       $cleanupAttempted=$true
       try {
-        $null=& $DeleteDraft
+        $null = & $DeleteDraft
         $draftCreated=$false
       }
       catch {
