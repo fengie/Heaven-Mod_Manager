@@ -94,6 +94,30 @@ try{
         $text -replace '(?i)explicit user authorization','ordinary project decision'
     }
 
+    Expect-Rejected 'AGENTS hides learned-rules requirement in a comment' 'AGENTS.md' {
+        param($text)
+        $text -replace '(?m)^8\. Read active rules in `_AGENT_CONTEXT/LEARNED_RULES\.md`.*$','8. Read active rules in the continuity ledger. <!-- _AGENT_CONTEXT/LEARNED_RULES.md -->'
+    }
+
+    Expect-Rejected 'start-here explicitly negates successor propagation' 'NEXT-AGENT-START-HERE.md' {
+        param($text)
+        $text -replace '(?i)require your successor to propagate them recursively to the agent after them','require your successor must not preserve or propagate them to the agent after them'
+    }
+
+    Expect-Rejected 'AGENTS weakens Core Rules while retaining authorization keyword' 'AGENTS.md' {
+        param($text)
+        $text -replace 'Core continuity rules may be weakened only with explicit user authorization\.','Core continuity rules may be weakened without explicit user authorization.'
+    }
+
+    Expect-Rejected 'README read-order deception' '_AGENT_CONTEXT/README_FIRST.md' {
+        param($text)
+        $protocolLine=[regex]::Match($text,'(?m)^2\. .*CONTINUITY_PROTOCOL\.md.*$').Value
+        $learnedLine=[regex]::Match($text,'(?m)^3\. .*LEARNED_RULES\.md.*$').Value
+        if([string]::IsNullOrWhiteSpace($protocolLine) -or [string]::IsNullOrWhiteSpace($learnedLine)){throw 'Fixture could not locate canonical read-order lines.'}
+        $changed=$text.Replace($protocolLine,'__PROTOCOL_LINE__').Replace($learnedLine,$protocolLine).Replace('__PROTOCOL_LINE__',$learnedLine)
+        return "Reference order: _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md then _AGENT_CONTEXT/LEARNED_RULES.md.`r`n`r`n"+$changed
+    }
+
     Write-Host 'PASS: Agent handoff negative fixtures prove recursive continuity checks fail closed.' -ForegroundColor Green
 }finally{
     if(Test-Path $fixture){Remove-Item -LiteralPath $fixture -Recurse -Force -ErrorAction SilentlyContinue}

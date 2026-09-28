@@ -8,6 +8,10 @@
 
 The preceding exact-main run **36428542918** passed all verifier/build/package/policy stages and failed only before first release creation because empty release-list output was not normalized. No release/tag was created by that failed run. Local C12 build **230** ZIP SHA-256: `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`. Preserve the permanent recursive continuity constitution and active Learned Rules.
 
+## Support checkpoint — continuity validator adversarial hardening
+
+An isolated support branch now implements the previously documented continuity-validator adversarial-fixture checkpoint. It strips HTML comments from semantic checks, rejects explicit successor-propagation/Core-Rule contradictions, scopes read-order validation to the active numbered section, and expands the negative suite from four to eight cases. Focused Windows handoff validation is green after final reconciliation to canonical `main` `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`; full exact-source verifier/release-gate closure is not yet claimed. Read `_AGENT_CONTEXT/CONTINUITY_VALIDATOR_ADVERSARIAL_HARDENING_2026-09-28.md`. This support checkpoint does not replace or reorder the active updater production milestone.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
