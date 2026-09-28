@@ -187,6 +187,61 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("NEW-APP", await File.ReadAllTextAsync(staged, TestToken));
     }
 
+    [Theory]
+    [InlineData(1176)]
+    [InlineData(1177)]
+    public async Task Ambiguous_native_replace_failure_recovers_then_retries_on_next_apply(int nativeErrorCode)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        string? displaced = null;
+        var backend = new ScriptedReplaceBackend(
+            nativeErrorCode,
+            (replaced, _) =>
+            {
+                if (nativeErrorCode == 1176)
+                {
+                    File.Delete(replaced);
+                    return;
+                }
+
+                displaced = replaced + ".1177-displaced";
+                File.Move(replaced, displaced, false);
+            });
+        var firstAttempt = new UpdateInstaller(applyReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => firstAttempt.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(nativeErrorCode, error.NativeErrorCode);
+        Assert.Equal(
+            UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        var retainedReplacement = Assert.Single(
+            Directory.EnumerateFiles(installRoot, ".app.exe.*.mhwmm.tmp"));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(retainedReplacement, TestToken));
+
+        await new UpdateInstaller().ApplyAsync(fixture.Request, TestToken);
+
+        Assert.Equal("NEW-APP",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.Equal("NEW-LIB",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
+        Assert.Equal(
+            UpdateJournalPhase.AppliedAwaitingHealth,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(File.Exists(retainedReplacement));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(retainedReplacement, TestToken));
+        Assert.Equal("OLD-APP",
+            await File.ReadAllTextAsync(Path.Combine(fixture.Request.BackupRoot, "app.exe"), TestToken));
+        if (nativeErrorCode == 1177)
+        {
+            Assert.NotNull(displaced);
+            Assert.True(File.Exists(displaced));
+            Assert.Equal("OLD-APP", await File.ReadAllTextAsync(displaced!, TestToken));
+        }
+    }
+
     [Fact]
     public async Task Recovery_rejects_journal_for_a_different_update_before_mutation()
     {
