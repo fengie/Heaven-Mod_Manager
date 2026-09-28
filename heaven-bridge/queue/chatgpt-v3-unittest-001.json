@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-v3-unittest-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git -C 'C:\\Users\\Xxkan\\HeavenBridgeRepo' pull --rebase origin heaven-bridge; python -m unittest discover -s 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\tests' -p 'test_*.py' -v",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-28T19:39:30Z",
+  "priority": "highest"
+}
