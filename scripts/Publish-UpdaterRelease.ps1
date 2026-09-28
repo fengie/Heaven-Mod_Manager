@@ -67,7 +67,7 @@ try {
   $remoteMain=(& git rev-parse origin/main).Trim()
   $tag="updater-main-$ExpectedBuildNumber"
 
-  $releaseJson=& gh release list --repo $Repository --limit 1000 --json tagName,isDraft
+  $releaseJson=& gh release list --repo $Repository --limit 1000 --json tagName,isDraft,isImmutable
   if($LASTEXITCODE -ne 0){throw 'Failed to list existing GitHub releases.'}
   $releases=@($releaseJson | ConvertFrom-Json)
   $existing=@($releases | Where-Object {[string]$_.tagName -eq $tag})
@@ -75,6 +75,7 @@ try {
   if($existing.Count -gt 0){
     if($existing.Count -ne 1){throw "Multiple releases unexpectedly use tag $tag."}
     if([bool]$existing[0].isDraft){throw "Updater release $tag exists only as a draft; refusing to overwrite or publish it automatically."}
+    if(-not [bool]$existing[0].isImmutable){throw "Updater release $tag exists but is not immutable; refusing to trust it as an update feed."}
     & git show-ref --verify --quiet "refs/tags/$tag"
     if($LASTEXITCODE -ne 0){throw "Published updater release $tag has no fetched Git tag."}
     $tagSha=(& git rev-list -n 1 "refs/tags/$tag").Trim()
@@ -141,6 +142,19 @@ try {
   # We never pass --clobber; an existing tag/release/assets fail closed above.
   & gh release create $tag $artifact $manifestFile --repo $Repository --target $ExpectedSourceSha --title "MHW Manual Mod Manager updater build $ExpectedBuildNumber" --notes $notes --latest=false
   if($LASTEXITCODE -ne 0){throw "Failed to create immutable updater release $tag."}
+
+  $releaseViewJson=& gh release view $tag --repo $Repository --json tagName,isDraft,isImmutable
+  if($LASTEXITCODE -ne 0){throw "Published updater release $tag could not be inspected for immutability."}
+  $releaseView=$releaseViewJson | ConvertFrom-Json
+  if([string]$releaseView.tagName -ne $tag -or [bool]$releaseView.isDraft){
+    throw "Published updater release $tag has unexpected identity/draft state."
+  }
+  if(-not [bool]$releaseView.isImmutable){
+    Write-Host "::error::GitHub published $tag without immutable-release protection; attempting to withdraw the invalid updater feed."
+    & gh release delete $tag --repo $Repository --cleanup-tag --yes
+    if($LASTEXITCODE -ne 0){Write-Host "::error::Failed to withdraw non-immutable updater release $tag."}
+    throw "Updater release $tag was not immutable and is not accepted as a safe publication."
+  }
 
   & git fetch origin "refs/tags/$tag:refs/tags/$tag"
   if($LASTEXITCODE -ne 0){throw "Published updater tag $tag could not be fetched for verification."}
