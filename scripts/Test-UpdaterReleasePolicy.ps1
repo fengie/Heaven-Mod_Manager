@@ -123,6 +123,10 @@ Assert-Equal $false $sequenceStale.Result.Published 'post-upload stale main publ
 Assert-Equal 'stale-main-after-upload' $sequenceStale.Result.Reason 'post-upload stale main reason'
 Assert-Equal 'create|upload|verify|refresh|delete' $sequenceStale.Events 'post-upload stale main cleanup order'
 
+$sequenceCreateFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'create'
+Assert-Equal 'fixture-create' $sequenceCreateFailure.Error 'draft creation failure propagated'
+Assert-Equal 'create' $sequenceCreateFailure.Events 'draft creation ambiguity avoids unsafe cleanup or publish'
+
 $sequenceUploadFailure=Invoke-PublicationSequenceFixture -ExpectedSha $current -RemoteMainSha $current -FailStage 'upload'
 Assert-Equal 'fixture-upload' $sequenceUploadFailure.Error 'upload failure propagated'
 Assert-Equal 'create|upload|delete' $sequenceUploadFailure.Events 'upload failure draft cleanup'
