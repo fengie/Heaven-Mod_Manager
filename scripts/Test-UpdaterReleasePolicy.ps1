@@ -150,7 +150,7 @@ $noisySequence=Invoke-UpdaterDraftPublication -ExpectedSourceSha $current `
   -RefreshMain {$current} `
   -DeleteDraft {'delete-output'} `
   -PublishDraft {'publish-output'}
-Assert-Equal 1 @($noisySequence).Count 'publication callback output suppression'
+Assert-Equal 1 (@($noisySequence).Count) 'publication callback output suppression'
 Assert-Equal $true $noisySequence.Published 'publication callback output suppression result'
 
 $script:UpdaterRefreshCleanupCount=0
