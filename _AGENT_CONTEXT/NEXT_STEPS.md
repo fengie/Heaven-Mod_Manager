@@ -1,8 +1,12 @@
-# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+# Recursive source reparse containment — STRESS FOLLOW-UP LOCAL WINDOWS GREEN / HOSTED PENDING
 
-Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Reconciled exact local verification source: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
+Original implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Adversarial follow-up source verified locally: `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a`.
 
-Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox. After reconciling current canonical `main` (including the company trainer/governance additions), exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed `Verify-Release.ps1` **25/25** with functions **614/614** and call sites **6512 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, strict analyzers, and ReadyToRun publish. Reconciled release SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
+The stress follow-up reproduced two additional candidate defects on real Windows before repair: a junction at the scanner's package source root bypassed the child-root reparse check, and the custom LIFO traversal changed ordinary safe-tree ordering enough to change Smart Inbox classification from **Texture** to **Mixed**. The focused fix now validates the package source root before root resolution and preserves legacy depth-first sibling order while still rejecting reparses.
+
+Exact source `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a` passed `Verify-Release.ps1` **25/25** with functions **615/615** after promotion and call sites **6517 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **24/24**, Integration **94/94**, self-test **11/11**, strict analyzers, and ReadyToRun self-contained publish. Release SHA-256: `665836D7BED41CD83925FD956E987E9D64D1DE618BF238157E13291F5B7731B6`.
+
+Dedicated real-Windows regressions now cover scanner source-root/descendant junctions, bounded scanner junction cycles, adoption live-root/descendant junctions, Smart Inbox top-level/descendant junctions and bounded cycles, plus safe-tree classification parity. A real file-symlink leaf fixture remains environment-blocked because `mklink` on `heaven2` lacks symlink privilege; do not represent that case as executed.
 
 Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
 
@@ -41,16 +45,15 @@ The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as
 
 **Close recursive source reparse containment; do not start another production boundary yet.**
 
-The test-first implementation and real Windows descendant-junction regressions are already present. Reconciliation with current canonical `main` is complete, and exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed both local Windows gates.
+The test-first implementation plus adversarial stress follow-up are present. Reconciliation with canonical `main` is complete through the candidate base, and exact follow-up source `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a` passed both local Windows gates. Root-junction and bounded directory-junction cycle fixtures are now present; the dedicated file-reparse leaf fixture remains blocked by missing symlink privilege on `heaven2`.
 
-The remaining closure sequence is:
+The remaining closure sequence after the local evidence/cache checkpoint is:
 
-1. commit/push the verification cache and durable evidence generated from that exact source;
-2. ensure the branch is still reconciled with current canonical `main`;
-3. dispatch the hosted Windows Release Gate against the exact final branch HEAD;
-4. persist the hosted run ID/artifacts and only then mark this boundary CLOSED.
+1. ensure the final candidate branch is still reconciled with current canonical `main`;
+2. dispatch the hosted Windows Release Gate against the exact final branch HEAD;
+3. persist the hosted run ID/artifacts and only then mark this boundary CLOSED.
 
-Keep dedicated root/file-leaf/cycle fixtures, handle/file-ID TOCTOU, hardlinks, CAS identity/digest namespace, migration, broader concurrency/crash matrices, and scale/performance as separate future work.
+Keep the file-reparse privilege gap, handle/file-ID TOCTOU, hardlinks, CAS identity/digest namespace, migration, broader concurrency/crash matrices, and scale/performance as separate future work.
 
 ## Continuity
 

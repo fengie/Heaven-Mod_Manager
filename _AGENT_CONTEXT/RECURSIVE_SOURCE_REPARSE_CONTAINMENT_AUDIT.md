@@ -487,4 +487,17 @@ The next agent taking this boundary should:
 9. update canonical continuity only from the then-current main state;
 10. explicitly require their successor to inherit, preserve, and recursively propagate the same continuity constitution to the agent after them.
 
+## 2026-09-28 implementation stress follow-up
+
+The implementation candidate was subsequently tested on real Windows and then adversarially re-reviewed. The follow-up found two defects not covered by the first three junction regressions:
+
+- scanner package-root junctions could bypass the child traversal-root check after `ResolveRoots` descended into `nativePC`;
+- the custom LIFO traversal reversed safe sibling order and changed Smart Inbox classification on a non-reparse fixture.
+
+Both were reproduced before repair. The scanner root regression was the only failure in a 94-test Integration run; the classification parity regression was the only failure in a 24-test Automation run.
+
+The minimal follow-up fix validates `mod.SourcePath` itself before root resolution and reverses the stack push order so depth-first processing preserves prior sibling ordering. New real-Windows fixtures also cover scanner/adoption/Smart Inbox root junctions and bounded junction cycles. Exact source `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a` passes Integration **94/94**, Automation **24/24**, repository verification **25/25**, functions **615/615**, call sites **6517 / 0 uncovered**, self-test **11/11**, and ReadyToRun release publication. Release SHA-256: `665836D7BED41CD83925FD956E987E9D64D1DE618BF238157E13291F5B7731B6`.
+
+A dedicated file-symlink/reparse-leaf fixture remains unexecuted because `heaven2` lacks symlink creation privilege. TOCTOU and hardlink policy remain separate boundaries. Hosted Windows Release Gate evidence is still pending and is required before this boundary is marked closed.
+
 **Do not break the chain.**

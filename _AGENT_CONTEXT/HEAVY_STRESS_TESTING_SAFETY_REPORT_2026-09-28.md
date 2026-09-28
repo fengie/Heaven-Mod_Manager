@@ -74,7 +74,7 @@ Focused real-Windows post-fix runs:
 - Automation: **21/21 PASS**
 - both projects build with **0 warnings / 0 errors**.
 
-Final exact local verification source after reconciling current canonical `main`: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
+First-pass exact local verification source after reconciling canonical `main`: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` (superseded by the adversarial follow-up section below).
 
 Repository verifier on Win32NT / Windows 10.0.26200 / .NET SDK 10.0.401:
 - **25/25 PASS**
@@ -111,3 +111,47 @@ Company-trainer review: no new generic trainer rule was added. The reusable less
 **Hosted verification — NOT EXECUTED:** this workflow runs on pushes to `main` or by `workflow_dispatch`. The available GitHub connector can inspect and rerun existing Actions runs but cannot dispatch a new workflow, `gh` is not installed on `heaven2`, and the tool safety layer blocked secure credential extraction for a direct REST dispatch. The local `Verify-Release.ps1` and `Build-Release.ps1` gates were actually executed and are green, but they do not substitute for hosted-runner evidence. A future agent/operator must dispatch the Windows Release Gate against the exact branch HEAD, record its run ID/artifacts, and only then mark this boundary fully closed.
 
 No destructive test touched the real game installation, real mod library, Desktop, OneDrive, or personal data; all hostile fixtures were isolated temporary directories.
+
+## Adversarial follow-up — 2026-09-28
+
+The first candidate was independently stress-reviewed before integration. Two additional defects were then reproduced on real Windows against pre-follow-up candidate `1c453f5f9c813a85bca53657c0ee30b47d2d15ab`:
+
+1. **Scanner source-root junction bypass.** A mod package whose `SourcePath` itself was a junction was not rejected because root resolution descended to `SourcePath\nativePC` before the shared traversal checked its root. With the new regression present and production unchanged, Integration ran **94 total / exactly 1 failure**: `Scanner_rejects_reparse_source_root_before_capture` reported that no `IOException` was thrown.
+2. **Safe-tree behavior regression.** The LIFO traversal reversed sibling processing relative to the prior `SearchOption.AllDirectories` behavior. On an ordinary non-reparse tree the Smart Inbox classification changed from **Texture** to **Mixed**. With the parity regression present and production unchanged, Automation ran **24 total / exactly 1 failure**.
+
+The minimal repair:
+- validates `ModScanner`'s package source root before resolving child scan roots;
+- keeps fail-closed root/entry reparse rejection;
+- pushes discovered child directories in reverse so stack processing preserves the legacy depth-first sibling order instead of reversing it.
+
+Additional dedicated real-Windows regressions now cover:
+- scanner source-root junction rejection with no CAS/database publication;
+- scanner descendant junction rejection;
+- bounded scanner junction cycle failure;
+- adoption live-root and descendant junction rejection with no copied package/adoption rows;
+- Smart Inbox top-level and descendant junction rejection with no destination/catalog publication;
+- bounded Smart Inbox junction cycle failure;
+- safe non-reparse Smart Inbox classification parity.
+
+A real **file-symlink/reparse leaf** fixture remains **blocked by environment privilege**: direct `mklink` on `heaven2` returned `You do not have sufficient privilege to perform this operation.` No mock is being substituted for that Windows-specific case.
+
+Exact follow-up source: `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a`.
+
+Executed after repair:
+- focused Integration **94/94 PASS**;
+- focused Automation **24/24 PASS**;
+- both changed test projects build with **0 warnings / 0 errors**;
+- `Verify-Release.ps1` **25/25 PASS**;
+- functions **615/615** after promotion;
+- explicit call sites **6517 / 0 uncovered**;
+- trace gaps **0**; parse errors **0**;
+- Core **79/79**;
+- Automation **24/24**;
+- Integration/fault injection **94/94**;
+- self-test **11/11**;
+- strict whole-solution/analyzer verification PASS;
+- `Build-Release.ps1` PASS;
+- win-x64 ReadyToRun self-contained publish PASS;
+- release ZIP SHA-256 `665836D7BED41CD83925FD956E987E9D64D1DE618BF238157E13291F5B7731B6`.
+
+**Updated risk classification:** source-root junctions and bounded directory-junction cycles are now experimentally covered in addition to the original descendant cases. File-reparse leaves remain implementation-covered but not privilege-backed by a dedicated real symlink fixture. The documented path-check/open TOCTOU window and hardlink policy remain separate unresolved boundaries. Hosted Windows Release Gate evidence is still required before declaring this checkpoint fully closed.

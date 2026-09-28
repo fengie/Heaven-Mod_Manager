@@ -1,8 +1,12 @@
-# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+# Recursive source reparse containment — STRESS FOLLOW-UP LOCAL WINDOWS GREEN / HOSTED PENDING
 
-Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Reconciled exact local verification source: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
+Original implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Adversarial follow-up source verified locally: `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a`.
 
-Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox. After reconciling current canonical `main` (including the company trainer/governance additions), exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed `Verify-Release.ps1` **25/25** with functions **614/614** and call sites **6512 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, strict analyzers, and ReadyToRun publish. Reconciled release SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
+The stress follow-up reproduced two additional candidate defects on real Windows before repair: a junction at the scanner's package source root bypassed the child-root reparse check, and the custom LIFO traversal changed ordinary safe-tree ordering enough to change Smart Inbox classification from **Texture** to **Mixed**. The focused fix now validates the package source root before root resolution and preserves legacy depth-first sibling order while still rejecting reparses.
+
+Exact source `742484ba7a6ff07d12c0cfa1ea1a46a1b1205b4a` passed `Verify-Release.ps1` **25/25** with functions **615/615** after promotion and call sites **6517 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **24/24**, Integration **94/94**, self-test **11/11**, strict analyzers, and ReadyToRun self-contained publish. Release SHA-256: `665836D7BED41CD83925FD956E987E9D64D1DE618BF238157E13291F5B7731B6`.
+
+Dedicated real-Windows regressions now cover scanner source-root/descendant junctions, bounded scanner junction cycles, adoption live-root/descendant junctions, Smart Inbox top-level/descendant junctions and bounded cycles, plus safe-tree classification parity. A real file-symlink leaf fixture remains environment-blocked because `mklink` on `heaven2` lacks symlink privilege; do not represent that case as executed.
 
 Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
 
