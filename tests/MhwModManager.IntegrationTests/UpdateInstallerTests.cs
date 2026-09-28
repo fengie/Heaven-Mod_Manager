@@ -243,6 +243,92 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Native_replace_1176_product_manifest_failure_preserves_ambiguous_metadata_state()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        var backend = new ScriptedReplaceBackend(
+            1176,
+            (replaced, _) => File.Delete(replaced));
+        var installer = new UpdateInstaller(metadataReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1176, error.NativeErrorCode);
+        var productPath = Path.Combine(installRoot, UpdateProtocol.ProductManifestFileName);
+        Assert.False(File.Exists(productPath));
+        Assert.Equal(UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(File.Exists(Path.Combine(
+            fixture.Request.BackupRoot, UpdateProtocol.ProductManifestFileName)));
+        var staged = Assert.Single(Directory.EnumerateFiles(
+            installRoot, $".{UpdateProtocol.ProductManifestFileName}.*.mhwmm.tmp"));
+        Assert.Equal(
+            await File.ReadAllTextAsync(
+                Path.Combine(fixture.Request.StagingRoot, UpdateProtocol.ProductManifestFileName), TestToken),
+            await File.ReadAllTextAsync(staged, TestToken));
+    }
+
+    [Fact]
+    public async Task Native_replace_1177_install_marker_failure_preserves_metadata_images()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        string? displaced = null;
+        var backend = new SelectiveReplaceBackend(
+            path => string.Equals(
+                Path.GetFileName(path),
+                UpdateProtocol.InstallMarkerFileName,
+                StringComparison.OrdinalIgnoreCase),
+            1177,
+            (replaced, _) =>
+            {
+                displaced = replaced + ".1177-displaced";
+                File.Move(replaced, displaced, false);
+            });
+        var installer = new UpdateInstaller(metadataReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1177, error.NativeErrorCode);
+        Assert.Equal(UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.NotNull(displaced);
+        Assert.Equal(1, (await ReadMarkerAsync(displaced!)).Build.BuildNumber);
+        var markerTemp = Assert.Single(Directory.EnumerateFiles(
+            installRoot, $".{UpdateProtocol.InstallMarkerFileName}.*.mhwmm.tmp"));
+        Assert.Equal(2, (await ReadMarkerAsync(markerTemp)).Build.BuildNumber);
+        Assert.True(File.Exists(Path.Combine(
+            fixture.Request.BackupRoot, UpdateProtocol.InstallMarkerFileName)));
+    }
+
+    [Fact]
+    public async Task Native_replace_1176_during_explicit_rollback_marks_recovery_required()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        await new UpdateInstaller().ApplyAsync(fixture.Request, TestToken);
+        var backend = new ScriptedReplaceBackend(
+            1176,
+            (replaced, _) => File.Delete(replaced));
+        var installer = new UpdateInstaller(rollbackReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.RollbackAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1176, error.NativeErrorCode);
+        Assert.Equal(UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(File.Exists(Path.Combine(fixture.Request.BackupRoot, "app.exe")));
+        Assert.False(File.Exists(Path.Combine(installRoot, "app.exe")));
+        var staged = Assert.Single(Directory.EnumerateFiles(
+            installRoot, ".app.exe.*.mhwmm.tmp"));
+        Assert.Equal("OLD-APP", await File.ReadAllTextAsync(staged, TestToken));
+    }
+
+    [Fact]
     public async Task Recovery_rejects_journal_for_a_different_update_before_mutation()
     {
         var fixture = await CreateFixtureAsync();
@@ -892,6 +978,30 @@ public sealed class UpdateInstallerTests : IDisposable
             materializeFailure(replaced, replacement);
             errorCode = nativeErrorCode;
             return false;
+        }
+    }
+
+    private sealed class SelectiveReplaceBackend(
+        Func<string, bool> shouldFail,
+        int nativeErrorCode,
+        Action<string, string> materializeFailure) : IAtomicReplaceBackend
+    {
+        public bool TryReplace(
+            string replaced,
+            string replacement,
+            string? backup,
+            out int errorCode)
+        {
+            if (shouldFail(replaced))
+            {
+                materializeFailure(replaced, replacement);
+                errorCode = nativeErrorCode;
+                return false;
+            }
+
+            File.Move(replacement, replaced, true);
+            errorCode = 0;
+            return true;
         }
     }
 
