@@ -1,3 +1,7 @@
+## Parallel support candidate — crash-bisector validated controls — 2026-09-28
+
+Branch `agent/crash-bisector-evidence-integrity-20260928` is an isolated support candidate based on canonical `main` `a8b581176aac0e6bcf09c049285ed40f4b2b392c`. It closes only CB-01 from `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md`: prove the empty baseline does not reproduce and the full suspect set does reproduce before narrowing may return an isolated culprit. Read `_AGENT_CONTEXT/CRASH_BISECTOR_VALIDATED_CONTROL_CHECKPOINT_2026-09-28.md` for exact pre-fix failure evidence, verification, exclusions, and residuals. This support candidate does not supersede the active updater lane below and must be reconciled with live `main` before integration.
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.

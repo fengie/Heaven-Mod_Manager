@@ -61,6 +61,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/LAUNCH_HEALTH_REVALIDATION_AUDIT.md` — game-build freshness, runtime revalidation semantics, launch gating, and duplicate-launch safety.
 - `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` — mod retirement, stale live references, same-path identity reuse, and delete/re-import integrity.
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
+- `_AGENT_CONTEXT/CRASH_BISECTOR_VALIDATED_CONTROL_CHECKPOINT_2026-09-28.md` — support implementation candidate that runtime-characterizes and closes the CB-01 baseline/full-set precondition gap; read its newest status before integration.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
 - `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md` — runtime-reproduced single-entry cancellation failure plus archive byte/disk-budget hardening guidance.
 

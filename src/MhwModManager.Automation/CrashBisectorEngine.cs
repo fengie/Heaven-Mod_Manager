@@ -12,6 +12,18 @@ public sealed class CrashBisectorEngine
         if (suspects.Count == 0) return new(false, [], 0, "No changed mods are available to bisect.");
         var remaining = suspects.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToList();
         var probes = 0;
+
+        ct.ThrowIfCancellationRequested();
+        probes++;
+        if (await reproducesCrash(new HashSet<string>(StringComparer.OrdinalIgnoreCase), ct))
+            return new(false, [], probes, "The baseline/control reproduces the failure, so the diagnosis is invalid and no culprit can be confirmed.");
+
+        ct.ThrowIfCancellationRequested();
+        var fullSet = remaining.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        probes++;
+        if (!await reproducesCrash(fullSet, ct))
+            return new(false, [], probes, "The full suspect set does not reproduce the failure, so the issue is not currently reproducible and no culprit can be confirmed.");
+
         while (remaining.Count > 1)
         {
             ct.ThrowIfCancellationRequested();

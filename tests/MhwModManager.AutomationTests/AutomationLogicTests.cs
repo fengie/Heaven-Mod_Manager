@@ -34,11 +34,47 @@ public sealed class AutomationLogicTests
     }
 
     [Fact]
+    public async Task CrashBisectorRejectsFailingBaselineBeforeNarrowing()
+    {
+        var engine=new CrashBisectorEngine();
+        var probes=new List<IReadOnlySet<string>>();
+        var result=await engine.RunAsync(["a","b"],(enabled,_)=>
+        {
+            probes.Add(enabled.ToHashSet(StringComparer.OrdinalIgnoreCase));
+            return Task.FromResult(true);
+        },TestContext.Current.CancellationToken);
+        Assert.False(result.Isolated);Assert.Empty(result.Suspects);
+        Assert.Single(probes);Assert.Empty(probes[0]);
+        Assert.Contains("baseline",result.Message,StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CrashBisectorRejectsCleanFullSetBeforeNarrowing()
+    {
+        var engine=new CrashBisectorEngine();
+        var probes=new List<IReadOnlySet<string>>();
+        var result=await engine.RunAsync(["a","b"],(enabled,_)=>
+        {
+            probes.Add(enabled.ToHashSet(StringComparer.OrdinalIgnoreCase));
+            return Task.FromResult(false);
+        },TestContext.Current.CancellationToken);
+        Assert.False(result.Isolated);Assert.Empty(result.Suspects);
+        Assert.Equal(2,probes.Count);Assert.Empty(probes[0]);Assert.Equal(2,probes[1].Count);
+        Assert.Contains("full suspect set",result.Message,StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task CrashBisectorIsolatesSingleCulprit()
     {
         var engine=new CrashBisectorEngine();
-        var result=await engine.RunAsync(["a","b","c","d"],(enabled,_)=>Task.FromResult(enabled.Contains("c")),TestContext.Current.CancellationToken);
+        var probes=new List<IReadOnlySet<string>>();
+        var result=await engine.RunAsync(["a","b","c","d"],(enabled,_)=>
+        {
+            probes.Add(enabled.ToHashSet(StringComparer.OrdinalIgnoreCase));
+            return Task.FromResult(enabled.Contains("c"));
+        },TestContext.Current.CancellationToken);
         Assert.True(result.Isolated); Assert.Single(result.Suspects); Assert.Equal("c",result.Suspects[0]);
+        Assert.Empty(probes[0]);Assert.Equal(4,probes[1].Count);
     }
 
     [Fact]
