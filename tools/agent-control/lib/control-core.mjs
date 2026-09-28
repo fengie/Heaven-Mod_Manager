@@ -27,6 +27,49 @@ export const AUTONOMY_PROFILES = Object.freeze({
   }
 });
 
+export const WORKFLOW_PERMISSION_REQUIREMENTS = Object.freeze({
+  "usual-swarm": "dispatch-support",
+  "support-current": "dispatch-support",
+  integration: "prepare-integration",
+  review: "request-review",
+  release: "prepare-integration",
+  "bug-hunt": "dispatch-support",
+  "ui-ux": "dispatch-support",
+  "updater-hardening": "dispatch-support",
+  verification: "run-tests",
+  research: "dispatch-support",
+  continuity: "maintain-continuity",
+  cleanup: "dispatch-support",
+  "self-improve": "prepare-integration"
+});
+
+export function autonomyPermissionDecision(state, permission) {
+  const level = String(state?.settings?.autonomyLevel || "assist");
+  const profile = AUTONOMY_PROFILES[level];
+  if (!profile) {
+    return {
+      allowed: false,
+      level,
+      permission,
+      reason: `Unknown autonomy level "${level}" fails closed.`
+    };
+  }
+  const allowed = profile.permissions.includes(permission);
+  return {
+    allowed,
+    level,
+    permission,
+    profile: profile.label,
+    reason: allowed
+      ? `${profile.label} permits ${permission}.`
+      : `${profile.label} does not permit ${permission}.`
+  };
+}
+
+export function workflowPermission(workflowId) {
+  return WORKFLOW_PERMISSION_REQUIREMENTS[String(workflowId || "")] || null;
+}
+
 export const DEFAULT_MACHINE_POLICIES = Object.freeze({
   heaven: {
     label: "heaven",
