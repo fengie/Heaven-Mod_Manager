@@ -47,5 +47,7 @@ Before publication:
 ## Post-release
 Perform lightweight health checks appropriate to the product and preserve a way to map user reports back to exact release artifacts.
 
+For state created by an irreversible publication, verify the newly created object through the service's authoritative control-plane API when one exists. Do not turn expected propagation lag in a secondary transport, mirror, cache, or distribution path into a false publication failure. Validate exact object identity, target type, and source/content identity fail-closed; keep transport-level checks where they prove a different pre-publication invariant.
+
 ## Reusable lesson rule
 When CI/release fails for a new systemic reason, fix the immediate issue and decide whether the doctrine, gate, or regression suite should change so the class of failure is caught earlier.
