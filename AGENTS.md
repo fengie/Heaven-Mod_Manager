@@ -19,7 +19,15 @@ Before modifying code or durable project state:
 13. At meaningful checkpoints, ask whether new reusable engineering knowledge belongs in `_AGENT_TRAINING/`; update it when the lesson is generalized, meaningful, understood, non-duplicate, and operational.
 14. Commit and push meaningful checkpoints; do not leave expensive discoveries only in chat or local state. During long-running agent/tool sessions, keep those checkpoints short-interval and small enough that a stream/session cancellation cannot erase a substantial block of finished work.
 15. Run the handoff/verification checks appropriate to the change and report verification only for exact inputs actually checked.
-16. Explicitly pass this continuity obligation to your successor, and require that successor to pass it to the agent after them.
+16. For every product/source update that will ship in the application or a release (feature, bug fix, UI/workflow change, behavior change, storage/schema change, deployment/update logic, or other shipped code change), treat release identity and user-facing documentation as part of the same change:
+    - bump the app version in `VERSION.txt` and `Directory.Build.props` (`<Version>`), and keep `<InformationalVersion>` semantically aligned;
+    - update any release/build/install/update manifests or metadata that duplicate the app version or release identity;
+    - update `README.md` so the current version and relevant behavior/workflow are accurately documented;
+    - update `CHANGELOG.md` with the same version and a concise summary of the shipped change;
+    - do not declare the work complete, merge it, or hand it off as release-ready while code and version/docs disagree.
+17. Documentation-only, agent-policy-only, continuity/evidence-only, or test-only changes that do not alter the shipped application are exempt from an app-version bump, but any documentation they make stale must still be corrected.
+18. In every handoff/PR summary for a shipped app change, explicitly state the new app version and identify the README/CHANGELOG/version files updated. A missing version/docs update is unfinished work, not an optional cleanup.
+19. Explicitly pass this continuity obligation to your successor, and require that successor to pass it to the agent after them.
 
 GitHub `fengie/mhw-mods` on `main` is the source of truth. Source ZIPs are optional export/release artifacts, not canonical development state.
 
