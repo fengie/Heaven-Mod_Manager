@@ -112,7 +112,13 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
     private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string token)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"method={method}");
-        var request = new HttpRequestMessage(method, uri);
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out var requestUri)
+            || !string.Equals(requestUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(requestUri.Host, "api.github.com", StringComparison.OrdinalIgnoreCase)
+            || !requestUri.IsDefaultPort)
+            throw new InvalidDataException("Authenticated updater requests may target only https://api.github.com.");
+
+        var request = new HttpRequestMessage(method, requestUri);
         request.Headers.UserAgent.ParseAdd("MHW-Manual-Mod-Manager-Updater/1");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
