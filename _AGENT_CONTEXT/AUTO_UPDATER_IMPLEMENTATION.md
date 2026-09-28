@@ -107,3 +107,24 @@ After that boundary is independently green, implement client coordination/UI/sta
 ## Continuity
 
 This updater lane inherits the permanent continuity constitution and active Learned Rules. The successor must read, preserve, and recursively propagate those rules to the agent after them. Do not weaken verification or filesystem/recovery invariants to make updater work pass.
+
+## Checkpoint B — apply/rollback helper
+
+Implemented:
+
+- `UpdateInstaller` with packaged-install marker validation, target-build anti-downgrade check, staged marker agreement, exact previous-payload backup, application-owned replacement, conservative stale-owned retirement, installed-byte verification, explicit journal transitions, rollback, and post-health confirmation.
+- `release-install.json` is separate updater metadata rather than a `product-files.json` member. This avoids a cryptographic hash cycle because the install marker carries the product-manifest hash. It is still required inside the verified ZIP, validated before apply, backed up, applied, and validated after apply.
+- Modified stale files are preserved rather than deleted when their current bytes no longer match the prior owned-file hash.
+- Rollback backups record hashes of the exact pre-update bytes, so rollback restores the actual pre-update installation rather than assuming the old manifest still describes every byte.
+- New-only files are deleted during rollback only if they still hash to the just-applied update bytes. Unexpectedly modified bytes make rollback fail closed instead of guessing.
+- `MhwModManager.Updater.Helper` is a separate executable. It waits for the old PID, owns a cross-process single-writer named semaphore, applies the update, restarts the app with a health token/file, waits for exact build identity acknowledgement, confirms and retires backup on success, or stops the failed new process and rolls back/restarts the previous payload.
+- The helper recognizes `AppliedAwaitingHealth` after its own interruption and resumes health confirmation instead of re-backing-up the already-updated install.
+- Cross-process serialization uses a named semaphore rather than a named mutex because helper awaits may resume on another thread and mutex release is thread-affine.
+
+Verification for this checkpoint:
+
+- updater focused tests: **33/33 PASS**
+- installer/runtime subset: **13/13 PASS**
+- strict whole-solution build before final checkpoint cleanup: **PASS, 0 warnings / 0 errors**
+- real disposable filesystem tests prove user `Mods`, `State`, and unknown files survive successful updates and injected rollback paths.
+- fault injection currently covers after-file replacement and after-stale-owned deletion; further fault points remain to be exercised before final closure.

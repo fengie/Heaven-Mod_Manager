@@ -185,6 +185,7 @@ public static class UpdatePackageVerifier
             StringComparer.OrdinalIgnoreCase)
         {
             UpdateProtocol.ProductManifestFileName
+            , UpdateProtocol.InstallMarkerFileName
         };
         var actual = EnumerateFilesSafely(payloadRoot, ct)
             .Select(f => UpdatePathSafety.NormalizeRelativeFilePath(Path.GetRelativePath(payloadRoot, f)))

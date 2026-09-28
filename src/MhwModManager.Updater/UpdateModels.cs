@@ -9,6 +9,8 @@ public static class UpdateProtocol
     public const int ManifestSchemaVersion = 1;
     public const int ProductManifestSchemaVersion = 1;
     public const int BuildIdentitySchemaVersion = 1;
+    public const int InstallMarkerSchemaVersion = 1;
+    public const string ProductId = "fengie/mhw-mods:MHW-Manual-Mod-Manager";
     public const int UpdaterProtocolVersion = 1;
     public const string Channel = "main";
     public const string ProductManifestFileName = "product-files.json";
@@ -35,7 +37,7 @@ public sealed record UpdateBuildIdentity(
     long BuildNumber,
     DateTimeOffset BuiltUtc)
 {
-    public string DisplayId => $"{ProductVersion} • build {BuildNumber} • {ShortSha}";
+    public string DisplayId => $"{ProductVersion} â€¢ build {BuildNumber} â€¢ {ShortSha}";
     public string ShortSha => SourceSha.Length <= 12 ? SourceSha : SourceSha[..12];
 
     public static UpdateBuildIdentity Load(string installRoot)
@@ -50,6 +52,29 @@ public sealed record UpdateBuildIdentity(
         if (value.SchemaVersion != UpdateProtocol.BuildIdentitySchemaVersion)
             throw new InvalidDataException($"Unsupported build identity schema {value.SchemaVersion}.");
         return value;
+    }
+}
+
+public sealed record ReleaseInstallMarker(
+    int SchemaVersion,
+    string ProductId,
+    string Channel,
+    UpdateBuildIdentity Build,
+    string ProductManifestSha256)
+{
+    public void Validate()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={Build.BuildNumber}");
+        if (SchemaVersion != UpdateProtocol.InstallMarkerSchemaVersion)
+            throw new InvalidDataException($"Unsupported install marker schema {SchemaVersion}.");
+        if (!string.Equals(ProductId, UpdateProtocol.ProductId, StringComparison.Ordinal))
+            throw new InvalidDataException($"Unexpected updater product id '{ProductId}'.");
+        if (!string.Equals(Channel, UpdateProtocol.Channel, StringComparison.Ordinal))
+            throw new InvalidDataException($"Unexpected installed update channel '{Channel}'.");
+        if (Build.SchemaVersion != UpdateProtocol.BuildIdentitySchemaVersion)
+            throw new InvalidDataException($"Unsupported installed build identity schema {Build.SchemaVersion}.");
+        if (ProductManifestSha256.Length != 64 || ProductManifestSha256.Any(c => !Uri.IsHexDigit(c)))
+            throw new InvalidDataException("Install marker product manifest SHA-256 is malformed.");
     }
 }
 
@@ -137,6 +162,17 @@ public enum UpdateJournalPhase
     Failed
 }
 
+public enum UpdateApplyFaultPoint
+{
+    BeforeBackup,
+    AfterBackup,
+    BeforeFileApply,
+    AfterFileApply,
+    BeforeStaleOwnedRemoval,
+    AfterStaleOwnedRemoval,
+    BeforeInstalledVerification
+}
+
 public sealed record UpdateApplyRequest(
     UpdateManifest Manifest,
     string InstallRoot,
@@ -146,6 +182,7 @@ public sealed record UpdateApplyRequest(
     string PendingPath,
     string HealthFile,
     string HealthToken,
+    int CurrentProcessId,
     IReadOnlyList<string> RestartArguments);
 
 public sealed record UpdateJournal(
