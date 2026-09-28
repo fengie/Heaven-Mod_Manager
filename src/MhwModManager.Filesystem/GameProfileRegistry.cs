@@ -128,6 +128,7 @@ public sealed partial class GameProfileRegistry
 
     public static bool IsUsable(GameProfile profile)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             if(!GameProfile.IsCanonicalId(profile.Id)||string.IsNullOrWhiteSpace(profile.DisplayName)||string.IsNullOrWhiteSpace(profile.GameRoot)||!Path.IsPathRooted(profile.GameRoot))return false;
