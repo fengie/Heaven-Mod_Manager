@@ -127,6 +127,38 @@ export function classifyAuthoritativeExit(agent, exitCode) {
   return exitCode === 0 ? "done" : "failed";
 }
 
+export function applyPreLaunchFailure(state, {
+  taskId,
+  leaseId,
+  error,
+  reason,
+  at = new Date().toISOString(),
+  retainedWorktree = null,
+  retainedBranch = null
+}) {
+  const task = state.tasks.find(item => item.id === taskId) || null;
+  if (task) {
+    task.status = "failed";
+    task.finishedAt = at;
+    task.updatedAt = at;
+    task.error = String(error || "Unknown pre-launch failure");
+    task.retainedWorktree = retainedWorktree;
+    task.retainedBranch = retainedBranch || task.branchName || null;
+    task.nextAction = retainedWorktree
+      ? "Inspect or remove the retained pre-launch worktree after preserving any useful evidence."
+      : null;
+  }
+
+  const lease = state.leases.find(item => item.id === leaseId) || null;
+  if (lease && lease.status === "active") {
+    lease.status = "released";
+    lease.releasedAt = at;
+    lease.releaseReason = reason;
+  }
+
+  return { task, lease };
+}
+
 export function machinePolicy(state, machine) {
   const key = String(machine || "").trim().toLowerCase();
   return state.settings?.machinePolicies?.[key] || null;
