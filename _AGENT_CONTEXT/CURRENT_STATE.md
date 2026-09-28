@@ -1,3 +1,15 @@
+# LIVE CANONICAL STATE OVERLAY — 2026-09-28
+
+Canonical `main` at this checkpoint: `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
+
+The older C12 publication-repair section below is preserved as historical provenance, but it is no longer sufficient routing authority. PR #58 owns the live updater post-upload publication lane. Other currently owned lanes are PR #55 (frontend UX), PR #59 (Agent Control v2), and support PR #62 (persisted game-profile ID containment).
+
+Archive streaming cancellation / actual-output budgeting is implemented on main; PR #61 repaired its verification provenance. Historical exact verification claims remain bound to their recorded SHAs/runs.
+
+Because ownership changed during this support task, always re-query live GitHub before selecting work. See `_AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md`.
+
+---
+
 ## Current updater publication repair — 2026-09-28
 
 Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.
