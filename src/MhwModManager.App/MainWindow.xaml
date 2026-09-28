@@ -36,13 +36,17 @@
                                 <TextBlock Text="v8.8.0" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="Safe staging, clear conflicts, confident launches."/>
+                        <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="{Binding HeaderSummary}" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                 </StackPanel>
 
-                <Border Grid.Column="1" Margin="24,0" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,5" CornerRadius="12" Background="#0A0E13" BorderBrush="{StaticResource Border}" BorderThickness="1">
-                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding HeaderSummary}" TextTrimming="CharacterEllipsis"/>
-                </Border>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
+                    <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" AutomationProperties.Name="Active game" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
+                    <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
+                    <Button Content="Scan games" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
+                    <Button Content="+ Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
+                    <Button Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
+                </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="Import" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Import a mod archive into this game's managed library."/>
@@ -398,7 +402,7 @@
                             <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Margin="0,3,0,0" Text="{Binding PlanPreviewText}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Button Content="Preview" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
+                            <Button Content="Preview changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
                             <Button Content="Discard staged" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Return every logical mod to its currently applied state. No files are changed."/>
                             <Button Content="Apply staged changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Commit the staged plan transactionally. Ctrl+Enter."/>
                         </StackPanel>
