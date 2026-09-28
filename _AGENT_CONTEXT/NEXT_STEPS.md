@@ -1,6 +1,6 @@
 # Active CAS integrity checkpoint
 
-Capture now rejects corrupt existing objects; restore validates private staged bytes before publication. Nine focused Windows regressions and the full local Windows gates pass for source 8334d725f6bdb73661e2f3ed71a04189db76950b: verifier 25/25, Integration 88/88, Automation 20/20, self-test 11/11, strict builds and ReadyToRun publish PASS. Hosted verification is pending; see EVIDENCE/cas-integrity-local-windows.log. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for design, reproduced failures, branch review, limits, and exact continuation.
+CAS integrity remains the only active production checkpoint. Local Windows gates passed for source 8334d725f6bdb73661e2f3ed71a04189db76950b, but hosted run 36366784304 on 797991231819d8e5693efd671e5352fd447902a0 exposed a real same-digest publication race: VerifyExistingAsync could hit ERROR_SHARING_VIOLATION immediately after another caller's winning rename. Branch agent/cas-integrity-20260927 contains the narrow repair and stronger regression coverage. The next action is not another feature: run focused BlobIntegrityTests, exact full local Windows Verify-Release.ps1 and Build-Release.ps1, then the normal hosted Windows Release Gate for the exact candidate. Close the checkpoint only after all are green. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
 
 Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
@@ -24,9 +24,9 @@ Release SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B386866353734
 
 The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as proof that staged recovery material can be discarded: documented 1176/1177 partial-name-mutation outcomes preserve the replacement staging path and remain fail-closed in `RecoveryRequired`. Focused fixtures pin 1175/1176/1177 filesystem and operation/journal postconditions.
 
-### Highest-value next independently verifiable boundary
+### Active independently verifiable boundary
 
-Implement the **CAS integrity checkpoint** identified as step 3 in `TEST_GAP_AND_PERFORMANCE_AUDIT.md`.
+Finish the **current CAS integrity concurrency repair** before starting any later boundary.
 
 Keep it test-first and narrow:
 
