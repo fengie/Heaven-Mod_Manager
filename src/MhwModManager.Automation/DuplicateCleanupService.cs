@@ -55,10 +55,46 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var dest = Unique(Path.Combine(archiveRoot, stamp + "-" + Path.GetFileName(mod.SourcePath)));
             Directory.Move(mod.SourcePath, dest);
-            await db.ExecuteAsync("DELETE FROM mods WHERE id=$m",new Dictionary<string,object?>{{"$m",id}},ct);
+            try
+            {
+                await db.ExecuteAsync("DELETE FROM mods WHERE id=$m",new Dictionary<string,object?>{{"$m",id}},ct);
+            }
+            catch(Exception deleteError)
+            {
+                try
+                {
+                    await RestoreSourceWhenDeleteDidNotCommitAsync(id,mod.SourcePath,dest);
+                }
+                catch(Exception recoveryError)
+                {
+                    throw new AggregateException(
+                        $"Duplicate cleanup could not persist retirement for '{id}', and the source move could not be safely reconciled. Archived data remains at '{dest}' when available.",
+                        deleteError,
+                        recoveryError);
+                }
+                throw;
+            }
             moved++;
         }
         return moved;
+    }
+
+    private async Task RestoreSourceWhenDeleteDidNotCommitAsync(string modId,string sourcePath,string archivePath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={modId}");
+        await using var c=await db.OpenAsync(CancellationToken.None);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT EXISTS(SELECT 1 FROM mods WHERE id=$m)";
+        cmd.Parameters.AddWithValue("$m",modId);
+        var stillPersisted=Convert.ToInt64(await cmd.ExecuteScalarAsync(CancellationToken.None),CultureInfo.InvariantCulture)!=0;
+        if(!stillPersisted)return;
+
+        if(Directory.Exists(sourcePath))
+            throw new IOException($"Cannot restore archived duplicate '{modId}' because source path '{sourcePath}' already exists.");
+        if(!Directory.Exists(archivePath))
+            throw new IOException($"Cannot restore archived duplicate '{modId}' because archive path '{archivePath}' no longer exists.");
+
+        Directory.Move(archivePath,sourcePath);
     }
 
     private static string Unique(string path) {
