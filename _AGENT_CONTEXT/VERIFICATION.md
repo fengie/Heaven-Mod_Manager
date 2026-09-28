@@ -1,3 +1,24 @@
+# 2026-09-28 combined support integration — CLOSED / hosted + local Windows verification
+
+Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.
+
+- `scripts/Verify-Release.ps1`: **25/25 PASS**
+- production fingerprints: **615/615**
+- explicit call sites: **6532 / 0 uncovered**
+- trace gaps / parse errors: **0 / 0**
+- Core: **79/79 PASS**
+- Automation: **24/24 PASS**
+- Integration/fault injection: **96/96 PASS**
+- automation self-test: **11/11 PASS**
+- strict whole-solution/project analyzers: **PASS**
+- `scripts/Build-Release.ps1`: **PASS**
+- win-x64 self-contained ReadyToRun publish: **PASS**
+- local release ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`
+
+Hosted Windows Release Gate **36392282315** independently passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8` with repository verifier **25/25** and ReadyToRun publish; hosted release ZIP SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. GitHub Actions persisted the promoted hosted cache/evidence in `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The local run above verified the same production code plus later documentation/trainer changes. No support-branch cache was copied as canonical proof.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is fully closed. Hosted Windows Release Gate `36367883836` passed repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows verification on heaven2 then passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**; repository verifier **25/25**; functions **613/613**, call sites **6494 / 0 uncovered**; Core **79/79**; Automation **20/20**; Integration/fault injection **89/89**; self-test **11/11**; strict builds/analyzers PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.

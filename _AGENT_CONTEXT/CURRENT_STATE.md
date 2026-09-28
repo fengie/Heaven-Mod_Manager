@@ -4,6 +4,14 @@ A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captu
 
 This is a documentation/governance layer only; it does not change MHW product behavior or inherit/replace product verification. Future agents must read `_AGENT_TRAINING/README.md` during startup and evaluate reusable lessons for trainer updates at meaningful checkpoints. Project-specific architecture, current bugs, verification, branches, and next steps remain in `_AGENT_CONTEXT/`.
 
+# 2026-09-28 support integration — CLOSED / hosted Windows verified
+
+Canonical main now contains the recursive-source reparse hardening, its adversarial parity/root/cycle follow-up, archive extraction trusted-root physical containment, the associated Windows regressions, three independent support audits, and the durable LR-010 fail-before-mutation rule. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun release publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
+
+Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, and the hosted artifact SHA-256 is `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. The recursive-source and archive physical-root implementation boundaries are closed. The separate runtime-confirmed archive streaming cancellation/resource-budget audit remains unimplemented.
+
+See `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`.
+
 # CAS integrity checkpoint — CLOSED
 
 The CAS byte-integrity/concurrency repair is closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**, verifier **25/25**, functions **613/613**, call sites **6494 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
@@ -12,7 +20,7 @@ Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable
 
 ## Latest archive resource/cancellation support audit — documentation only
 
-A specialized archive-ingestion audit at canonical base `831da365c0c67e0239ad668f60fe3c78513dc63b` runtime-reproduced a cancellation defect in `ArchiveInspector.ExtractSafelyAsync`: cancellation requested during a single 1 GiB compressed entry was not observed by the synchronous `WriteToFile`; extraction wrote the full 1 GiB and returned success. The audit also records that the 200 GiB metadata ceiling is not tied to destination free space and is not enforced against actual streamed output bytes. No production source/tests/caches changed. Read `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. The reusable lesson was also promoted into `_AGENT_TRAINING/SAFETY_AND_DESTRUCTIVE_OPERATIONS.md` with provenance recorded in `_AGENT_TRAINING/PROVENANCE.md`. Keep this future checkpoint separate from the active recursive source reparse hardening branch.
+A specialized archive-ingestion audit at canonical base `831da365c0c67e0239ad668f60fe3c78513dc63b` runtime-reproduced a cancellation defect in `ArchiveInspector.ExtractSafelyAsync`: cancellation requested during a single 1 GiB compressed entry was not observed by the synchronous `WriteToFile`; extraction wrote the full 1 GiB and returned success. The audit also records that the 200 GiB metadata ceiling is not tied to destination free space and is not enforced against actual streamed output bytes. No production source/tests/caches changed. Read `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. The reusable lesson was also promoted into `_AGENT_TRAINING/SAFETY_AND_DESTRUCTIVE_OPERATIONS.md` with provenance recorded in `_AGENT_TRAINING/PROVENANCE.md`. Keep this future checkpoint separate from the now-integrated recursive-source and archive physical-root containment work.
 
 ## Latest CAS support-audit harvest — documentation only
 
@@ -71,11 +79,11 @@ No production C#, tests, verification scripts, workflows, or support-branch impl
 
 That support-integration pass preserved CAS integrity as the next boundary at the time; CAS has since closed with hosted and local Windows evidence. Do not combine the new recursive source reparse boundary with launch-health, retirement, diagnosis, import publication, CAS filesystem-identity/digest-namespace work, migration, async, diagnostics, networking, backup, or Smart Pack work.
 
-## Exact next boundary
+## Historical next boundary — completed 2026-09-28
 
-The next recommended independently verifiable checkpoint is **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox. Start test-first with real Windows junction/symlink fixtures, characterize the traversal behavior, and preserve fail-closed filesystem containment. Keep CAS root/hash-leaf identity, digest namespace validation, migration, async, diagnostics, networking, backup, and Smart Pack separate.
+Recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox was the next boundary at this historical checkpoint and is now integrated and hosted-Windows verified. The current separate candidate is archive streaming cancellation/resource budgeting.
 
-The successor inherits the permanent continuity constitution and active LR-001 through LR-009, and must explicitly require its own successor to recursively propagate them to the agent after them.
+The successor inherits the permanent continuity constitution and active LR-001 through LR-010, and must explicitly require its own successor to recursively propagate them to the agent after them.
 
 **Do not break the chain.**
 

@@ -1,6 +1,6 @@
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
-**Latest closed product verification:** CAS byte-integrity/concurrent-capture repair. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`; fresh local Windows closure on heaven2 passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` with verifier 25/25, Integration 89/89, self-test 11/11, ReadyToRun publish PASS, and local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/EVIDENCE/cas-integrity-local-windows-repair-closure.md` before choosing the next production boundary.
+**Latest integrated product verification:** recursive-source reparse containment plus archive extraction physical-root containment are CLOSED. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence commit `a94066004660e4d542f5d4a528c7e5e22bdea9cb`; hosted release SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier 25/25, functions 615/615, call sites 6532/0 uncovered, Core 79/79, Automation 24/24, Integration 96/96, self-test 11/11, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`. Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` before opening another production boundary.
 
 GitHub repository `fengie/mhw-mods` on `main` is now the canonical development
 state. The project originally advanced from the user-supplied
@@ -35,9 +35,13 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 
 ## Integrated specialized support audits
 
-These documents are durable research, **not claims that their proposed fixes are implemented**. Read the ones intersecting your task:
+These documents preserve durable research and implementation history. **Read each document's newest status header**: recursive-source reparse containment and archive physical-root containment are now implemented; other audit findings may remain future work.
 
-- `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` — branch inventory, integration decisions, overlaps and skips.
+- `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` — historical branch inventory, integration decisions, overlaps and skips.
+- `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` — current recursive/archive support integration, dispositions, combined local verification, and residuals.
+- `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CANDIDATE_ADVERSARIAL_REVIEW.md` — independent review that found and drove the safe-tree ordering and source-root follow-up fixes.
+- `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` — recursive traversal stress evidence.
+- `_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md` — archive trusted-root/fail-before-mutation stress evidence.
 - `_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md` — specialized SQLite atomicity findings already canonical before this integration.
 - `_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md` — canonical ownership audit plus independent support re-audit.
 - `_AGENT_CONTEXT/ASYNC_LIFETIME_CANCELLATION_AUDIT.md` — background-task, staging, close/cancel, and mutation-coordination risks.

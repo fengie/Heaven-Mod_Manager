@@ -1,3 +1,9 @@
+# Implementation status — 2026-09-28
+
+**Integrated on canonical main and CLOSED; hosted Windows verified.** Hosted Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The original documentation-only audit below is retained as historical reproduction evidence. Archive extraction now takes an explicit trusted root and validates/creates path components in fail-before-mutation order. The integrated ancestor-junction and descendant-junction regressions are included in the combined Integration **96/96** local Windows pass for exact source `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Path-based TOCTOU and hardlinks are not claimed solved.
+
+---
+
 # Archive extraction / import physical-root safety audit
 
 ## Status

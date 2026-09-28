@@ -1,8 +1,18 @@
+# Current next step — archive streaming cancellation/resource budgeting
+
+The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
+
+The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work.
+
+Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-010.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
-The next independent production boundary is recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox. The new company trainer in `_AGENT_TRAINING/` does not change that product priority. Future agents must also evaluate meaningful reusable lessons for promotion into the trainer while keeping transient MHW state in `_AGENT_CONTEXT/`. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+Historical note: recursive source reparse containment was the next independent boundary at this CAS checkpoint and has since been integrated. Current priority is the hosted final-integration gate described at the top of this file. Future agents must still evaluate reusable lessons for promotion into the trainer while keeping transient MHW state in `_AGENT_CONTEXT/`, and recursively propagate the continuity constitution.
 
 ## Newly integrated support research
 
@@ -15,7 +25,7 @@ Documentation-only CAS support work has been harvested from PRs #23, #25, and #2
 
 Exact documentation/continuity integration commit `027b6d9dc9b049d9e9857e5a0e4d021e31adf443` passed hosted Windows Release Gate `36343967045`: **25/25**, functions **612/612**, call sites **6480 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**, ReadyToRun publish PASS, release SHA-256 `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`. Evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`.
 
-No production source or tests were integrated by this support harvest. The audits remain future independently scoped boundaries, not implementation claims. CAS integrity has since closed; the current highest-value production action is recursive source reparse containment.
+No production source or tests were integrated by that historical support harvest. Its audits were future boundaries at the time; later work has since implemented recursive source reparse containment. Use the current section at the top of this file for present priority.
 
 
 ## Current checkpoint — native ReplaceFileW failure semantics CLOSED
@@ -28,9 +38,9 @@ Release SHA-256: `B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B386866353734
 
 The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as proof that staged recovery material can be discarded: documented 1176/1177 partial-name-mutation outcomes preserve the replacement staging path and remain fail-closed in `RecoveryRequired`. Focused fixtures pin 1175/1176/1177 filesystem and operation/journal postconditions.
 
-### Active independently verifiable boundary
+### Historical independently verifiable boundary — completed 2026-09-28
 
-Implement **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox as one narrow filesystem-safety checkpoint.
+This checkpoint called for **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox; that work is now integrated. The test-first requirements below are retained as historical acceptance criteria.
 
 Keep it test-first and narrow:
 

@@ -71,7 +71,12 @@
     "_AGENT_CONTEXT/CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md",
     "_AGENT_CONTEXT/CAS_DIGEST_NAMESPACE_VALIDATION_AUDIT.md",
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md",
-    "_AGENT_CONTEXT/ARCHIVE_EXTRACTION_PHYSICAL_ROOT_AUDIT.md"
+    "_AGENT_CONTEXT/ARCHIVE_EXTRACTION_PHYSICAL_ROOT_AUDIT.md",
+    "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md",
+    "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CANDIDATE_ADVERSARIAL_REVIEW.md",
+    "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
+    "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -80,7 +85,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, and the permanent continuity constitution before edits. CAS integrity is CLOSED with hosted and fresh local Windows evidence. Take recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox as the next separate test-first boundary; keep CAS filesystem-identity/digest-namespace findings separate. Preserve active Learned Rules, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

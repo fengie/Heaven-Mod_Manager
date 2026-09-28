@@ -1,3 +1,9 @@
+# Implementation status — 2026-09-28
+
+**Integrated on canonical main and CLOSED; hosted Windows verified.** Hosted Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The original audit below is retained as the test contract/history. The integrated implementation uses shared `SafeRecursiveTraversal`, validates the package root before root resolution, rejects root/descendant reparse traversal, preserves ordinary sibling/classification order, and includes real Windows root/descendant/cycle regressions for scanner/adoption/Smart Inbox. Exact combined source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed Automation **24/24**, Integration **96/96**, full verifier **25/25**, and ReadyToRun release publish. Dedicated file-symlink leaf execution remains privilege-blocked; hardlinks and path-check/open TOCTOU remain separate residuals.
+
+---
+
 # Recursive source reparse containment audit — 2026-09-27
 
 ## Status

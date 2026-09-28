@@ -1,8 +1,18 @@
+# 2026-09-28 support integration — CLOSED / HOSTED WINDOWS VERIFIED
+
+Recursive source reparse containment and archive extraction physical-root containment are now integrated on canonical `main`. Exact integrated source `c6c70dd2f8db760ad236b0188cc7026a502afb7a` passed local `Verify-Release.ps1` **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and `Build-Release.ps1` with ReadyToRun publish. Local ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.
+
+Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` first. Older text below that names recursive source reparse containment as the next boundary is historical and superseded by this section. Hosted Windows Release Gate **36392282315** passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8` and persisted evidence/cache state in `a94066004660e4d542f5d4a528c7e5e22bdea9cb`. The hosted release artifact SHA-256 is `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. The strongest independently reproduced unimplemented production boundary is now archive extraction streaming cancellation / actual-output resource budgeting in `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`.
+
+Active Learned Rules are now **LR-001 through LR-010**. Preserve the permanent continuity constitution and require your successor to propagate it again.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
-The next independent production boundary is recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+Historical note: recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox was the next boundary at this CAS checkpoint and has since been integrated and hosted-Windows verified. Current action is the archive streaming cancellation/resource-budget boundary stated at the top of this file. Keep CAS root/hash-leaf identity and digest-namespace findings separately scoped. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
 # NEXT AGENT — START HERE
@@ -17,8 +27,8 @@ Before modifying this project:
 2. read `_AGENT_TRAINING/README.md` and the company-doctrine sections relevant to the task;
 3. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 4. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
-6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
+5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-010);
+6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`, then the 2026-09-27 historical inventory as needed;
 7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
 The authority hierarchy is company engineering doctrine → project-specific operating rules/current repository truth → current task instructions, with more specific and newer verified repository truth taking precedence when guidance conflicts.
@@ -46,9 +56,9 @@ This LR-003 boundary is complete and hosted-Windows verified.
 
 `AtomicFileOps` now has a narrow injectable native replacement seam. Documented 1176/1177 partial-name-mutation failures preserve staged replacement bytes and remain fail-closed as `RecoveryRequired` / journal `Writing`; 1175 rolls back to exact BEFORE bytes with operation/journal `RolledBack`. Do not reopen this boundary to solve CAS, recursive traversal, or migration findings.
 
-## Exact next programmer boundary
+## Historical next programmer boundary — completed 2026-09-28
 
-The next highest-value independent checkpoint is **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox.
+This section originally selected **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox. That checkpoint is now integrated; its instructions below are retained as historical acceptance criteria.
 
 Read `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` and the relevant filesystem-safety findings. Add Windows junction/symlink fixtures first, characterize each recursive traversal entry point, then apply the smallest fail-closed containment change required by evidence.
 
@@ -154,6 +164,7 @@ Read the full ledger; do not rely only on this summary.
 - LR-007 — entity retirement must close live semantic references.
 - LR-008 — import publication requires catalog-invisible staging.
 - LR-009 — automated diagnosis must validate its control before persisting blame.
+- LR-010 — a containment check after mutation is not fail-closed.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule. A later crash-diagnosis branch independently proposed LR-007; follow-up integration preserved lifecycle LR-007 and import LR-008, and renumbered crash diagnosis to LR-009 without changing the rule.
 
@@ -166,7 +177,7 @@ Do **not** automatically:
 - combine all support findings into one hardening change;
 - weaken tests or verification to obtain a green result.
 
-Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The current highest-safety candidate is the separate, test-first **recursive source reparse containment** checkpoint. Re-check current canonical source before acting; CAS integrity, Windows live containment, and native `ReplaceFileW` are closed.
+Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. First close the final integrated main with the repository-native hosted Windows gate. After hosted closure, the current strongest separately scoped candidate is **archive extraction streaming cancellation / actual-output resource budgeting**. Re-check canonical source before acting; CAS integrity, Windows live containment, native `ReplaceFileW`, recursive source reparse containment, and archive physical-root containment are implemented.
 
 Any production source change starts a new exact verification boundary and must earn a fresh full Windows Release Gate.
 
