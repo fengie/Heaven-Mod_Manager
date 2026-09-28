@@ -1,0 +1,14 @@
+{
+  "id": "controller-20260928-1726-agentcontrol-reconcile-v2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T21:26:00Z",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo=Join-Path $env:TEMP 'mhw-agentcontrol-cycle4'; $wt=Join-Path $env:TEMP 'mhw-agentcontrol-cycle4-wt'; if(Test-Path $wt){Remove-Item -Recurse -Force $wt}; if(Test-Path $repo){Remove-Item -Recurse -Force $repo}; git clone --no-checkout https://github.com/fengie/mhw-mods.git $repo; Set-Location $repo; git fetch origin main feature/agent-control-plane-v2-20260928; git worktree add -B controller-agentcontrol-cycle4 $wt origin/feature/agent-control-plane-v2-20260928; Set-Location $wt; git merge --no-edit origin/main; if($LASTEXITCODE -ne 0){ git status --short; exit $LASTEXITCODE }; if(Test-Path 'Agent Control/package.json'){ Push-Location 'Agent Control'; npm run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; npm test; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Pop-Location }; git status --short; git rev-parse HEAD",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "priority": "highest",
+  "purpose": "Retry the canonical PR #59 current-main reconciliation after cycle-3 job failed schema validation. Use isolated temp clone/worktree on heaven, do not push, and return exact conflict/test/head evidence without secrets."
+}
