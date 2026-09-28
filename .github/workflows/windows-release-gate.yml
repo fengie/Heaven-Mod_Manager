@@ -67,6 +67,18 @@ jobs:
         if: success() && github.ref == 'refs/heads/main'
         shell: powershell
         run: |
+          # Verification evidence is exact-input data. Never replay a stale run's promoted
+          # cache/evidence commit on top of a newer main revision.
+          git fetch origin main
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to fetch origin/main before persisting verification state.'
+          }
+          $remoteMain = (git rev-parse origin/main).Trim()
+          if ($remoteMain -ne $env:GITHUB_SHA) {
+            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in the uploaded artifact."
+            exit 0
+          }
+
           $verify = Get-ChildItem -Path BuildLogs -Filter 'verification-report-*.md' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           $build = Get-ChildItem -Path BuildLogs -Filter 'build-release-report-*.txt' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           if (-not $verify -or -not $build) { throw 'Expected verification/build reports were not produced.' }
@@ -93,7 +105,23 @@ jobs:
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m 'Persist hosted Windows verification evidence [skip ci]'
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to create the verification evidence commit.' }
+
             git push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) {
+              # A concurrent main update between the preflight fetch and this push is benign:
+              # this run's exact evidence was already uploaded and must not be rebased forward.
+              git fetch origin main
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Verification evidence was produced, but the failed push could not be diagnosed because origin/main could not be fetched.'
+              }
+              $remoteMain = (git rev-parse origin/main).Trim()
+              if ($remoteMain -ne $env:GITHUB_SHA) {
+                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the uploaded artifact."
+                exit 0
+              }
+              throw "Failed to persist verification state while origin/main still points at exact source $env:GITHUB_SHA."
+            }
           } else {
             Write-Host 'Promoted verification state already matches the repository.'
           }

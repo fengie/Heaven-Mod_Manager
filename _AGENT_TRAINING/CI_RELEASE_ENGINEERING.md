@@ -3,6 +3,8 @@
 ## CI is evidence, not ceremony
 A green workflow matters only if it runs the checks that protect the relevant boundary on the exact source being accepted.
 
+When CI persists verification state back into the repository, keep that state bound to the exact source revision that produced it. If the canonical branch advances while an older exact-input run is still finishing, preserve the older run's evidence as an artifact and skip stale repository write-back rather than rebasing or replaying it onto newer source. A non-fast-forward caused solely by that source advance is stale-bookkeeping contention, not a product failure; other push failures must still fail loudly.
+
 ## Build doctrine
 - Pin or record important toolchain versions.
 - Keep build inputs explicit and reproducible.
