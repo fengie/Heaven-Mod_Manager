@@ -38,9 +38,9 @@ Support tasks: (1) measure duplicate-capture/restore hashing at realistic blob s
 
 The successor must read AGENTS.md, inherit and preserve the permanent continuity constitution and active Learned Rules, update durable handoff state, and explicitly require its successor to recursively propagate these obligations to the agent after them. Do not break the chain.
 
-## Local full-gate checkpoint
+## Historical pre-repair local full-gate checkpoint
 
-Exact source 8334d725f6bdb73661e2f3ed71a04189db76950b passed both local Windows gates; evidence is EVIDENCE/cas-integrity-local-windows.log. The 25-stage verifier passed, including 88 integration tests and 11 self-tests; release ReadyToRun publishing passed. Generated caches were promoted only by the successful normal pipeline. Hosted canonical verification remains pending.
+Exact source 8334d725f6bdb73661e2f3ed71a04189db76950b passed both local Windows gates; evidence is EVIDENCE/cas-integrity-local-windows.log. The 25-stage verifier passed, including 88 integration tests and 11 self-tests; release ReadyToRun publishing passed. Generated caches were promoted only by the successful normal pipeline. Hosted canonical verification was still pending at that historical point.
 
 
 ## Hosted failure and concurrency repair candidate
@@ -54,7 +54,7 @@ Repair candidate production commit `3810c6b8c5baf1f7aff3b22952e137796dddaa8f` ke
 The earlier local Windows green evidence applies to production source `8334d725f6bdb73661e2f3ed71a04189db76950b`, not this repair candidate. Fresh focused tests, full local Windows verification/build, and an exact hosted Windows Release Gate are required before closure. Do not manually promote caches.
 
 
-## Hosted repair gate passed; local repair verification still required
+## Hosted repair gate passed
 
 Exact hosted candidate `d001870d4cd3549841d8511392ae7885f174bca2` passed Windows Release Gate `36367883836`.
 
@@ -73,4 +73,20 @@ Exact hosted candidate `d001870d4cd3549841d8511392ae7885f174bca2` passed Windows
 
 This closes the hosted reproduction boundary that failed in run `36366784304`; the strengthened many-caller convergence regression passes on the hosted Windows environment that exposed the race.
 
-The CAS checkpoint is still **not fully closed** because the user's required fresh local Windows verification for the repair has not run. The authorized Desktop Commander device `heaven2` is offline, so no local result is claimed. When that runner is available, run the focused `BlobIntegrityTests`, then the exact repository `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` against the hosted-green source. If those pass without production-source changes, record exact local results and close this checkpoint. Do not begin recursive scanner/adoption/Smart Inbox or any other deferred feature before then.
+## Fresh local repair closure — 2026-09-27
+
+The required fresh local Windows closure has now passed on authorized runner `heaven2`, canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`. Production CAS code is unchanged from the hosted-green repair; later commits before this local run were verification evidence/documentation.
+
+- focused command: `dotnet run --project tests/MhwModManager.IntegrationTests -c Release -- -class '*BlobIntegrityTests'` — **10/10 PASS**
+- full verifier: `scripts/Verify-Release.ps1` — **25/25 PASS**
+- functions: **613/613**, explicit call sites **6494**, uncovered **0**, trace gaps **0**, parse errors **0**
+- Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**
+- strict project/solution analyzers: **PASS**, 0 warnings / 0 errors
+- release build: `scripts/Build-Release.ps1` — **PASS**
+- win-x64 compile/analyzers and self-contained ReadyToRun publish: **PASS**
+- local release ZIP SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`
+- durable local evidence: `_AGENT_CONTEXT/EVIDENCE/cas-integrity-local-windows-repair-closure.md`
+
+Remote Desktop Commander omitted the normally present `OS=Windows_NT` environment variable. The first unchanged verifier invocation therefore skipped the two Windows-only stages and reported 23/25. The host was independently confirmed as `Win32NT` and `RuntimeInformation.IsOSPlatform(Windows)=True`; the unchanged repository scripts were rerun with the standard process-local `OS=Windows_NT` marker restored. Those reruns produced the green closure above.
+
+**CAS integrity is CLOSED.** The next independent production boundary is recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox. CAS root/hash-leaf filesystem identity, hardlink policy, and digest namespace validation remain separate audited future boundaries.

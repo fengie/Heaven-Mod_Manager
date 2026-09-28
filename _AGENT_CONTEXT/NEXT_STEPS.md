@@ -1,12 +1,12 @@
-# Active CAS integrity checkpoint
+# CAS integrity checkpoint — CLOSED
 
-CAS integrity remains the only active production checkpoint. Hosted Windows Release Gate `36367883836` is green for exact candidate `d001870d4cd3549841d8511392ae7885f174bca2`: verifier 25/25, Integration 89/89, release publish PASS, release SHA-256 `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`. The only outstanding closure requirement is the fresh local Windows run for this repair; authorized runner `heaven2` is currently offline. When it is available, run focused BlobIntegrityTests, then exact `scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` against this source. If they pass with no source changes, record the exact local evidence and close CAS continuity; do not rerun hosted unless the verified source changes. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
+CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
-Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+The next independent production boundary is recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ## Newly integrated support research
 
-Documentation-only CAS support work has been harvested from PRs #23, #25, and #22. Read the new filesystem-identity, digest-namespace, and recursive-source-containment audits before starting those later checkpoints. PR #24 was skipped as redundant with the broader filesystem-identity audit. The immediate action remains unchanged: finish the fresh local Windows CAS gate first; do not start any of these production changes early.
+Documentation-only CAS support work has been harvested from PRs #23, #25, and #22. Read the new filesystem-identity, digest-namespace, and recursive-source-containment audits before starting those later checkpoints. PR #24 was skipped as redundant with the broader filesystem-identity audit. The local CAS gate is now closed; keep the remaining audit findings as separate implementation boundaries.
 
 ---
 # Next steps
@@ -15,7 +15,7 @@ Documentation-only CAS support work has been harvested from PRs #23, #25, and #2
 
 Exact documentation/continuity integration commit `027b6d9dc9b049d9e9857e5a0e4d021e31adf443` passed hosted Windows Release Gate `36343967045`: **25/25**, functions **612/612**, call sites **6480 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**, ReadyToRun publish PASS, release SHA-256 `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`. Evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`.
 
-No production source or tests were integrated by this support harvest. The four new audits remain future independently scoped boundaries, not implementation claims. The current highest-value production action is still the CAS integrity checkpoint below.
+No production source or tests were integrated by this support harvest. The audits remain future independently scoped boundaries, not implementation claims. CAS integrity has since closed; the current highest-value production action is recursive source reparse containment.
 
 
 ## Current checkpoint — native ReplaceFileW failure semantics CLOSED
@@ -30,21 +30,19 @@ The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as
 
 ### Active independently verifiable boundary
 
-Finish the **current CAS integrity concurrency repair** before starting any later boundary.
+Implement **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox as one narrow filesystem-safety checkpoint.
 
 Keep it test-first and narrow:
 
-1. re-check canonical `main`, current continuity, and active Learned Rules;
-2. inspect `BlobStore.CaptureWithHashAsync`, `BlobStore.RestoreAsync`, deployment/rollback CAS consumers, and the CAS sections of the filesystem/test-gap audits;
-3. create a known blob, corrupt the existing hash-named CAS object without renaming it, and prove restore/deployment never accepts those bytes as the advertised SHA;
-4. cover the existing-object capture path where a newly verified temp currently loses to an already-existing hash filename;
-5. define the smallest safe behavior before implementation: reject/fail closed, or atomically replace a proven-corrupt object only when recovery invariants make that safe;
-6. assert live destination bytes and operation/recovery state so a CAS integrity failure cannot silently become a committed deployment;
-7. run the exact full hosted Windows Release Gate and persist exact evidence before opening another source boundary.
+1. re-check canonical `main`, current continuity, active Learned Rules, and `RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md`;
+2. identify each recursive traversal entry point and its current containment assumptions;
+3. add real Windows junction/symlink fixtures that redirect traversal outside the configured source root;
+4. prove the current behavior before changing production code;
+5. implement the smallest fail-closed physical-containment guard required by those fixtures;
+6. assert external redirected content is never scanned, adopted, staged, or imported;
+7. run focused tests and then the repository's full exact Windows verification/build gates before closure.
 
-Do **not** combine this with recursive ModScanner/adoption/Smart Inbox reparse traversal, hardlink/migration redesign, async lifetime, diagnostics privacy, remote networking, backup, or Smart Pack work.
-
-Recursive source/live reparse traversal remains a separate P0 finding in `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`; address it after this CAS checkpoint unless new canonical evidence changes the priority.
+Do **not** combine this with CAS root/hash-leaf identity, digest namespace validation, hardlink/migration redesign, async lifetime, diagnostics privacy, remote networking, backup, or Smart Pack work.
 
 ## Continuity
 

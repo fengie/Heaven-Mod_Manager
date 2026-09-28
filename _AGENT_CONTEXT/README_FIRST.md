@@ -1,6 +1,6 @@
 # READ THIS FIRST — MHW Manual Mod Manager v8.8.0
 
-**Latest closed product verification:** PlannerSnapshotRepository at `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`. Parallel support-agent research has since been integrated as documentation only; read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md` before choosing a new production boundary.
+**Latest closed product verification:** CAS byte-integrity/concurrent-capture repair. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`; fresh local Windows closure on heaven2 passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` with verifier 25/25, Integration 89/89, self-test 11/11, ReadyToRun publish PASS, and local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/EVIDENCE/cas-integrity-local-windows-repair-closure.md` before choosing the next production boundary.
 
 GitHub repository `fengie/mhw-mods` on `main` is now the canonical development
 state. The project originally advanced from the user-supplied

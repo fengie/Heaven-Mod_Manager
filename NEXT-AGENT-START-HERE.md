@@ -1,8 +1,8 @@
-# Active CAS integrity checkpoint
+# CAS integrity checkpoint — CLOSED
 
-Capture rejects corrupt existing objects and restore validates private staged bytes before publication. Hosted Windows Release Gate `36367883836` passed on exact candidate `d001870d4cd3549841d8511392ae7885f174bca2`: repository verifier 25/25, Integration 89/89, strict build/analyzers and ReadyToRun release publish PASS, release SHA-256 `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`. The repair keeps `FileShare.Read` and retries only bounded Win32 sharing/lock violations while corruption still fails immediately. The CAS checkpoint is NOT yet fully closed because the required fresh local Windows run for this repair could not be executed: the authorized `heaven2` runner is offline. Do not start another feature; run the exact local focused/full gates against this source, then close continuity without changing production code. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for exact evidence and continuation.
+CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
-Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+The next independent production boundary is recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
 # NEXT AGENT — START HERE
@@ -45,11 +45,11 @@ This LR-003 boundary is complete and hosted-Windows verified.
 
 ## Exact next programmer boundary
 
-The next highest-value independent checkpoint is **CAS integrity: corrupt existing hash-named object trust**.
+The next highest-value independent checkpoint is **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox.
 
-Read `TEST_GAP_AND_PERFORMANCE_AUDIT.md` and the CAS section of `WINDOWS_FILESYSTEM_SAFETY_AUDIT.md`, then inspect `BlobStore.CaptureWithHashAsync`, `BlobStore.RestoreAsync`, and deployment/recovery CAS consumers. Add tests first: a valid SHA filename containing wrong bytes must never be accepted as that hash, and live destination/recovery state must remain safe. Define the smallest reject-or-repair behavior from those tests before changing production code.
+Read `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` and the relevant filesystem-safety findings. Add Windows junction/symlink fixtures first, characterize each recursive traversal entry point, then apply the smallest fail-closed containment change required by evidence.
 
-Keep recursive ModScanner/adoption/Smart Inbox reparse traversal as a separate later boundary. Do not combine CAS with migration, async, diagnostics, networking, backup, Smart Pack, or unrelated architecture work.
+Keep CAS root/hash-leaf filesystem identity, digest namespace validation, migration, async, diagnostics, networking, backup, and Smart Pack as separate boundaries.
 
 You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
@@ -163,7 +163,7 @@ Do **not** automatically:
 - combine all support findings into one hardening change;
 - weaken tests or verification to obtain a green result.
 
-Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The current highest-safety candidate is the separate, test-first **CAS integrity corrupt-existing-object checkpoint**. Re-check current canonical source before acting; the Windows live-containment and native `ReplaceFileW` boundaries are already closed.
+Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The current highest-safety candidate is the separate, test-first **recursive source reparse containment** checkpoint. Re-check current canonical source before acting; CAS integrity, Windows live containment, and native `ReplaceFileW` are closed.
 
 Any production source change starts a new exact verification boundary and must earn a fresh full Windows Release Gate.
 

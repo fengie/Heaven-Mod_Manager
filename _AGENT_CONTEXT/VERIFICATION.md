@@ -1,8 +1,8 @@
-# Active CAS integrity checkpoint
+# CAS integrity checkpoint — CLOSED
 
-CAS integrity local Windows gates passed for the pre-repair source `8334d725f6bdb73661e2f3ed71a04189db76950b`, but hosted run `36366784304` exposed the concurrent publication sharing race. The repair candidate `d001870d4cd3549841d8511392ae7885f174bca2` has now passed hosted Windows Release Gate `36367883836` completely: repository verifier 25/25, Integration 89/89, release build/publish PASS, release SHA-256 `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`. Fresh local Windows verification for the repair is still required and is pending because `heaven2` is offline. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
+CAS integrity is fully closed. Hosted Windows Release Gate `36367883836` passed repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows verification on heaven2 then passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**; repository verifier **25/25**; functions **613/613**, call sites **6494 / 0 uncovered**; Core **79/79**; Automation **20/20**; Integration/fault injection **89/89**; self-test **11/11**; strict builds/analyzers PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
-Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+The initial local verifier invocation produced 23/25 only because Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable and the script therefore skipped two Windows-only stages. The host was confirmed as Win32NT and `RuntimeInformation.IsOSPlatform(Windows)=True`; rerunning the unchanged canonical scripts with the standard process-local marker restored produced the green closure above. The successor must preserve and recursively propagate the continuity constitution and active Learned Rules.
 
 ---
 
@@ -22,9 +22,9 @@ Finish the exact Windows gates before taking recursive scanner/adoption/Smart In
 - verifier: **25/25 PASS**; Integration/fault injection: **89/89 PASS**; release ReadyToRun publish: **PASS**
 - release SHA-256: `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`
 - workflow evidence/cache persistence: `e5325317cb7005bdf9d3082a033ab95e666ebbf9`
-- fresh local Windows verification for this repair: **PENDING — authorized runner `heaven2` offline**
+- fresh local Windows verification for this repair: **PASS — heaven2, source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`; focused 10/10; verifier 25/25; release build/publish PASS**
 
-The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. The previous local Windows green evidence does not apply to the repair candidate. Hosted evidence now applies exactly to `d001870d4cd3549841d8511392ae7885f174bca2`, but the repository's separately required fresh local Windows run remains outstanding.
+The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. Hosted evidence applies exactly to `d001870d4cd3549841d8511392ae7885f174bca2`, and the separately required fresh local Windows run has now passed on canonical `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`, which carries the same production CAS repair plus later evidence/documentation changes.
 
 ---
 # Native ReplaceFileW failure-postcondition closure — 2026-09-27
