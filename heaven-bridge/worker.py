@@ -1,4 +1,7 @@
+import base64
 import csv
+import hashlib
+import hmac
 import io
 import json
 import os
@@ -24,24 +27,143 @@ MAX_OUTPUT = 120000
 MAX_READ_BYTES = 2_000_000
 MAX_SEARCH_FILE_BYTES = 2_000_000
 MAX_RESULTS = 500
+MAX_BINARY_CHUNK = 1_000_000
+MAX_CAPTURE = 5_000_000
+WORKER_VERSION = 3
+DEFAULT_JOB_TTL_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_JOB_TTL_SECONDS", "86400"))
+MAX_FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_MAX_FUTURE_SKEW_SECONDS", "300"))
+SESSION_IDLE_TIMEOUT = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE_SECONDS", "1800"))
+SESSION_MAX_LIFETIME = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX_SECONDS", "21600"))
+RATE_LIMIT_PER_MINUTE = int(os.environ.get("HEAVEN_BRIDGE_RATE_LIMIT_PER_MINUTE", "120"))
+HMAC_KEY = os.environ.get("HEAVEN_BRIDGE_HMAC_KEY", "")
+AUDIT_LOG = STATE / "audit.jsonl"
+JOB_OUTPUT_DIR = STATE / "job-output"
+PROCESSED_DIR = STATE / "processed"
 SESSIONS = {}
+RATE_WINDOW = []
 
 DIRECT_ACTIONS = {
     "health", "system_info",
     "fs_read", "fs_read_many", "fs_write", "fs_edit", "fs_mkdir",
-    "fs_list", "fs_move", "fs_info", "fs_search",
+    "fs_list", "fs_move", "fs_copy", "fs_delete", "fs_info", "fs_search",
+    "fs_read_binary", "fs_write_binary",
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
-    "proc_list_sessions", "proc_list",
+    "proc_list_sessions", "proc_list", "job_output_read",
     "powershell", "cmd", "python", "codex",
 }
 
 def now():
     return datetime.now(timezone.utc).isoformat()
 
+class BridgeError(Exception):
+    def __init__(self, code, message, details=None):
+        super().__init__(message)
+        self.code = str(code)
+        self.message = str(message)
+        self.details = details if isinstance(details, dict) else {}
+
+    def as_dict(self):
+        return {"code": self.code, "message": self.message, "details": self.details}
+
 def log(msg):
     LOG.parent.mkdir(parents=True, exist_ok=True)
     with LOG.open("a", encoding="utf-8") as f:
         f.write(f"[{now()}] {msg}\n")
+
+def audit(event, **fields):
+    AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
+    safe = {"ts": now(), "event": str(event)}
+    blocked = {"password", "secret", "token", "key", "cookie", "authorization"}
+    for key, value in fields.items():
+        if key.lower() in blocked:
+            continue
+        text = value if isinstance(value, (int, float, bool, type(None))) else str(value)
+        safe[key] = text[:2000] if isinstance(text, str) else text
+    with AUDIT_LOG.open("a", encoding="utf-8") as af:
+        af.write(json.dumps(safe, ensure_ascii=False) + "\n")
+
+def parse_time(value):
+    if not isinstance(value, str) or not value.strip():
+        raise BridgeError("INVALID_CREATED_AT", "created_at is required")
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise BridgeError("INVALID_CREATED_AT", "created_at must be ISO-8601") from e
+
+def canonical_job_hash(job):
+    clean = dict(job)
+    clean.pop("auth", None)
+    clean.pop("signature", None)
+    payload = json.dumps(clean, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+def verify_job(job, job_id):
+    if str(job.get("id") or job_id) != job_id:
+        raise BridgeError("JOB_ID_MISMATCH", "job id does not match queue filename")
+    created = parse_time(job.get("created_at"))
+    age = (datetime.now(timezone.utc) - created).total_seconds()
+    ttl = max(60, min(int(job.get("ttl_seconds") or DEFAULT_JOB_TTL_SECONDS), 7 * 86400))
+    if age > ttl:
+        raise BridgeError("JOB_EXPIRED", "job exceeded TTL", {"age_seconds": int(age), "ttl_seconds": ttl})
+    if age < -MAX_FUTURE_SKEW_SECONDS:
+        raise BridgeError("JOB_FROM_FUTURE", "job timestamp exceeds allowed future skew")
+    digest = canonical_job_hash(job)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    marker = PROCESSED_DIR / f"{job_id}.sha256"
+    if marker.exists():
+        previous = marker.read_text(encoding="ascii", errors="ignore").strip()
+        if previous and previous != digest:
+            raise BridgeError("REPLAY_MISMATCH", "job id was previously seen with different content")
+    if HMAC_KEY:
+        auth = job.get("auth") if isinstance(job.get("auth"), dict) else {}
+        supplied = str(auth.get("hmac_sha256") or "")
+        expected = hmac.new(HMAC_KEY.encode("utf-8"), digest.encode("ascii"), hashlib.sha256).hexdigest()
+        if not supplied or not hmac.compare_digest(supplied.lower(), expected.lower()):
+            raise BridgeError("AUTH_FAILED", "valid HMAC-SHA256 authentication is required")
+    return digest
+
+def mark_processed(job_id, digest):
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = PROCESSED_DIR / f".{job_id}.{uuid.uuid4().hex}.tmp"
+    tmp.write_text(digest, encoding="ascii")
+    os.replace(tmp, PROCESSED_DIR / f"{job_id}.sha256")
+
+def rate_limit_check():
+    global RATE_WINDOW
+    t = time.time()
+    RATE_WINDOW = [x for x in RATE_WINDOW if t - x < 60]
+    if len(RATE_WINDOW) >= RATE_LIMIT_PER_MINUTE:
+        raise BridgeError("RATE_LIMITED", "worker rate limit exceeded")
+    RATE_WINDOW.append(t)
+
+def allowed_roots():
+    roots = [Path.home().resolve(), ROOT.resolve()]
+    svc = Path(r"C:\HeavenServices")
+    if svc.exists():
+        roots.append(svc.resolve())
+    extra = os.environ.get("HEAVEN_BRIDGE_ALLOWED_ROOTS", "")
+    for item in extra.split(os.pathsep):
+        if item.strip():
+            try:
+                roots.append(Path(os.path.expandvars(os.path.expanduser(item))).resolve())
+            except OSError:
+                pass
+    out = []
+    for root in roots:
+        if root not in out:
+            out.append(root)
+    return out
+
+def ensure_allowed(path, destructive=False):
+    p = Path(path).resolve()
+    roots = allowed_roots()
+    if not any(p == root or root in p.parents for root in roots):
+        raise BridgeError("PATH_DENIED", "path is outside allowed filesystem roots", {"path": str(p)})
+    if destructive and any(p == root for root in roots):
+        raise BridgeError("DANGEROUS_PATH", "refusing destructive operation on an allowed root itself", {"path": str(p)})
+    if destructive and str(p) == p.anchor:
+        raise BridgeError("DANGEROUS_PATH", "refusing destructive operation on drive root")
+    return p
 
 def git(*args, check=True):
     p = subprocess.run(
@@ -90,37 +212,55 @@ def shell_argv(shell, command):
         return ["python.exe", "-c", command]
     raise ValueError(f"unsupported shell: {shell}")
 
-def run_capture(argv, cwd, timeout, stdin=None):
+def build_env(p):
+    env = os.environ.copy()
+    inherit = p.get("inherit_env") or []
+    if inherit and not isinstance(inherit, list):
+        raise BridgeError("INVALID_ENV", "inherit_env must be a list")
+    inline = p.get("env") or {}
+    if inline and not isinstance(inline, dict):
+        raise BridgeError("INVALID_ENV", "env must be an object")
+    for key, value in inline.items():
+        k = str(key)
+        if re.search(r"(secret|token|password|passwd|cookie|authorization|api[_-]?key|private[_-]?key)", k, re.I):
+            raise BridgeError("SECRET_ENV_REJECTED", "inline secret-like environment variables are not allowed", {"name": k})
+        env[k] = str(value)
+    for name in inherit[:100]:
+        key = str(name)
+        if key in os.environ:
+            env[key] = os.environ[key]
+    return env
+
+def run_capture(argv, cwd, timeout, stdin=None, env=None):
     started = now()
     try:
         p = subprocess.run(
-            argv,
-            cwd=str(cwd),
-            input=stdin,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
+            argv, cwd=str(cwd), input=stdin, capture_output=True, text=True,
+            timeout=timeout, env=env,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        return {
-            "status": "done" if p.returncode == 0 else "failed",
-            "exit_code": p.returncode,
-            "started_at": started,
-            "finished_at": now(),
-            "stdout": cap_text(p.stdout),
-            "stderr": cap_text(p.stderr),
-        }
+        return {"status": "done" if p.returncode == 0 else "failed", "exit_code": p.returncode,
+                "started_at": started, "finished_at": now(),
+                "stdout": cap_text(p.stdout, MAX_CAPTURE), "stderr": cap_text(p.stderr, MAX_CAPTURE)}
     except subprocess.TimeoutExpired as e:
-        return {
-            "status": "timeout",
-            "exit_code": 124,
-            "started_at": started,
-            "finished_at": now(),
-            "stdout": cap_text(e.stdout if isinstance(e.stdout, str) else ""),
-            "stderr": cap_text(e.stderr if isinstance(e.stderr, str) else ""),
-        }
+        return {"status": "timeout", "exit_code": 124, "started_at": started, "finished_at": now(),
+                "stdout": cap_text(e.stdout if isinstance(e.stdout, str) else "", MAX_CAPTURE),
+                "stderr": cap_text(e.stderr if isinstance(e.stderr, str) else "", MAX_CAPTURE)}
+
+def persist_command_output(job_id, result):
+    JOB_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    refs = {}
+    for stream in ("stdout", "stderr"):
+        value = str(result.get(stream) or "")
+        target = JOB_OUTPUT_DIR / f"{job_id}.{stream}.log"
+        target.write_text(value, encoding="utf-8")
+        refs[stream] = {"path": str(target), "bytes": target.stat().st_size}
+        result[stream] = cap_text(value)
+    result.setdefault("data", {})["output_ref"] = refs
+    return result
 
 def read_text_lines(path, offset=0, length=1000):
+    path = ensure_allowed(path)
     raw = path.read_bytes()
     if len(raw) > MAX_READ_BYTES:
         raise ValueError(f"file exceeds {MAX_READ_BYTES} byte direct-read limit")
@@ -137,7 +277,7 @@ def read_text_lines(path, offset=0, length=1000):
     return {"path": str(path), "offset": start, "length": len(chunk), "total_lines": total, "content": "\n".join(chunk)}
 
 def fs_list(root, depth=2, max_items=2000):
-    root = expand_path(root)
+    root = ensure_allowed(expand_path(root))
     depth = max(1, min(int(depth or 2), 8))
     out = []
     base_parts = len(root.parts)
@@ -163,7 +303,7 @@ def fs_list(root, depth=2, max_items=2000):
     return out
 
 def fs_search(p):
-    root = expand_path(p.get("path"))
+    root = ensure_allowed(expand_path(p.get("path")))
     pattern = str(p.get("pattern") or "")
     if not pattern:
         raise ValueError("pattern is required")
@@ -284,7 +424,11 @@ def run_job(job):
 
     if action == "health":
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
-                "data": {"worker_version": 2, "protocol": SOURCE, "actions": sorted(DIRECT_ACTIONS)}}
+                "data": {"worker_version": WORKER_VERSION, "protocol": SOURCE, "actions": sorted(DIRECT_ACTIONS),
+                         "auth_mode": "hmac-sha256" if HMAC_KEY else "unsigned-private-relay",
+                         "allowed_roots": [str(x) for x in allowed_roots()],
+                         "capabilities": {"binary_io": True, "delete": True, "copy": True, "output_paging": True,
+                                          "job_ttl": True, "replay_protection": True, "process_tree_kill": True}}}
 
     if action == "system_info":
         data = {
@@ -315,7 +459,7 @@ def run_job(job):
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action, "data": data}
 
     if action == "fs_write":
-        path = expand_path(p.get("path"))
+        path = ensure_allowed(expand_path(p.get("path")))
         content = str(p.get("content") if p.get("content") is not None else "")
         mode = str(p.get("mode") or "rewrite").lower()
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -325,7 +469,7 @@ def run_job(job):
                 "data": {"path": str(path), "bytes": path.stat().st_size, "mode": mode}}
 
     if action == "fs_edit":
-        path = expand_path(p.get("path"))
+        path = ensure_allowed(expand_path(p.get("path")))
         old = str(p.get("old_string") if p.get("old_string") is not None else "")
         new = str(p.get("new_string") if p.get("new_string") is not None else "")
         replace_all = bool(p.get("replace_all", False))
@@ -341,7 +485,7 @@ def run_job(job):
                 "data": {"path": str(path), "replacements": count if replace_all else 1}}
 
     if action == "fs_mkdir":
-        path = expand_path(p.get("path"))
+        path = ensure_allowed(expand_path(p.get("path")))
         path.mkdir(parents=True, exist_ok=True)
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action, "data": {"path": str(path)}}
 
@@ -351,15 +495,79 @@ def run_job(job):
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action, "data": data}
 
     if action == "fs_move":
-        src = expand_path(p.get("source"))
-        dst = expand_path(p.get("destination"))
+        src = ensure_allowed(expand_path(p.get("source")), destructive=True)
+        dst = ensure_allowed(expand_path(p.get("destination")))
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src), str(dst))
         return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
                 "data": {"source": str(src), "destination": str(dst)}}
 
+    if action == "fs_copy":
+        src = ensure_allowed(expand_path(p.get("source")))
+        dst = ensure_allowed(expand_path(p.get("destination")))
+        overwrite = bool(p.get("overwrite", False))
+        if dst.exists() and not overwrite:
+            raise BridgeError("DESTINATION_EXISTS", "destination already exists")
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            if dst.exists() and overwrite:
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy2(src, dst)
+        return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                "data": {"source": str(src), "destination": str(dst), "recursive": src.is_dir()}}
+
+    if action == "fs_delete":
+        path = ensure_allowed(expand_path(p.get("path")), destructive=True)
+        recursive = bool(p.get("recursive", False))
+        if not path.exists():
+            return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                    "data": {"path": str(path), "deleted": False, "reason": "not_found"}}
+        if path.is_dir():
+            path.rmdir() if not recursive else shutil.rmtree(path)
+        else:
+            path.unlink()
+        return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                "data": {"path": str(path), "deleted": True}}
+
+    if action == "fs_read_binary":
+        path = ensure_allowed(expand_path(p.get("path")))
+        offset = max(0, int(p.get("offset_bytes") or 0))
+        length = max(1, min(int(p.get("length_bytes") or 262144), MAX_BINARY_CHUNK))
+        total = path.stat().st_size
+        with path.open("rb") as bf:
+            bf.seek(min(offset, total))
+            raw = bf.read(length)
+        return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                "data": {"path": str(path), "offset_bytes": offset, "length_bytes": len(raw), "total_bytes": total,
+                         "next_offset": offset + len(raw), "eof": offset + len(raw) >= total,
+                         "base64": base64.b64encode(raw).decode("ascii")}}
+
+    if action == "fs_write_binary":
+        path = ensure_allowed(expand_path(p.get("path")))
+        try:
+            raw = base64.b64decode(str(p.get("base64") or ""), validate=True)
+        except Exception as e:
+            raise BridgeError("INVALID_BASE64", "base64 payload is invalid") from e
+        if len(raw) > MAX_BINARY_CHUNK:
+            raise BridgeError("BINARY_CHUNK_TOO_LARGE", "binary write chunk exceeds limit")
+        offset = p.get("offset_bytes")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if offset is None:
+            path.write_bytes(raw)
+            written_at = 0
+        else:
+            written_at = max(0, int(offset))
+            mode = "r+b" if path.exists() else "w+b"
+            with path.open(mode) as bf:
+                bf.seek(written_at)
+                bf.write(raw)
+        return {"status": "completed", "exit_code": 0, "started_at": started, "finished_at": now(), "host": host, "action": action,
+                "data": {"path": str(path), "offset_bytes": written_at, "written_bytes": len(raw), "total_bytes": path.stat().st_size}}
+
     if action == "fs_info":
-        path = expand_path(p.get("path"))
+        path = ensure_allowed(expand_path(p.get("path")))
         st = path.stat()
         data = {"path": str(path), "exists": True, "is_file": path.is_file(), "is_dir": path.is_dir(),
                 "size": st.st_size, "modified": datetime.fromtimestamp(st.st_mtime, timezone.utc).isoformat()}
