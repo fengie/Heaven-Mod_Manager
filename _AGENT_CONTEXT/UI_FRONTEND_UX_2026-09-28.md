@@ -178,3 +178,14 @@ After the responsive verification checkpoint, authoritative `main` advanced duri
 The incoming deltas after `33a4bf07f716564780341a39a0d54492d6dca74a` were documentation-only (`_AGENT_CONTEXT/AGENT_CONTROL_PLANE_SAFETY_AUDIT.md`) and did not touch frontend code or shared WPF files. No additional UI semantics changed.
 
 The branch-specific start header was updated to the reconciled main SHA while preserving canonical main's handoff content byte-for-byte beneath that header.
+### Reconciliation through updater trust/audit main
+
+The branch later reconciled canonical `main` through `8d5cc311ed13f5cb7f0df1f9e7c3e8bf9fcaec82`. Those incoming commits changed updater release-trust code/tests and audit documentation, but did not touch the frontend/WPF files owned by this branch.
+
+Exact post-merge verification on `heaven2`:
+- strict Release solution build: PASS, 0 warnings / 0 errors;
+- Core: 79/79 PASS;
+- Automation: 24/24 PASS;
+- Integration: 175/175 PASS.
+
+The Integration count increased from 173 to 175 because the reconciled updater branch added two upstream regression tests. The frontend source itself was unchanged by this reconciliation, so the fresh Dashboard/Mods visual evidence above still maps to the same WPF frontend code.
