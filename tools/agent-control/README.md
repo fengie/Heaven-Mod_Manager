@@ -66,6 +66,8 @@ node .\agentctl.mjs sync
 node .\agentctl.mjs routing
 node .\agentctl.mjs routing-set --file C:\Temp\routing.json
 node .\agentctl.mjs routing-clear
+node .\agentctl.mjs autonomy
+node .\agentctl.mjs autonomy-set coordinate
 node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928
 node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90
 node .\agentctl.mjs review <agent-id>
@@ -87,6 +89,19 @@ Use the routing manifest when live ownership exists outside this controller (for
 - `observedAt` + `expiresAt` scope freshness; broad automatic swarm execution refuses stale ownership.
 
 Only ownership metadata belongs in this manifest. Never place credentials, access tokens, or other secrets in it.
+
+## Autonomy enforcement
+
+Autonomy is enforced by the server API, not just shown as UI metadata:
+
+- `observe` — monitoring only. Workflow preview and governed control-plane mutations are denied.
+- `assist` (default) — recommendations and workflow previews are allowed, but direct deploys, workflow execution, review dispatch, continuity mutation, integration preparation, and self-improvement starts are denied.
+- `coordinate` — adds bounded support dispatch, review requests, and test/verification workflows. Integration preparation and continuity maintenance remain denied.
+- `engineering-autopilot` — adds integration preparation and continuity maintenance while read-only, pause/drain, emergency-stop, machine-policy, ownership, and release governance still apply.
+
+Use `node .\agentctl.mjs autonomy` to inspect the active profile and `node .\agentctl.mjs autonomy-set <level>` to change it explicitly.
+
+Safety controls such as changing the autonomy level, pausing/draining, emergency stop, and stopping owned workers remain operator-accessible so a restrictive profile cannot trap the controller in an unsafe state.
 
 ## Environment variables
 
@@ -112,6 +127,7 @@ Only ownership metadata belongs in this manifest. Never place credentials, acces
 - Pre-launch setup failures converge reserved tasks to failed, release their lease only because no process was launched, and explicitly retain any created worktree/branch for evidence-safe cleanup.
 - Broad `usual-swarm` execution requires current reconciled ownership context.
 - An authoritative routing manifest fills only manager-declared open slots; claimed external ownership counts as occupied, while stale/superseded claims do not block a lane forever.
+- Autonomy permissions are checked server-side before workflow execution, direct deployment, review dispatch, persisted takeover/evidence mutation, integration verdict mutation, and self-improvement execution.
 - The controller does not merge branches automatically.
 - Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
 
