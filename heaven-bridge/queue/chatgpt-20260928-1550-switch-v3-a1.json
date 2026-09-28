@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1550-switch-v3-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$sw=Join-Path $env:USERPROFILE 'HeavenBridge\\switch-v3.ps1'; $log=Join-Path $env:USERPROFILE 'HeavenBridge\\switch-v3.log'; $body=@'\nStart-Sleep -Seconds 8\n$ErrorActionPreference='Continue'\n$bootstrap=Join-Path $env:USERPROFILE 'HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'\n$log=Join-Path $env:USERPROFILE 'HeavenBridge\\switch-v3.log'\n& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrap *> $log\nexit $LASTEXITCODE\n'@; Set-Content -Path $sw -Value $body -Encoding UTF8; Start-Process -WindowStyle Hidden -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('\"{0}\"' -f $sw)); Write-Output ('V3_SWITCH_SCHEDULED script=' + $sw)",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-28T19:50:00Z",
+  "priority": "highest"
+}
