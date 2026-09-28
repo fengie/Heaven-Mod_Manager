@@ -81,6 +81,7 @@ public sealed class GameProfileEditorWindow : Window
 
     private static void AddLabeled(Grid root,ref int row,string label,UIElement control)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var panel=new StackPanel{Margin=new Thickness(0,8,0,0)};
         var labelText=new TextBlock{Text=label,Margin=new Thickness(2,0,0,5),FontSize=11,FontWeight=FontWeights.SemiBold};
         labelText.SetResourceReference(TextBlock.ForegroundProperty,"Muted");

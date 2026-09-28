@@ -518,6 +518,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void ClearModFilters()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        SearchText=string.Empty;
+        ModViewMode="All";
+        SelectedTab=1;
+    }
+
+    [RelayCommand]
     private void DiscardStaged()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

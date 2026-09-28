@@ -35,7 +35,7 @@
                         </Border>
                         <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Universal Mod Manager" FontSize="18" FontWeight="SemiBold"/>
+                                <TextBlock Text="Universal Mod Manager" Foreground="{StaticResource Text}" FontSize="18" FontWeight="SemiBold"/>
                                 <Border Margin="10,1,0,0" Padding="7,2" CornerRadius="10" Background="#231F15" BorderBrush="#4A3A1E" BorderThickness="1">
                                     <TextBlock Text="{Binding CurrentProgramBuildText}" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
                                 </Border>
@@ -324,8 +324,8 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding PartsLabel}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}"/>
+                                                <TextBlock Text="{Binding IdentityHint}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}"/>
                                                 <TextBlock Text="{Binding IssueBadge}" Foreground="{StaticResource Warn}" FontSize="10" FontWeight="SemiBold" ToolTip="{Binding IssueReason}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
@@ -391,22 +391,48 @@
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="PRIORITY" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="SOURCE" Binding="{Binding SourceSummary}" Width="1.2*" IsReadOnly="True"/>
+                                <DataGridTemplateColumn Header="SOURCE" Width="1.2*" SortMemberPath="SourceSummary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding SourceName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                         </Border>
-                        <Border Background="#E60A0D11" CornerRadius="9" BorderBrush="{StaticResource Border}" BorderThickness="1" Padding="12" IsHitTestVisible="False">
+                        <Border Background="#E60A0D11" CornerRadius="9" BorderBrush="{StaticResource Border}" BorderThickness="1" Padding="12" IsHitTestVisible="True">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding InstalledCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540" Margin="16,8">
+                                <TextBlock Text="Your mod library is empty" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Import a mod archive or adopt existing manual files to create your first managed entry."/>
+                                <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="Import archive" Command="{Binding ImportArchiveCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Import a mod archive into this game's managed library."/>
+                                    <Button Content="Adopt manual files" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from the configured mod folder into a tracked source package without modifying the live tree."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#E60A0D11" CornerRadius="9" BorderBrush="{StaticResource Border}" BorderThickness="1" Padding="12" IsHitTestVisible="True">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding VisibleModCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                        <DataTrigger Binding="{Binding InstalledCount}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520" Margin="16,8">
-                                <TextBlock Text="No mods in this view" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Clear the search or choose All. If the library is empty, import a mod or adopt existing manual files."/>
+                                <TextBlock Text="No mods match this view" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="The library is intact. Clear the search and smart-view filter to show every mod again."/>
+                                <Button Margin="0,16,0,0" HorizontalAlignment="Center" Content="Clear filters" Command="{Binding ClearModFiltersCommand}" Style="{StaticResource PrimaryButton}"/>
                             </StackPanel>
                         </Border>
                     </Grid>
