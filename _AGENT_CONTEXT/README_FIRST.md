@@ -33,6 +33,10 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
 12. `_AGENT_CONTEXT/NEXT_STEPS.md`
 
+## Parallel branch / PR state
+
+Before selecting support work or integrating a branch, read `_AGENT_CONTEXT/BRANCH_DISPOSITION_LEDGER.json` and `_AGENT_CONTEXT/BRANCH_PR_DISPOSITION_AUDIT_2026-09-28.md`, then re-check live GitHub `main`, PRs, and branch tips. The ledger records reviewed dispositions so stale open/diverged PRs are not mistaken for unintegrated work; live repository truth and newer canonical continuity still outrank the snapshot.
+
 ## Integrated specialized support audits
 
 These documents preserve durable research and implementation history. **Read each document's newest status header**: recursive-source reparse containment and archive physical-root containment are now implemented; other audit findings may remain future work.
