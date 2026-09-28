@@ -17,12 +17,13 @@ The publisher previously re-fetched `origin/main` before invoking one `gh releas
 - Once the publish call begins, automatic cleanup is disabled because a nonzero client result is state-ambiguous: the release may already have become immutable.
 - Existing post-publication immutable/tag/source/asset verification remains in place.
 - Added fault-injection coverage for success ordering, main advance during upload, upload failure, draft-verification failure, final-main refresh failure, cleanup failure, and publish-command ambiguity.
+- Added a narrow PR-only Windows gate for these publication scripts; it runs the publication policy/fault tests and continuity handoff check with read-only repository permissions and performs no release publication.
 
 ## Verification status
 Not yet closed. This chat environment has not executed Windows PowerShell, the full repository verifier, Build-Release, or a hosted exact-main publication. The branch is intentionally not merged on static inspection alone.
 
 Required closure:
-1. run `scripts/Test-UpdaterReleasePolicy.ps1` on Windows PowerShell 5.1;
+1. require the PR-only Windows publication gate to pass `scripts/Test-UpdaterReleasePolicy.ps1` and `scripts/Test-AgentHandoff.ps1`;
 2. run the repository handoff check and exact release verification/build gates;
 3. review the PR diff and any PR-triggered checks;
 4. integrate only after those are green;
