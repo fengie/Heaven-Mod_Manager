@@ -2,11 +2,15 @@
 
 Canonical `main` at this checkpoint is `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
 
-Current owned work:
+Current owned work at the final snapshot:
 - PR #55 — frontend UX/responsive workflows;
-- PR #58 — updater post-upload stale-main publication window (**current updater implementation lane**);
+- PR #58 — updater post-upload stale-main publication window;
+- PR #65 — updater publication verification-race integration; it states it supersedes #58 once merged;
 - PR #59 — Agent Control v2 engineering control plane;
-- PR #62 — persisted game-profile ID path-containment audit.
+- PR #66 — independent safety review of #59;
+- PR #62 — persisted game-profile ID path-containment audit;
+- PR #64 — launch-observation persistence atomicity audit;
+- PR #68 — archive streaming failure-cleanup semantics audit.
 
 Do not restart the older isolated C12 lane merely because historical sections below name it. Archive streaming cancellation / actual-output budgeting is implemented, and PR #61 has already repaired its verification provenance.
 
