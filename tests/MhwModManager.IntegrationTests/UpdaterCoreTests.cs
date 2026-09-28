@@ -106,6 +106,53 @@ public sealed class UpdaterCoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Release_discovery_skips_mutable_and_prerelease_builds()
+    {
+        var current = Identity(10);
+        var m11 = Manifest(11);
+        var releases = JsonSerializer.Serialize(new[]
+        {
+            ReleaseEntry(13, Manifest(13), immutable: false),
+            ReleaseEntry(12, Manifest(12), prerelease: true),
+            ReleaseEntry(11, m11)
+        });
+        using var http = new HttpClient(new FakeHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/releases", StringComparison.Ordinal))
+                return JsonResponse(releases);
+            if (request.RequestUri.AbsolutePath.EndsWith("/manifest-11", StringComparison.Ordinal))
+                return JsonResponse(m11, "application/octet-stream");
+            throw new InvalidOperationException($"Unsafe release asset was requested: {request.RequestUri}");
+        }));
+        var source = new GitHubUpdateSource(http);
+
+        var candidate = await source.FindLatestAsync(current, "fixture-token", TestToken);
+
+        Assert.NotNull(candidate);
+        Assert.Equal(11, candidate.Manifest.BuildNumber);
+    }
+
+    [Fact]
+    public async Task Only_mutable_or_prerelease_newer_releases_are_not_offered()
+    {
+        var current = Identity(10);
+        var releases = JsonSerializer.Serialize(new[]
+        {
+            ReleaseEntry(12, Manifest(12), immutable: false),
+            ReleaseEntry(11, Manifest(11), prerelease: true)
+        });
+        using var http = new HttpClient(new FakeHandler(request =>
+            request.RequestUri!.AbsolutePath.EndsWith("/releases", StringComparison.Ordinal)
+                ? JsonResponse(releases)
+                : throw new InvalidOperationException("Untrusted release assets must not be requested.")));
+        var source = new GitHubUpdateSource(http);
+
+        var candidate = await source.FindLatestAsync(current, "fixture-token", TestToken);
+
+        Assert.Null(candidate);
+    }
+
+    [Fact]
     public async Task Artifact_download_rejects_wrong_sha256_without_publishing_destination()
     {
         Directory.CreateDirectory(root);
@@ -579,20 +626,27 @@ public sealed class UpdaterCoreTests : IDisposable
             "update.zip", 4, new string('A', 64), new string('B', 64),
             "MHW Mod Manager.exe", 1, DateTimeOffset.UtcNow);
 
-    private static string ReleaseList(params (long Build, UpdateManifest Manifest)[] releases)
-    {
-        var values = releases.Select(x => new
+    private static string ReleaseList(params (long Build, UpdateManifest Manifest)[] releases) =>
+        JsonSerializer.Serialize(releases.Select(x => ReleaseEntry(x.Build, x.Manifest)));
+
+    private static object ReleaseEntry(
+        long build,
+        UpdateManifest manifest,
+        bool draft = false,
+        bool prerelease = false,
+        bool immutable = true) =>
+        new
         {
-            tag_name = $"updater-main-{x.Build}",
-            draft = false,
+            tag_name = $"updater-main-{build}",
+            draft,
+            prerelease,
+            immutable,
             assets = new object[]
             {
-                new { name = "update-manifest.json", url = $"https://api.github.com/assets/manifest-{x.Build}", size = 512 },
-                new { name = x.Manifest.ArtifactName, url = $"https://api.github.com/assets/artifact-{x.Build}", size = x.Manifest.ArtifactSize }
+                new { name = "update-manifest.json", url = $"https://api.github.com/assets/manifest-{build}", size = 512 },
+                new { name = manifest.ArtifactName, url = $"https://api.github.com/assets/artifact-{build}", size = manifest.ArtifactSize }
             }
-        });
-        return JsonSerializer.Serialize(values);
-    }
+        };
 
     private static HttpResponseMessage JsonResponse(object value, string contentType = "application/json") =>
         JsonResponse(value is string raw ? raw : JsonSerializer.Serialize(value), contentType);
