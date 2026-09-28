@@ -11,6 +11,7 @@ import {
   STATE_VERSION,
   AUTONOMY_PROFILES,
   WORKFLOW_PRESETS,
+  applyPreLaunchFailure,
   canUseMachineForRepositoryWrite,
   classifyAuthoritativeExit,
   buildTaskGraph,
@@ -517,31 +518,23 @@ function acquireLease(state, { boundary, agentId, taskId, branchName }) {
 
 function failReservedDeployment({ taskId, leaseId, error, reason, worktree = null, branchName = null }) {
   const failed = loadState();
-  const taskItem = failed.tasks.find(item => item.id === taskId);
-  if (taskItem) {
-    taskItem.status = "failed";
-    taskItem.finishedAt = isoNow();
-    taskItem.updatedAt = isoNow();
-    taskItem.error = error?.message || String(error);
-    taskItem.retainedWorktree = worktree && fs.existsSync(worktree) ? worktree : null;
-    taskItem.retainedBranch = branchName || taskItem.branchName || null;
-    taskItem.nextAction = taskItem.retainedWorktree
-      ? "Inspect or remove the retained pre-launch worktree after preserving any useful evidence."
-      : null;
-  }
-  const leaseItem = failed.leases.find(item => item.id === leaseId);
-  if (leaseItem && leaseItem.status === "active") {
-    leaseItem.status = "released";
-    leaseItem.releasedAt = isoNow();
-    leaseItem.releaseReason = reason;
-  }
+  const retainedWorktree = worktree && fs.existsSync(worktree) ? worktree : null;
+  const converged = applyPreLaunchFailure(failed, {
+    taskId,
+    leaseId,
+    error: error?.message || String(error),
+    reason,
+    at: isoNow(),
+    retainedWorktree,
+    retainedBranch: branchName
+  });
   addEvent(failed, "task.failed", `Deployment failed before a worker process was launched for ${taskId}`, {
     taskId,
     reason,
     evidence: {
       error: error?.message || String(error),
-      retainedWorktree: taskItem?.retainedWorktree || null,
-      retainedBranch: taskItem?.retainedBranch || branchName || null
+      retainedWorktree: converged.task?.retainedWorktree || null,
+      retainedBranch: converged.task?.retainedBranch || branchName || null
     }
   });
   addNotification(failed, {
