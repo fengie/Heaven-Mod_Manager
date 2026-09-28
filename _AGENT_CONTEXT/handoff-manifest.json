@@ -90,7 +90,8 @@
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md",
-    "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md"
+    "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md",
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",

@@ -1,3 +1,9 @@
+# Concurrent canonical-main evidence reconciled
+
+The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
 # v8.8.3 archive failure-cleanup ? locally release-verified
 
 Exact release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release **25/25**; functions **738/738**; call sites **7,850 / 0 uncovered**; Core **79/79**; Automation **29/29**; Integration **181/181**; self-test **11/11**; strict builds/analyzers PASS. Build-Release passed win-x64 ReadyToRun plus updater-helper publish, updater build **320**, ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.

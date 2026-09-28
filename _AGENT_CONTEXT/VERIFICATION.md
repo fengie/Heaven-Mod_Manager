@@ -1,3 +1,9 @@
+# Reconciled canonical-main hosted evidence
+
+Inherited v8.8.2 hosted Windows closure: source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, run `36455992975`, 25/25, release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. Keep this distinct from v8.8.3 local release evidence at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
 # v8.8.3 archive failure-cleanup ? exact local Windows release verification
 
 Exact repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6` on `agent/archive-streaming-cleanup-lr011-20260928`. Host: heaven2 / Windows; .NET SDK 10.0.401.
