@@ -415,6 +415,60 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Scanner_rejects_reparse_source_root_before_capture()
+    {
+        var (_, db, hashing, blobs) = await CreateAsync("scanner-reparse-root");
+        var externalPackage = Path.Combine(root, "scanner-reparse-root-external");
+        Directory.CreateDirectory(Path.Combine(externalPackage, "nativePC"));
+        var sentinel = Path.Combine(externalPackage, "nativePC", "outside.tex");
+        await File.WriteAllTextAsync(sentinel, "OUTSIDE", TestToken);
+        var source = Path.Combine(root, "scanner-reparse-root", "linked-mod");
+        CreateDirectoryJunction(source, externalPackage);
+
+        var mod = new ModDescriptor("scanner-root-reparse", "Scanner Root Reparse", "Scanner Root Reparse", source, true, 0);
+        await db.UpsertModAsync(mod, TestToken);
+        var scanner = new ModScanner(db, blobs, hashing);
+
+        var ex = await Assert.ThrowsAsync<IOException>(() => scanner.CaptureAsync(mod, TestToken));
+
+        Assert.Contains("reparse point", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(sentinel, TestToken));
+        var blobRoot = Path.Combine(root, "scanner-reparse-root", "state", "blobs");
+        Assert.True(!Directory.Exists(blobRoot) ||
+            !Directory.EnumerateFiles(blobRoot, "*", SearchOption.AllDirectories).Any());
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM mod_files WHERE mod_id=$m";
+        command.Parameters.AddWithValue("$m", mod.Id);
+        Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(TestToken))!);
+    }
+
+    [Fact]
+    public async Task Scanner_reparse_cycle_fails_bounded_before_capture()
+    {
+        var (_, db, hashing, blobs) = await CreateAsync("scanner-reparse-cycle");
+        var source = Path.Combine(root, "scanner-reparse-cycle", "mod");
+        var native = Path.Combine(source, "nativePC");
+        Directory.CreateDirectory(native);
+        await File.WriteAllTextAsync(Path.Combine(native, "safe.tex"), "SAFE", TestToken);
+        CreateDirectoryJunction(Path.Combine(native, "loop"), native);
+
+        var mod = new ModDescriptor("scanner-reparse-cycle", "Scanner Reparse Cycle", "Scanner Reparse Cycle", source, true, 0);
+        await db.UpsertModAsync(mod, TestToken);
+        var scanner = new ModScanner(db, blobs, hashing);
+
+        var ex = await Assert.ThrowsAsync<IOException>(
+            () => scanner.CaptureAsync(mod, TestToken).WaitAsync(TimeSpan.FromSeconds(5), TestToken));
+
+        Assert.Contains("reparse point", ex.Message, StringComparison.OrdinalIgnoreCase);
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM mod_files WHERE mod_id=$m";
+        command.Parameters.AddWithValue("$m", mod.Id);
+        Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(TestToken))!);
+    }
+
+    [Fact]
     public async Task Adoption_rejects_descendant_junction_before_copy_or_record()
     {
         var (game, db, hashing, _) = await CreateAsync("adoption-reparse-source");
@@ -427,6 +481,37 @@ public sealed class HardeningTests : IDisposable
         var sentinel = Path.Combine(external, "outside.tex");
         await File.WriteAllTextAsync(sentinel, "OUTSIDE", TestToken);
         CreateDirectoryJunction(Path.Combine(liveRoot, "escape"), external);
+        var adoption = new UnmanagedAdoptionService(
+            db,
+            new PlannerSnapshotRepository(db),
+            hashing,
+            modsRoot,
+            GameProfile.MonsterHunterWorld(game));
+
+        var ex = await Assert.ThrowsAsync<IOException>(() => adoption.AdoptAsync(TestToken));
+
+        Assert.Contains("reparse point", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(sentinel, TestToken));
+        Assert.Empty(Directory.EnumerateDirectories(modsRoot));
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT (SELECT COUNT(*) FROM adoption_runs) + (SELECT COUNT(*) FROM adopted_live_files)";
+        Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(TestToken))!);
+    }
+
+    [Fact]
+    public async Task Adoption_rejects_reparse_live_root_before_copy_or_record()
+    {
+        var (game, db, hashing, _) = await CreateAsync("adoption-reparse-root");
+        var modsRoot = Path.Combine(root, "adoption-reparse-root", "Mods");
+        Directory.CreateDirectory(modsRoot);
+        var liveRoot = Path.Combine(game, "nativePC");
+        Directory.Delete(liveRoot, true);
+        var external = Path.Combine(root, "adoption-reparse-root-external");
+        Directory.CreateDirectory(external);
+        var sentinel = Path.Combine(external, "outside.tex");
+        await File.WriteAllTextAsync(sentinel, "OUTSIDE", TestToken);
+        CreateDirectoryJunction(liveRoot, external);
         var adoption = new UnmanagedAdoptionService(
             db,
             new PlannerSnapshotRepository(db),

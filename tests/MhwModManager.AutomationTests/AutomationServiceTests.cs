@@ -230,6 +230,104 @@ public sealed class AutomationServiceTests : IDisposable
 
 
     [Fact]
+    public async Task SmartInboxRejectsTopLevelReparseItemWithoutPublishing()
+    {
+        var db=await CreateDbAsync("inbox-root-reparse.db");
+        var mods=Path.Combine(root,"Mods-root-reparse");
+        var inbox=Path.Combine(root,"Inbox-root-reparse");
+        var state=Path.Combine(root,"state-root-reparse");
+        Directory.CreateDirectory(inbox);
+        var external=Path.Combine(root,"inbox-root-reparse-external");
+        Directory.CreateDirectory(Path.Combine(external,"nativePC"));
+        var sentinel=Path.Combine(external,"nativePC","outside.tex");
+        await File.WriteAllTextAsync(sentinel,"OUTSIDE",TestContext.Current.CancellationToken);
+        var source=Path.Combine(inbox,"Linked Pack");
+        CreateDirectoryJunction(source,external);
+
+        var hash=new MhwModManager.Filesystem.HashingService();
+        var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);
+        var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);
+        var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
+        var categories=new AutoCategoryService(db);
+        var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
+        var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,categories,inbox,mods);
+
+        var result=await service.ProcessAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(0,result.Imported);
+        Assert.Equal(1,result.Skipped);
+        Assert.True(Directory.Exists(source));
+        Assert.False(Directory.Exists(Path.Combine(mods,"Linked Pack")));
+        Assert.Empty(await db.GetModsAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("OUTSIDE",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SmartInboxReparseCycleFailsBoundedWithoutPublishing()
+    {
+        var db=await CreateDbAsync("inbox-cycle.db");
+        var mods=Path.Combine(root,"Mods-cycle");
+        var inbox=Path.Combine(root,"Inbox-cycle");
+        var state=Path.Combine(root,"state-cycle");
+        Directory.CreateDirectory(inbox);
+        var source=Path.Combine(inbox,"Cyclic Pack");
+        Directory.CreateDirectory(Path.Combine(source,"nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(source,"nativePC","safe.tex"),"SAFE",TestContext.Current.CancellationToken);
+        CreateDirectoryJunction(Path.Combine(source,"loop"),source);
+
+        var hash=new MhwModManager.Filesystem.HashingService();
+        var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);
+        var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);
+        var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
+        var categories=new AutoCategoryService(db);
+        var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
+        var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,categories,inbox,mods);
+
+        var result=await service.ProcessAsync(TestContext.Current.CancellationToken)
+            .WaitAsync(TimeSpan.FromSeconds(5),TestContext.Current.CancellationToken);
+
+        Assert.Equal(0,result.Imported);
+        Assert.Equal(1,result.Skipped);
+        Assert.True(Directory.Exists(source));
+        Assert.False(Directory.Exists(Path.Combine(mods,"Cyclic Pack")));
+        Assert.Empty(await db.GetModsAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SmartInboxSafeTreePreservesLegacyClassificationOrder()
+    {
+        var db=await CreateDbAsync("inbox-order.db");
+        var mods=Path.Combine(root,"Mods-order");
+        var inbox=Path.Combine(root,"Inbox-order");
+        var state=Path.Combine(root,"state-order");
+        Directory.CreateDirectory(inbox);
+        var source=Path.Combine(inbox,"Ordering Pack");
+        Directory.CreateDirectory(Path.Combine(source,"A"));
+        Directory.CreateDirectory(Path.Combine(source,"B"));
+        await File.WriteAllTextAsync(Path.Combine(source,"A","one.tex"),"ONE",TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(source,"A","two.tex"),"TWO",TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(source,"B","npc.bin"),"NPC",TestContext.Current.CancellationToken);
+
+        var dbCategories=new AutoCategoryService(db);
+        var legacyCategory=dbCategories.Classify(
+            Directory.EnumerateFiles(source,"*",SearchOption.AllDirectories)
+                .Select(x=>Path.GetRelativePath(source,x)));
+        Assert.Equal(AutomationCategory.Texture,legacyCategory);
+
+        var hash=new MhwModManager.Filesystem.HashingService();
+        var blobs=new MhwModManager.Filesystem.BlobStore(Path.Combine(state,"Blobs"),db);
+        var scanner=new MhwModManager.Filesystem.ModScanner(db,blobs,hash);
+        var catalog=new MhwModManager.Filesystem.CatalogService(db,scanner,mods);
+        var nexus=new MhwModManager.Filesystem.NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
+        var service=new SmartInboxService(db,new MhwModManager.Filesystem.ArchiveInspector(),catalog,nexus,dbCategories,inbox,mods);
+
+        var result=await service.ProcessAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(1,result.Imported);
+        Assert.Equal(legacyCategory,Assert.Single(result.Items).Category);
+    }
+
+    [Fact]
     public async Task GpuIssueFallbackRanksNewTextureModFromLastLaunch()
     {
         var db=await CreateDbAsync("gpu-issues.db");
