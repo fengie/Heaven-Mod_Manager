@@ -220,3 +220,7 @@ Not performed in this pass:
 - no verification-cache promotion.
 
 The successor must still finish the exact fresh local Windows CAS closure before starting the production checkpoints described by these audits, preserve the permanent continuity constitution and active Learned Rules, and explicitly require its successor to recursively propagate them to the agent after them. **Do not break the chain.**
+
+### Canonical merge closure
+
+PR #26 merged this documentation-only harvest to canonical `main` as exact integration commit `1dc4655b2ade03338ef826690d8ed1dc5d31fa14`. Immediately after merge, GitHub comparison reported remote `main` and that commit as **identical** (ahead 0 / behind 0). No commit status checks or workflow runs were reported for that merge commit. The local Windows CAS closure remains separately pending; `heaven2` was offline at the final runner check.
