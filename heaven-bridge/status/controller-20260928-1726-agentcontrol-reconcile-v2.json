@@ -1,9 +1,10 @@
 {
   "id": "controller-20260928-1726-agentcontrol-reconcile-v2",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T21:26:59.736424+00:00"
+  "updated_at": "2026-09-28T21:27:08.420643+00:00",
+  "exit_code": 0
 }
