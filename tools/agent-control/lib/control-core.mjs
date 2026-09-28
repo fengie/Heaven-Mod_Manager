@@ -166,6 +166,20 @@ function activeAgents(state, role = null) {
   return state.agents.filter(agent => isActiveStatus(agent.status) && (!role || agent.role === role));
 }
 
+export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) {
+  const count = Math.max(1, Math.floor(Number(requestedCount) || 1));
+  const maximum = Math.max(0, Math.floor(Number(maxActiveAgents) || 0));
+  const active = activeAgents(state).length;
+  const available = Math.max(0, maximum - active);
+  return {
+    count,
+    active,
+    maximum,
+    available,
+    allowed: count <= available
+  };
+}
+
 function activeLaneSet(state) {
   return new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
 }
