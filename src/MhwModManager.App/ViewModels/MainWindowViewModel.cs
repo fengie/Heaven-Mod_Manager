@@ -216,7 +216,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try
         {
             await Task.Delay(160,ct);
-            await Application.Current.Dispatcher.InvokeAsync(ModsView.Refresh);
+            await Application.Current.Dispatcher.InvokeAsync(()=>
+            {
+                ModsView.Refresh();
+                OnPropertyChanged(nameof(VisibleModCount));
+            });
         }
         catch(OperationCanceledException){}
     }
