@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-v3-bootstrap-log-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_read",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\bootstrap-last.log",
+    "offset": 0,
+    "length": 1000
+  },
+  "created_at": "2026-09-28T19:43:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
