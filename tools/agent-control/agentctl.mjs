@@ -51,6 +51,20 @@ Commands:
   queue
   branches
   sync
+  workflows
+  recommend
+  release
+  search <query>
+  workflow <workflow-id> [--task "..."] [--base BRANCH] [--execute]
+  command <natural language command> [--execute]
+  improve --task "..."
+  improve-start <proposal-id>
+  prompt <agent-id>
+  takeover <agent-id>
+  control --autonomy observe|assist|coordinate|engineering-autopilot [--pause true|false] [--read-only true|false]
+  drain
+  emergency-stop
+  stop-swarm
   deploy --role support --task "..." [options]
   deploy --role support --task-file C:\\path\\task.txt [options]
   review <agent-id> [--task "..."] [--task-file C:\\path\\review.txt]
@@ -116,6 +130,78 @@ try {
     print(await request("/api/branches"));
   } else if (command === "sync") {
     print(await request("/api/sync", { method: "POST", body: "{}" }));
+  } else if (command === "workflows") {
+    print(await request("/api/workflows"));
+  } else if (command === "recommend") {
+    const snapshot = await request("/api/snapshot");
+    print({ mission:snapshot.currentMission, recommendations:snapshot.suggestedActions });
+  } else if (command === "release") {
+    print(await request("/api/release"));
+  } else if (command === "search") {
+    const query = flags._.slice(1).join(" ").trim();
+    if (!query) throw new Error("Search query is required.");
+    print(await request(`/api/search?q=${encodeURIComponent(query)}`));
+  } else if (command === "workflow") {
+    const id = flags._[1];
+    if (!id) throw new Error("Workflow id is required.");
+    const task = readTask(flags);
+    const action = flags.execute ? "execute" : "preview";
+    print(await request(`/api/workflows/${encodeURIComponent(id)}/${action}`, {
+      method:"POST",
+      body:JSON.stringify({ objective:task, baseBranch:flags.base || "main", model:flags.model || "" })
+    }));
+  } else if (command === "command") {
+    const text = flags._.slice(1).join(" ").trim();
+    if (!text) throw new Error("Natural-language command is required.");
+    const resolved = await request("/api/command/resolve", {
+      method:"POST",
+      body:JSON.stringify({ command:text, baseBranch:flags.base || "main" })
+    });
+    if (!flags.execute) {
+      print(resolved);
+    } else if (resolved.interpretation?.workflowId) {
+      print(await request(`/api/workflows/${encodeURIComponent(resolved.interpretation.workflowId)}/execute`, {
+        method:"POST",
+        body:JSON.stringify({ objective:text, baseBranch:flags.base || "main", model:flags.model || "" })
+      }));
+    } else if (resolved.interpretation?.action === "recommend") {
+      const snapshot = await request("/api/snapshot");
+      print({ interpretation:resolved.interpretation, mission:snapshot.currentMission, recommendations:snapshot.suggestedActions });
+    } else {
+      throw new Error("Command did not map to a governed workflow. Review it and use deploy for an explicit bounded custom task.");
+    }
+  } else if (command === "improve") {
+    const task = readTask(flags);
+    if (!task) throw new Error("--task or --task-file is required.");
+    print(await request("/api/improvements", { method:"POST", body:JSON.stringify({ request:task, source:"agentctl" }) }));
+  } else if (command === "improve-start") {
+    const id = flags._[1];
+    if (!id) throw new Error("Improvement proposal id is required.");
+    print(await request(`/api/improvements/${encodeURIComponent(id)}/start`, { method:"POST", body:JSON.stringify({ baseBranch:flags.base || "main" }) }));
+  } else if (command === "prompt") {
+    const id = flags._[1];
+    if (!id) throw new Error("Agent id is required.");
+    print(await request(`/api/agents/${encodeURIComponent(id)}/prompt`));
+  } else if (command === "takeover") {
+    const id = flags._[1];
+    if (!id) throw new Error("Agent id is required.");
+    print(await request(`/api/agents/${encodeURIComponent(id)}/takeover`, { method:"POST", body:"{}" }));
+  } else if (command === "control") {
+    const parseBool = value => value === undefined ? undefined : ["true","1","yes","on"].includes(String(value).toLowerCase());
+    print(await request("/api/control/settings", {
+      method:"POST",
+      body:JSON.stringify({
+        autonomyLevel:flags.autonomy,
+        dispatchPaused:parseBool(flags.pause),
+        readOnly:parseBool(flags["read-only"])
+      })
+    }));
+  } else if (command === "drain") {
+    print(await request("/api/control/drain", { method:"POST", body:JSON.stringify({ reason:"agentctl" }) }));
+  } else if (command === "emergency-stop") {
+    print(await request("/api/control/emergency-stop", { method:"POST", body:"{}" }));
+  } else if (command === "stop-swarm") {
+    print(await request("/api/control/stop-swarm", { method:"POST", body:JSON.stringify({ preserve:true }) }));
   } else if (command === "deploy") {
     const task = readTask(flags);
     if (!task) throw new Error("--task or --task-file is required.");

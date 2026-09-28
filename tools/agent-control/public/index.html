@@ -1,468 +1,214 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Heaven Agent Control Plane</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg:#080b10; --panel:#10151d; --panel2:#151b24; --line:#26303e;
-      --text:#eef3f8; --muted:#8d99a8; --accent:#86b7ff; --good:#7ee787;
-      --warn:#f2cc60; --bad:#ff7b72; --radius:16px;
-    }
-    * { box-sizing:border-box; }
-    body {
-      margin:0; min-height:100vh; color:var(--text);
-      font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:
-        radial-gradient(circle at 20% -10%, rgba(88,166,255,.14), transparent 28%),
-        radial-gradient(circle at 100% 0, rgba(126,231,135,.08), transparent 24%),
-        var(--bg);
-    }
-    button,input,textarea,select { font:inherit; }
-    .shell { width:min(1320px,calc(100% - 28px)); margin:0 auto; padding:26px 0 54px; }
-    header { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
-    h1 { font-size:clamp(26px,4vw,40px); margin:0; letter-spacing:-.035em; }
-    .eyebrow { color:var(--accent); font-weight:800; letter-spacing:.18em; font-size:11px; text-transform:uppercase; }
-    .sub { color:var(--muted); margin-top:7px; max-width:780px; }
-    .pill { border:1px solid var(--line); background:rgba(16,21,29,.8); border-radius:999px; padding:8px 11px; color:var(--muted); }
-    .toolbar { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-    .grid { display:grid; grid-template-columns:minmax(310px,.85fr) minmax(0,1.85fr); gap:18px; align-items:start; }
-    .card { background:rgba(16,21,29,.9); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 18px 70px rgba(0,0,0,.24); }
-    .composer { padding:18px; position:sticky; top:14px; }
-    .section { padding:16px; margin-bottom:16px; }
-    .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
-    .section-title h2 { font-size:15px; margin:0; }
-    label { display:block; color:var(--muted); font-size:12px; font-weight:700; margin:12px 0 6px; }
-    textarea,input,select {
-      width:100%; color:var(--text); background:#0c1118; border:1px solid var(--line);
-      border-radius:11px; padding:10px 11px; outline:none;
-    }
-    textarea:focus,input:focus,select:focus { border-color:#4b78b5; box-shadow:0 0 0 3px rgba(88,166,255,.08); }
-    textarea { min-height:135px; resize:vertical; }
-    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-    .row3 { display:grid; grid-template-columns:1fr 100px 100px; gap:9px; }
-    .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
-    button {
-      border:1px solid var(--line); background:var(--panel2); color:var(--text);
-      border-radius:11px; padding:10px 12px; cursor:pointer; transition:.14s ease;
-    }
-    button:hover { transform:translateY(-1px); border-color:#3d4d62; }
-    button.primary { background:#1f6feb; border-color:#2f81f7; font-weight:800; }
-    button.danger { color:#ffb3ad; }
-    button.good { color:#a8f0ae; }
-    button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-    .stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; margin-bottom:16px; }
-    .stat { padding:13px 14px; }
-    .stat strong { display:block; font-size:23px; line-height:1; margin-top:4px; }
-    .stat span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
-    .agent-list,.queue-list,.lease-list,.branch-list { display:grid; gap:9px; }
-    .agent,.queue-item,.lease,.worker,.branch-item { border:1px solid var(--line); border-radius:13px; padding:13px; background:rgba(10,13,18,.55); }
-    .agent-top,.item-top { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; }
-    .agent-name,.item-name { display:flex; gap:9px; align-items:center; font-weight:800; }
-    .dot { width:9px; height:9px; border-radius:50%; background:var(--muted); box-shadow:0 0 0 4px rgba(141,153,168,.07); flex:0 0 auto; }
-    .dot.running { background:var(--good); box-shadow:0 0 0 4px rgba(126,231,135,.08); }
-    .dot.failed { background:var(--bad); }
-    .dot.stopping,.dot.candidate { background:var(--warn); }
-    .meta { color:var(--muted); font-size:12px; margin-top:4px; overflow-wrap:anywhere; }
-    .task { margin:10px 0; white-space:pre-wrap; }
-    .tag { display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#c9d1d9; background:#0c1118; border:1px solid var(--line); border-radius:8px; padding:4px 7px; font-size:11px; overflow-wrap:anywhere; }
-    .actions { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
-    .log { margin-top:10px; display:none; white-space:pre-wrap; overflow-wrap:anywhere; max-height:320px; overflow:auto; padding:10px; border-radius:10px; border:1px solid var(--line); background:#070a0f; color:#c7d0da; font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
-    .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .metricline { display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
-    .metricline strong { color:var(--text); }
-    .empty { text-align:center; color:var(--muted); padding:28px 16px; }
-    .tiny { color:var(--muted); font-size:11px; margin-top:9px; }
-    .toast { position:fixed; right:18px; bottom:18px; background:#161d27; border:1px solid var(--line); border-radius:11px; padding:12px 14px; max-width:min(460px,calc(100% - 36px)); opacity:0; transform:translateY(8px); pointer-events:none; transition:.18s ease; z-index:20; }
-    .toast.show { opacity:1; transform:translateY(0); }
-    .progress { height:7px; border-radius:999px; background:#080b10; border:1px solid var(--line); overflow:hidden; margin-top:9px; }
-    .progress > span { display:block; height:100%; background:linear-gradient(90deg,#2f81f7,#7ee787); }
-    @media (max-width:960px) {
-      .grid { grid-template-columns:1fr; }
-      .composer { position:static; }
-      .stats { grid-template-columns:repeat(2,1fr); }
-      .split { grid-template-columns:1fr; }
-      header { flex-direction:column; }
-      .toolbar { justify-content:flex-start; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heaven Command Center</title>
+<style>
+:root{color-scheme:dark;--bg:#07090d;--panel:#0e131b;--panel2:#131a24;--line:#253142;--text:#eef3f8;--muted:#8f9bab;--accent:#78aaff;--good:#63d88b;--warn:#f2c75c;--bad:#ff756e;--violet:#b99cff;--radius:16px}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% -10%,rgba(80,130,220,.15),transparent 30%),radial-gradient(circle at 95% 0,rgba(120,70,220,.09),transparent 24%),var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.shell{width:min(1480px,calc(100% - 28px));margin:auto;padding:20px 0 48px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}.brand{display:flex;align-items:center;gap:11px}.mark{width:34px;height:34px;border:1px solid #355684;border-radius:11px;background:linear-gradient(145deg,#203a61,#141a26);display:grid;place-items:center;font-weight:900}.brand h1{font-size:18px;margin:0}.muted{color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 11px;border-radius:10px;transition:.13s}.btn:hover{border-color:#45607f;transform:translateY(-1px)}.btn.primary{background:#1f64cf;border-color:#347ce6;font-weight:750}.btn.danger{background:#2a1316;border-color:#6d2d31;color:#ffaca6}.btn.ghost{background:transparent}.btn.good{color:#9ceeb4}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1017;padding:6px 9px;border-radius:999px;color:var(--muted);font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.good{background:var(--good)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.8fr);gap:15px}.stack{display:grid;gap:15px}.card{border:1px solid var(--line);background:rgba(14,19,27,.92);border-radius:var(--radius);box-shadow:0 16px 55px rgba(0,0,0,.23)}.pad{padding:16px}.card h2,.card h3{margin:0}.section-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.section-head h2{font-size:14px;letter-spacing:.01em}
+.hero{padding:18px}.eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--accent);font-weight:800}.mission{font-size:20px;line-height:1.25;font-weight:750;margin:7px 0 13px;max-width:920px}.recommendations{display:grid;gap:8px}.rec{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:11px;border:1px solid var(--line);border-radius:12px;background:#0a0f16}.rec strong{display:block;margin-bottom:2px}.severity-critical{border-color:#713238}.severity-high{border-color:#6d5028}
+.command{display:flex;gap:8px}.command input{flex:1;background:#080d13;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px 13px;outline:none}.command input:focus{border-color:#4778bd;box-shadow:0 0 0 3px rgba(80,130,220,.1)}.interpretation{display:none;margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#090e15}.interpretation.show{display:block}
+.workflow-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.workflow{padding:12px;border:1px solid var(--line);background:#0a0f16;border-radius:12px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}.workflow strong{font-size:13px}.workflow .desc{color:var(--muted);font-size:11px}.workflow button{width:100%}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.stat{padding:12px}.stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em}.stat strong{font-size:22px}
+.agent-list,.queue-list,.task-list,.event-list{display:grid;gap:8px}.agent,.queue,.taskrow,.event{border:1px solid var(--line);border-radius:12px;padding:12px;background:#090e15}.agent-top,.rowtop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.name{font-weight:800}.status{font-size:11px;text-transform:uppercase;letter-spacing:.08em}.status-running,.status-starting{color:var(--good)}.status-stale,.status-stopping,.status-candidate,.status-needs-review{color:var(--warn)}.status-failed,.status-orphaned,.status-interrupted{color:var(--bad)}.tag{display:inline-block;border:1px solid var(--line);border-radius:7px;padding:3px 6px;background:#070b10;font:10px ui-monospace,Consolas,monospace;color:#c5cfda;overflow-wrap:anywhere}.agent .summary{margin:8px 0;white-space:pre-wrap}.agent .micro{display:flex;gap:7px;flex-wrap:wrap}.details{display:none;margin-top:9px;border:1px solid var(--line);border-radius:9px;background:#05080c;padding:10px;max-height:300px;overflow:auto;white-space:pre-wrap;font:11px/1.5 ui-monospace,Consolas,monospace}.details.show{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:15px}.machine{border:1px solid var(--line);padding:12px;border-radius:12px;background:#090e15}.bar{height:6px;border-radius:99px;background:#06090d;border:1px solid var(--line);overflow:hidden;margin-top:8px}.bar span{display:block;height:100%;background:linear-gradient(90deg,#4c7ed1,#63d88b)}
+.controls{display:grid;gap:9px}.controlrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.controls select{width:100%;background:#080d13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px}
+.notice{padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#0a0f16}.notice.bad{border-color:#75363a}.notice.warn{border-color:#665027}.empty{color:var(--muted);text-align:center;padding:20px}.modalback{display:none;position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:50;align-items:center;justify-content:center;padding:18px}.modalback.show{display:flex}.modal{width:min(760px,100%);max-height:82vh;overflow:auto;background:#0e131b;border:1px solid #33435a;border-radius:18px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.55)}.planitem{padding:9px;border:1px solid var(--line);border-radius:10px;margin-top:7px;background:#090e15}
+details summary{cursor:pointer;color:var(--muted)}textarea,input[type=text],input[type=number]{background:#080d13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px;width:100%}textarea{min-height:90px;resize:vertical}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toast{position:fixed;right:18px;bottom:18px;background:#161e29;border:1px solid #35465d;border-radius:11px;padding:11px 13px;max-width:min(460px,calc(100% - 36px));opacity:0;transform:translateY(8px);transition:.16s;pointer-events:none;z-index:80}.toast.show{opacity:1;transform:none}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.workflow-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.workflow-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}}@media(max-width:500px){.workflow-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.command{flex-direction:column}}
+</style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <div>
-        <div class="eyebrow">MHW Swarm · Control Plane</div>
-        <h1>Agent Control</h1>
-        <div class="sub">One runtime view of tasks, workers, branch leases, agents, outputs, and integration candidates. Managed agents always receive isolated Git worktrees.</div>
-      </div>
-      <div class="toolbar">
-        <div class="pill" id="connection">Connecting…</div>
-        <button id="refresh">Refresh</button>
-        <button id="sync">Sync Git</button>
-      </div>
-    </header>
-
-    <div class="grid">
-      <aside class="card composer">
-        <div class="section-title"><h2>Deploy</h2><span class="pill" id="repoPill">repo</span></div>
-
-        <label for="task">Objective</label>
-        <textarea id="task" placeholder="Example: Audit updater rollback for race conditions. Commit and push any verified fixes."></textarea>
-
-        <div class="row2">
-          <div>
-            <label for="baseBranch">Base branch</label>
-            <input id="baseBranch" value="main" spellcheck="false" />
-          </div>
-          <div>
-            <label for="machine">Worker</label>
-            <select id="machine"><option value="auto">Auto / local</option></select>
-          </div>
-        </div>
-
-        <label for="boundary">Mutable boundary lease <span style="font-weight:400">(optional)</span></label>
-        <input id="boundary" placeholder="Example: updater-release-pipeline" spellcheck="false" />
-        <div class="tiny">Leave blank for an isolated per-agent lease. Name a boundary when you want collision prevention across related work.</div>
-
-        <div class="row3">
-          <div>
-            <label for="model">Model override</label>
-            <input id="model" placeholder="Codex default" spellcheck="false" />
-          </div>
-          <div>
-            <label for="priority">Priority</label>
-            <input id="priority" type="number" min="0" max="100" value="50" />
-          </div>
-          <div>
-            <label for="count">Count</label>
-            <input id="count" type="number" min="1" max="8" value="1" />
-          </div>
-        </div>
-
-        <label>One-click role</label>
-        <div class="role-grid">
-          <button class="primary deploy" data-role="support">Support</button>
-          <button class="deploy" data-role="reviewer">Reviewer</button>
-          <button class="deploy" data-role="test">Test</button>
-          <button class="deploy" data-role="main">Main</button>
-          <button class="deploy" data-role="manager">Manager</button>
-          <button class="deploy" data-role="integration">Integration</button>
-          <button class="deploy" data-role="recovery">Recovery</button>
-          <button class="deploy" data-role="release">Release</button>
-        </div>
-        <div class="tiny">Controller capacity is enforced before launch. This v1 schedules on its local host only; multi-machine registration is the next layer.</div>
-      </aside>
-
-      <main>
-        <div class="stats">
-          <div class="card stat"><span>Running</span><strong id="running">0</strong></div>
-          <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
-          <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
-          <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
-          <div class="card stat"><span>Total agents</span><strong id="total">0</strong></div>
-        </div>
-
-        <section class="card section">
-          <div class="section-title">
-            <h2>Worker pool</h2>
-            <span class="pill" id="workerSummary">0 workers</span>
-          </div>
-          <div id="workers"></div>
-        </section>
-
-        <section class="card section">
-          <div class="section-title">
-            <h2>Managed agents</h2>
-            <span class="pill" id="agentSummary">0</span>
-          </div>
-          <div class="agent-list" id="agents"></div>
-        </section>
-
-        <div class="split">
-          <section class="card section">
-            <div class="section-title"><h2>Mutable-boundary leases</h2><span class="pill" id="leaseSummary">0 active</span></div>
-            <div class="lease-list" id="leaseList"></div>
-          </section>
-
-          <section class="card section">
-            <div class="section-title"><h2>Integration queue</h2><span class="pill" id="queueSummary">0 candidates</span></div>
-            <div class="queue-list" id="queue"></div>
-          </section>
-        </div>
-
-        <section class="card section">
-          <div class="section-title"><h2>Observed swarm branches</h2><span class="pill" id="branchSummary">0</span></div>
-          <div class="branch-list" id="branches"></div>
-          <div class="tiny">Branch discovery can show work produced outside this control plane. It cannot enumerate unrelated ChatGPT web conversations because ChatGPT does not expose a general active-chat registry.</div>
-        </section>
-      </main>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand"><div class="mark">H</div><div><h1>Heaven Command Center</h1><div class="tiny">MHW autonomous engineering control plane</div></div></div>
+    <div class="actions">
+      <span class="pill" id="connection"><span class="dot" id="connectionDot"></span><span id="connectionText">Connecting</span></span>
+      <button class="btn" id="refreshBtn">Refresh</button>
+      <button class="btn" id="syncBtn">Sync remote</button>
+      <button class="btn danger" id="emergencyBtn">Emergency Stop</button>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="layout">
+    <main class="stack">
+      <section class="card hero">
+        <div class="eyebrow">Current mission</div>
+        <div class="mission" id="mission">Loading project state…</div>
+        <div class="recommendations" id="recommendations"></div>
+      </section>
 
-  <script>
-    const $ = id => document.getElementById(id);
-    const state = { snapshot:null, busy:false };
-    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
-    const fmt = value => value ? new Date(value).toLocaleString() : "—";
-    const age = ms => {
-      if (ms == null) return "—";
-      const s = Math.max(0, Math.round(ms / 1000));
-      if (s < 60) return `${s}s`;
-      const m = Math.round(s / 60);
-      if (m < 60) return `${m}m`;
-      return `${Math.round(m / 60)}h`;
-    };
-    const toast = message => {
-      $("toast").textContent = message;
-      $("toast").classList.add("show");
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
-    };
+      <section class="card pad">
+        <div class="section-head"><h2>Command</h2><span class="tiny">Objective optional · state-aware</span></div>
+        <div class="command"><input id="commandInput" placeholder="fix updater · support whoever is working · ship this · check everyone"><button class="btn primary" id="resolveBtn">Resolve</button></div>
+        <div class="interpretation" id="interpretation"></div>
+      </section>
 
-    async function api(path, options={}) {
-      const response = await fetch(path, {
-        ...options,
-        headers: { "Content-Type":"application/json", ...(options.headers || {}) }
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Request failed");
-      return data;
-    }
+      <section class="card pad">
+        <div class="section-head"><h2>Quick deploy</h2><span class="tiny" id="workflowVersion"></span></div>
+        <div class="workflow-grid" id="workflowGrid"></div>
+      </section>
 
-    function statusClass(status) {
-      if (["running","starting"].includes(status)) return "running";
-      if (status === "failed") return "failed";
-      if (status === "stopping") return "stopping";
-      if (status === "candidate") return "candidate";
-      return "";
-    }
+      <div class="stats">
+        <div class="card stat"><span>Running</span><strong id="statRunning">0</strong></div>
+        <div class="card stat"><span>Stale</span><strong id="statStale">0</strong></div>
+        <div class="card stat"><span>Orphaned</span><strong id="statOrphaned">0</strong></div>
+        <div class="card stat"><span>Leases</span><strong id="statLeases">0</strong></div>
+        <div class="card stat"><span>Integration</span><strong id="statIntegration">0</strong></div>
+        <div class="card stat"><span>Success</span><strong id="statSuccess">—</strong></div>
+      </div>
 
-    function renderWorkers(snapshot) {
-      const workers = snapshot.workers || [];
-      $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
-      $("machine").innerHTML = '<option value="auto">Auto / local</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
-      if (!workers.length) {
-        $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
-        return;
-      }
+      <section class="card pad">
+        <div class="section-head"><h2>Swarm</h2><span class="pill" id="agentCount">0 agents</span></div>
+        <div class="agent-list" id="agents"></div>
+      </section>
 
-      $("workers").innerHTML = workers.map(w => {
-        const pct = w.capacity ? Math.min(100, Math.round((w.running / w.capacity) * 100)) : 0;
-        const freeGb = w.freeMemoryBytes ? (w.freeMemoryBytes / 1073741824).toFixed(1) : "—";
-        return `<div class="worker">
-          <div class="item-top">
-            <div>
-              <div class="item-name"><span class="dot running"></span>${escapeHtml(w.name)} <span class="meta">· ${escapeHtml(w.status)}</span></div>
-              <div class="meta">${escapeHtml(w.platform)} / ${escapeHtml(w.arch)} · ${escapeHtml(w.cpus || "—")} CPU threads · ${freeGb} GB free RAM</div>
-            </div>
-            <span class="tag">${w.running}/${w.capacity} slots</span>
-          </div>
-          <div class="progress"><span style="width:${pct}%"></span></div>
-        </div>`;
-      }).join("");
-    }
+      <div class="two">
+        <section class="card pad">
+          <div class="section-head"><h2>Task graph</h2><span class="tiny">dependencies & ownership</span></div>
+          <div class="task-list" id="tasks"></div>
+        </section>
+        <section class="card pad">
+          <div class="section-head"><h2>Integration queue</h2><span class="tiny">review before canonical</span></div>
+          <div class="queue-list" id="queue"></div>
+        </section>
+      </div>
 
-    function renderAgents(snapshot) {
-      const agents = snapshot.agents || [];
-      $("agentSummary").textContent = `${agents.length} tracked`;
-      if (!agents.length) {
-        $("agents").innerHTML = '<div class="empty">No managed agents yet. Give the swarm an objective and deploy one.</div>';
-        return;
-      }
+      <section class="card pad">
+        <div class="section-head"><h2>Activity</h2><span class="tiny">operational rationale, not hidden reasoning</span></div>
+        <div class="event-list" id="events"></div>
+      </section>
+    </main>
 
-      $("agents").innerHTML = agents.map(a => `
-        <article class="agent">
-          <div class="agent-top">
-            <div>
-              <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}</span></div>
-              <div class="meta">${escapeHtml(a.id)} · ${escapeHtml(a.machine || "—")} · PID ${escapeHtml(a.pid || "—")} · ${fmt(a.startedAt)}</div>
-            </div>
-            <span class="tag">P${escapeHtml(a.priority)} · ${escapeHtml(a.boundary)}</span>
-          </div>
-          <div class="task">${escapeHtml(a.task)}</div>
-          <div class="meta"><span class="tag">${escapeHtml(a.baseBranch)} → ${escapeHtml(a.branchName)}</span></div>
-          ${a.lastMessage ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last output:</strong> ${escapeHtml(a.lastMessage.slice(0,420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
-          <div class="actions">
-            <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
-            <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
-          </div>
-          <div class="log" id="log-${escapeHtml(a.id)}"></div>
-        </article>
-      `).join("");
-    }
-
-    function renderLeases(snapshot) {
-      const leases = snapshot.leases || [];
-      const active = leases.filter(l => l.status === "active");
-      $("leaseSummary").textContent = `${active.length} active`;
-      const visible = leases.slice(0,20);
-      if (!visible.length) {
-        $("leaseList").innerHTML = '<div class="empty">No leases yet.</div>';
-        return;
-      }
-
-      $("leaseList").innerHTML = visible.map(l => `
-        <div class="lease">
-          <div class="item-top">
-            <div>
-              <div class="item-name"><span class="dot ${l.status === "active" ? "running" : ""}"></span>${escapeHtml(l.boundary)}</div>
-              <div class="meta">${escapeHtml(l.ownerAgentId)} · ${escapeHtml(l.status)} · ${fmt(l.acquiredAt)}</div>
-            </div>
-          </div>
+    <aside class="stack">
+      <section class="card pad">
+        <div class="section-head"><h2>Autonomy</h2><span class="pill" id="autonomyPill">Assist</span></div>
+        <div class="controls">
+          <select id="autonomySelect">
+            <option value="observe">Observe — monitor only</option>
+            <option value="assist">Assist — recommend and plan</option>
+            <option value="coordinate">Coordinate — manage support/review</option>
+            <option value="engineering-autopilot">Engineering Autopilot — safe routine coordination</option>
+          </select>
+          <div class="controlrow"><button class="btn" id="pauseBtn">Pause dispatch</button><button class="btn" id="readOnlyBtn">Read-only mode</button></div>
+          <div class="controlrow"><button class="btn" id="drainBtn">Drain workers</button><button class="btn danger" id="stopSwarmBtn">Preserve & stop</button></div>
+          <div class="tiny" id="autonomyDetails"></div>
         </div>
-      `).join("");
-    }
+      </section>
 
-    function renderQueue(snapshot) {
-      const queue = snapshot.integrationQueue || [];
-      const candidates = queue.filter(q => q.state === "candidate");
-      $("queueSummary").textContent = `${candidates.length} candidates`;
-      if (!queue.length) {
-        $("queue").innerHTML = '<div class="empty">No completed branches yet.</div>';
-        return;
-      }
+      <section class="card pad">
+        <div class="section-head"><h2>Machines</h2><span class="tiny">real controller telemetry</span></div>
+        <div id="machines"></div>
+      </section>
 
-      $("queue").innerHTML = queue.slice(0,20).map(q => `
-        <div class="queue-item">
-          <div class="item-top">
-            <div>
-              <div class="item-name"><span class="dot ${statusClass(q.state)}"></span>${escapeHtml(q.state)}</div>
-              <div class="meta">${escapeHtml(q.agentId)} · ${escapeHtml(q.status)}</div>
+      <section class="card pad">
+        <div class="section-head"><h2>System health</h2><span class="pill" id="healthPill">Checking</span></div>
+        <div id="health"></div>
+      </section>
+
+      <section class="card pad">
+        <div class="section-head"><h2>Release gate</h2><span class="pill" id="releasePill">Checking</span></div>
+        <div id="releaseGate"></div>
+      </section>
+
+      <section class="card pad">
+        <div class="section-head"><h2>Notifications</h2><span class="pill" id="notificationCount">0</span></div>
+        <div id="notifications"></div>
+      </section>
+
+      <section class="card pad">
+        <div class="section-head"><h2>Global search</h2><span class="tiny">tasks · agents · commits · continuity</span></div>
+        <div class="command"><input id="searchInput" placeholder="rollback problem yesterday"><button class="btn" id="searchBtn">Search</button></div>
+      </section>
+
+      <section class="card pad">
+        <div class="section-head"><h2>Improve Agent Manager</h2><span class="tiny">governed proposal pipeline</span></div>
+        <textarea id="improvementInput" placeholder="Add a button that deploys 3 security reviewers."></textarea>
+        <button class="btn primary" id="improvementBtn" style="width:100%;margin-top:8px">Create proposal</button>
+        <div id="improvements" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card pad">
+        <details>
+          <summary>Advanced manual deploy</summary>
+          <div style="margin-top:12px">
+            <textarea id="manualTask" placeholder="Custom bounded objective"></textarea>
+            <div class="formgrid">
+              <select id="manualRole"><option value="support">Support</option><option value="main">Primary Programmer</option><option value="manager">Manager</option><option value="reviewer">Reviewer</option><option value="verification">Verification</option><option value="integration">Integration</option><option value="release">Release</option><option value="recovery">Recovery</option><option value="research">Research</option><option value="documentation">Documentation / Continuity</option><option value="cleanup">Technical Debt</option></select>
+              <input type="text" id="manualBase" value="main" placeholder="Base branch">
+              <input type="text" id="manualBoundary" placeholder="Boundary (optional)">
+              <input type="number" id="manualPriority" value="50" min="0" max="100">
             </div>
-            <span class="tag">${q.ahead ?? "?"} ahead / ${q.behind ?? "?"} behind</span>
+            <button class="btn primary" id="manualDeployBtn" style="width:100%;margin-top:8px">Deploy bounded task</button>
           </div>
-          <div class="task">${escapeHtml(q.task)}</div>
-          <div class="meta">${escapeHtml(q.branchName)}</div>
-        </div>
-      `).join("");
-    }
+        </details>
+      </section>
+    </aside>
+  </div>
+</div>
 
-    function renderBranches(snapshot) {
-      const branches = snapshot.observedBranches || [];
-      $("branchSummary").textContent = `${branches.length} observed`;
-      if (!branches.length) {
-        $("branches").innerHTML = '<div class="empty">No agent/support/feature branches found on origin.</div>';
-        return;
-      }
+<div class="modalback" id="modalBack"><div class="modal"><div class="section-head"><h2 id="modalTitle">Plan</h2><button class="btn ghost" id="modalClose">Close</button></div><div id="modalBody"></div><div class="actions" style="margin-top:14px"><button class="btn primary" id="modalConfirm">Deploy plan</button></div></div></div>
+<div class="toast" id="toast"></div>
 
-      $("branches").innerHTML = branches.slice(0,40).map(b => `
-        <div class="branch-item">
-          <div class="item-top">
-            <div>
-              <div class="item-name">${escapeHtml(b.branchName)}</div>
-              <div class="meta">${escapeHtml(b.sha)} · ${fmt(b.committedAt)} ${b.managed ? `· managed by ${escapeHtml(b.agentId)}` : "· external/observed"}</div>
-            </div>
-            <span class="tag">${escapeHtml(b.status)}</span>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function render(snapshot) {
-      const t = snapshot.telemetry || {};
-      $("running").textContent = t.running ?? 0;
-      $("leases").textContent = t.activeLeases ?? 0;
-      $("candidates").textContent = t.integrationCandidates ?? 0;
-      $("success").textContent = t.successRate == null ? "—" : `${t.successRate}%`;
-      $("total").textContent = t.total ?? 0;
-
-      const controller = snapshot.controller || {};
-      $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} running`;
-      $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
-
-      renderWorkers(snapshot);
-      renderAgents(snapshot);
-      renderLeases(snapshot);
-      renderQueue(snapshot);
-      renderBranches(snapshot);
-    }
-
-    async function refresh(sync=false) {
-      try {
-        const snapshot = await api(sync ? "/api/sync" : "/api/snapshot", sync ? {method:"POST",body:"{}"} : {});
-        state.snapshot = snapshot;
-        render(snapshot);
-        if (sync) toast("Git state synchronized.");
-      } catch (error) {
-        $("connection").textContent = "Offline";
-        toast(error.message);
-      }
-    }
-
-    async function deploy(role) {
-      const task = $("task").value.trim();
-      if (!task) return toast("Give the agent an objective first.");
-      if (state.busy) return;
-      state.busy = true;
-      document.querySelectorAll(".deploy").forEach(button => button.disabled = true);
-
-      try {
-        const result = await api("/api/deploy", {
-          method:"POST",
-          body:JSON.stringify({
-            role,
-            task,
-            count:Number($("count").value || 1),
-            baseBranch:$("baseBranch").value.trim() || "main",
-            model:$("model").value.trim(),
-            boundary:$("boundary").value.trim(),
-            priority:Number($("priority").value || 50),
-            machine:$("machine").value || "auto"
-          })
-        });
-        toast(`Deployed ${result.agents.length} ${role} agent${result.agents.length === 1 ? "" : "s"}.`);
-        await refresh();
-      } catch (error) {
-        toast(error.message);
-      } finally {
-        state.busy = false;
-        document.querySelectorAll(".deploy").forEach(button => button.disabled = false);
-      }
-    }
-
-    async function stopAgent(id) {
-      try {
-        await api(`/api/agents/${id}/stop`, {method:"POST",body:"{}"});
-        toast("Stop signal sent.");
-        await refresh();
-      } catch (error) { toast(error.message); }
-    }
-
-    async function reviewAgent(id) {
-      try {
-        await api(`/api/agents/${id}/review`, {method:"POST",body:"{}"});
-        toast("Reviewer deployed.");
-        await refresh();
-      } catch (error) { toast(error.message); }
-    }
-
-    async function showLog(id, button) {
-      try {
-        const data = await api(`/api/agents/${id}/log`);
-        const rawId = decodeURIComponent(id);
-        const box = document.getElementById(`log-${rawId}`);
-        box.textContent = data.lastMessage ? `FINAL / LAST MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
-        box.style.display = box.style.display === "block" ? "none" : "block";
-        button.textContent = box.style.display === "block" ? "Hide log" : "View log";
-      } catch (error) { toast(error.message); }
-    }
-
-    async function copyText(value) {
-      try { await navigator.clipboard.writeText(value); toast("Copied."); }
-      catch { toast("Could not access clipboard."); }
-    }
-
-    document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
-    $("refresh").addEventListener("click", () => refresh(false));
-    $("sync").addEventListener("click", () => refresh(true));
-
-    refresh();
-    setInterval(() => refresh(false), 4000);
-  </script>
+<script>
+var app={snapshot:null,status:null,pending:null,busy:false};
+function byId(id){return document.getElementById(id)}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]})}
+function fmt(v){return v?new Date(v).toLocaleString():"—"}
+function toast(msg){var el=byId("toast");el.textContent=msg;el.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(function(){el.classList.remove("show")},2800)}
+async function api(path,options){options=options||{};var r=await fetch(path,Object.assign({},options,{headers:Object.assign({"Content-Type":"application/json"},options.headers||{})}));var d=await r.json();if(!r.ok)throw new Error(d.error||"Request failed");return d}
+function statusClass(a){var s=a.healthState==="stale"?"stale":a.status;return "status-"+s}
+function healthDot(snapshot){var h=snapshot.controller&&snapshot.controller.health;if(h&&h.mode!=="healthy")return "bad";if((snapshot.telemetry&&snapshot.telemetry.orphaned)||0)return "warn";return "good"}
+function renderHeader(snapshot){var t=snapshot.telemetry||{};byId("connectionDot").className="dot "+healthDot(snapshot);byId("connectionText").textContent=(snapshot.controller&&snapshot.controller.host||"controller")+" · "+(t.running||0)+" running"}
+function renderStats(snapshot){var t=snapshot.telemetry||{};byId("statRunning").textContent=t.running||0;byId("statStale").textContent=t.stale||0;byId("statOrphaned").textContent=t.orphaned||0;byId("statLeases").textContent=t.activeLeases||0;byId("statIntegration").textContent=t.integrationCandidates||0;byId("statSuccess").textContent=t.successRate==null?"—":t.successRate+"%"}
+function renderRecommendations(snapshot){var list=snapshot.suggestedActions||[];byId("recommendations").innerHTML=list.length?list.map(function(r){var sev=r.priority>=95?"critical":r.priority>=80?"high":"normal";return '<div class="rec severity-'+sev+'"><div><strong>'+esc(r.title)+'</strong><div class="tiny">'+esc(r.reason)+'</div></div>'+recommendationAction(r)+'</div>'}).join(""):'<div class="notice"><strong>No urgent coordination action.</strong><div class="tiny">Use a workflow or command when you want to start new work.</div></div>'}
+function recommendationAction(r){var a=r.action||{};if(a.type==="workflow"&&a.workflowId)return '<button class="btn primary" onclick="previewWorkflow(\''+encodeURIComponent(a.workflowId)+'\')">Plan</button>';if(r.kind==="review")return '<button class="btn" onclick="scrollToId(\'queue\')">Open queue</button>';if(["recovery","safety"].indexOf(r.kind)>=0)return '<button class="btn" onclick="scrollToId(\'agents\')">Inspect</button>';return ""}
+function scrollToId(id){byId(id).scrollIntoView({behavior:"smooth",block:"center"})}
+function renderWorkflows(snapshot){var list=snapshot.workflows||[];byId("workflowVersion").textContent="governed preset library";byId("workflowGrid").innerHTML=list.map(function(w){return '<div class="workflow"><div><strong>'+esc(w.label)+'</strong><div class="desc">'+esc(w.description)+'</div></div><button class="btn" onclick="previewWorkflow(\''+encodeURIComponent(w.id)+'\')">Plan</button></div>'}).join("")}
+function humanSummary(a){var activity=a.healthState==="stale"?"No recent output; inspect before replacement.":a.lastMessage||a.task||"No summary yet.";return activity.length>260?activity.slice(0,260)+"…":activity}
+function renderAgents(snapshot){var list=snapshot.agents||[];byId("agentCount").textContent=list.length+" tracked";if(!list.length){byId("agents").innerHTML='<div class="empty">No managed agents. You can still use the command bar or one-click workflows.</div>';return}byId("agents").innerHTML=list.map(function(a){var active=["reserved","starting","running","waiting","blocked","stale","stopping"].indexOf(a.status)>=0;var stoppable=active&&a.status!=="orphaned";var stop=stoppable?'<button class="btn danger" onclick="stopAgent(\''+encodeURIComponent(a.id)+'\')">Stop</button>':"";var review=!active&&a.status!=="orphaned"?'<button class="btn good" onclick="reviewAgent(\''+encodeURIComponent(a.id)+'\')">Review</button>':"";return '<article class="agent"><div class="agent-top"><div><div class="name">'+esc(a.roleLabel||a.role)+' <span class="status '+statusClass(a)+'">· '+esc(a.healthState||a.status)+'</span></div><div class="tiny">'+esc(a.id)+' · '+esc(a.machine||"—")+' · '+fmt(a.heartbeatAt||a.lastHeartbeat||a.updatedAt)+'</div></div><span class="tag">'+esc(a.boundary||"isolated")+'</span></div><div class="summary">'+esc(humanSummary(a))+'</div><div class="tiny">'+esc(a.baseBranch||"—")+' @ '+esc(a.baseSha||"unrecorded")+' → '+esc(a.branchName||"—")+'</div><div class="micro"><button class="btn" onclick="toggleLog(\''+encodeURIComponent(a.id)+'\')">Log</button><button class="btn" onclick="showPrompt(\''+encodeURIComponent(a.id)+'\')">Prompt</button><button class="btn" onclick="showTakeover(\''+encodeURIComponent(a.id)+'\')">Takeover</button>'+review+stop+'</div><div class="details" id="details-'+esc(a.id)+'"></div></article>'}).join("")}
+function renderTasks(snapshot){var list=snapshot.tasks||[];byId("tasks").innerHTML=list.length?list.slice(0,20).map(function(t){var deps=(t.dependencies||[]).map(function(d){return '<span class="tag">'+esc(d)+'</span>'}).join(" ");return '<div class="taskrow"><div class="rowtop"><span class="name">'+esc(t.roleLabel||t.role)+'</span><span class="status status-'+esc(t.status)+'">'+esc(t.status)+'</span></div><div class="tiny" style="margin-top:6px">'+esc(t.objective||"")+'</div><div style="margin-top:7px">'+(deps||'<span class="tiny">No declared dependencies</span>')+'</div></div>'}).join(""):'<div class="empty">No task graph yet.</div>'}
+function renderQueue(snapshot){var list=snapshot.integrationQueue||[];byId("queue").innerHTML=list.length?list.slice(0,20).map(function(q){return '<div class="queue"><div class="rowtop"><span class="name">'+esc(q.role||"agent")+'</span><span class="status status-'+esc(q.state)+'">'+esc(q.state)+'</span></div><div class="tiny" style="margin-top:6px">'+esc(q.task||"")+'</div><div style="margin-top:7px"><span class="tag">'+esc(q.branchName)+'</span> <span class="tag">'+esc(q.ahead==null?"?":q.ahead)+' ahead / '+esc(q.behind==null?"?":q.behind)+' behind</span></div></div>'}).join(""):'<div class="empty">No completed managed branches.</div>'}
+function renderMachines(snapshot){var list=snapshot.workers||[];byId("machines").innerHTML=list.length?list.map(function(w){var pct=w.capacity&&w.running!=null?Math.min(100,Math.round((w.running/w.capacity)*100)):0;var mem=w.freeMemoryBytes?(w.freeMemoryBytes/1073741824).toFixed(1)+" GB free":"telemetry unavailable";var slots=w.capacity!=null?(String(w.running||0)+"/"+w.capacity):w.status;var policy=w.policy&&w.policy.role?" · "+w.policy.role:"";return '<div class="machine"><div class="rowtop"><div><strong>'+esc(w.name)+'</strong><div class="tiny">'+esc(w.status)+policy+' · '+mem+'</div></div><span class="tag">'+esc(slots)+'</span></div><div class="bar"><span style="width:'+pct+'%"></span></div></div>'}).join(""):'<div class="empty">No registered workers.</div>'}
+function renderEvents(snapshot){var list=snapshot.recentEvents||[];byId("events").innerHTML=list.length?list.slice(0,18).map(function(e){return '<div class="event"><div class="rowtop"><strong>'+esc(e.type)+'</strong><span class="tiny">'+fmt(e.at)+'</span></div><div class="tiny" style="margin-top:4px">'+esc(e.message||"")+'</div></div>'}).join(""):'<div class="empty">No activity recorded.</div>'}
+function renderControls(snapshot){var s=snapshot.settings||{};var level=s.autonomyLevel||"assist";byId("autonomySelect").value=level;var p=snapshot.autonomyProfiles&&snapshot.autonomyProfiles[level];byId("autonomyPill").textContent=p?p.label:"Assist";var perms=p&&(p.permissions||p.permits)||[];byId("autonomyDetails").textContent=perms.length?"Permits: "+perms.join(", "):"No autonomous mutations permitted.";byId("pauseBtn").textContent=s.dispatchPaused?"Resume dispatch":"Pause dispatch";byId("readOnlyBtn").textContent=s.readOnly?"Exit read-only":"Read-only mode"}
+function renderHealth(snapshot){var c=snapshot.controller||{};var h=c.health||{mode:"unknown"};byId("healthPill").textContent=h.mode;byId("healthPill").className="pill";var notices=[];if(h.mode!=="healthy")notices.push('<div class="notice bad"><strong>State degraded</strong><div class="tiny">'+esc(h.degradedReason||"Unknown state error")+'</div></div>');if(c.bindHost&&c.bindHost!=="127.0.0.1"&&c.bindHost!=="localhost"&&c.bindHost!=="::1")notices.push('<div class="notice bad">Unexpected non-loopback bind.</div>');if(c.codex&&!c.codex.available)notices.push('<div class="notice warn"><strong>Agent runtime unavailable</strong><div class="tiny">'+esc(c.codex.error||"Codex not found")+'</div></div>');if(!notices.length)notices.push('<div class="notice"><strong>Control plane healthy</strong><div class="tiny">Loopback API · state readable · schema v'+esc(c.stateVersion||"")+'</div></div>');byId("health").innerHTML=notices.join("")}
+function renderRelease(snapshot){var g=snapshot.releaseGate||{};byId("releasePill").textContent=g.ready?"Ready":"Gated";var checks=g.checks||[];byId("releaseGate").innerHTML=checks.length?checks.map(function(c){var klass=c.status==="fail"?"bad":c.status==="unknown"?"warn":"";return '<div class="notice '+klass+'"><strong>'+esc(c.status.toUpperCase())+' · '+esc(c.label)+'</strong><div class="tiny">'+esc(typeof c.evidence==="string"?c.evidence:JSON.stringify(c.evidence||""))+'</div></div>'}).join(""):'<div class="empty">No release evidence available.</div>'}
+function renderNotifications(snapshot){var list=(snapshot.notifications||[]).filter(function(n){return !n.dismissedAt}).slice(0,8);byId("notificationCount").textContent=String(list.length);byId("notifications").innerHTML=list.length?list.map(function(n){var klass=n.severity==="error"?"bad":n.severity==="warning"?"warn":"";return '<div class="notice '+klass+'"><strong>'+esc(n.title||n.severity)+'</strong><div class="tiny">'+esc(n.message||"")+'</div></div>'}).join(""):'<div class="empty">No actionable notifications.</div>'}
+function renderImprovements(snapshot){var list=(snapshot.improvements||[]).slice(0,6);byId("improvements").innerHTML=list.length?list.map(function(p){var start=p.status==="proposed"?'<button class="btn" style="margin-top:7px" onclick="startImprovement(\''+encodeURIComponent(p.id)+'\')">Start governed implementation</button>':"";return '<div class="notice"><strong>'+esc(p.request)+'</strong><div class="tiny">'+esc(p.status)+' · '+fmt(p.updatedAt)+'</div>'+start+'</div>'}).join(""):'<div class="empty">No improvement proposals yet.</div>'}
+function configureSync(snapshot){var host=String(snapshot.controller&&snapshot.controller.host||"").toLowerCase();var worker=(snapshot.workers||[]).find(function(w){return String(w.id||w.name||"").toLowerCase()===host});var allowed=!!(worker&&worker.policy&&worker.policy.repositoryWriteAllowed);byId("syncBtn").disabled=!allowed;byId("syncBtn").title=allowed?"Fetch/prune canonical origin on this authorized development machine.":"Disabled by machine policy: this controller host may not mutate repository state."}
+function render(snapshot){app.snapshot=snapshot;byId("mission").textContent=snapshot.currentMission||"No current mission";renderHeader(snapshot);renderStats(snapshot);renderRecommendations(snapshot);renderWorkflows(snapshot);renderAgents(snapshot);renderTasks(snapshot);renderQueue(snapshot);renderMachines(snapshot);renderEvents(snapshot);renderControls(snapshot);renderHealth(snapshot);renderRelease(snapshot);renderNotifications(snapshot);renderImprovements(snapshot);configureSync(snapshot)}
+async function refreshFull(sync){try{var s=await api(sync?"/api/sync":"/api/snapshot",sync?{method:"POST",body:"{}"}:{});render(s);if(sync)toast("Canonical Git state synchronized.")}catch(e){byId("connectionText").textContent="Offline";byId("connectionDot").className="dot bad";toast(e.message)}}
+async function refreshStatus(){try{var s=await api("/api/status");app.status=s;renderHeader(s);var t=s.telemetry||{};byId("statRunning").textContent=t.running||0;byId("statStale").textContent=t.stale||0;byId("statOrphaned").textContent=t.orphaned||0;byId("statLeases").textContent=t.activeLeases||0;if(t.successRate!=null)byId("statSuccess").textContent=t.successRate+"%";if(app.snapshot&&s.controller){app.snapshot.controller=s.controller;renderHealth(app.snapshot)}}catch(e){}}
+async function previewWorkflow(id){id=decodeURIComponent(id);try{var objective=byId("commandInput").value.trim();var p=await api("/api/workflows/"+encodeURIComponent(id)+"/preview",{method:"POST",body:JSON.stringify({objective:objective,baseBranch:"main"})});app.pending={type:"workflow",id:id,objective:objective};showPlan("Workflow plan",p)}catch(e){toast(e.message)}}
+function showPlan(title,p){byId("modalTitle").textContent=title;var steps=p.steps||p.planned||[];var blocked=p.blocked||[];var body='<div class="notice"><strong>Mission</strong><div class="tiny">'+esc(p.mission||"")+'</div></div>';body+='<h3 style="margin-top:13px">Will deploy</h3>';body+=steps.length?steps.map(function(x){return '<div class="planitem"><strong>'+esc(x.role)+'</strong> · '+esc(x.lane||x.boundary)+'<div class="tiny">'+esc(x.task||"")+'</div></div>'}).join(""):'<div class="empty">Nothing new is needed; equivalent work is already active.</div>';if(blocked.length)body+='<h3 style="margin-top:13px">Blocked</h3>'+blocked.map(function(x){return '<div class="planitem tiny">'+esc(typeof x==="string"?x:(x.error||JSON.stringify(x)))+'</div>'}).join("");byId("modalBody").innerHTML=body;byId("modalConfirm").disabled=!steps.length;byId("modalBack").classList.add("show")}
+async function confirmPlan(){if(!app.pending)return;var p=app.pending;app.pending=null;byId("modalConfirm").disabled=true;try{if(p.type==="workflow"){var r=await api("/api/workflows/"+encodeURIComponent(p.id)+"/execute",{method:"POST",body:JSON.stringify({objective:p.objective,baseBranch:"main"})});toast("Deployed "+(r.created||[]).length+" useful worker(s).")}byId("modalBack").classList.remove("show");await refreshFull(false)}catch(e){toast(e.message);byId("modalConfirm").disabled=false}}
+async function resolveCommand(){var command=byId("commandInput").value.trim();try{var r=await api("/api/command/resolve",{method:"POST",body:JSON.stringify({command:command,baseBranch:"main"})});app.pendingCommand={command:command,result:r};var box=byId("interpretation");box.classList.add("show");var count=r.plan?(r.plan.steps||[]).length:0;var action=r.plan?'<button class="btn primary" id="executeCommandBtn">Review plan</button>':(r.interpretation.action==="recommend"?'<button class="btn primary" id="executeCommandBtn">Refresh recommendations</button>':'<button class="btn" id="executeCommandBtn">Use as custom objective</button>');box.innerHTML='<strong>'+esc(r.interpretation.explanation||r.interpretation.summary)+'</strong><div class="tiny">Confidence '+esc(r.interpretation.confidence||"low")+(r.plan?' · '+count+' useful deployment(s)':'')+'</div><div class="actions" style="margin-top:8px">'+action+'</div>';byId("executeCommandBtn").onclick=executeCommand}catch(e){toast(e.message)}}
+async function executeCommand(){var pending=app.pendingCommand||{};var r=pending.result||{};var command=pending.command||byId("commandInput").value.trim();if(r.plan&&r.interpretation&&r.interpretation.workflowId){app.pending={type:"workflow",id:r.interpretation.workflowId,objective:command};showPlan("Resolved command plan",r.plan);return}if(r.interpretation&&r.interpretation.action==="recommend"){byId("interpretation").classList.remove("show");await refreshFull(false);toast("Recommendations refreshed from current state.");return}byId("manualTask").value=command;byId("interpretation").classList.remove("show");byId("manualTask").scrollIntoView({behavior:"smooth",block:"center"});toast("Custom objective staged for bounded manual deploy.")}
+async function toggleLog(id){id=decodeURIComponent(id);try{var d=await api("/api/agents/"+encodeURIComponent(id)+"/log");var box=byId("details-"+id);box.textContent=(d.lastMessage?"LAST OUTPUT\n"+d.lastMessage+"\n\n":"")+d.tail;box.classList.toggle("show")}catch(e){toast(e.message)}}
+async function showPrompt(id){id=decodeURIComponent(id);try{var d=await api("/api/agents/"+encodeURIComponent(id)+"/prompt");openText("Exact agent prompt",d.prompt||"Prompt was not persisted for this legacy agent.",{templateId:d.templateId,templateVersion:d.templateVersion,sha256:d.sha256})}catch(e){toast(e.message)}}
+async function showTakeover(id){id=decodeURIComponent(id);try{var d=await api("/api/agents/"+encodeURIComponent(id)+"/takeover",{method:"POST",body:"{}"});openText("Replacement / takeover context",JSON.stringify(d.handoff,null,2),{takeoverPath:d.takeoverPath})}catch(e){toast(e.message)}}
+function openText(title,text,meta){app.pending=null;byId("modalTitle").textContent=title;byId("modalBody").innerHTML='<pre style="white-space:pre-wrap;font:12px/1.5 ui-monospace,Consolas,monospace">'+esc(text||"")+'</pre><div class="tiny">'+esc(meta?JSON.stringify(meta,null,2):"")+'</div>';byId("modalConfirm").disabled=true;byId("modalBack").classList.add("show")}
+async function stopAgent(id){id=decodeURIComponent(id);if(!confirm("Stop this owned worker? Its lease is retained unless process termination is proven."))return;try{await api("/api/agents/"+encodeURIComponent(id)+"/stop",{method:"POST",body:"{}"});toast("Worker stopped safely.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function reviewAgent(id){id=decodeURIComponent(id);try{await api("/api/agents/"+encodeURIComponent(id)+"/review",{method:"POST",body:"{}"});toast("Independent reviewer deployed.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function setControl(patch){try{var r=await api("/api/control/settings",{method:"POST",body:JSON.stringify(patch)});if(app.snapshot){app.snapshot.settings=r;renderControls(app.snapshot)}toast("Control settings updated.")}catch(e){toast(e.message)}}
+async function emergencyStop(){if(!confirm("Emergency Stop pauses all new dispatch and stops only workers whose ownership this controller can prove. Continue?"))return;try{var r=await api("/api/control/emergency-stop",{method:"POST",body:"{}"});var results=r.results||[];toast("Emergency stop active · "+results.filter(function(x){return x.stopped}).length+" worker(s) stopped.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function togglePause(){var s=app.snapshot&&app.snapshot.settings||{};try{if(s.dispatchPaused){await api("/api/control/resume",{method:"POST",body:JSON.stringify({clearEmergencyStop:!!s.emergencyStop,reason:"operator-ui-resume"})})}else{await api("/api/control/pause",{method:"POST",body:JSON.stringify({reason:"operator-ui-pause"})})}await refreshFull(false);toast(s.dispatchPaused?"Dispatch resumed.":"Dispatch paused.")}catch(e){toast(e.message)}}
+async function drainWorkers(){try{await api("/api/control/drain",{method:"POST",body:JSON.stringify({reason:"operator-ui-drain"})});toast("Dispatch paused; active workers may finish.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function stopSwarm(){if(!confirm("Preserve takeover state and stop all managed workers whose process ownership can be proven?"))return;try{var r=await api("/api/control/stop-swarm",{method:"POST",body:JSON.stringify({preserve:true})});var results=r.results||[];toast("Preserve & stop completed for "+results.length+" tracked worker(s).");await refreshFull(false)}catch(e){toast(e.message)}}
+async function runSearch(){var q=byId("searchInput").value.trim();if(!q)return toast("Enter something to search.");try{var r=await api("/api/search?q="+encodeURIComponent(q));var text=(r.results||[]).map(function(x){return "["+x.type+"] "+x.title+"\n"+(x.detail||"")+"\n"+(x.at||"")}).join("\n\n")||"No matching control-plane history.";openText("Search · "+q,text,{count:(r.results||[]).length})}catch(e){toast(e.message)}}
+async function createImprovement(){var request=byId("improvementInput").value.trim();if(!request)return toast("Describe the improvement you want.");try{await api("/api/improvements",{method:"POST",body:JSON.stringify({request:request,source:"operator-ui"})});byId("improvementInput").value="";toast("Improvement proposal captured.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function startImprovement(id){id=decodeURIComponent(id);try{var r=await api("/api/improvements/"+encodeURIComponent(id)+"/start",{method:"POST",body:JSON.stringify({baseBranch:"main"})});toast((r.created||[]).length?"Governed improvement work started.":"Improvement is blocked; inspect the plan.");await refreshFull(false)}catch(e){toast(e.message)}}
+async function manualDeploy(){var task=byId("manualTask").value.trim();if(!task)return toast("Custom deploy needs a bounded objective.");try{await api("/api/deploy",{method:"POST",body:JSON.stringify({role:byId("manualRole").value,task:task,baseBranch:byId("manualBase").value||"main",boundary:byId("manualBoundary").value,priority:Number(byId("manualPriority").value||50),count:1,machine:"auto"})});toast("Bounded task deployed.");await refreshFull(false)}catch(e){toast(e.message)}}
+byId("refreshBtn").onclick=function(){refreshFull(false)};byId("syncBtn").onclick=function(){refreshFull(true)};byId("resolveBtn").onclick=resolveCommand;byId("commandInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();resolveCommand()}});byId("modalClose").onclick=function(){byId("modalBack").classList.remove("show")};byId("modalConfirm").onclick=confirmPlan;byId("emergencyBtn").onclick=emergencyStop;byId("autonomySelect").onchange=function(){setControl({autonomyLevel:this.value})};byId("pauseBtn").onclick=togglePause;byId("readOnlyBtn").onclick=function(){setControl({readOnly:!(app.snapshot&&app.snapshot.settings&&app.snapshot.settings.readOnly)})};byId("drainBtn").onclick=drainWorkers;byId("stopSwarmBtn").onclick=stopSwarm;byId("searchBtn").onclick=runSearch;byId("searchInput").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();runSearch()}});byId("improvementBtn").onclick=createImprovement;byId("manualDeployBtn").onclick=manualDeploy;
+refreshFull(false);setInterval(refreshStatus,4000);setInterval(function(){refreshFull(false)},20000);
+</script>
 </body>
 </html>

@@ -104,6 +104,8 @@ test("natural language command bar maps common operator language", () => {
   assert.equal(interpretCommand("support whoever is working on updater").workflowId, "support-current");
   assert.equal(interpretCommand("test everything").workflowId, "verification");
   assert.equal(interpretCommand("make the agent manager better").workflowId, "self-improve");
+  assert.equal(interpretCommand("check everyone").action, "recommend");
+  assert.equal(interpretCommand("what should I do next?").action, "recommend");
   assert.equal(interpretCommand("do something unusual").needsClarification, true);
 });
 
