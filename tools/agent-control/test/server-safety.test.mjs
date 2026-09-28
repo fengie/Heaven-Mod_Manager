@@ -158,3 +158,21 @@ test("backup recovery preserves uncertain work and refuses to call it complete",
   const lease = response.body.leases.find(item => item.id === "lease-old");
   assert.equal(lease.status, "active");
 });
+
+
+test("authoritative exit gathers async evidence before fresh state mutation", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf('child.on("exit", async (code, signal) => {');
+  const end = source.indexOf('child.on("error"', start);
+  assert.ok(start >= 0 && end > start, "authoritative child exit handler must exist");
+  const handler = source.slice(start, end);
+  const evidenceAt = handler.indexOf('await git(["rev-parse", branchName])');
+  const loadAt = handler.indexOf("const current = loadState()");
+  const saveAt = handler.indexOf("saveState(current)");
+  assert.ok(evidenceAt >= 0, "exit handler must collect branch evidence");
+  assert.ok(loadAt > evidenceAt, "authoritative state must be loaded only after async evidence is collected");
+  assert.ok(saveAt > loadAt, "fresh state must be saved after mutation");
+  assert.equal(/\bawait\b/.test(handler.slice(loadAt, saveAt)), false, "no async yield may occur between authoritative state load and save");
+  assert.match(handler, /ownerSessionId === SESSION_ID/);
+  assert.match(handler, /item\?\.pid === child\.pid/);
+});
