@@ -36,6 +36,9 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.False(File.Exists(Path.Combine(installRoot, "stale.dll")));
         Assert.Equal("USER-MOD", await File.ReadAllTextAsync(Path.Combine(installRoot, "Mods", "mine.mod"), TestToken));
         Assert.Equal("USER-STATE", await File.ReadAllTextAsync(Path.Combine(installRoot, "State", "user.dat"), TestToken));
+        Assert.Equal("USER-INBOX", await File.ReadAllTextAsync(Path.Combine(installRoot, "Inbox", "drop.zip"), TestToken));
+        Assert.Equal("USER-ARCHIVE", await File.ReadAllTextAsync(Path.Combine(installRoot, "Mods Archive", "old.zip"), TestToken));
+        Assert.Equal("USER-GAME", await File.ReadAllTextAsync(Path.Combine(installRoot, "Games", "mhw", "workspace.dat"), TestToken));
         Assert.Equal("UNKNOWN", await File.ReadAllTextAsync(Path.Combine(installRoot, "notes.txt"), TestToken));
 
         var marker = await ReadMarkerAsync(Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName));
@@ -188,11 +191,17 @@ public sealed class UpdateInstallerTests : IDisposable
         Directory.CreateDirectory(installRoot);
         Directory.CreateDirectory(Path.Combine(installRoot, "Mods"));
         Directory.CreateDirectory(Path.Combine(installRoot, "State"));
+        Directory.CreateDirectory(Path.Combine(installRoot, "Inbox"));
+        Directory.CreateDirectory(Path.Combine(installRoot, "Mods Archive"));
+        Directory.CreateDirectory(Path.Combine(installRoot, "Games", "mhw"));
 
         await File.WriteAllTextAsync(Path.Combine(installRoot, "app.exe"), "OLD-APP", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "stale.dll"), "STALE", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "Mods", "mine.mod"), "USER-MOD", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "State", "user.dat"), "USER-STATE", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(installRoot, "Inbox", "drop.zip"), "USER-INBOX", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(installRoot, "Mods Archive", "old.zip"), "USER-ARCHIVE", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(installRoot, "Games", "mhw", "workspace.dat"), "USER-GAME", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "notes.txt"), "UNKNOWN", TestToken);
 
         var oldManifest = new ProductFileManifest(1,
@@ -262,6 +271,9 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("OLD-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
         Assert.Equal("USER-MOD", await File.ReadAllTextAsync(Path.Combine(installRoot, "Mods", "mine.mod"), TestToken));
         Assert.Equal("USER-STATE", await File.ReadAllTextAsync(Path.Combine(installRoot, "State", "user.dat"), TestToken));
+        Assert.Equal("USER-INBOX", await File.ReadAllTextAsync(Path.Combine(installRoot, "Inbox", "drop.zip"), TestToken));
+        Assert.Equal("USER-ARCHIVE", await File.ReadAllTextAsync(Path.Combine(installRoot, "Mods Archive", "old.zip"), TestToken));
+        Assert.Equal("USER-GAME", await File.ReadAllTextAsync(Path.Combine(installRoot, "Games", "mhw", "workspace.dat"), TestToken));
         Assert.Equal("UNKNOWN", await File.ReadAllTextAsync(Path.Combine(installRoot, "notes.txt"), TestToken));
         var marker = await ReadMarkerAsync(Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName));
         Assert.Equal(1, marker.Build.BuildNumber);
