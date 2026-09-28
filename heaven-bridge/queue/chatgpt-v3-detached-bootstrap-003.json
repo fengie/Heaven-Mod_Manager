@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-v3-detached-bootstrap-003",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$script='C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'; $cmd=\"Start-Sleep -Seconds 8; & '$script' *> '$env:USERPROFILE\\HeavenBridge\\bootstrap-v3-last.log'\"; Start-Process -WindowStyle Hidden -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-Command',$cmd); Write-Output 'V3_RESTART_SCHEDULED'",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-28T19:45:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
