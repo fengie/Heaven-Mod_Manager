@@ -5,11 +5,11 @@
 Documentation-only support checkpoint. No production C#, test suite, schema, workflow, or verification cache is changed by this branch.
 
 - initial canonical production source inspected: `831da365c0c67e0239ad668f60fe3c78513dc63b`
-- final canonical `main` reconciled before commit: `ef9c0dc93ca5270e9ee5ab3dea080b2fcb461585`
-- intervening `c40879b` / `ef9c0dc` changes add and wire generic agent-training documentation; relevant archive/import production source is unchanged
+- final canonical `main` reconciled before final push: `2d6969c7d94438dd64a540dab93fc9a910a8458b`
+- intervening `c40879b` / `ef9c0dc` changes add and wire generic agent-training documentation; `2d6969c` persists hosted Windows verification evidence; relevant archive/import production source is unchanged
 - local runtime host: `heaven2`, Windows, .NET SDK `10.0.401`
 - selected because the active `agent/recursive-source-reparse-hardening-20260927` branch already owns recursive source traversal
-- that active branch was at `f51f72927e8f90c264df1ef197ba6c9bbe2704de` during this audit
+- that active branch was at `f51f72927e8f90c264df1ef197ba6c9bbe2704de` when task selection occurred and had advanced to `5e4b4cc1a524a28640367ce22e1ceee2d62d1134` by final parallel-work reconciliation
 - this audit owns only archive extraction/import physical-root containment and deliberately does not modify that active production boundary
 
 ## Scope
