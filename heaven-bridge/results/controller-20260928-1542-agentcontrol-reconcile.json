@@ -1,0 +1,13 @@
+{
+  "id": "controller-20260928-1542-agentcontrol-reconcile",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:42:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-28T19:40:13.445364+00:00",
+  "finished_at": "2026-09-28T19:40:13.445364+00:00",
+  "host": "heaven",
+  "action": "codex",
+  "stdout": "",
+  "stderr": "FileNotFoundError(2, 'The system cannot find the file specified', None, 2, None)"
+}
