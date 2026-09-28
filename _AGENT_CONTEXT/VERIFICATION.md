@@ -1,3 +1,20 @@
+# Updater v8.8.1 REST tag-verification integration — current verification
+
+Canonical product merge: `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78). Exact PR head: `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23`.
+
+Verified evidence:
+- Updater Publication PR Gate **36448819098**: **PASS** on exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23`.
+- PR-focused checks recorded on the branch: `scripts/Test-UpdaterReleasePolicy.ps1` PASS, `scripts/Test-AgentHandoff.ps1` PASS, `git diff --check` PASS.
+- The branch also carried prior local Windows evidence for the same code change: full `Verify-Release.ps1` **25/25** and `Build-Release.ps1` PASS on heaven2.
+
+Exact-main status:
+- Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`: **IN PROGRESS** at this checkpoint.
+- Do not reuse the PR gate or earlier branch-local evidence as exact-main publication closure.
+- Earlier main runs **36442433856** and **36443919632** successfully published immutable updater releases, then failed only because immediate Git transport could not fetch the just-created tag. GitHub REST git-ref state confirmed the published tags were direct commit refs, motivating the narrow verifier repair.
+
+Remaining closure: exact-main gate green through immutable publication and tag/source/asset verification, followed by disposable old→new and injected-rollback proof with seeded user-data preservation.
+
+---
 # Updater C12 first-publication repair — current verification
 
 Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.
