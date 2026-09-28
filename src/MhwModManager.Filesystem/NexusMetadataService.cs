@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -16,7 +18,8 @@ namespace MhwModManager.Filesystem;
 public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnapshotRepository plannerSnapshots,string nextStateRoot,GameProfile? game = null)
 {
     private readonly string? gameDomain = game?.NexusGameDomain ?? (game is null || game.IsMonsterHunterWorld ? "monsterhunterworld" : null);
-    private static readonly HttpClient Http=CreateHttpClient();
+    private static readonly HttpClient PreviewHttp=CreatePreviewHttpClient();
+    private static readonly HttpClient NexusHttp=CreateNexusHttpClient();
 
     public Task<MetadataRefreshResult> RefreshAsync(CancellationToken ct=default)
     {
@@ -365,8 +368,15 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
         var cached=new List<string>();
         foreach(var url in urls)
         {
-            var path=await CacheRemoteImageAsync(mod.Id,url,ct);
-            if(path is not null)cached.Add(path);
+            try
+            {
+                var path=await CacheRemoteImageAsync(mod.Id,url,ct);
+                if(path is not null)cached.Add(path);
+            }
+            catch(HttpRequestException ex)
+            {
+                MasterDebugLog.Write("VISUALS","Declared remote preview was blocked or unavailable.",ex);
+            }
         }
         if(cached.Count>0)
         {
@@ -400,7 +410,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
             var ini=Path.Combine(root,iniName);if(!File.Exists(ini))continue;
             Dictionary<string,string> values;
             try{values=ParseIni(ini);}catch(IOException){continue;}catch(UnauthorizedAccessException){continue;}
-            foreach(var key in keys)if(values.TryGetValue(key,out var value)&&IsHttpImageUrl(value))yield return value;
+            foreach(var key in keys)if(values.TryGetValue(key,out var value)&&IsRemotePreviewUrl(value))yield return value;
         }
     }
 
@@ -413,7 +423,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
                 {
                     if(keys.Contains(property.Name)&&property.Value.ValueKind==JsonValueKind.String)
                     {
-                        var value=property.Value.GetString();if(IsHttpImageUrl(value))yield return value!;
+                        var value=property.Value.GetString();if(IsRemotePreviewUrl(value))yield return value!;
                     }
                     foreach(var nested in EnumerateJsonImageUrls(property.Value,keys))yield return nested;
                 }
@@ -439,7 +449,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
             request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml");
             request.Headers.Referrer=new Uri("https://www.nexusmods.com/");
             MasterDebugLog.Write("HTTP",$"Public Nexus visual request START mod={mod.NexusModId}");
-            using var response=await Http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,ct);
+            using var response=await NexusHttp.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,ct);
             MasterDebugLog.Write("HTTP",$"Public Nexus visual request END mod={mod.NexusModId}; status={(int)response.StatusCode} {response.StatusCode}");
             if(!response.IsSuccessStatusCode)return 0;
             var length=response.Content.Headers.ContentLength;if(length is>4_000_000)return 0;
@@ -467,12 +477,19 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
             var content=MetaContentRegex().Match(tag);if(!content.Success)continue;
             var url=System.Net.WebUtility.HtmlDecode(content.Groups[1].Value).Trim();
             if(url.StartsWith("//",StringComparison.Ordinal))url="https:"+url;
-            if(IsHttpImageUrl(url))return url;
+            if(IsRemotePreviewUrl(url))return url;
         }
         return null;
     }
 
-    private static bool IsHttpImageUrl(string? value)=>Uri.TryCreate(value,UriKind.Absolute,out var uri)&&(uri.Scheme==Uri.UriSchemeHttps||uri.Scheme==Uri.UriSchemeHttp);
+    private static bool IsRemotePreviewUrl(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Uri.TryCreate(value,UriKind.Absolute,out var uri)
+            && uri.Scheme==Uri.UriSchemeHttps
+            && string.IsNullOrEmpty(uri.UserInfo)
+            && !string.IsNullOrWhiteSpace(uri.Host);
+    }
 
     private async Task<int> TryRefreshNexusVisualsAsync(ModDescriptor mod,string? nexusUuid,string apiKey,CancellationToken ct)
     {
@@ -483,7 +500,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
             using var doc=await GetJsonAsync($"mods/{Uri.EscapeDataString(nexusUuid)}",apiKey,ct);
             if(doc is null||!doc.RootElement.TryGetProperty("data",out var data))return 0;
             var urls=new[]{GetString(data,"thumbnail_url"),GetString(data,"picture_url"),GetString(data,"image_url")}
-                .Where(x=>Uri.TryCreate(x,UriKind.Absolute,out var u)&&(u.Scheme==Uri.UriSchemeHttps||u.Scheme==Uri.UriSchemeHttp))
+                .Where(IsRemotePreviewUrl)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Take(4).Cast<string>().ToArray();
             if(urls.Length==0)return 0;
             var cached=new List<string>();
@@ -510,7 +527,8 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
         Directory.CreateDirectory(dir);
         PruneStalePreviewParts(dir);
         var existing=Directory.EnumerateFiles(dir,key+".*").FirstOrDefault();if(existing is not null)return existing;
-        using var response=await Http.GetAsync(url,HttpCompletionOption.ResponseHeadersRead,ct);
+        if(!IsRemotePreviewUrl(url))return null;
+        using var response=await PreviewHttp.GetAsync(url,HttpCompletionOption.ResponseHeadersRead,ct);
         if(!response.IsSuccessStatusCode)return null;
         var media=response.Content.Headers.ContentType?.MediaType??string.Empty;
         var ext=media.ToLowerInvariant() switch
@@ -609,16 +627,13 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
         request.Headers.TryAddWithoutValidation("apikey",apiKey);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         MasterDebugLog.Write("HTTP", $"Nexus request START GET /v3/{relative}; apiKey=<redacted>");
-        using var response=await Http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,ct);
+        using var response=await NexusHttp.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,ct);
         MasterDebugLog.Write("HTTP", $"Nexus request END GET /v3/{relative}; status={(int)response.StatusCode} {response.StatusCode}; contentLength={response.Content.Headers.ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "<unknown>"}");
         if(!response.IsSuccessStatusCode)return null;
         await using var stream=await response.Content.ReadAsStreamAsync(ct);
         return await JsonDocument.ParseAsync(stream,cancellationToken:ct);
     }
 
-    private static HttpClient CreateHttpClient(){
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.0");return h;}
     private static string? GetString(JsonElement e,string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
