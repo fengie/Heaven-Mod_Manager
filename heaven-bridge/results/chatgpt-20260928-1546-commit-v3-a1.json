@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260928-1546-commit-v3-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:46:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-28T19:45:12.996089+00:00",
+  "finished_at": "2026-09-28T19:45:14.393859+00:00",
+  "stdout": "[heaven-bridge 5261741] heaven bridge: harden worker v3\n 4 files changed, 1384 insertions(+), 479 deletions(-)\n create mode 100644 heaven-bridge/test_worker.py\nAuto-merging heaven-bridge/README.md\nCONFLICT (content): Merge conflict in heaven-bridge/README.md\nAuto-merging heaven-bridge/bootstrap.ps1\nCONFLICT (content): Merge conflict in heaven-bridge/bootstrap.ps1\nAuto-merging heaven-bridge/worker.py\nCONFLICT (content): Merge conflict in heaven-bridge/worker.py\n",
+  "stderr": "warning: in the working copy of 'heaven-bridge/README.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'heaven-bridge/bootstrap.ps1', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'heaven-bridge/worker.py', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'heaven-bridge/test_worker.py', LF will be replaced by CRLF the next time Git touches it\nFrom https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\n   28434b0..c7c1e82  heaven-bridge -> origin/heaven-bridge\nRebasing (1/1)\nerror: could not apply 5261741... heaven bridge: harden worker v3\nhint: Resolve all conflicts manually, mark them as resolved with\nhint: \"git add/rm <conflicted_files>\", then run \"git rebase --continue\".\nhint: You can instead skip this commit: run \"git rebase --skip\".\nhint: To abort and get back to the state before \"git rebase\", run \"git rebase --abort\".\nhint: Disable this message with \"git config advice.mergeConflict false\"\nCould not apply 5261741... heaven bridge: harden worker v3\n",
+  "host": "heaven",
+  "action": "proc_run"
+}
