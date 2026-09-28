@@ -1,104 +1,207 @@
 # Heaven Local Bridge
 
-Private local-execution bridge for the `heaven` worker PC. It replaces routine Remote Desktop Commander usage with a private GitHub relay while keeping execution local.
+Private, local-first desktop-control bridge for the `heaven` worker PC. Routine filesystem, terminal, process, build/test, and local-agent work runs on `heaven` without consuming Remote Desktop Commander Remote MCP quota.
 
 ## Architecture
 
-```
+```text
 ChatGPT
-  -> private GitHub repo fengie/mhw-mods
-     branch: heaven-bridge
-     queue:   heaven-bridge/queue/<job-id>.json
-  -> worker on heaven
+  -> private GitHub relay (fengie/mhw-mods, branch heaven-bridge)
+  -> heaven local worker
   -> Windows/files/processes/local Codex
-  -> heaven-bridge/results/<job-id>.json
-  -> ChatGPT
+  -> result/status back through GitHub
 ```
 
-Machine policy:
-- `heaven` is the worker/execution machine.
-- `heaven2` is the main/control machine and credential authority.
-- Secrets stay on `heaven2` unless a runtime task explicitly needs them.
-- GitHub is repository truth. Development stays on `heaven-bridge` unless explicitly authorized otherwise.
-- No unauthenticated public raw shell is exposed.
+Machine roles:
 
-## Protocol
+- `heaven`: worker/execution machine.
+- `heaven2`: main/control machine and credential authority.
+- Secrets remain on `heaven2` unless a runtime task explicitly requires them.
+- Heavy builds, tests, scans, indexing, agents, and automation run on `heaven`.
 
-Protocol remains `chatgpt-heaven-bridge-v2` for compatibility. Worker implementation version is reported separately by `health`.
+Relay paths:
 
-Base job:
+- Queue: `heaven-bridge/queue/<job-id>.json`
+- Results: `heaven-bridge/results/<job-id>.json`
+- Status: `heaven-bridge/status/<job-id>.json`
+- Heartbeat: `heaven-bridge/status/heartbeat.json`
+- Protocol: `chatgpt-heaven-bridge-v2`
+
+Remote Desktop Commander is bootstrap/recovery only.
+
+## Worker v3
+
+`heaven-bridge/worker.py` is the repository source of truth. `bootstrap.ps1` installs it to:
+
+`%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
+
+The worker preserves v2 protocol compatibility and reports `worker_version: 3`.
+
+Core capabilities:
+
+- health and system/capability negotiation
+- text reads/writes/edits/list/search/info/move
+- safe copy/delete
+- chunked base64 binary read/write
+- synchronous terminal execution with persisted/paginated output
+- multiple persistent process sessions with input/read/kill
+- process-tree termination
+- job cancellation and status
+- bounded concurrent job execution
+- TTL/replay/idempotency checks
+- optional HMAC-SHA256 authentication
+- structured error codes
+- atomic result writes
+- Git retry/backoff and serialized Git mutations
+- heartbeat and sanitized local audit logging
+- session idle/max-runtime cleanup
+- configurable filesystem allowlists
+- screenshot capture to a local PNG for later binary retrieval
+- local Codex dispatch using an absolute user npm path fallback
+
+Clipboard reading is intentionally not enabled by default because clipboards commonly contain credentials or other sensitive data.
+
+## Job schema
 
 ```json
 {
-  "id": "unique-job-id",
+  "id": "chatgpt-YYYYMMDD-HHMMSS-suffix",
   "source": "chatgpt-heaven-bridge-v2",
-  "created_at": "2026-09-28T19:00:00Z",
-  "ttl_seconds": 86400,
   "action": "health",
-  "params": {}
+  "params": {},
+  "created_at": "2026-09-28T19:30:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
 }
 ```
 
-The worker rejects expired/future-skewed jobs, validates filename/job-id consistency, hashes jobs canonically for replay protection, applies a per-minute rate limit, and publishes structured errors.
+`job.id` must match the queue filename. Jobs outside their TTL, too far in the future, or replayed under the same ID with different content are rejected with structured errors.
 
-If `HEAVEN_BRIDGE_HMAC_KEY` is configured on `heaven`, jobs require `auth.hmac_sha256`. The signature is HMAC-SHA256 over the ASCII canonical-job SHA256 digest. When the key is absent, unsigned jobs are accepted only through the private relay for backward compatibility.
+## Authentication and integrity
 
-Never place passwords, tokens, API keys, cookies, private keys, or other secrets in queue jobs, result files, logs, or commits.
+The private GitHub repository and branch ACL are the baseline trust boundary.
 
-## Structured actions
+For stronger per-job authentication, set `HEAVEN_BRIDGE_HMAC_KEY` in the worker environment. When configured, every new job must contain an HMAC-SHA256 signature in:
 
-Preferred actions:
-- Health/system: `health`, `system_info`
-- Files: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_copy`, `fs_delete`, `fs_info`, `fs_search`
-- Binary: `fs_read_binary`, `fs_write_binary` using paged/chunked base64
-- Processes: `proc_run`, `proc_start`, `proc_read`, `proc_input`, `proc_kill`, `proc_list_sessions`, `proc_list`
-- Large command output: `job_output_read`
-- Recovery/escape hatch: `powershell`, `cmd`, `python`, `codex`
+```json
+{
+  "auth": {
+    "signature": "<64 lowercase hex characters>"
+  }
+}
+```
 
-Structured actions should be used before raw shell. Raw actions are compatibility/recovery surfaces, not the default API.
+The signature is computed over canonical JSON for the job with `auth.signature` omitted. `health` reports the active auth mode.
 
-Filesystem actions are restricted to configured roots. Safe defaults include the current user's home, the relay checkout, and `C:\HeavenServices` when present. Additional roots may be supplied with `HEAVEN_BRIDGE_ALLOWED_ROOTS`. Destructive operations reject allowed-root and drive-root deletion.
+Never put passwords, access tokens, API keys, cookies, private keys, or other credentials into queue files or result files.
 
-`fs_delete` requires `recursive:true` for recursive directory deletion. `fs_copy` requires `overwrite:true` to replace an existing destination.
+## Filesystem safety
 
-## Processes and sessions
+Structured `fs_*` actions are limited to configured roots. Defaults include:
 
-`proc_run` is synchronous. Output is returned inline up to the normal cap and is also persisted locally for paging with `job_output_read`.
+- the current user's home directory
+- the bridge repository checkout
+- `C:\HeavenServices` when present
 
-`proc_start` creates a persistent PowerShell/CMD/Python session. Sessions have idle and maximum-lifetime limits and are cleaned automatically. `proc_kill` terminates the process tree on Windows.
+Additional roots can be supplied through `HEAVEN_BRIDGE_ALLOWED_ROOTS`.
 
-Environment handling supports explicit non-secret inline variables and named inheritance from the worker's local environment. Secret-like inline variable names are rejected. Environment values are never echoed merely because they were inherited.
+Delete operations refuse configured roots, the user home, bridge state directory, and drive roots. Directory copy/delete requires `recursive: true`.
+
+### Common filesystem actions
+
+`fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`.
+
+Text reads are paginated by line offset. Binary reads use byte offsets and bounded base64 chunks.
+
+## Terminal and process control
+
+Use `proc_run` for synchronous commands:
+
+```json
+{
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git status",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  }
+}
+```
+
+Full stdout/stderr are persisted locally. Use `job_output_read` to page through large output after the command finishes.
+
+Persistent sessions:
+
+- `proc_start`
+- `proc_input`
+- `proc_read`
+- `proc_kill`
+- `proc_list_sessions`
+
+Sessions have configurable idle and maximum-runtime cleanup. Windows process termination uses tree termination so child processes do not remain orphaned.
+
+Environment handling supports:
+
+- non-sensitive inline `env`
+- `env_from_host: ["NAME"]` to inherit named variables that already exist locally without returning their values
+
+Secret-like inline environment keys are rejected.
+
+## Job control and progress
+
+- `job_status`: returns running/completed/unknown state.
+- `cancel`: requests cancellation of a running job.
+- per-job status files are published under `heaven-bridge/status/`.
+- `heartbeat.json` periodically publishes worker version, protocol, capabilities, and running job IDs.
+
+Heartbeat commits are deliberately infrequent to avoid relay commit spam.
+
+## Screenshots and GUI
+
+`screenshot` captures the primary interactive display to a local PNG under `%USERPROFILE%\HeavenBridge\screenshots` and returns its path. Retrieve it with `fs_read_binary`.
+
+App launching is already covered by `proc_start`/`proc_run`. Window-focus and clipboard-reading APIs are not enabled in v3 because they are more fragile/sensitive and should be added only with explicit reliability and privacy constraints.
+
+## Raw shell fallback
+
+Legacy `powershell`, `cmd`, `python`, and `codex` actions remain for compatibility and recovery. They are not a public network API and must never be exposed through an unauthenticated internet listener.
+
+Prefer structured actions whenever one exists. Raw shell is an escape hatch, not the default interface.
 
 ## Startup and recovery
 
 Run:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\heaven-bridge\bootstrap.ps1
+powershell -ExecutionPolicy Bypass -File .\heaven-bridge\bootstrap.ps1
 ```
 
-The bootstrap:
-1. clones or updates only the `heaven-bridge` branch;
-2. syntax-checks the repository worker;
-3. atomically installs it to `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`;
-4. installs a Startup fallback;
-5. best-effort installs a user Scheduled Task with restart-on-failure;
-6. replaces only existing bridge worker processes;
-7. verifies that the new worker remains running.
+Bootstrap:
 
-## Security model
+1. clones/updates the isolated `heaven-bridge` relay checkout;
+2. copies repository `worker.py` to the local runtime path;
+3. runs `python -m py_compile` before replacing the active file;
+4. keeps a backup of the prior runtime worker;
+5. configures a user-level Scheduled Task with restart-on-failure when available;
+6. also writes a Startup-folder VBS fallback with an absolute `pythonw.exe` path;
+7. starts the worker and restores the backup if the new worker immediately fails to remain running.
 
-The GitHub repository/branch is the control plane; Windows execution stays local. The worker adds TTL validation, replay hashes, optional HMAC authentication, path allowlists, dangerous-root protections, structured error codes, local JSONL audit logging, output limits/paging, process-session expiry, and rate limiting.
+The relay branch is not a canonical development branch for the wider project.
 
-Optional future LAN-direct transport must use authenticated encryption and preserve the GitHub relay as a safe fallback. Do not bind an unauthenticated raw shell or command endpoint to the public internet.
+## Testing
 
-## Verification
-
-Run locally on `heaven`:
+From the repository root:
 
 ```powershell
-python -m py_compile .\heaven-bridge\worker.py
-python -m unittest discover -s .\heaven-bridge\tests -p "test_*.py" -v
+python -m py_compile heaven-bridge\worker.py
+python -m unittest -v heaven-bridge\test_worker.py
 ```
 
-A healthy worker returns `status: completed`, `host: heaven`, `data.worker_version: 3`, and `data.protocol: chatgpt-heaven-bridge-v2`.
+The test suite covers TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, and health capabilities.
+
+## Security boundary
+
+This design intentionally does **not** expose an unauthenticated raw shell to the public internet.
+
+An optional LAN-direct transport may be added later only if it is mutually authenticated, encrypted, replay-protected, bound to a trusted interface, and retains the GitHub relay as a safe fallback. ChatGPT cloud connectivity to a LAN endpoint should not be assumed.
