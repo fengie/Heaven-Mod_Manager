@@ -1,3 +1,12 @@
+# Current updater handoff — PR #78 integrated — 2026-09-28
+
+Canonical product merge is `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, version **8.8.1**. PR #78 replaces only the post-publication immediate Git tag fetch with authoritative GitHub REST git-ref verification and fails closed on wrong ref identity, non-commit targets, malformed SHAs, or source mismatch. Exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed Updater Publication PR Gate **36448819098**.
+
+Exact-main Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` is currently running. The next agent must inspect that exact run before claiming publication closure. If it finishes green, verify the immutable updater release, exact direct-commit tag target, and both expected assets/digests, then perform the disposable old→new and injected-rollback end-to-end proof with seeded user-data hashes and exact restart identity.
+
+Preserve current parallel work. Do not duplicate active support-bundle or crash-bisector branches. Inherit, preserve, and recursively propagate the permanent continuity constitution to the agent after you.
+
+---
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.
