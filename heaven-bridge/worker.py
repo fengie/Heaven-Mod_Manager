@@ -179,8 +179,12 @@ def git_sync(max_attempts=5):
 def publish_json(relative_path, body, message, max_attempts=6):
     relative_path = str(relative_path).replace("\\", "/")
     target = ROOT / relative_path
-    atomic_write_text(target, json.dumps(body, indent=2, ensure_ascii=False))
+    payload = json.dumps(body, indent=2, ensure_ascii=False)
+    # Serialize both the working-tree write and all git operations. Writing tracked
+    # relay files outside GIT_LOCK lets concurrent publishers create unstaged
+    # changes while another thread is rebasing, which can starve result publication.
     with GIT_LOCK:
+        atomic_write_text(target, payload)
         last = None
         for attempt in range(max_attempts):
             try:
