@@ -33,7 +33,7 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Universal Mod Manager" FontSize="18" FontWeight="SemiBold"/>
                             <Border Margin="10,1,0,0" Padding="7,2" CornerRadius="10" Background="#231F15" BorderBrush="#4A3A1E" BorderThickness="1">
-                                <TextBlock Text="v8.8.0" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding CurrentProgramBuildText}" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
                             </Border>
                         </StackPanel>
                         <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="{Binding HeaderSummary}"/>
@@ -147,6 +147,8 @@
                                     </Border>
                                     <TextBlock Margin="0,13,0,0" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Text="{Binding GamePathText}"/>
                                     <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Text="{Binding UnmanagedAdoptionLabel}"/>
+                                    <TextBlock Margin="0,12,0,0" Foreground="{StaticResource AccentBright}" TextWrapping="Wrap" Text="{Binding ProgramUpdateStatus}"/>
+                                    <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Text="{Binding LatestProgramBuildText}"/>
                                 </StackPanel>
                             </Border>
 
@@ -162,6 +164,7 @@
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export collection recipe" Command="{Binding ExportRecipeCommand}"/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview staged changes (dry run)" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Inspect normal overlaps" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for program updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified private release feed. Network or authentication failures never block normal manager use."/>
                                     <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply staged changes" Command="{Binding ApplyCommand}"/>
                                 </StackPanel>
                             </Border>

@@ -12,6 +12,7 @@ using MhwModManager.Core;
 using MhwModManager.Storage;
 using MhwModManager.Diagnostics;
 using MhwModManager.Automation;
+using MhwModManager.Updater;
 
 namespace MhwModManager.App.ViewModels;
 
@@ -100,6 +101,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         s=services;
+        CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
+            ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
+            : $"v{s.BuildIdentity.ProductVersion} · development";
+        ProgramUpdateStatus=UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot())
+            ? "Automatic program updates are ready."
+            : "Self-update is disabled for this development/unmanaged installation.";
         Activity=new ActivityPageViewModel(s.PresentationReads);
         ActivityRows=Activity.Rows;
         Coverage=new CoveragePageViewModel(s.PresentationReads);

@@ -300,6 +300,246 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Contains("file set", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Health_arguments_are_not_forwarded_to_restarted_application()
+    {
+        var filtered = UpdateArgumentSanitizer.RemoveHealthArguments(
+        [
+            "--normal", "value",
+            UpdateHealthProtocol.TokenArgument, "secret",
+            UpdateHealthProtocol.FileArgument, "health.json",
+            UpdateHealthProtocol.AttemptArgument, "attempt",
+            "--tail", "two words"
+        ]);
+
+        Assert.Equal(
+            ["--normal", "value", "--tail", "two words"],
+            filtered);
+    }
+
+    [Fact]
+    public async Task Handoff_copies_only_verified_owned_helper_and_writes_sanitized_request()
+    {
+        var install = Path.Combine(root, "handoff-install");
+        var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-" + Guid.NewGuid().ToString("N"), "stage");
+        Directory.CreateDirectory(Path.Combine(install, "UpdaterHelper"));
+        Directory.CreateDirectory(stage);
+        await File.WriteAllTextAsync(
+            Path.Combine(install, "app.exe"), "OLD", TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(install, UpdateProtocol.BuildIdentityFileName),
+            JsonSerializer.Serialize(
+                Identity(10),
+                UpdateProtocol.Json),
+            TestToken);
+        var helper = Path.Combine(
+            install,
+            UpdateProtocol.HelperRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        await File.WriteAllTextAsync(helper, "HELPER-BYTES", TestToken);
+
+        var installedManifest = new ProductFileManifest(
+            1,
+            [
+                await EntryAsync(install, "app.exe"),
+                await EntryAsync(install, UpdateProtocol.BuildIdentityFileName),
+                await EntryAsync(install, UpdateProtocol.HelperRelativePath)
+            ]);
+        var installedManifestPath = Path.Combine(
+            install,
+            UpdateProtocol.ProductManifestFileName);
+        await File.WriteAllTextAsync(
+            installedManifestPath,
+            JsonSerializer.Serialize(installedManifest, UpdateProtocol.Json),
+            TestToken);
+        var installedManifestHash = await UpdatePackageVerifier.HashFileAsync(
+            installedManifestPath,
+            TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(install, UpdateProtocol.InstallMarkerFileName),
+            JsonSerializer.Serialize(
+                new ReleaseInstallMarker(
+                    1,
+                    UpdateProtocol.ProductId,
+                    UpdateProtocol.Channel,
+                    Identity(10),
+                    "app.exe",
+                    installedManifestHash),
+                UpdateProtocol.Json),
+            TestToken);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(stage, "app.exe"), "NEW", TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(stage, UpdateProtocol.BuildIdentityFileName),
+            JsonSerializer.Serialize(Identity(11), UpdateProtocol.Json),
+            TestToken);
+        var stagedManifest = new ProductFileManifest(
+            1,
+            [
+                await EntryAsync(stage, "app.exe"),
+                await EntryAsync(stage, UpdateProtocol.BuildIdentityFileName)
+            ]);
+        var stagedManifestPath = Path.Combine(
+            stage,
+            UpdateProtocol.ProductManifestFileName);
+        await File.WriteAllTextAsync(
+            stagedManifestPath,
+            JsonSerializer.Serialize(stagedManifest, UpdateProtocol.Json),
+            TestToken);
+        var stagedManifestHash = await UpdatePackageVerifier.HashFileAsync(
+            stagedManifestPath,
+            TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(stage, UpdateProtocol.InstallMarkerFileName),
+            JsonSerializer.Serialize(
+                new ReleaseInstallMarker(
+                    1,
+                    UpdateProtocol.ProductId,
+                    UpdateProtocol.Channel,
+                    Identity(11),
+                    "app.exe",
+                    stagedManifestHash),
+                UpdateProtocol.Json),
+            TestToken);
+
+        var manifest = Manifest(11) with
+        {
+            ProductManifestSha256 = stagedManifestHash,
+            ArtifactSize = 1
+        };
+        var staged = new StagedUpdate(
+            manifest,
+            stage,
+            stagedManifestPath);
+        using var client = new UpdateClientService(
+            new HttpClient(new FakeHandler(_ => throw new InvalidOperationException("Network must not be used."))));
+
+        var prepared = await client.PrepareHandoffAsync(
+            staged,
+            install,
+            [
+                "--normal", "value",
+                UpdateHealthProtocol.TokenArgument, "old-token",
+                UpdateHealthProtocol.FileArgument, "old-health",
+                UpdateHealthProtocol.AttemptArgument, "old-attempt"
+            ],
+            4321,
+            TestToken);
+
+        Assert.True(File.Exists(prepared.HelperExecutablePath));
+        Assert.Equal(
+            "HELPER-BYTES",
+            await File.ReadAllTextAsync(prepared.HelperExecutablePath, TestToken));
+        var request = await UpdateRequestStore.ReadAsync(
+            prepared.RequestPath,
+            TestToken);
+        Assert.Equal(4321, request.CurrentProcessId);
+        Assert.Equal(["--normal", "value"], request.RestartArguments);
+        Assert.Equal(stage, request.StagingRoot);
+        Assert.Equal(11, request.Manifest.BuildNumber);
+    }
+
+    [Fact]
+    public async Task Handoff_rejects_helper_not_owned_by_installed_manifest()
+    {
+        var install = Path.Combine(root, "handoff-unowned");
+        Directory.CreateDirectory(Path.Combine(install, "UpdaterHelper"));
+        await File.WriteAllTextAsync(
+            Path.Combine(install, "app.exe"), "OLD", TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(install, UpdateProtocol.BuildIdentityFileName),
+            JsonSerializer.Serialize(Identity(10), UpdateProtocol.Json),
+            TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(
+                install,
+                UpdateProtocol.HelperRelativePath.Replace('/', Path.DirectorySeparatorChar)),
+            "UNOWNED-HELPER",
+            TestToken);
+        var installedManifest = new ProductFileManifest(
+            1,
+            [
+                await EntryAsync(install, "app.exe"),
+                await EntryAsync(install, UpdateProtocol.BuildIdentityFileName)
+            ]);
+        var installedManifestPath = Path.Combine(
+            install,
+            UpdateProtocol.ProductManifestFileName);
+        await File.WriteAllTextAsync(
+            installedManifestPath,
+            JsonSerializer.Serialize(installedManifest, UpdateProtocol.Json),
+            TestToken);
+        var installedHash = await UpdatePackageVerifier.HashFileAsync(
+            installedManifestPath,
+            TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(install, UpdateProtocol.InstallMarkerFileName),
+            JsonSerializer.Serialize(
+                new ReleaseInstallMarker(
+                    1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
+                    Identity(10), "app.exe", installedHash),
+                UpdateProtocol.Json),
+            TestToken);
+
+        var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-unowned-" + Guid.NewGuid().ToString("N"), "stage");
+        Directory.CreateDirectory(stage);
+        await File.WriteAllTextAsync(Path.Combine(stage, "app.exe"), "NEW", TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(stage, UpdateProtocol.BuildIdentityFileName),
+            JsonSerializer.Serialize(Identity(11), UpdateProtocol.Json),
+            TestToken);
+        var stagedManifest = new ProductFileManifest(
+            1,
+            [
+                await EntryAsync(stage, "app.exe"),
+                await EntryAsync(stage, UpdateProtocol.BuildIdentityFileName)
+            ]);
+        var stagedManifestPath = Path.Combine(stage, UpdateProtocol.ProductManifestFileName);
+        await File.WriteAllTextAsync(
+            stagedManifestPath,
+            JsonSerializer.Serialize(stagedManifest, UpdateProtocol.Json),
+            TestToken);
+        var stagedHash = await UpdatePackageVerifier.HashFileAsync(
+            stagedManifestPath, TestToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(stage, UpdateProtocol.InstallMarkerFileName),
+            JsonSerializer.Serialize(
+                new ReleaseInstallMarker(
+                    1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
+                    Identity(11), "app.exe", stagedHash),
+                UpdateProtocol.Json),
+            TestToken);
+        var staged = new StagedUpdate(
+            Manifest(11) with { ProductManifestSha256 = stagedHash, ArtifactSize = 1 },
+            stage,
+            stagedManifestPath);
+        using var client = new UpdateClientService(
+            new HttpClient(new FakeHandler(_ => throw new InvalidOperationException())));
+
+        var ex = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.PrepareHandoffAsync(
+                staged,
+                install,
+                [],
+                1,
+                TestToken));
+
+        Assert.Contains("does not own updater helper", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<ProductFileEntry> EntryAsync(string rootPath, string relative)
+    {
+        var normalized = UpdatePathSafety.NormalizeRelativeFilePath(relative);
+        var path = Path.Combine(
+            rootPath,
+            normalized.Replace('/', Path.DirectorySeparatorChar));
+        var info = new FileInfo(path);
+        return new ProductFileEntry(
+            normalized,
+            info.Length,
+            await UpdatePackageVerifier.HashFileAsync(path, TestToken));
+    }
+
     private static UpdateBuildIdentity Identity(long build) =>
         new(1, UpdateProtocol.Channel, "8.8.0", $"sha-{build}-abcdef", build, DateTimeOffset.UtcNow);
 
