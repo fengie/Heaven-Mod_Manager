@@ -1,0 +1,13 @@
+{
+  "id": "controller-20260928-1550-find-mhw-fast",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:50:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:43:48.264844+00:00",
+  "finished_at": "2026-09-28T19:44:01.121658+00:00",
+  "stdout": "",
+  "stderr": "",
+  "host": "heaven",
+  "action": "proc_run"
+}
