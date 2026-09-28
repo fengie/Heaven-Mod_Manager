@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-continue-search-v2-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan",
+    "pattern": "heaven_bridge_verify",
+    "mode": "name",
+    "regex": false,
+    "case_sensitive": false,
+    "glob": "*",
+    "max_results": 20
+  },
+  "created_at": "2026-09-28T19:31:31Z",
+  "priority": "highest"
+}
