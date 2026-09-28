@@ -35,6 +35,8 @@ Design recovery for the states that can actually exist after interruption. Recov
 ## Migration
 A restartable migration must prove ownership before deleting/resetting destination state, validate reused artifacts rather than trusting existence, distinguish cleanup attempted from cleanup completed, converge on retry or emit a precise recovery action, and preserve the authoritative source until completion is proven.
 
+Content-addressed or otherwise immutable destination data must also have an explicit ownership model after migration. A one-time digest check does not make the destination immutable if its bytes remain hardlinked or otherwise aliased to a pathname that another owner can still modify. Prefer independently owned verified bytes, or prove and enforce immutability across every retained alias for the object's lifetime.
+
 ## Publication
 Do work in a catalog-invisible or otherwise non-public staging area. Make visibility an explicit commit-on-success step. Cleanup is not a publication guarantee because cleanup can fail or be skipped by process death.
 

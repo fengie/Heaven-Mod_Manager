@@ -76,7 +76,9 @@
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CANDIDATE_ADVERSARIAL_REVIEW.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md",
+    "_AGENT_CONTEXT/EVIDENCE/legacy-migration-hardlink-runtime-2026-09-28.txt"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -85,7 +87,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve LR-001 through LR-010, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md, _AGENT_TRAINING/README.md, SUPPORT_BRANCH_INTEGRATION_2026-09-28.md, and the permanent continuity constitution before edits. Recursive source reparse containment and archive physical-root containment are CLOSED with hosted Windows Release Gate 36392282315 and local corroboration. Take archive streaming cancellation/actual-output budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it. Preserve the separate runtime-confirmed legacy migration CAS hardlink-alias audit for a later migration/CAS-identity checkpoint. Preserve LR-001 through LR-011, exact evidence, and transaction/recovery invariants. At meaningful checkpoints evaluate reusable lessons for promotion into _AGENT_TRAINING while keeping transient MHW state in _AGENT_CONTEXT. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

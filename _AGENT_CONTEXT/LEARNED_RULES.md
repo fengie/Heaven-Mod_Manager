@@ -177,3 +177,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant report:** _AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-011 — immutable content stores require independent byte ownership
+
+- **Rule ID:** LR-011
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** content-addressed storage, migrations, hardlinks/aliases, immutable artifact publication
+- **Rule:** Do not call a content-addressed or immutable destination verified merely because its digest is correct at publication time if it still aliases bytes writable through another pathname or ownership domain. Either give the destination independent byte ownership or enforce immutability across every alias for the full lifetime of the object.
+- **Trigger / evidence:** A real-Windows v7 -> v8 migration probe on canonical source `4fd61dd33609a7c55e5aedbaad026266a410f942` proved that `LegacyV7Migrator` successfully verifies a hash-named CAS object and marks migration complete while the CAS pathname remains an NTFS hardlink to the retained legacy blob. Mutating only the legacy pathname afterward changed the CAS digest; rerunning migration skipped revalidation because the completion marker already existed. Current restore integrity checks correctly rejected the changed bytes before live publication.
+- **Rationale:** Point-in-time digest verification proves bytes, not ownership. A hardlink or equivalent alias can let a supposedly immutable object change later through a different authority boundary, invalidating durable verification metadata and retry/completion assumptions.
+- **Enforcement:** For immutable/content-addressed publication, test post-publication mutation through every retained alias. Prefer independently owned verified bytes when another pathname remains mutable. If aliasing is intentional, define and enforce the alias immutability policy rather than relying on naming or a one-time hash check.
+- **Relevant audit:** `_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md`
+- **Supersedes:** none
+- **Superseded by:** none

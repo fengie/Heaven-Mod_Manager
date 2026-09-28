@@ -10,6 +10,7 @@ The trainer's rules are generic. This file preserves lightweight provenance show
 | Native/system failure may leave partial mutation | LR-003; Windows filesystem safety/test-gap audits |
 | Lexical path containment is not physical containment | LR-004; Windows filesystem safety and recursive-source audits |
 | Restartable migrations require ownership and retry convergence | LR-005; legacy migration recovery audit |
+| Immutable/content-addressed publication requires independent byte ownership or enforced alias immutability | LR-011; `_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md` real-Windows reproduction |
 | Shareable diagnostics need export-boundary sanitization | LR-006; diagnostics privacy audit |
 | Entity deletion must retire live semantic references | LR-007; mod lifecycle referential-integrity audit |
 | In-progress imports must stay invisible until commit-on-success | LR-008; import publication/catalog visibility audit |

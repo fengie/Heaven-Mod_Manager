@@ -48,6 +48,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/TEST_GAP_AND_PERFORMANCE_AUDIT.md` — broad failure-mode and scale coverage gaps.
 - `_AGENT_CONTEXT/WINDOWS_FILESYSTEM_SAFETY_AUDIT.md` — reparse containment, CAS integrity, and native replacement semantics.
 - `_AGENT_CONTEXT/CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md` — current-source CAS root/hash-leaf physical identity, reparse policy, and legacy hardlink-alias findings after content-integrity hardening.
+- `_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md` — real-Windows confirmation that v7 migration can leave the verified v8 CAS hardlinked to retained mutable legacy bytes; current restore validation fails closed, but the migration completion marker does not revalidate the later-mutated alias.
 - `_AGENT_CONTEXT/CAS_DIGEST_NAMESPACE_VALIDATION_AUDIT.md` — SHA-256 identifier/path namespace validation, malformed legacy/persisted digest handling, and regression-first guidance.
 - `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` — ModScanner, unmanaged-adoption, and Smart Inbox recursive reparse traversal findings and test contract.
 - `_AGENT_CONTEXT/ARCHIVE_EXTRACTION_PHYSICAL_ROOT_AUDIT.md` — runtime-reproduced archive/import destination-root ancestor-junction escape and test-first closure guidance.

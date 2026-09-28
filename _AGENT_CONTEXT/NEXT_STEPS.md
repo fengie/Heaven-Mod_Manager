@@ -4,7 +4,9 @@ The integrated filesystem hardening is closed. Hosted Windows Release Gate `3639
 
 The strongest separately scoped implementation candidate is now **archive extraction streaming cancellation / actual-output resource budgeting**. Read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. Keep it separate from the closed recursive reparse and archive physical-root containment work.
 
-Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-010.
+A separate support audit has now runtime-confirmed the legacy migration CAS hardlink-alias defect on real Windows. Read `LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md`. Keep its future migration-specific repair separate and do **not** let it displace or merge into the active archive-streaming boundary.
+
+Older sections below that call recursive source reparse containment “next” are historical and superseded. Active Learned Rules are LR-001 through LR-011.
 
 ---
 

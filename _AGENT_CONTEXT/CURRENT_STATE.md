@@ -83,7 +83,9 @@ That support-integration pass preserved CAS integrity as the next boundary at th
 
 Recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox was the next boundary at this historical checkpoint and is now integrated and hosted-Windows verified. The current separate candidate is archive streaming cancellation/resource budgeting.
 
-The successor inherits the permanent continuity constitution and active LR-001 through LR-010, and must explicitly require its own successor to recursively propagate them to the agent after them.
+A separate real-Windows support audit now confirms the previously documented legacy-migration hardlink risk: after successful digest verification and migration completion, the v8 CAS object can remain hardlinked to the retained v7 blob, so later mutation through the legacy pathname changes the hash-named CAS bytes. Current restore staging detects the digest mismatch before publication, so this is a P1 immutability/recovery defect rather than silent live-file corruption. Read `_AGENT_CONTEXT/LEGACY_MIGRATION_CAS_HARDLINK_RUNTIME_AUDIT.md`; keep its future repair separate from archive streaming work.
+
+The successor inherits the permanent continuity constitution and active LR-001 through LR-011, and must explicitly require its own successor to recursively propagate them to the agent after them.
 
 **Do not break the chain.**
 

@@ -1,0 +1,34 @@
+Legacy v7 -> v8 CAS hardlink runtime characterization
+Date: 2026-09-28
+Canonical source inspected: 4fd61dd33609a7c55e5aedbaad026266a410f942
+Host: heaven2 / Windows
+Probe target: net10.0-windows10.0.19041.0
+Probe used public ManagerDatabase.InitializeAsync, LegacyV7Migrator.MigrateIfNeededAsync,
+and BlobStore.RestoreAsync from the canonical source checkout.
+
+First disposable probe build:
+FAILED before execution because the probe targeted generic net10.0 while
+MhwModManager.Filesystem targets net10.0-windows10.0.19041.0.
+No product source was changed. The disposable probe target was corrected.
+
+Successful probe output:
+root=C:\Users\fengc\AppData\Local\Temp\mhw-hardlink-runtime-fe66776fecca4b36a997a245f4482ee8
+migration1 performed=True success=True message=v7 state migrated and verified.
+expected_sha256=cac5679d2854b7e86950ce3dbb992c49e7d2f756dc56cfa8e5d472efd4795367
+cas_before_mutation_sha256=cac5679d2854b7e86950ce3dbb992c49e7d2f756dc56cfa8e5d472efd4795367
+legacy_mutation_changed_cas_bytes=True
+cas_after_legacy_mutation_sha256=42ce5cedd8f1038cacb89de22c98c286ec3976dffdc0582851dcf2c0003e3861
+migration2 performed=False success=True message=The verified v7 migration is already complete.
+restore_outcome=InvalidDataException: CAS integrity failure: staged replacement does not match SHA-256 cac5679d2854b7e86950ce3dbb992c49e7d2f756dc56cfa8e5d472efd4795367.
+restore_destination_exists=False
+
+fsutil hardlink list on the CAS pathname returned both:
+\Users\fengc\AppData\Local\Temp\mhw-hardlink-runtime-fe66776fecca4b36a997a245f4482ee8\Tool\State\V2\Blobs\cac5679d2854b7e86950ce3dbb992c49e7d2f756dc56cfa8e5d472efd4795367
+\Users\fengc\AppData\Local\Temp\mhw-hardlink-runtime-fe66776fecca4b36a997a245f4482ee8\CAS\cac5679d2854b7e86950ce3dbb992c49e7d2f756dc56cfa8e5d472efd4795367
+
+Interpretation:
+- migration verified the correct bytes and marked completion;
+- CAS and retained legacy blob remained aliases to the same NTFS file object;
+- mutating the legacy pathname changed the hash-named CAS object's bytes;
+- rerunning migration trusted the durable completion marker and did not reverify;
+- current BlobStore restore validation failed closed before publishing corrupt bytes.

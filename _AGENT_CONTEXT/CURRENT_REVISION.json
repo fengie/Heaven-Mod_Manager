@@ -112,7 +112,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it; read ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "nextRequiredAction": "Take archive extraction streaming cancellation and actual-output resource budgeting as the next separate test-first production boundary unless newer canonical evidence supersedes it; read ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md. Preserve and recursively propagate continuity and LR-001 through LR-011.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
