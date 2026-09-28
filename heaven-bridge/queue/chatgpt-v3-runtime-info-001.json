@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-v3-runtime-info-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p='C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py'; if(Test-Path $p){ Select-String -Path $p -Pattern 'WORKER_VERSION|worker_version.: 2|worker_version.: WORKER_VERSION' | Select-Object -First 10 | ForEach-Object { $_.Line }; Get-Item $p | Select-Object FullName,Length,LastWriteTime | Format-List } else { 'RUNTIME_MISSING' }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-28T19:43:01Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
