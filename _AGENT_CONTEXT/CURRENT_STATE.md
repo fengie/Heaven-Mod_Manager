@@ -6,7 +6,7 @@ Finish the exact Windows gates before taking recursive scanner/adoption/Smart In
 
 ## Latest CAS support-audit harvest — documentation only
 
-Integrated durable research from PRs #23, #25, and #22: CAS filesystem identity/reparse safety, CAS digest namespace validation, and recursive source reparse containment. PR #24 was reviewed but skipped as redundant with the broader filesystem-identity audit; its root/hash-leaf fixture guidance was already covered there. No production C#, tests, verification scripts, workflows, or verification caches changed, and this harvest does **not** close the outstanding fresh local Windows CAS verification.
+Integrated durable research from PRs #23, #25, and #22: CAS filesystem identity/reparse safety, CAS digest namespace validation, and recursive source reparse containment. PR #24 was reviewed but skipped as redundant with the broader filesystem-identity audit; its root/hash-leaf fixture guidance was already covered there. No production C#, tests, verification scripts, workflows, or verification caches changed, and this harvest does **not** close the outstanding fresh local Windows CAS verification. Canonical integration commit: `1dc4655b2ade03338ef826690d8ed1dc5d31fa14` (remote main verified identical immediately after merge).
 
 ---
 # Native ReplaceFileW failure-postcondition boundary — CLOSED / hosted Windows verified
