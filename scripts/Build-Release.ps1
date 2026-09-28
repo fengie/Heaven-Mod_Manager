@@ -106,7 +106,9 @@ try{
   Write-MhwMasterDebug -Root $Root -Area 'BUILD' -Message ("SDK="+$version+"; Transcript="+$masterLog+"; MasterDebug="+$MasterDebug)
 
   $dirtyTracked=@(& git diff HEAD --name-only -- | Where-Object {
-    -not $_.Replace('\','/').StartsWith('.verification/',[StringComparison]::OrdinalIgnoreCase)
+    $normalized=$_.Replace('\','/')
+    -not ($normalized.StartsWith('.verification/',[StringComparison]::OrdinalIgnoreCase) -or
+      [string]::Equals($normalized,'MHW-DEBUG-ALL.log',[StringComparison]::OrdinalIgnoreCase))
   })
   $dirtyUntracked=@(& git ls-files --others --exclude-standard | Where-Object {
     $normalized=$_.Replace('\','/')
