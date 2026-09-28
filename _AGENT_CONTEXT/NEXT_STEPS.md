@@ -163,6 +163,7 @@ Keep these separate and consult their specialized audits before implementation:
 - crash-bisector diagnosis evidence integrity; read `CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` and validate baseline + full-candidate reproduction before persistent blame;
 - catalog-invisible import publication; read `IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` and stage outside catalog-visible roots until commit-on-success.
 - archive extraction resource/cancellation hardening; read `ARCHIVE_EXTRACTION_RESOURCE_CANCELLATION_AUDIT.md`. A Windows runtime probe confirmed that canceling during a single 1 GiB entry can still finish the full write and return success. Keep this separate from the active recursive-reparse boundary.
+- persisted game-profile ID workspace/state containment; read `GAME_PROFILE_ID_PATH_CONTAINMENT_AUDIT_2026-09-28.md`. `GameProfileRegistry.IsUsable` accepts non-empty persisted IDs without canonical path-segment validation, while `AppPaths.Discover` uses the raw active ID under `Games/<id>` and `State/Games/<id>/Next`. Treat this as a regression-first persisted-state containment checkpoint; do not silently normalize IDs or bundle it with workspace migration.
 
 ## Verification truth
 
