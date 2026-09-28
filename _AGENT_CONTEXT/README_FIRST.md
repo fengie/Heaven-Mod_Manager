@@ -59,6 +59,7 @@ These documents preserve durable research and implementation history. **Read eac
 - `_AGENT_CONTEXT/VERIFICATION_INFRASTRUCTURE_AUDIT.md` — verifier, stage-cache, CI and supply-chain trust gaps.
 - `_AGENT_CONTEXT/CONTINUITY_VALIDATOR_ADVERSARIAL_HARDENING_2026-09-28.md` — implemented adversarial handoff-validator hardening for comments, negation, authorization contradiction, and read-order deception; exact hosted gate still required before closure.
 - `_AGENT_CONTEXT/DIAGNOSTICS_PRIVACY_AND_SECRET_HANDLING_AUDIT.md` — share-boundary sanitization and credential handling.
+- `_AGENT_CONTEXT/SUPPORT_BUNDLE_SHARE_SANITIZATION_2026-09-28.md` — isolated LR-006 implementation checkpoint for sanitized recent-log export, privacy notice, and generated-bundle canary regression; broader diagnostics privacy remains open.
 - `_AGENT_CONTEXT/REMOTE_PREVIEW_NETWORK_TRUST_AUDIT.md` — remote-fetch destination/redirect/HTTP/response validation.
 - `_AGENT_CONTEXT/STATE_BACKUP_PORTABILITY_RECOVERY_AUDIT.md` — full-state backup, CAS/DB consistency and portability.
 - `_AGENT_CONTEXT/MULTISOURCE_MOD_DISCOVERY_BULK_FILL_AUDIT.md` — source-neutral acquisition/bulk-fill design.
