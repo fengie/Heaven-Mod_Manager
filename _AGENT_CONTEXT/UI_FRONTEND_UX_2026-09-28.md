@@ -170,3 +170,11 @@ Authoritative GitHub `main` was rechecked before continuation integration and re
 Shared collision risk remains concentrated in `MainWindow.xaml` and `MainWindowViewModel.cs` because updater work may touch them. Recheck authoritative `main` again immediately before any merge to canonical main.
 
 The successor inherits the permanent continuity constitution and active Learned Rules and must recursively require the same inheritance and propagation from the agent after them. Do not break the chain.
+
+### Latest canonical reconciliation
+
+After the responsive verification checkpoint, authoritative `main` advanced during active multi-agent work. This branch non-destructively merged canonical main through `927839ab87ff5e71178e2d43d32d4fed324f3c97`.
+
+The incoming deltas after `33a4bf07f716564780341a39a0d54492d6dca74a` were documentation-only (`_AGENT_CONTEXT/AGENT_CONTROL_PLANE_SAFETY_AUDIT.md`) and did not touch frontend code or shared WPF files. No additional UI semantics changed.
+
+The branch-specific start header was updated to the reconciled main SHA while preserving canonical main's handoff content byte-for-byte beneath that header.
