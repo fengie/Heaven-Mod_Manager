@@ -55,4 +55,4 @@ dotnet tool install --global dotnet-gcdump
 
 ## Support bundle
 
-The in-app support bundle exports bounded, privacy-conscious metadata: environment/schema/migration status, recent structured diagnostics/errors, operations, manifest metadata, conflict/profile information, DB integrity status, and recent logs. It never automatically includes mod assets or CAS blobs.
+The in-app support bundle exports bounded diagnostic metadata: environment/schema/migration status, recent structured diagnostics/errors, operations, manifest metadata, conflict/profile information, DB integrity status, and recent logs. Recent JSONL logs are sanitized only in the shareable bundle copy: known state/user/temp roots are pseudonymized and common authorization/token-like values are redacted, while the full-fidelity local logs remain unchanged. The bundle never automatically includes mod assets or CAS blobs. It can still contain mod/profile/file-organization metadata, so review the archive before sharing it.

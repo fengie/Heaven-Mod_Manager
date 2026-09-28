@@ -2,6 +2,8 @@ using MhwModManager.Core;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using MhwModManager.Storage;
 
 namespace MhwModManager.Diagnostics;
@@ -52,7 +54,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
             var logDir=Path.Combine(stateRoot,"Next","Logs");
             if(Directory.Exists(logDir))
                 foreach(var f in Directory.EnumerateFiles(logDir,"*.jsonl").OrderByDescending(x=>x).Take(5))
-                    File.Copy(f,Path.Combine(temp,Path.GetFileName(f)),true);
+                    await ExportSanitizedLogAsync(f,Path.Combine(temp,Path.GetFileName(f)),ct);
 
             var stamp=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss",CultureInfo.InvariantCulture);
             var zip=Path.Combine(outputDirectory,$"MHWMM-Support-{stamp}.zip");
@@ -63,6 +65,84 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         {
             try{if(Directory.Exists(temp))Directory.Delete(temp,true);}catch{}
         }
+    }
+
+    private async Task ExportSanitizedLogAsync(string source,string destination,CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var input=new FileStream(source,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete);
+        using var reader=new StreamReader(input);
+        await using var output=new FileStream(destination,FileMode.CreateNew,FileAccess.Write,FileShare.None);
+        await using var writer=new StreamWriter(output);
+        while(await reader.ReadLineAsync(ct) is { } line)
+        {
+            ct.ThrowIfCancellationRequested();
+            await writer.WriteLineAsync(SanitizeStructuredLogLine(line).AsMemory(),ct);
+        }
+    }
+
+    private string SanitizeStructuredLogLine(string line)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        JsonNode? root;
+        try { root=JsonNode.Parse(line); }
+        catch(JsonException) { return SanitizeText(line); }
+        if(root is null)return SanitizeText(line);
+
+        var pending=new Stack<JsonNode>();
+        pending.Push(root);
+        while(pending.Count>0)
+        {
+            var node=pending.Pop();
+            if(node is JsonObject obj)
+            {
+                foreach(var property in obj.ToArray())
+                {
+                    var child=property.Value;
+                    var key=property.Key;
+                    var sensitive=key.Contains("token",StringComparison.OrdinalIgnoreCase)
+                        ||key.Contains("secret",StringComparison.OrdinalIgnoreCase)
+                        ||key.Contains("password",StringComparison.OrdinalIgnoreCase)
+                        ||key.Contains("api_key",StringComparison.OrdinalIgnoreCase)
+                        ||key.Contains("apikey",StringComparison.OrdinalIgnoreCase)
+                        ||key.Contains("credential",StringComparison.OrdinalIgnoreCase)
+                        ||key.Equals("authorization",StringComparison.OrdinalIgnoreCase);
+                    if(sensitive){obj[key]="<redacted>";continue;}
+                    if(child is JsonValue value&&value.TryGetValue<string>(out var text))obj[key]=SanitizeText(text);
+                    else if(child is not null)pending.Push(child);
+                }
+            }
+            else if(node is JsonArray array)
+            {
+                for(var i=0;i<array.Count;i++)
+                {
+                    var child=array[i];
+                    if(child is JsonValue value&&value.TryGetValue<string>(out var text))array[i]=SanitizeText(text);
+                    else if(child is not null)pending.Push(child);
+                }
+            }
+        }
+        return root.ToJsonString();
+    }
+
+    private string SanitizeText(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var sanitized=value;
+        var roots=new[]
+        {
+            (Path.GetFullPath(stateRoot).TrimEnd(Path.DirectorySeparatorChar),"<STATE_ROOT>"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).TrimEnd(Path.DirectorySeparatorChar),"<USER_PROFILE>"),
+            (Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar),"<TEMP>")
+        };
+        foreach(var (rootPath,replacement) in roots)
+            if(!string.IsNullOrWhiteSpace(rootPath))
+                sanitized=sanitized.Replace(rootPath,replacement,StringComparison.OrdinalIgnoreCase);
+
+        sanitized=Regex.Replace(sanitized,@"(?i)\b[A-Z]:[\\/]+Users[\\/]+[^\\/:*?""<>|\r\n]+","<USER_PROFILE>");
+        sanitized=Regex.Replace(sanitized,@"(?i)\bAuthorization\s*[:=]\s*(?:Bearer\s+)?[^\s,;""']+","Authorization: <redacted>");
+        sanitized=Regex.Replace(sanitized,@"(?i)([?&](?:token|access_token|api_key|apikey|key|secret|password|authorization)=)[^&#\s""']+","$1<redacted>");
+        return sanitized;
     }
 
     private async Task<string?> ReadScalarAsync(string sql,CancellationToken ct)
