@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Diagnostics;
+using System.ComponentModel;
+using MhwModManager.Filesystem;
 using MhwModManager.Updater;
 using Xunit;
 
@@ -107,6 +109,82 @@ public sealed class UpdateInstallerTests : IDisposable
             await File.ReadAllTextAsync(Path.Combine(installRoot, "new.dll"), TestToken));
         Assert.Equal(UpdateJournalPhase.RolledBack,
             (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
+    public async Task Native_replace_1175_failure_rolls_back_to_previous_payload()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        var backend = new ScriptedReplaceBackend(1175, (_, _) => { });
+        var installer = new UpdateInstaller(applyReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1175, error.NativeErrorCode);
+        await AssertOldInstallRestoredAsync();
+        Assert.Equal(
+            UpdateJournalPhase.RolledBack,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.Empty(Directory.EnumerateFiles(installRoot, ".app.exe.*.mhwmm.tmp"));
+        Assert.True(File.Exists(Path.Combine(fixture.Request.BackupRoot, "app.exe")));
+    }
+
+    [Fact]
+    public async Task Native_replace_1176_failure_preserves_ambiguous_state_for_recovery()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        var backend = new ScriptedReplaceBackend(
+            1176,
+            (replaced, _) => File.Delete(replaced));
+        var installer = new UpdateInstaller(applyReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1176, error.NativeErrorCode);
+        Assert.False(File.Exists(Path.Combine(installRoot, "app.exe")));
+        Assert.Equal(
+            UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(File.Exists(Path.Combine(fixture.Request.BackupRoot, "app.exe")));
+        var staged = Assert.Single(Directory.EnumerateFiles(installRoot, ".app.exe.*.mhwmm.tmp"));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(staged, TestToken));
+        Assert.Equal("USER-MOD", await File.ReadAllTextAsync(
+            Path.Combine(installRoot, "Mods", "mine.mod"), TestToken));
+    }
+
+    [Fact]
+    public async Task Native_replace_1177_failure_preserves_both_images_for_recovery()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = await CreateFixtureAsync();
+        string? displaced = null;
+        var backend = new ScriptedReplaceBackend(
+            1177,
+            (replaced, _) =>
+            {
+                displaced = replaced + ".1177-displaced";
+                File.Move(replaced, displaced, false);
+            });
+        var installer = new UpdateInstaller(applyReplaceBackend: backend);
+
+        var error = await Assert.ThrowsAsync<Win32Exception>(
+            () => installer.ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(1177, error.NativeErrorCode);
+        Assert.False(File.Exists(Path.Combine(installRoot, "app.exe")));
+        Assert.NotNull(displaced);
+        Assert.True(File.Exists(displaced));
+        Assert.Equal("OLD-APP", await File.ReadAllTextAsync(displaced!, TestToken));
+        Assert.Equal(
+            UpdateJournalPhase.RollbackRequired,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+        Assert.True(File.Exists(Path.Combine(fixture.Request.BackupRoot, "app.exe")));
+        var staged = Assert.Single(Directory.EnumerateFiles(installRoot, ".app.exe.*.mhwmm.tmp"));
+        Assert.Equal("NEW-APP", await File.ReadAllTextAsync(staged, TestToken));
     }
 
     [Fact]
@@ -745,6 +823,22 @@ public sealed class UpdateInstallerTests : IDisposable
         ?? throw new InvalidDataException("Journal fixture is empty.");
 
     private sealed record UpdateFixture(UpdateApplyRequest Request);
+
+    private sealed class ScriptedReplaceBackend(
+        int nativeErrorCode,
+        Action<string, string> materializeFailure) : IAtomicReplaceBackend
+    {
+        public bool TryReplace(
+            string replaced,
+            string replacement,
+            string? backup,
+            out int errorCode)
+        {
+            materializeFailure(replaced, replacement);
+            errorCode = nativeErrorCode;
+            return false;
+        }
+    }
 
     private sealed class InjectedUpdateFailureException(string message) : Exception(message);
 }

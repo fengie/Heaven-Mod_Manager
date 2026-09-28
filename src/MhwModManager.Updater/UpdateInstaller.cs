@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text.Json;
 using MhwModManager.Core;
@@ -7,10 +9,12 @@ namespace MhwModManager.Updater;
 
 public sealed class UpdateInstaller(
     Action<UpdateApplyFaultPoint, string?>? faultInjector = null,
-    Action<string>? log = null)
+    Action<string>? log = null,
+    IAtomicReplaceBackend? applyReplaceBackend = null)
 {
     private readonly Action<UpdateApplyFaultPoint, string?> injectFault = faultInjector ?? ((_, _) => { });
     private readonly Action<string> writeLog = log ?? (_ => { });
+    private readonly IAtomicReplaceBackend? liveApplyReplaceBackend = applyReplaceBackend;
 
     public async Task ApplyAsync(UpdateApplyRequest request, CancellationToken ct)
     {
@@ -75,6 +79,13 @@ public sealed class UpdateInstaller(
         catch (Exception applyError)
         {
             await WriteJournalBestEffortAsync(request, UpdateJournalPhase.RollbackRequired, applyError.Message);
+            if (IsAmbiguousNativeReplaceFailure(applyError))
+            {
+                writeLog(
+                    $"update native replacement failed ambiguously error={((Win32Exception)applyError).NativeErrorCode}; " +
+                    "preserving backup and replacement evidence for deterministic recovery");
+                throw;
+            }
             try
             {
                 // User cancellation stops forward work, never the recovery it requires.
@@ -90,6 +101,12 @@ public sealed class UpdateInstaller(
             }
             throw;
         }
+    }
+
+    private static bool IsAmbiguousNativeReplaceFailure(Exception error)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"type={error.GetType().Name}");
+        return error is Win32Exception { NativeErrorCode: 1176 or 1177 };
     }
 
     public async Task ConfirmAsync(UpdateApplyRequest request, CancellationToken ct)
@@ -232,7 +249,7 @@ public sealed class UpdateInstaller(
         return manifest;
     }
 
-    private static async Task ApplyOwnedFileAsync(
+    private async Task ApplyOwnedFileAsync(
         UpdateApplyRequest request,
         ProductFileEntry entry,
         bool previouslyOwned,
@@ -248,6 +265,7 @@ public sealed class UpdateInstaller(
         await AtomicFileOps.ReplaceFromAsync(
             source,
             destination,
+            replaceBackend: liveApplyReplaceBackend,
             expectedSha256: entry.Sha256,
             ct: ct,
             requireDestinationAbsent: !previouslyOwned);
