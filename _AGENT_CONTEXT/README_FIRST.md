@@ -57,6 +57,7 @@ These documents are durable research, **not claims that their proposed fixes are
 - `_AGENT_CONTEXT/MOD_LIFECYCLE_REFERENTIAL_INTEGRITY_AUDIT.md` — mod retirement, stale live references, same-path identity reuse, and delete/re-import integrity.
 - `_AGENT_CONTEXT/CRASH_BISECTOR_DIAGNOSIS_EVIDENCE_AUDIT.md` — baseline/provenance/reproducibility requirements before persistent automated culprit confirmation.
 - `_AGENT_CONTEXT/IMPORT_PUBLICATION_CATALOG_VISIBILITY_AUDIT.md` — catalog-invisible staging and commit-on-success publication for archive/Smart Inbox imports.
+- `_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md` — executed archive physical-containment stress pass, reproduced junction escapes, regression tests, repair, and exact local evidence.
 
 ## Critical rule
 
