@@ -1,34 +1,66 @@
 {
   "schema": "permanent-dev-controller-v1",
   "controller": "single-logical-controller",
-  "cycle_id": "2026-09-28T16:28-04:00-cycle-3",
-  "updated_at": "2026-09-28T20:29:00Z",
+  "cycle_id": "2026-09-28T17:26-04:00-cycle-4",
+  "updated_at": "2026-09-28T21:27:00Z",
   "selected_task": {
     "priority": "P1",
-    "target": "PR #59 Agent Control v2 current-main reconciliation and exact-head verification",
-    "reason": "Cycle 2 local-route discovery completed without producing a usable route; PR #59 remains the canonical core control-plane lane and authoritative GitHub shows its head 06f8085 is now based on stale main 79a5be1 while repository main has advanced."
+    "target": "Recover broken Heaven Local Bridge dispatch for canonical PR #59 reconciliation",
+    "reason": "The prior P1 reconciliation job failed before execution because its queue payload used protocol plus top-level command/args instead of the worker's accepted source plus params schema. Repairing the local execution path is prerequisite to safely verifying the canonical Agent Control lane without Remote Desktop Commander quota."
   },
   "actions": [
-    "Read prior controller state before touching work.",
-    "Read completed bridge result controller-20260928-1550-find-mhw-fast: exit 0 but empty stdout/stderr, so it did not establish a usable mhw-fast route.",
-    "Refreshed authoritative GitHub open PR state and PR #59; preserved the existing canonical lane rather than creating competing implementation ownership.",
-    "Dispatched controller-20260928-1628-agentcontrol-reconcile through Heaven Local Bridge for an isolated heaven clone/worktree: fetch current main and PR #59, merge current main locally, run Agent Control npm check/test, and return conflict or exact-head evidence without pushing or using secrets.",
-    "No Remote Desktop Commander calls used; no canonical repository on heaven2 or existing repository on heaven was altered."
+    "Read prior controller state before mutation.",
+    "Read failed result controller-20260928-1628-agentcontrol-reconcile: INVALID_PROTOCOL, source null, exit 1; no reconciliation command executed.",
+    "Compared the failed queue payload with the previously accepted bridge-v2 queue schema and identified the concrete schema regression.",
+    "Refreshed authoritative GitHub main and PR #59: main fd2866efafcc0dd845353a6c0e78931f13ec5040; PR #59 head 06f8085f54833d24b4c42e77e22f6c09f1f621b7 remains open, draft, and mergeable but stale relative to current main.",
+    "Queued corrected job controller-20260928-1726-agentcontrol-reconcile-v2 using source=chatgpt-heaven-bridge-v2 and params.shell/command/cwd/timeout_seconds, preserving isolated temp clone/worktree execution on heaven and explicitly forbidding push/secrets.",
+    "Immediately checked for a result; none exists yet, so no test/reconciliation success is claimed.",
+    "No Remote Desktop Commander calls used; no canonical repository on heaven2 and no existing repository checkout on heaven was altered."
+  ],
+  "affected_files_systems": [
+    "heaven-bridge/queue/controller-20260928-1726-agentcontrol-reconcile-v2.json",
+    "heaven-bridge/controller/state.json",
+    "Heaven Local Bridge v2 dispatch path",
+    "PR #59 Agent Control verification lane"
   ],
   "current_pr": {
     "number": 59,
     "branch": "feature/agent-control-plane-v2-20260928",
     "head_sha": "06f8085f54833d24b4c42e77e22f6c09f1f621b7",
     "draft": true,
+    "mergeable": true,
     "safe_to_merge": false,
-    "reason_not_mergeable_yet": "Current main has advanced beyond the PR base; current-main reconciliation, exact-head verification, product-contract completion, and independent review remain required."
+    "authoritative_main_sha": "fd2866efafcc0dd845353a6c0e78931f13ec5040",
+    "reason_not_mergeable_yet": "Draft; current-main reconciliation/exact-head verification and remaining product/workflow P1 contracts plus independent review are still required."
   },
-  "pending_jobs": ["controller-20260928-1628-agentcontrol-reconcile"],
-  "active_work": [{"owner":"single autonomous controller","boundary":"PR #59 Agent Control current-main reconciliation and verification","job":"controller-20260928-1628-agentcontrol-reconcile"}],
-  "tests_checks": ["Bridge cycle-2 route discovery result: done/exit 0/empty output (not sufficient evidence of route).", "Cycle-3 reconciliation/check/test job queued; result pending and no success claimed."],
-  "commits_prs_issues_jobs": ["heaven-bridge commit b50d6ed1eff54418264b08e391eb9026d158316a queued reconciliation job", "PR #59 remains canonical implementation lane"],
-  "blockers": ["No verified mhw-fast/local Codex route was discovered by prior job.", "PR #59 is stale relative to current main and still requires the product/workflow contracts listed in its live PR body plus independent review."],
-  "unfinished_work": ["Read controller-20260928-1628-agentcontrol-reconcile result first next cycle.", "If merge/check/tests pass, preserve the reconciled commit/worktree evidence and determine a credential-safe path to update the canonical PR branch; do not push from heaven unless explicitly authorized.", "If conflicts occur, use returned conflict evidence to repair through an authorized lane without duplicating ownership.", "Complete remaining #59 product/workflow P1 contracts and independent review before integration."],
-  "likely_next_priorities": ["Finish PR #59 reconciliation/verification if unblocked.", "If #59 is provider/authorization blocked, select the next highest-value unowned P1/P2 task executable without Codex."],
-  "next_cycle_start": ["Read result controller-20260928-1628-agentcontrol-reconcile first.", "Refresh main, PR #59 head, issue/ownership state before any mutation.", "Do not create a competing Agent Control branch/lane."]
+  "pending_jobs": ["controller-20260928-1726-agentcontrol-reconcile-v2"],
+  "active_work": [{"owner":"single autonomous controller","boundary":"PR #59 Agent Control current-main reconciliation and verification","job":"controller-20260928-1726-agentcontrol-reconcile-v2"}],
+  "tests_checks": [
+    "Prior malformed job: ERROR INVALID_PROTOCOL/source null/exit 1; confirmed it never executed the intended command.",
+    "Corrected queue payload committed successfully on heaven-bridge at 4372f4f63f6c3048fb558916e6ea329508e2734a.",
+    "Corrected result path checked immediately after dispatch: not present yet; execution outcome pending."
+  ],
+  "commits_prs_issues_jobs": [
+    "heaven-bridge commit 4372f4f63f6c3048fb558916e6ea329508e2734a queued corrected bridge-v2 reconciliation job",
+    "PR #59 remains canonical Agent Control implementation lane"
+  ],
+  "blockers": [
+    "Corrected Heaven Local Bridge job has not produced a result yet.",
+    "PR #59 remains draft and still has explicit product/workflow P1 contracts and independent review requirements before integration."
+  ],
+  "unfinished_work": [
+    "Read result controller-20260928-1726-agentcontrol-reconcile-v2 first next cycle.",
+    "If merge/check/tests pass, preserve exact reconciled head evidence and use an authorized credential-safe lane for any canonical branch update; do not push from heaven unless explicitly authorized.",
+    "If conflicts/tests fail, repair from returned evidence without creating a competing Agent Control lane.",
+    "Complete remaining #59 product/workflow P1 contracts and independent review before integration."
+  ],
+  "likely_next_priorities": [
+    "Consume corrected bridge result and finish PR #59 reconciliation/verification.",
+    "If #59 becomes authorization/provider blocked, select the next highest-value unowned P1/P2 task executable through the verified local bridge path."
+  ],
+  "next_cycle_start": [
+    "Read controller-20260928-1726-agentcontrol-reconcile-v2 result first.",
+    "Refresh main, PR #59 head/reviews/CI, issues and ownership before mutation.",
+    "Do not create a competing Agent Control branch/lane."
+  ]
 }
