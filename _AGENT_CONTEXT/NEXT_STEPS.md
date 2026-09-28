@@ -1,3 +1,11 @@
+# Support finding — updater cross-session ownership — 2026-09-28
+
+Read `_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md`. At canonical main `a83dc6e047ccf98e896f10c25772df99b95426d1`, `UpdateMutexLease` uses a `Local\\MHWMM.Update.<hash>` named semaphore. Windows defines `Local\\` named kernel objects as session-scoped, while the current updater contention test covers only one session. Preserve LR-011. Keep the future ownership checkpoint separate from the currently active updater publication/WPF/metadata work.
+
+No production source, tests, workflows, or verification cache changed in this support checkpoint.
+
+---
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
