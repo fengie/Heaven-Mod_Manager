@@ -126,6 +126,32 @@ public sealed class UpdaterCoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Artifact_download_rejects_non_github_api_host_before_sending_request()
+    {
+        Directory.CreateDirectory(root);
+        var manifest = Manifest(11);
+        var candidate = new UpdateCandidate(
+            manifest,
+            new Uri("https://api.github.com.evil.invalid/assets/artifact"),
+            new Uri("https://api.github.com/assets/manifest"));
+        var sent = false;
+        using var http = new HttpClient(new FakeHandler(_ =>
+        {
+            sent = true;
+            return BytesResponse(new byte[checked((int)manifest.ArtifactSize)]);
+        }));
+        var source = new GitHubUpdateSource(http);
+        var destination = Path.Combine(root, "update.zip");
+
+        var ex = await Assert.ThrowsAsync<InvalidDataException>(
+            () => source.DownloadArtifactAsync(candidate, "fixture-token", destination, TestToken));
+
+        Assert.Contains("api.github.com", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(sent);
+        Assert.False(File.Exists(destination));
+    }
+
+    [Fact]
     public async Task Artifact_download_requests_octet_stream_from_release_asset_api()
     {
         Directory.CreateDirectory(root);
