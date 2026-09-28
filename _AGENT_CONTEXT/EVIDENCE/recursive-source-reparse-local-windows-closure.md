@@ -42,4 +42,4 @@ Before production repair, real Windows junction regressions failed:
 - ReadyToRun fallback used: False
 - ZIP SHA-256: `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
 
-Hosted Windows Release Gate remains pending for the final branch candidate; this local evidence must not be represented as hosted closure.
+Hosted Windows Release Gate was **not executed** from this session. The workflow supports branch verification through `workflow_dispatch`, but the available GitHub connector has no dispatch action; `gh` is absent on `heaven2`; and the tool safety layer blocked credential extraction for a direct API dispatch. This local evidence must not be represented as hosted closure. The next agent/operator must dispatch the gate against the exact final branch HEAD and preserve its run ID/artifacts before closure.

@@ -103,6 +103,6 @@ Release build:
 
 **Still separate audited work:** CAS filesystem identity/reparse/hardlink policy, CAS digest namespace validation, broader multi-file crash matrices, statement-level SQLite failure injection, migration interruption/idempotency, wider mutation concurrency, and scale/performance workloads.
 
-**Hosted verification:** pending at the time of this report section; do not call the boundary fully closed until the exact branch candidate passes the hosted Windows Release Gate.
+**Hosted verification — NOT EXECUTED:** this workflow runs on pushes to `main` or by `workflow_dispatch`. The available GitHub connector can inspect and rerun existing Actions runs but cannot dispatch a new workflow, `gh` is not installed on `heaven2`, and the tool safety layer blocked secure credential extraction for a direct REST dispatch. The local `Verify-Release.ps1` and `Build-Release.ps1` gates were actually executed and are green, but they do not substitute for hosted-runner evidence. A future agent/operator must dispatch the Windows Release Gate against the exact branch HEAD, record its run ID/artifacts, and only then mark this boundary fully closed.
 
 No destructive test touched the real game installation, real mod library, Desktop, OneDrive, or personal data; all hostile fixtures were isolated temporary directories.

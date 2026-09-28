@@ -109,7 +109,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run the exact hosted Windows Release Gate against the final recursive-source branch candidate. If green, persist hosted evidence and mark this boundary closed before starting any separate CAS filesystem-identity/digest-namespace, migration, concurrency, or other safety boundary.",
+  "nextRequiredAction": "Dispatch the exact hosted Windows Release Gate against the final recursive-source branch HEAD. This session could not start a new workflow because the GitHub connector exposes inspection/rerun but no workflow_dispatch action, gh is absent on heaven2, and secure credential extraction was blocked by the tool safety layer. If the hosted gate is green, persist its run ID/artifacts and mark this boundary closed before starting any separate CAS filesystem-identity/digest-namespace, migration, concurrency, or other safety boundary.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
