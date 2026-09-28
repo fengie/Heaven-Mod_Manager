@@ -1,0 +1,225 @@
+{
+  "formatVersion": 1,
+  "repository": "fengie/mhw-mods",
+  "canonicalMain": "4fd61dd33609a7c55e5aedbaad026266a410f942",
+  "asOfUtc": "2026-09-28T09:15:00Z",
+  "rule": "Re-check live GitHub state before acting. Historical entries must not be merged wholesale merely because Git ancestry shows unique commits. Update this ledger when disposition changes.",
+  "activeCurrent": [
+    {
+      "pr": 35,
+      "branch": "agent/archive-streaming-budget-20260928",
+      "ahead": 3,
+      "behind": 0,
+      "scope": "archive streaming cancellation/output budget"
+    },
+    {
+      "pr": 34,
+      "branch": "agent/support-bundle-share-safety-20260928",
+      "ahead": 2,
+      "behind": 0,
+      "scope": "support bundle log sanitization"
+    },
+    {
+      "pr": 33,
+      "branch": "agent/support-legacy-migration-hardlink-runtime-20260928",
+      "ahead": 1,
+      "behind": 0,
+      "scope": "legacy migration hardlink runtime characterization"
+    },
+    {
+      "pr": 32,
+      "branch": "agent/support-auto-updater-release-security-audit-20260928",
+      "ahead": 6,
+      "behind": 0,
+      "scope": "auto-updater release/recovery safety audit"
+    }
+  ],
+  "historicalIntegrated": [
+    {
+      "pr": 31,
+      "branch": "agent/heavy-stress-safety-20260928",
+      "ahead": 8,
+      "behind": 16,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"
+    },
+    {
+      "pr": 30,
+      "branch": "agent/support-archive-resource-cancellation-audit-20260928",
+      "ahead": 1,
+      "behind": 16,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"
+    },
+    {
+      "pr": 29,
+      "branch": "agent/support-archive-hardening-audit-20260928",
+      "ahead": 3,
+      "behind": 16,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"
+    },
+    {
+      "pr": 28,
+      "branch": "agent/support-recursive-source-candidate-audit-20260928",
+      "ahead": 1,
+      "behind": 17,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"
+    },
+    {
+      "pr": 27,
+      "branch": "agent/recursive-source-reparse-hardening-20260927",
+      "ahead": 9,
+      "behind": 16,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"
+    },
+    {
+      "pr": 25,
+      "branch": "agent/support-cas-digest-namespace-audit-20260927",
+      "ahead": 4,
+      "behind": 38,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 23,
+      "branch": "agent/support-cas-filesystem-identity-audit-20260927",
+      "ahead": 5,
+      "behind": 37,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 22,
+      "branch": "agent/support-recursive-source-containment-audit-20260927",
+      "ahead": 1,
+      "behind": 38,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 18,
+      "branch": "agent/support-import-publication-integrity-audit-20260927",
+      "ahead": 26,
+      "behind": 70,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 16,
+      "branch": "agent/support-crash-bisect-diagnosis-audit-20260927",
+      "ahead": 2,
+      "behind": 87,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 15,
+      "branch": "agent/support-mod-lifecycle-integrity-audit-20260927",
+      "ahead": 9,
+      "behind": 88,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 14,
+      "branch": "agent/support-launch-health-revalidation-audit-20260927",
+      "ahead": 1,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 12,
+      "branch": "agent/support-7-legacy-migration-recovery-audit-20260927",
+      "ahead": 9,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 11,
+      "branch": "agent/support-8-diagnostics-privacy-audit-20260927",
+      "ahead": 9,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 10,
+      "branch": "agent/support-network-preview-security-audit-20260927",
+      "ahead": 1,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 9,
+      "branch": "agent/support-7-state-backup-portability-audit-20260927",
+      "ahead": 1,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 8,
+      "branch": "agent/support-6-mhw-semantic-coverage-fill-audit-20260927",
+      "ahead": 1,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 7,
+      "branch": "agent/windows-filesystem-safety-audit-20260927",
+      "ahead": 8,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 6,
+      "branch": "agent/support-5-async-lifetime-audit-20260927",
+      "ahead": 2,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 5,
+      "branch": "agent/support-5-multisource-bulk-fill-audit-20260927",
+      "ahead": 1,
+      "behind": 109,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 4,
+      "branch": "agent/test-gap-performance-audit-20260927-v2",
+      "ahead": 8,
+      "behind": 116,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 3,
+      "branch": "audit/verification-infrastructure-20260927",
+      "ahead": 3,
+      "behind": 116,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    },
+    {
+      "pr": 2,
+      "branch": "agent/support-3-mainwindow-ui-audit-20260927",
+      "ahead": 2,
+      "behind": 116,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    }
+  ],
+  "historicalRedundant": [
+    {
+      "pr": 24,
+      "branch": "agent/support-cas-reparse-policy-audit-20260927",
+      "ahead": 3,
+      "behind": 36,
+      "authority": "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md"
+    }
+  ],
+  "unresolvedFeature": [
+    {
+      "pr": 13,
+      "branch": "agent/smart-pack-planner-core",
+      "ahead": 12,
+      "behind": 109,
+      "action": "fresh current-main re-audit required"
+    },
+    {
+      "pr": 1,
+      "branch": "codex/complete-mod-workflows",
+      "ahead": 10,
+      "behind": 185,
+      "action": "fresh current-main re-audit required"
+    }
+  ]
+}
