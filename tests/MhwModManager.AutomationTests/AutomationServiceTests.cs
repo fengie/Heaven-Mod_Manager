@@ -53,6 +53,44 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task DuplicateArchiveDeleteFailureRestoresSourceAndKeepsRow()
+    {
+        var db=await CreateDbAsync("dupes-delete-failure.db");
+        var a=Path.Combine(root,"Failure A");
+        var b=Path.Combine(root,"Failure B");
+        var archive=Path.Combine(root,"archive-delete-failure");
+        Directory.CreateDirectory(a);
+        Directory.CreateDirectory(b);
+        var marker=Path.Combine(a,"marker.txt");
+        await File.WriteAllTextAsync(marker,"preserve-me",TestContext.Current.CancellationToken);
+
+        await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            """
+            CREATE TRIGGER fail_duplicate_delete
+            BEFORE DELETE ON mods
+            WHEN OLD.id='a'
+            BEGIN
+                SELECT RAISE(ABORT,'injected duplicate cleanup delete failure');
+            END;
+            """,
+            ct:TestContext.Current.CancellationToken);
+
+        var service=new DuplicateCleanupService(db,archive);
+
+        await Assert.ThrowsAnyAsync<Exception>(async()=>await service.ArchiveSafeAsync(TestContext.Current.CancellationToken));
+
+        Assert.True(Directory.Exists(a));
+        Assert.Equal("preserve-me",await File.ReadAllTextAsync(marker,TestContext.Current.CancellationToken));
+        Assert.Empty(Directory.EnumerateDirectories(archive));
+        Assert.Contains(await db.GetModsAsync(TestContext.Current.CancellationToken),m=>m.Id=="a");
+        Assert.True(Directory.Exists(b));
+    }
+
+    [Fact]
     public async Task EffectiveInspectorShowsWinnerAndShadowedProvider()
     {
         var db=await CreateDbAsync("inspect.db");await SeedModAsync(db,"a","A");await SeedModAsync(db,"b","B");
