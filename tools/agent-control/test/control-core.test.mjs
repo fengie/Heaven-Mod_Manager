@@ -9,6 +9,7 @@ import {
   interpretCommand,
   supportLanesFor,
   canUseMachineForRepositoryWrite,
+  classifyAuthoritativeExit,
   isIntegrationEligible,
   recommendNextActions,
   takeoverContext
@@ -121,6 +122,20 @@ test("integration eligibility requires authoritative successful exit", () => {
   assert.equal(isIntegrationEligible({ status: "done", exitCode: 0, completionEvidence: "authoritative-exit" }), true);
   assert.equal(isIntegrationEligible({ status: "done", exitCode: 0, completionEvidence: "reconciled-from-output" }), false);
   assert.equal(isIntegrationEligible({ status: "interrupted", exitCode: null, completionEvidence: null }), false);
+});
+
+test("operator stop intent dominates an authoritative zero exit", () => {
+  const stopping = { status: "stopping" };
+  const blockedAfterStop = { status: "blocked", stopRequestedAt: "2026-09-28T16:00:00.000Z" };
+  assert.equal(classifyAuthoritativeExit(stopping, 0), "stopped");
+  assert.equal(classifyAuthoritativeExit(blockedAfterStop, 0), "stopped");
+  assert.equal(classifyAuthoritativeExit({ status: "running" }, 0), "done");
+  assert.equal(classifyAuthoritativeExit({ status: "running" }, 1), "failed");
+  assert.equal(isIntegrationEligible({
+    status: classifyAuthoritativeExit(stopping, 0),
+    exitCode: 0,
+    completionEvidence: "verified-operator-stop"
+  }), false);
 });
 
 test("recommendations prioritize uncertain worker reconciliation", () => {
