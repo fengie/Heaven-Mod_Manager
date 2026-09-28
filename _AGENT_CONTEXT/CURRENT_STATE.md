@@ -1,3 +1,9 @@
+## Current updater publication repair — 2026-09-28
+
+Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.
+
+C12 is isolated on `agent/auto-updater-publication-fix-20260928` and normalizes empty CLI release output while validating all nonempty rows. Focused policy tests and `git diff --check` pass under Windows PowerShell 5.1 / .NET 10.0.401. Full verifier/build, hosted rerun/publication, and disposable live update/rollback proof remain pending. Detailed handoff: `_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md`.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.

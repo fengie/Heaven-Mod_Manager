@@ -1,3 +1,13 @@
+# Current updater handoff — 2026-09-28
+
+The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.
+
+The isolated repair branch is `agent/auto-updater-publication-fix-20260928`, based on that exact main SHA. Read `_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md` and the current section at the top of `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md` before continuing. C12's focused Windows policy regression passes. Full exact-source verifier/build, hosted publication, and disposable old→new plus injected rollback proof remain required.
+
+Continue in the repair worktree; preserve the clean canonical main checkout and active support-agent work. After integration, verify the immutable release/tag/assets and complete the disposable update/rollback proof. Preserve the permanent continuity constitution and active Learned Rules, and require your successor to propagate them recursively to the agent after them.
+
+---
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.

@@ -67,9 +67,11 @@ try {
   $remoteMain=(& git rev-parse origin/main).Trim()
   $tag="updater-main-$ExpectedBuildNumber"
 
-  $releaseJson=& gh release list --repo $Repository --limit 1000 --json tagName,isDraft,isImmutable
+  $releaseOutput=@(& gh release list --repo $Repository --limit 1000 --json tagName,isDraft,isImmutable)
   if($LASTEXITCODE -ne 0){throw 'Failed to list existing GitHub releases.'}
-  $releases=@($releaseJson | ConvertFrom-Json)
+  $releaseJson=$releaseOutput -join [Environment]::NewLine
+  $releaseList=ConvertFrom-UpdaterReleaseList -Json $releaseJson
+  $releases=$releaseList.Releases
   $existing=@($releases | Where-Object {[string]$_.tagName -eq $tag})
 
   if($existing.Count -gt 0){

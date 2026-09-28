@@ -1,5 +1,15 @@
 # Updater: exact continuation checklist
 
+## Current canonical updater state — 2026-09-28
+- Starting `origin/main` and the historical updater branch `agent/auto-updater-20260928` both resolve to `a83dc6e047ccf98e896f10c25772df99b95426d1`; the canonical checkout was clean.
+- PR #48 integrated the C11b publication and native-recovery closure. PRs #44–#46 and #49 remain open support PRs; inspect current branch ancestry/diffs before assigning any disposition.
+- Hosted Windows Release Gate run **36428542918** passed repository verification, release build/package verification, and publication-policy tests, then failed only in `Publish-UpdaterRelease.ps1` when PowerShell strict mode accessed `tagName` on the empty first-release inventory. GitHub currently has no releases.
+- Active repair branch/worktree: `agent/auto-updater-publication-fix-20260928`, based on the exact main SHA above. See `_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md`.
+- C12 adds fail-closed release-list shape validation and tests for empty stdout/JSON, valid rows, malformed JSON, null rows, and missing properties. Windows policy test and diff check pass; full verifier/build, hosted rerun, publication, and installed-client old→new/rollback proof remain pending.
+- Continue from this branch. Do not touch the separate clean canonical main worktree. After exact local gates, commit/push, integrate through the repository workflow, confirm release bytes, then complete disposable old→new and injected rollback with user-data and build-identity checks.
+
+
+
 ## Start here
 - Fetch all remotes, inspect status and recent commits. Preserve other agents' work.
 - Canonical base: 4fd61dd33609a7c55e5aedbaad026266a410f942.

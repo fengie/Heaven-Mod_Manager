@@ -1,5 +1,39 @@
 Set-StrictMode -Version Latest
 
+function ConvertFrom-UpdaterReleaseList {
+  param([AllowNull()][AllowEmptyString()][string]$Json)
+
+  if([string]::IsNullOrWhiteSpace($Json)){
+    return [pscustomobject]@{Releases=[object[]]@()}
+  }
+
+  $trimmed=$Json.Trim()
+  if(-not $trimmed.StartsWith('[',[StringComparison]::Ordinal) -or -not $trimmed.EndsWith(']',[StringComparison]::Ordinal)){
+    throw 'GitHub release list was not a JSON array.'
+  }
+
+  try{$parsed=ConvertFrom-Json -InputObject $trimmed -ErrorAction Stop}catch{
+    throw 'GitHub release list contained invalid JSON.'
+  }
+  if($null -eq $parsed -and $trimmed -ne '[]'){
+    throw 'GitHub release list did not contain a valid release array.'
+  }
+
+  $releases=@($parsed)
+  foreach($release in $releases){
+    if($null -eq $release){throw 'GitHub release list contained a null entry.'}
+    foreach($property in @('tagName','isDraft','isImmutable')){
+      if($null -eq $release.PSObject.Properties[$property]){
+        throw "GitHub release list entry omitted required property '$property'."
+      }
+    }
+    if([string]::IsNullOrWhiteSpace([string]$release.tagName)){
+      throw 'GitHub release list entry contained an empty tagName.'
+    }
+  }
+  return [pscustomobject]@{Releases=[object[]]$releases}
+}
+
 function Get-UpdaterBuildFromTag {
   param([Parameter(Mandatory=$true)][string]$Tag)
   $prefix='updater-main-'
