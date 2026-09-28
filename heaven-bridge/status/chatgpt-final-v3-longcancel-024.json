@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-final-v3-longcancel-024",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-28T19:59:29.236198+00:00"
+  "updated_at": "2026-09-28T20:01:05.110021+00:00",
+  "exit_code": 0
 }
