@@ -24,7 +24,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         var staging = destination + ".importing";
         if (Directory.Exists(staging)) Directory.Delete(staging, true);
 
-        await archive.ExtractSafelyAsync(archivePath, staging, ct);
+        await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
         await Task.Run(() => NormalizeSingleWrapper(staging), ct);
         Directory.Move(staging, destination);
         await catalog.RefreshFoldersAsync(ct);

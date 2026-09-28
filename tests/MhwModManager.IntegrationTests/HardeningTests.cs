@@ -545,7 +545,7 @@ public sealed class HardeningTests : IDisposable
         var inspector = new ArchiveInspector();
         var inspection = await inspector.InspectAsync(zip, TestToken);
         Assert.True(inspection.HasSuspiciousPaths);
-        Assert.Throws<InvalidDataException>(() => inspector.ExtractSafely(zip, destination, TestToken));
+        Assert.Throws<InvalidDataException>(() => inspector.ExtractSafely(zip, destination, root, TestToken));
         Assert.False(File.Exists(Path.Combine(root, "escape.txt")));
     }
 
@@ -570,7 +570,7 @@ public sealed class HardeningTests : IDisposable
 
         var destination=Path.Combine(modsRoot,"fixture.importing");
         var inspector=new ArchiveInspector();
-        Assert.Throws<InvalidDataException>(()=>inspector.ExtractSafely(zip,destination,TestToken));
+        Assert.Throws<InvalidDataException>(()=>inspector.ExtractSafely(zip,destination,modsRoot,TestToken));
         Assert.False(File.Exists(Path.Combine(external,"fixture.importing","nativePC","x.tex")));
     }
 
