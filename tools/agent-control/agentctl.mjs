@@ -54,6 +54,8 @@ Commands:
   routing
   routing-set --file C:\\path\\routing.json
   routing-clear
+  autonomy
+  autonomy-set LEVEL
   deploy --role support --task "..." [options]
   deploy --role support --task-file C:\\path\\task.txt [options]
   review <agent-id> [--task "..."] [--task-file C:\\path\\review.txt]
@@ -133,6 +135,20 @@ try {
     print(await request("/api/control/routing-manifest", {
       method: "POST",
       body: JSON.stringify({ clear: true, reason: "agentctl-routing-clear" })
+    }));
+  } else if (command === "autonomy") {
+    const data = await request("/api/workflows");
+    const level = data.settings?.autonomyLevel || null;
+    print({
+      autonomyLevel: level,
+      profile: level ? data.autonomyProfiles?.[level] || null : null
+    });
+  } else if (command === "autonomy-set") {
+    const level = String(flags._[1] || flags.level || "").trim();
+    if (!level) throw new Error("Autonomy level is required.");
+    print(await request("/api/control/settings", {
+      method: "POST",
+      body: JSON.stringify({ autonomyLevel: level, reason: "agentctl-autonomy-set" })
     }));
   } else if (command === "deploy") {
     const task = readTask(flags);
