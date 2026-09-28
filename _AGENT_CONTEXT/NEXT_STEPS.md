@@ -1,8 +1,8 @@
 # Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
 
-Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Reconciled exact local verification source: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
 
-Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox. After reconciling current canonical `main` (including the company trainer/governance additions), exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed `Verify-Release.ps1` **25/25** with functions **614/614** and call sites **6512 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, strict analyzers, and ReadyToRun publish. Reconciled release SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
 
 Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
 
@@ -11,7 +11,7 @@ Do not call this boundary fully closed until the exact final branch candidate pa
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
-Recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox is implemented and local-Windows green on this branch. The next action is exact reconciliation verification plus the hosted Windows Release Gate, not another production feature. The new company trainer in `_AGENT_TRAINING/` does not change that closure priority. Future agents must also evaluate meaningful reusable lessons for promotion into the trainer while keeping transient MHW state in `_AGENT_CONTEXT/`. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+Recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox is implemented and exact local-Windows green after reconciliation with current canonical `main`. The next action is the hosted Windows Release Gate against the exact final branch HEAD, not another production feature. The new company trainer in `_AGENT_TRAINING/` does not change that closure priority. Future agents must also evaluate meaningful reusable lessons for promotion into the trainer while keeping transient MHW state in `_AGENT_CONTEXT/`. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ## Newly integrated support research
 
@@ -41,13 +41,14 @@ The LR-003 boundary is complete. `ReplaceFileW == false` is no longer treated as
 
 **Close recursive source reparse containment; do not start another production boundary yet.**
 
-The test-first implementation and real Windows descendant-junction regressions are already present. After reconciling with current canonical `main`:
+The test-first implementation and real Windows descendant-junction regressions are already present. Reconciliation with current canonical `main` is complete, and exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed both local Windows gates.
 
-1. run the exact local Windows `Verify-Release.ps1` gate;
-2. run the exact `Build-Release.ps1` release/publish gate;
-3. inspect the final diff/status and push the reconciled candidate;
-4. dispatch the hosted Windows Release Gate against that exact branch HEAD;
-5. persist the hosted run ID/artifacts and only then mark this boundary CLOSED.
+The remaining closure sequence is:
+
+1. commit/push the verification cache and durable evidence generated from that exact source;
+2. ensure the branch is still reconciled with current canonical `main`;
+3. dispatch the hosted Windows Release Gate against the exact final branch HEAD;
+4. persist the hosted run ID/artifacts and only then mark this boundary CLOSED.
 
 Keep dedicated root/file-leaf/cycle fixtures, handle/file-ID TOCTOU, hardlinks, CAS identity/digest namespace, migration, broader concurrency/crash matrices, and scale/performance as separate future work.
 

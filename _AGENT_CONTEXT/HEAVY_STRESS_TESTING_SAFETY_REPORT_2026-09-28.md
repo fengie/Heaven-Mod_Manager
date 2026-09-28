@@ -74,6 +74,8 @@ Focused real-Windows post-fix runs:
 - Automation: **21/21 PASS**
 - both projects build with **0 warnings / 0 errors**.
 
+Final exact local verification source after reconciling current canonical `main`: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
+
 Repository verifier on Win32NT / Windows 10.0.26200 / .NET SDK 10.0.401:
 - **25/25 PASS**
 - functions **614 total / 614 verified after promotion**
@@ -92,7 +94,10 @@ Release build:
 - self-test **11/11**
 - win-x64 compile/analyzers PASS
 - ReadyToRun self-contained publish PASS, fallback false
-- release ZIP SHA-256: `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+- release ZIP SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
+
+Company-trainer review: no new generic trainer rule was added. The reusable lessons exposed here—physical containment is distinct from lexical containment, destructive/stateful traversal should fail closed, publication should be commit-on-success, and failure tests must assert durable postconditions—are already captured in `_AGENT_TRAINING/SAFETY_AND_DESTRUCTIVE_OPERATIONS.md` and `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md`.
+
 ## Remaining risks
 
 **Proven safe by executed tests:** descendant Windows junction rejection for scanner, adoption, and direct-directory Smart Inbox; no durable/copy/catalog side effects in those fixtures; ordinary existing happy paths remain green.

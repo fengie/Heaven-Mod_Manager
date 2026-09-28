@@ -1,8 +1,8 @@
 # Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
 
-Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`. Reconciled exact local verification source: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`.
 
-Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox. After reconciling current canonical `main` (including the company trainer/governance additions), exact source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed `Verify-Release.ps1` **25/25** with functions **614/614** and call sites **6512 / 0 uncovered**; `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, strict analyzers, and ReadyToRun publish. Reconciled release SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
 
 Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
 
@@ -11,7 +11,7 @@ Do not call this boundary fully closed until the exact final branch candidate pa
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
-Recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox is now implemented and local-Windows green on this branch. The immediate action is to reconcile with current canonical `main`, rerun the exact local Windows gates on that reconciled candidate, and then obtain the hosted Windows Release Gate before declaring closure. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must also read the company trainer, evaluate reusable lessons, and inherit/preserve/recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+Recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox is implemented and exact local-Windows green after reconciliation with current canonical `main`. The immediate remaining action is the hosted Windows Release Gate against the exact final branch HEAD before declaring closure. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must also read the company trainer, evaluate reusable lessons, and inherit/preserve/recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
 # NEXT AGENT â€” START HERE
@@ -59,7 +59,7 @@ This LR-003 boundary is complete and hosted-Windows verified.
 
 The recursive source reparse containment implementation is already present and locally Windows-verified. The **exact next action is closure verification**, not new production code.
 
-Reconcile with current canonical `main`, rerun the exact local Windows verifier and release build on the reconciled source, push that candidate, then dispatch the hosted Windows Release Gate against its exact HEAD. Persist hosted evidence before marking the boundary CLOSED.
+Canonical reconciliation and exact local Windows verification are complete on source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`. Commit/push the resulting verification cache and durable evidence, confirm the branch is still current with canonical `main`, then dispatch the hosted Windows Release Gate against the exact final HEAD. Persist hosted evidence before marking the boundary CLOSED.
 
 Keep CAS root/hash-leaf filesystem identity, digest namespace validation, migration, async, diagnostics, networking, backup, Smart Pack, TOCTOU/hardlinks, and broader stress matrices as separate boundaries.
 

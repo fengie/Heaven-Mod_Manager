@@ -4,6 +4,7 @@
 - Device: heaven2 / Win32NT / Windows 10.0.26200
 - .NET SDK: 10.0.401
 - Source implementation commit: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`
+- Reconciled exact local verification source: `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5`
 - Branch: `agent/recursive-source-reparse-hardening-20260927`
 
 ## Test-first failure evidence
@@ -40,6 +41,6 @@ Before production repair, real Windows junction regressions failed:
 - self-test 11/11
 - ReadyToRun self-contained win-x64 publish PASS
 - ReadyToRun fallback used: False
-- ZIP SHA-256: `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+- ZIP SHA-256: `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
 
 Hosted Windows Release Gate was **not executed** from this session. The workflow supports branch verification through `workflow_dispatch`, but the available GitHub connector has no dispatch action; `gh` is absent on `heaven2`; and the tool safety layer blocked credential extraction for a direct API dispatch. This local evidence must not be represented as hosted closure. The next agent/operator must dispatch the gate against the exact final branch HEAD and preserve its run ID/artifacts before closure.

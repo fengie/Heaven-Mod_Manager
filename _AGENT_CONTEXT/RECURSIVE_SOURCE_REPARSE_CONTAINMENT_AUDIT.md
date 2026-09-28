@@ -4,7 +4,7 @@ Status: **implemented and fully local-Windows verified; hosted Windows Release G
 
 The tests-first implementation is on `agent/recursive-source-reparse-hardening-20260927`. Real junction regressions first failed against unchanged production behavior, proving scanner/adoption followed junctions and Smart Inbox imported a junction-containing tree. Production commit `f51f72927e8f90c264df1ef197ba6c9bbe2704de` adds shared fail-closed `SafeRecursiveTraversal` and migrates all three consumers.
 
-Post-fix local Windows evidence: Integration **91/91**, Automation **21/21**, repository verifier **25/25**, functions **614/614**, call sites **6512 / 0 uncovered**, self-test **11/11**, strict analyzers PASS, ReadyToRun release publish PASS, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+After reconciling current canonical `main`, exact local Windows source `ba8b9a049b9b6e1c68cf24cbeb337b9e91d5dfd5` passed Integration **91/91**, Automation **21/21**, repository verifier **25/25**, functions **614/614**, call sites **6512 / 0 uncovered**, self-test **11/11**, strict analyzers PASS, ReadyToRun release publish PASS, release SHA-256 `7B46BF7CBC85F4818B49D478613E3FE20F5F83E98E416F60E2D9F79D03E7F686`.
 
 Residuals remain explicit: path-check/open TOCTOU, hardlinks, and dedicated root/file-leaf/cycle fixture coverage. Do not conflate those with the proven descendant-junction regression.
 
