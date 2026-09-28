@@ -77,12 +77,42 @@ function Require-Stage {
   if($code -ne 0){throw "$Name failed (exit $code). See $LogPath"}
 }
 
+function New-DeterministicZip {
+  param([string]$SourceRoot,[string]$Destination,[DateTimeOffset]$Timestamp)
+  Add-Type -AssemblyName System.IO.Compression
+  $resolved=(Resolve-Path -LiteralPath $SourceRoot).Path
+  Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
+  $stream=[IO.File]::Open($Destination,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+  try {
+    $archive=[IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create,$true)
+    try {
+      foreach($file in Get-ChildItem -LiteralPath $resolved -Recurse -File | Sort-Object FullName){
+        $relative=$file.FullName.Substring($resolved.Length).TrimStart('\','/').Replace('\','/')
+        $entry=$archive.CreateEntry($relative,[IO.Compression.CompressionLevel]::Optimal)
+        $entry.LastWriteTime=$Timestamp
+        $input=$file.OpenRead()
+        $output=$entry.Open()
+        try {$input.CopyTo($output)} finally {$output.Dispose();$input.Dispose()}
+      }
+    } finally {$archive.Dispose()}
+  } finally {$stream.Dispose()}
+}
+
 Push-Location $Root
 try{
   Write-Host ("SDK: "+$version)
   Write-Host ("Master build transcript: "+$masterLog)
   Write-Host ("MASTER DEBUG LOG (send this file): "+$MasterDebug) -ForegroundColor Yellow
   Write-MhwMasterDebug -Root $Root -Area 'BUILD' -Message ("SDK="+$version+"; Transcript="+$masterLog+"; MasterDebug="+$MasterDebug)
+
+  $dirtyTracked=@(& git diff HEAD --name-only -- | Where-Object {
+    -not $_.Replace('\','/').StartsWith('.verification/',[StringComparison]::OrdinalIgnoreCase)
+  })
+  $dirtyUntracked=@(& git ls-files --others --exclude-standard)
+  $dirtyInputs=@($dirtyTracked+$dirtyUntracked | Sort-Object -Unique)
+  if($dirtyInputs.Count -gt 0){
+    throw "Release build requires an exact committed checkout. Dirty paths: $($dirtyInputs -join ', ')"
+  }
 
   & (Join-Path $PSScriptRoot 'Test-AgentHandoff.ps1') -Root $Root
   & (Join-Path $PSScriptRoot 'Test-VerificationCache.ps1')
@@ -96,10 +126,14 @@ try{
   $selfTestOutput = Join-Path $Root 'BuildLogs'
   Require-Stage 'Automation self-test' @('run','-c','Release','--project','.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-build','--',$selfTestOutput) (Join-Path $logRoot ("build-selftest-"+$stamp+".log"))
   $appVersion=(Get-Content (Join-Path $Root 'VERSION.txt') -Raw).Trim()
+  $headSha=(& git rev-parse HEAD).Trim()
   $sourceSha=$env:MHW_UPDATE_SOURCE_SHA
   if([string]::IsNullOrWhiteSpace($sourceSha)){$sourceSha=$env:GITHUB_SHA}
-  if([string]::IsNullOrWhiteSpace($sourceSha)){$sourceSha=(& git rev-parse HEAD).Trim()}
+  if([string]::IsNullOrWhiteSpace($sourceSha)){$sourceSha=$headSha}
   if($sourceSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw "Updater source SHA is malformed: $sourceSha"}
+  if(-not [string]::Equals($sourceSha,$headSha,[StringComparison]::OrdinalIgnoreCase)){
+    throw "Updater source SHA $sourceSha does not match checked-out HEAD $headSha."
+  }
   $buildNumberText=$env:MHW_UPDATE_BUILD_NUMBER
   if([string]::IsNullOrWhiteSpace($buildNumberText)){$buildNumberText=$env:GITHUB_RUN_NUMBER}
   if([string]::IsNullOrWhiteSpace($buildNumberText)){$buildNumberText=(& git rev-list --count HEAD).Trim()}
@@ -107,7 +141,9 @@ try{
   if(-not [long]::TryParse($buildNumberText,[ref]$buildNumber) -or $buildNumber -le 0){
     throw "Updater build number must be a positive integer. Value: $buildNumberText"
   }
-  $buildIdentityUtc=[DateTimeOffset]::UtcNow.ToString('o')
+  $commitTimeText=(& git show -s --format=%cI HEAD).Trim()
+  [DateTimeOffset]$commitTime=[DateTimeOffset]::Parse($commitTimeText,[Globalization.CultureInfo]::InvariantCulture)
+  $buildIdentityUtc=$commitTime.ToUniversalTime().ToString('o')
   $updateChannel='main'
   $executableRelativePath='MHW Mod Manager.exe'
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-UPDATER' -Message ("SourceSha="+$sourceSha+"; BuildNumber="+$buildNumber+"; ProductVersion="+$appVersion)
@@ -159,7 +195,7 @@ try{
       'ReadyToRun optimization was unavailable for this local SDK/runtime-pack combination.',
       'The release was published self-contained with normal JIT compilation instead.',
       'Application behavior and features are unchanged; only ahead-of-time startup optimization is omitted.',
-      ('ReadyToRun log: '+$publishR2RLog)
+      'See the exact gate BuildLogs for ReadyToRun diagnostics.'
     ) | Set-Content (Join-Path $publish 'PUBLISH FALLBACK.txt') -Encoding UTF8
   }
 
@@ -246,8 +282,8 @@ try{
   $art=Join-Path $Root 'artifacts';New-Item -ItemType Directory -Force $art|Out-Null
   $zip=Join-Path $art ($releaseName+'-win-x64.zip')
   Remove-Item $zip -Force -ErrorAction SilentlyContinue
-  Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message ('Compressing release artifact: '+$zip)
-  Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $zip -CompressionLevel Optimal
+  Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message ('Compressing deterministic release artifact: '+$zip)
+  New-DeterministicZip -SourceRoot $publish -Destination $zip -Timestamp $commitTime
   Write-MhwMasterDebug -Root $Root -Area 'BUILD-PACKAGE' -Message 'Computing SHA256.'
   $hash=(Get-FileHash $zip -Algorithm SHA256).Hash
   $zipInfo=Get-Item -LiteralPath $zip
@@ -264,7 +300,7 @@ try{
     productManifestSha256=$productManifestHash
     executableRelativePath=$executableRelativePath
     minimumUpdaterProtocol=1
-    publishedUtc=[DateTimeOffset]::UtcNow.ToString('o')
+    publishedUtc=$buildIdentityUtc
   }
   $updateManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $updateManifestPath -Encoding UTF8
 
