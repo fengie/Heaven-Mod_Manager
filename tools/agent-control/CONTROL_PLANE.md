@@ -58,7 +58,7 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.3.2 registers the controller host as one local worker with:
+v0.4.0 registers the controller host as one local worker with:
 
 - hostname
 - platform/architecture
@@ -86,6 +86,21 @@ last_heartbeat
 ```
 
 Then the scheduler can choose machines by capacity and policy.
+
+## Autonomy authorization
+
+`settings.autonomyLevel` is an enforced server-side authorization boundary.
+
+The declared profiles map to concrete permissions:
+
+- `observe` — no action permissions;
+- `assist` — `recommend`, `preview`;
+- `coordinate` — adds `dispatch-support`, `replace-stale`, `request-review`, and `run-tests`;
+- `engineering-autopilot` — adds `prepare-integration` and `maintain-continuity`.
+
+Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; evidence/persisted-takeover mutation requires `maintain-continuity`; integration verdict mutation and self-improvement execution require `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
+
+The default is `assist`, so a fresh controller can inspect, recommend, and preview without launching agents. The operator must explicitly raise autonomy before dispatch. Safety controls remain outside this restriction so pause/drain/emergency-stop/owned-worker stop and autonomy changes cannot be blocked by the current profile.
 
 ## Integration queue
 
@@ -150,3 +165,4 @@ A future native MCP mode can replace the bridge once the controller has an authe
 10. Child-exit Git evidence is collected before authoritative registry mutation so a stale whole-state snapshot is never saved after an asynchronous yield.
 11. Counted deploys reserve capacity as a batch and fail before the first launch when the full request cannot fit.
 12. Failures after task/lease reservation but before worker launch converge to a failed task and released lease, while retaining created worktree/branch evidence for explicit cleanup.
+13. Autonomy permissions are enforced at server mutation/dispatch boundaries; UI labels or client behavior are not trusted as the authorization mechanism.
