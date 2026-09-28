@@ -177,3 +177,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant report:** _AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-011 — cleanup must not replace primary failure or cancellation semantics
+
+- **Rule ID:** LR-011
+- **Status:** Active
+- **Date:** 2026-09-28
+- **Scope:** cancellation, rollback, temp/staging cleanup, filesystem compensation, and recovery error handling
+- **Rule:** When handling a primary failure or requested cancellation, best-effort cleanup must not silently replace that primary outcome with a secondary cleanup exception. Preserve cancellation/fail-closed semantics as dominant, record cleanup failure separately or attach it without reclassifying the operation, and ensure outer callers cannot mistake cleanup failure for an ordinary recoverable condition that permits continued work.
+- **Trigger / evidence:** Post-PR #57 source inspection found that `ArchiveInspector.ExtractSafelyAsync` catches `OperationCanceledException`, calls `File.Delete(dest)`, and only then executes `throw;`. If that cleanup call itself throws an `IOException` or `UnauthorizedAccessException`, the original cancellation is never rethrown. `SmartInboxService.ProcessAsync` catches those filesystem exceptions as recoverable per-item failures and can continue its loop, so a cleanup failure can conditionally downgrade a user-requested cancellation into “skip this item and continue.” This control-flow result is confirmed statically; no forced-delete runtime reproduction is claimed.
+- **Rationale:** Cleanup is subordinate to the operation outcome it is trying to contain. Allowing cleanup failure to overwrite cancellation or the original fail-closed error can violate caller control flow, hide the real cause, and trigger additional mutation after the user/system already requested stop.
+- **Enforcement:** Fault-test cleanup paths independently from the primary failure. After ownership is established, attempt cleanup on exceptional exits, but preserve the primary exception/outcome and report secondary cleanup failure diagnostically. Callers handling broad I/O exceptions must re-check cancellation dominance before continuing. Do not use cleanup success as the only evidence that an operation is safe to resume.
+- **Relevant audit:** `_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md`
+- **Supersedes:** none
+- **Superseded by:** none
