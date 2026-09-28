@@ -1,3 +1,22 @@
+# Updater C8 atomic publication race — Windows evidence only
+
+Exact production/test commit: `fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.
+
+- Pre-fix focused race regression: **FAILED as intended** — `Unowned_file_created_after_preflight_is_never_overwritten` observed no exception because the raced unknown file was overwritten.
+- Repaired focused updater suite: **58/58 PASS**.
+- Existing LR-003 Atomic ReplaceFileW fixtures (1175/1176/1177): **3/3 PASS**.
+- First full integration after the race repair: **153/154**; sole failure was the inherited `ExternalProcessesCannotBypassMasterProcessTrace` static policy test identifying direct `Process.Start` in the updater helper.
+- Helper launch was switched to the existing `ProcessDebug.Start` wrapper.
+- Final full IntegrationTests: **154/154 PASS**.
+- Strict whole-solution build: **PASS, 0 warnings / 0 errors**.
+- `git diff --check`: PASS.
+- No verification cache was manually promoted.
+- No full repository `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, immutable release publication, or disposable live old→new update is claimed for C8.
+
+C8 deliberately does not claim to close the path-based physical-containment TOCTOU window. Next evidence should characterize updater-specific native partial-replacement failures under LR-003 before WPF integration.
+
+---
+
 # Updater C7 exact published build identity — focused Windows evidence only
 
 Exact production/test commit: `f70fea687be362fb0869390b119f77417d9bf707`. Environment: heaven2 / Windows x64 / .NET SDK 10.0.401.

@@ -188,3 +188,18 @@ Verification for this checkpoint:
 - Next independent boundary: updater collision-race/LR-003 mutation review, then WPF integration.
 
 The successor inherits the permanent continuity constitution and active Learned Rules, must preserve them, and must require its own successor to recursively propagate them again.
+
+## Checkpoint C8 — atomic new-path publication and inherited process-trace repair
+- Exact production/test commit: `fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b`.
+- Characterization test proved a late-created unowned file at a new product path was overwritten after initial preflight because AtomicFileOps reclassified the destination via a later `File.Exists` check.
+- `AtomicFileOps.ReplaceFromAsync` now has an opt-in `requireDestinationAbsent` policy. Under that policy publication is a single no-overwrite same-directory move, so a late collision fails without replacing the existing path. Existing default ReplaceFileW behavior remains unchanged.
+- UpdateInstaller applies this policy only to paths absent from previous product ownership. It records successfully published new paths in-process; rollback after a same-process failure touches only those new paths, preserving a raced unowned file while restoring previous owned bytes.
+- Crash/restart recovery does not trust the transient in-memory set and retains conservative byte-identity recovery.
+- Full integration surfaced an inherited updater helper direct `Process.Start`; helper launches now use the canonical `ProcessDebug.Start` wrapper.
+- Evidence on heaven2 / Windows x64 / SDK 10.0.401: updater **58/58**, atomic native replacement fixtures **3/3**, full integration **154/154**, strict solution build **0 warnings / 0 errors**.
+- Pre-fix race regression: **FAIL as intended** (no exception; user file overwritten).
+- First repair compiles were correctly stopped by CA1068 and CA1859; implementation was adjusted, analyzers were not suppressed.
+- Remaining physical-path topology swap window is documented; this checkpoint does not claim handle-level atomic containment.
+- Full repository release verification and live update remain pending.
+
+Next: updater-specific LR-003 partial native replacement characterization, then WPF/client integration.

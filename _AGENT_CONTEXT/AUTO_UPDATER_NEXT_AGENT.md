@@ -80,3 +80,22 @@ Preserve and recursively propagate the continuity constitution to the successor,
 4. Only after those independently green checkpoints, run the full release gates and disposable real old→new plus injected-rollback end-to-end tests.
 
 Preserve and recursively propagate the continuity constitution and active Learned Rules to the successor, and require that successor to pass them to the agent after them.
+
+## Checkpoint C8 — atomic new-path publication and trace-policy closure
+- Exact production/test commit: `fe05fc0dd6542dc46e8fc05d4b15b7370b150b8b`.
+- A new regression creates an unknown `new.dll` after preflight but immediately before file apply. Before repair, updater apply completed successfully and silently overwrote the user file; the regression failed because no exception was thrown.
+- New-only product paths now use `AtomicFileOps.ReplaceFromAsync(... requireDestinationAbsent: true)`, which publishes by one no-overwrite same-directory rename instead of a `File.Exists` check followed by replacement.
+- Same-process apply records only new paths whose publication actually returned successfully; if a later collision/failure occurs, rollback removes only those proven-published new paths and preserves a raced unknown path. Crash/restart rollback intentionally keeps the previous conservative hash-based behavior because ephemeral progress is not guessed after process loss.
+- Shared AtomicFileOps default replacement behavior is unchanged. BlobStore was converted to named arguments only to preserve analyzer-clean calling after the optional policy parameter was added.
+- Full integration initially exposed an inherited updater-helper direct `Process.Start` policy violation (153/154). Helper restart now routes through the existing `ProcessDebug.Start` trace wrapper; full integration then passed.
+- Windows x64 / .NET SDK 10.0.401: updater focused **58/58 PASS**; native ReplaceFileW 1175/1176/1177 fixtures **3/3 PASS**; full IntegrationTests **154/154 PASS**; strict whole-solution build **0 warnings / 0 errors**.
+- Analyzer feedback during repair was honored rather than suppressed: CA1068 kept CancellationToken last; CA1859 uses the private concrete HashSet type.
+- Physical reparse/topology TOCTOU remains explicitly path-based and is not claimed solved by this checkpoint.
+- No Verify-Release, Build-Release, hosted Windows Release Gate, or live old→new updater closure is claimed yet.
+
+### Next bounded work
+1. Add updater-specific LR-003 fault injection around native existing-file replacement (especially documented 1176/1177 partial-name-mutation outcomes) and prove backup/journal/recovery behavior without weakening fail-closed semantics.
+2. Then wire WPF update client/lifetime integration.
+3. Keep packaging/publication and full end-to-end release closure separate.
+
+Preserve the permanent continuity constitution and active Learned Rules, and require the successor to recursively propagate them to the agent after them.
