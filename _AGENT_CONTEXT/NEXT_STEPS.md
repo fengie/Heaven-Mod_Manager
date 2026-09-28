@@ -1,3 +1,15 @@
+## Current updater next steps — post-PR #78 integration — 2026-09-28
+
+1. **DONE:** integrate PR #78 at canonical product merge `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; release identity is synchronized at **v8.8.1** in `VERSION.txt`, `Directory.Build.props`, `README.md`, and `CHANGELOG.md`.
+2. **DONE:** exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed Updater Publication PR Gate **36448819098**.
+3. **IN PROGRESS:** inspect exact-main Windows Release Gate **36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`. Require repository verification, release build/package, policy tests, immutable publication, exact REST tag target, and exact two-asset digest/size verification to finish green.
+4. After that gate is green, verify the published release/tag/assets directly against `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`.
+5. Run disposable real installed-client old→new plus fault-injected rollback. Seed and hash `Mods`, `State`, and unknown files; prove exact restarted build identity and startup health acknowledgement.
+6. Only then mark the automatic updater end-to-end complete.
+
+Do not reopen the now-fixed Git-transport propagation symptom unless new evidence contradicts the REST-ref result. Preserve the permanent recursive continuity constitution and pass it to the next agent.
+
+---
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
