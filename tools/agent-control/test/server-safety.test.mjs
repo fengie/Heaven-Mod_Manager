@@ -237,6 +237,63 @@ test("counted deploy preflights whole-batch capacity before launching the first 
 });
 
 
+test("assist autonomy blocks dispatch and governed mutations before side effects", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-autonomy-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const deploy = await postJson(port, "/api/deploy", {
+    role: "support",
+    task: "Should not launch"
+  });
+  assert.equal(deploy.status, 403);
+  assert.match(deploy.body.error, /dispatch-support/i);
+
+  const review = await postJson(port, "/api/agents/missing/review", {});
+  assert.equal(review.status, 403);
+  assert.match(review.body.error, /request-review/i);
+
+  const proposal = await postJson(port, "/api/improvements", {
+    request: "Improve the controller safely"
+  });
+  assert.equal(proposal.status, 201);
+  assert.ok(proposal.body.id);
+
+  const start = await postJson(port, `/api/improvements/${encodeURIComponent(proposal.body.id)}/start`, {});
+  assert.equal(start.status, 403);
+  assert.match(start.body.error, /prepare-integration/i);
+
+  const evidence = await postJson(port, "/api/tasks/missing/evidence", { type: "test" });
+  assert.equal(evidence.status, 403);
+  assert.match(evidence.body.error, /maintain-continuity/i);
+
+  const verdict = await postJson(port, "/api/integration/missing/review-verdict", { verdict: "approved" });
+  assert.equal(verdict.status, 403);
+  assert.match(verdict.body.error, /prepare-integration/i);
+
+  const takeover = await postJson(port, "/api/agents/missing/takeover", {});
+  assert.equal(takeover.status, 403);
+  assert.match(takeover.body.error, /maintain-continuity/i);
+
+  const observed = await postJson(port, "/api/control/settings", { autonomyLevel: "observe" });
+  assert.equal(observed.status, 200);
+
+  const preview = await postJson(port, "/api/workflows/review/preview", { objective: "Review current work" });
+  assert.equal(preview.status, 403);
+  assert.match(preview.body.error, /preview/i);
+
+  const routing = await postJson(port, "/api/control/routing-manifest", {
+    source: "should-be-blocked",
+    mode: "authoritative",
+    assignments: []
+  });
+  assert.equal(routing.status, 403);
+  assert.match(routing.body.error, /preview/i);
+});
+
 test("broad workflow execution fails closed until a routing manifest is current", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-routing-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -244,6 +301,10 @@ test("broad workflow execution fails closed until a routing manifest is current"
   const { child } = launch({ root, port });
   t.after(() => closeChild(child));
   await waitForSnapshot(port);
+
+  const settings = await postJson(port, "/api/control/settings", { autonomyLevel: "coordinate" });
+  assert.equal(settings.status, 200);
+  assert.equal(settings.body.autonomyLevel, "coordinate");
 
   const blocked = await postJson(port, "/api/workflows/usual-swarm/execute", {
     objective: "Continue current repository work"
