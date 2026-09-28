@@ -5,6 +5,8 @@
   "canonicalBranch": "main",
   "workingBranch": "agent/recursive-source-reparse-hardening-20260927",
   "currentVersion": "8.8.0",
+  "companyTrainingRoot": "_AGENT_TRAINING",
+  "companyTrainingStatus": "active-living-system",
   "nextMilestone": "hosted verification for recursive source reparse containment",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
@@ -13,7 +15,7 @@
   "lastClosedVerificationCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
   "lastClosedVerificationRun": "local-heaven2-20260927-233041",
   "candidateSourceCommit": "f51f72927e8f90c264df1ef197ba6c9bbe2704de",
-  "verificationScopeNote": "Recursive source reparse containment is implemented and local-Windows green on source checkpoint f51f72927e8f90c264df1ef197ba6c9bbe2704de. Tests-first real junction fixtures proved the previous unsafe behavior in ModScanner, unmanaged adoption, and Smart Inbox. Post-fix heaven2 verification: Verify-Release 25/25; functions 614/614; 6512 explicit call sites / 0 uncovered; Automation 21/21; Integration 91/91; self-test 11/11; strict analyzers PASS; Build-Release PASS with Core 79/79 and ReadyToRun publish; release SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6. Hosted Windows Release Gate is still required before full closure.",
+  "verificationScopeNote": "Recursive source reparse containment is implemented and local-Windows green on source checkpoint f51f72927e8f90c264df1ef197ba6c9bbe2704de. Tests-first real junction fixtures proved the previous unsafe behavior in ModScanner, unmanaged adoption, and Smart Inbox. Post-fix heaven2 verification: Verify-Release 25/25; functions 614/614; 6512 explicit call sites / 0 uncovered; Automation 21/21; Integration 91/91; self-test 11/11; strict analyzers PASS; Build-Release PASS with Core 79/79 and ReadyToRun publish; release SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6. Canonical main later advanced only with hosted-evidence cache updates and the company trainer governance layer; those changes are being reconciled before a fresh exact local gate. Hosted Windows Release Gate is still required before full closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 613,
     "functionsVerified": 613,
@@ -30,7 +32,8 @@
   "candidateChanges": [
     "Recursive source reparse containment implemented test-first: shared SafeRecursiveTraversal now fail-closes on root/descendant/file reparses before scanner capture, adoption copy/records, or Smart Inbox destination publication.",
     "Real Windows pre-fix regressions reproduced unsafe junction traversal in scanner/adoption and successful Smart Inbox import; post-fix Integration 91/91 and Automation 21/21 pass.",
-    "Local full gates passed: Verify-Release 25/25, functions 614/614, call sites 6512/0 uncovered, Build-Release ReadyToRun PASS, SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6.",
+    "Local full gates passed before canonical trainer reconciliation: Verify-Release 25/25, functions 614/614, call sites 6512/0 uncovered, Build-Release ReadyToRun PASS, SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6.",
+    "Governance/documentation: added _AGENT_TRAINING as a project-agnostic living company engineering trainer; startup guidance now requires future agents to read it and evaluate reusable lessons for promotion while keeping transient MHW state in _AGENT_CONTEXT.",
     "CLOSED: CAS integrity byte-validation and concurrent-capture repair passed hosted Windows Release Gate 36367883836 and fresh local heaven2 verification on canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f.",
     "Local CAS closure: focused BlobIntegrityTests 10/10; Verify-Release 25/25; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79.",
     "CAS capture verifies existing/concurrent winning object before trust; restore verifies staged bytes before publication; bounded Windows sharing/lock retries preserve FileShare.Read and hash mismatch remains immediate failure.",
@@ -109,7 +112,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Dispatch the exact hosted Windows Release Gate against the final recursive-source branch HEAD. This session could not start a new workflow because the GitHub connector exposes inspection/rerun but no workflow_dispatch action, gh is absent on heaven2, and secure credential extraction was blocked by the tool safety layer. If the hosted gate is green, persist its run ID/artifacts and mark this boundary closed before starting any separate CAS filesystem-identity/digest-namespace, migration, concurrency, or other safety boundary.",
+  "nextRequiredAction": "Finish reconciling the branch with current canonical main, rerun the exact local Windows Verify-Release and Build-Release gates on the reconciled candidate, then dispatch the hosted Windows Release Gate against the exact final branch HEAD. The current toolset cannot start a new workflow_dispatch. If hosted green, persist run evidence and mark this boundary closed before starting another safety boundary.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",

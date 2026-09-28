@@ -11,7 +11,7 @@ Do not call this boundary fully closed until the exact final branch candidate pa
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
-The next independent production boundary is recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+Recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox is now implemented and local-Windows green on this branch. The immediate action is to reconcile with current canonical `main`, rerun the exact local Windows gates on that reconciled candidate, and then obtain the hosted Windows Release Gate before declaring closure. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must also read the company trainer, evaluate reusable lessons, and inherit/preserve/recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
 # NEXT AGENT â€” START HERE
@@ -23,13 +23,16 @@ You inherit the repository's **permanent continuity constitution**.
 Before modifying this project:
 
 1. inspect actual canonical `fengie/mhw-mods` `main`, `git status` when a checkout is available, and recent relevant history/diffs;
-2. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
-3. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-4. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
-5. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
-6. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
+2. read `_AGENT_TRAINING/README.md` and the company-doctrine sections relevant to the task;
+3. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
+4. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
+5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
+6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
+7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
-Preserve the constitution. Obey active Learned Rules. Add a Learned Rule only when a concrete, durable discovery justifies it.
+The authority hierarchy is company engineering doctrine → project-specific operating rules/current repository truth → current task instructions, with more specific and newer verified repository truth taking precedence when guidance conflicts.
+
+Preserve the constitution. Obey active Learned Rules. Add a project Learned Rule only when a concrete, durable discovery justifies it. Before finishing any meaningful engineering task, also ask whether the work revealed a reusable lesson that should update `_AGENT_TRAINING/`.
 
 Before finishing, update durable repository handoff state and explicitly require your **successor** to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement for the **agent after them**. The next agent must be able to continue without previous chat history.
 
@@ -54,13 +57,13 @@ This LR-003 boundary is complete and hosted-Windows verified.
 
 ## Exact next programmer boundary
 
-The next highest-value independent checkpoint is **recursive source reparse containment** for ModScanner, unmanaged adoption, and Smart Inbox.
+The recursive source reparse containment implementation is already present and locally Windows-verified. The **exact next action is closure verification**, not new production code.
 
-Read `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` and the relevant filesystem-safety findings. Add Windows junction/symlink fixtures first, characterize each recursive traversal entry point, then apply the smallest fail-closed containment change required by evidence.
+Reconcile with current canonical `main`, rerun the exact local Windows verifier and release build on the reconciled source, push that candidate, then dispatch the hosted Windows Release Gate against its exact HEAD. Persist hosted evidence before marking the boundary CLOSED.
 
-Keep CAS root/hash-leaf filesystem identity, digest namespace validation, migration, async, diagnostics, networking, backup, and Smart Pack as separate boundaries.
+Keep CAS root/hash-leaf filesystem identity, digest namespace validation, migration, async, diagnostics, networking, backup, Smart Pack, TOCTOU/hardlinks, and broader stress matrices as separate boundaries.
 
-You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+You inherit the company trainer, the permanent continuity constitution, and active LR-001 through LR-009. Before finishing, evaluate whether any reusable lesson belongs in `_AGENT_TRAINING/`, update durable context, and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
 
@@ -172,7 +175,7 @@ Do **not** automatically:
 - combine all support findings into one hardening change;
 - weaken tests or verification to obtain a green result.
 
-Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. The current highest-safety candidate is the separate, test-first **recursive source reparse containment** checkpoint. Re-check current canonical source before acting; CAS integrity, Windows live containment, and native `ReplaceFileW` are closed.
+Read `_AGENT_CONTEXT/NEXT_STEPS.md` for the current recommendation. Recursive source reparse containment is already implemented; the current highest-safety action is to finish exact reconciliation verification and obtain the hosted Windows Release Gate before starting another boundary. Re-check current canonical source before acting; CAS integrity, Windows live containment, and native `ReplaceFileW` are closed.
 
 Any production source change starts a new exact verification boundary and must earn a fresh full Windows Release Gate.
 
