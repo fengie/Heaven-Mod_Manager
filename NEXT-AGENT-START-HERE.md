@@ -1,3 +1,7 @@
+# Support ownership audit — 2026-09-28
+
+Before changing updater single-writer/locking behavior, read `_AGENT_CONTEXT/UPDATER_CROSS_SESSION_OWNERSHIP_AUDIT.md` and LR-011. The current `Local\\MHWMM.Update.<hash>` synchronization object is Windows-session scoped, so the current same-session contention test does not prove cross-session ownership of one writable installation. This support checkpoint is documentation/continuity only and deliberately does not overlap the active publication/WPF/metadata updater work.
+
 # Active updater continuation — 2026-09-28
 
 The user selected automatic updates as the current production boundary. Older archive-budget recommendations below are historical for this task. Work on `agent/auto-updater-20260928`; canonical starting main is `4fd61dd33609a7c55e5aedbaad026266a410f942`. Read `_AGENT_CONTEXT/AUTO_UPDATER_IMPLEMENTATION.md` and `_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md`.
