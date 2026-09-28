@@ -1,3 +1,23 @@
+# Archive physical-containment stress candidate — local Windows evidence 2026-09-28
+
+Exact source: `ea5c9f8ce121d58806fe503c1330dbce9e63d3ed` on `agent/heavy-stress-safety-20260928`.
+
+Focused real-Windows characterization:
+- Mods-root junction regression: pre-fix **0/1**, post-fix **1/1 PASS**.
+- Descendant-junction fail-late regression: pre-ordering-fix **0/1** because an external parent directory was created before the throw; post-fix **1/1 PASS**.
+- Existing archive parent-traversal test: **1/1 PASS**.
+- HardeningTests **30/30**, Automation **20/20**, Integration/fault injection **91/91**.
+
+First full verifier: **24/25**. The only failure was an LR-001 trace/call-site gap for the changed `ExtractSafelyAsync(string,string,string,CancellationToken)`; strict compile/analyzers, Automation 20/20, Integration 91/91, and self-test 11/11 were green. Failed-run verification cache state was discarded.
+
+After adding the required entry trace, the unchanged repository verifier passed **25/25**: functions **613/613**, explicit call sites **6509**, uncovered **0**, trace gaps **0**, Core **79/79**, Automation **20/20**, Integration **91/91**, self-test **11/11**. The normal script promoted the exact function/stage cache.
+
+`Build-Release.ps1` then passed on the same source: analyzers PASS, win-x64 compile PASS, self-contained ReadyToRun publish PASS, release ZIP SHA-256 `75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027`.
+
+This is local `heaven2` evidence, not hosted Windows Release Gate evidence. Hosted closure remains pending.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is fully closed. Hosted Windows Release Gate `36367883836` passed repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows verification on heaven2 then passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**; repository verifier **25/25**; functions **613/613**, call sites **6494 / 0 uncovered**; Core **79/79**; Automation **20/20**; Integration/fault injection **89/89**; self-test **11/11**; strict builds/analyzers PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.

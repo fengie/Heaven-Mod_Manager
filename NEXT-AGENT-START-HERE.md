@@ -1,3 +1,13 @@
+# IMMEDIATE BRANCH STATE — archive physical-containment stress candidate
+
+You are inheriting `agent/heavy-stress-safety-20260928`, not a claim that this work is already canonical main. Exact source `ea5c9f8ce121d58806fe503c1330dbce9e63d3ed` passed local real-Windows `Verify-Release.ps1` **25/25** and `Build-Release.ps1` ReadyToRun on `heaven2`; release SHA-256 `75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027`. Hosted Windows Release Gate evidence is still pending.
+
+Read `_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md` before touching this branch. It records two reproduced bugs, red-before-fix evidence, the minimal repair, exact verification, and remaining risks. Do not mix PR #27 recursive-source traversal or PR #30 archive cancellation/resource-budget work into this boundary.
+
+Before any new edit, fetch current `origin/main`, inspect overlap/open PRs, and reconcile repository truth. During long-running work, commit and push short, coherent checkpoints so a stream/session cancellation cannot erase substantial finished work. Preserve and recursively propagate the permanent continuity constitution to your successor and require them to pass it to the agent after them.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
@@ -17,7 +27,7 @@ Before modifying this project:
 2. read `_AGENT_TRAINING/README.md` and the company-doctrine sections relevant to the task;
 3. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
 4. read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`;
-5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-009);
+5. read active `_AGENT_CONTEXT/LEARNED_RULES.md` (currently LR-001 through LR-010);
 6. read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md`;
 7. follow the remaining order in `_AGENT_CONTEXT/README_FIRST.md`.
 
@@ -54,7 +64,7 @@ Read `_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md` and the rele
 
 Keep CAS root/hash-leaf filesystem identity, digest namespace validation, migration, async, diagnostics, networking, backup, and Smart Pack as separate boundaries.
 
-You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+You inherit the permanent continuity constitution and active LR-001 through LR-010. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
 
@@ -84,7 +94,7 @@ Before modifying source, inspect actual canonical `main`, current continuity, `A
 
 Keep that checkpoint narrow: introduce only the seam necessary to reproduce/document 1175/1176/1177 postconditions, assert actual destination/replacement recovery bytes and operation/journal state, and preserve fail-closed `RecoveryRequired`. Do not mix CAS, recursive scans, migration, async, diagnostics, networking, backup, or Smart Pack work into it.
 
-You inherit the permanent continuity constitution and active LR-001 through LR-009. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
+You inherit the permanent continuity constitution and active LR-001 through LR-010. Before finishing, update durable context and explicitly require your successor to inherit, preserve, and recursively propagate these same rules to the agent after them.
 
 **Do not break the chain.**
 
@@ -154,6 +164,7 @@ Read the full ledger; do not rely only on this summary.
 - LR-007 — entity retirement must close live semantic references.
 - LR-008 — import publication requires catalog-invisible staging.
 - LR-009 — automated diagnosis must validate its control before persisting blame.
+- LR-010 — a containment check after mutation is not fail-closed.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule. A later crash-diagnosis branch independently proposed LR-007; follow-up integration preserved lifecycle LR-007 and import LR-008, and renumbered crash diagnosis to LR-009 without changing the rule.
 

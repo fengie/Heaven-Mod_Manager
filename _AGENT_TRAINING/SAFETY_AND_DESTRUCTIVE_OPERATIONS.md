@@ -17,6 +17,9 @@ If safety state cannot be proven, fail closed.
 ## Physical vs lexical safety
 String normalization and prefix checks prevent many traversal bugs but do not prove where the filesystem object resolves. Define a link/reparse/mount policy and test it on supported platforms.
 
+## Validate before the mutation you authorize
+A safety check that runs only after the forbidden side effect can occur is not fail-closed. Identify the first externally visible create/write/delete/rename and prove its required ownership, containment, and topology checks happen before it. For nested path creation, validate existing components before descending or creating deeper components; assert absence of forbidden side effects in regression tests, not merely that an exception was thrown.
+
 ## Native and external operations
 A failed native/system call does not necessarily mean no state changed. Model documented partial-failure postconditions and inspect actual resulting state before cleanup or rollback.
 

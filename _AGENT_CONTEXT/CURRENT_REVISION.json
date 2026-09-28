@@ -3,19 +3,19 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/heavy-stress-safety-20260928",
   "currentVersion": "8.8.0",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "recursive source reparse containment",
+  "nextMilestone": "archive physical-containment candidate hosted closure/integration",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "cas-integrity-closed-next-recursive-source-reparse-containment",
-  "verificationAppliesToCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
+  "status": "archive-physical-containment-candidate-local-windows-green-hosted-pending",
+  "verificationAppliesToCommit": "ea5c9f8ce121d58806fe503c1330dbce9e63d3ed",
   "lastClosedVerificationCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
   "lastClosedVerificationRun": "local-heaven2-20260927-233041",
-  "candidateSourceCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
-  "verificationScopeNote": "CAS integrity is CLOSED. Hosted Windows Release Gate 36367883836 passed exact repair candidate d001870d4cd3549841d8511392ae7885f174bca2. Fresh local Windows verification on heaven2 passed canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f, which has the same production CAS repair plus later evidence/documentation: focused BlobIntegrityTests 10/10; Verify-Release 25/25; functions 613/613 with 6494 explicit call sites and 0 uncovered; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; strict analyzers/build PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79. Remote Desktop Commander omitted the normal OS=Windows_NT variable, so the unchanged scripts were rerun with that standard process-local marker restored after Win32NT/Windows was independently confirmed.",
+  "candidateSourceCommit": "ea5c9f8ce121d58806fe503c1330dbce9e63d3ed",
+  "verificationScopeNote": "Archive physical-containment candidate is locally Windows-green on heaven2 at exact source ea5c9f8ce121d58806fe503c1330dbce9e63d3ed: Verify-Release 25/25; functions 613/613 with 6509 explicit call sites, 0 uncovered, 0 trace gaps; Core 79/79; Automation 20/20; Integration 91/91; self-test 11/11; strict analyzers/build PASS; win-x64 ReadyToRun publish PASS; release SHA-256 75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027. The first full verifier attempt was 24/25 because the changed async extraction wrapper lacked LR-001 entry tracing; that was repaired without weakening verification. Hosted Windows Release Gate evidence remains pending for this branch; prior CAS hosted/local closure remains the last fully closed canonical gate.",
   "lastClosedVerification": {
     "functionInventoryTotal": 613,
     "functionsVerified": 613,
@@ -29,7 +29,29 @@
     "selfTest": "11/11 passed",
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
+  "currentCandidateVerification": {
+    "sourceCommit": "ea5c9f8ce121d58806fe503c1330dbce9e63d3ed",
+    "localWindowsHost": "heaven2",
+    "verifyRelease": "25/25 passed",
+    "functionInventoryTotal": 613,
+    "functionsVerified": 613,
+    "functionsPending": 0,
+    "explicitCallSites": 6509,
+    "uncoveredCallSites": 0,
+    "traceGaps": 0,
+    "coreTests": "79/79 passed",
+    "automationTests": "20/20 passed",
+    "integrationTests": "91/91 passed",
+    "selfTest": "11/11 passed",
+    "readyToRunPublish": "passed",
+    "releaseArtifactSha256": "75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027",
+    "hostedWindowsGate": "pending"
+  },
   "candidateChanges": [
+    "HEAVY STRESS: archive extraction now requires an explicit caller-owned trusted root and rejects a Windows junction at Mods before destination creation or payload write.",
+    "HEAVY STRESS: directory creation is component-by-component so descendant reparses are rejected before external parent creation; regression first reproduced the prior fail-late side effect.",
+    "LOCAL WINDOWS GREEN: exact source ea5c9f8ce121d58806fe503c1330dbce9e63d3ed passed Verify-Release 25/25 and Build-Release ReadyToRun; hosted Windows gate remains pending.",
+    "Promoted LR-010 and company safety doctrine: a containment/authority check that runs after its forbidden side effect is not fail-closed; validate before the mutation and assert absence of escaped side effects.",
     "Governance/documentation: added _AGENT_TRAINING as a project-agnostic living company engineering trainer; startup guidance now requires future agents to read it and evaluate reusable lessons for promotion while keeping transient MHW state in _AGENT_CONTEXT.",
     "CLOSED: CAS integrity byte-validation and concurrent-capture repair passed hosted Windows Release Gate 36367883836 and fresh local heaven2 verification on canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f.",
     "Local CAS closure: focused BlobIntegrityTests 10/10; Verify-Release 25/25; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79.",
@@ -83,6 +105,8 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "Archive extraction may create/write only beneath an explicit caller-owned trusted root; Windows reparse components at the root or descendants are rejected before deeper filesystem mutation.",
+    "Archive lexical traversal, no-overwrite behavior, deployment/journal/CAS semantics, and unrelated recursive source traversal behavior were not weakened or redesigned.",
     "Follow-up support integration changes documentation/continuity only; production source, tests, verification scripts, workflows, and promoted caches remain unchanged.",
     "Fail-closed rollback/recovery semantics were preserved: 1176/1177 do not auto-commit or destructively guess.",
     "CAS integrity, recursive scanner/adoption/Smart Inbox traversal, migration, async, diagnostics, networking, backup, and Smart Pack were not redesigned.",
@@ -107,7 +131,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take recursive source reparse containment as the next independent test-first production boundary for ModScanner, unmanaged adoption, and Smart Inbox. Read RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md, preserve CAS filesystem-identity/digest-namespace findings as separate later work, and preserve/recursively propagate continuity.",
+  "nextRequiredAction": "Do not start another archive feature. First obtain hosted Windows Release Gate evidence or integrate/rebase this archive physical-containment candidate according to current main truth. Keep PR #27 recursive-source reparse work and PR #30 archive cancellation/resource-budget work separate. Preserve and recursively propagate continuity plus the short-interval checkpoint/push rule.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
@@ -133,7 +157,8 @@
     "_AGENT_CONTEXT/EVIDENCE/cas-integrity-local-windows-repair-closure.md",
     "_AGENT_CONTEXT/CAS_FILESYSTEM_IDENTITY_REPARSE_AUDIT.md",
     "_AGENT_CONTEXT/CAS_DIGEST_NAMESPACE_VALIDATION_AUDIT.md",
-    "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md"
+    "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md",
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
   ],
   "integratedMainParent": "74ba0a94464210f8ac88b5f6967706730908c855",
   "closureEvidenceCommit": "9b9a2946437de90ae7f74f38e42f143bfe94f11c",

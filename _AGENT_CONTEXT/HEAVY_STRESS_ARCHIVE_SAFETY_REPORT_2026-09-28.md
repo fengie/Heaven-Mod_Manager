@@ -130,8 +130,8 @@ Real Windows `heaven2`:
 - Integration/fault-injection: **91/91 PASS**;
 - affected Automation test project build after restore: **0 warnings / 0 errors**.
 
-The full repository verifier and release build are still pending at this report checkpoint.
-Do not treat this branch as release-gate closed until those exact commands run successfully.
+At this intermediate report checkpoint the full repository verifier and release build were still pending.
+They were subsequently executed successfully after one LR-001 instrumentation repair; see **Final local Windows verification** below.
 
 ## Remaining risks by evidence level
 
@@ -158,3 +158,31 @@ Blocked/separate:
 
 Successors must preserve the permanent continuity constitution and the short-interval checkpoint/push rule,
 and must require their successor to propagate both obligations to the agent after them.
+
+## Final local Windows verification
+
+Exact production/test source verified: `ea5c9f8ce121d58806fe503c1330dbce9e63d3ed`.
+
+The first full `Verify-Release.ps1` attempt intentionally remained failed evidence:
+- **24/25 PASS**, with the only failure being function fingerprint verification;
+- the changed `ExtractSafelyAsync(string,string,string,CancellationToken)` wrapper had one LR-001 entry-trace gap and two uncovered call sites;
+- all compile/analyzer stages, Automation **20/20**, Integration **91/91**, and self-test **11/11** were already green;
+- no failed-run cache state was committed.
+
+After adding the required `MasterDebugLog.BeginMethod()` scope, the exact verifier rerun on `heaven2` passed:
+- repository verifier: **25/25 PASS**;
+- function inventory: **613/613 verified**;
+- explicit call sites: **6509**, uncovered **0**;
+- trace gaps **0**, parse errors **0**;
+- Core **79/79**, Automation **20/20**, Integration/fault injection **91/91**;
+- automation self-test **11/11**;
+- strict whole-solution/project analyzers: PASS.
+
+`Build-Release.ps1` then passed on the same source:
+- function scan **613 known-good / 0 pending**;
+- win-x64 compile/analyzers PASS;
+- self-contained ReadyToRun publish PASS;
+- release ZIP SHA-256: `75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027`.
+
+The normal verifier/release scripts promoted the exact function/stage cache; no verification cache was manually edited or promoted.
+Hosted Windows Release Gate evidence is still pending for this branch and must remain distinct from this local `heaven2` closure.

@@ -1,3 +1,15 @@
+# Heavy stress archive physical-containment candidate — LOCAL WINDOWS GREEN / HOSTED PENDING
+
+Branch `agent/heavy-stress-safety-20260928` is based on canonical `origin/main` `2d6969c7d94438dd64a540dab93fc9a910a8458b`. Exact production/test source `ea5c9f8ce121d58806fe503c1330dbce9e63d3ed` fixes two reproduced archive containment defects: a junction at the caller-owned Mods root could redirect extraction outside the library, and a descendant junction could cause external directory creation before the old guard threw.
+
+Two real-Windows regressions now prove rejection before the external mutation. Local `heaven2` verification passed `Verify-Release.ps1` **25/25**, functions **613/613**, call sites **6509 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **91/91**, self-test **11/11**, strict analyzers/build, and `Build-Release.ps1` ReadyToRun publish. Release SHA-256: `75EC78E6297510622B1FF6931F774273478292F53C7E073BBB83228A6C493027`.
+
+The first full verifier attempt was **24/25** only because the changed async extraction wrapper lacked the LR-001 entry trace; the verifier correctly rejected it, the trace was added, and failed-run cache state was discarded rather than committed. Hosted Windows Release Gate evidence is still pending. Read `_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md`.
+
+Keep PR #27 recursive-source reparse hardening and PR #30 archive cancellation/resource-budget work separate. Long-running agents must make short-interval, focused commits and pushes so stream/session cancellation cannot erase substantial completed work.
+
+---
+
 # Company programming-agent trainer — ACTIVE LIVING SYSTEM
 
 A project-agnostic engineering trainer now lives in `_AGENT_TRAINING/`. It captures reusable company values, agent operating standards, development pipeline, role boundaries, multi-agent coordination, continuity/recovery, verification, destructive-operation safety, CI/release doctrine, knowledge maintenance, prompting guidance, and reusable role prompts.

@@ -1,3 +1,13 @@
+# Current branch next step — archive physical-containment candidate
+
+Do **not** start another feature or archive hardening boundary on `agent/heavy-stress-safety-20260928`. Exact source `ea5c9f8ce121d58806fe503c1330dbce9e63d3ed` is local-Windows green on `heaven2` (`Verify-Release.ps1` 25/25, `Build-Release.ps1` ReadyToRun PASS) but still lacks hosted Windows Release Gate evidence.
+
+Before integration, fetch current `origin/main`, reconcile any newer canonical work, inspect PR #27/#30 overlap, and run/obtain the repository-native hosted Windows gate for the exact integrated candidate. Do not claim hosted closure from local evidence. Preserve the archive stress report and promoted cache only when it still corresponds to the exact source being verified.
+
+PR #27 recursive source traversal and PR #30 archive cancellation/resource budgeting are separate boundaries. The successor must also preserve the short-interval checkpoint/push rule and recursively pass the continuity constitution to the agent after them.
+
+---
+
 # CAS integrity checkpoint — CLOSED
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
