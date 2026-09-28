@@ -1,10 +1,16 @@
-# v8.8.1 — Support-bundle privacy hardening
+# v8.8.2 — Support-bundle privacy hardening
 
 - Sanitize recent structured JSONL logs when exporting user-shareable support bundles instead of copying them verbatim.
 - Recursively redact secret-like JSON fields and secret-like string assignments, known local roots, and residual absolute Windows paths from exported log text.
 - Preserve full-fidelity local logs unchanged and add `CONTENTS-AND-PRIVACY.txt` to explain the bundle boundary.
 - Add a generated-bundle path/credential canary regression proving sensitive values do not cross the support ZIP boundary.
 - Keep remaining LR-006 work separate: DB-backed free-form exports, startup/manual-share artifacts, settings allowlisting/default-redact policy, and protected credential storage.
+
+# v8.8.1 — Updater publication verification hardening
+
+- Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.
+- Fail closed unless the published ref name is exact, its target is a direct commit, its SHA is a valid 40-hex identifier, and it matches the expected source commit.
+- Add regression coverage for empty, malformed, wrong-tag, non-commit, and malformed-SHA ref responses while preserving the existing pre-publication local checks.
 
 # v8.8.0 — Function verification cache and call-error hardening
 

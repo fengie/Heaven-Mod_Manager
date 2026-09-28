@@ -16,7 +16,7 @@ public static class AppLogging
         return new LoggerConfiguration()
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("app","UniversalModManager-v8.8.1")
+            .Enrich.WithProperty("app","UniversalModManager-v8.8.2")
             .Enrich.WithProperty("pid",Environment.ProcessId)
             .WriteTo.Sink(new UnifiedDebugLogSink(),LogEventLevel.Debug)
             .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),Path.Combine(logDir,"manager-.jsonl"),restrictedToMinimumLevel:detailed?LogEventLevel.Debug:LogEventLevel.Information,rollingInterval:RollingInterval.Day,retainedFileCountLimit:14,fileSizeLimitBytes:50*1024*1024,rollOnFileSizeLimit:true,shared:false)

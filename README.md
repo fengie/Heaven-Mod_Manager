@@ -1,10 +1,14 @@
-# v8.8.1 Universal Mod Manager
+# v8.8.2 Universal Mod Manager
 
-## v8.8.1 — Support-bundle privacy hardening
+## v8.8.2 — support-bundle privacy hardening
 
 Shareable support bundles now sanitize recent structured JSONL logs at export time instead of copying them verbatim. Secret-like fields and assignments, known local roots, and residual absolute Windows paths are redacted in the ZIP while full-fidelity local logs remain unchanged. Generated bundles include `CONTENTS-AND-PRIVACY.txt`, and a regression test verifies path/credential canaries do not cross the support boundary.
 
 This is a focused LR-006 improvement, not full diagnostic-secret closure: DB-backed free-form support exports, startup/manual-share artifacts, settings allowlisting/default-redact policy, and protected provider credential storage remain separate follow-up work.
+
+## v8.8.1 — updater publication verification hardening
+
+The automatic-updater release gate now verifies a newly published updater tag through GitHub's authoritative REST git-ref API instead of requiring immediate Git transport propagation. The check fails closed unless the exact expected tag exists, points directly to a commit, and resolves to the exact source SHA being published. This prevents a successfully published immutable release from being reported as failed solely because the Git tag has not propagated to fetch transport yet.
 
 ## Repair revision — 2026-09-27
 
@@ -304,7 +308,7 @@ Accepted heuristic pairings are written to `MHW-DEBUG-ALL.log` as `[FAMILY] GENE
 
 ## Git-first agent continuity
 
-GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Run `scripts/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
+GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Every shipped application change must also bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run `scripts/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
 
 ## Verification closure status
 

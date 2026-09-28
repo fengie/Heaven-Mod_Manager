@@ -34,6 +34,39 @@ function ConvertFrom-UpdaterReleaseList {
   return [pscustomobject]@{Releases=[object[]]$releases}
 }
 
+function Get-UpdaterTagCommitFromRefJson {
+  param(
+    [Parameter(Mandatory=$true)][string]$Json,
+    [Parameter(Mandatory=$true)][string]$ExpectedTag
+  )
+
+  if([string]::IsNullOrWhiteSpace($Json)){
+    throw 'GitHub updater tag ref response was empty.'
+  }
+
+  try{$tagRef=ConvertFrom-Json -InputObject $Json -ErrorAction Stop}catch{
+    throw 'GitHub updater tag ref response contained invalid JSON.'
+  }
+  if($null -eq $tagRef){throw 'GitHub updater tag ref response was null.'}
+
+  $expectedRef="refs/tags/$ExpectedTag"
+  if([string]$tagRef.ref -ne $expectedRef){
+    throw "GitHub updater tag ref '$($tagRef.ref)' did not match expected ref '$expectedRef'."
+  }
+  if($null -eq $tagRef.PSObject.Properties['object'] -or $null -eq $tagRef.object){
+    throw 'GitHub updater tag ref omitted its target object.'
+  }
+  if([string]$tagRef.object.type -ne 'commit'){
+    throw "GitHub updater tag ref target type '$($tagRef.object.type)' was not a direct commit."
+  }
+
+  $sha=[string]$tagRef.object.sha
+  if($sha -notmatch '^[0-9a-fA-F]{40}$'){
+    throw 'GitHub updater tag ref target SHA was malformed.'
+  }
+  return $sha
+}
+
 function Get-UpdaterBuildFromTag {
   param([Parameter(Mandatory=$true)][string]$Tag)
   $prefix='updater-main-'
