@@ -34,6 +34,9 @@
         <SolidColorBrush x:Key="Good" Color="{StaticResource GoodColor}"/>
         <SolidColorBrush x:Key="Warn" Color="{StaticResource WarnColor}"/>
         <SolidColorBrush x:Key="Bad" Color="{StaticResource BadColor}"/>
+        <SolidColorBrush x:Key="FocusRing" Color="#F7D68D"/>
+        <SolidColorBrush x:Key="Info" Color="#7DB4F4"/>
+        <SolidColorBrush x:Key="PanelHover" Color="#171E27"/>
 
         <Style TargetType="Window">
             <Setter Property="Background" Value="{StaticResource Bg}"/>
@@ -73,6 +76,31 @@
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="18"/>
         </Style>
+        <Style x:Key="SubtleCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Background" Value="#0E1319"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style x:Key="StatusBadge" TargetType="Border">
+            <Setter Property="Background" Value="#151A20"/>
+            <Setter Property="BorderBrush" Value="#303844"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="StatusBadgeGood" TargetType="Border" BasedOn="{StaticResource StatusBadge}">
+            <Setter Property="Background" Value="#13241C"/>
+            <Setter Property="BorderBrush" Value="#28553E"/>
+        </Style>
+        <Style x:Key="StatusBadgeWarn" TargetType="Border" BasedOn="{StaticResource StatusBadge}">
+            <Setter Property="Background" Value="#272113"/>
+            <Setter Property="BorderBrush" Value="#5B4720"/>
+        </Style>
+        <Style x:Key="StatusBadgeBad" TargetType="Border" BasedOn="{StaticResource StatusBadge}">
+            <Setter Property="Background" Value="#2B1719"/>
+            <Setter Property="BorderBrush" Value="#5A2A2E"/>
+        </Style>
 
         <!-- Buttons -->
         <Style x:Key="BaseButton" TargetType="Button">
@@ -82,8 +110,10 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="13,8"/>
             <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="350"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -102,6 +132,10 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Root" Property="Opacity" Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource FocusRing}"/>
+                                <Setter TargetName="Root" Property="BorderThickness" Value="2"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Root" Property="Opacity" Value="0.45"/>
@@ -163,6 +197,15 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="Background" Value="#0C1015"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
 
         <!-- Navigation -->
         <Style TargetType="TabControl">
@@ -173,14 +216,22 @@
                     <ControlTemplate TargetType="TabControl">
                         <Grid KeyboardNavigation.TabNavigation="Local">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="228"/>
+                                <ColumnDefinition Width="214"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
                                 <DockPanel>
                                     <StackPanel DockPanel.Dock="Top" Margin="18,22,18,14">
-                                        <TextBlock Text="NAVIGATION" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Text="WORKSPACE" Style="{StaticResource Eyebrow}"/>
                                     </StackPanel>
+                                    <Border DockPanel.Dock="Bottom" Margin="14,8,14,16" Padding="10" Background="#0A0E13" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="7">
+                                        <StackPanel>
+                                            <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
+                                            <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
+                                            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply staged"/>
+                                            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
+                                        </StackPanel>
+                                    </Border>
                                     <StackPanel IsItemsHost="True" Margin="10,0,10,12" KeyboardNavigation.TabIndex="1"/>
                                 </DockPanel>
                             </Border>
@@ -215,6 +266,10 @@
                                 <Setter TargetName="Root" Property="Background" Value="#1A1B18"/>
                                 <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource Accent}"/>
                                 <Setter Property="Foreground" Value="{StaticResource AccentBright}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource FocusRing}"/>
+                                <Setter TargetName="Root" Property="BorderThickness" Value="3,1,1,1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -259,10 +314,16 @@
             </Style.Triggers>
         </Style>
         <Style TargetType="DataGridCell">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="9,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource FocusRing}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Height" Value="38"/>
