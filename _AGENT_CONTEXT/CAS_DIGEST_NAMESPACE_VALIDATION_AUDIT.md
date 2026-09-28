@@ -412,3 +412,21 @@ The successor inherits the permanent continuity constitution. Before modifying t
 Before finishing, explicitly require the next successor to inherit, preserve, and recursively propagate the same constitution and active Learned Rules to the agent after them.
 
 **Do not break the chain.**
+
+
+## Final canonical reconciliation before PR
+
+Canonical `main` advanced after this branch was created from `d001870d4cd3549841d8511392ae7885f174bca2` to:
+
+`265d58d6a9d4ffb6ab62cde987ba6ad335eae05a`
+
+The intervening commits are verification/evidence/continuity only:
+
+- `e5325317cb7005bdf9d3082a033ab95e666ebbf9` — persist hosted Windows verification evidence;
+- `265d58d6a9d4ffb6ab62cde987ba6ad335eae05a` — record hosted CAS repair verification, local gate pending.
+
+No production source inspected by this audit changed.
+
+Hosted Windows Release Gate `36367883836` is now green for exact production candidate `d001870d4cd3549841d8511392ae7885f174bca2` (repository verifier 25/25, Integration 89/89, strict build/analyzers and ReadyToRun publish PASS). The repository still keeps the CAS checkpoint open because the required fresh local Windows verification on the authorized runner remains pending.
+
+Therefore this support audit remains valid without rebasing its source analysis, and it does not supersede the current instruction to finish the local CAS closure before starting another production change.
