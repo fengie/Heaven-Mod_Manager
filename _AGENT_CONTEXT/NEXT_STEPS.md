@@ -1,4 +1,13 @@
-# CAS integrity checkpoint — CLOSED
+# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+
+Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
+
+---
+# CAS integrity checkpoint â€” CLOSED
 
 CAS integrity is closed with both hosted and fresh local Windows evidence. Hosted Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Local heaven2 verification on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` passed focused `BlobIntegrityTests` **10/10**, `Verify-Release.ps1` **25/25**, Core **79/79**, Automation **20/20**, Integration **89/89**, self-test **11/11**, and `Build-Release.ps1` including win-x64 ReadyToRun publish. Local artifact SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
@@ -11,14 +20,14 @@ Documentation-only CAS support work has been harvested from PRs #23, #25, and #2
 ---
 # Next steps
 
-## Follow-up support integration — CLOSED
+## Follow-up support integration â€” CLOSED
 
 Exact documentation/continuity integration commit `027b6d9dc9b049d9e9857e5a0e4d021e31adf443` passed hosted Windows Release Gate `36343967045`: **25/25**, functions **612/612**, call sites **6480 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration **79/79**, self-test **11/11**, ReadyToRun publish PASS, release SHA-256 `DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6`. Evidence/cache persistence: `dadbe73a48567b17c9814c483f654be00d1d810f`.
 
 No production source or tests were integrated by this support harvest. The audits remain future independently scoped boundaries, not implementation claims. CAS integrity has since closed; the current highest-value production action is recursive source reparse containment.
 
 
-## Current checkpoint — native ReplaceFileW failure semantics CLOSED
+## Current checkpoint â€” native ReplaceFileW failure semantics CLOSED
 
 Final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`.  
 Production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`.  
@@ -53,7 +62,7 @@ Preserve exact SHA/run evidence, update durable context, and explicitly require 
 ---
 
 
-## Current checkpoint — Windows live containment CLOSED
+## Current checkpoint â€” Windows live containment CLOSED
 
 Exact verified commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
 Hosted Windows Release Gate: `36341049469`.  
@@ -94,7 +103,7 @@ Before every handoff, preserve exact SHA/run evidence, update durable context, r
 ---
 
 
-## Current checkpoint — parallel support-audit integration
+## Current checkpoint â€” parallel support-audit integration
 
 PlannerSnapshotRepository remains **CLOSED** at exact verified commit `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`, hosted Windows Release Gate `36336190920`, evidence/cache persistence `852f07b9d6ad0457c161df0aa1c8165981d349cf`.
 

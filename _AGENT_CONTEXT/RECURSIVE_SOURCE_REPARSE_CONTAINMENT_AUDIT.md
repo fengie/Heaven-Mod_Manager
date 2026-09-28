@@ -1,4 +1,15 @@
-# Recursive source reparse containment audit — 2026-09-27
+# Implementation checkpoint — 2026-09-28
+
+Status: **implemented and fully local-Windows verified; hosted Windows Release Gate pending**.
+
+The tests-first implementation is on `agent/recursive-source-reparse-hardening-20260927`. Real junction regressions first failed against unchanged production behavior, proving scanner/adoption followed junctions and Smart Inbox imported a junction-containing tree. Production commit `f51f72927e8f90c264df1ef197ba6c9bbe2704de` adds shared fail-closed `SafeRecursiveTraversal` and migrates all three consumers.
+
+Post-fix local Windows evidence: Integration **91/91**, Automation **21/21**, repository verifier **25/25**, functions **614/614**, call sites **6512 / 0 uncovered**, self-test **11/11**, strict analyzers PASS, ReadyToRun release publish PASS, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+
+Residuals remain explicit: path-check/open TOCTOU, hardlinks, and dedicated root/file-leaf/cycle fixture coverage. Do not conflate those with the proven descendant-junction regression.
+
+---
+# Recursive source reparse containment audit â€” 2026-09-27
 
 ## Status
 
@@ -12,7 +23,7 @@ Documentation-only autonomous support checkpoint.
 - Production code changed by this support checkpoint: **no**
 - Tests changed by this support checkpoint: **no**
 - Verification cache changed: **no**
-- New Learned Rule: **none** — LR-004 already governs physical/reparse containment and should remain the canonical rule.
+- New Learned Rule: **none** â€” LR-004 already governs physical/reparse containment and should remain the canonical rule.
 
 This audit deliberately prepares the **next separate filesystem checkpoint after CAS**. It must not be merged as evidence that the traversal defect is fixed.
 
@@ -70,7 +81,7 @@ These external facts are used only to interpret the explicit recursive enumerati
 
 ## Executive findings
 
-### P0 — ModScanner can ingest external bytes through a package junction/symlink
+### P0 â€” ModScanner can ingest external bytes through a package junction/symlink
 
 Confirmed source behavior:
 
@@ -95,7 +106,7 @@ A descendant junction under the package can therefore make external bytes look l
 
 This is stronger than a read-only information leak: the external bytes can become durable manager state.
 
-### P0 — unmanaged adoption can copy and persist external bytes reached through the live tree
+### P0 â€” unmanaged adoption can copy and persist external bytes reached through the live tree
 
 Confirmed source behavior:
 
@@ -118,7 +129,7 @@ There is no reparse check for:
 
 A junction below the configured live mod root can therefore pull external files into a managed package and into durable `adopted_live_files` state.
 
-### P0/P1 — Smart Inbox direct-directory import can copy external trees into Mods
+### P0/P1 â€” Smart Inbox direct-directory import can copy external trees into Mods
 
 Confirmed source behavior:
 
@@ -143,7 +154,7 @@ A top-level inbox junction or a descendant junction can therefore cause Smart In
 
 After copy, category classification performs another `SearchOption.AllDirectories` traversal over the destination. That second traversal is not the primary escape mechanism, but it should also move to the same safe traversal contract so the safety invariant is not duplicated inconsistently.
 
-### P1 — recursive link cycles can bypass cancellation and hang a workflow
+### P1 â€” recursive link cycles can bypass cancellation and hang a workflow
 
 The Microsoft-documented cycle behavior is relevant to the current control flow.
 
@@ -155,19 +166,19 @@ A directory cycle that keeps recursing without yielding a useful file can theref
 
 This audit did not runtime-reproduce an infinite loop; the risk is source + Microsoft-documented API behavior.
 
-### P1 — root reparses and leaf-file reparses need an explicit policy, not only descendant-directory checks
+### P1 â€” root reparses and leaf-file reparses need an explicit policy, not only descendant-directory checks
 
 A first fix must define all three cases:
 
-1. **root reparse** — e.g. the mod source path or inbox item itself is a junction;
-2. **descendant directory reparse** — the common junction/symlink escape;
-3. **leaf file reparse** — a file symlink/reparse object whose opened bytes may come from another location.
+1. **root reparse** â€” e.g. the mod source path or inbox item itself is a junction;
+2. **descendant directory reparse** â€” the common junction/symlink escape;
+3. **leaf file reparse** â€” a file symlink/reparse object whose opened bytes may come from another location.
 
 Only checking directory parents is insufficient for source ingestion because these workflows hash/copy the leaf bytes themselves.
 
 The safest first checkpoint is to treat unsupported reparse objects as an actionable error rather than silently following them.
 
-### P1 — Smart Inbox ordering makes a naïve "throw when encountered" patch unsafe
+### P1 â€” Smart Inbox ordering makes a naÃ¯ve "throw when encountered" patch unsafe
 
 This is the most important interaction with LR-008.
 
@@ -302,7 +313,7 @@ Hardlinks are also not reparses and remain outside this checkpoint unless a sepa
 
 Add tests first in the implementation checkpoint.
 
-### ModScanner — IntegrationTests / HardeningTests
+### ModScanner â€” IntegrationTests / HardeningTests
 
 #### 1. `Scanner_rejects_descendant_junction_without_capturing_external_bytes`
 
@@ -342,7 +353,7 @@ Create a directory junction cycle.
 
 The fixed implementation must fail promptly with a reparse error. The test must have a bounded outer timeout so a regression cannot hang the entire release gate indefinitely.
 
-### Unmanaged adoption — IntegrationTests / HardeningTests
+### Unmanaged adoption â€” IntegrationTests / HardeningTests
 
 #### 5. `Adoption_rejects_descendant_junction_before_copy_or_record`
 
@@ -362,7 +373,7 @@ Assert:
 
 Use a junction as the configured live root and assert no managed package or adoption record is created.
 
-### Smart Inbox — AutomationTests
+### Smart Inbox â€” AutomationTests
 
 AutomationTests references the Automation project; IntegrationTests currently does not. Keep Smart Inbox behavior tests in AutomationTests unless project references are deliberately changed for another reason.
 

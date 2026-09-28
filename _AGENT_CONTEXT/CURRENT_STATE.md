@@ -1,15 +1,24 @@
-# CAS integrity checkpoint — CLOSED
+# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+
+Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
+
+---
+# CAS integrity checkpoint â€” CLOSED
 
 The CAS byte-integrity/concurrency repair is closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**, verifier **25/25**, functions **613/613**, call sites **6494 / 0 uncovered**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
 Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable, causing the first unchanged verifier invocation to report two Windows-only stages as skipped (23/25). The host was independently confirmed as Win32NT / `IsOSPlatform(Windows)=True`; rerunning the unchanged scripts with the standard process-local marker restored produced the green results above. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules. Do not break the chain.
 
-## Latest CAS support-audit harvest — documentation only
+## Latest CAS support-audit harvest â€” documentation only
 
 Integrated durable research from PRs #23, #25, and #22: CAS filesystem identity/reparse safety, CAS digest namespace validation, and recursive source reparse containment. PR #24 was reviewed but skipped as redundant with the broader filesystem-identity audit; its root/hash-leaf fixture guidance was already covered there. No production C#, tests, verification scripts, workflows, or verification caches changed. The CAS local Windows closure has since completed; these audits now remain future independently scoped work. Canonical integration commit: `1dc4655b2ade03338ef826690d8ed1dc5d31fa14`.
 
 ---
-# Native ReplaceFileW failure-postcondition boundary — CLOSED / hosted Windows verified
+# Native ReplaceFileW failure-postcondition boundary â€” CLOSED / hosted Windows verified
 
 Final exact verified commit: `17abfb05d83ff38040eb9356d34fbb3131644801`.  
 Production implementation merge: `6d52ede722f18fcdbe727ec44e027de3e1c69fb1`.  
@@ -39,7 +48,7 @@ Closed behavior:
 
 No new Learned Rule was required because LR-003 already states the governing invariant.
 
-## Follow-up support research integration — CLOSED / hosted Windows verified
+## Follow-up support research integration â€” CLOSED / hosted Windows verified
 
 Exact integration commit: `027b6d9dc9b049d9e9857e5a0e4d021e31adf443`.  
 Hosted Windows Release Gate: `36343967045`.  
@@ -71,7 +80,7 @@ The successor inherits the permanent continuity constitution and active LR-001 t
 
 ---
 
-# Windows live DeploymentExecutor physical containment — CLOSED / hosted Windows verified
+# Windows live DeploymentExecutor physical containment â€” CLOSED / hosted Windows verified
 
 Exact verified integration commit: `356fde242046b78e39c7266c57b27e52220141fa`.  
 Hosted Windows Release Gate: `36341049469`.  
@@ -115,7 +124,7 @@ The successor inherits the permanent continuity constitution, active LR-001 thro
 ---
 
 
-# Parallel support-agent integration — documentation/continuity checkpoint
+# Parallel support-agent integration â€” documentation/continuity checkpoint
 
 Integration base: canonical `main` at `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
 
@@ -173,7 +182,7 @@ The successor must inherit the permanent continuity constitution, obey LR-001 th
 
 ---
 
-# PlannerSnapshotRepository boundary CLOSED — hosted Windows verified
+# PlannerSnapshotRepository boundary CLOSED â€” hosted Windows verified
 
 Exact verified repository commit: `efe58f38c4780d40200bcf2b7bbb5914ecd8ebc3`.
 Last production repair source: `528401925b1d09b3d65c9652de8e4f2024e3677f`.
@@ -217,7 +226,7 @@ The next agent must inherit the permanent continuity constitution, obey active L
 
 ---
 
-# Governance checkpoint CLOSED — permanent recursive continuity
+# Governance checkpoint CLOSED â€” permanent recursive continuity
 
 A governance-only checkpoint now installs the repository-level continuity constitution requested by the user.
 
@@ -241,9 +250,9 @@ Every future handoff must explicitly require the successor to preserve and recur
 
 ---
 
-# Current state — v8.8.0
+# Current state â€” v8.8.0
 
-## MainWindow re-audit / storage transaction design COMPLETE — documentation checkpoint
+## MainWindow re-audit / storage transaction design COMPLETE â€” documentation checkpoint
 
 Canonical audit base: `0129607a0558da6a596e1688a04f3051e5f6ce40`.
 
@@ -279,7 +288,7 @@ move, add focused parity tests, then require a fresh full Windows Release Gate
 before any second production change.
 
 
-## Games list-presentation slice CLOSED — hosted Windows
+## Games list-presentation slice CLOSED â€” hosted Windows
 
 The Games extraction is fully green.
 
@@ -308,7 +317,7 @@ The verified architecture keeps only passive list state in
 changes, restart/shutdown, busy/status coordination, AppPaths discovery, and
 startup service reconstruction remain shell/application responsibilities.
 
-## Profiles read/list page-view-model slice CLOSED — hosted Windows
+## Profiles read/list page-view-model slice CLOSED â€” hosted Windows
 
 The Profiles read/list extraction is fully green.
 
@@ -333,7 +342,7 @@ Profile mutations, selected-profile behavior, mod staging/application, and
 shell-global busy/status ownership remain in `MainWindowViewModel`.
 
 
-## Coverage page-view-model slice CLOSED — hosted Windows
+## Coverage page-view-model slice CLOSED â€” hosted Windows
 
 The Coverage extraction is fully green.
 
@@ -357,7 +366,7 @@ legacy `OutfitRows` / `RefreshOutfitsCommand` binding surface and keeping
 shell-global busy/status ownership in `MainWindowViewModel`.
 
 
-## Activity page-view-model slice CLOSED — hosted Windows
+## Activity page-view-model slice CLOSED â€” hosted Windows
 
 The first post-closure architecture slice is fully green.
 
@@ -394,7 +403,7 @@ No intended Activity architecture or runtime behavior changed; only the connecto
 serialization defect was removed. A fresh complete Windows Release Gate is
 required for this corrected source.
 
-## Activity page-view-model candidate — awaiting hosted Windows verification
+## Activity page-view-model candidate â€” awaiting hosted Windows verification
 
 Production source commit `e2396c7c91c5d8d88fe229603689539b5cdfb2da` begins the first post-closure
 architecture slice.
@@ -413,7 +422,7 @@ architecture slice.
 This candidate does **not** inherit the closed green state from
 `9717a22d3338f77e63cd409a80d2ec5fc3c924f2`. A fresh Windows gate is required.
 
-## Architecture / Explain Why milestone CLOSED — hosted Windows
+## Architecture / Explain Why milestone CLOSED â€” hosted Windows
 
 The integrated architecture/Explain Why checkpoint is now fully closed.
 
@@ -436,7 +445,7 @@ access in overlap primary-path selection; no resolver/deployment semantics chang
 This checkpoint is the required stable base for the next incremental architecture
 slice. Any new production-source edit invalidates the applicable source evidence
 until a fresh verifier/gate run confirms the changed fingerprints.
-## Architecture candidate release-gate follow-up — 2026-09-27
+## Architecture candidate release-gate follow-up â€” 2026-09-27
 
 GitHub Actions run `36324750213` on integrated main checkpoint
 `35abe5c7425456675086cdc38455a8447d3560c5` passed the exact repository
@@ -445,7 +454,7 @@ Automation **20/20**, Integration/fault injection **62/62**, and all **11**
 self-tests. The release stage then failed at the dedicated win-x64
 compile/analyzer gate on a single diagnostic:
 
-- `MainWindowViewModel.Overlaps.cs:22` — CA1826, LINQ
+- `MainWindowViewModel.Overlaps.cs:22` â€” CA1826, LINQ
   `FirstOrDefault()` used on indexable `IReadOnlyList<string>`.
 
 Production source commit `098d617bcb3dcdd044e3fdb8319ba506c97082af` changes only that expression to
@@ -454,7 +463,7 @@ asset key. No deployment, conflict-resolution, database, or filesystem safety
 semantics changed. A fresh complete Windows Release Gate is required before the
 architecture/Explain Why milestone can be marked closed.
 
-## Architecture / Explain Why candidate — 2026-09-27
+## Architecture / Explain Why candidate â€” 2026-09-27
 
 Working branch: `agent/architecture-explain-why`. Candidate production source:
 `5c1937e557aa9996cef493709e94a6aa611d4e1c` (later branch commits update handoff docs only).

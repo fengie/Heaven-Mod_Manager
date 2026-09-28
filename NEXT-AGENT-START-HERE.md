@@ -1,13 +1,22 @@
-# CAS integrity checkpoint — CLOSED
+# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+
+Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
+
+---
+# CAS integrity checkpoint â€” CLOSED
 
 CAS integrity is now closed. Hosted Windows Release Gate `36367883836` passed exact repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows closure then passed on canonical `main` source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f` (same production CAS code; later changes were verification evidence/documentation): focused `BlobIntegrityTests` **10/10**, repository verifier **25/25**, Core **79/79**, Automation **20/20**, Integration/fault injection **89/89**, self-test **11/11**, strict analyzers/build PASS, and win-x64 ReadyToRun publish PASS. Local release SHA-256: `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`. Remote Desktop Commander omitted the normal `OS=Windows_NT` environment variable; the host was independently confirmed as Win32NT/Windows, and the unchanged scripts were rerun with that standard process-local marker restored. See `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` and `_AGENT_CONTEXT/VERIFICATION.md`.
 
 The next independent production boundary is recursive source reparse containment for ModScanner / unmanaged adoption / Smart Inbox. Keep CAS root/hash-leaf identity and digest-namespace findings as separately scoped future work. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
 
 ---
-# NEXT AGENT — START HERE
+# NEXT AGENT â€” START HERE
 
-## Permanent recursive continuity obligation — read before any edit
+## Permanent recursive continuity obligation â€” read before any edit
 
 You inherit the repository's **permanent continuity constitution**.
 
@@ -142,15 +151,15 @@ Migration documentation was corrected to match current source behavior.
 
 Read the full ledger; do not rely only on this summary.
 
-- LR-001 — moved production bodies require verification-instrumentation re-audit.
-- LR-002 — shared API removal requires compile-backed caller closure.
-- LR-003 — native replacement failure is not equivalent to no filesystem mutation.
-- LR-004 — lexical containment is not physical filesystem containment.
-- LR-005 — restartable migrations must prove ownership and convergence.
-- LR-006 — shareable diagnostic artifacts require export-boundary sanitization.
-- LR-007 — entity retirement must close live semantic references.
-- LR-008 — import publication requires catalog-invisible staging.
-- LR-009 — automated diagnosis must validate its control before persisting blame.
+- LR-001 â€” moved production bodies require verification-instrumentation re-audit.
+- LR-002 â€” shared API removal requires compile-backed caller closure.
+- LR-003 â€” native replacement failure is not equivalent to no filesystem mutation.
+- LR-004 â€” lexical containment is not physical filesystem containment.
+- LR-005 â€” restartable migrations must prove ownership and convergence.
+- LR-006 â€” shareable diagnostic artifacts require export-boundary sanitization.
+- LR-007 â€” entity retirement must close live semantic references.
+- LR-008 â€” import publication requires catalog-invisible staging.
+- LR-009 â€” automated diagnosis must validate its control before persisting blame.
 
 The diagnostics support branch originally also proposed LR-005; integration deliberately renumbered it LR-006 to preserve the append-only ledger without losing either rule. A later crash-diagnosis branch independently proposed LR-007; follow-up integration preserved lifecycle LR-007 and import LR-008, and renumbered crash diagnosis to LR-009 without changing the rule.
 

@@ -63,7 +63,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Read AGENTS.md and the permanent continuity constitution before edits. CAS integrity is CLOSED with hosted and fresh local Windows evidence. Take recursive source reparse containment for ModScanner, unmanaged adoption, and Smart Inbox as the next separate test-first boundary; keep CAS filesystem-identity/digest-namespace findings separate. Preserve active Learned Rules, exact evidence, and transaction/recovery invariants. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Read AGENTS.md and the permanent continuity constitution before edits. Recursive source reparse containment is implemented and local-Windows green; the immediate action is the exact hosted Windows Release Gate before declaring closure or starting another boundary. Keep CAS filesystem-identity/digest-namespace, migration, concurrency, and other audited risks separate. Preserve active Learned Rules, exact evidence, and transaction/recovery invariants. Explicitly require your successor to recursively propagate this constitution to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

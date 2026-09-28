@@ -1,4 +1,13 @@
-# CAS integrity checkpoint — CLOSED
+# Recursive source reparse containment — IMPLEMENTED / LOCAL WINDOWS GREEN / HOSTED PENDING
+
+Source implementation checkpoint: `f51f72927e8f90c264df1ef197ba6c9bbe2704de`.
+
+Real-Windows tests-first evidence proved the prior defect in ModScanner, unmanaged adoption, and Smart Inbox, then the shared `SafeRecursiveTraversal` repair made Integration **91/91** and Automation **21/21** green. Full local `Verify-Release.ps1` passed **25/25** with functions **614/614**, call sites **6512 / 0 uncovered**, and `Build-Release.ps1` passed Core **79/79**, Automation **21/21**, Integration **91/91**, self-test **11/11**, ReadyToRun publish, release SHA-256 `D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6`.
+
+Do not call this boundary fully closed until the exact final branch candidate passes the hosted Windows Release Gate. See `_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md`.
+
+---
+# CAS integrity checkpoint â€” CLOSED
 
 CAS integrity is fully closed. Hosted Windows Release Gate `36367883836` passed repair candidate `d001870d4cd3549841d8511392ae7885f174bca2`. Fresh local Windows verification on heaven2 then passed canonical source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`: focused `BlobIntegrityTests` **10/10**; repository verifier **25/25**; functions **613/613**, call sites **6494 / 0 uncovered**; Core **79/79**; Automation **20/20**; Integration/fault injection **89/89**; self-test **11/11**; strict builds/analyzers PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 `54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79`.
 
@@ -6,7 +15,7 @@ The initial local verifier invocation produced 23/25 only because Remote Desktop
 
 ---
 
-## CAS hosted Windows concurrency failure — 2026-09-27
+## CAS hosted Windows concurrency failure â€” 2026-09-27
 
 - run: `36366784304`
 - exact commit: `797991231819d8e5693efd671e5352fd447902a0`
@@ -22,12 +31,12 @@ The initial local verifier invocation produced 23/25 only because Remote Desktop
 - verifier: **25/25 PASS**; Integration/fault injection: **89/89 PASS**; release ReadyToRun publish: **PASS**
 - release SHA-256: `409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4`
 - workflow evidence/cache persistence: `e5325317cb7005bdf9d3082a033ab95e666ebbf9`
-- fresh local Windows verification for this repair: **PASS — heaven2, source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`; focused 10/10; verifier 25/25; release build/publish PASS**
+- fresh local Windows verification for this repair: **PASS â€” heaven2, source `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`; focused 10/10; verifier 25/25; release build/publish PASS**
 
 The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. Hosted evidence applies exactly to `d001870d4cd3549841d8511392ae7885f174bca2`, and the separately required fresh local Windows run has now passed on canonical `3556bddcd7c7f84c0efe2ff92f6d73e12842128f`, which carries the same production CAS repair plus later evidence/documentation changes.
 
 ---
-# Native ReplaceFileW failure-postcondition closure — 2026-09-27
+# Native ReplaceFileW failure-postcondition closure â€” 2026-09-27
 
 The LR-003 native replacement boundary is **CLOSED and hosted-Windows verified**.
 
@@ -57,7 +66,7 @@ No new Learned Rule was needed; LR-003 already captures the durable invariant.
 
 ---
 
-# Windows live-containment hosted closure — 2026-09-27
+# Windows live-containment hosted closure â€” 2026-09-27
 
 Hosted Windows Release Gate `36341049469` closed exact merge `356fde242046b78e39c7266c57b27e52220141fa`.
 
@@ -88,7 +97,7 @@ Known residual risk is explicitly unchanged: path-component attributes are reche
 ---
 
 
-# Parallel support-audit integration verification — 2026-09-27
+# Parallel support-audit integration verification â€” 2026-09-27
 
 Canonical integration base: `6ada5a5c4cc83afadfba42bc6af6559540920e3d`.
 
@@ -169,7 +178,7 @@ Both failures informed durable regression coverage/rules and were not hidden.
 
 ---
 
-## PlannerSnapshotRepository candidate — exact Windows gate required
+## PlannerSnapshotRepository candidate â€” exact Windows gate required
 
 Production source commit `8e0068bd44cc6735ffa9478067923ad5d9c54506` extracts the read-only planner snapshot query assembly. Regression-test commit `64e666a19ce17c21bc696b46cce9c07bb257a686` adds/strengthens full, filtered, empty-filter, representative planner-output and cancellation coverage.
 
@@ -182,7 +191,7 @@ Last closed exact repository checkpoint before this source boundary:
 - evidence/cache persistence: `bb5e86e1bc956df9dfd4c1cd7ebed0e9c07e2fe8`
 - release SHA-256: `0E1B98BC3CB32446CF85B5E0F269B798A761366BD6DB006AD9CFC0048887041A`
 
-### First PlannerSnapshotRepository hosted attempt — FAILED / superseded
+### First PlannerSnapshotRepository hosted attempt â€” FAILED / superseded
 
 Run `36335255922` checked exact candidate `161b5fcba88470b7d941a3831624bdbf071ff668` on Windows / SDK 10.0.401.
 
@@ -205,7 +214,7 @@ Root cause: the first caller audit was incomplete and the two changed MainWindow
 
 Repair source `528401925b1d09b3d65c9652de8e4f2024e3677f` migrates both missed callers, adds both required entry traces, and corrects the representative planner parity assertion to the pre-existing ExactWinner semantics.
 
-### Second PlannerSnapshotRepository hosted attempt — 24/25 / superseded
+### Second PlannerSnapshotRepository hosted attempt â€” 24/25 / superseded
 
 Run `36335692754` checked exact candidate `0e561f3c059475ad443a79ac4a27dd68264a7bdb` on Windows / SDK 10.0.401.
 
@@ -290,7 +299,7 @@ Historical note: run `36330808544` on the pre-fix Games candidate produced
 being moved to a new production file. The final verified source adds that trace;
 the failure was not hidden or manually promoted.
 
-## Games first hosted verification — one trace gap
+## Games first hosted verification â€” one trace gap
 
 Run `36330808544` checked exact commit
 `1aa8cff1d06ba3b97dfe362655fe07e1c5758514`.
@@ -439,7 +448,7 @@ release diagnostic was CA1826 at
 `IReadOnlyList` Count/indexer access. This fix is not yet promoted evidence;
 the complete Windows release gate must rerun and pass.
 
-## Latest executed checks — 2026-09-27 repair revision
+## Latest executed checks â€” 2026-09-27 repair revision
 
 The latest evidence is `EVIDENCE/v8.8.0-repair-validation.log` and
 `EVIDENCE/v8.8.0-repair-function-scan.json`. With SDK 10.0.401 / runtime 10.0.12
@@ -552,7 +561,7 @@ Only a completed green Windows run for the exact source SHA may close v8.8 or be
 used to persist promoted function/stage booleans in the canonical repository.
 
 
-## First hosted Windows closure run — exact remaining trace gap
+## First hosted Windows closure run â€” exact remaining trace gap
 
 GitHub Actions run `36320489729` executed the exact repository verifier on Windows
 for commit `c95e88669c3fc2d5627fee8d7821cac8cdd0b05d` with SDK 10.0.401.
@@ -593,7 +602,7 @@ Commit `be0d786e996a09fece24f5599dab8911af5b31db` persisted promoted caches/evid
 The `agent/architecture-explain-why` candidate changes production source and therefore does **not** inherit the closed v8.8 green state. Its new services, partial view-model files, explainability model/UI, and regression tests must pass the exact Windows Release Gate after integration to `main`. Until that happens, the candidate is intentionally marked unverified.
 
 
-## Follow-up support-audit integration hosted closure — 2026-09-27
+## Follow-up support-audit integration hosted closure â€” 2026-09-27
 
 Exact source checked: `027b6d9dc9b049d9e9857e5a0e4d021e31adf443`  
 GitHub Actions run: `36343967045`  

@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "agent/recursive-source-reparse-hardening-20260927",
   "currentVersion": "8.8.0",
-  "nextMilestone": "recursive source reparse containment",
+  "nextMilestone": "hosted verification for recursive source reparse containment",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "cas-integrity-closed-next-recursive-source-reparse-containment",
-  "verificationAppliesToCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
+  "status": "recursive-source-reparse-implemented-local-green-hosted-pending",
+  "verificationAppliesToCommit": "f51f72927e8f90c264df1ef197ba6c9bbe2704de",
   "lastClosedVerificationCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
   "lastClosedVerificationRun": "local-heaven2-20260927-233041",
-  "candidateSourceCommit": "3556bddcd7c7f84c0efe2ff92f6d73e12842128f",
-  "verificationScopeNote": "CAS integrity is CLOSED. Hosted Windows Release Gate 36367883836 passed exact repair candidate d001870d4cd3549841d8511392ae7885f174bca2. Fresh local Windows verification on heaven2 passed canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f, which has the same production CAS repair plus later evidence/documentation: focused BlobIntegrityTests 10/10; Verify-Release 25/25; functions 613/613 with 6494 explicit call sites and 0 uncovered; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; strict analyzers/build PASS; win-x64 ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79. Remote Desktop Commander omitted the normal OS=Windows_NT variable, so the unchanged scripts were rerun with that standard process-local marker restored after Win32NT/Windows was independently confirmed.",
+  "candidateSourceCommit": "f51f72927e8f90c264df1ef197ba6c9bbe2704de",
+  "verificationScopeNote": "Recursive source reparse containment is implemented and local-Windows green on source checkpoint f51f72927e8f90c264df1ef197ba6c9bbe2704de. Tests-first real junction fixtures proved the previous unsafe behavior in ModScanner, unmanaged adoption, and Smart Inbox. Post-fix heaven2 verification: Verify-Release 25/25; functions 614/614; 6512 explicit call sites / 0 uncovered; Automation 21/21; Integration 91/91; self-test 11/11; strict analyzers PASS; Build-Release PASS with Core 79/79 and ReadyToRun publish; release SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6. Hosted Windows Release Gate is still required before full closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 613,
     "functionsVerified": 613,
@@ -28,6 +28,9 @@
     "releaseArtifactSha256": "54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79"
   },
   "candidateChanges": [
+    "Recursive source reparse containment implemented test-first: shared SafeRecursiveTraversal now fail-closes on root/descendant/file reparses before scanner capture, adoption copy/records, or Smart Inbox destination publication.",
+    "Real Windows pre-fix regressions reproduced unsafe junction traversal in scanner/adoption and successful Smart Inbox import; post-fix Integration 91/91 and Automation 21/21 pass.",
+    "Local full gates passed: Verify-Release 25/25, functions 614/614, call sites 6512/0 uncovered, Build-Release ReadyToRun PASS, SHA-256 D18E151644149EBCCC49ABCECB0FB84D51E1B95D7C407FB69D0D6FBA97CB3EE6.",
     "CLOSED: CAS integrity byte-validation and concurrent-capture repair passed hosted Windows Release Gate 36367883836 and fresh local heaven2 verification on canonical source 3556bddcd7c7f84c0efe2ff92f6d73e12842128f.",
     "Local CAS closure: focused BlobIntegrityTests 10/10; Verify-Release 25/25; Core 79/79; Automation 20/20; Integration 89/89; self-test 11/11; ReadyToRun publish PASS; local release SHA-256 54C53313567D96E0FE937746FE0F323E229717CE7CE296694FEC151F2E73FC79.",
     "CAS capture verifies existing/concurrent winning object before trust; restore verifies staged bytes before publication; bounded Windows sharing/lock retries preserve FileShare.Read and hash mismatch remains immediate failure.",
@@ -80,6 +83,8 @@
     "Recommended exactly one next storage extraction: read-only PlannerSnapshotRepository moving LoadPlannerSnapshotAsync query assembly with behavior/connection semantics preserved."
   ],
   "invariantsPreserved": [
+    "Recursive source operations now reject unsupported reparses before durable capture/copy/catalog state; ordinary happy paths remain green.",
+    "The repair does not claim handle/file-ID atomicity: path-check/open TOCTOU and hardlinks remain separate documented risks.",
     "Follow-up support integration changes documentation/continuity only; production source, tests, verification scripts, workflows, and promoted caches remain unchanged.",
     "Fail-closed rollback/recovery semantics were preserved: 1176/1177 do not auto-commit or destructively guess.",
     "CAS integrity, recursive scanner/adoption/Smart Inbox traversal, migration, async, diagnostics, networking, backup, and Smart Pack were not redesigned.",
@@ -104,8 +109,10 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Take recursive source reparse containment as the next independent test-first production boundary for ModScanner, unmanaged adoption, and Smart Inbox. Read RECURSIVE_SOURCE_REPARSE_CONTAINMENT_AUDIT.md, preserve CAS filesystem-identity/digest-namespace findings as separate later work, and preserve/recursively propagate continuity.",
+  "nextRequiredAction": "Run the exact hosted Windows Release Gate against the final recursive-source branch candidate. If green, persist hosted evidence and mark this boundary closed before starting any separate CAS filesystem-identity/digest-namespace, migration, concurrency, or other safety boundary.",
   "canonicalEvidence": [
+    "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.0-hosted-windows-closure.log",
