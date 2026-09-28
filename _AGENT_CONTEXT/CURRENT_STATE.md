@@ -1,10 +1,10 @@
-## Updater REST tag verification integrated — 2026-09-28
+## Updater v8.8.1 exact-main gate follow-up — 2026-09-28
 
-Canonical product merge is `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78), version **8.8.1**. The post-publication verifier no longer treats immediate Git transport tag propagation as authoritative: it reads `git/ref/tags/<tag>` through GitHub REST and fails closed unless the exact ref exists, targets a direct commit, exposes a valid 40-hex SHA, and matches the expected source commit.
+Canonical product merge is `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` (PR #78), version **8.8.1**. Windows Release Gate **36452561463** reached **24/25** and failed only at the agent-handoff continuity preflight because `_AGENT_CONTEXT/handoff-manifest.json` still declared version `8.8.0`. That was incomplete release-identity synchronization, not a production-code/test failure.
 
-Exact PR head `ea6cbbdc263de080d79d3f1e2bfe2f7dda0b6b23` passed **Updater Publication PR Gate 36448819098**. The exact-main **Windows Release Gate 36452561463** for `9dd91767880ae6c9dcb2a31d64410c1f0bd52827` is currently running; do not claim exact-main publication closure until it finishes green and the immutable tag/source/assets are inspected. Earlier Windows runs **36442433856** and **36443919632** had already published immutable updater releases but failed afterward because Git transport could not immediately fetch the newly created tag.
+The same exact-main run showed FunctionVerifier **728/728** known-good with **7,772 / 0 uncovered** explicit call sites, relaxed + strict builds with **0 warnings / 0 errors**, Core **79/79**, Automation **24/24**, Integration/fault injection **177/177**, and self-test **11/11**. Release build, updater policy, and immutable publication were skipped because repository verification correctly failed closed.
 
-Next priority: inspect 36452561463; if green, verify the immutable release/tag/two assets against `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`, then run the disposable installed-client old→new and injected-rollback proof with seeded `Mods`, `State`, and unknown-file hashes plus exact restarted build identity/health acknowledgement.
+The continuity repair branch synchronizes the handoff manifest to **8.8.1** and updates durable state. After integration, a fresh exact-main Windows Release Gate must complete all 25 verification stages, release build/package, policy, immutable publication, and exact REST tag/source/two-asset checks before publication closure is claimed.
 
 ---
 ## Current updater publication repair — 2026-09-28
