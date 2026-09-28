@@ -1,3 +1,13 @@
+# v8.8.3 archive streaming failure-cleanup candidate ? 2026-09-28
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`. The LR-011 repair now attempts cleanup of the currently owned archive output file on every exceptional payload-copy exit, preserves the primary cancellation/budget/I/O exception when cleanup itself fails, and makes Smart Inbox re-check requested cancellation before classifying filesystem failures as recoverable.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**; xUnit v3 executable runner Integration **181/181** and Automation **29/29**. Full `Verify-Release.ps1`, `Build-Release.ps1`, remote integration, and exact-main hosted verification are still pending and must not be inferred from this checkpoint.
+
+Keep LR-008 whole-import catalog-invisible staging/publication as a separate boundary. Re-query live PRs before integrating or opening another lane; do not duplicate active Agent Control, frontend, or updater work. Preserve the permanent continuity constitution and active Learned Rules. The successor must preserve and recursively propagate them to the agent after them. **Do not break the chain.**
+
+---
+
 # v8.8.2 support integration — current handoff
 
 The second 2026-09-28 support harvest is integrated on the current integration branch and reconciles canonical `main` through `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`. Exact locally release-verified product source is `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`.

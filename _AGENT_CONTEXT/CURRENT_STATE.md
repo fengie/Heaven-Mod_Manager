@@ -1,3 +1,11 @@
+# v8.8.3 archive failure-cleanup candidate ? 2026-09-28
+
+Implementation checkpoint `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928` closes the narrow LR-011 source defect: `ArchiveInspector` best-effort-cleans its owned current output for every exceptional payload-copy exit and never lets cleanup failure replace the primary exception; `SmartInboxService` re-checks cancellation before recoverable I/O handling. Deterministic regressions cover ordinary I/O cleanup, cleanup-failure preservation of cancellation/budget failures, and prevention of later Smart Inbox processing after cancellation.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**, Integration **181/181**, Automation **29/29**. Full release verification/build and hosted exact-main closure remain pending. LR-008 whole-import staging/publication is deliberately not changed. No new company-trainer rule is needed because LR-011 already captures the reusable cleanup-dominance invariant.
+
+---
+
 # v8.8.2 current integration state — 2026-09-28
 
 Canonical pre-harvest main was `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; during verification it advanced to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`, which is being reconciled without overwriting concurrent work. Shipped product source did not change in that concurrent delta.

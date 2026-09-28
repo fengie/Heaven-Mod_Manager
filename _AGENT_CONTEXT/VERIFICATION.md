@@ -1,3 +1,18 @@
+# v8.8.3 archive failure-cleanup candidate ? focused Windows evidence
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`.
+
+- `git diff --check`: PASS after removing an edit-side BOM/EOF artifact.
+- Strict whole-solution `dotnet build MhwModManager.sln -c Release --no-restore -warnaserror`: PASS, **0 warnings / 0 errors**.
+- xUnit v3 executable runner, Integration: **181/181 passed**.
+- xUnit v3 executable runner, Automation: **29/29 passed**.
+- Two direct `dotnet test` attempts before the executable-runner invocation returned **Zero tests ran / exit 5** in this local MTP/xUnit-v3 setup; they are recorded as tooling-invocation failures, not test-pass evidence.
+- Full repository verifier, release build/package, and hosted exact-main gate: **pending** at this checkpoint.
+
+No verification cache or prior hosted evidence is promoted by this focused checkpoint.
+
+---
+
 # v8.8.2 support integration — exact local Windows verification
 
 Exact product/docs integration source verified: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.

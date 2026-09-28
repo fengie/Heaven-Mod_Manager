@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.2",
+  "currentVersion": "8.8.3",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.1 updater publication verification",
   "canonicalRepository": "fengie/mhw-mods",
@@ -88,7 +88,8 @@
     "_AGENT_CONTEXT/RECURSIVE_SOURCE_REPARSE_CANDIDATE_ADVERSARIAL_REVIEW.md",
     "_AGENT_CONTEXT/EVIDENCE/recursive-source-reparse-local-windows-closure.md",
     "_AGENT_CONTEXT/HEAVY_STRESS_TESTING_SAFETY_REPORT_2026-09-28.md",
-    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md"
+    "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
+    "_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -97,7 +98,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. v8.8.2 integrates crash-bisector control/full-set preflight, duplicate-cleanup ordinary delete-failure compensation, support-bundle structured-log sanitization, profile-save rollback regression, continuity-validator adversarial hardening, and the game-profile ID / launch-observation audits. Exact local release-verified source is dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d: Verify-Release 25/25, functions 736/736 with 7842 call sites and 0 uncovered, Core 79/79, Automation 28/28, Integration 178/178, self-test 11/11, Build-Release PASS, updater build 315, ZIP SHA-256 9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086. After integration, inspect the exact-main hosted Windows Release Gate and preserve its provenance. Do not duplicate active Agent Control v2 or frontend lanes. Remaining explicit support follow-ups include persisted game-profile ID containment repair, launch-observation transaction atomicity, duplicate-cleanup crash durability, broader LR-006 diagnostic export hardening, and remaining crash-bisector evidence boundaries. Preserve the permanent continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. v8.8.3 candidate 5688fe91c03b56b651a3e9d94d7111b974693ab9 on agent/archive-streaming-cleanup-lr011-20260928 implements LR-011 archive streaming failure cleanup and Smart Inbox cancellation dominance. Focused Windows evidence: strict whole-solution build 0 warnings/errors; Integration 181/181 and Automation 29/29 via the xUnit v3 executable runner. Full Verify-Release/Build-Release and exact-main hosted evidence are not yet claimed. Preserve LR-008 whole-import catalog-invisible staging as a separate boundary. Do not duplicate active Agent Control v2, frontend, or updater lanes. Preserve the permanent continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them to the agent after them. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

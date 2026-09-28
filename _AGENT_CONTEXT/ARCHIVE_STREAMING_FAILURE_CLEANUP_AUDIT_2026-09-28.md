@@ -1,3 +1,9 @@
+# IMPLEMENTATION STATUS ? v8.8.3 candidate
+
+The narrow repair recommended by this audit is implemented at `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`. `ArchiveInspector` now attempts cleanup of the currently owned output on every exceptional payload-copy exit, cleanup failure is logged as secondary without replacing the primary exception, and `SmartInboxService` preserves requested cancellation before recoverable-I/O handling. Focused Windows evidence: strict solution build 0 warnings/errors, Integration 181/181, Automation 29/29. Full release verification/build and hosted exact-main closure are pending. LR-008 whole-destination publication/staging remains intentionally separate.
+
+---
+
 # Archive streaming failure-cleanup audit — 2026-09-28
 
 ## Status and canonical baseline
