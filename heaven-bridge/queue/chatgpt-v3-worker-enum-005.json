@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-v3-worker-enum-005",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output '===WORKERS==='; Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'heaven.*worker|worker.py|heaven-desktop-worker' } | Select-Object ProcessId,ParentProcessId,CreationDate,ExecutablePath,CommandLine | Format-List; Write-Output '===RUNTIME==='; $p='C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py'; Select-String -Path $p -Pattern 'WORKER_VERSION|worker_version.: 2' | Select-Object -First 8 | ForEach-Object {$_.Line}; Write-Output '===BOOTLOG==='; if(Test-Path \"$env:USERPROFILE\\HeavenBridge\\bootstrap-v3-last.log\") { Get-Content -LiteralPath \"$env:USERPROFILE\\HeavenBridge\\bootstrap-v3-last.log\" -Encoding Unicode | Select-Object -Last 80 }; Write-Output '===STARTUP==='; Get-Content -LiteralPath ([IO.Path]::Combine([Environment]::GetFolderPath('Startup'),'HeavenBridgeWorker.cmd')) -ErrorAction SilentlyContinue; Write-Output '===TASK==='; Get-ScheduledTask -TaskName 'HeavenLocalBridge' -ErrorAction SilentlyContinue | Select-Object TaskName,State | Format-List",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-28T19:46:30Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
