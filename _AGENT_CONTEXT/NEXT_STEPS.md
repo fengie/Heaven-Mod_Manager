@@ -1,3 +1,19 @@
+# LIVE ROUTING — supersedes older task-selection text below
+
+Canonical `main` at this checkpoint is `3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`.
+
+Current owned work:
+- PR #55 — frontend UX/responsive workflows;
+- PR #58 — updater post-upload stale-main publication window (**current updater implementation lane**);
+- PR #59 — Agent Control v2 engineering control plane;
+- PR #62 — persisted game-profile ID path-containment audit.
+
+Do not restart the older isolated C12 lane merely because historical sections below name it. Archive streaming cancellation / actual-output budgeting is implemented, and PR #61 has already repaired its verification provenance.
+
+For a new support task, re-query live GitHub first and choose a boundary not owned above. Stored PR heads are a point-in-time snapshot, not durable authority. Read `_AGENT_CONTEXT/LIVE_ROUTING_RECONCILIATION_2026-09-28.md`.
+
+---
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
