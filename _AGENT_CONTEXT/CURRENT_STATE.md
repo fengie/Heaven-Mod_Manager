@@ -1,3 +1,15 @@
+# v8.8.3 game-profile ID containment candidate — 2026-09-28
+
+Exact locally release-verified source is `e5eb300223c01800e3a7652ce4ffe303cbc168c5` on `agent/game-profile-id-containment-v2-20260928`, incorporating canonical main `86d6f9cb07fa15574aad4cc6b0c9cfd84d011c07`.
+
+Persisted/upserted `GameProfile.Id` values now must be canonical single-segment manager IDs before registry trust, and generic workspace/state paths are rechecked for lexical containment before directory creation. Hostile persisted IDs are ignored without rewriting the registry or creating escaped workspace/state paths.
+
+Local Windows release closure: Verify-Release 25/25; 737/737 function fingerprints; 7,863 explicit call sites / 0 uncovered; Core 88/88; Automation 28/28; Integration 184/184; self-test 11/11; strict/relaxed builds 0 warnings/errors; Build-Release PASS; updater build 324; artifact SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+
+Integration plus exact-main hosted Windows verification remain pending. Launch-observation atomicity and archive-streaming cleanup now have active branches; avoid duplicate ownership.
+
+---
+
 # v8.8.2 current integration state — 2026-09-28
 
 Canonical pre-harvest main was `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; during verification it advanced to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`, which is being reconciled without overwriting concurrent work. Shipped product source did not change in that concurrent delta.

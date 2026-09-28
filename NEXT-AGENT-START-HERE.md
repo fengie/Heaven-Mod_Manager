@@ -1,3 +1,17 @@
+# v8.8.3 programmer handoff — persisted game-profile ID path containment
+
+Game-profile ID path containment is implemented on `agent/game-profile-id-containment-v2-20260928`. Exact locally release-verified source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`, after incorporating canonical main `86d6f9cb07fa15574aad4cc6b0c9cfd84d011c07`.
+
+The repair rejects noncanonical persisted/upserted profile IDs before registry trust, independently checks generic workspace/state roots before creating manager-owned directories, and adds hostile-registry/no-escaped-side-effect regressions. It preserves valid IDs and is not a StorageKey migration.
+
+Local heaven2/Windows/.NET 10.0.401 closure: Verify-Release 25/25; FunctionVerifier 737/737 with 7,863 explicit call sites and 0 uncovered; Core 88/88; Automation 28/28; Integration 184/184; self-test 11/11; Build-Release PASS; updater build 324; ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+
+Next: integrate this branch without clobbering concurrent work, then inspect/persist the exact-main hosted Windows Release Gate. Re-query ownership before selecting more work. Launch-observation atomicity and archive-streaming cleanup acquired active branches during this run; Agent Control v2 and frontend are also active.
+
+Preserve the continuity constitution and active Learned Rules, and require the successor to recursively propagate them.
+
+---
+
 # v8.8.2 support integration — current handoff
 
 The second 2026-09-28 support harvest is integrated on the current integration branch and reconciles canonical `main` through `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`. Exact locally release-verified product source is `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`.

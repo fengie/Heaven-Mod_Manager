@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.3",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.1 updater publication verification",
+  "immediateParentRevision": "v8.8.2 support safety integration",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -56,6 +56,7 @@
     "_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md",
     "_AGENT_CONTEXT/SQLITE_TRANSACTION_ATOMICITY_DEEP_AUDIT.md",
     "_AGENT_CONTEXT/GAME_PROFILE_ID_PATH_CONTAINMENT_AUDIT_2026-09-28.md",
+    "_AGENT_CONTEXT/EVIDENCE/game-profile-id-containment-v8.8.3-local-windows-closure.md",
     "_AGENT_CONTEXT/LAUNCH_OBSERVATION_ATOMICITY_AUDIT_2026-09-28.md",
     "_AGENT_CONTEXT/PROFILE_SAVE_TRANSACTION_ATOMICITY_CHECKPOINT_2026-09-28.md",
     "_AGENT_CONTEXT/CRASH_BISECTOR_CONTROL_PREFLIGHT_CHECKPOINT_2026-09-28.md",
@@ -97,7 +98,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. v8.8.2 integrates crash-bisector control/full-set preflight, duplicate-cleanup ordinary delete-failure compensation, support-bundle structured-log sanitization, profile-save rollback regression, continuity-validator adversarial hardening, and the game-profile ID / launch-observation audits. Exact local release-verified source is dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d: Verify-Release 25/25, functions 736/736 with 7842 call sites and 0 uncovered, Core 79/79, Automation 28/28, Integration 178/178, self-test 11/11, Build-Release PASS, updater build 315, ZIP SHA-256 9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086. After integration, inspect the exact-main hosted Windows Release Gate and preserve its provenance. Do not duplicate active Agent Control v2 or frontend lanes. Remaining explicit support follow-ups include persisted game-profile ID containment repair, launch-observation transaction atomicity, duplicate-cleanup crash durability, broader LR-006 diagnostic export hardening, and remaining crash-bisector evidence boundaries. Preserve the permanent continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.3 game-profile ID path containment is locally release-verified at e5eb300223c01800e3a7652ce4ffe303cbc168c5 on branch agent/game-profile-id-containment-v2-20260928: Verify-Release 25/25, functions 737/737 with 7863 explicit call sites and 0 uncovered, Core 88/88, Automation 28/28, Integration 184/184, self-test 11/11, Build-Release PASS, updater build 324, ZIP SHA-256 75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7. Integrate without overwriting concurrent work, then inspect the exact-main hosted Windows Release Gate and preserve its provenance. At handoff time launch-observation atomicity and archive-streaming cleanup have active branches; Agent Control v2 and frontend are also active, so do not duplicate those lanes. Re-query ownership before taking the highest-priority unowned audited boundary. Preserve the continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

@@ -1,3 +1,14 @@
+# v8.8.3 immediate next steps
+
+1. Integrate `agent/game-profile-id-containment-v2-20260928`, preserving concurrent main evidence/cache work. Verified product source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`.
+2. Run/inspect the exact-main hosted Windows Release Gate after integration and persist the exact main SHA, workflow run, promoted verification cache, updater build, and artifact digest.
+3. Re-query open PRs/branches before taking another task. At this handoff, launch-observation atomicity and archive-streaming cleanup have active branches; Agent Control v2 and frontend are also active.
+4. From the remaining unowned audited work, prefer the highest severity/data-integrity boundary; likely candidates include duplicate-cleanup crash-durable reconciliation, broader LR-006 diagnostic export hardening, or remaining crash-bisector evidence boundaries, subject to the fresh ownership check.
+
+Do not start a second large task until the v8.8.3 branch is integrated or clearly handed to the integration lane.
+
+---
+
 # v8.8.2 next steps — current
 
 1. Finish reconciling the metadata-only concurrent `main` advance, run the handoff/verification checks on the reconciled tree, commit intended continuity/evidence, and push canonical `main` without force.

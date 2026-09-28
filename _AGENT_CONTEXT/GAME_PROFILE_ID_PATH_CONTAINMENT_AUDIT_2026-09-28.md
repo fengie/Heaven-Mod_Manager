@@ -249,3 +249,13 @@ If implementing the repair, preserve exact profile/workspace identity semantics,
 The successor must preserve this permanent continuity system and explicitly require their successor to recursively propagate it again.
 
 **Do not break the chain.**
+
+## Implementation checkpoint — 2026-09-28
+
+Status: **implemented and locally release-verified; integration/hosted exact-main closure pending**.
+
+The narrow repair was implemented without introducing a StorageKey migration: `GameProfile.IsCanonicalId` defines the exact accepted manager-ID form; registry load/upsert rejects invalid IDs; and `AppPaths.Discover` performs an independent lexical containment check for generic workspace/state roots before directory creation. Hostile persisted registry tests prove no escaped Mods/Next side effects and no registry rewrite-on-read.
+
+Exact verified source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`. Focused tests passed 18/18 and 12/12. Full local Windows release verification passed 25/25, functions 737/737, Core 88/88, Automation 28/28, Integration 184/184, self-test 11/11, Build-Release, updater build 324, ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+
+No new Learned Rule was added: the repair is a concrete application of existing fail-before-mutation/path-authority containment rules (including LR-004/LR-010), so duplicating doctrine would add noise.

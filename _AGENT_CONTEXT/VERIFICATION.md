@@ -1,3 +1,19 @@
+# v8.8.3 game-profile ID containment local verification — 2026-09-28
+
+Exact source: `e5eb300223c01800e3a7652ce4ffe303cbc168c5`; branch `agent/game-profile-id-containment-v2-20260928`; heaven2 / Windows / .NET SDK 10.0.401.
+
+- Focused before release gate: `GameProfileTests` 18/18 PASS; `MultiGameTests` 12/12 PASS.
+- `scripts/Verify-Release.ps1`: 25/25 PASS; FunctionVerifier 737/737; 7,863 explicit call sites; 0 uncovered; 0 trace gaps; 0 parse errors.
+- Core 88/88 PASS; Automation 28/28 PASS; Integration/fault injection 184/184 PASS; self-test 11/11 PASS.
+- Strict and relaxed builds/analyzers: 0 warnings, 0 errors.
+- `scripts/Build-Release.ps1`: PASS through win-x64 ReadyToRun app publish, updater-helper publish, package verification, and fingerprint promotion.
+- Updater build 324; ZIP SHA-256 `75C0FD14ED8225AB37B5120243E61AA883674E969E8EED810A6257342A60DCF7`.
+- Initial failed characterization: handoff preflight caught stale v8.8.2 metadata after the version bump. Metadata was repaired and the full gate rerun; no pass was claimed from the failed run.
+
+Hosted exact-main verification remains pending until integration.
+
+---
+
 # v8.8.2 support integration — exact local Windows verification
 
 Exact product/docs integration source verified: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.
