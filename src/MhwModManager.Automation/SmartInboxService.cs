@@ -34,7 +34,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
                     await archive.ExtractSafelyAsync(entry, destination, ct); NormalizeWrapper(destination);
                 }
-                var category = categories.Classify(Directory.EnumerateFiles(destination, "*", SearchOption.AllDirectories).Select(x => Path.GetRelativePath(destination, x)));
+                var category = categories.Classify(SafeRecursiveTraversal.Snapshot(destination, ct).Files.Select(x => Path.GetRelativePath(destination, x)));
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");
                 UnifiedDebugLog.Write("INBOX", $"IMPORTED Source={entry}; Destination={destination}; Category={category}");
@@ -70,9 +70,10 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     private static async Task CopyDirectoryAsync(string source, string destination, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var snapshot = SafeRecursiveTraversal.Snapshot(source, ct);
         Directory.CreateDirectory(destination);
-        foreach (var dir in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, dir)));
-        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        foreach (var dir in snapshot.Directories) Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, dir)));
+        foreach (var file in snapshot.Files)
         {
             ct.ThrowIfCancellationRequested(); var dest = Path.Combine(destination, Path.GetRelativePath(source, file)); Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 1024*1024, FileOptions.Asynchronous|FileOptions.SequentialScan);

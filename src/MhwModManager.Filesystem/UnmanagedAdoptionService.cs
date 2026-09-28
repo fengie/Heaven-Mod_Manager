@@ -54,7 +54,7 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
         var snapshot=await plannerSnapshots.LoadAsync(ct);
         var managed=snapshot.CurrentManifest.Keys.Select(PathRules.Normalize).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var adopted=await LoadAdoptedAsync(ct);
-        var files=await Task.Run(()=>Directory.EnumerateFiles(live,"*",SearchOption.AllDirectories)
+        var files=await Task.Run(()=>SafeRecursiveTraversal.Snapshot(live,ct).Files
             .Select(f=>(File:f,Key:ManagedKey(f))).Where(x=>!managed.Contains(x.Key)).ToArray(),ct);
         var result=new List<Candidate>();
         foreach(var item in files)

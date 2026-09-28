@@ -1,0 +1,50 @@
+using MhwModManager.Core;
+
+namespace MhwModManager.Filesystem;
+
+public static class SafeRecursiveTraversal
+{
+    public static (IReadOnlyList<string> Directories, IReadOnlyList<string> Files) Snapshot(
+        string root,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");
+        if (!Directory.Exists(root))
+            throw new DirectoryNotFoundException($"Recursive source root is missing: {root}");
+
+        var fullRoot = Path.GetFullPath(root);
+        if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Recursive source traversal rejected reparse point: {fullRoot}");
+
+        var directories = new List<string>();
+        var files = new List<string>();
+        var pending = new Stack<string>();
+        pending.Push(fullRoot);
+
+        while (pending.Count > 0)
+        {
+            ct.ThrowIfCancellationRequested();
+            var current = pending.Pop();
+            foreach (var entry in Directory.EnumerateFileSystemEntries(
+                         current, "*", SearchOption.TopDirectoryOnly))
+            {
+                ct.ThrowIfCancellationRequested();
+                var attributes = File.GetAttributes(entry);
+                if ((attributes & FileAttributes.ReparsePoint) != 0)
+                    throw new IOException($"Recursive source traversal rejected reparse point: {entry}");
+
+                if ((attributes & FileAttributes.Directory) != 0)
+                {
+                    directories.Add(entry);
+                    pending.Push(entry);
+                }
+                else
+                {
+                    files.Add(entry);
+                }
+            }
+        }
+
+        return (directories, files);
+    }
+}
