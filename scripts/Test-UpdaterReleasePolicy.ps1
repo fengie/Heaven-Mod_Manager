@@ -201,4 +201,15 @@ Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST ta
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
+
+# A shipped updater-policy change must keep release identity and continuity identity aligned.
+# Keep this in the focused gate so version drift fails before the much larger repository verifier.
+$repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$declaredVersion=(Get-Content -LiteralPath (Join-Path $repoRoot 'VERSION.txt') -Raw).Trim()
+$handoffManifest=Get-Content -LiteralPath (Join-Path $repoRoot '_AGENT_CONTEXT\handoff-manifest.json') -Raw | ConvertFrom-Json
+Assert-Equal $declaredVersion ([string]$handoffManifest.currentVersion) 'updater shipped version matches handoff manifest'
+$directoryProps=Get-Content -LiteralPath (Join-Path $repoRoot 'Directory.Build.props') -Raw
+$escapedVersion=[regex]::Escape($declaredVersion)
+Assert-Equal $true ([regex]::IsMatch($directoryProps,"<Version>$escapedVersion</Version>")) 'updater shipped version matches Directory.Build.props'
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
