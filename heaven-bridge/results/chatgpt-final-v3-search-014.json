@@ -1,0 +1,31 @@
+{
+  "id": "chatgpt-final-v3-search-014",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-28T19:52:01Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-28T19:52:19.356431+00:00",
+  "finished_at": "2026-09-28T19:52:19.357752+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\copied_v3.txt",
+        "line": 1,
+        "text": "HEAVEN_V3_SEARCH_NEEDLE"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3\\needle_v3.txt",
+        "line": 1,
+        "text": "HEAVEN_V3_SEARCH_NEEDLE"
+      }
+    ],
+    "scanned_files": 3,
+    "truncated": false
+  },
+  "job_hash": "51c5145f572bb05a58387981ea1bc4b89ac2d32afbcaaa8832125fcaeff32b67"
+}
