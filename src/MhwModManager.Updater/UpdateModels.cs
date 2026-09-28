@@ -18,7 +18,9 @@ public static class UpdateProtocol
     public const string BuildIdentityFileName = "build-identity.json";
     public const string InstallMarkerFileName = "release-install.json";
     public const string PendingFileName = "pending-update.json";
-    public const string HelperRelativePath = "UpdaterHelper/MHW Mod Manager Updater.exe";
+    public const string HelperDirectoryRelativePath = "UpdaterHelper";
+    public const string HelperRelativePath =
+        HelperDirectoryRelativePath + "/MHW Mod Manager Updater.exe";
     public const string CredentialTarget = "MhwModManager/GitHubUpdater/fengie/mhw-mods";
     public const string Repository = "fengie/mhw-mods";
     public const long MaxArtifactBytes = 1024L * 1024L * 1024L;

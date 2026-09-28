@@ -120,32 +120,46 @@ public sealed class UpdateClientService : IDisposable
 
         var helperRelative = UpdatePathSafety.NormalizeRelativeFilePath(
             UpdateProtocol.HelperRelativePath);
-        var helperEntry = installedManifest.Files.FirstOrDefault(x =>
-            string.Equals(
-                UpdatePathSafety.NormalizeRelativeFilePath(x.Path),
-                helperRelative,
+        var helperPrefix =
+            UpdateProtocol.HelperDirectoryRelativePath.TrimEnd('/') + "/";
+        var helperFiles = installedManifest.Files
+            .Select(entry => (
+                Entry: entry,
+                Relative: UpdatePathSafety.NormalizeRelativeFilePath(entry.Path)))
+            .Where(x => x.Relative.StartsWith(
+                helperPrefix,
                 StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidDataException(
+            .OrderBy(x => x.Relative, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (!helperFiles.Any(x => string.Equals(
+                x.Relative,
+                helperRelative,
+                StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidDataException(
                 $"Installed product manifest does not own updater helper '{helperRelative}'.");
 
-        var helperSource = UpdatePathSafety.CombineUnderRoot(
-            fullInstallRoot,
-            helperRelative);
-        UpdatePathSafety.EnsureExistingComponentsNotReparse(
-            fullInstallRoot,
-            helperSource);
-        var helperInfo = new FileInfo(helperSource);
-        if (!helperInfo.Exists || helperInfo.Length != helperEntry.Size)
-            throw new InvalidDataException("Installed updater helper size does not match product ownership metadata.");
-        var helperSourceHash = await UpdatePackageVerifier.HashFileAsync(
-            helperSource,
-            ct);
-        if (!string.Equals(
-                helperSourceHash,
-                helperEntry.Sha256,
-                StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException(
-                "Installed updater helper hash does not match product ownership metadata.");
+        foreach (var helperFile in helperFiles)
+        {
+            var source = UpdatePathSafety.CombineUnderRoot(
+                fullInstallRoot,
+                helperFile.Relative);
+            UpdatePathSafety.EnsureExistingComponentsNotReparse(
+                fullInstallRoot,
+                source);
+            var info = new FileInfo(source);
+            if (!info.Exists || info.Length != helperFile.Entry.Size)
+                throw new InvalidDataException(
+                    $"Installed updater helper file size does not match product ownership metadata: {helperFile.Relative}");
+            var sourceHash = await UpdatePackageVerifier.HashFileAsync(
+                source,
+                ct);
+            if (!string.Equals(
+                    sourceHash,
+                    helperFile.Entry.Sha256,
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException(
+                    $"Installed updater helper file hash does not match product ownership metadata: {helperFile.Relative}");
+        }
 
         var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
         UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
@@ -165,15 +179,38 @@ public sealed class UpdateClientService : IDisposable
         UpdatePathSafety.CreateDirectorySafely(
             transactionRoot,
             helperExecutionRoot);
-        var helperDestination = Path.Combine(
-            helperExecutionRoot,
-            Path.GetFileName(helperSource));
-        await CopyVerifiedAsync(
-            helperSource,
-            helperDestination,
-            helperEntry.Size,
-            helperEntry.Sha256,
-            ct);
+        string? helperDestination = null;
+        foreach (var helperFile in helperFiles)
+        {
+            var source = UpdatePathSafety.CombineUnderRoot(
+                fullInstallRoot,
+                helperFile.Relative);
+            var relativeWithinHelper =
+                helperFile.Relative[helperPrefix.Length..];
+            var destination = UpdatePathSafety.CombineUnderRoot(
+                helperExecutionRoot,
+                relativeWithinHelper);
+            var destinationParent = Path.GetDirectoryName(destination)
+                ?? throw new InvalidOperationException(
+                    $"Updater helper destination has no parent: {relativeWithinHelper}");
+            UpdatePathSafety.CreateDirectorySafely(
+                helperExecutionRoot,
+                destinationParent);
+            await CopyVerifiedAsync(
+                source,
+                destination,
+                helperFile.Entry.Size,
+                helperFile.Entry.Sha256,
+                ct);
+            if (string.Equals(
+                    helperFile.Relative,
+                    helperRelative,
+                    StringComparison.OrdinalIgnoreCase))
+                helperDestination = destination;
+        }
+        if (helperDestination is null)
+            throw new InvalidDataException(
+                $"Updater helper '{helperRelative}' was not copied.");
 
         var backupRoot = Path.Combine(
             transactionRoot,
@@ -366,7 +403,10 @@ public static class UpdateArgumentSanitizer
         {
             if (IsHealthArgument(args[i]))
             {
-                if (i + 1 < args.Count) i++;
+                if (i + 1 >= args.Count || IsHealthArgument(args[i + 1]))
+                    throw new InvalidDataException(
+                        $"Updater health argument '{args[i]}' is missing a value.");
+                i++;
                 continue;
             }
             output.Add(args[i]);

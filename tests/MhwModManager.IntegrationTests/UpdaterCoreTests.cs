@@ -317,8 +317,26 @@ public sealed class UpdaterCoreTests : IDisposable
             filtered);
     }
 
+    [Theory]
+    [InlineData(UpdateHealthProtocol.TokenArgument)]
+    [InlineData(UpdateHealthProtocol.FileArgument)]
+    [InlineData(UpdateHealthProtocol.AttemptArgument)]
+    public void Health_argument_sanitizer_rejects_dangling_owned_flag(string flag)
+    {
+        Assert.Throws<InvalidDataException>(() =>
+            UpdateArgumentSanitizer.RemoveHealthArguments(["--normal", "value", flag]));
+    }
+
     [Fact]
-    public async Task Handoff_copies_only_verified_owned_helper_and_writes_sanitized_request()
+    public void Health_argument_sanitizer_rejects_owned_flag_as_another_owned_flags_value()
+    {
+        Assert.Throws<InvalidDataException>(() =>
+            UpdateArgumentSanitizer.RemoveHealthArguments(
+                [UpdateHealthProtocol.TokenArgument, UpdateHealthProtocol.FileArgument, "health.json"]));
+    }
+
+    [Fact]
+    public async Task Handoff_copies_verified_owned_helper_closure_and_writes_sanitized_request()
     {
         var install = Path.Combine(root, "handoff-install");
         var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-" + Guid.NewGuid().ToString("N"), "stage");
@@ -336,13 +354,20 @@ public sealed class UpdaterCoreTests : IDisposable
             install,
             UpdateProtocol.HelperRelativePath.Replace('/', Path.DirectorySeparatorChar));
         await File.WriteAllTextAsync(helper, "HELPER-BYTES", TestToken);
+        const string helperDependencyRelative =
+            "UpdaterHelper/MHW Mod Manager Updater.runtimeconfig.json";
+        var helperDependency = Path.Combine(
+            install,
+            helperDependencyRelative.Replace('/', Path.DirectorySeparatorChar));
+        await File.WriteAllTextAsync(helperDependency, "RUNTIME-CONFIG", TestToken);
 
         var installedManifest = new ProductFileManifest(
             1,
             [
                 await EntryAsync(install, "app.exe"),
                 await EntryAsync(install, UpdateProtocol.BuildIdentityFileName),
-                await EntryAsync(install, UpdateProtocol.HelperRelativePath)
+                await EntryAsync(install, UpdateProtocol.HelperRelativePath),
+                await EntryAsync(install, helperDependencyRelative)
             ]);
         var installedManifestPath = Path.Combine(
             install,
@@ -430,6 +455,12 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(
             "HELPER-BYTES",
             await File.ReadAllTextAsync(prepared.HelperExecutablePath, TestToken));
+        var copiedDependency = Path.Combine(
+            Path.GetDirectoryName(prepared.HelperExecutablePath)!,
+            Path.GetFileName(helperDependency));
+        Assert.Equal(
+            "RUNTIME-CONFIG",
+            await File.ReadAllTextAsync(copiedDependency, TestToken));
         var request = await UpdateRequestStore.ReadAsync(
             prepared.RequestPath,
             TestToken);

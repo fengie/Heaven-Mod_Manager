@@ -10,6 +10,7 @@ namespace MhwModManager.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private readonly SemaphoreSlim programUpdateGate = new(1, 1);
+    private readonly UpdateHandoffGate programUpdateHandoffGate = new();
     private StagedUpdate? stagedProgramUpdate;
     private Task? stagedProgramHandoffTask;
     private bool programUpdaterStarted;
@@ -182,7 +183,8 @@ public sealed partial class MainWindowViewModel
             }
 
             // Preparing the helper is non-destructive and asynchronous. Re-check
-            // operation/game lifetime immediately before the one synchronous launch+shutdown step.
+            // operation/game lifetime immediately before arming the one synchronous
+            // launch+shutdown step.
             if (CriticalOperation
                 || BusyVisibility == Visibility.Visible
                 || HasActiveGameProcess())
@@ -190,10 +192,27 @@ public sealed partial class MainWindowViewModel
                 await DelayForSafeUpdateRetryAsync(ct);
                 continue;
             }
+            if (!programUpdateHandoffGate.TryArmHandoff())
+            {
+                ProgramUpdateStatus =
+                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
+                await DelayForSafeUpdateRetryAsync(ct);
+                continue;
+            }
 
+            var keepHandoffArmed = false;
             try
             {
+                // No RunBusy operation can begin after the handoff gate is armed.
+                // Re-check legacy UI state and the external game-process condition
+                // without yielding before helper launch.
+                if (CriticalOperation
+                    || BusyVisibility == Visibility.Visible
+                    || HasActiveGameProcess())
+                    continue;
+
                 using var helper = s.Updater.LaunchHelper(prepared);
+                keepHandoffArmed = true;
                 ProgramUpdateStatus =
                     $"Installing verified update build {stagedProgramUpdate.Manifest.BuildNumber}; restarting…";
                 s.Log.Information(
@@ -209,6 +228,11 @@ public sealed partial class MainWindowViewModel
                     $"Update build {stagedProgramUpdate.Manifest.BuildNumber} remains staged because the updater helper could not start ({ex.GetType().Name}).";
                 s.Log.Warning(ex,"Program updater helper launch failed; current application remains active.");
                 return;
+            }
+            finally
+            {
+                if (!keepHandoffArmed)
+                    programUpdateHandoffGate.DisarmHandoff();
             }
             }
         }
