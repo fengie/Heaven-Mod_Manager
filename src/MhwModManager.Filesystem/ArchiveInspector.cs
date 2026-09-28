@@ -42,8 +42,11 @@ public sealed class ArchiveInspector
         return new(entries,hasNative,hasRoot,bad,total,top.Count==1?top.First():null);
     }
 
-    public Task ExtractSafelyAsync(string archivePath,string destination,string trustedRoot,CancellationToken ct=default) =>
-        Task.Run(() => ExtractSafely(archivePath,destination,trustedRoot,ct), ct);
+    public async Task ExtractSafelyAsync(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
+        await Task.Run(() => ExtractSafely(archivePath,destination,trustedRoot,ct), ct);
+    }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
     public void ExtractSafely(string archivePath,string destination,string trustedRoot,CancellationToken ct=default)
