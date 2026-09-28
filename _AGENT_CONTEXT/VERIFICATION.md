@@ -1,3 +1,23 @@
+# Updater C10 WPF/client hardening — local Windows verification — 2026-09-28
+
+Exact hardened production/test source: `fdff9ed940b8801c1b17bedb6e6de523d7b807a6` (inherited C10 integration `1fbdd06`).
+
+Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
+- pre-repair focused characterization: **5/5 failed as intended** for dangling/mispaired updater health arguments and incomplete helper dependency copying;
+- repaired focused updater/handoff suite: **74/74 PASS**;
+- full `MhwModManager.IntegrationTests`: **170/170 PASS**;
+- strict `dotnet build MhwModManager.sln -c Release -warnaserror`: **PASS, 0 warnings / 0 errors**;
+- `scripts/Test-AgentHandoff.ps1`: PASS;
+- `git diff --check`: PASS before source checkpoint.
+
+C10 now includes late startup health acknowledgement, non-fatal background/manual check-stage UI, stale updater-health argument removal with malformed input rejection, complete product-owned `UpdaterHelper/` invocation-closure copying with per-file verification, and an atomic foreground-operation/handoff gate.
+
+No full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, verification-cache promotion, immutable publication, or disposable old→new packaged update is claimed for C10. Those belong to the separate C11 packaging/publication and final end-to-end boundaries.
+
+See `_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md`.
+
+---
+
 # Updater C9 local Windows verification — 2026-09-28
 
 Exact changed production/test commit: `8cdf54d0bc4065a55124aef96c68b26de2a78f0c`.

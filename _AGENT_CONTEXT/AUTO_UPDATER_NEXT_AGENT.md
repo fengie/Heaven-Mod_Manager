@@ -110,3 +110,25 @@ Preserve the permanent continuity constitution and active Learned Rules, and req
 - No `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windows Release Gate, cache promotion, or live old→new updater closure is claimed for this changed source.
 - Next bounded work: WPF startup health acknowledgement, background check/stage, operation-aware handoff, verified helper copying, and minimal updater status/manual-check UX. Keep packaging/publication as the following independent checkpoint.
 - Preserve the permanent continuity constitution and active Learned Rules; require the successor to recursively propagate them to the agent after them.
+
+## Checkpoint C10 — WPF/client lifetime integration and handoff hardening
+- Inherited WPF/client integration commit: `1fbdd0619cc4e7bee00d4eeb70de1d4d488166d4`.
+- Exact hardened production/test source: `fdff9ed940b8801c1b17bedb6e6de523d7b807a6`.
+- Startup health acknowledgement occurs only after the main window is initialized/shown, watchdog exists, and startup has otherwise completed.
+- Background/manual update checks are non-fatal and stage before any shutdown.
+- Restart arguments remove updater-owned health tuples and now reject malformed/dangling tuples.
+- Handoff verifies and copies the complete product-owned `UpdaterHelper/` file closure, not only the executable.
+- `UpdateHandoffGate` atomically excludes new foreground `RunBusy` work from the final helper-launch/shutdown window.
+- Expected-red characterization before repair: **5/5 failed** for malformed health tuples / missing helper dependency copy.
+- Final heaven/Windows/.NET 10.0.401 evidence: focused updater/handoff **74/74 PASS**; full IntegrationTests **170/170 PASS**; strict solution build **0 warnings / 0 errors**; handoff preflight PASS.
+- Detailed evidence: `AUTO_UPDATER_C10_HARDENING_2026-09-28.md`.
+- No full release gate or cache promotion is claimed.
+
+### Next bounded work — C11 only
+1. Finish deterministic minimal updater package generation and exact metadata.
+2. Ship and own the full helper invocation closure.
+3. Publish immutable private GitHub Releases keyed to exact main build identity; never overwrite an existing release/tag/assets.
+4. Add publication-negative, stale-build, and evidence-only-change regressions.
+5. Then run the repository verifier/release build/hosted Windows gate and disposable real old→new plus injected rollback closure.
+
+Keep C11 packaging/publication separate from C10 and from unrelated hardening. Preserve and recursively propagate the continuity constitution again.
