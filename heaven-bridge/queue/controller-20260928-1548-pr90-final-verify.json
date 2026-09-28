@@ -1,0 +1,13 @@
+{
+  "id": "controller-20260928-1548-pr90-final-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $jobRoot=Join-Path $env:USERPROFILE 'HeavenBridge\\jobs\\controller-20260928-1548-pr90-final-verify'; New-Item -ItemType Directory -Force -Path $jobRoot | Out-Null; $repo=Join-Path $jobRoot 'repo'; if (Test-Path $repo) { throw \"job repo already exists: $repo\" }; git clone --single-branch --branch 'agent/game-profile-id-containment-v8.8.5-reconcile' https://github.com/fengie/mhw-mods.git $repo; if ($LASTEXITCODE -ne 0) { throw \"git clone failed: $LASTEXITCODE\" }; Push-Location $repo; try {;   $env:OS='Windows_NT';   Write-Output ('HEAD=' + (git rev-parse HEAD));   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\Verify-Release.ps1;   $verify=$LASTEXITCODE;   Write-Output ('VERIFY_EXIT=' + $verify);   exit $verify; } finally { Pop-Location }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 7200
+  },
+  "created_at": "2026-09-28T19:48:00Z",
+  "priority": "highest"
+}
