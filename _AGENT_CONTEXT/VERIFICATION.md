@@ -1,8 +1,26 @@
 # Active CAS integrity checkpoint
 
-Capture now rejects corrupt existing objects; restore validates private staged bytes before publication. Nine focused Windows regressions and the full local Windows gates pass for source 8334d725f6bdb73661e2f3ed71a04189db76950b: verifier 25/25, Integration 88/88, Automation 20/20, self-test 11/11, strict builds and ReadyToRun publish PASS. Hosted verification is pending; see EVIDENCE/cas-integrity-local-windows.log. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md` for design, reproduced failures, branch review, limits, and exact continuation.
+CAS integrity local Windows gates passed for source 8334d725f6bdb73661e2f3ed71a04189db76950b, but hosted Windows Release Gate 36366784304 on exact canonical commit 797991231819d8e5693efd671e5352fd447902a0 failed the release integration suite at 87/88. The failure is a real transient Windows sharing race in concurrent CAS publication verification, not CI noise. Branch agent/cas-integrity-20260927 contains the repair candidate and stronger coverage; fresh exact verification is pending. Read `_AGENT_CONTEXT/CAS_INTEGRITY_CHECKPOINT.md`.
 
 Finish the exact Windows gates before taking recursive scanner/adoption/Smart Inbox containment as a separate boundary. The successor must inherit, preserve, and recursively propagate the permanent continuity constitution and active Learned Rules to the agent after them. Do not break the chain.
+
+---
+
+## CAS hosted Windows concurrency failure — 2026-09-27
+
+- run: `36366784304`
+- exact commit: `797991231819d8e5693efd671e5352fd447902a0`
+- initial repository verification gate: **PASS**
+- Core: **79/79 PASS**
+- Automation: **20/20 PASS**
+- release-build integration suite: **87/88**
+- failing test: `BlobIntegrityTests.Concurrent_valid_captures_converge_and_restore_the_expected_bytes`
+- failure: `System.IO.IOException` / Windows `ERROR_SHARING_VIOLATION` while opening the hash-named CAS destination in `BlobStore.VerifyExistingAsync`
+- production repair commit: `3810c6b8c5baf1f7aff3b22952e137796dddaa8f`
+- strengthened regression commit: `cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3`
+- fresh focused/local/release/hosted verification: **PENDING**
+
+The repair retains `FileShare.Read` so verification continues to exclude mutation. It retries only Win32 sharing/lock violations with bounded cancellation-aware backoff. A content hash mismatch is still an immediate `InvalidDataException`; it is not a retry condition. The previous local Windows green evidence does not apply to the repair candidate.
 
 ---
 # Native ReplaceFileW failure-postcondition closure — 2026-09-27
