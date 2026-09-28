@@ -246,3 +246,19 @@ The successor must preserve the permanent continuity constitution and explicitly
 their successor to inherit, preserve, and recursively propagate the same system again.
 
 **Do not break the chain.**
+
+
+## Final canonical-main revalidation before PR
+
+Canonical `main` advanced once during this checkpoint, from
+`3d24155823b278662cc2aa9ecf9f1bb1a4d7353d` to
+`3d625dfbda54b34848f4da7369c02f065bf00f09`.
+
+The intervening commit is `Persist hosted Windows verification evidence [skip ci]`.
+Its diff updates verification cache/evidence for exact source
+`3d24155823b278662cc2aa9ecf9f1bb1a4d7353d`; it does not modify DuplicateCleanup,
+Automation tests, storage behavior, or the findings/repair in this checkpoint.
+
+The branch is therefore intentionally left one evidence-only commit behind rather than
+copying or promoting canonical verification evidence onto changed production inputs.
+The new DuplicateCleanup source/test fingerprints require their own fresh verification.
