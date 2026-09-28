@@ -150,17 +150,22 @@ public sealed class UpdateInstaller(
             throw new InvalidDataException("Installed product manifest no longer matches the packaged install marker.");
         var oldManifest = await LoadProductManifestAsync(oldProductPath, ct);
         EnsureManifestOwnsExecutable(oldManifest, marker.ExecutableRelativePath, "Installed");
+        EnsureManifestOwnsPath(oldManifest, UpdateProtocol.BuildIdentityFileName, "Installed");
+        var installedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(request.InstallRoot, ct);
+        EnsureMarkerMatchesBuildIdentity(marker, installedIdentity, "Installed");
 
         var newManifest = await UpdatePackageVerifier.VerifyAsync(
             request.StagingRoot, request.Manifest.ProductManifestSha256, ct);
+        EnsureManifestOwnsPath(newManifest, UpdateProtocol.BuildIdentityFileName, "Staged");
+        var stagedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(request.StagingRoot, ct);
         var stagedMarkerPath = Path.Combine(request.StagingRoot, UpdateProtocol.InstallMarkerFileName);
         var stagedMarker = JsonSerializer.Deserialize<ReleaseInstallMarker>(
                                await File.ReadAllTextAsync(stagedMarkerPath, ct), UpdateProtocol.Json)
                            ?? throw new InvalidDataException("Staged updater install marker is empty.");
         stagedMarker.Validate();
-        if (stagedMarker.Build.BuildNumber != request.Manifest.BuildNumber
-            || !string.Equals(stagedMarker.Build.SourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(
+        EnsureMarkerMatchesBuildIdentity(stagedMarker, stagedIdentity, "Staged");
+        EnsureTargetIdentityAgreement(request.Manifest, stagedMarker, stagedIdentity);
+        if (!string.Equals(
                 UpdatePathSafety.NormalizeRelativeFilePath(stagedMarker.ExecutableRelativePath),
                 UpdatePathSafety.NormalizeRelativeFilePath(request.Manifest.ExecutableRelativePath),
                 StringComparison.OrdinalIgnoreCase)
@@ -298,9 +303,10 @@ public sealed class UpdateInstaller(
                          await File.ReadAllTextAsync(markerPath, ct), UpdateProtocol.Json)
                      ?? throw new InvalidDataException("Installed release marker is empty after apply.");
         marker.Validate();
-        if (marker.Build.BuildNumber != request.Manifest.BuildNumber
-            || !string.Equals(marker.Build.SourceSha, request.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(
+        var installedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(request.InstallRoot, ct);
+        EnsureMarkerMatchesBuildIdentity(marker, installedIdentity, "Installed target");
+        EnsureTargetIdentityAgreement(request.Manifest, marker, installedIdentity);
+        if (!string.Equals(
                 UpdatePathSafety.NormalizeRelativeFilePath(marker.ExecutableRelativePath),
                 UpdatePathSafety.NormalizeRelativeFilePath(request.Manifest.ExecutableRelativePath),
                 StringComparison.OrdinalIgnoreCase))
@@ -344,6 +350,9 @@ public sealed class UpdateInstaller(
             throw new InvalidDataException("Rollback metadata does not describe the previous installation.");
         var previousManifest = await LoadProductManifestAsync(backupProductPath, ct);
         EnsureManifestOwnsExecutable(previousManifest, backupMarker.ExecutableRelativePath, "Rollback");
+        EnsureManifestOwnsPath(previousManifest, UpdateProtocol.BuildIdentityFileName, "Rollback");
+        var previousIdentity = await UpdateBuildIdentity.LoadRequiredAsync(request.BackupRoot, ct);
+        EnsureMarkerMatchesBuildIdentity(backupMarker, previousIdentity, "Rollback");
         var previousPaths = previousManifest.Files.Select(x => UpdatePathSafety.NormalizeRelativeFilePath(x.Path))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         previousPaths.Add(UpdateProtocol.ProductManifestFileName);
@@ -442,14 +451,58 @@ public sealed class UpdateInstaller(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"label={label}; executable={executableRelativePath}");
-        var executable = UpdatePathSafety.NormalizeRelativeFilePath(executableRelativePath);
+        EnsureManifestOwnsPath(manifest, executableRelativePath, $"{label} restart executable");
+    }
+
+    private static void EnsureManifestOwnsPath(
+        ProductFileManifest manifest,
+        string relativePath,
+        string label)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"label={label}; path={relativePath}");
+        var normalized = UpdatePathSafety.NormalizeRelativeFilePath(relativePath);
         if (!manifest.Files.Any(x =>
                 string.Equals(
                     UpdatePathSafety.NormalizeRelativeFilePath(x.Path),
-                    executable,
+                    normalized,
                     StringComparison.OrdinalIgnoreCase)))
             throw new InvalidDataException(
-                $"{label} product manifest does not own declared restart executable '{executableRelativePath}'.");
+                $"{label} is not owned by the product manifest: '{relativePath}'.");
+    }
+
+    private static void EnsureMarkerMatchesBuildIdentity(
+        ReleaseInstallMarker marker,
+        UpdateBuildIdentity identity,
+        string label)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"label={label}");
+        marker.Validate();
+        identity.ValidatePublished();
+        if (marker.Build.SchemaVersion != identity.SchemaVersion
+            || !string.Equals(marker.Build.Channel, identity.Channel, StringComparison.Ordinal)
+            || !string.Equals(marker.Build.ProductVersion, identity.ProductVersion, StringComparison.Ordinal)
+            || !string.Equals(marker.Build.SourceSha, identity.SourceSha, StringComparison.OrdinalIgnoreCase)
+            || marker.Build.BuildNumber != identity.BuildNumber
+            || marker.Build.BuiltUtc != identity.BuiltUtc)
+            throw new InvalidDataException(
+                $"{label} install marker does not match build-identity.json.");
+    }
+
+    private static void EnsureTargetIdentityAgreement(
+        UpdateManifest manifest,
+        ReleaseInstallMarker marker,
+        UpdateBuildIdentity identity)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={manifest.BuildNumber}");
+        manifest.Validate();
+        if (!string.Equals(manifest.Channel, marker.Channel, StringComparison.Ordinal)
+            || !string.Equals(manifest.Channel, identity.Channel, StringComparison.Ordinal)
+            || !string.Equals(manifest.ProductVersion, identity.ProductVersion, StringComparison.Ordinal)
+            || !string.Equals(manifest.SourceSha, identity.SourceSha, StringComparison.OrdinalIgnoreCase)
+            || manifest.BuildNumber != identity.BuildNumber)
+            throw new InvalidDataException(
+                "Update manifest, install marker, and build-identity.json disagree on target build identity.");
     }
 
     private static async Task<UpdateJournal?> ReadJournalAsync(string path, CancellationToken ct)

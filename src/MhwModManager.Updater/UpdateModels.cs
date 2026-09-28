@@ -54,6 +54,37 @@ public sealed record UpdateBuildIdentity(
             throw new InvalidDataException($"Unsupported build identity schema {value.SchemaVersion}.");
         return value;
     }
+
+    public void ValidatePublished()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={BuildNumber}");
+        if (SchemaVersion != UpdateProtocol.BuildIdentitySchemaVersion)
+            throw new InvalidDataException($"Unsupported build identity schema {SchemaVersion}.");
+        if (!string.Equals(Channel, UpdateProtocol.Channel, StringComparison.Ordinal))
+            throw new InvalidDataException($"Unexpected build identity channel '{Channel}'.");
+        if (string.IsNullOrWhiteSpace(ProductVersion))
+            throw new InvalidDataException("Build identity product version is missing.");
+        if (string.IsNullOrWhiteSpace(SourceSha) || SourceSha.Length < 7)
+            throw new InvalidDataException("Build identity source SHA is missing or malformed.");
+        if (BuildNumber <= 0)
+            throw new InvalidDataException("Build identity build number must be positive.");
+    }
+
+    public static async Task<UpdateBuildIdentity> LoadRequiredAsync(
+        string root,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");
+        var path = UpdatePathSafety.CombineUnderRoot(root, UpdateProtocol.BuildIdentityFileName);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(root, path);
+        if (!File.Exists(path))
+            throw new InvalidDataException($"Required build identity is missing: {path}");
+        var value = JsonSerializer.Deserialize<UpdateBuildIdentity>(
+                        await File.ReadAllTextAsync(path, ct), UpdateProtocol.Json)
+                    ?? throw new InvalidDataException("Build identity is empty.");
+        value.ValidatePublished();
+        return value;
+    }
 }
 
 public sealed record ReleaseInstallMarker(
@@ -73,8 +104,9 @@ public sealed record ReleaseInstallMarker(
             throw new InvalidDataException($"Unexpected updater product id '{ProductId}'.");
         if (!string.Equals(Channel, UpdateProtocol.Channel, StringComparison.Ordinal))
             throw new InvalidDataException($"Unexpected installed update channel '{Channel}'.");
-        if (Build.SchemaVersion != UpdateProtocol.BuildIdentitySchemaVersion)
-            throw new InvalidDataException($"Unsupported installed build identity schema {Build.SchemaVersion}.");
+        Build.ValidatePublished();
+        if (!string.Equals(Build.Channel, Channel, StringComparison.Ordinal))
+            throw new InvalidDataException("Install marker channel does not match its nested build identity.");
         UpdatePathSafety.NormalizeRelativeFilePath(ExecutableRelativePath);
         if (ProductManifestSha256.Length != 64 || ProductManifestSha256.Any(c => !Uri.IsHexDigit(c)))
             throw new InvalidDataException("Install marker product manifest SHA-256 is malformed.");
@@ -118,6 +150,8 @@ public sealed record UpdateManifest(
             throw new InvalidDataException($"Unsupported update manifest schema {SchemaVersion}.");
         if (!string.Equals(Channel, UpdateProtocol.Channel, StringComparison.Ordinal))
             throw new InvalidDataException($"Unexpected update channel '{Channel}'.");
+        if (string.IsNullOrWhiteSpace(ProductVersion))
+            throw new InvalidDataException("Update product version is missing.");
         if (BuildNumber <= 0) throw new InvalidDataException("Update build number must be positive.");
         if (ArtifactSize <= 0 || ArtifactSize > UpdateProtocol.MaxArtifactBytes)
             throw new InvalidDataException($"Update artifact size {ArtifactSize} is outside the allowed budget.");

@@ -497,6 +497,100 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.Equal("OLD-APP", await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
     }
 
+    [Fact]
+    public async Task Staged_marker_product_version_disagreement_fails_before_backup()
+    {
+        var fixture = await CreateFixtureAsync();
+        var markerPath = Path.Combine(fixture.Request.StagingRoot, UpdateProtocol.InstallMarkerFileName);
+        var marker = await ReadMarkerAsync(markerPath);
+        await WriteJsonAsync(markerPath, marker with
+        {
+            Build = marker.Build with { ProductVersion = "9.9.9" }
+        });
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => new UpdateInstaller().ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(
+            "OLD-APP",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.False(Directory.Exists(fixture.Request.BackupRoot));
+    }
+
+    [Fact]
+    public async Task Cryptographically_consistent_staged_identity_disagreement_fails_before_backup()
+    {
+        var fixture = await CreateFixtureAsync();
+        var stage = fixture.Request.StagingRoot;
+        var identityPath = Path.Combine(stage, UpdateProtocol.BuildIdentityFileName);
+        var originalIdentity = JsonSerializer.Deserialize<UpdateBuildIdentity>(
+            await File.ReadAllTextAsync(identityPath, TestToken), UpdateProtocol.Json)
+            ?? throw new InvalidDataException("Identity fixture is empty.");
+        var inconsistentIdentity = originalIdentity with { SourceSha = "different-source-abcdef" };
+        await WriteJsonAsync(identityPath, inconsistentIdentity);
+
+        var manifestPath = Path.Combine(stage, UpdateProtocol.ProductManifestFileName);
+        var productManifest = JsonSerializer.Deserialize<ProductFileManifest>(
+            await File.ReadAllTextAsync(manifestPath, TestToken), UpdateProtocol.Json)
+            ?? throw new InvalidDataException("Product manifest fixture is empty.");
+        var updatedFiles = new List<ProductFileEntry>();
+        foreach (var entry in productManifest.Files)
+        {
+            updatedFiles.Add(string.Equals(
+                UpdatePathSafety.NormalizeRelativeFilePath(entry.Path),
+                UpdateProtocol.BuildIdentityFileName,
+                StringComparison.OrdinalIgnoreCase)
+                ? await EntryAsync(stage, UpdateProtocol.BuildIdentityFileName)
+                : entry);
+        }
+        var updatedProductManifest = productManifest with { Files = updatedFiles };
+        await WriteJsonAsync(manifestPath, updatedProductManifest);
+        var updatedProductHash = await UpdatePackageVerifier.HashFileAsync(manifestPath, TestToken);
+
+        var markerPath = Path.Combine(stage, UpdateProtocol.InstallMarkerFileName);
+        var marker = await ReadMarkerAsync(markerPath);
+        await WriteJsonAsync(markerPath, marker with
+        {
+            Build = inconsistentIdentity,
+            ProductManifestSha256 = updatedProductHash
+        });
+        var request = fixture.Request with
+        {
+            Manifest = fixture.Request.Manifest with
+            {
+                ProductManifestSha256 = updatedProductHash
+            }
+        };
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => new UpdateInstaller().ApplyAsync(request, TestToken));
+
+        Assert.Equal(
+            "OLD-APP",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.False(Directory.Exists(request.BackupRoot));
+    }
+
+    [Fact]
+    public async Task Staged_marker_nested_channel_disagreement_fails_before_backup()
+    {
+        var fixture = await CreateFixtureAsync();
+        var markerPath = Path.Combine(fixture.Request.StagingRoot, UpdateProtocol.InstallMarkerFileName);
+        var marker = await ReadMarkerAsync(markerPath);
+        await WriteJsonAsync(markerPath, marker with
+        {
+            Build = marker.Build with { Channel = "other" }
+        });
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => new UpdateInstaller().ApplyAsync(fixture.Request, TestToken));
+
+        Assert.Equal(
+            "OLD-APP",
+            await File.ReadAllTextAsync(Path.Combine(installRoot, "app.exe"), TestToken));
+        Assert.False(Directory.Exists(fixture.Request.BackupRoot));
+    }
+
     private async Task<UpdateFixture> CreateFixtureAsync(
         string oldExecutable = "app.exe",
         string newExecutable = "app.exe")
@@ -512,17 +606,19 @@ public sealed class UpdateInstallerTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(installRoot, "Mods", "mine.mod"), "USER-MOD", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "State", "user.dat"), "USER-STATE", TestToken);
         await File.WriteAllTextAsync(Path.Combine(installRoot, "notes.txt"), "UNKNOWN", TestToken);
+        var oldIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
+            "sha-old-abcdef", 1, DateTimeOffset.UtcNow.AddMinutes(-5));
+        await WriteJsonAsync(Path.Combine(installRoot, UpdateProtocol.BuildIdentityFileName), oldIdentity);
 
         var oldManifest = new ProductFileManifest(1,
         [
             await EntryAsync(installRoot, oldExecutable),
-            await EntryAsync(installRoot, "stale.dll")
+            await EntryAsync(installRoot, "stale.dll"),
+            await EntryAsync(installRoot, UpdateProtocol.BuildIdentityFileName)
         ]);
         var oldManifestPath = Path.Combine(installRoot, UpdateProtocol.ProductManifestFileName);
         await WriteJsonAsync(oldManifestPath, oldManifest);
         var oldProductHash = await UpdatePackageVerifier.HashFileAsync(oldManifestPath, TestToken);
-        var oldIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
-            "sha-old-abcdef", 1, DateTimeOffset.UtcNow.AddMinutes(-5));
         var oldMarker = new ReleaseInstallMarker(1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
             oldIdentity, oldExecutable, oldProductHash);
         await WriteJsonAsync(Path.Combine(installRoot, UpdateProtocol.InstallMarkerFileName), oldMarker);
@@ -531,17 +627,19 @@ public sealed class UpdateInstallerTests : IDisposable
         Directory.CreateDirectory(stage);
         await File.WriteAllTextAsync(Path.Combine(stage, newExecutable), "NEW-APP", TestToken);
         await File.WriteAllTextAsync(Path.Combine(stage, "new.dll"), "NEW-LIB", TestToken);
+        var newIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
+            "sha-new-abcdef", 2, DateTimeOffset.UtcNow);
+        await WriteJsonAsync(Path.Combine(stage, UpdateProtocol.BuildIdentityFileName), newIdentity);
         var newManifest = new ProductFileManifest(1,
         [
             await EntryAsync(stage, newExecutable),
-            await EntryAsync(stage, "new.dll")
+            await EntryAsync(stage, "new.dll"),
+            await EntryAsync(stage, UpdateProtocol.BuildIdentityFileName)
         ]);
         var newManifestPath = Path.Combine(stage, UpdateProtocol.ProductManifestFileName);
         await WriteJsonAsync(newManifestPath, newManifest);
         var newProductHash = await UpdatePackageVerifier.HashFileAsync(newManifestPath, TestToken);
 
-        var newIdentity = new UpdateBuildIdentity(1, UpdateProtocol.Channel, "8.8.0",
-            "sha-new-abcdef", 2, DateTimeOffset.UtcNow);
         var newMarker = new ReleaseInstallMarker(1, UpdateProtocol.ProductId, UpdateProtocol.Channel,
             newIdentity, newExecutable, newProductHash);
         await WriteJsonAsync(Path.Combine(stage, UpdateProtocol.InstallMarkerFileName), newMarker);
