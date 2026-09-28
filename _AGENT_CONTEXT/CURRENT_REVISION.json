@@ -205,7 +205,10 @@
       },
       "productionSourceChanged": false,
       "testsChanged": false,
-      "verificationStatus": "documentation integration only; active CAS local Windows closure remains pending"
+      "verificationStatus": "documentation integration only; active CAS local Windows closure remains pending",
+      "integrationCommit": "1dc4655b2ade03338ef826690d8ed1dc5d31fa14",
+      "remoteMainVerified": true,
+      "canonicalHeadNote": "The integration commit above was verified identical to remote main immediately after merge. The canonical handoff HEAD is the commit containing the final closure note; obtain its exact SHA from main."
     }
   },
   "lastClosedBoundary": {
