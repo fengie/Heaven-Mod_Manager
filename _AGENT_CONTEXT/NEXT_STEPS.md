@@ -1,3 +1,12 @@
+# ARCHIVE STREAMING CANDIDATE — LOCAL WINDOWS GREEN / HOSTED INTEGRATION PENDING
+
+Support branch `agent/archive-streaming-budget-20260928` implements the previously runtime-confirmed archive single-entry cancellation and actual-output-budget boundary. Production candidate `b0be45beed223e0b0fd06ab719f696028581e626` replaces synchronous payload extraction with token-aware streamed read/write, meters actual decompressed bytes before each write, and removes the owned partial output on cancellation or budget failure while preserving existing path/reparse checks.
+
+Local Windows evidence is green: `Verify-Release.ps1` **25/25**, functions **616**, trace gaps **0**, call sites **6555 / 0 uncovered**, Core **79/79** in the release build, Automation **24/24**, Integration **98/98**, self-test **11/11**, strict analyzers PASS, ReadyToRun publish PASS/fallback False, release SHA-256 `50B320A6352D2335D77D6864EA456FEE3FF582D82F5102338882C083CE7B2E40`.
+
+This is a support candidate, not canonical closure. Read `_AGENT_CONTEXT/ARCHIVE_STREAMING_CANCELLATION_BUDGET_IMPLEMENTATION_2026-09-28.md`. Re-check current main, integrate without overwriting newer continuity, and run the hosted Windows Release Gate for the exact integrated candidate before declaring the boundary closed. Free-space reserve and compression-ratio policy remain separate decisions. Preserve and recursively propagate the continuity constitution.
+
+---
 # Current next step â€” archive streaming cancellation/resource budgeting
 
 The integrated filesystem hardening is closed. Hosted Windows Release Gate `36392282315` passed exact production integration commit `d66bff290f197236ec43c9b37d2b015ab2ee5fe8`; evidence/cache persistence is `a94066004660e4d542f5d4a528c7e5e22bdea9cb`, hosted artifact SHA-256 `A264C5108DDEA0E3301BFF0E33D7A3E7DA3A92A566739C865AE28B8111BFAFAB`. A separate local Windows run on the same production code plus documentation passed verifier **25/25**, functions **615/615**, call sites **6532 / 0 uncovered**, Core **79/79**, Automation **24/24**, Integration **96/96**, self-test **11/11**, strict analyzers, and ReadyToRun publish; local ZIP SHA-256 `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`.

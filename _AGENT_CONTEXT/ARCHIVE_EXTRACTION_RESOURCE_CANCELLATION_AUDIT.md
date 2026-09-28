@@ -1,5 +1,10 @@
 # Archive extraction resource/cancellation audit â€” 2026-09-28
 
+## Implementation follow-up — candidate locally green
+
+The production boundary described by this audit is now implemented on support branch `agent/archive-streaming-budget-20260928`, production candidate `b0be45beed223e0b0fd06ab719f696028581e626`. Local Windows verification/release is green; hosted integration closure remains pending. Read `ARCHIVE_STREAMING_CANCELLATION_BUDGET_IMPLEMENTATION_2026-09-28.md` for exact implementation, red/green evidence, exclusions, and successor instructions.
+
+
 ## Status and canonical baseline
 
 Documentation-only support checkpoint. Source inspection and the runtime reproduction began from canonical `main` at `831da365c0c67e0239ad668f60fe3c78513dc63b`. During the task, canonical `main` advanced first to `ef9c0dc93ca5270e9ee5ab3dea080b2fcb461585` with the generic agent-training/continuity system, then to `2d6969c7d94438dd64a540dab93fc9a910a8458b` with hosted-verification evidence/cache persistence. Neither interval changes `src/` or `tests/`. This branch was rebased onto `2d6969c7d94438dd64a540dab93fc9a910a8458b` before final verification and push.

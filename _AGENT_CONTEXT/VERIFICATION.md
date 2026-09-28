@@ -1,3 +1,8 @@
+# Archive streaming candidate local Windows closure — 2026-09-28
+
+Exact production candidate `b0be45beed223e0b0fd06ab719f696028581e626` passed local Windows `scripts/Verify-Release.ps1` **25/25** and `scripts/Build-Release.ps1`. Function scan: **616** functions, **0** trace gaps, **6555 / 0** uncovered call sites, **0** parse errors. Core **79/79**, Automation **24/24**, Integration/fault injection **98/98**, self-test **11/11**; strict analyzers and win-x64 ReadyToRun publish PASS, fallback False. Release ZIP SHA-256: `50B320A6352D2335D77D6864EA456FEE3FF582D82F5102338882C083CE7B2E40`. Hosted integration-gate evidence remains pending.
+
+---
 # 2026-09-28 combined support integration â€” CLOSED / hosted + local Windows verification
 
 Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.
