@@ -8,12 +8,12 @@
   "nextMilestone": "CAS integrity exact Windows gate closure",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.0 Windows-verified release",
-  "status": "cas-integrity-hosted-race-repair-implemented-reverification-pending",
+  "status": "cas-integrity-hosted-green-local-windows-reverification-pending",
   "verificationAppliesToCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationCommit": "17abfb05d83ff38040eb9356d34fbb3131644801",
   "lastClosedVerificationRun": "36342205103",
-  "candidateSourceCommit": "cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3",
-  "verificationScopeNote": "CAS source 8334d725f6bdb73661e2f3ed71a04189db76950b passed local gates, but hosted run 36366784304 on canonical 797991231819d8e5693efd671e5352fd447902a0 failed the 88-test integration suite at 87/88 due to a transient Windows sharing violation in concurrent CAS publication verification. Production repair 3810c6b8c5baf1f7aff3b22952e137796dddaa8f plus test stress cde16cc7db8a9f0fa2470797a4ee8c9d75c475a3 require fresh focused, full local Windows, release, and hosted verification. No new verification is claimed yet.",
+  "candidateSourceCommit": "d001870d4cd3549841d8511392ae7885f174bca2",
+  "verificationScopeNote": "Hosted Windows Release Gate 36367883836 passed exact candidate d001870d4cd3549841d8511392ae7885f174bca2: Verify-Release 25/25, Integration 89/89, strict build/analyzers PASS, ReadyToRun release publish PASS, release SHA-256 409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4. Workflow evidence/cache persistence commit e5325317cb7005bdf9d3082a033ab95e666ebbf9. The required fresh local Windows verification for the repair remains pending because authorized runner heaven2 is offline; do not mark the CAS checkpoint closed until it passes.",
   "lastClosedVerification": {
     "functionInventoryTotal": 612,
     "functionsVerified": 612,
@@ -28,6 +28,7 @@
     "releaseArtifactSha256": "B88694E81A35DCFF0C8FF76EBD07908ECA47B0AA2777ABE26B38686635373468"
   },
   "candidateChanges": [
+    "CAS concurrency repair hosted closure: exact candidate d001870d4cd3549841d8511392ae7885f174bca2 passed Windows Release Gate 36367883836 with 25/25 verifier, Integration 89/89, ReadyToRun publish PASS, release SHA-256 409E00ABAC1E6D51309C97CC33F8B2F8C1FFF25E62908B332BABB24C32ECDEC4; fresh local Windows verification remains pending because heaven2 is offline.",
     "CAS capture verifies existing/concurrent winning object before trust; restore verifies staged bytes before publication; prior AtomicFileOps CA1068 corrected; nine focused Windows cases pass.",
     "Follow-up support integration exact commit 027b6d9dc9b049d9e9857e5a0e4d021e31adf443 passed hosted Windows Release Gate 36343967045; evidence/cache persistence commit dadbe73a48567b17c9814c483f654be00d1d810f; release SHA-256 DC5A5F8DA92BE6A7469F3C6072BA6A555E5AAF5FDE25439D064CD115BA201BD6.",
     "Follow-up support integration: harvested later documentation-only PRs #14, #15, #16, and #18 without merging stale branch-local continuity snapshots.",
@@ -102,7 +103,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Verify the CAS sharing-violation repair: focused BlobIntegrityTests, exact full local Windows Verify-Release and Build-Release, then exact hosted Windows Release Gate. Close only after all are green; then take recursive source reparse traversal separately. Preserve and recursively propagate continuity.",
+  "nextRequiredAction": "Run focused BlobIntegrityTests and the exact full local Windows Verify-Release.ps1 and Build-Release.ps1 against the hosted-green CAS candidate without changing production source. If local gates pass, record exact results and close CAS continuity; do not start another feature. Preserve and recursively propagate continuity.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/MAINWINDOW_RESPONSIBILITY_AUDIT.md",
     "_AGENT_CONTEXT/STORAGE_TRANSACTION_BOUNDARY_AUDIT.md",
