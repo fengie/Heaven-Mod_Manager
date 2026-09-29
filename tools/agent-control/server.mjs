@@ -547,6 +547,27 @@ async function workerSnapshot(state = refreshState()) {
   });
 }
 
+async function runtimeFederationSnapshot(state = refreshState()) {
+  const snapshot = federationSnapshot(state.federation, { now: Date.now() });
+  if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
+
+  const health = await inspectHeavenBridge({ sync: false });
+  const provider = snapshot.providers.find(item => item.id === "heaven-bridge");
+  if (provider) {
+    provider.status = health.healthy ? "online" : (health.configured ? "unhealthy" : "not-configured");
+    provider.last_heartbeat_at = health.heartbeat?.updatedAt || null;
+    provider.last_error = health.healthy ? null : (health.reason || null);
+    provider.metadata = {
+      ...(provider.metadata || {}),
+      execution_authority: Boolean(health.healthy),
+      protocol: health.protocol || null,
+      heartbeat_age_ms: health.heartbeat?.ageMs ?? null,
+      running: health.heartbeat?.running ?? null
+    };
+  }
+  return snapshot;
+}
+
 function activeLeaseForBoundary(state, boundary) {
   if (!boundary) return null;
   return state.leases.find(lease => lease.status === "active" && lease.boundary.toLowerCase() === boundary.toLowerCase()) || null;
@@ -1444,7 +1465,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     repositorySnapshot()
   ]);
   const workers = await workerSnapshot(state);
-  const federation = federationSnapshot(state.federation, { now: Date.now() });
+  const federation = await runtimeFederationSnapshot(state);
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
 
@@ -2327,12 +2348,12 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && pathname === "/api/federation") {
       const state = refreshState();
-      return sendJson(res, 200, federationSnapshot(state.federation));
+      return sendJson(res, 200, await runtimeFederationSnapshot(state));
     }
 
     if (req.method === "GET" && pathname === "/api/providers") {
       const state = refreshState();
-      return sendJson(res, 200, federationSnapshot(state.federation).providers);
+      return sendJson(res, 200, (await runtimeFederationSnapshot(state)).providers);
     }
 
     if (req.method === "POST" && (pathname === "/api/federation/observations" || pathname === "/api/federation/heartbeat")) {
