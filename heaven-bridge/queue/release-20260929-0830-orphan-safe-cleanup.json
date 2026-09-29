@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0830-orphan-safe-cleanup",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60,
+    "command": "$p=Get-CimInstance Win32_Process -Filter \"ProcessId=74344\" -ErrorAction SilentlyContinue; if(-not $p){Write-Output 'ALREADY_STOPPED'; exit 0}; if($p.Name -ne 'powershell.exe' -or $p.CommandLine -notlike '*SESSION_STARTED_FOR_STOP_TEST*' -or $p.CommandLine -notlike '*UNEXPECTED_NATURAL_COMPLETION*'){Write-Error 'PID identity mismatch; refusing cleanup'; exit 41}; taskkill /PID 74344 /T /F | Out-String | Write-Output; Start-Sleep -Milliseconds 500; $q=Get-CimInstance Win32_Process -Filter \"ProcessId=74344\" -ErrorAction SilentlyContinue; if($q){Write-Error 'PID still alive after taskkill'; exit 42}; Write-Output 'ORPHAN_SESSION_STOPPED_VERIFIED'; exit 0"
+  },
+  "created_at": "2026-09-29T08:30:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
