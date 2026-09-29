@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-opencode-run-help-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:48:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:44:20.165057+00:00",
+  "finished_at": "2026-09-29T08:44:20.583227+00:00",
+  "stdout": "---RUN HELP---\r\nDESCRIPTION\r\n  Run OpenCode with a message\r\n\r\nUSAGE\r\n  opencode run [flags] [<message...>]\r\n\r\nARGUMENTS\r\n  message... string    Message to send (optional)\r\n\r\nFLAGS\r\n  --standalone            Run with a private server instead of the background service\r\n  --server string         Connect to a server URL instead of the background service\r\n  --continue, -c          Continue the last session\r\n  --session, -s string    Session ID to continue\r\n  --fork                  Fork the session before continuing\r\n  --model, -m string      Model to use in the format provider/model#variant\r\n  --agent string          Agent to use\r\n  --format choice         Output format (choices: default, json)\r\n  --file, -f string       File to attach to the message\r\n  --title string          Session title\r\n  --thinking              Show thinking blocks\r\n  --auto                  Auto-approve permissions that are not explicitly denied\r\n\r\nGLOBAL FLAGS\r\n  --help, -h                                                          Show help information\r\n  --version, -v                                                       Show version information\r\n  --wizard                                                            Start wizard mode for a command\r\n  --completions <bash|zsh|fish|sh>                                    Print shell completion script (choices: bash, zsh, fish, sh)\r\n  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)\r\n  --print-logs                                                        Print logs to stderr (server logs require --standalone)\r\n---DEBUG HELP---\r\nDESCRIPTION\r\n  Debugging and troubleshooting tools\r\n\r\nUSAGE\r\n  opencode debug <subcommand> [flags]\r\n\r\nGLOBAL FLAGS\r\n  --help, -h                                                          Show help information\r\n  --version, -v                                                       Show version information\r\n  --wizard                                                            Start wizard mode for a command\r\n  --completions <bash|zsh|fish|sh>                                    Print shell completion script (choices: bash, zsh, fish, sh)\r\n  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)\r\n  --print-logs                                                        Print logs to stderr (server logs require --standalone)\r\n\r\nSUBCOMMANDS\r\n  agents    List all agents\r\n  config    List configuration sources\r\n  paths     Show global paths (data, config, cache, state)\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-run-help-a4.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-run-help-a4.stderr.log",
+    "stdout_bytes": 2662,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "470ff25a7a7368815d6b573978bbed4ca2e1c31979eb0eb93f4931c667f5be95"
+}
