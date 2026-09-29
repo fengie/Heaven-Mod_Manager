@@ -302,7 +302,7 @@ export function syncManagedAgents(federation, managedAgents = [], {
   let changed = 0;
   for (const managed of managedAgents) {
     if (!managed?.id) continue;
-    const provider = String(managed.runtimeProvider || managed.provider || "local-control").trim().toLowerCase() || "local-control";
+    const provider = String(managed.executionProvider || managed.runtimeProvider || managed.provider || "local-control").trim().toLowerCase() || "local-control";
     reconcileObservation(federation, {
       provider,
       source_id: String(managed.id),
@@ -328,13 +328,13 @@ export function syncManagedAgents(federation, managedAgents = [], {
         lease_id: managed.leaseId || null,
         boundary: managed.boundary || null,
         lane: managed.lane || null,
-        runtime_provider: provider
+        execution_provider: provider
       }
     }, { now });
     changed += 1;
   }
 
-  const localManaged = managedAgents.filter(managed => !managed?.runtimeProvider || managed.runtimeProvider === "local-control").length;
+  const localManaged = managedAgents.filter(managed => !managed?.executionProvider || managed.executionProvider === "local-control").length;
   recordProviderHeartbeat(federation, "local-control", {
     status: "online",
     at: now,
