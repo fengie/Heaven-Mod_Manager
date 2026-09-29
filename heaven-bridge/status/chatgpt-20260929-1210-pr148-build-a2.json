@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1210-pr148-build-a2",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:12:50.321076+00:00"
+  "updated_at": "2026-09-29T12:13:10.983950+00:00",
+  "exit_code": 1
 }
