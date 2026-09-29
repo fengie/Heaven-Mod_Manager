@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-perf-inspect-checkouts-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$paths=@(\n'C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods',\n'C:\\Users\\Xxkan\\actions-runner-heaven-v2\\_work\\mhw-mods\\mhw-mods',\n'C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n)\nforeach($p in $paths){\n  Write-Output \"=== $p ===\"\n  if(-not (Test-Path -LiteralPath (Join-Path $p '.git'))){Write-Output 'NO_GIT'; continue}\n  git -C $p remote -v\n  Write-Output (\"branch=\" + (git -C $p branch --show-current))\n  Write-Output (\"head=\" + (git -C $p rev-parse HEAD))\n  Write-Output 'status:'\n  git -C $p status --short\n  Write-Output ''\n}",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:19:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
