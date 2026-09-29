@@ -16,10 +16,13 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 4
+WORKER_VERSION = 6
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
+LEGACY_DEFAULT_HOST = "heaven"
+CONTROL_HOST = "heaven2"
+HOST_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
 ROOT = Path(os.environ.get("HEAVEN_BRIDGE_REPO", str(Path.home() / "HeavenBridgeRepo"))).resolve()
 QUEUE = ROOT / "heaven-bridge" / "queue"
@@ -74,6 +77,14 @@ UIA_ACTIONS = {
     "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
 }
 
+SECRET_ENVELOPE_SCHEMA = "heaven-secret-envelope-v1"
+SECRET_PURPOSE = "gui_type_secret"
+SECRET_INBOX_ENV = "HEAVEN_BRIDGE_SECRET_INBOX"
+SECRET_MAX_TTL_SECONDS = max(30, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_TTL", "300")), 900))
+SECRET_MAX_FILE_BYTES = max(1024, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_FILE_BYTES", "65536")), 262144))
+SECRET_MAX_CHARACTERS = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_CHARACTERS", "10000")), 100000))
+SECRET_CONSUMED_DIR = STATE / "secret-consumed"
+
 DIRECT_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "job_output_read", "controller_checkpoint",
     "fs_read", "fs_read_many", "fs_write", "fs_edit", "fs_mkdir",
@@ -81,9 +92,9 @@ DIRECT_ACTIONS = {
     "fs_read_binary", "fs_write_binary",
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
     "proc_list_sessions", "proc_list", "wait_for", "screenshot", "display_list",
-    "clipboard_read", "clipboard_write", "app_launch",
+    "clipboard_read", "clipboard_write", "app_launch", "desktop_shortcut_create",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
-    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type", "gui_type_secret",
     *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
@@ -103,6 +114,28 @@ JOB_PRIORITY_RANK = {
 }
 
 RAW_ACTIONS = {"powershell", "cmd", "python", "codex"}
+
+
+def current_host():
+    raw = os.environ.get("HEAVEN_BRIDGE_HOST") or os.environ.get("COMPUTERNAME") or LEGACY_DEFAULT_HOST
+    host = str(raw).strip().casefold()
+    if not host or not HOST_RE.fullmatch(host):
+        raise BridgeError("INVALID_WORKER_HOST", "worker host identity is invalid", {"host": str(raw)})
+    return host
+
+
+def job_target_host(job):
+    raw = job.get("target_host") if isinstance(job, dict) else None
+    if raw is None or not str(raw).strip():
+        return LEGACY_DEFAULT_HOST
+    host = str(raw).strip().casefold()
+    if not HOST_RE.fullmatch(host):
+        raise BridgeError("INVALID_TARGET_HOST", "target_host must be a simple machine name", {"target_host": str(raw)})
+    return host
+
+
+def job_targets_this_worker(job):
+    return job_target_host(job) == current_host()
 
 
 class BridgeError(Exception):
@@ -1676,6 +1709,251 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def _secret_unc_parts(raw):
+    value = str(raw or "").strip()
+    match = re.fullmatch(r"\\\\([^\\]+)\\([^\\]+)(?:\\.*)?", value)
+    if not match:
+        return None
+    return match.group(1), match.group(2)
+
+
+def verify_secret_inbox_transport(raw=None):
+    if os.name != "nt":
+        return False
+    value = str(raw if raw is not None else os.environ.get(SECRET_INBOX_ENV) or "").strip()
+    parts = _secret_unc_parts(value)
+    if not parts:
+        return False
+    server, share = parts
+    try:
+        inbox = Path(os.path.expandvars(os.path.expanduser(value)))
+        if not inbox.is_dir():
+            return False
+    except OSError:
+        return False
+
+    env = os.environ.copy()
+    env["HEAVEN_SECRET_VERIFY_SERVER"] = server
+    env["HEAVEN_SECRET_VERIFY_SHARE"] = share
+    command = (
+        "$c = Get-SmbConnection -ServerName $env:HEAVEN_SECRET_VERIFY_SERVER -ErrorAction Stop | "
+        "Where-Object { $_.ShareName -eq $env:HEAVEN_SECRET_VERIFY_SHARE } | "
+        "Select-Object -First 1 -Property ServerName,ShareName,Encrypted; "
+        "if ($null -eq $c) { exit 3 }; "
+        "$c | ConvertTo-Json -Compress"
+    )
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+            env=env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    if proc.returncode != 0:
+        return False
+    lines = [line.strip() for line in (proc.stdout or "").splitlines() if line.strip()]
+    if not lines:
+        return False
+    try:
+        row = json.loads(lines[-1])
+    except json.JSONDecodeError:
+        return False
+    return bool(
+        isinstance(row, dict)
+        and str(row.get("ServerName") or "").casefold() == server.casefold()
+        and str(row.get("ShareName") or "").casefold() == share.casefold()
+        and row.get("Encrypted") is True
+    )
+
+
+def secret_channel_status():
+    raw = str(os.environ.get(SECRET_INBOX_ENV) or "").strip()
+    available = bool(raw and verify_secret_inbox_transport(raw))
+    return {
+        "available": available,
+        "transport": "encrypted-smb-inbox-v1" if available else "not_configured",
+        "relay_secret_values_allowed": False,
+        "single_use": True,
+        "destination_bound": True,
+        "target_bound": True,
+        "transport_verified": available,
+    }
+
+
+def advertised_actions():
+    actions = set(DIRECT_ACTIONS)
+    if not secret_channel_status()["available"]:
+        actions.discard("gui_type_secret")
+    return sorted(actions)
+
+
+def secret_target_binding(hwnd, destination=None):
+    try:
+        hwnd_value = int(hwnd)
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a numeric params.hwnd") from exc
+    if hwnd_value <= 0:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a positive params.hwnd")
+    host = str(destination or os.environ.get("COMPUTERNAME") or "heaven").strip().casefold()
+    if not host:
+        raise BridgeError("SECRET_DESTINATION_INVALID", "secret destination host is empty")
+    material = f"{SECRET_PURPOSE}|{host}|hwnd:{hwnd_value}".encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
+
+
+def _parse_secret_timestamp(value, field):
+    if not value:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", f"secret envelope is missing {field}")
+    text = str(value).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", f"secret envelope {field} must be ISO-8601") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _secret_inbox_path():
+    status = secret_channel_status()
+    if not status["available"]:
+        raise BridgeError(
+            "SECRET_CHANNEL_UNAVAILABLE",
+            "credential-safe GUI input requires a locally configured encrypted secret inbox",
+        )
+    return Path(os.path.expandvars(os.path.expanduser(str(os.environ.get(SECRET_INBOX_ENV)))))
+
+
+def _validate_secret_handle(handle):
+    value = str(handle or "").strip()
+    if not re.fullmatch(r"[A-Fa-f0-9]{32,120}", value):
+        raise BridgeError("SECRET_HANDLE_INVALID", "secret handle must be a 32-120 character hexadecimal opaque id")
+    return value.lower()
+
+
+def consume_secret_envelope(handle, hwnd, current=None):
+    handle = _validate_secret_handle(handle)
+    inbox = _secret_inbox_path()
+    envelope = inbox / f"{handle}.json"
+    claim = inbox / f".claim-{handle}-{os.getpid()}-{uuid.uuid4().hex}.json"
+
+    if (SECRET_CONSUMED_DIR / f"{handle}.used").exists():
+        raise BridgeError("SECRET_REPLAYED", "secret handle has already been consumed")
+
+    try:
+        os.replace(envelope, claim)
+    except FileNotFoundError as exc:
+        raise BridgeError("SECRET_HANDLE_NOT_FOUND", "secret handle is missing or already consumed") from exc
+    except OSError as exc:
+        raise BridgeError("SECRET_CLAIM_FAILED", "could not atomically claim the secret envelope") from exc
+
+    SECRET_CONSUMED_DIR.mkdir(parents=True, exist_ok=True)
+    marker = SECRET_CONSUMED_DIR / f"{handle}.used"
+    try:
+        try:
+            with marker.open("x", encoding="utf-8") as f:
+                f.write(json.dumps({"handle": handle, "claimed_at": now()}, separators=(",", ":")))
+        except FileExistsError as exc:
+            raise BridgeError("SECRET_REPLAYED", "secret handle has already been consumed") from exc
+        except OSError as exc:
+            raise BridgeError("SECRET_REPLAY_GUARD_FAILED", "could not persist the secret replay guard") from exc
+
+        try:
+            size = claim.stat().st_size
+        except OSError as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "claimed secret envelope is unreadable") from exc
+        if size <= 0 or size > SECRET_MAX_FILE_BYTES:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope size is outside the allowed budget")
+
+        try:
+            doc = json.loads(claim.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope is not valid UTF-8 JSON") from exc
+        if not isinstance(doc, dict):
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope must be a JSON object")
+        if doc.get("schema") != SECRET_ENVELOPE_SCHEMA:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "unsupported secret envelope schema")
+        if str(doc.get("handle") or "").strip().lower() != handle:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope handle does not match its opaque id")
+        if str(doc.get("purpose") or "") != SECRET_PURPOSE:
+            raise BridgeError("SECRET_PURPOSE_MISMATCH", "secret envelope purpose does not match gui_type_secret")
+
+        expected_host = str(os.environ.get("COMPUTERNAME") or "heaven").strip().casefold()
+        destination = str(doc.get("destination") or "").strip().casefold()
+        if destination != expected_host:
+            raise BridgeError("SECRET_DESTINATION_MISMATCH", "secret envelope is bound to a different destination host")
+
+        expected_binding = secret_target_binding(hwnd, expected_host)
+        actual_binding = str(doc.get("target_binding") or "").strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", actual_binding) or not hmac.compare_digest(actual_binding, expected_binding):
+            raise BridgeError("SECRET_TARGET_MISMATCH", "secret envelope is bound to a different GUI target")
+
+        created = _parse_secret_timestamp(doc.get("created_at"), "created_at")
+        expires = _parse_secret_timestamp(doc.get("expires_at"), "expires_at")
+        if expires <= created:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope expiration must be after creation")
+        ttl = (expires - created).total_seconds()
+        if ttl > SECRET_MAX_TTL_SECONDS:
+            raise BridgeError("SECRET_TTL_TOO_LONG", "secret envelope TTL exceeds the configured maximum")
+
+        current = current or utcnow()
+        if (created - current).total_seconds() > FUTURE_SKEW_SECONDS:
+            raise BridgeError("SECRET_FROM_FUTURE", "secret envelope creation time is too far in the future")
+        if current >= expires:
+            raise BridgeError("SECRET_EXPIRED", "secret envelope has expired")
+
+        value = doc.get("value")
+        if not isinstance(value, str) or not value:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope value must be a non-empty string")
+        if len(value) > SECRET_MAX_CHARACTERS:
+            raise BridgeError("SECRET_TOO_LARGE", "secret value exceeds the configured character budget")
+        return value
+    finally:
+        try:
+            claim.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def desktop_type_secret(p):
+    if not isinstance(p, dict):
+        raise BridgeError("INVALID_SECRET_INPUT_PARAMS", "gui_type_secret params must be an object")
+    unknown = sorted(set(p) - {"handle", "hwnd"})
+    if unknown:
+        if any(CONTROLLER_SECRET_KEY_RE.search(str(key)) or str(key).lower() in ("text", "value") for key in unknown):
+            raise BridgeError("SECRET_RELAY_VALUE_BLOCKED", "secret values must never be included in GitHub relay params")
+        raise BridgeError("INVALID_SECRET_INPUT_PARAMS", "gui_type_secret accepts only handle and hwnd", {"fields": unknown})
+
+    handle = _validate_secret_handle(p.get("handle"))
+    try:
+        hwnd = int(p.get("hwnd"))
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a numeric params.hwnd") from exc
+    if hwnd <= 0:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a positive params.hwnd")
+
+    if not secret_channel_status()["available"]:
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "credential-safe GUI input is not configured")
+
+    # Resolve/focus the exact target before consuming the one-time secret.
+    desktop_focus_window({"hwnd": hwnd})
+    value = consume_secret_envelope(handle, hwnd)
+    try:
+        desktop_type_text({"text": value})
+    finally:
+        value = None
+    return {"consumed": True, "typed": True}
+
+
+
 def _validate_uia_request(p, operation):
     if not isinstance(p, dict):
         raise BridgeError("INVALID_UIA_REQUEST", "UI Automation params must be an object")
@@ -1859,6 +2137,106 @@ def desktop_clipboard_write(value):
     return {"characters": len(text), "format": "unicode_text"}
 
 
+
+def desktop_create_shortcut(job_id, p, cancel_event):
+    if os.name != "nt":
+        raise BridgeError("DESKTOP_UNSUPPORTED", "desktop_shortcut_create is only available on Windows")
+
+    name = str(p.get("name") or "").strip()
+    if name.lower().endswith(".lnk"):
+        name = name[:-4].rstrip()
+    if not name:
+        raise BridgeError("SHORTCUT_NAME_REQUIRED", "params.name is required")
+    if len(name) > 180 or any(ch in name for ch in '<>:"/\\|?*'):
+        raise BridgeError("INVALID_SHORTCUT_NAME", "params.name contains invalid Windows filename characters")
+
+    target = str(p.get("target") or p.get("path") or "").strip()
+    if not target:
+        raise BridgeError("SHORTCUT_TARGET_REQUIRED", "params.target or params.path is required")
+
+    raw_args = p.get("args") or []
+    if isinstance(raw_args, list):
+        if any(not isinstance(x, str) for x in raw_args):
+            raise BridgeError("INVALID_SHORTCUT_ARGS", "params.args list must contain only strings")
+        arguments = subprocess.list2cmdline(raw_args)
+    elif isinstance(raw_args, str):
+        arguments = raw_args
+    else:
+        raise BridgeError("INVALID_SHORTCUT_ARGS", "params.args must be a string or list of strings")
+
+    working_directory = str(p.get("working_directory") or p.get("cwd") or "").strip()
+    description = str(p.get("description") or "").strip()
+    if len(description) > 1024:
+        raise BridgeError("SHORTCUT_DESCRIPTION_TOO_LONG", "params.description is limited to 1024 characters")
+
+    icon_path = str(p.get("icon_path") or "").strip()
+    try:
+        icon_index = int(p.get("icon_index") or 0)
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("INVALID_ICON_INDEX", "params.icon_index must be an integer") from exc
+
+    location = str(p.get("location") or "desktop").strip().lower()
+    if location != "desktop":
+        raise BridgeError("INVALID_SHORTCUT_LOCATION", "only location=desktop is currently supported")
+
+    env = os.environ.copy()
+    env.update({
+        "HLB_SHORTCUT_NAME": name,
+        "HLB_SHORTCUT_TARGET": target,
+        "HLB_SHORTCUT_ARGUMENTS": arguments,
+        "HLB_SHORTCUT_WORKDIR": working_directory,
+        "HLB_SHORTCUT_DESCRIPTION": description,
+        "HLB_SHORTCUT_ICON": icon_path,
+        "HLB_SHORTCUT_ICON_INDEX": str(icon_index),
+        "HLB_SHORTCUT_OVERWRITE": "1" if bool(p.get("overwrite", False)) else "0",
+    })
+    script = r"""
+$ErrorActionPreference = 'Stop'
+$desktop = [Environment]::GetFolderPath('Desktop')
+if (-not $desktop) { throw 'Desktop folder could not be resolved' }
+$shortcutPath = Join-Path $desktop ($env:HLB_SHORTCUT_NAME + '.lnk')
+if ((Test-Path -LiteralPath $shortcutPath) -and $env:HLB_SHORTCUT_OVERWRITE -ne '1') {
+    throw 'SHORTCUT_EXISTS'
+}
+$wsh = New-Object -ComObject WScript.Shell
+$shortcut = $wsh.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = $env:HLB_SHORTCUT_TARGET
+$shortcut.Arguments = $env:HLB_SHORTCUT_ARGUMENTS
+if ($env:HLB_SHORTCUT_WORKDIR) { $shortcut.WorkingDirectory = $env:HLB_SHORTCUT_WORKDIR }
+if ($env:HLB_SHORTCUT_DESCRIPTION) { $shortcut.Description = $env:HLB_SHORTCUT_DESCRIPTION }
+if ($env:HLB_SHORTCUT_ICON) {
+    $shortcut.IconLocation = $env:HLB_SHORTCUT_ICON + ',' + $env:HLB_SHORTCUT_ICON_INDEX
+}
+$shortcut.Save()
+$verify = $wsh.CreateShortcut($shortcutPath)
+[pscustomobject]@{
+    path = $shortcutPath
+    target = $verify.TargetPath
+    arguments = $verify.Arguments
+    working_directory = $verify.WorkingDirectory
+    icon_location = $verify.IconLocation
+} | ConvertTo-Json -Compress
+"""
+    result = run_capture(
+        job_id,
+        shell_argv("powershell", script),
+        Path.home(),
+        30,
+        cancel_event=cancel_event,
+        env=env,
+    )
+    if result.get("exit_code") != 0:
+        message = (result.get("stderr") or result.get("stdout") or "shortcut creation failed")[-4000:]
+        code = "SHORTCUT_EXISTS" if "SHORTCUT_EXISTS" in message else "SHORTCUT_CREATE_FAILED"
+        raise BridgeError(code, message)
+    raw = (result.get("stdout") or "").strip()
+    try:
+        data = json.loads(raw.splitlines()[-1]) if raw else {}
+    except json.JSONDecodeError as exc:
+        raise BridgeError("SHORTCUT_CREATE_FAILED", "shortcut verification returned invalid JSON") from exc
+    data["created"] = True
+    return data
+
 def desktop_launch_app(p):
     if os.name != "nt":
         raise BridgeError("DESKTOP_UNSUPPORTED", "app_launch is only available on Windows")
@@ -1914,7 +2292,7 @@ def desktop_display_list(job_id, cancel_event):
 def make_result(job, action, status="completed", exit_code=0, data=None, stdout=None, stderr=None, started_at=None):
     out = {
         "status": status, "exit_code": exit_code, "started_at": started_at or now(), "finished_at": now(),
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "action": action,
+        "host": current_host(), "action": action,
     }
     if data is not None:
         out["data"] = data
@@ -1933,8 +2311,10 @@ def run_job(job_id, job, cancel_event):
     started = now()
 
     if action == "health":
+        secret_status = secret_channel_status()
         data = {
-            "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": sorted(DIRECT_ACTIONS),
+            "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": advertised_actions(),
+            "host": current_host(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
             "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
@@ -1947,31 +2327,29 @@ def run_job(job_id, job, cancel_event):
                 "desktop_control": os.name == "nt", "mouse_control": os.name == "nt",
                 "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
+                "desktop_shortcut_create": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
                 "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
-                "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
+                "clipboard_relay_requires_opt_in": True, "credential_safe_gui_input": secret_status["available"], "public_raw_shell": False,
             },
             "capability_schema": 2,
             "features": {
-                "desktop": {"version": 2, "coordinate_fallback": True},
+                "desktop": {"version": 3, "coordinate_fallback": True, "shortcut_create": os.name == "nt"},
                 "uia": {
                     "version": 1, "available": os.name == "nt", "backend": "windows-uia-powershell",
                     "actions": sorted(UIA_ACTIONS), "max_nodes": UIA_MAX_NODES, "max_depth": UIA_MAX_DEPTH,
                     "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
                     "password_set_value_allowed": False, "set_value_requires_relay_opt_in": True,
                 },
-                "secret_input": {
-                    "version": 1, "available": False, "transport": "not_configured",
-                    "relay_secret_values_allowed": False,
-                },
+                "secret_input": {"version": 1, **secret_status},
             },
         }
         return make_result(job, action, data=data, started_at=started)
 
     if action == "system_info":
         data = {
-            "host": os.environ.get("COMPUTERNAME", "heaven"), "user": os.environ.get("USERNAME"),
+            "host": current_host(), "user": os.environ.get("USERNAME"),
             "home": str(Path.home()), "platform": os.name, "python": os.sys.version, "cwd": os.getcwd(),
             "drives": [f"{c}:\\" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if Path(f"{c}:\\").exists()],
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL,
@@ -2128,7 +2506,7 @@ def run_job(job_id, job, cancel_event):
         timeout = max(1, min(int(p.get("timeout_seconds") or 1800), MAX_TIMEOUT))
         result = run_capture(job_id, shell_argv(p.get("shell"), command), expand_path(p.get("cwd")), timeout,
                              cancel_event=cancel_event, env=build_env(p))
-        result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+        result.update({"host": current_host(), "action": action})
         return result
 
     if action == "proc_start":
@@ -2219,6 +2597,9 @@ def run_job(job_id, job, cancel_event):
     if action == "app_launch":
         return make_result(job, action, data=desktop_launch_app(p), started_at=started)
 
+    if action == "desktop_shortcut_create":
+        return make_result(job, action, data=desktop_create_shortcut(job_id, p, cancel_event), started_at=started)
+
     if action == "window_list":
         return make_result(
             job, action,
@@ -2260,6 +2641,9 @@ def run_job(job_id, job, cancel_event):
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
 
+    if action == "gui_type_secret":
+        return make_result(job, action, data=desktop_type_secret(p), started_at=started)
+
     if action in UIA_ACTIONS:
         return make_result(job, action, data=desktop_uia(p, action), started_at=started)
 
@@ -2267,7 +2651,7 @@ def run_job(job_id, job, cancel_event):
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
         result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
-        result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+        result.update({"host": current_host(), "action": action})
         return result
 
     if action == "screenshot":
@@ -2326,7 +2710,7 @@ def run_job(job_id, job, cancel_event):
             argv = [codex, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"]
         stdin = payload
     result = run_capture(job_id, argv, cwd, timeout, stdin=stdin, cancel_event=cancel_event, env=os.environ.copy())
-    result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+    result.update({"host": current_host(), "action": action})
     return result
 
 
@@ -2348,13 +2732,14 @@ def failure_result(job_id, job, exc, digest=None):
     err = error_dict(exc)
     result = {
         "status": "error", "exit_code": 1, "started_at": now(), "finished_at": now(),
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "action": action,
+        "host": current_host(), "action": action,
         "error": err, "stderr": err["message"], "stdout": "",
     }
     return result_envelope(job_id, job, result, digest)
 
 
 def validate_job(job_id, job):
+    job_target_host(job)
     if not safe_id(job_id):
         raise BridgeError("INVALID_JOB_ID", "invalid queue filename/job id")
     if str(job.get("id") or "") != job_id:
@@ -2379,7 +2764,7 @@ def publish_result(job_id, job, body):
 
 
 def publish_status(job_id, state, action=None, **extra):
-    body = {"id": job_id, "state": state, "action": action, "host": os.environ.get("COMPUTERNAME", "heaven"),
+    body = {"id": job_id, "state": state, "action": action, "host": current_host(),
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "updated_at": now(), **extra}
     try:
         publish_json(f"heaven-bridge/status/{job_id}.json", body, f"heaven bridge status {job_id} {state}", max_attempts=3)
@@ -2442,13 +2827,16 @@ def heartbeat(force=False):
         return
     with STATE_LOCK:
         running = [{"id": jid, "action": info["action"], "started_at": info["started_at"]} for jid, info in RUNNING.items()]
+    host = current_host()
     body = {
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "pid": os.getpid(), "worker_version": WORKER_VERSION,
+        "host": host, "pid": os.getpid(), "worker_version": WORKER_VERSION,
         "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
-        "capabilities": sorted(DIRECT_ACTIONS),
+        "capabilities": advertised_actions(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
     }
     try:
-        publish_json("heaven-bridge/status/heartbeat.json", body, "heaven bridge heartbeat", max_attempts=3)
+        publish_json(f"heaven-bridge/status/hosts/{host}/heartbeat.json", body, f"heaven bridge heartbeat {host}", max_attempts=3)
+        if host == LEGACY_DEFAULT_HOST:
+            publish_json("heaven-bridge/status/heartbeat.json", body, "heaven bridge heartbeat legacy", max_attempts=3)
         LAST_HEARTBEAT = t
     except Exception as e:
         log(f"heartbeat publish failed: {e}")
@@ -2536,6 +2924,8 @@ def process_queue(executor):
                 continue
         try:
             job = json.loads(path.read_text(encoding="utf-8-sig"))
+            if not job_targets_this_worker(job):
+                continue
             digest = validate_job(job_id, job)
         except Exception as e:
             dummy = {}
@@ -2605,7 +2995,7 @@ def main():
         clean_stale_locks()
         recovery = recover_sessions()
         log(
-            f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
+            f"worker starting host={current_host()} version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
             f"auth={auth_mode()} sessions_loaded={recovery['loaded']} sessions_live={recovery['live']} "
             f"sessions_blocked={recovery['blocked']}"
         )
