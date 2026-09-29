@@ -1,0 +1,21 @@
+{
+  "id": "0-actions-diag-20260929-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:58:55.479829+00:00",
+  "finished_at": "2026-09-29T10:58:56.111370+00:00",
+  "stdout": "===GIT===\r\ngit version 2.47.1.windows.2\n",
+  "stderr": "gh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:36\r\n+ $ErrorActionPreference='Continue'; gh run list --repo fengie/mhw-mods ...\r\n+                                    ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\0-actions-diag-20260929-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\0-actions-diag-20260929-a1.stderr.log",
+    "stdout_bytes": 40,
+    "stderr_bytes": 499,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "dae7b49cd67a4f0a3ce22d19a65aee6b34dd8ebc33eeb1afbdc76a6e6419ac73"
+}
