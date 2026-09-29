@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0830-orphan-safe-cleanup",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:31:15.437243+00:00"
+}
