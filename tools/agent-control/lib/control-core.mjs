@@ -1,6 +1,7 @@
 import { defaultFederationState, federationSnapshot, migrateFederationState } from "./federated-registry.mjs";
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
+import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
 export const STATE_VERSION = 5;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
@@ -248,16 +249,17 @@ export function buildTaskGraph(tasks = []) {
   return nodes;
 }
 
-function activeAgents(state, role = null) {
+function activeAgents(state, role = null, now = Date.now()) {
   const byId = new Map();
+  const thresholds = livenessThresholds(state);
 
   for (const agent of state.agents || []) {
-    if (!isActiveStatus(agent.status)) continue;
+    if (!managedAgentLiveness(agent, { now, ...thresholds }).live) continue;
     if (role && agent.role !== role) continue;
     byId.set(agent.id, agent);
   }
 
-  const federation = federationSnapshot(state.federation, { now: Date.now() });
+  const federation = federationSnapshot(state.federation, { now });
   for (const agent of federation.agents) {
     if (!agent.live) continue;
     if (role && agent.role !== role) continue;
@@ -316,41 +318,55 @@ function currentRoutingAssignments(state, now = Date.now()) {
 }
 
 function roleIsOccupied(state, role, now = Date.now()) {
-  if (activeAgents(state, role).length) return true;
+  if (activeAgents(state, role, now).length) return true;
   const federated = federationSnapshot(migrateFederationState(state.federation), { now });
   if (federated.agents.some(agent => agent.live && agent.role === role)) return true;
   return currentRoutingAssignments(state, now).some(item => item.role === role && routingAssignmentOccupied(item));
 }
 
-export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) {
-  const count = Math.max(1, Math.floor(Number(requestedCount) || 1));
-  const maximum = Math.max(0, Math.floor(Number(maxActiveAgents) || 0));
-  const active = (state.agents || []).filter(agent => isActiveStatus(agent.status)).length;
-  const available = Math.max(0, maximum - active);
-  return {
-    count,
-    active,
-    maximum,
-    available,
-    allowed: count <= available
-  };
+export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents, { now = Date.now() } = {}) {
+  return deploymentCapacity(state, requestedCount, maxActiveAgents, { now });
 }
 
-export function workflowLeasePreflight(state, steps = []) {
+export function workflowLeasePreflight(state, steps = [], { now = Date.now() } = {}) {
   const occupied = new Set(
     (state?.leases || [])
       .filter(lease => lease?.status === "active")
       .map(lease => String(lease?.boundary || "").trim())
       .filter(Boolean)
   );
+  const thresholds = livenessThresholds(state);
+  const activeTaskIds = new Set(
+    (state?.agents || [])
+      .filter(agent => managedAgentLiveness(agent, { now, ...thresholds }).live)
+      .map(agent => String(agent?.taskId || "").trim())
+      .filter(Boolean)
+  );
+  const federated = federationSnapshot(migrateFederationState(state?.federation), { now });
+  for (const agent of federated.agents) {
+    if (agent.live && agent.task_id) activeTaskIds.add(String(agent.task_id));
+  }
+  const plannedTaskIds = new Set();
 
   for (const work of Array.isArray(steps) ? steps : []) {
+    const taskId = String(work?.taskId || "").trim();
+    if (taskId && (activeTaskIds.has(taskId) || plannedTaskIds.has(taskId))) {
+      return {
+        allowed: false,
+        boundary: String(work?.boundary || "").trim() || null,
+        taskId,
+        reason: `Task "${taskId}" is already owned by a live agent or duplicated in this workflow.`
+      };
+    }
+    if (taskId) plannedTaskIds.add(taskId);
+
     const boundary = String(work?.boundary || "").trim();
     if (!boundary) continue;
     if (occupied.has(boundary)) {
       return {
         allowed: false,
         boundary,
+        taskId: taskId || null,
         reason: `Mutable boundary "${boundary}" is already leased or duplicated in this workflow.`
       };
     }
@@ -361,7 +377,7 @@ export function workflowLeasePreflight(state, steps = []) {
 }
 
 function activeLaneSet(state, now = Date.now()) {
-  const lanes = new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
+  const lanes = new Set(activeAgents(state, null, now).map(agent => agent.lane).filter(Boolean));
   const federated = federationSnapshot(migrateFederationState(state.federation), { now });
   for (const agent of federated.agents) {
     if (!agent.live) continue;
