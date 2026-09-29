@@ -53,6 +53,19 @@ class QueueTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.queue.create_task("x", {"data": "x" * 300000})
 
+    def test_task_identifier_rejects_sql_wildcards(self):
+        with self.assertRaises(ValueError):
+            self.queue.create_task("x", task_id="bad%id")
+
+    def test_cancel_releases_only_exact_leased_task_lock(self):
+        task = self.queue.create_task("x", task_id="task-1")
+        self.queue.claim_task("w1", lease_seconds=30)
+        self.assertTrue(self.queue.acquire_resource("repo:one", "w1:task-1", lease_seconds=30))
+        self.assertTrue(self.queue.acquire_resource("repo:two", "other:task-2", lease_seconds=30))
+        self.queue.cancel_task("task-1")
+        self.assertTrue(self.queue.acquire_resource("repo:one", "w2:new", lease_seconds=30))
+        self.assertFalse(self.queue.acquire_resource("repo:two", "w2:new", lease_seconds=30))
+
 
 if __name__ == "__main__":
     unittest.main()
