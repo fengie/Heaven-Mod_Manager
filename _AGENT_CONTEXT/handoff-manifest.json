@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.14",
+  "currentVersion": "8.8.15",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.13 repeatable recipe family restore",
+  "immediateParentRevision": "v8.8.14 fail-closed Smart Inbox rollback",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.14, including fail-closed Smart Inbox publication rollback after source-archive failure. Treat exact-main Windows Release Gate evidence as SHA-scoped; preserve continuity and LR-001 verification instrumentation. Once all required release gates are green, publish immediately in the same execution cycle through the canonical private publisher and required public mirror, then verify tags, assets, digests, and exact source provenance before reporting SHIPPED. Recursively propagate the permanent continuity rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release candidate is v8.8.15 with the true visual overhaul on top of v8.8.14 Smart Inbox rollback hardening. Treat exact-head Windows Release Gate and real-app screenshot/UIA evidence as SHA-scoped; preserve continuity and LR-001 verification instrumentation. Once all required release gates are green, merge and publish immediately in the same execution cycle through the canonical private publisher and required public mirror, then verify tags, assets, digests, and exact source provenance before reporting SHIPPED. Recursively propagate the permanent continuity rules.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
