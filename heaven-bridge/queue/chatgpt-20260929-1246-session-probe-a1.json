@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-1246-session-probe-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:45:20Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "action": "proc_list_sessions",
+  "params": {}
+}
