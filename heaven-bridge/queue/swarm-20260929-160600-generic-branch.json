@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-160600-generic-branch",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git fetch origin main --prune; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git checkout --detach origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git switch -c fix/game-registry-corrupt-preserve-20260929; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git status --short --branch; git rev-parse HEAD",
+    "cwd": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:06:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
