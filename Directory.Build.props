@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.13</Version>
-    <InformationalVersion>8.8.13-recipe-family-idempotence</InformationalVersion>
+    <Version>8.8.14</Version>
+    <InformationalVersion>8.8.14-diagnostic-version-identity</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

@@ -1,3 +1,9 @@
+# v8.8.14 — Accurate runtime diagnostic version identity
+
+- Derive support-bundle release identity from the running diagnostics assembly instead of the stale hard-coded `v8.3.0` label.
+- Derive startup trace/bootstrap and structured-log `app` identity from the executing assemblies instead of stale `v8.8.6` literals.
+- Add regressions that verify generated support bundles and structured logs identify the build that actually produced them, and keep focused PR-gate coverage on this diagnostic surface.
+
 # v8.8.13 — Repeatable recipe family restore
 
 - Make repeated explicit family restoration from the same portable recipe idempotent instead of misclassifying the manager-created local family as a conflict.

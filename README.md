@@ -1,4 +1,8 @@
-# v8.8.13 Universal Mod Manager
+# v8.8.14 Universal Mod Manager
+
+## v8.8.14 — accurate runtime diagnostic version identity
+
+Support bundles, startup trace/bootstrap records, and structured JSON logs now derive their release identity from the assemblies that are actually running. Diagnostic artifacts no longer claim stale v8.3.0/v8.8.6 identities, which makes support and reproduction evidence trustworthy across updates.
 
 ## v8.8.13 — repeatable recipe family restore
 
