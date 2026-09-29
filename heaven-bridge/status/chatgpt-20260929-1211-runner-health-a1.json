@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1211-runner-health-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:09:17.879465+00:00"
+  "updated_at": "2026-09-29T12:09:39.844631+00:00",
+  "exit_code": 0
 }
