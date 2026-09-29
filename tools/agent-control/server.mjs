@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
-import { renderAgentPrompt } from "./lib/prompt-templates.mjs";
+import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
   STATE_VERSION,
@@ -101,6 +101,28 @@ function taskCapabilityMatches(expectedHash, token) {
 
 function requestTaskCapability(req) {
   return String(req?.headers?.["x-agent-control-task-token"] || "").trim();
+}
+
+function repositoryTrainingPathsFor(role) {
+  const paths = [...REQUIRED_REPOSITORY_TRAINING_PATHS];
+  if (role === "manager") paths.push("_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt");
+  return paths;
+}
+
+function buildRepositoryTrainingManifest(worktree, role) {
+  const manifest = [];
+  for (const relativePath of repositoryTrainingPathsFor(role)) {
+    const absolutePath = path.join(worktree, relativePath);
+    if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
+      throw new Error(`Repository training gate failed: mandatory training source is missing: ${relativePath}`);
+    }
+    const content = fs.readFileSync(absolutePath);
+    if (!content.length) {
+      throw new Error(`Repository training gate failed: mandatory training source is empty: ${relativePath}`);
+    }
+    manifest.push(`${relativePath} — sha256:${createHash("sha256").update(content).digest("hex")} — ${content.length} bytes`);
+  }
+  return manifest;
 }
 
 function authorizationError(message) {
@@ -925,7 +947,8 @@ function buildPrompt({
   repositoryWriteAuthorized = false,
   acceptanceCriteria = [],
   verification = [],
-  additionalConstraints = []
+  additionalConstraints = [],
+  repositoryTrainingManifest = []
 }) {
   return renderAgentPrompt({
     role,
@@ -937,6 +960,7 @@ function buildPrompt({
     acceptanceCriteria,
     verification,
     additionalConstraints,
+    repositoryTrainingManifest,
     assignment: { taskId, priority, boundary, baseBranch, baseSha, branchName }
   });
 }
@@ -1093,6 +1117,7 @@ async function deployOne({
   let logFd = null;
   const remoteExecution = placement.provider === "heaven-bridge";
   try {
+    const repositoryTrainingManifest = buildRepositoryTrainingManifest(worktree, role);
     if (!remoteExecution) codex = findCodex();
     prompt = buildPrompt({
       role,
@@ -1109,6 +1134,7 @@ async function deployOne({
       repositoryWriteAuthorized,
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
+      repositoryTrainingManifest,
       additionalConstraints: [
         ...additionalConstraints,
         branchPlan.mode === "reused"

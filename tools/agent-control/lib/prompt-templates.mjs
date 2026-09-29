@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.2";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.3";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -52,6 +52,30 @@ export const ROLE_TEMPLATES = Object.freeze({
     mission: "Identify concrete debt and modify only clearly owned, low-collision scope with explicit verification."
   }
 });
+
+export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
+  "AGENTS.md",
+  "NEXT-AGENT-START-HERE.md",
+  "_AGENT_TRAINING/README.md",
+  "_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt",
+  "_AGENT_CONTEXT/README_FIRST.md",
+  "_AGENT_CONTEXT/CURRENT_REVISION.json",
+  "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
+  "_AGENT_CONTEXT/CURRENT_STATE.md",
+  "_AGENT_CONTEXT/NEXT_STEPS.md",
+  "_AGENT_CONTEXT/VERIFICATION.md",
+  "_AGENT_CONTEXT/LEARNED_RULES.md"
+]);
+
+const REPOSITORY_TRAINING_GATE = [
+  "THIS GATE RUNS BEFORE THE TASK. Do not analyze, answer, summarize, plan, or act on the USER / MANAGER TASK until repository training is complete.",
+  "Open and read every path in the TRAINING MANIFEST from the assigned worktree. The manifest proves the controller found and hashed the files; it is not a substitute for reading their contents.",
+  "Establish exact canonical repository truth before task reasoning: current origin/main SHA, assigned base/head, worktree status, recent relevant history, active branches/PRs, and live Agent Control ownership/leases when available.",
+  "Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming a task answer. Do not rely on filenames or stale chat context as a substitute for repository evidence.",
+  "Managers must additionally read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt before responding to or dispatching work.",
+  "If any mandatory training source is unreadable, missing, stale relative to the assigned revision, or contradicted by current repository state, stop task execution and report TRAINING-BLOCKED with the exact evidence instead of answering from partial context.",
+  "Only after this gate is complete may you process the USER / MANAGER TASK. Preserve this same pre-response gate for every successor or sub-agent you create."
+];
 
 const REPOSITORY_PROTOCOL = [
   "Unless the user explicitly marks the assignment read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, treat it as an execution assignment: reading and planning are preparatory, make concrete progress with available authorized tools, and try another supported execution path before declaring a blocker.",
@@ -142,7 +166,8 @@ export function renderAgentPrompt({
   dependencies = [],
   machine,
   repositoryWriteAuthorized = false,
-  additionalConstraints = []
+  additionalConstraints = [],
+  repositoryTrainingManifest = []
 }) {
   const template = ROLE_TEMPLATES[role] || ROLE_TEMPLATES.support;
   const roleProtocol = role === "manager"
@@ -165,6 +190,12 @@ export function renderAgentPrompt({
 
   const rendered = [
     `You are the ${template.label} in the user's MHW engineering organization.`,
+    "",
+    "MANDATORY REPOSITORY TRAINING GATE — COMPLETE BEFORE TASK RESPONSE",
+    bullets(REPOSITORY_TRAINING_GATE),
+    "",
+    "TRAINING MANIFEST — READ EVERY LISTED PATH BEFORE TASK REASONING",
+    bullets(repositoryTrainingManifest),
     "",
     "ROLE CONTRACT",
     template.mission,

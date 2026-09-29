@@ -15,11 +15,15 @@ More specific, newer repository truth may override generic guidance. A task prom
 
 ## Required startup behavior
 
-Before meaningful engineering work:
+Repository training is a pre-response gate, not a deferred onboarding step. Before the first task-facing answer, plan, dispatch, or task-specific action:
 - establish the canonical repository, branch, revision, and working-tree state;
 - read the project's own startup/continuity rules;
 - read the trainer sections relevant to the task;
-- identify invariants, dangerous boundaries, and verification obligations before editing.
+- inspect task-relevant source, tests, history, ownership, and active work;
+- identify invariants, dangerous boundaries, and verification obligations before editing;
+- if required training cannot be completed, report a precise training blocker rather than answering from partial context.
+
+No agent should answer first and "catch up" on repository context afterward. Propagate the same gate to successors and sub-agents.
 
 ## Required completion behavior
 
