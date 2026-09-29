@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-20260929-170528-shortcut-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:05:30Z",
+  "ttl_seconds": 3600,
+  "action": "desktop_shortcut_create",
+  "params": {
+    "name": "Heaven Agent Control",
+    "target": "C:\\Windows\\System32\\cmd.exe",
+    "args": "/d /c \"\"C:\\Users\\fengc\\local-ai-workspaces\\mhw-mods\\tools\\agent-control\\Start Agent Control.bat\"\"",
+    "working_directory": "C:\\Users\\fengc\\local-ai-workspaces\\mhw-mods\\tools\\agent-control",
+    "description": "Open Heaven Agent Control",
+    "icon_path": "C:\\Users\\fengc\\AppData\\Local\\MHW-Agent-Control\\agent-control.ico",
+    "icon_index": 0,
+    "location": "desktop",
+    "overwrite": true
+  },
+  "priority": "highest"
+}
