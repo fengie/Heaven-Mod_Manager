@@ -17,6 +17,8 @@ public sealed class UxHardeningTests
         Assert.Contains("Modifiers=\"Control\" Command=\"{Binding ApplyCommand}\"",xaml);
         Assert.Contains("Content=\"Launch Game\"",xaml);
         Assert.Contains("Content=\"Install Mod\"",xaml);
+        Assert.Contains("Content=\"Auto Populate\"",xaml);
+        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"",xaml);
         Assert.Contains("Header=\"More tools\"",xaml);
         Assert.DoesNotContain("JUST PLAY",xaml);
         Assert.DoesNotContain("Text=\"SMART VIEWS\"",xaml);
