@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-0850-session-recovery-worktree-r2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\HeavenBridgeRepo'; $wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-bridge-session-persist-r2'; git -C $repo fetch origin heaven-bridge; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; if(Test-Path $wt){ throw 'target worktree path already exists' }; git -C $repo worktree add -b agent/heaven-bridge-session-recovery-20260929 $wt origin/heaven-bridge; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $wt rev-parse HEAD; git -C $wt status --short"
+  },
+  "created_at": "2026-09-29T08:50:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "purpose": "P0 session restart recovery implementation in isolated worktree; do not modify live relay checkout."
+}
