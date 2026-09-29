@@ -29,7 +29,7 @@ Relay paths:
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
-## Worker v3
+## Worker v4
 
 Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and runtime mirror; do not merge its operational job history wholesale into `main`.
 
@@ -86,7 +86,7 @@ Run these from the repository root on `heaven`:
 - `STOP` stops only the canonical v4 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
 - `RECOVER` runs the hardened bootstrap and then requires `STATUS` to become healthy. Bootstrap preserves a dirty/diverged relay HEAD and tracked diff under `%USERPROFILE%\HeavenBridge\bootstrap-recovery` before realigning the disposable relay checkout.
 
-If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v3 heartbeat is healthy.
+If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v4 heartbeat is healthy.
 
 ## Job schema
 
