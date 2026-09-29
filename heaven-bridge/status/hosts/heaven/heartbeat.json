@@ -5,8 +5,14 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T16:10:45.622231+00:00",
-  "running": [],
+  "updated_at": "2026-09-29T16:15:49.337972+00:00",
+  "running": [
+    {
+      "id": "swarm-20260929-161730-read-fingerprint-failure",
+      "action": "fs_read",
+      "started_at": "2026-09-29T16:15:47.835555+00:00"
+    }
+  ],
   "capabilities": [
     "app_launch",
     "cancel",
