@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1549-inspect-pr214-conflict",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenWork\\recover-pr214",
+    "timeout_seconds": 120,
+    "command": "git status --short --branch; Write-Output '---WORKFLOW CONFLICT---'; Get-Content .github\\workflows\\workflow-feature-pr-gate.yml"
+  },
+  "created_at": "2026-09-29T15:46:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
