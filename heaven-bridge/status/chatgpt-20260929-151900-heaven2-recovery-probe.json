@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-151900-heaven2-recovery-probe",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:29:05.539237+00:00"
+  "updated_at": "2026-09-29T15:29:25.623848+00:00",
+  "exit_code": 0
 }
