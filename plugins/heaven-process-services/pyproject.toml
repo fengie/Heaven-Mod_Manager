@@ -1,0 +1,5 @@
+[project]
+name="heaven-process-services"
+version="0.1.0"
+description="Process, service, port-health, and dev-server helpers for Heaven"
+requires-python=">=3.10"
