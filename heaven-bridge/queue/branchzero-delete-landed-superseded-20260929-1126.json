@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-delete-landed-superseded-20260929-1126",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:26:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\ngit -C $repo fetch origin --prune\n$deleted=@();$skipped=@()\nfunction Del([string]$b,[string]$expected,[scriptblock]$guard){\n $line=(git -C $repo ls-remote origin (\"refs/heads/\"+$b))\n if(-not $line){$script:skipped += [pscustomobject]@{branch=$b;reason='absent'};return}\n $actual=($line -split '\\s+')[0]\n if($actual -ne $expected){throw \"tip changed $b $actual\"}\n & $guard\n git -C $repo push origin --delete $b\n if($LASTEXITCODE -ne 0){throw \"delete failed $b\"}\n $script:deleted += $b\n}\nDel 'agent/bridge-uia-native-20260929' 'e52328aea7a2cfa26a63a35e07003c736c9c571a' {\n $w=git -C $repo show 'origin/main:heaven-bridge/worker.py'\n $u=git -C $repo show 'origin/main:heaven-bridge/uia.ps1'\n $r=git -C $repo show 'origin/main:heaven-bridge/README.md'\n if(($w -notmatch '\"uia_tree\"') -or ($w -notmatch '\"uia_set_value\"') -or ($u -notmatch 'UIAutomationClient') -or ($r -notmatch 'Worker v4')){throw 'landed UIA proof failed'}\n}\nDel 'agent-bridge' '30fcf1d6a4946aaa8f760ab9b5141453b6b87e69' {\n $w=git -C $repo show 'origin/main:heaven-bridge/worker.py'\n $r=git -C $repo show 'origin/main:heaven-bridge/README.md'\n if(($w -notmatch 'chatgpt-heaven-bridge-v2') -or ($r -notmatch 'Worker v4')){throw 'canonical bridge proof failed'}\n}\nDel 'agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm' 'b8f9424e274644ff5e76590e7dd44b05fe7c01a6' {\n foreach($p in @('_AGENT_CONTEXT/EVIDENCE/UPDATER_DISPOSABLE_HELPER_20260928.md','scripts/Test-UpdaterDisposable.Tests.ps1','scripts/Test-UpdaterDisposable.ps1')){\n   git -C $repo cat-file -e (\"origin/main:\"+$p)\n   if($LASTEXITCODE -ne 0){throw \"main missing merged harness $p\"}\n }\n}\ngit -C $repo fetch origin --prune\n[pscustomobject]@{deleted=$deleted;skipped=$skipped;main=(git -C $repo rev-parse origin/main).Trim()}|ConvertTo-Json -Depth 5 -Compress",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 240
+  },
+  "priority": "highest"
+}
