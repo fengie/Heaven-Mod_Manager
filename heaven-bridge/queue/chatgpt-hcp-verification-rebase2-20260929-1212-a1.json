@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-hcp-verification-rebase2-20260929-1212-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "~",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'; $relay=Join-Path $HOME 'HeavenBridgeRepo'; $origin=(git -C $relay remote get-url origin).Trim(); $tmp=Join-Path $env:TEMP ('hcp-vrebase2-'+[guid]::NewGuid().ToString('N')); git clone --quiet --branch agent/hcp-verification-wire-20260929-0806 --single-branch $origin $tmp; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; try { $before=(git -C $tmp rev-parse HEAD).Trim(); if($before -ne '6830c3ca2c31af9c1864f5ee05e9e8aded668ade'){ throw ('branch moved unexpectedly: '+$before) }; git -C $tmp fetch --quiet origin main:refs/remotes/origin/main; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; $base=(git -C $tmp rev-parse origin/main).Trim(); git -C $tmp rebase origin/main; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; $after=(git -C $tmp rev-parse HEAD).Trim(); git -C $tmp push --force-with-lease origin HEAD:agent/hcp-verification-wire-20260929-0806; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output ('BEFORE='+$before); Write-Output ('BASE='+$base); Write-Output ('REBASED_SHA='+$after) } finally { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }"
+  },
+  "created_at": "2026-09-29T12:12:20Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
