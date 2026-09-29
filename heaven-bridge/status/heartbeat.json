@@ -4,32 +4,32 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T10:53:01.226590+00:00",
+  "updated_at": "2026-09-29T10:58:23.204812+00:00",
   "running": [
     {
-      "id": "000-branch-cleanup-snapshot-20260929104857",
+      "id": "---manager-20260929-1054-priority-gate",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:51:21.203044+00:00"
+      "started_at": "2026-09-29T10:56:45.374197+00:00"
     },
     {
-      "id": "000-aaa-branch-cleanup-20260929T105200Z",
-      "action": "powershell",
-      "started_at": "2026-09-29T10:51:46.162224+00:00"
-    },
-    {
-      "id": "000-00-safe-delete-20260929105200",
+      "id": "-------releasefix-finalgate-11a9d3-62-20260929-105635",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:52:09.207802+00:00"
+      "started_at": "2026-09-29T10:57:12.664871+00:00"
     },
     {
-      "id": "000-chatgpt-swarm-probe-20260929-1051",
+      "id": "----agentctl-cycle-status-20260929-1057-a1",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:52:22.706928+00:00"
+      "started_at": "2026-09-29T10:57:12.675013+00:00"
     },
     {
-      "id": "000-01-integrate-branches-20260929105239",
-      "action": "codex",
-      "started_at": "2026-09-29T10:52:59.724633+00:00"
+      "id": "----validate-main-priority-20260929-1058-a2",
+      "action": "proc_run",
+      "started_at": "2026-09-29T10:57:51.011638+00:00"
+    },
+    {
+      "id": "0-actions-diag-20260929-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T10:58:21.703032+00:00"
     }
   ],
   "capabilities": [
