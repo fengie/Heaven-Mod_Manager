@@ -295,3 +295,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant implementation:** PR #230, Heaven Local Bridge plugin v0.8.1.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-018 — control-path failure is not host-offline evidence
+
+- **Rule ID:** LR-018
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** remote-control diagnosis, bridge/runner/plugin health, machine-presence claims, recovery routing
+- **Rule:** Failure of a bridge, relay heartbeat, self-hosted runner, plugin surface, or remote-control action establishes failure of that control path only. Do not infer that the target host itself is offline without independent host-level evidence.
+- **Trigger / evidence:** During the `heaven2` Agent Control shortcut incident, the user was actively using ChatGPT on `heaven2` while the bridge heartbeat was absent and a self-hosted workflow initially showed `runner_id=0`. Describing the computer itself as offline conflated control-plane reachability with machine presence.
+- **Rationale:** A control process can be dead while the operating system, browser session, network stack, and user session remain healthy. Conflating those layers produces incorrect diagnoses and sends recovery toward the wrong target.
+- **Enforcement:** Report the narrowest failed layer: bridge worker, watchdog, GitHub relay, runner allocation, plugin exposure, or host reachability. If user interaction proves host presence, state that explicitly and continue repairing the control path. Host-offline claims require separate evidence such as failed network reachability from an authorized source plus absence of stronger contrary evidence.
+- **Relevant implementation:** PR #230 establishes independent bridge recovery; this rule governs diagnosis and wording when any control path fails.
+- **Supersedes:** none
+- **Superseded by:** none
