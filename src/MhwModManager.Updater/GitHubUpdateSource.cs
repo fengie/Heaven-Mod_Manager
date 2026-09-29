@@ -37,8 +37,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
             throw new InvalidDataException($"Release manifest size {manifestAsset.Size} is outside the allowed budget.");
 
         var manifestBytes = await DownloadBytesAsync(new Uri(manifestAsset.ApiUrl), token, 64 * 1024, ct);
-        var manifest = JsonSerializer.Deserialize<UpdateManifest>(manifestBytes, UpdateProtocol.Json)
-                       ?? throw new InvalidDataException("Update manifest is empty.");
+        var manifest = DeserializeManifest(manifestBytes);
         manifest.Validate();
         if (manifest.BuildNumber != release.Build)
             throw new InvalidDataException($"Release tag build {release.Build} does not match manifest build {manifest.BuildNumber}.");
@@ -107,6 +106,16 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         {
             try { if (File.Exists(temp)) File.Delete(temp); } catch { }
         }
+    }
+
+    private static UpdateManifest DeserializeManifest(ReadOnlySpan<byte> bytes)
+    {
+        // PowerShell 5.1's -Encoding UTF8 emits a BOM. Accept existing immutable
+        // updater manifests while publication is migrated to BOM-free UTF-8.
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+            bytes = bytes[3..];
+        return JsonSerializer.Deserialize<UpdateManifest>(bytes, UpdateProtocol.Json)
+               ?? throw new InvalidDataException("Update manifest is empty.");
     }
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string token)
