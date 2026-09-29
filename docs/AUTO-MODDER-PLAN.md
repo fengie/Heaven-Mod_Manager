@@ -1,11 +1,11 @@
 # Auto Modder / Mod Builder — Implementation Plan
 
-Status: **PLANNING ONLY**  
+Status: **IMPLEMENTATION STARTED — M0 LOCKED / M1 FOUNDATION IN PROGRESS**  
 Date: 2026-09-29  
 Canonical feature name: **Auto Modder**  
 Alternate UI label: **Mod Builder**
 
-This document defines the architecture and staged implementation plan for a future data-driven mod authoring system inside the MHW Manual Mod Manager. It deliberately does **not** implement the shipped feature yet.
+This document defines the architecture and staged implementation plan for the data-driven mod authoring system inside the MHW Manual Mod Manager. M0 contracts are now implemented in Core: recipe/schema normalization, adapter capability/version negotiation, bounded reference expressions, typed patch planning, build-sandbox containment/budgets, generated-manifest writing, threat-model documentation, and a synthetic recipe fixture. M1 remains in progress; real adapter execution, catalog/discovery, publication, and the WPF workspace are not yet complete.
 
 The goal is to let a user create supported Monster Hunter: World mods by choosing a recipe, entering meaningful values/IDs, previewing the exact generated changes, and producing a normal manager-owned mod package without manually unpacking/editing/repacking game data.
 
@@ -907,14 +907,14 @@ Only after built-in adapter contracts are stable:
 
 ### P0 foundation
 
-- [ ] Define `AutoModRecipeV1` normalized model.
-- [ ] Define public JSON Schema.
-- [ ] Define adapter API v1.
-- [ ] Define patch-plan IR v1.
-- [ ] Define generated manifest v1.
-- [ ] Define recipe expression grammar and hard limits.
+- [x] Define `AutoModRecipeV1` normalized model.
+- [x] Define public JSON Schema.
+- [x] Define adapter API v1.
+- [x] Define patch-plan IR v1.
+- [x] Define generated manifest v1.
+- [x] Define recipe expression grammar and hard limits.
 - [ ] Define source-material trust/fingerprint model.
-- [ ] Define build-sandbox containment rules.
+- [x] Define build-sandbox containment rules.
 - [ ] Add threat-model document/tests for recipe execution boundary.
 - [ ] Add synthetic end-to-end fixtures.
 

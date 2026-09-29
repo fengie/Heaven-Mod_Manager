@@ -1,3 +1,13 @@
+# v8.8.19 — Auto Modder foundation
+
+- Add the normalized Auto Mod Recipe v1 domain model and strict parser/semantic validator.
+- Add bounded whole-value input/catalog-property references; arbitrary expressions, scripts, reflection, process launch, network access, and unrestricted filesystem access remain unavailable to recipes.
+- Add explicit adapter registration, dotted-version range negotiation, and per-operation capability checks.
+- Add deterministic typed patch-plan lowering and generated provenance-manifest serialization with ordinal dictionary ordering.
+- Add a manager-owned build sandbox that reuses PathRules, enforces output file/byte budgets, writes through owned temporary files, and fails closed on duplicate/escaping paths.
+- Publish the JSON Schema, adapter/IR contract, generated-manifest contract, threat model, and synthetic recipe fixture; mark M0 locked while catalog discovery, real adapter execution, publication, and WPF UI remain in-progress M1+ work.
+- Add focused unit coverage for parsing/validation, expression resolution, adapter capability/version checks, unsafe outputs, deterministic manifests, and sandbox containment.
+
 # v8.8.18 — Maximum windowed Mods workspace
 
 - Make the Mods library consume nearly all available client space in windowed mode by cutting the page's outer padding from 60 horizontal pixels to 16 and tightening vertical spacing.

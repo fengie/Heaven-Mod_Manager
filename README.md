@@ -1,4 +1,14 @@
-# v8.8.17 Universal Mod Manager
+# v8.8.19 Universal Mod Manager
+
+## v8.8.19 — Auto Modder foundation
+
+Auto Modder is now an implemented engine foundation rather than a planning-only feature. Core includes the v1 recipe/domain contracts, strict JSON parsing and semantic validation, bounded input/property references, adapter registration with capability and version negotiation, deterministic typed patch planning, generated provenance-manifest writing, and a manager-owned build sandbox with output-count/byte budgets and fail-closed path containment.
+
+This release does not yet expose the final Auto Modder WPF workspace or a real Monster Hunter: World binary-format adapter. Those remain the next vertical slices; recipes still cannot execute arbitrary code, launch processes, access the network, or bypass the normal library/deployment/Undo pipeline.
+
+## v8.8.18 — maximum windowed Mods workspace
+
+The Mods page now uses nearly all available windowed client space: the outer padding is reduced, header/status/actions are consolidated, Filters and Bulk Actions stay in one compact strip, and pending-change controls no longer consume an extra row. The structural regression keeps the library from shrinking back to the earlier layout.
 
 ## v8.8.17 — reliable first-launch mod discovery
 

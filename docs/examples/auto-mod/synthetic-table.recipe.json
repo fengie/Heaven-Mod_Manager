@@ -1,0 +1,54 @@
+{
+  "schema": "mhw-auto-mod-recipe/v1",
+  "id": "mhw.auto-mod.builtin.synthetic-table",
+  "version": "1.0.0",
+  "name": "Synthetic Table Edit",
+  "game": "monster-hunter-world",
+  "requires": {
+    "adapters": [
+      {
+        "id": "synthetic.table",
+        "version": ">=1.0.0 <2.0.0"
+      }
+    ]
+  },
+  "inputs": {
+    "record": {
+      "type": "entity",
+      "label": "Record",
+      "required": true,
+      "catalog": "synthetic.records"
+    },
+    "defense": {
+      "type": "integer",
+      "label": "Defense",
+      "required": true,
+      "min": 0,
+      "max": 9999
+    }
+  },
+  "steps": [
+    {
+      "id": "select_record",
+      "adapter": "synthetic.table",
+      "op": "select_record",
+      "source": "table",
+      "target": "${record.id}"
+    },
+    {
+      "id": "set_defense",
+      "adapter": "synthetic.table",
+      "op": "set_field",
+      "source": "table",
+      "target": "${record.id}",
+      "field": "defense",
+      "value": "${defense}"
+    }
+  ],
+  "outputs": [
+    {
+      "source": "table",
+      "path": "nativePC/synthetic/table.json"
+    }
+  ]
+}

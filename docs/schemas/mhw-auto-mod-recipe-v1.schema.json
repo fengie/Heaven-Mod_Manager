@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mhw-auto-mod-recipe-v1.schema.json",
+  "title": "MHW Auto Mod Recipe v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "version",
+    "name",
+    "game",
+    "requires",
+    "inputs",
+    "steps",
+    "outputs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "mhw-auto-mod-recipe/v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^mhw\\.auto-mod\\.[a-z0-9.-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+(?:\\.\\d+){1,3}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "game": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapters"
+      ],
+      "properties": {
+        "adapters": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/adapterRequirement"
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/input"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/step"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/output"
+      }
+    }
+  },
+  "$defs": {
+    "adapterRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "integer",
+            "decimal",
+            "string",
+            "boolean",
+            "enum",
+            "entity",
+            "file",
+            "image",
+            "color",
+            "list",
+            "group"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "default": {},
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "options": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "uniqueItems": true
+        },
+        "catalog": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "advanced": {
+          "type": "boolean"
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "adapter",
+        "op",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "adapter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "op": {
+          "enum": [
+            "select_record",
+            "assert_field",
+            "set_field",
+            "set_bit_field",
+            "replace_enum",
+            "replace_reference",
+            "insert_record",
+            "delete_record",
+            "copy_record",
+            "replace_asset",
+            "write_output"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "target": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "field": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "expect": {},
+        "value": {}
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "path"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 512,
+          "pattern": "^(?:nativePC|root)[\\\\/]"
+        }
+      }
+    }
+  }
+}
