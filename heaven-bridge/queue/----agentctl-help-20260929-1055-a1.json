@@ -1,0 +1,14 @@
+{
+  "id": "----agentctl-help-20260929-1055-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "command": "node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs --help",
+    "cwd": "C:\\Users\\Xxkan\\agent-control-panel",
+    "timeout_seconds": 30
+  }
+}
