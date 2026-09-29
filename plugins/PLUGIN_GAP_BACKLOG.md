@@ -91,7 +91,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** No plaintext secret values in SQLite, logs, checkpoints, manifests, test fixtures, exceptions, or Git. Mutation authorization must fail closed. Secret handles are scoped, expiring where the backing store supports it, and non-exportable through normal plugin APIs.
 - **Dependencies / reuse:** Reuse plugin manifests, Heaven Control Plane execution environment injection, OS credential facilities where available, and ChatGPT connector authorization when the action is connector-native.
 - **Acceptance tests:** secret values never appear in serialized outputs/log capture; expired/unknown handles fail closed; capability permission declarations are validated; denied mutations do not reach transport; tests use fake handles only.
-- **Owner / branch / PR:** owner = current plugin platform lane; branch = `plugin-security-broker-sync-20260929`; PR pending.
+- **Owner / branch / PR:** owner = current plugin platform lane; branch = `plugin-security-broker-sync-20260929`; PR #290.
 - **Completion evidence:** pending exact-head Heaven Plugin Toolbox Gate and canonical-main merge.
 
 ## PG-004 — distributed task queue and cluster integration
