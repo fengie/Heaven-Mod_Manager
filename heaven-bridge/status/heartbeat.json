@@ -4,27 +4,27 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T11:19:14.880238+00:00",
+  "updated_at": "2026-09-29T11:26:14.882708+00:00",
   "running": [
     {
-      "id": "------------------------------------------------runner-install-20260929-1118",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:18:00.857698+00:00"
+      "id": "chatgpt-20260929-104740-canonicalized-branch-cleanup-a2",
+      "action": "powershell",
+      "started_at": "2026-09-29T11:26:13.318341+00:00"
     },
     {
-      "id": "-----------------------------------------------exact-main-agent-control-20260929-1118",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:18:30.239990+00:00"
+      "id": "chatgpt-20260929-104740-complete-workflows-merge-audit-a1",
+      "action": "powershell",
+      "started_at": "2026-09-29T11:26:13.341965+00:00"
     },
     {
-      "id": "----------------------------------------------exact-main-bridge-gate-20260929-1118",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:18:58.927409+00:00"
+      "id": "chatgpt-20260929-104740-smart-pack-main-salvage-a1",
+      "action": "powershell",
+      "started_at": "2026-09-29T11:26:13.373266+00:00"
     },
     {
-      "id": "---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:19:13.379082+00:00"
+      "id": "chatgpt-20260929-1048-read-cycle-state-a1",
+      "action": "fs_read",
+      "started_at": "2026-09-29T11:26:13.381959+00:00"
     }
   ],
   "capabilities": [
