@@ -6,6 +6,7 @@ import {
   hasVerifiedCompletionEvidence,
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
+  planSwarmTailRecoveryBatch,
   recoveryBackoffMs,
   recoveryMachineTarget,
   terminationReconciliationDecision
@@ -172,4 +173,50 @@ test("release-required work is complete only after release verification", () => 
   const complete = structuredClone(incomplete);
   complete.source_metadata.release_verified = true;
   assert.equal(hasVerifiedCompletionEvidence(complete), true);
+});
+
+
+test("end-of-swarm recovery waits until the active wave drains", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [
+      { id: "running", status: "running", taskId: "t-running", task: "still working" },
+      { id: "crashed", status: "failed", taskId: "t-crashed", task: "unfinished" }
+    ],
+    tasks: [
+      { id: "t-running", status: "running", objective: "still working" },
+      { id: "t-crashed", status: "failed", objective: "unfinished" }
+    ]
+  });
+  assert.deepEqual(batch, []);
+});
+
+test("end-of-swarm recovery selects up to four distinct unfinished roots", () => {
+  const agents = Array.from({ length: 6 }, (_, index) => ({
+    id: `failed-${index}`,
+    status: "failed",
+    taskId: `task-${index}`,
+    task: `finish ${index}`
+  }));
+  const tasks = agents.map((agent, index) => ({
+    id: agent.taskId,
+    status: "failed",
+    objective: `finish ${index}`
+  }));
+  const batch = planSwarmTailRecoveryBatch({ agents, tasks }, { maxWorkers: 4, maxAttemptsPerRoot: 2 });
+  assert.equal(batch.length, 4);
+  assert.equal(new Set(batch.map(item => item.rootId)).size, 4);
+  assert.ok(batch.every(item => item.attempt === 1));
+});
+
+test("end-of-swarm recovery does not duplicate successful or exhausted recovery lineages", () => {
+  const agents = [
+    { id: "root-done", status: "failed", taskId: "task-done", task: "one" },
+    { id: "closer-done", status: "done", taskId: "task-closer-done", task: "one", retryOfAgentId: "root-done", recoveryRootAgentId: "root-done", swarmTailRecovery: true },
+    { id: "root-exhausted", status: "failed", taskId: "task-exhausted", task: "two" },
+    { id: "closer-1", status: "failed", taskId: "task-closer-1", task: "two", retryOfAgentId: "root-exhausted", recoveryRootAgentId: "root-exhausted", swarmTailRecovery: true },
+    { id: "closer-2", status: "failed", taskId: "task-closer-2", task: "two", retryOfAgentId: "closer-1", recoveryRootAgentId: "root-exhausted", swarmTailRecovery: true }
+  ];
+  const tasks = agents.map(agent => ({ id: agent.taskId, status: agent.status === "done" ? "candidate" : "failed", objective: agent.task }));
+  const batch = planSwarmTailRecoveryBatch({ agents, tasks }, { maxWorkers: 4, maxAttemptsPerRoot: 2 });
+  assert.deepEqual(batch, []);
 });

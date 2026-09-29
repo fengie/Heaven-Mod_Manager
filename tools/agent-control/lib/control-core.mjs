@@ -143,7 +143,7 @@ export const DEFAULT_MACHINE_POLICIES = Object.freeze({
 });
 
 export const WORKFLOW_PRESETS = Object.freeze([
-  { id: "usual-swarm", label: "Usual Swarm", description: "Fill only missing useful roles toward 1 Manager + 1 Primary Programmer + 4 distinct support lanes." },
+  { id: "usual-swarm", label: "Usual Swarm", description: "Fill only missing useful roles toward 1 Manager + 1 Primary Programmer + 8 distinct support lanes." },
   { id: "support-current", label: "Support Current Programmer", description: "Create distinct support lanes around the active programmer without duplicating owned work." },
   { id: "integration", label: "Integrate Finished Work", description: "Inspect completed candidates and prepare evidence-backed selective integration." },
   { id: "review", label: "Review Current Work", description: "Independently review the newest implementation candidate." },
@@ -179,6 +179,11 @@ export function defaultControlState({ sessionId, hostname }) {
         maxDispatchFailures: 5,
         retryBackoffMs: 15_000,
         maxBackoffMs: 300_000
+      },
+      swarmTailRecovery: {
+        enabled: true,
+        maxWorkers: 4,
+        maxAttemptsPerRoot: 2
       }
     },
     autopilot: defaultAutopilotState(),
@@ -211,7 +216,8 @@ export function migrateControlState(parsed, context) {
         allowAutomaticWorkHandoff: false
       } : {}),
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) },
-      noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) }
+      noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) },
+      swarmTailRecovery: { ...base.settings.swarmTailRecovery, ...(parsed.settings?.swarmTailRecovery || {}) }
     },
     autopilot: normalizeAutopilotState(parsed.autopilot),
     federation: migrateFederationState(parsed.federation),
@@ -555,7 +561,11 @@ export function supportLanesFor(objective = "") {
       { id: "architecture", title: "Architecture / code-path analysis", focus: "Map updater ownership, invariants, dependencies, and exact change surface." },
       { id: "tests", title: "Tests / regression coverage", focus: "Find missing regression, failure-path, concurrency, and recovery coverage." },
       { id: "adversarial", title: "Failure / security analysis", focus: "Challenge artifact trust, interruption, rollback, stale state, races, and fail-closed behavior." },
-      { id: "windows", title: "Windows / packaging verification", focus: "Verify real Windows, packaging, process lifetime, update handoff, and runtime assumptions." }
+      { id: "windows", title: "Windows / packaging verification", focus: "Verify real Windows, packaging, process lifetime, update handoff, and runtime assumptions." },
+      { id: "performance", title: "Updater performance / throughput", focus: "Profile startup, download, staging, hashing, copy, extraction, and cleanup bottlenecks under realistic load." },
+      { id: "migration", title: "Upgrade / migration compatibility", focus: "Exercise old-to-new state transitions, partial upgrades, schema drift, downgrade boundaries, and interrupted recovery." },
+      { id: "release", title: "Release / publication verification", focus: "Verify artifact identity, publication ordering, mirrors, metadata, updater discovery, and post-publication checks." },
+      { id: "observability", title: "Diagnostics / operator recovery", focus: "Check logs, progress, actionable errors, cancellation, retry evidence, and supportability when updater work fails." }
     ];
   }
   if (/ui|ux|frontend|screen|dashboard|layout|interaction/.test(text)) {
@@ -563,14 +573,22 @@ export function supportLanesFor(objective = "") {
       { id: "ux-audit", title: "UX architecture audit", focus: "Inspect information hierarchy, interaction cost, navigation, and task clarity." },
       { id: "states", title: "Empty / loading / failure states", focus: "Exercise realistic empty, loading, blocked, stale, failure, and recovery states." },
       { id: "responsive", title: "Responsive / accessibility review", focus: "Check mobile sizing, keyboard flow, semantics, readability, and accessibility." },
-      { id: "regression", title: "Frontend integration regression", focus: "Check contracts with backend state, live updates, errors, and existing workflows." }
+      { id: "regression", title: "Frontend integration regression", focus: "Check contracts with backend state, live updates, errors, and existing workflows." },
+      { id: "performance", title: "Frontend performance", focus: "Profile startup, render, refresh, scrolling, large-list, and repeated-update behavior under realistic data volume." },
+      { id: "visual-consistency", title: "Visual consistency / density", focus: "Check spacing, hierarchy, sizing, dense-data readability, overflow, and consistency across primary screens." },
+      { id: "input-flow", title: "Keyboard / controller / focus flow", focus: "Exercise focus order, shortcuts, selection retention, controller navigation, and interruption-safe input behavior." },
+      { id: "live-state", title: "Live-state / synchronization review", focus: "Verify polling, streaming, stale-state reconciliation, conflict badges, progress, and cross-tab consistency." }
     ];
   }
   return [
     { id: "architecture", title: "Architecture / code-path analysis", focus: "Map ownership, invariants, dependencies, and collision risk." },
     { id: "tests", title: "Tests / regression coverage", focus: "Find unproven behavior and build targeted regression evidence." },
     { id: "adversarial", title: "Adversarial failure analysis", focus: "Challenge edge cases, races, interruption, stale state, and recovery." },
-    { id: "continuity", title: "Documentation / continuity", focus: "Check durable handoff, exact state, and integration/release evidence." }
+    { id: "continuity", title: "Documentation / continuity", focus: "Check durable handoff, exact state, and integration/release evidence." },
+    { id: "performance", title: "Performance / resource analysis", focus: "Profile startup, hot paths, allocation, I/O, repeated work, and throughput limits with realistic scale." },
+    { id: "integration", title: "Integration / conflict analysis", focus: "Check neighboring branches, API contracts, merge hazards, compatibility, and safe integration ordering." },
+    { id: "platform", title: "Windows / runtime verification", focus: "Exercise real platform behavior, process lifetime, filesystem edge cases, packaging assumptions, and machine-specific failures." },
+    { id: "observability", title: "Diagnostics / supportability", focus: "Verify useful logs, progress, errors, recovery hints, cancellation, and operator-visible evidence." }
   ];
 }
 
