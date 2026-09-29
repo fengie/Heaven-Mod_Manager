@@ -1,0 +1,19 @@
+{
+  "schema": "heaven-plugin/manifest/v1",
+  "name": "heaven-workflows",
+  "version": "0.1.0",
+  "entrypoint": "heaven_workflows.service:HeavenWorkflowPlugin",
+  "capabilities": [
+    "workflow.repo_snapshot",
+    "workflow.verify_repo",
+    "workflow.parallel_invoke"
+  ],
+  "depends_on": {
+    "heaven-control-plane": ">=0.4.0"
+  },
+  "security": {
+    "raw_execution_from_parallel_scheduler": false,
+    "max_parallel_tasks": 16,
+    "max_workers": 8
+  }
+}
