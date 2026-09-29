@@ -19,14 +19,12 @@ on:
       - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
-      - 'src/MhwModManager.App/WorkflowWindow.xaml'
-      - 'src/MhwModManager.App/WorkflowWindow.xaml.cs'
-      - 'src/MhwModManager.App/FomodInstallerWindow.cs'
-      - 'src/MhwModManager.App/MainWindow.xaml'
-      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs'
-      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
+      - 'src/MhwModManager.App/**'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
       - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
+      - '_AGENT_CONTEXT/handoff-manifest.json'
+      - '_AGENT_CONTEXT/CURRENT_REVISION.json'
+      - 'scripts/Test-AgentHandoff.ps1'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 
@@ -54,6 +52,10 @@ jobs:
         run: |
           $version = (& dotnet --version).Trim()
           if ($version -ne '10.0.401') { throw "Workflow gate requires .NET SDK 10.0.401; found $version." }
+
+      - name: Run exact repository verification gate
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Verify-Release.ps1"
 
       - name: Restore workflow projects
         shell: powershell
