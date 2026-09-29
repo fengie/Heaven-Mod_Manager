@@ -67,3 +67,16 @@ test("local Codex args carry exact worktree and output paths", () => {
   assert.ok(args.includes("C:\\data\\last.txt"));
   assert.ok(args.includes("gpt-5.6"));
 });
+
+test("remote runner stages new files and pushes only from the control-side worktree", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const source = fs.readFileSync(path.resolve(here, "..", "lib", "heaven-bridge-runner.mjs"), "utf8");
+  assert.match(source, /git -C \$\{psQuote\(remoteWorktree\)\} add -A/);
+  assert.match(source, /diff --cached --binary/);
+  assert.match(source, /const remoteParent = path\.win32\.dirname\(remoteWorktree\)/);
+  assert.match(source, /git\(spec\.localWorktree, \["push", "--set-upstream", "origin", spec\.branchName\]\)/);
+  assert.doesNotMatch(source, /git -C \$\{psQuote\(remoteWorktree\)\} push/);
+});
