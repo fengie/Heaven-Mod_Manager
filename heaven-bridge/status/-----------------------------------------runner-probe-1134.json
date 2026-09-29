@@ -1,0 +1,9 @@
+{
+  "id": "-----------------------------------------runner-probe-1134",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:37:01.577284+00:00"
+}
