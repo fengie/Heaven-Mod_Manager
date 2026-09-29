@@ -23,7 +23,7 @@ public sealed class UpdateMutexLease : IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod($"installRoot={installRoot}");
         var normalized = Path.GetFullPath(installRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized.ToUpperInvariant())));
-        var semaphore = new Semaphore(1, 1, $"Local\\MHWMM.Update.{hash[..24]}");
+        var semaphore = new Semaphore(1, 1, $"Global\\MHWMM.Update.{hash[..24]}");
         try
         {
             var acquired = semaphore.WaitOne(timeout);
