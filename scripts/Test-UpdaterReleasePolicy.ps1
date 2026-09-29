@@ -237,4 +237,19 @@ Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST ta
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
+# Release completion requires private publication followed by the public client-feed mirror.
+$repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$releaseWorkflowPath=Join-Path $repoRoot '.github\workflows\windows-release-gate.yml'
+$releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
+$privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\Publish-UpdaterRelease.ps1')
+$publicMirrorIndex=$releaseWorkflow.IndexOf('.\scripts\Publish-PublicUpdaterRelease.ps1')
+if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical private updater publisher.'}
+if($publicMirrorIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater mirror.'}
+if($publicMirrorIndex -le $privatePublishIndex){throw 'Public updater mirroring must run after canonical private release publication.'}
+Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
+
+$publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-PublicUpdaterRelease.ps1') -Raw
+Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'
+Assert-Equal $true ($publicPublisherSource.Contains('Unexpected private source repository')) 'canonical private release source guard'
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
