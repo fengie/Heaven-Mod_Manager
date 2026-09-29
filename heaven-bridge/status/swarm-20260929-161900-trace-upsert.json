@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-161900-trace-upsert",
-  "state": "running",
+  "state": "completed",
   "action": "fs_edit",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:16:24.507243+00:00"
+  "updated_at": "2026-09-29T16:16:36.078208+00:00",
+  "exit_code": 0
 }
