@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0031-controller-checkpoint-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T00:31:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'; $d=Join-Path $env:TEMP 'heaven-bridge-checkpoint-tests'; if(Test-Path $d){Remove-Item -Recurse -Force $d}; git clone --quiet --single-branch --branch heaven-bridge https://github.com/fengie/mhw-mods.git $d; python -m py_compile (Join-Path $d 'heaven-bridge\\worker.py') (Join-Path $d 'heaven-bridge\\test_worker.py'); python (Join-Path $d 'heaven-bridge\\test_worker.py'); $rc=$LASTEXITCODE; Remove-Item -Recurse -Force $d; exit $rc"
+  },
+  "priority": "highest"
+}
