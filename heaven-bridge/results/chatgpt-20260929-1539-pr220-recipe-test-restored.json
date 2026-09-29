@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1539-pr220-recipe-test-restored",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:39:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:38:00.695648+00:00",
+  "finished_at": "2026-09-29T15:38:04.523961+00:00",
+  "stdout": "HEAD is now at 44d84b6c test: cover repeated recipe family restore\nTEST_SHA=44d84b6c552bae3f7d311ac824afed966e9d2ba6\r\n  Determining projects to restore...\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Core\\MhwModManager.Core.csproj (in 84 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Mhw\\MhwModManager.Mhw.csproj (in 206 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj (in 206 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Storage\\MhwModManager.Storage.csproj (in 206 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj (in 206 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\src\\MhwModManager.Automation\\MhwModManager.Automation.csproj (in 206 ms).\r\n  Restored C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj (in 208 ms).\r\nC:\\Users\\Xxkan\\.nuget\\packages\\microsoft.testing.platform.msbuild\\2.4.0\\buildMultiTargeting\\Microsoft.Testing.Platform.MSBuild.targets(355,5): error : Testing with VSTest target is no longer supported by Microsoft.Testing.Platform on .NET 10 SDK and later. If you use dotnet test, you should opt-in to the new dotnet test experience. For more information, see https://aka.ms/dotnet-test-mtp-error [C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe-restore\\tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj]\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              agent/bughunt-recipe-family-idempotence-20260929 -> FETCH_HEAD\nPreparing worktree (detached HEAD 44d84b6c)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1539-pr220-recipe-test-restored.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1539-pr220-recipe-test-restored.stderr.log",
+    "stdout_bytes": 1644,
+    "stderr_bytes": 170,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e9689cc8c4734de6b6883d5c26fa0420a78ced49b3a3c49484a3c8f26c7fe5be"
+}
