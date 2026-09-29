@@ -56,10 +56,14 @@ Core capabilities:
 - heartbeat and sanitized local audit logging
 - session idle/max-runtime cleanup
 - configurable filesystem allowlists
-- screenshot capture to a local PNG for later binary retrieval
+- screenshot capture for the primary display, one monitor, or the full virtual desktop
+- structured display/window enumeration and window focus/move/state/close
+- structured cursor, mouse button/click/scroll, keyboard shortcut, and Unicode text input
+- structured app launch without shell interpolation
+- clipboard text read/write with relay-aware privacy guards
 - local Codex dispatch using an absolute user npm path fallback
 
-Clipboard reading is intentionally not enabled by default because clipboards commonly contain credentials or other sensitive data.
+Clipboard reads require an explicit per-job `allow_relay: true` opt-in because clipboard contents are returned through the private GitHub relay. Never use clipboard or GUI text actions to transmit secrets through this relay.
 
 ## Operator quickstart
 
@@ -211,11 +215,37 @@ The action fails closed when the existing cycle no longer matches `expected_prev
 
 Heartbeat commits are deliberately infrequent to avoid relay commit spam.
 
-## Screenshots and GUI
+## Local desktop control
 
-`screenshot` captures the primary interactive display to a local PNG under `%USERPROFILE%\HeavenBridge\screenshots` and returns its path. Retrieve it with `fs_read_binary`.
+The bridge now exposes structured Win32 desktop primitives so routine interactive control no longer depends on a Remote Desktop MCP.
 
-App launching is already covered by `proc_start`/`proc_run`. Window-focus and clipboard-reading APIs are not enabled in v3 because they are more fragile/sensitive and should be added only with explicit reliability and privacy constraints.
+Observation actions:
+
+- `display_list`: enumerate active displays and their working areas.
+- `window_list`: enumerate titled top-level windows with HWND, PID, visibility, minimized state, and bounds.
+- `gui_cursor_get`: read the current cursor position.
+- `screenshot`: capture `scope: "primary"`, `"all"`, or `"monitor"` (with `monitor_index`) to a local PNG, then retrieve it through `fs_read_binary` when image bytes are needed.
+
+Interaction actions:
+
+- `gui_mouse_move`: move the pointer, optionally over a bounded duration.
+- `gui_mouse_button`: press or release left/right/middle independently; use this for drag sequences.
+- `gui_mouse_click`: single/double/triple click at the current or supplied coordinates.
+- `gui_mouse_scroll`: vertical or horizontal wheel input.
+- `gui_key`: named key/shortcut input such as Ctrl+L, Alt+F4, arrows, or function keys.
+- `gui_type`: inject Unicode text through Win32 `SendInput`.
+- `window_focus`, `window_move`, `window_state`, `window_close`: manage a window selected by HWND, PID, or title.
+- `app_launch`: launch an executable with an argv list and no shell interpolation.
+- `clipboard_write`: place Unicode text on the interactive clipboard.
+- `clipboard_read`: read Unicode text only when `params.allow_relay=true` is supplied for an explicit clipboard-read request.
+
+Desktop selectors fail closed on ambiguous window matches unless `first_match:true` is explicitly supplied. Clipboard reads are additionally capped and report truncation.
+
+### Sensitive input boundary
+
+The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, or controller state.
+
+For full credential-safe desktop parity, secrets should be referenced by a local named-secret handle owned by the credential authority and resolved only on the destination machine; the secret value itself must never enter GitHub. Until that channel is implemented, credential entry remains outside the bridge's safe structured surface.
 
 ## Raw shell fallback
 
