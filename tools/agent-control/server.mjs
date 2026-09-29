@@ -25,6 +25,7 @@ import {
   isIntegrationEligible,
   migrateControlState,
   planWorkflow,
+  providerCapacityCircuit,
   recommendNextActions,
   roleCatalog,
   takeoverContext,
@@ -754,6 +755,14 @@ async function deployOne({
 
   const state = refreshState();
   assertMutationsAllowed(state, { dispatch: true });
+  const capacity = providerCapacityCircuit(state);
+  if (capacity.blocked && process.env.AGENT_CONTROL_IGNORE_PROVIDER_CAPACITY !== "1") {
+    const until = capacity.blockedUntil ? ` until ${capacity.blockedUntil}` : "";
+    const error = new Error(`Codex agent dispatch is capacity-blocked${until}. Direct Heaven Bridge proc_run/build/test/computer-control remains available; retry agent dispatch after provider capacity resets.`);
+    error.code = "CODEX_PROVIDER_CAPACITY";
+    error.statusCode = 503;
+    throw error;
+  }
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   if (running >= MAX_ACTIVE_AGENTS) throw new Error(`Worker capacity reached (${running}/${MAX_ACTIVE_AGENTS}).`);
 
