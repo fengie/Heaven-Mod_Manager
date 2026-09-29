@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0900-pr90-verify-progress-h1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p=\"$env:USERPROFILE\\HeavenBridge\\outputs\\chatgpt-20260929-0857-pr90-full-verify-a1.stdout.log\"; if(Test-Path $p){Get-Content $p -Tail 80}else{'NO_STDOUT_YET'}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T09:00:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
