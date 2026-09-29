@@ -6,6 +6,7 @@ on:
       - 'perf-startup-*'
     paths:
       - 'src/**'
+      - 'tests/MhwModManager.IntegrationTests/**'
       - 'scripts/Measure-StartupPerformance.ps1'
       - '.github/workflows/startup-performance-gate.yml'
       - 'Directory.Build.props'
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      - 'tests/MhwModManager.IntegrationTests/**'
       - 'scripts/Measure-StartupPerformance.ps1'
       - '.github/workflows/startup-performance-gate.yml'
       - 'Directory.Build.props'
@@ -63,6 +65,12 @@ jobs:
         shell: powershell
         run: |
           .\scripts\Measure-StartupPerformance.ps1 -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 120
+
+      - name: Verify lazy startup-page behavior
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release -p:NuGetAudit=false --filter "FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Preserve startup benchmark evidence
         if: always()
