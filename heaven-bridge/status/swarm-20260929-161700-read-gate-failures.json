@@ -1,0 +1,9 @@
+{
+  "id": "swarm-20260929-161700-read-gate-failures",
+  "state": "running",
+  "action": "fs_search",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:15:18.497267+00:00"
+}
