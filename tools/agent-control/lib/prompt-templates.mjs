@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.3";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.4";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -79,6 +79,8 @@ const REPOSITORY_TRAINING_GATE = [
 
 const REPOSITORY_PROTOCOL = [
   "Unless the user explicitly marks the assignment read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, treat it as an execution assignment: reading and planning are preparatory, make concrete progress with available authorized tools, and try another supported execution path before declaring a blocker.",
+  "NO WORK HANDOFF BY DEFAULT: never invoke, request, suggest, or hand off to ChatGPT Work mode unless the user explicitly requested Work mode for this current task. Complexity, file/computer work, a failed tool, or a missing preferred route is not permission.",
+  "Stay in the current ChatGPT conversation when it can execute the task. If a normal Chat session cannot be auto-created, continue through another authorized non-Work path such as the direct local worker, Heaven Local Bridge, or repository tooling. Do not stop solely to ask the operator to switch modes.",
   "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
   "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
   "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
@@ -100,13 +102,14 @@ const MACHINE_POLICIES = {
     "heaven is the preferred worker for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy or long-running execution.",
     "Keep secrets and credential authority on heaven2 unless runtime access on heaven is genuinely required. Never print, commit, or unnecessarily copy credentials.",
     "Repository work may execute on heaven when the assignment and available tooling authorize it; keep mutation scoped to the owned boundary and preserve collision safety.",
-    "Work mode is not a repository prerequisite. Use the best supported execution path actually available, and try another supported path before declaring a blocker."
+    "Work mode is deny-by-default. Never request or trigger a Work handoff unless the current user task explicitly opts into Work; otherwise keep executing through normal Chat or another authorized non-Work path."
   ],
   heaven2: [
     "heaven2 is the control machine and credential authority.",
     "Keep secrets here by default and expose only the minimum runtime access genuinely required by an assigned task.",
     "Preserve responsiveness by offloading builds, tests, scans, local swarms, indexing, and other resource-heavy work to heaven when practical.",
-    "Use heaven2 directly for credential-gated operations, control-plane work, MHW installation checks, Windows/UI/GPU validation, or other tasks that genuinely require the main machine."
+    "Use heaven2 directly for credential-gated operations, control-plane work, MHW installation checks, Windows/UI/GPU validation, or other tasks that genuinely require the main machine.",
+    "Do not hand off to ChatGPT Work as a fallback. Stay in the current chat or use an authorized non-Work execution path unless this current task explicitly requests Work mode."
   ]
 };
 
