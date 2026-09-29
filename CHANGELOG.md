@@ -1,3 +1,11 @@
+# v8.8.12 — Import publication isolation
+
+- Stage manual archive, Smart Inbox, and FOMOD work in a manager-owned sibling workspace outside the catalog-visible `ModsRoot`.
+- Publish completed imports only after validation/normalization through one final same-volume directory move.
+- Keep failed, canceled, or crash-residue staging structurally invisible to `CatalogService.RefreshFoldersAsync`, preventing persistent ghost mod rows from partial imports.
+- Preserve the source Inbox item until publication succeeds and keep cleanup failures secondary to the original operation outcome.
+- Add deterministic regressions for mixed failed/successful Smart Inbox runs, failed manual archive publication, and pending FOMOD preparation visibility.
+
 # v8.8.11 — First-time user UX overhaul
 
 - Replace ambiguous/developer-centric primary labels with explicit actions such as **Install Mod**, **Apply Mod Changes**, **Launch Game**, and **Launch Without Mods**.
