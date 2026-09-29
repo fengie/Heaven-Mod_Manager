@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-104400-agentcontrol-compact",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p1=Join-Path $env:USERPROFILE 'agent-control-panel\\tools\\agent-control\\agentctl.mjs'; $p2=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods\\tools\\agent-control\\agentctl.mjs'; $p=if(Test-Path $p1){$p1}elseif(Test-Path $p2){$p2}else{throw 'agentctl.mjs not found'}; node $p status; node $p autonomy; node $p workers; node $p queue",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T10:44:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
