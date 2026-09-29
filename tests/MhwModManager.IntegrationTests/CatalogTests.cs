@@ -163,6 +163,77 @@ public sealed class CatalogTests : IDisposable
         Assert.Equal(mod.Id, byProvider[0].ModId);
     }
 
+    [Fact]
+    public async Task Catalog_keeps_other_provider_results_when_one_provider_is_offline()
+    {
+        var gameRoot = Path.Combine(root, "game-provider-isolation");
+        Directory.CreateDirectory(gameRoot);
+        var game = GameProfile.Generic("fixture", "Fixture Game", gameRoot, "game.exe", "mods");
+
+        var offline = new StubProvider("offline-provider", [CreateMod("offline-provider", "1", game.Id, "Offline Mod")])
+        {
+            FailRequests = true
+        };
+        var healthy = new StubProvider("healthy-provider", [CreateMod("healthy-provider", "2", game.Id, "Healthy Mod")]);
+        var service = new ModCatalogService(
+            new ModCatalogProviderRegistry([offline, healthy]),
+            new CatalogCacheStore(Path.Combine(root, "provider-isolation-cache")),
+            TimeSpan.Zero);
+
+        var result = await service.BrowseAsync(new(game, Limit: 20), TestToken);
+
+        var mod = Assert.Single(result.Mods);
+        Assert.Equal("healthy-provider", mod.ProviderId);
+        Assert.Equal("Healthy Mod", mod.Name);
+    }
+
+    [Fact]
+    public async Task Catalog_does_not_fuzzy_merge_same_named_mods_from_different_providers()
+    {
+        var gameRoot = Path.Combine(root, "game-dedup");
+        Directory.CreateDirectory(gameRoot);
+        var game = GameProfile.Generic("fixture", "Fixture Game", gameRoot, "game.exe", "mods");
+
+        var first = new StubProvider("provider-a", [CreateMod("provider-a", "10", game.Id, "Same Name")]);
+        var second = new StubProvider("provider-b", [CreateMod("provider-b", "20", game.Id, "Same Name")]);
+        var service = new ModCatalogService(
+            new ModCatalogProviderRegistry([first, second]),
+            new CatalogCacheStore(Path.Combine(root, "dedup-cache")),
+            TimeSpan.Zero);
+
+        var result = await service.BrowseAsync(new(game, Limit: 20), TestToken);
+
+        Assert.Equal(2, result.Mods.Count);
+        Assert.Contains(result.Mods, mod => mod.ProviderId == "provider-a");
+        Assert.Contains(result.Mods, mod => mod.ProviderId == "provider-b");
+    }
+
+    [Fact]
+    public async Task Download_manager_rejects_mismatched_content_range_without_touching_partial_file()
+    {
+        var bytes = "hello catalog download"u8.ToArray();
+        var downloadRoot = Path.Combine(root, "bad-range");
+        Directory.CreateDirectory(downloadRoot);
+        var partial = Path.Combine(downloadRoot, "sample.zip.part");
+        var prefix = bytes[..5];
+        await File.WriteAllBytesAsync(partial, prefix, TestToken);
+
+        var file = new CatalogModFile(
+            "fixture",
+            "mod-1",
+            "file-1",
+            "Main file",
+            "sample.zip",
+            CatalogFileCategory.Main,
+            SizeBytes: bytes.Length);
+
+        var manager = new CatalogDownloadManager(downloadRoot, new MismatchedRangeFixtureHandler(bytes), 1024 * 1024);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            manager.DownloadAsync(new Uri("https://mods.example.test/sample.zip"), file, ct: TestToken));
+        Assert.Equal(prefix, await File.ReadAllBytesAsync(partial, TestToken));
+    }
+
     private static CatalogMod CreateMod(string providerId, string providerModId, string gameId, string name)
     {
         return new(
@@ -240,6 +311,20 @@ public sealed class CatalogTests : IDisposable
         {
             if (FailRequests) throw new HttpRequestException("fixture provider offline");
             return Task.FromResult(mods);
+        }
+    }
+
+    private sealed class MismatchedRangeFixtureHandler(byte[] payload) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.PartialContent)
+            {
+                Content = new ByteArrayContent(payload),
+                RequestMessage = request
+            };
+            response.Content.Headers.ContentRange = new("bytes", 0, payload.LongLength - 1, payload.LongLength);
+            return Task.FromResult(response);
         }
     }
 
