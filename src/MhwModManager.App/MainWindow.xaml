@@ -108,7 +108,7 @@
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="WORKING IN GAME" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding FullyEffectiveCount}" FontSize="32" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" composed • "/><Run Text="{Binding RevalidationCount,Mode=OneWay}"/><Run Text=" revalidate"/></TextBlock>
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" partly replaced • "/><Run Text="{Binding RevalidationCount,Mode=OneWay}"/><Run Text=" need a check"/></TextBlock>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -166,18 +166,23 @@
                             <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource Card}">
                                 <StackPanel>
                                     <TextBlock Text="Start here" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Text="The most useful actions for this game." Style="{StaticResource PageSubtitle}"/>
-                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="Launch Game" ToolTip="Back up saves, run the health gate, launch, observe, and track last-known-good state." Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mods from Inbox" Command="{Binding ProcessInboxCommand}" ToolTip="Drop archives/folders into Inbox and let the manager classify/import them automatically."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Restore Last Working Setup" Command="{Binding RestoreLastGoodCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Find Mod Causing Startup Crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Clean Up Duplicate Mods" Command="{Binding SmartCleanupCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export Mod List" Command="{Binding ExportRecipeCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Advanced Tools &amp; Diagnostics" Command="{Binding OpenWorkflowsCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Review Shared Files" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for App Updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified program release feed. Network or authentication failures never block normal manager use."/>
-                                    <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply Mod Changes" Command="{Binding ApplyCommand}"/>
+                                    <TextBlock Text="The actions most people need day to day." Style="{StaticResource PageSubtitle}"/>
+                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="Launch Game" ToolTip="Back up your save, check the mod setup, and launch with enabled mods." Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mod" Command="{Binding ImportArchiveCommand}" ToolTip="Choose a downloaded mod archive and add it to this game's library."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Apply Mod Changes" Command="{Binding ApplyCommand}" ToolTip="Safely update the game files to match your pending mod choices."/>
+                                    <Button Margin="0,0,0,0" HorizontalContentAlignment="Left" Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" ToolTip="See what would change without editing game files."/>
+                                    <Expander Header="More tools" Margin="0,15,0,0" Foreground="{StaticResource Text}">
+                                        <StackPanel Margin="0,10,0,0">
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mods from Inbox" Command="{Binding ProcessInboxCommand}" ToolTip="Process multiple mod files or folders placed in the Inbox."/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Restore Last Working Setup" Command="{Binding RestoreLastGoodCommand}" ToolTip="Return to the most recent mod setup that successfully started the game."/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Find Mod Causing Startup Crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Test recently enabled mods to narrow down which one prevents the game from starting."/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Clean Up Duplicate Mods" Command="{Binding SmartCleanupCommand}"/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export Mod List" Command="{Binding ExportRecipeCommand}"/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Review Shared Files" Command="{Binding ShowOverlapsCommand}" ToolTip="See files changed by more than one mod and which version the game will use."/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for App Updates" Command="{Binding CheckForProgramUpdatesCommand}"/>
+                                            <Button Margin="0" HorizontalContentAlignment="Left" Content="Advanced Tools &amp; Diagnostics" Command="{Binding OpenWorkflowsCommand}"/>
+                                        </StackPanel>
+                                    </Expander>
                                 </StackPanel>
                             </Border>
                         </Grid>
