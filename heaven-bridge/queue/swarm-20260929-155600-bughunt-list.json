@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-155600-bughunt-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_list",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\bughunt-worktrees",
+    "depth": 3,
+    "max_items": 300,
+    "offset": 0
+  },
+  "created_at": "2026-09-29T15:56:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
