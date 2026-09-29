@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-114800-controlplane-truth",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:57:21.695527+00:00"
+}
