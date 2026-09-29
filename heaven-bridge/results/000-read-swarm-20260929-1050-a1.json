@@ -1,0 +1,21 @@
+{
+  "id": "000-read-swarm-20260929-1050-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:50:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:20:24.637237+00:00",
+  "finished_at": "2026-09-29T11:20:24.640274+00:00",
+  "host": "heaven",
+  "action": "fs_read",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\data\\cycles\\cycle-20260929104636-yytns.json",
+    "offset": 0,
+    "length": 95,
+    "total_lines": 95,
+    "next_offset": 95,
+    "eof": true,
+    "content": "{\n  \"id\": \"cycle-20260929104636-yytns\",\n  \"status\": \"running\",\n  \"stage\": \"initial-wave\",\n  \"createdAt\": \"2026-09-29T10:46:36.168Z\",\n  \"startedAt\": \"2026-09-29T10:46:54.724Z\",\n  \"updatedAt\": \"2026-09-29T11:19:56.727Z\",\n  \"objectivePreview\": \"Continue advancing Heaven Local Bridge v0.4.0 in fengie/mhw-mods. EXECUTE changes; do not merely review. Coordinate a small local swarm (implementation + security review + testing/integration). Do not use Remote Desktop Commander.\\n\\nPrioriti\",\n  \"baseBranch\": \"main\",\n  \"supervisorPid\": 103260,\n  \"waves\": [\n    {\n      \"name\": \"manager\",\n      \"launchedAt\": \"2026-09-29T10:47:26.791Z\",\n      \"agentIds\": [\n        \"manager-20260929104713-ln9yh\"\n      ]\n    },\n    {\n      \"name\": \"primary\",\n      \"launchedAt\": \"2026-09-29T10:47:26.793Z\",\n      \"agentIds\": [\n        \"main-20260929104715-d4eza\"\n      ]\n    },\n    {\n      \"name\": \"support\",\n      \"launchedAt\": \"2026-09-29T10:47:26.795Z\",\n      \"agentIds\": [\n        \"support-20260929104718-nqrmb\",\n        \"support-20260929104724-nyxyj\",\n        \"support-20260929104726-lae4b\"\n      ]\n    }\n  ],\n  \"agents\": {\n    \"manager-20260929104713-ln9yh\": {\n      \"id\": \"manager-20260929104713-ln9yh\",\n      \"role\": \"manager\",\n      \"taskId\": \"task-20260929104713-ln9yh\",\n      \"branchName\": \"agent/control-manager-coordinate-this-development-obje-20260929104713-ln9yh\",\n      \"baseBranch\": \"main\",\n      \"status\": \"done\",\n      \"wave\": \"manager\",\n      \"lastMessage\": \"I'm unable to remove the directory due to policy restrictions. Let me try a different approach to resolve this issue. I'll attempt to use the `git worktree` command to clean up the worktree instead.\",\n      \"finishedAt\": \"2026-09-29T11:06:04.634Z\"\n    },\n    \"main-20260929104715-d4eza\": {\n      \"id\": \"main-20260929104715-d4eza\",\n      \"role\": \"main\",\n      \"taskId\": \"task-20260929104715-d4eza\",\n      \"branchName\": \"agent/control-main-continue-advancing-heaven-local--20260929104715-d4eza\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"primary\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104718-nqrmb\": {\n      \"id\": \"support-20260929104718-nqrmb\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104718-nqrmb\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104718-nqrmb\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104724-nyxyj\": {\n      \"id\": \"support-20260929104724-nyxyj\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104724-nyxyj\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104724-nyxyj\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104726-lae4b\": {\n      \"id\": \"support-20260929104726-lae4b\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104726-lae4b\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104726-lae4b\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    }\n  },\n  \"result\": null,\n  \"error\": null\n}"
+  },
+  "job_hash": "6cfd6c6225c86887d8fa76412185b5b53d7b2b16901fa686a4dfab3571fbbf0b"
+}
