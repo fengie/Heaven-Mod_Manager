@@ -30,13 +30,13 @@ public sealed class UpdateRestartCoordinator(
             {
                 if (File.Exists(request.HealthFile)) File.Delete(request.HealthFile);
                 var launch = await UpdateLaunchStateStore.BeginAsync(request, CancellationToken.None);
-                reportStage?.Invoke(UpdateRestartStage.LaunchingUpdatedApplication);
+                ReportStage(UpdateRestartStage.LaunchingUpdatedApplication);
                 process = startTargetApplication(launch.AttemptId);
                 launch = await UpdateLaunchStateStore.RecordStartedAsync(
                     request, launch, process, CancellationToken.None);
                 log?.Invoke(
                     $"update restarted target build={request.Manifest.BuildNumber} pid={process.Id} attempt={launch.AttemptId}");
-                reportStage?.Invoke(UpdateRestartStage.VerifyingUpdatedApplication);
+                ReportStage(UpdateRestartStage.VerifyingUpdatedApplication);
                 if (await UpdateHealthProtocol.WaitForHealthyAsync(
                         request.HealthFile,
                         request.HealthToken,
@@ -47,7 +47,7 @@ public sealed class UpdateRestartCoordinator(
                         healthTimeout,
                         CancellationToken.None))
                 {
-                    reportStage?.Invoke(UpdateRestartStage.ConfirmingUpdate);
+                    ReportStage(UpdateRestartStage.ConfirmingUpdate);
                     await installer.ConfirmAsync(request, CancellationToken.None);
                     UpdateLaunchStateStore.DeleteBestEffort(request, log);
                     log?.Invoke($"update confirmed build={request.Manifest.BuildNumber}");
@@ -84,7 +84,7 @@ public sealed class UpdateRestartCoordinator(
             {
                 log?.Invoke(
                     $"update resume found ambiguous launch attempt={launch.AttemptId}; waiting for its health without launching a duplicate");
-                reportStage?.Invoke(UpdateRestartStage.VerifyingUpdatedApplication);
+                ReportStage(UpdateRestartStage.VerifyingUpdatedApplication);
                 if (await UpdateHealthProtocol.WaitForHealthyAsync(
                         request.HealthFile,
                         request.HealthToken,
@@ -95,7 +95,7 @@ public sealed class UpdateRestartCoordinator(
                         healthTimeout,
                         CancellationToken.None))
                 {
-                    reportStage?.Invoke(UpdateRestartStage.ConfirmingUpdate);
+                    ReportStage(UpdateRestartStage.ConfirmingUpdate);
                     await installer.ConfirmAsync(request, CancellationToken.None);
                     UpdateLaunchStateStore.DeleteBestEffort(request, log);
                     log?.Invoke($"update confirmed resumed launch build={request.Manifest.BuildNumber}");
@@ -121,7 +121,7 @@ public sealed class UpdateRestartCoordinator(
             {
                 log?.Invoke(
                     $"update resume attached to target pid={process.Id} attempt={launch.AttemptId}");
-                reportStage?.Invoke(UpdateRestartStage.VerifyingUpdatedApplication);
+                ReportStage(UpdateRestartStage.VerifyingUpdatedApplication);
                 if (await UpdateHealthProtocol.WaitForHealthyAsync(
                         request.HealthFile,
                         request.HealthToken,
@@ -132,7 +132,7 @@ public sealed class UpdateRestartCoordinator(
                         healthTimeout,
                         CancellationToken.None))
                 {
-                    reportStage?.Invoke(UpdateRestartStage.ConfirmingUpdate);
+                    ReportStage(UpdateRestartStage.ConfirmingUpdate);
                     await installer.ConfirmAsync(request, CancellationToken.None);
                     UpdateLaunchStateStore.DeleteBestEffort(request, log);
                     log?.Invoke($"update confirmed resumed launch build={request.Manifest.BuildNumber}");
@@ -153,13 +153,27 @@ public sealed class UpdateRestartCoordinator(
         }
     }
 
+    private void ReportStage(UpdateRestartStage stage)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"stage={stage}");
+        try
+        {
+            reportStage?.Invoke(stage);
+        }
+        catch (Exception ex)
+        {
+            log?.Invoke(
+                $"update progress reporting failed stage={stage} type={ex.GetType().Name}");
+        }
+    }
+
     private async Task<int> RecoverAsync(
         UpdateInstaller installer,
         UpdateApplyRequest request,
         Process? process)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
-        reportStage?.Invoke(UpdateRestartStage.RecoveringPreviousApplication);
+        ReportStage(UpdateRestartStage.RecoveringPreviousApplication);
         if (process is not null && !process.HasExited && !await stopApplication(process))
         {
             log?.Invoke(
@@ -174,7 +188,7 @@ public sealed class UpdateRestartCoordinator(
             var previousMarker = await ReleaseInstallMarker.LoadAsync(request.InstallRoot, recovery.Token);
             UpdateLaunchStateStore.DeleteBestEffort(request, log);
             using var previous = startPreviousApplication(previousMarker.ExecutableRelativePath);
-            reportStage?.Invoke(UpdateRestartStage.RestoredPreviousApplication);
+            ReportStage(UpdateRestartStage.RestoredPreviousApplication);
             log?.Invoke(
                 $"update restored previous application pid={previous.Id} executable={previousMarker.ExecutableRelativePath}");
             return 5;

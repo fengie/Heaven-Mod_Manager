@@ -453,6 +453,58 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Progress_callback_failure_cannot_change_update_outcome()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var progressAttempts = 0;
+        var logs = new List<string>();
+
+        var coordinator = new UpdateRestartCoordinator(
+            attemptId =>
+            {
+                File.WriteAllText(
+                    fixture.Request.HealthFile,
+                    JsonSerializer.Serialize(
+                        new UpdateStartupHealth(
+                            fixture.Request.HealthToken,
+                            attemptId,
+                            Environment.ProcessId,
+                            fixture.Request.Manifest.BuildNumber,
+                            fixture.Request.Manifest.SourceSha,
+                            DateTimeOffset.UtcNow),
+                        UpdateProtocol.Json));
+                return Process.GetCurrentProcess();
+            },
+            _ => throw new InvalidOperationException(
+                "Previous app must not restart after successful health."),
+            _ => Task.FromResult(true),
+            logs.Add,
+            _ =>
+            {
+                progressAttempts++;
+                throw new InvalidOperationException("injected progress failure");
+            });
+
+        Assert.Equal(
+            0,
+            await coordinator.RunAsync(
+                installer,
+                fixture.Request,
+                TimeSpan.FromMilliseconds(250)));
+        Assert.Equal(3, progressAttempts);
+        Assert.Contains(
+            logs,
+            line => line.Contains(
+                "update progress reporting failed",
+                StringComparison.Ordinal));
+        Assert.Equal(
+            UpdateJournalPhase.Confirmed,
+            (await ReadJournalAsync(fixture.Request.JournalPath)).Phase);
+    }
+
+    [Fact]
     public async Task Rollback_restart_uses_restored_previous_executable_when_target_name_changed()
     {
         var fixture = await CreateFixtureAsync("old-manager.exe", "new-manager.exe");
