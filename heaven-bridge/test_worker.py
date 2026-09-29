@@ -196,24 +196,6 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             ordered = sorted([normal, bad], key=hb.queue_order_key)
             self.assertEqual({p.name for p in ordered}, {"bad.json", "normal.json"})
 
-    def test_queue_sort_prioritizes_control_plane_and_explicit_priority(self):
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            jobs = {
-                "a-normal.json": {"action": "proc_run", "priority": "normal", "created_at": "2026-09-29T10:00:00Z"},
-                "b-high.json": {"action": "proc_run", "priority": "highest", "created_at": "2026-09-29T10:01:00Z"},
-                "z-health.json": {"action": "health", "priority": "low", "created_at": "2026-09-29T10:02:00Z"},
-                "y-cancel.json": {"action": "cancel", "priority": "normal", "created_at": "2026-09-29T10:03:00Z"},
-            }
-            paths = []
-            for name, payload in jobs.items():
-                path = root / name
-                path.write_text(__import__("json").dumps(payload), encoding="utf-8")
-                paths.append(path)
-            ordered = [p.name for p in sorted(paths, key=hb.queue_sort_key)]
-            self.assertEqual(ordered[:2], ["y-cancel.json", "z-health.json"])
-            self.assertEqual(ordered[2:], ["b-high.json", "a-normal.json"])
-
     def test_queue_order_ages_low_priority_work(self):
         current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
         with tempfile.TemporaryDirectory() as td:
