@@ -421,3 +421,17 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** failed bridge job `chatgpt-startup-setup-restore-heaven2-20260929-1819`; fixes `f78ac9337b6df935170bfcf62b726cd003d16896`, `989bebbb567cb98bffd4f41e206e09ea4c9878af`.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## LR-026 — perpetual agent loops require two-level supervision and progress liveness
+
+- **Rule ID:** LR-026
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Agent Control, autonomous swarms, long-running local automation
+- **Rule:** A perpetual swarm must not be implemented as an unbounded respawn loop. Persist standing intent outside workers; distinguish progress liveness from process heartbeat; preserve takeover evidence before replacing a stuck owned worker; block replacements while the execution provider is capacity-limited; rate-limit repeated wave starts with cooldown/backoff; and run the controller under an independent host watchdog with its own restart policy.
+- **Trigger / evidence:** The Perpetual Machine requirement exposed that existing bounded autopilot, tail recovery, and startup restore each covered only one failure domain: none alone could both create new waves indefinitely, replace progress-stalled lanes, and recover the controller process itself.
+- **Rationale:** A single self-supervising loop cannot recover when its own process is dead, while blind child respawn can destroy partial work or amplify provider outages into restart storms.
+- **Enforcement:** Perpetual Machine decisions are pure/tested, provider capacity is checked before destructive replacement, stale replacement persists takeover state before proven stop, wave-start history drives restart-intensity cooldown, and Windows Task Scheduler/Startup fallback supervise the manager outside Node.
+- **Supersedes:** none
+- **Superseded by:** none
+
