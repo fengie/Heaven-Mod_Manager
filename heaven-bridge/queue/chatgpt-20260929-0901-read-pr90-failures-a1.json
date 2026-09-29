@@ -1,0 +1,17 @@
+{
+  "id": "chatgpt-20260929-0901-read-pr90-failures-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_read_many",
+  "params": {
+    "paths": [
+      "C:\\Users\\Xxkan\\mhw-mods-pr90-integration\\BuildLogs\\verification-report-20260929-045649.json",
+      "C:\\Users\\Xxkan\\mhw-mods-pr90-integration\\BuildLogs\\verification-report-20260929-045649.md",
+      "C:\\Users\\Xxkan\\mhw-mods-pr90-integration\\.verification\\stage-status.json"
+    ],
+    "offset": 0,
+    "length": 5000
+  },
+  "created_at": "2026-09-29T09:01:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
