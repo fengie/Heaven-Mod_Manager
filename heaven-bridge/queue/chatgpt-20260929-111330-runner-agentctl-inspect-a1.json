@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:13:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "command": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$services=@(Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'actions.runner*' -or $_.DisplayName -like '*GitHub Actions Runner*' } | Select-Object Name,DisplayName,Status,StartType)\n$procs=@(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match 'Runner\\.(Listener|Worker)|run\\.cmd' } | Select-Object Id,ProcessName,Path)\n$runnerDirs=@('C:\\actions-runner','C:\\Users\\Xxkan\\actions-runner','C:\\Users\\Xxkan\\github-actions-runner') | ForEach-Object { [pscustomobject]@{path=$_;exists=(Test-Path $_)} }\n$runnerApi=$null\ntry { $runnerApi = gh api repos/fengie/mhw-mods/actions/runners --jq '{total_count:.total_count,runners:[.runners[]|{id,name,os,status,busy,labels:[.labels[].name]}]}' 2>$null } catch { $runnerApi = \"gh-api-error: $($_.Exception.Message)\" }\n$agentStatus=$null\ntry { $agentStatus=(Invoke-RestMethod 'http://127.0.0.1:7331/api/status' -TimeoutSec 5 | ConvertTo-Json -Depth 8 -Compress) } catch { $agentStatus=\"agentctl-api-error: $($_.Exception.Message)\" }\n$git=@{}\nif(Test-Path $repo){ Push-Location $repo; try { $git=@{branch=(git branch --show-current); head=(git rev-parse HEAD); status=(git status --short); originMain=(git rev-parse origin/main)} } finally { Pop-Location } }\n[pscustomobject]@{services=$services;processes=$procs;runnerDirs=$runnerDirs;runnerApi=$runnerApi;agentStatus=$agentStatus;git=$git} | ConvertTo-Json -Depth 10 -Compress",
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
