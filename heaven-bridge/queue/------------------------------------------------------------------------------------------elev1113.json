@@ -1,0 +1,10 @@
+{
+  "id": "------------------------------------------------------------------------------------------elev1113",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:13:20Z",
+  "ttl_seconds": 21600,
+  "action": "powershell",
+  "priority": "highest",
+  "payload": "$identity=[Security.Principal.WindowsIdentity]::GetCurrent(); $principal=New-Object Security.Principal.WindowsPrincipal($identity); $elevated=$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); $runLevel=$null; try{$runLevel=[string](Get-ScheduledTask -TaskName 'Heaven Local Bridge' -ErrorAction Stop).Principal.RunLevel}catch{}; [ordered]@{elevated=[bool]$elevated; task_run_level=$runLevel; process_id=$PID} | ConvertTo-Json -Compress",
+  "timeout_seconds": 60
+}
