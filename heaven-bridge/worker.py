@@ -82,6 +82,17 @@ CONTROL_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "controller_checkpoint",
     "proc_read", "proc_input", "proc_kill", "proc_list_sessions",
 }
+JOB_PRIORITY_RANK = {
+    "highest": 0,
+    "critical": 0,
+    "urgent": 0,
+    "high": 1,
+    "normal": 2,
+    "default": 2,
+    "low": 3,
+    "lowest": 4,
+}
+
 RAW_ACTIONS = {"powershell", "cmd", "python", "codex"}
 
 
@@ -2200,13 +2211,34 @@ def restore_cached_result(job_id, row):
         return False
 
 
+def queue_order_key(path):
+    """Order control jobs first, then declared priority, then FIFO created_at.
+
+    Malformed jobs stay processable so the normal validation path can publish a
+    structured failure instead of letting one bad queue file break a sweep.
+    """
+    try:
+        job = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return (1, JOB_PRIORITY_RANK["normal"], 0.0, path.name)
+
+    action = str(job.get("action") or job.get("kind") or "codex").lower()
+    control_rank = 0 if action in CONTROL_ACTIONS else 1
+    priority = JOB_PRIORITY_RANK.get(str(job.get("priority") or "normal").strip().lower(), JOB_PRIORITY_RANK["normal"])
+    try:
+        created_rank = parse_time(job.get("created_at")).timestamp()
+    except Exception:
+        created_rank = 0.0
+    return (control_rank, priority, created_rank, path.name)
+
+
 def process_queue(executor):
     git_sync()
     QUEUE.mkdir(parents=True, exist_ok=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
 
-    files = sorted(QUEUE.glob("*.json"))
+    files = sorted(QUEUE.glob("*.json"), key=queue_order_key)
     for path in files:
         job_id = path.stem
         if not safe_id(job_id):
