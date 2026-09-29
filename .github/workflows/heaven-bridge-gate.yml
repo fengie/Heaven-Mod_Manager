@@ -29,7 +29,9 @@ permissions:
 
 jobs:
   verify-windows:
-    runs-on: windows-latest
+    name: Verify on Heaven self-hosted runner
+    runs-on: [self-hosted, Windows, X64, heaven]
+    timeout-minutes: 20
     steps:
       - name: Check out exact bridge source
         uses: actions/checkout@v4
