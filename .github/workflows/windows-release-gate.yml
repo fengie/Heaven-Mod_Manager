@@ -90,6 +90,7 @@ jobs:
 
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: windows-release-evidence-${{ github.sha }}
@@ -116,7 +117,7 @@ jobs:
           }
           $remoteMain = (git rev-parse origin/main).Trim()
           if ($remoteMain -ne $env:GITHUB_SHA) {
-            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in the uploaded artifact."
+            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in the workflow logs and in the uploaded artifact when repository artifact quota permits."
             exit 0
           }
 
@@ -159,7 +160,7 @@ jobs:
               }
               $remoteMain = (git rev-parse origin/main).Trim()
               if ($remoteMain -ne $env:GITHUB_SHA) {
-                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the uploaded artifact."
+                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the workflow logs and in the uploaded artifact when repository artifact quota permits."
                 exit 0
               }
               throw "Failed to persist verification state while origin/main still points at exact source $env:GITHUB_SHA."
