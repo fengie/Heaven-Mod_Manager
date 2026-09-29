@@ -1,3 +1,25 @@
+# v8.8.14 — Startup performance and diagnostic I/O reduction
+
+- Defer Profiles, History, and Shared Files data loading until those tabs are opened instead of blocking first usable UI.
+- Keep routine method START/PASS/PASS-CHECK trace detail opt-in while retaining exception observation and error diagnostics.
+- Batch RUNNING startup-diagnostic JSON rewrites while forcing failure and final-completion persistence.
+- Add a reproducible Heaven startup benchmark that compares exact current main against the candidate on the same runner with 3 cold-state and 3 warm-state runs over an 80-mod / 2,000-file fixture.
+- Add regression guards for lazy secondary-page startup behavior and diagnostic trace/write semantics.
+
+# v8.8.13 — Repeatable recipe family restore
+
+- Make repeated explicit family restoration from the same portable recipe idempotent instead of misclassifying the manager-created local family as a conflict.
+- Recognize only a complete `imported:` family whose membership and roles still exactly match the recipe; preserve fail-closed behavior for mixed, manual, partial, or changed local families.
+- Add a regression requiring the second identical restore to return zero changes.
+
+# v8.8.12 — Import publication isolation
+
+- Stage manual archive, Smart Inbox, and FOMOD work in a manager-owned sibling workspace outside the catalog-visible `ModsRoot`.
+- Publish completed imports only after validation/normalization through one final same-volume directory move.
+- Keep failed, canceled, or crash-residue staging structurally invisible to `CatalogService.RefreshFoldersAsync`, preventing persistent ghost mod rows from partial imports.
+- Preserve the source Inbox item until publication succeeds and keep cleanup failures secondary to the original operation outcome.
+- Add deterministic regressions for mixed failed/successful Smart Inbox runs, failed manual archive publication, and pending FOMOD preparation visibility.
+
 # v8.8.11 — First-time user UX overhaul
 
 - Replace ambiguous/developer-centric primary labels with explicit actions such as **Install Mod**, **Apply Mod Changes**, **Launch Game**, and **Launch Without Mods**.
