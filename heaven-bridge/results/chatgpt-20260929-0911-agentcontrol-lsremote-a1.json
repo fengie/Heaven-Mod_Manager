@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0911-agentcontrol-lsremote-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:11:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:11:44.871415+00:00",
+  "finished_at": "2026-09-29T09:11:46.125221+00:00",
+  "stdout": "1583300aea9ac3ae20750d1ad0af6592f6993acc\trefs/heads/main\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0911-agentcontrol-lsremote-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0911-agentcontrol-lsremote-a1.stderr.log",
+    "stdout_bytes": 57,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "65c169dea059ebe8a133fd0b2e0b80591b7840ce50f9579f24f9eb9da3226936"
+}
