@@ -695,6 +695,16 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(row["protocol"], hb.PROTOCOL)
         self.assertIn("updated_at", row)
 
+    def test_loop_progress_is_pid_bound_and_local(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_PROGRESS", Path(td) / "worker-loop-progress.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_loop_progress()
+            row = json.loads(hb.LOCAL_PROGRESS.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertIn("updated_at", row)
+
     def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")
@@ -709,6 +719,8 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("worker-local-heartbeat.json", watchdog)
         self.assertIn("Startup fallback handed ownership to the scheduled watchdog", watchdog)
         self.assertIn("local heartbeat stale", watchdog)
+        self.assertIn("worker queue loop stalled", watchdog)
+        self.assertIn("worker-loop-progress.json", watchdog)
         self.assertNotIn("git -C", watchdog)
         self.assertIn("@('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
 
