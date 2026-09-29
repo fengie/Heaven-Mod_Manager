@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0823-bootstrap-read",
+  "state": "running",
+  "action": "proc_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:23:12.360531+00:00"
+}
