@@ -44,7 +44,7 @@ import {
   inspectHeavenBridge
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
-import { chooseBranchPlan } from "./lib/branch-lifecycle.mjs";
+import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -422,6 +422,172 @@ async function remoteHeadSha(branch = "main") {
   }
 }
 
+async function branchTipOnMain(branchSha) {
+  if (!branchSha) return false;
+  try {
+    await git(["merge-base", "--is-ancestor", branchSha, "origin/main"]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function cleanupIntegratedBranchForTask(agent, task) {
+  const branchName = String(task?.branchName || agent?.branchName || "").trim();
+  if (!branchName || BRANCH_POLICY_RESERVED.includes(branchName)) {
+    return { status: "preserved", reason: "reserved-or-missing-branch", remotePresent: false };
+  }
+
+  await git(["fetch", "origin", "--prune"]);
+
+  let branchSha = agent?.currentSha || task?.branchSha || null;
+  if (!branchSha) {
+    for (const ref of [`refs/heads/${branchName}`, `refs/remotes/origin/${branchName}`]) {
+      try {
+        branchSha = await git(["rev-parse", "--verify", ref]);
+        if (branchSha) break;
+      } catch {}
+    }
+  }
+
+  const remotePresentBefore = Boolean(await remoteHeadSha(branchName));
+  if (!branchSha) {
+    return {
+      status: remotePresentBefore ? "cleanup-required" : "preserved",
+      reason: remotePresentBefore ? "branch-tip-unresolved" : "branch-already-absent-without-tip-proof",
+      remotePresent: remotePresentBefore,
+      branchSha: null
+    };
+  }
+
+  const integrated = await branchTipOnMain(branchSha);
+  if (!integrated) {
+    return {
+      status: "preserved",
+      reason: "unique-or-unmerged-work",
+      remotePresent: remotePresentBefore,
+      branchSha
+    };
+  }
+
+  if (agent?.worktree && fs.existsSync(agent.worktree)) {
+    const dirty = await git(["status", "--porcelain"], agent.worktree);
+    if (dirty) {
+      return {
+        status: "cleanup-required",
+        reason: "dirty-worktree-after-integration",
+        remotePresent: remotePresentBefore,
+        branchSha
+      };
+    }
+    try {
+      await git(["worktree", "remove", agent.worktree]);
+    } catch (error) {
+      return {
+        status: "cleanup-required",
+        reason: `worktree-remove-failed:${error.message || error}`,
+        remotePresent: remotePresentBefore,
+        branchSha
+      };
+    }
+  }
+
+  try {
+    await git(["rev-parse", "--verify", `refs/heads/${branchName}`]);
+    await git(["branch", "-D", branchName]);
+  } catch {}
+
+  const remotePresent = Boolean(await remoteHeadSha(branchName));
+  const disposition = cleanupDisposition({
+    branchName,
+    branchSha,
+    mainContainsBranchTip: true,
+    worktreeDirty: false,
+    deletionSucceeded: !remotePresent
+  });
+
+  return {
+    status: disposition.status,
+    reason: remotePresent ? "remote-branch-pending-lifecycle-enforcer" : disposition.reason,
+    remotePresent,
+    branchSha
+  };
+}
+
+let branchCleanupReconcileRunning = false;
+async function reconcileIntegratedBranchCleanup() {
+  if (branchCleanupReconcileRunning || degradedReason) return;
+  branchCleanupReconcileRunning = true;
+  try {
+    const initial = loadState();
+    const candidates = initial.tasks
+      .filter(task => ["candidate", "cleanup-required"].includes(String(task.status || "")))
+      .map(task => ({ taskId: task.id, agentId: task.agentId, branchName: task.branchName }));
+
+    for (const candidate of candidates) {
+      const snapshot = loadState();
+      const task = snapshot.tasks.find(item => item.id === candidate.taskId);
+      const agent = snapshot.agents.find(item => item.id === candidate.agentId);
+      if (!task || !agent || agent.status !== "done") continue;
+
+      let outcome;
+      try {
+        outcome = await cleanupIntegratedBranchForTask(agent, task);
+      } catch (error) {
+        outcome = {
+          status: "cleanup-required",
+          reason: `cleanup-reconciliation-error:${error.message || error}`,
+          remotePresent: true,
+          branchSha: agent.currentSha || null
+        };
+      }
+
+      const current = loadState();
+      const currentTask = current.tasks.find(item => item.id === candidate.taskId);
+      const currentAgent = current.agents.find(item => item.id === candidate.agentId);
+      if (!currentTask || !currentAgent || currentAgent.status !== "done") continue;
+
+      currentTask.branchCleanup = {
+        status: outcome.status,
+        reason: outcome.reason,
+        branchSha: outcome.branchSha || currentAgent.currentSha || null,
+        remotePresent: Boolean(outcome.remotePresent),
+        checkedAt: isoNow()
+      };
+
+      if (outcome.status === "done") {
+        currentTask.status = "done";
+        currentTask.finishedAt ||= isoNow();
+        currentTask.blockers = (currentTask.blockers || []).filter(item => item !== "branch-cleanup");
+        currentTask.nextAction = null;
+        addEvent(current, "branch.cleanup-complete", `${candidate.branchName} cleanup verified; task is complete`, {
+          agentId: currentAgent.id,
+          taskId: currentTask.id,
+          branchName: candidate.branchName
+        });
+      } else if (outcome.status === "cleanup-required") {
+        currentTask.status = "cleanup-required";
+        currentTask.blockers = Array.from(new Set([...(currentTask.blockers || []), "branch-cleanup"]));
+        currentTask.nextAction = outcome.remotePresent
+          ? "Close/merge any remaining PR and let Branch Lifecycle Cleanup remove the proven-safe remote branch; completion will retry automatically."
+          : "Resolve the recorded branch cleanup failure; the task cannot become done until cleanup verifies.";
+        addEvent(current, "branch.cleanup-required", `${candidate.branchName} still requires cleanup: ${outcome.reason}`, {
+          agentId: currentAgent.id,
+          taskId: currentTask.id,
+          branchName: candidate.branchName
+        });
+      } else {
+        currentTask.status = "candidate";
+        currentTask.nextAction = "Integrate the branch into current origin/main before cleanup can run; unique/unmerged work is preserved.";
+      }
+
+      saveState(current);
+    }
+  } finally {
+    branchCleanupReconcileRunning = false;
+  }
+}
+
 function isTerminalStatus(status) {
   return ["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"].includes(status);
 }
@@ -645,6 +811,14 @@ function acquireLease(state, { boundary, agentId, taskId, branchName }) {
   if (conflict) {
     throw new Error(`Mutable boundary "${boundary}" is already leased by ${conflict.ownerAgentId}.`);
   }
+  const branchConflict = state.leases.find(lease =>
+    lease.status === "active" &&
+    lease.branchName === branchName &&
+    lease.ownerAgentId !== agentId
+  );
+  if (branchConflict) {
+    throw new Error(`Branch "${branchName}" is already leased by ${branchConflict.ownerAgentId}.`);
+  }
 
   const acquiredAt = isoNow();
   const lease = {
@@ -799,31 +973,32 @@ async function deployOne({
 
   const placement = await resolveWorkerPlacement(state, machine, { repositoryWriteAuthorized });
   const assignedMachine = placement.machine;
-  const base = (baseBranch || "main").trim();
-  const baseRef = await resolveBaseRef(base);
-  const baseSha = await git(["rev-parse", baseRef]);
-
-  const stamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
-  const suffix = Math.random().toString(36).slice(2, 7);
-  const id = `${role}-${stamp}-${suffix}`;
-  const taskId = `task-${stamp}-${suffix}`;
-  const generatedBranchName = `agent/control-${role}-${slugify(task)}-${stamp}-${suffix}`;
+  const requestedBase = (baseBranch || "main").trim();
   const branchInventory = await listBranchInventory();
   const checkedOutBranches = await listCheckedOutBranches();
   const branchPlan = chooseBranchPlan({
     task: task.trim(),
     boundary: (boundary || "").trim(),
     lane,
-    baseBranch: base,
+    baseBranch: requestedBase,
     branches: branchInventory,
     leases: state.leases,
     tasks: state.tasks,
     agents: state.agents,
     checkedOutBranches
   });
+
+  const stamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+  const suffix = Math.random().toString(36).slice(2, 7);
+  const id = `${role}-${stamp}-${suffix}`;
+  const taskId = `task-${stamp}-${suffix}`;
+  const generatedBranchName = `agent/control-${role}-${slugify(task)}-${stamp}-${suffix}`;
   const branchName = branchPlan.mode === "reused" && branchPlan.branchName
     ? branchPlan.branchName
     : generatedBranchName;
+  const effectiveBase = branchPlan.mode === "reused" ? branchName : requestedBase;
+  const baseRef = await resolveBaseRef(effectiveBase);
+  const baseSha = await git(["rev-parse", baseRef]);
   const mutableBoundary = (boundary || "").trim() || `isolated:${branchName}`;
   const normalizedPriority = normalizePriority(priority);
   const taskCapability = createTaskCapability();
@@ -858,9 +1033,13 @@ async function deployOne({
     agentId: id,
     targetAgentId,
     machine: assignedMachine,
-    baseBranch: base,
+    baseBranch: effectiveBase,
+    requestedBaseBranch: requestedBase,
     baseSha,
     branchName,
+    branchDecision: branchPlan.mode,
+    branchDecisionReason: branchPlan.reason,
+    branchCandidates: branchPlan.candidates,
     branchPlan: {
       mode: branchPlan.mode,
       reason: branchPlan.reason,
@@ -916,7 +1095,7 @@ async function deployOne({
     prompt = buildPrompt({
       role,
       task,
-      baseBranch: base,
+      baseBranch: effectiveBase,
       baseSha,
       branchName,
       taskId,
@@ -1064,9 +1243,13 @@ async function deployOne({
     heartbeatAt: startedAt,
     lastProgressAt: startedAt,
     machine: assignedMachine,
-    baseBranch: base,
+    baseBranch: effectiveBase,
+    requestedBaseBranch: requestedBase,
     baseSha,
     branchName,
+    branchDecision: branchPlan.mode,
+    branchDecisionReason: branchPlan.reason,
+    branchCandidates: branchPlan.candidates,
     worktree,
     leaseId: lease.id,
     boundary: mutableBoundary,
@@ -1094,7 +1277,13 @@ async function deployOne({
     startedTask.startedAt = agent.startedAt;
     startedTask.updatedAt = agent.updatedAt;
   }
-  addEvent(startedState, "agent.started", `${id} started on ${assignedMachine}`, { agentId: id, taskId });
+  addEvent(startedState, "agent.started", `${id} started on ${assignedMachine}`, {
+    agentId: id,
+    taskId,
+    branchName,
+    branchDecision: branchPlan.mode,
+    branchDecisionReason: branchPlan.reason
+  });
   saveState(startedState);
   children.set(id, child);
 
@@ -1411,7 +1600,10 @@ async function observedBranches(state = refreshState()) {
       "refs/remotes/origin/support",
       "refs/remotes/origin/feature",
       "refs/remotes/origin/ui",
-      "refs/remotes/origin/integration"
+      "refs/remotes/origin/integration",
+      "refs/remotes/origin/fix",
+      "refs/remotes/origin/recovery",
+      "refs/remotes/origin/ops"
     ]);
     if (!output) return [];
 
@@ -1427,7 +1619,10 @@ async function observedBranches(state = refreshState()) {
         managed: Boolean(managed),
         agentId: managed?.id || null,
         status: managed?.status || "observed",
-        task: managed?.task || null
+        task: managed?.task || null,
+        branchDecision: state.tasks.find(task => task.branchName === branchName)?.branchDecision || null,
+        branchDecisionReason: state.tasks.find(task => task.branchName === branchName)?.branchDecisionReason || null,
+        branchCleanup: state.tasks.find(task => task.branchName === branchName)?.branchCleanup || null
       };
     });
   } catch {
@@ -2860,3 +3055,9 @@ const autopilotTimer = setInterval(() => {
   void autopilotStep();
 }, AUTOPILOT_TICK_MS);
 autopilotTimer.unref?.();
+
+const branchCleanupTimer = setInterval(() => {
+  void reconcileIntegratedBranchCleanup();
+}, 60_000);
+branchCleanupTimer.unref?.();
+void reconcileIntegratedBranchCleanup();
