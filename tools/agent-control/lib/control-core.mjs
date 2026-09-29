@@ -663,7 +663,17 @@ export function buildSwarmPromptEvolutionContext(state, {
 } = {}) {
   const tasks = Array.isArray(state?.tasks) ? [...state.tasks] : [];
   const promptHistory = Array.isArray(state?.promptHistory) ? state.promptHistory : [];
-  const recentTasks = tasks.sort((a, b) => promptEvolutionTimestamp(b) - promptEvolutionTimestamp(a));
+  const scopedTasks = tasks.filter(item =>
+    (waveId && item?.swarmWaveId === waveId) ||
+    (workflowId && item?.workflowId === workflowId)
+  );
+  const relevantTasks = scopedTasks.length ? scopedTasks : tasks;
+  const scopedPromptHistory = promptHistory.filter(item =>
+    (waveId && item?.swarmWaveId === waveId) ||
+    (workflowId && item?.workflowId === workflowId)
+  );
+  const relevantPromptHistory = scopedPromptHistory.length ? scopedPromptHistory : promptHistory;
+  const recentTasks = relevantTasks.sort((a, b) => promptEvolutionTimestamp(b) - promptEvolutionTimestamp(a));
   const completedStatuses = new Set(["done", "completed", "integrated", "shipped"]);
   const activeStatuses = new Set(["reserved", "starting", "running", "working", "tool_wait", "reviewing", "verifying", "idle"]);
   const problemStatuses = new Set(["failed", "blocked", "capacity-blocked", "interrupted", "orphaned", "stale", "disconnected"]);
@@ -685,7 +695,7 @@ export function buildSwarmPromptEvolutionContext(state, {
         : [];
       return blockers.length ? `${summarizePromptEvolutionTask(item)}; blockers: ${blockers.join(" / ")}` : summarizePromptEvolutionTask(item);
     });
-  const lineage = promptHistory.slice(0, 5).map(item => {
+  const lineage = relevantPromptHistory.slice(0, 5).map(item => {
     const hash = promptEvolutionText(item?.sha256 || "unknown", 64).slice(0, 12);
     const template = promptEvolutionText(item?.templateId || "prompt", 48) || "prompt";
     const priorWave = promptEvolutionText(item?.swarmWaveId || "", 48);
