@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-perf-benchmark-stderr-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-perf-benchmark-001",
+    "stream": "stderr",
+    "offset": 0,
+    "length": 200000
+  },
+  "created_at": "2026-09-29T16:23:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
