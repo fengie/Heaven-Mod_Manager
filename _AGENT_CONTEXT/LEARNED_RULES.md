@@ -329,3 +329,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+---
+
+## LR-020 — operator validation instances must not masquerade as installed clients
+
+- **Rule ID:** LR-020
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** heaven2 UI validation, updater-installed clients, desktop shortcuts, operator-facing version verification
+- **Rule:** A development or validation instance of a user-facing application must not remain visible on the operator desktop after its validation purpose ends, and it must never be used as proof that the updater-managed installed client is current. Verify the installed client through its canonical launcher and process path/build identity, then clean up temporary validation processes.
+- **Trigger / evidence:** A v8.8.15 MHW Mod Manager validation build was left running from a HeavenBridgeSource/build-output path on heaven2 while the desktop shortcut correctly targeted the updater-managed packaged install, which was still on build 192/v8.8.14. The public build-193/v8.8.15 feed became available minutes later. The two visible windows therefore appeared to be an updated app and an old shortcut even though they were distinct installations. After the canonical install updated to build 193, launching the actual desktop shortcut was verified to start the packaged v8.8.15 executable.
+- **Rationale:** Operator-visible validation windows can be mistaken for the real installed product, especially when updater publication and client polling overlap. Folder names can also remain version-stamped from the original extraction even though updater-managed contents change in place.
+- **Enforcement:** Track and terminate non-installed validation app processes at task completion unless the user explicitly requests otherwise. For release/operator verification, launch the actual canonical shortcut or launcher and assert resulting executable path plus packaged build identity/version. Do not infer installed version from a parent folder name, shortcut name, or a separate validation window.
+- **Related policy:** `AGENTS.md` Operator validation / installed-client identity invariant.
+- **Supersedes:** none
+- **Superseded by:** none
