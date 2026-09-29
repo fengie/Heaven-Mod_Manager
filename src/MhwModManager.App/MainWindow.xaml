@@ -270,6 +270,9 @@
                                         <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show enabled mods whose files are completely replaced by other enabled mods."/>
                                     </StackPanel>
                                     <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
+                                    <TextBlock Text="AUTO SETUP" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="11,5" Margin="2,0" ToolTip="Automatically enable and apply the largest safe set of installed mods. Required dependencies and texture providers are included only when the complete setup stays conflict-free."/>
+                                    <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
                                     <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="Enable Visible Mods" Command="{Binding EnableSelectedCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Turn on every mod currently shown by the search and filters."/>
