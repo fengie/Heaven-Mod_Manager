@@ -1,9 +1,10 @@
 {
   "id": "---------validate-capacity-fallback-20260929-1103",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:05:15.389036+00:00"
+  "updated_at": "2026-09-29T11:05:53.827634+00:00",
+  "exit_code": 1
 }
