@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Check out exact source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Verify system Python
         shell: powershell
