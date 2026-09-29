@@ -29,9 +29,11 @@ Before using a generic/manual fallback for a task:
 
 When a reusable capability is missing or incomplete, update `PLUGIN_GAP_BACKLOG.md` immediately. Do not leave the idea only in chat or agent memory. Search active plugin branches/PRs first so the plan extends existing work rather than duplicating it.
 
+If the relevant plugin/connector/tool is **proven unavailable in the current runtime**, ordinary backlog capture is not enough. Follow `LOCAL_REPLACEMENT_PROTOCOL.md`: in the same execution cycle, record the outage evidence, create/update the plan, claim/start the local replacement project, and make the first concrete repository implementation move. Prefer a compatibility adapter over duplicating existing Heaven/bridge primitives.
+
 A gap entry must be implementation-ready enough for a future agent to pick up without the original conversation: triggering use case, proposed owner/plugin boundary, capability/API contract, security constraints, dependencies/reuse, acceptance tests, priority, and current status.
 
-The immediate user task should still proceed through the safest authorized fallback when possible. The backlog exists to eliminate repeated manual fallbacks over time, not to create artificial blockers.
+The immediate user task should still proceed through the safest authorized fallback when possible. Local replacement work exists to remove recurring external-plugin dependency over time, not to create artificial blockers or to bypass provider quotas/authentication.
 
 ## Existing Heaven Local Bridge compatibility
 
@@ -66,6 +68,10 @@ For Heaven plugin work:
 - `heaven-visual/` — local image probe/tile/resize/crop preprocessing.
 - `heaven-system-ops/` — Docker/WSL/Hyper-V/package/network/Tailscale/SSH/SCP operations.
 - `heaven-cluster/` — capability-aware multi-machine worker registry, selection, reservation, and dispatch.
+
+### Active local-replacement projects
+
+- `remote-desktop-commander-local/` — compatibility/parity layer that routes Remote Desktop Commander-style machine operations to existing Heaven Local Bridge/plugin primitives when the external connector is unavailable; current first milestone is structured storage-audit parity.
 
 Run the full plugin workspace gate with:
 
