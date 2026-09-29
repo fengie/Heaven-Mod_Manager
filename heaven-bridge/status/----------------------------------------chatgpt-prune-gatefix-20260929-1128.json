@@ -1,9 +1,10 @@
 {
   "id": "----------------------------------------chatgpt-prune-gatefix-20260929-1128",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:30:32.704239+00:00"
+  "updated_at": "2026-09-29T11:31:11.114796+00:00",
+  "exit_code": 0
 }
