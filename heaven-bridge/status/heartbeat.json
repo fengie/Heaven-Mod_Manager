@@ -4,27 +4,32 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T11:31:52.374492+00:00",
+  "updated_at": "2026-09-29T11:36:57.613602+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-104850-branch-zero-safe-clean-a1",
+      "id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:31:50.821878+00:00"
+      "started_at": "2026-09-29T11:33:23.184150+00:00"
     },
     {
-      "id": "chatgpt-20260929-104851-branch-converge",
+      "id": "branchzero-complete-workflows-final-reconcile-20260929-1136-a1",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:31:50.841109+00:00"
+      "started_at": "2026-09-29T11:36:17.727200+00:00"
     },
     {
-      "id": "chatgpt-20260929-1049-branchzero-locate-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:31:50.857027+00:00"
+      "id": "branchzero-read-cycle-20260929-1133",
+      "action": "fs_read",
+      "started_at": "2026-09-29T11:36:17.737050+00:00"
     },
     {
-      "id": "chatgpt-20260929-1049-hosted-actions-diagnose-a1",
+      "id": "chatgpt-20260929-105030-branch-zero-integrator-a1",
+      "action": "codex",
+      "started_at": "2026-09-29T11:36:41.003704+00:00"
+    },
+    {
+      "id": "-----------------------------------------runner-probe-1134",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:31:50.872038+00:00"
+      "started_at": "2026-09-29T11:36:56.111164+00:00"
     }
   ],
   "capabilities": [
