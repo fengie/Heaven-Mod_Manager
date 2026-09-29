@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0852-release-stale-runner-worker-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:52:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:55:10.649934+00:00",
+  "finished_at": "2026-09-29T12:55:17.495030+00:00",
+  "stdout": "STALE_WORKER_ALREADY_GONE_OR_IDENTITY_MISMATCH\r\n[{\"ProcessId\":52236,\"ParentProcessId\":15352,\"Name\":\"Runner.Listener.exe\",\"CreationDate\":\"\\/Date(1790682813777)\\/\"},{\"ProcessId\":91160,\"ParentProcessId\":52236,\"Name\":\"Runner.Worker.exe\",\"CreationDate\":\"\\/Date(1790686346563)\\/\"}]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0852-release-stale-runner-worker-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0852-release-stale-runner-worker-a1.stderr.log",
+    "stdout_bytes": 277,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "42f1a2469b53bf7d5c4e2aff1f563cb39634ff2f65344b14a5a6d767e55cad76"
+}
