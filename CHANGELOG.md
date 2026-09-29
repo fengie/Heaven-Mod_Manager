@@ -1,5 +1,6 @@
 # v8.8.19 — Auto Modder foundation
 
+- Keep updater progress reporting observational: a loading-screen callback failure is logged but cannot turn a healthy update into rollback or otherwise change update safety semantics.
 - Add a dedicated updater progress window with live prepare/install/restart/health-verification stages, an animated working state, safe rollback/error messaging, and automatic close after successful handoff.
 - Add the normalized Auto Mod Recipe v1 domain model and strict parser/semantic validator.
 - Add bounded whole-value input/catalog-property references; arbitrary expressions, scripts, reflection, process launch, network access, and unrestricted filesystem access remain unavailable to recipes.
