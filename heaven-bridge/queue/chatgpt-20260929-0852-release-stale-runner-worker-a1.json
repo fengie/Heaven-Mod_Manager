@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0852-release-stale-runner-worker-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\actions-runner-heaven",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $pidToStop=84736; $p=Get-CimInstance Win32_Process -Filter \"ProcessId=$pidToStop\" -ErrorAction SilentlyContinue; if($p -and $p.Name -eq 'Runner.Worker.exe' -and $p.ExecutablePath -like 'C:\\Users\\Xxkan\\actions-runner-heaven\\*'){ taskkill /PID $pidToStop /T /F | Out-String | Write-Output } else { Write-Output 'STALE_WORKER_ALREADY_GONE_OR_IDENTITY_MISMATCH' }; Start-Sleep -Seconds 5; Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -in @('Runner.Listener.exe','Runner.Worker.exe') -and $_.ExecutablePath -like 'C:\\Users\\Xxkan\\actions-runner-heaven\\*' } | Select-Object ProcessId,ParentProcessId,Name,CreationDate | ConvertTo-Json -Compress"
+  },
+  "created_at": "2026-09-29T12:52:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
