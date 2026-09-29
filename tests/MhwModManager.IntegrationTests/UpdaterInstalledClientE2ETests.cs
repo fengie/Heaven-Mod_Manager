@@ -15,9 +15,6 @@ public sealed class UpdaterInstalledClientE2ETests
     private const string OldTag = "updater-main-60";
     private const long OldBuild = 60;
     private const string OldSource = "ffd218b6ad4e9f4fea4b143d266712a6fa17a285";
-    private const long TargetBuild = 61;
-    private const string TargetSource = "5abe40304dfcb48f96e750bd7da3d0075315625b";
-
     private static readonly JsonSerializerOptions EvidenceJson = new(UpdateProtocol.Json)
     {
         WriteIndented = true
@@ -27,7 +24,7 @@ public sealed class UpdaterInstalledClientE2ETests
 
     [Fact]
     [Trait("Category", "UpdaterInstalledClientE2E")]
-    public async Task Published_build_60_to_61_and_fault_rollback_are_safe()
+    public async Task Published_build_60_to_latest_and_fault_rollback_are_safe()
     {
         if (!string.Equals(
                 Environment.GetEnvironmentVariable("MHW_RUN_UPDATER_INSTALLED_E2E"),
@@ -65,8 +62,6 @@ public sealed class UpdaterInstalledClientE2ETests
             ["oldTag"] = OldTag,
             ["oldBuild"] = OldBuild,
             ["oldSource"] = OldSource,
-            ["targetBuild"] = TargetBuild,
-            ["targetSource"] = TargetSource,
             ["startedUtc"] = DateTimeOffset.UtcNow
         };
 
@@ -78,6 +73,27 @@ public sealed class UpdaterInstalledClientE2ETests
             using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
             var oldRelease = await DownloadExactReleaseAsync(
                 http, token!, OldTag, OldBuild, OldSource, downloads, TestToken);
+
+            var oldIdentity = new UpdateBuildIdentity(
+                UpdateProtocol.BuildIdentitySchemaVersion,
+                UpdateProtocol.Channel,
+                oldRelease.Manifest.ProductVersion,
+                OldSource,
+                OldBuild,
+                oldRelease.Manifest.PublishedUtc);
+            var latest = await new GitHubUpdateSource(http).FindLatestAsync(
+                oldIdentity,
+                token!,
+                TestToken);
+            Assert.NotNull(latest);
+            Assert.True(
+                latest.Manifest.BuildNumber > 61,
+                $"Final installed-client E2E requires a post-BOM-fix immutable release newer than build 61; latest is {latest.Manifest.BuildNumber}.");
+
+            var targetBuild = latest.Manifest.BuildNumber;
+            var targetSource = latest.Manifest.SourceSha;
+            evidence["targetBuild"] = targetBuild;
+            evidence["targetSource"] = targetSource;
 
             ExtractPackage(oldRelease.ArchivePath, successInstall);
             await VerifyPublishedInstallAsync(
@@ -109,8 +125,8 @@ public sealed class UpdaterInstalledClientE2ETests
 
             var confirmed = await WaitForConfirmedTransactionAsync(
                 updaterRoot,
-                TargetBuild,
-                TargetSource,
+                targetBuild,
+                targetSource,
                 TimeSpan.FromMinutes(5),
                 TestToken);
 
@@ -122,8 +138,8 @@ public sealed class UpdaterInstalledClientE2ETests
             Assert.Equal(0, oldClient.ExitCode);
 
             var installedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(successInstall, TestToken);
-            Assert.Equal(TargetBuild, installedIdentity.BuildNumber);
-            Assert.Equal(TargetSource, installedIdentity.SourceSha, ignoreCase: true);
+            Assert.Equal(targetBuild, installedIdentity.BuildNumber);
+            Assert.Equal(targetSource, installedIdentity.SourceSha, ignoreCase: true);
 
             var targetManifest = await UpdatePackageVerifier.VerifyAsync(
                 confirmed.Request.StagingRoot,
@@ -132,8 +148,8 @@ public sealed class UpdaterInstalledClientE2ETests
             var stagedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(
                 confirmed.Request.StagingRoot,
                 TestToken);
-            Assert.Equal(TargetBuild, stagedIdentity.BuildNumber);
-            Assert.Equal(TargetSource, stagedIdentity.SourceSha, ignoreCase: true);
+            Assert.Equal(targetBuild, stagedIdentity.BuildNumber);
+            Assert.Equal(targetSource, stagedIdentity.SourceSha, ignoreCase: true);
 
             var successSentinelsAfter = await SnapshotSentinelsAsync(successInstall, TestToken);
             AssertSnapshotsEqual(successSentinelsBefore, successSentinelsAfter);
