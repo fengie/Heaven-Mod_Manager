@@ -1,0 +1,21 @@
+{
+  "id": "-----releasefix-finalgate-51af62-20260929-105425",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:54:25Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:55:18.348849+00:00",
+  "finished_at": "2026-09-29T10:55:20.977389+00:00",
+  "stdout": "REMOTE_MAIN_AT_START=049e644105fc3343afe8451dc540ee7a45f23ebc\r\nHEAD is now at 51af44b Test release policy workflow relevance\nSTART_DRIFT_DECISION=stale-main-release-input-change\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n   f508f35..049e644  main       -> origin/main\nPreparing worktree (detached HEAD 51af44b)\nrelease-relevant main drift before final gate: \r\nsrc/MhwModManager.Core/SmartPackPlanner.cs,tests/MhwModManager.Tests/SmartPackPlannerTests.cs\r\nAt line:1 char:1047\r\n+ ... n.Publish){ throw ('release-relevant main drift before final gate: '  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (release-relevan...PlannerTests.cs:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : release-relevant main drift before final gate: src/MhwModManager.Core/SmartPackPlanner.c \r\n   s,tests/MhwModManager.Tests/SmartPackPlannerTests.cs\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----releasefix-finalgate-51af62-20260929-105425.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----releasefix-finalgate-51af62-20260929-105425.stderr.log",
+    "stdout_bytes": 179,
+    "stderr_bytes": 793,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "67a63fe8ee5e2b4f60d28acc3307ce1c3d64525ae0899e7495b35b9f3dcbf002"
+}
