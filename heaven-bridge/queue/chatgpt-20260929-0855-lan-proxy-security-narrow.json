@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0855-lan-proxy-security-narrow",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$proxy='C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-agent-control-proxy.mjs'; $lines=if(Test-Path $proxy){Get-Content -LiteralPath $proxy}else{@()}; $hits=@($lines | Where-Object { $_ -match 'listen|host|auth|token|secret|header|bearer|7443|7331' } | ForEach-Object { $_ -replace '(?i)(token|secret|key)\\s*[:=]\\s*[\"'']?[^\"'';\\s]+','$1=<REDACTED>' }); $tunnel=@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match 'localtunnel' -and $_.CommandLine -match '7443' } | Select-Object ProcessId,Name,CommandLine); $listeners=@(Get-NetTCPConnection -LocalPort 7443 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess); [pscustomobject]@{proxy_exists=(Test-Path $proxy);security_lines=$hits;listeners=$listeners;tunnel_processes=$tunnel} | ConvertTo-Json -Depth 5 -Compress"
+  },
+  "created_at": "2026-09-29T08:55:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
