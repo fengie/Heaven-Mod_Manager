@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.9",
+  "currentVersion": "8.8.10",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.6 profile containment and responsive UI integration",
+  "immediateParentRevision": "v8.8.9 updater manifest compatibility and installed-client closure",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. v8.8.4 exact local source b48c1ff865ab41841d8c7eb931fca19f371f960e passed Verify-Release 25/25, FunctionVerifier 748/748 with 7,921 call sites and 0 uncovered/trace/parse gaps, Core 79/79, Automation 31/31, Integration 199/199, self-test 11/11; Build-Release passed ReadyToRun/helper publish, updater build 326, ZIP SHA-256 0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154. Hosted exact-main verification is still pending. Do not duplicate active Agent Control v2, frontend, updater, or game-profile lanes. Preserve the permanent continuity constitution and active Learned Rules, and explicitly require the successor to recursively propagate them to the agent after them. Do not break the chain.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.10 after workflow-feature closure. GitHub-hosted runner allocation is non-critical: current repository workflows route through the verified Heaven self-hosted runner. Treat Codex capacity/quota as a routing signal and use direct Heaven Bridge proc_run/build/test/filesystem/process/computer-control during cooldown. The immediate closure boundary is an exact-current-main Windows Release Gate followed by the installed-client build-60 update to the newly published immutable BOM-free release and deterministic rollback/sentinel proof. Preserve the permanent continuity constitution and active Learned Rules, and recursively propagate them.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
