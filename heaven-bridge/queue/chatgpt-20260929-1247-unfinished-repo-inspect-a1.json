@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1247-unfinished-repo-inspect-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $candidates=@('C:\\\\Users\\\\fengc\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\Desktop\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\Documents\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\source\\\\repos\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\repos\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\Projects\\\\mhw-mods','C:\\\\Users\\\\fengc\\\\HeavenBridgeRepo\\\\mhw-mods'); $repo=$null; foreach($p in $candidates){ if(Test-Path (Join-Path $p '.git')){ $remote=(& git -C $p remote get-url origin 2>$null); if($remote -match 'fengie/mhw-mods'){ $repo=$p; break } } }; if(-not $repo){ $repo=Get-ChildItem 'C:\\\\Users\\\\fengc' -Directory -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'mhw-mods' -and (Test-Path (Join-Path $_.FullName '.git')) } | Select-Object -First 1 -ExpandProperty FullName }; if(-not $repo){ throw 'mhw-mods checkout not found on heaven2' }; Write-Output ('REPO='+$repo); git -C $repo fetch origin --prune; Write-Output ('MAIN='+(& git -C $repo rev-parse origin/main)); Write-Output 'WORKTREES'; git -C $repo worktree list --porcelain; Write-Output 'STATUS'; git -C $repo status --short --branch; Write-Output 'REMOTE_BRANCHES'; git -C $repo for-each-ref --format='%(refname:short)|%(objectname:short)|%(committerdate:iso8601)' refs/remotes/origin | Sort-Object"
+  },
+  "created_at": "2026-09-29T16:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
