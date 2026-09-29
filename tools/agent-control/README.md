@@ -8,7 +8,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
-## What v0.5.6 does
+## What v0.5.7 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is preferred when already available, but local dispatch defaults to a direct non-Work worker path so execution does not stop merely because arbitrary ChatGPT conversations cannot be auto-created.
