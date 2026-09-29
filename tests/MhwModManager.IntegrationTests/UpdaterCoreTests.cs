@@ -82,6 +82,44 @@ public sealed class UpdaterCoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Public_release_feed_is_anonymous_and_uses_release_only_repository()
+    {
+        var current = Identity(10);
+        var m11 = Manifest(11);
+        var releases = ReleaseList((11, m11));
+        string? releasePath = null;
+        var sawAuthorization = false;
+        using var http = new HttpClient(new FakeHandler(request =>
+        {
+            sawAuthorization |= request.Headers.Authorization is not null;
+            if (request.RequestUri!.AbsolutePath.EndsWith("/releases", StringComparison.Ordinal))
+            {
+                releasePath = request.RequestUri.AbsolutePath;
+                return JsonResponse(releases);
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/manifest-11", StringComparison.Ordinal))
+                return JsonResponse(m11, "application/octet-stream");
+
+            throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+        }));
+        var source = new GitHubUpdateSource(http);
+
+        var candidate = await source.FindLatestAsync(
+            current,
+            token: null,
+            ct: TestToken,
+            repository: UpdateProtocol.PublicReleaseRepository);
+
+        Assert.NotNull(candidate);
+        Assert.Equal(11, candidate.Manifest.BuildNumber);
+        Assert.Equal(
+            $"/repos/{UpdateProtocol.PublicReleaseRepository}/releases",
+            releasePath);
+        Assert.False(sawAuthorization);
+    }
+
+    [Fact]
     public async Task Highest_newer_build_is_selected_even_if_release_order_is_stale()
     {
         var current = Identity(10);
