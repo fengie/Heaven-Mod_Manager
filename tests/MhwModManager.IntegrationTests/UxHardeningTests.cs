@@ -46,9 +46,11 @@ public sealed class UxHardeningTests
         var root=FindRepositoryRoot();
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
 
-        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\" Grid.Row=\"1\"",xaml);
+        Assert.Contains("<ScrollViewer x:Name=\"ModLibraryToolbar\"",xaml);
+        Assert.Contains("HorizontalScrollBarVisibility=\"Auto\"",xaml);
+        Assert.Contains("<StackPanel Orientation=\"Horizontal\" VerticalAlignment=\"Center\">",xaml);
         Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
-        Assert.Contains("<WrapPanel Grid.Column=\"1\" Margin=\"20,0,0,0\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+        Assert.Contains("<StackPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
     }
 
     [Fact]
