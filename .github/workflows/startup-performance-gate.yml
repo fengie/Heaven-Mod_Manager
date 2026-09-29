@@ -137,6 +137,14 @@ jobs:
           python .\candidate\plugins\verify.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Run exact release verification on candidate
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\Verify-Release.ps1"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C .\\candidate diff --check origin/main...HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Comment comparison on the open performance PR
         if: success()
         uses: actions/github-script@v7
