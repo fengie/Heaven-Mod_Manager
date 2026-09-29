@@ -1,3 +1,9 @@
+# v8.8.13 — Repeatable recipe family restore
+
+- Make repeated explicit family restoration from the same portable recipe idempotent instead of misclassifying the manager-created local family as a conflict.
+- Recognize only a complete `imported:` family whose membership and roles still exactly match the recipe; preserve fail-closed behavior for mixed, manual, partial, or changed local families.
+- Add a regression requiring the second identical restore to return zero changes.
+
 # v8.8.12 — Import publication isolation
 
 - Stage manual archive, Smart Inbox, and FOMOD work in a manager-owned sibling workspace outside the catalog-visible `ModsRoot`.
