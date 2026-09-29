@@ -209,3 +209,193 @@ test("failed repair stops when the repair budget is exhausted", () => {
   assert.equal(decision.kind, "gate");
   assert.match(decision.reason, /^repair-budget-exhausted:repair-failed$/);
 });
+
+
+test("perpetual mode ignores the ordinary transition budget", () => {
+  const current = state({
+    perpetual: true,
+    phase: "sync-plan",
+    iteration: 40,
+    maxIterations: 40
+  });
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.deepEqual(decision, { kind: "transition", phase: "implement", reason: "canonical-truth-reconciled" });
+});
+
+test("ordinary autopilot still stops at its transition budget", () => {
+  const current = state({
+    perpetual: false,
+    phase: "sync-plan",
+    iteration: 40,
+    maxIterations: 40
+  });
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.deepEqual(decision, { kind: "gate", reason: "iteration-budget-exhausted" });
+});
+
+test("approved perpetual candidate crosses into governed integration", () => {
+  const current = state({
+    perpetual: true,
+    phase: "integration-ready",
+    candidateAgentId: "main-1"
+  });
+  current.agents.push({ ...doneAgent("main-1"), reviewVerdict: "approved" });
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.equal(decision.kind, "transition");
+  assert.equal(decision.phase, "integrate");
+  assert.equal(decision.patch.phaseRetries, 0);
+});
+
+test("perpetual integration dispatches a worker when none exists", () => {
+  const current = state({
+    perpetual: true,
+    phase: "integrate",
+    candidateAgentId: "main-1",
+    integrationAgentId: null
+  });
+  current.agents.push({ ...doneAgent("main-1"), reviewVerdict: "approved" });
+  const decision = decideAutopilotAction(current, {
+    routingCurrent: true,
+    capacityAvailable: true,
+    integrationVerified: false
+  });
+  assert.deepEqual(decision, { kind: "dispatch-integration" });
+});
+
+test("integration without canonical-main proof retries with a fresh worker", () => {
+  const current = state({
+    perpetual: true,
+    phase: "integrate",
+    candidateAgentId: "main-1",
+    integrationAgentId: "integrator-1",
+    phaseRetries: 0,
+    maxPhaseRetries: 2
+  });
+  current.agents.push(
+    { ...doneAgent("main-1"), reviewVerdict: "approved" },
+    doneAgent("integrator-1")
+  );
+  const decision = decideAutopilotAction(current, {
+    routingCurrent: true,
+    capacityAvailable: true,
+    integrationVerified: false
+  });
+  assert.equal(decision.kind, "transition");
+  assert.equal(decision.phase, "integrate");
+  assert.equal(decision.patch.integrationAgentId, null);
+  assert.equal(decision.patch.phaseRetries, 1);
+});
+
+test("proven integration advances into repository hygiene", () => {
+  const current = state({
+    perpetual: true,
+    phase: "integrate",
+    candidateAgentId: "main-1",
+    integrationAgentId: "integrator-1"
+  });
+  current.agents.push(
+    { ...doneAgent("main-1"), reviewVerdict: "approved" },
+    doneAgent("integrator-1")
+  );
+  const decision = decideAutopilotAction(current, {
+    routingCurrent: true,
+    capacityAvailable: true,
+    integrationVerified: true
+  });
+  assert.deepEqual(decision, {
+    kind: "transition",
+    phase: "hygiene",
+    reason: "canonical-main-integration-proven",
+    patch: { phaseRetries: 0 }
+  });
+});
+
+test("completed hygiene advances into expansion", () => {
+  const current = state({
+    perpetual: true,
+    phase: "hygiene",
+    hygieneAgentId: "cleanup-1"
+  });
+  current.agents.push(doneAgent("cleanup-1"));
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.deepEqual(decision, {
+    kind: "transition",
+    phase: "expand",
+    reason: "repository-hygiene-complete",
+    patch: { phaseRetries: 0 }
+  });
+});
+
+test("completed expansion advances into a cycle checkpoint", () => {
+  const current = state({
+    perpetual: true,
+    phase: "expand",
+    expansionAgentId: "research-1"
+  });
+  current.agents.push(doneAgent("research-1"));
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.deepEqual(decision, {
+    kind: "transition",
+    phase: "cycle-checkpoint",
+    reason: "next-cycle-plan-ready",
+    patch: { phaseRetries: 0 }
+  });
+});
+
+test("cycle checkpoint resets per-cycle ownership and repeats", () => {
+  const current = state({
+    perpetual: true,
+    phase: "cycle-checkpoint",
+    cycleNumber: 4,
+    repairLoops: 2,
+    phaseRetries: 1,
+    implementationAgentId: "main-1",
+    candidateAgentId: "main-1",
+    verificationAgentId: "test-1",
+    reviewAgentId: "review-1",
+    repairAgentId: "repair-1",
+    integrationAgentId: "integration-1",
+    hygieneAgentId: "cleanup-1",
+    expansionAgentId: "research-1"
+  });
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.equal(decision.kind, "transition");
+  assert.equal(decision.phase, "sync-plan");
+  assert.equal(decision.patch.cycleNumber, 5);
+  assert.equal(decision.patch.repairLoops, 0);
+  assert.equal(decision.patch.phaseRetries, 0);
+  for (const key of [
+    "implementationAgentId",
+    "candidateAgentId",
+    "verificationAgentId",
+    "reviewAgentId",
+    "repairAgentId",
+    "integrationAgentId",
+    "hygieneAgentId",
+    "expansionAgentId"
+  ]) assert.equal(decision.patch[key], null);
+});
+
+test("perpetual phase retry budget stops repeated integration failure", () => {
+  const current = state({
+    perpetual: true,
+    phase: "integrate",
+    candidateAgentId: "main-1",
+    integrationAgentId: "integrator-1",
+    phaseRetries: 2,
+    maxPhaseRetries: 2
+  });
+  current.agents.push(
+    { ...doneAgent("main-1"), reviewVerdict: "approved" },
+    doneAgent("integrator-1")
+  );
+  const decision = decideAutopilotAction(current, {
+    routingCurrent: true,
+    capacityAvailable: true,
+    integrationVerified: false
+  });
+  assert.deepEqual(decision, {
+    kind: "gate",
+    reason: "phase-retry-budget-exhausted:integrate:candidate-not-on-canonical-main"
+  });
+});
