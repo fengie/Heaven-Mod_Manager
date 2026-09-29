@@ -127,7 +127,7 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
   assert.equal(plan.steps.filter(item => item.role === "main").length, 1);
   const support = plan.steps.filter(item => item.role === "support");
   assert.equal(support.length, 7);
-  assert.equal(new Set(support.map(item => item.lane)).size, 3);
+  assert.equal(new Set(support.map(item => item.lane)).size, 7);
   assert.ok(!support.some(item => item.lane === "architecture"));
 });
 
