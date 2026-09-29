@@ -37,7 +37,7 @@ Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is th
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
-The worker preserves v2 protocol compatibility and reports `worker_version: 3`.
+The worker preserves v2 protocol compatibility and reports `worker_version: 4`.
 
 Core capabilities:
 
@@ -47,6 +47,7 @@ Core capabilities:
 - chunked base64 binary read/write
 - synchronous terminal execution with persisted/paginated output
 - multiple persistent process sessions with input/read/kill
+- bounded structured `wait_for` polling for files, processes, sessions, and windows with cancellation/timeout evidence
 - process-tree termination
 - job cancellation and status
 - bounded concurrent job execution
@@ -79,10 +80,10 @@ Run these from the repository root on `heaven`:
 .\heaven-bridge\manage.ps1 RECOVER
 ```
 
-- `START` uses the hardened bootstrap when the canonical v3 worker is not already running, then performs the same health checks as `STATUS`.
-- `STATUS` verifies there is exactly one canonical v3 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current. It exits nonzero when any of those invariants are false.
+- `START` uses the hardened bootstrap when the canonical v4 worker is not already running, then performs the same health checks as `STATUS`.
+- `STATUS` verifies there is exactly one canonical v4 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current, the canonical task is configured at `Highest`, and the live heartbeat reports `elevated: true`. It exits nonzero when any of those invariants are false.
 - `TEST` compiles the worker and both committed test suites, runs both suites, and parses the PowerShell bootstrap/operator scripts.
-- `STOP` stops only the canonical v3 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
+- `STOP` stops only the canonical v4 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
 - `RECOVER` runs the hardened bootstrap and then requires `STATUS` to become healthy. Bootstrap preserves a dirty/diverged relay HEAD and tracked diff under `%USERPROFILE%\HeavenBridge\bootstrap-recovery` before realigning the disposable relay checkout.
 
 If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v3 heartbeat is healthy.
