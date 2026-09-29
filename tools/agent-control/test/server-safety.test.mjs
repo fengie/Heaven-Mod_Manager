@@ -569,6 +569,50 @@ test("perpetual one-click path renews ownership freshness without reviving stale
   assert.doesNotMatch(block, /\.\.\.state\.settings\?\.routingManifest/);
 });
 
+test("perpetual recovery preserves takeover before proven stop and persists replacement before redispatch", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function reconcilePerpetualReplacement");
+  const end = source.indexOf("function gateAutopilot", start);
+  assert.ok(start >= 0 && end > start);
+  const block = source.slice(start, end);
+
+  const capacityAt = block.indexOf("providerCapacityCircuit(state)");
+  const takeoverAt = block.indexOf("buildTakeoverForAgent(agent.id, { persist: true, safetyControl: true })");
+  const stopAt = block.indexOf("await stopAgent(agent.id)");
+  const pendingAt = block.indexOf("pendingReplacement: {");
+  const redispatchAt = block.indexOf("return reconcilePerpetualReplacement(refreshState())");
+
+  assert.ok(capacityAt >= 0);
+  assert.ok(takeoverAt > capacityAt);
+  assert.ok(stopAt > takeoverAt);
+  assert.ok(pendingAt > stopAt);
+  assert.ok(redispatchAt > pendingAt);
+  assert.match(block, /replacement-dispatch-failed/);
+  assert.match(block, /perpetual-stale-replacement/);
+  assert.match(block, /executionMode: "direct"/);
+});
+
+test("perpetual runtime errors and recoverable gates schedule retries instead of disabling the run", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function autopilotStep");
+  const end = source.indexOf("function sendJson", start);
+  assert.ok(start >= 0 && end > start);
+  const block = source.slice(start, end);
+  assert.match(block, /schedulePerpetualRetry\("autopilot-runtime-error"/);
+  assert.match(block, /perpetualRecoverableGatePatch/);
+  assert.match(block, /perpetualSafetyHoldReason/);
+  assert.match(block, /reconcilePerpetualReplacement/);
+});
+
+test("controller publishes process identity for ownership-verified watchdog restart", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /controller-process\.json/);
+  assert.match(source, /function writeControllerProcessIdentity/);
+  assert.match(source, /pid: process\.pid/);
+  assert.match(source, /writeControllerProcessIdentity\(\)/);
+  assert.match(source, /process\.once\("exit", clearControllerProcessIdentity\)/);
+});
+
 test("swarm recovery dispatch is evaluated before waiting for the active wave to finish", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const start = source.indexOf("async function reconcileSwarmTailRecoveries");
