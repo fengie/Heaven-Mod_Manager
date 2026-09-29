@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0906-a-list-recovered-a1",
+  "state": "running",
+  "action": "proc_list_sessions",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:06:12.442067+00:00"
+}
