@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0911-agentcontrol-cheap-http-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:11:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 25,
+    "command": "$ErrorActionPreference='Continue'; foreach($u in @('http://127.0.0.1:7331/','http://127.0.0.1:7331/api/providers')){ $sw=[Diagnostics.Stopwatch]::StartNew(); try{$r=Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 5; $sw.Stop(); [pscustomobject]@{url=$u;status=[int]$r.StatusCode;ms=$sw.ElapsedMilliseconds;len=$r.Content.Length}|ConvertTo-Json -Compress}catch{$sw.Stop(); [pscustomobject]@{url=$u;status=$null;ms=$sw.ElapsedMilliseconds;error=$_.Exception.Message}|ConvertTo-Json -Compress} }"
+  },
+  "priority": "highest"
+}
