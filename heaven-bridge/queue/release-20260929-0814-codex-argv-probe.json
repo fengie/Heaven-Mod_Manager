@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0814-codex-argv-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "python",
+    "command": "import subprocess, pathlib; c=str(pathlib.Path.home()/'AppData/Roaming/npm/codex.cmd'); p=subprocess.run(['cmd.exe','/d','/s','/c',c,'--version'],capture_output=True,text=True,timeout=30); print('RC='+str(p.returncode)); print('OUT='+p.stdout.strip()); print('ERR='+p.stderr.strip()); raise SystemExit(p.returncode)",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T08:14:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
