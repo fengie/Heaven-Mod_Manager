@@ -29,7 +29,8 @@ Use the existing Heaven Local Bridge relay and worker. This skill extends, rathe
 - `gui_mouse_click`: click at current or supplied coordinates; `count` is bounded.
 - `gui_mouse_scroll`: wheel input; `horizontal:true` for horizontal scrolling.
 - `gui_key`: named key input with optional modifiers. Use for shortcuts and navigation.
-- `gui_type`: Unicode text injection with Win32 SendInput.
+- `gui_type`: Unicode text injection with Win32 SendInput for non-secret text only.
+- `secret_type`: credential-safe typing by opaque one-time handle. The job carries no secret value; it must include the same non-secret `target` binding used when the secret was staged on heaven2.
 - `window_focus`: restore/focus a window.
 - `window_move`: move/resize a window.
 - `window_state`: hide, normal, maximize, show, minimize, or restore.
@@ -53,7 +54,9 @@ Mutation actions fail closed on ambiguous matches and on truncated searches unle
 
 ## Safety and privacy invariants
 
-The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state.
+The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, screenshots metadata, or controller state.
+
+For credentials, use `secret_type` only when `health.features.secret_input.available=true`. The credential must be staged interactively on heaven2 with `stage-secret.ps1`; GitHub receives only the opaque handle and target metadata. The worker focuses the target before consuming the handle, enforces TTL/destination/target binding and replay protection, deletes the envelope before typing, and returns payload-free success metadata. If consumption or typing fails, stage a fresh handle rather than retrying the old one.
 
 `clipboard_read` is privacy-sensitive because its returned text traverses the private relay. Do not use it speculatively. Require an explicit clipboard-read intent and set `allow_relay:true` only for that operation.
 
