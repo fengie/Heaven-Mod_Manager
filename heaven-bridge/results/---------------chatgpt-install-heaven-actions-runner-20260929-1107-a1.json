@@ -1,0 +1,21 @@
+{
+  "id": "---------------chatgpt-install-heaven-actions-runner-20260929-1107-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:07:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:11:29.132100+00:00",
+  "finished_at": "2026-09-29T11:11:32.573675+00:00",
+  "stdout": "",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-bootstrap-main'...\nInvoke-WebRequest : The process cannot access the file \r\n'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\actions-runner-win-x64-2.337.0.zip' because it is being used by another process.\r\nAt C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-bootstrap-main\\heaven-bridge\\install-github-runner.ps1:123 char:5\r\n+     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $archive\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [Invoke-WebRequest], IOException\r\n    + FullyQualifiedErrorId : System.IO.IOException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------chatgpt-install-heaven-actions-runner-20260929-1107-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------chatgpt-install-heaven-actions-runner-20260929-1107-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 699,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3c7450ebb1f2f762b844f1ba261eab4a3c8712e8e817475aa35fa97d4042e5c1"
+}
