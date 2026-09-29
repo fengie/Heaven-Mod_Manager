@@ -1,3 +1,11 @@
+# v8.8.10 — Workflow feature closure
+
+- Add a consolidated Loadouts, rules & diagnostics workspace for effective-file inspection, portable recipe import/export, inherited profile comparison, relationship graphs, rule editing, update migration, stability history, and adapter diagnostics.
+- Add guarded FOMOD parsing with choice visibility, dependency flags, cardinality validation, deterministic file planning, interactive import, and Smart Inbox hold behavior when installer choices are required.
+- Restore portable collection recipes with captured path/hash identity, Nexus-aware matching, wrong-version/hash/ambiguity diagnostics, profile import, and explicit family restoration without redistributing mod payloads.
+- Add profile inheritance/delta storage, compiled game-adapter contracts with conservative generic fallback, and workflow analysis for effective filesystem/provider changes.
+- Make update migration transactional across live files and selected rule/family/provider/supersession metadata so failure recovery and Undo keep filesystem and metadata on the same side of the commit.
+
 # v8.8.9 — Updater manifest compatibility and installed-client closure
 
 - Accept legacy UTF-8 BOM updater manifests already frozen in immutable releases while emitting all newly published update manifests as BOM-free UTF-8.
