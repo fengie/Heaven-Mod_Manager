@@ -1,0 +1,9 @@
+{
+  "id": "hcp140-rebased-exact-20260929-1151",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:57:21.697046+00:00"
+}
