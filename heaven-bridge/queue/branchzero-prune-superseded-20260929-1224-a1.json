@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-prune-superseded-20260929-1224-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:24:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$env:OPENCODE_CONFIG='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'\n$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'\n$prompt=@'\nYou are the branch-zero cleanup agent for fengie/mhw-mods. Work only on repository hygiene; do not edit product code.\n\nGoal: safely remove remote branches that are now proven merged or superseded after PR #151 and PR #153 landed on main.\n\nCurrent candidates to audit and delete if safe:\n- fix/heaven-runner-single-session-20260929\n- agent/hcp-processes-20260929-0804\n- agent/hcp-index-wiring-20260929\n- integration/hcp-index-wiring-20260929\n- integration/hcp-index-wiring-v040-20260929\n\nRules:\n1. Fetch origin --prune and resolve current main SHA first.\n2. Re-check each remote tip immediately before removal.\n3. If a branch has no unique useful content relative to current main, or is clearly superseded by PR #153/main, remove the remote branch.\n4. Never delete main or heaven-bridge.\n5. Do not touch these active lanes: fix/updater-bom-e2e-20260929, fix/updater-e2e-heaven-runner-20260929, codex/complete-mod-workflows.\n6. If any candidate contains unique useful work not on main, leave it and report why.\n7. Do not create replacement branches.\n8. End by printing the exact remaining origin/* branches excluding origin/HEAD.\n\nPerform the cleanup directly; do not merely recommend commands.\n'@\n& $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json $prompt\nif($LASTEXITCODE -ne 0){ throw 'LOCAL_AGENT_FAILED' }"
+  },
+  "priority": "highest"
+}
