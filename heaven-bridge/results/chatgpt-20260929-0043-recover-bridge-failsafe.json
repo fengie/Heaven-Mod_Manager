@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0043-recover-bridge-failsafe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T00:43:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:10:33.857489+00:00",
+  "finished_at": "2026-09-29T08:10:34.273680+00:00",
+  "stdout": "HEAVEN_BRIDGE_FAILSAFE_RECOVERY_SCHEDULED\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0043-recover-bridge-failsafe.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0043-recover-bridge-failsafe.stderr.log",
+    "stdout_bytes": 43,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "080d3cdb5e1506be84b32b023a69cd6e0f411190dd196fb4c62d2321ab11d24d"
+}
