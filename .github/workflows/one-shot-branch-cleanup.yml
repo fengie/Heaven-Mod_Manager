@@ -1,0 +1,130 @@
+name: One-shot obsolete branch cleanup
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-shot-branch-cleanup.yml"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete only pre-audited obsolete branches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const expected = new Map([
+              ["agent/architecture-explain-why", "74ba0a94464210f8ac88b5f6967706730908c855"],
+              ["agent/archive-streaming-cleanup-lr011-20260928", "7a08a2bc685a43a1d9639e14a270d9d57a996714"],
+              ["agent/auto-updater-20260928", "a83dc6e047ccf98e896f10c25772df99b95426d1"],
+              ["agent/auto-updater-postupload-publication-pre-reconcile2-20260928", "5e7966851b39ac0869f603e583bb58e24e984116"],
+              ["agent/cas-integrity-20260927", "265d58d6a9d4ffb6ab62cde987ba6ad335eae05a"],
+              ["agent/integrate-cas-support-audits-20260927", "108fff62a79f48cfcefc3dacc4979d5ec972d1ed"],
+              ["agent/integrate-support-audits-20260927", "a6cfef0bb161a7846cfab7c0761f9f4d90ea46e1"],
+              ["agent/integrate-support-followup-20260927-1510", "23ddc6a9dc788bf864e84161c41ea3283a4fcef7"],
+              ["agent/support-agent-control-plane-safety-audit-20260928", "64e2575f3c9e325d58fbd5ecf32c5e84b9c37323"],
+              ["agent/support-agent-control-v2-product-workflow-audit-v2-20260928", "7ea29df8f09adb0dfb1a3fdfb981f40ebb067a7a"],
+              ["agent/support-agent-control-v2-safety-verification-20260928", "0d48692749e3b25bf32c179e114323e4f45d05bd"],
+              ["agent/support-archive-streaming-failure-cleanup-audit-v2-20260928", "e24444c0c9867dda0dcf8b22db3f613878ae7478"],
+              ["agent/support-archive-streaming-provenance-20260928", "8d77b2090742a2fa662d6d38fc74ee769c601d0a"],
+              ["agent/support-duplicate-cleanup-recovery-audit-20260928", "f59ac98c8bcb9c3704db9b3b52acfccc470a4b51"],
+              ["agent/support-updater-cancellation-rollback-20260928", "cc946a169da249aab859a241d3bc27cbe2fa0a6c"],
+              ["agent/support-updater-publication-window-audit-20260928", "cd6e0a71433f16d039338059c61cdf1a31ba38a1"],
+              ["agent/support-updater-release-consumer-trust-20260928", "7db50dcd90f7b0300cb5a931c9c0c36b536e5a7c"],
+              ["agent/updater-tag-verification-race-20260928", "ca3727d67b24c77f861d6bf0bca46b1e63f5639a"],
+              ["agent/v881-evidence-metadata-sync-20260928", "8d79ec68539c0cddaaee8312c5ebaa7de367ddca"],
+              ["agent/windows-live-containment-hardening-v3", "df03d280c5b84c6a60058d55089abf76cc965c8b"],
+              ["hotfix/support-bundle-authorization-redaction-20260928", "fdf67b2c85b37b3a31c5156a6ed483323778350b"],
+              ["integration/pr35-archive-clean-20260928", "fd8b48fc92e6f5e64591fd1938b7ccce5ac94083"],
+              ["support/updater-c11-gap-closure-20260928", "b1d765cb93f2a735ad3f7c56795be5d6d6496413"],
+              ["support/updater-publication-race-20260928", "08054d96a8ba84819b6dfd775d56f9eeabc7986d"]
+            ]);
+
+            const { owner, repo } = context.repo;
+            const repoInfo = await github.rest.repos.get({ owner, repo });
+            if (repoInfo.data.default_branch !== "main") {
+              core.setFailed(`Default branch is ${repoInfo.data.default_branch}, not main; refusing cleanup.`);
+              return;
+            }
+
+            const initialMain = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
+            const baselineMainSha = initialMain.data.object.sha;
+            core.info(`CLEANUP_BASELINE_MAIN=${baselineMainSha}`);
+
+            const deleted = [];
+            const skipped = [];
+
+            for (const [branch, expectedSha] of expected) {
+              const latestMain = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
+              if (latestMain.data.object.sha !== baselineMainSha) {
+                core.setFailed(`main moved from ${baselineMainSha} to ${latestMain.data.object.sha}; stopping before further deletion.`);
+                break;
+              }
+
+              let ref;
+              try {
+                ref = await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
+              } catch (error) {
+                if (error.status === 404) {
+                  skipped.push({ branch, reason: "already absent" });
+                  continue;
+                }
+                throw error;
+              }
+
+              const actualSha = ref.data.object.sha;
+              if (actualSha !== expectedSha) {
+                skipped.push({ branch, reason: `tip changed: expected ${expectedSha}, found ${actualSha}` });
+                continue;
+              }
+
+              const detail = await github.rest.repos.getBranch({ owner, repo, branch });
+              if (detail.data.protected) {
+                skipped.push({ branch, reason: "protected" });
+                continue;
+              }
+
+              const pulls = await github.rest.pulls.list({
+                owner, repo, state: "open", head: `${owner}:${branch}`, per_page: 1
+              });
+              if (pulls.data.length > 0) {
+                skipped.push({ branch, reason: `open PR #${pulls.data[0].number}` });
+                continue;
+              }
+
+              const compare = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `${baselineMainSha}...${actualSha}`
+              });
+              if (compare.data.ahead_by !== 0) {
+                skipped.push({ branch, reason: `contains ${compare.data.ahead_by} commit(s) not in baseline main` });
+                continue;
+              }
+
+              await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
+
+              try {
+                await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
+                core.setFailed(`Deletion verification failed for ${branch}`);
+                break;
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+
+              deleted.push(branch);
+              core.info(`DELETED_BRANCH=${branch}`);
+            }
+
+            core.info(`DELETED_COUNT=${deleted.length}`);
+            core.info(`SKIPPED_COUNT=${skipped.length}`);
+            core.info(`DELETED_JSON=${JSON.stringify(deleted)}`);
+            core.info(`SKIPPED_JSON=${JSON.stringify(skipped)}`);
+            await core.summary
+              .addHeading("One-shot branch cleanup")
+              .addCodeBlock(JSON.stringify({ baselineMainSha, deleted, skipped }, null, 2), "json")
+              .write();
