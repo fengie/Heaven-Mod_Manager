@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1704-cancel-stale-ci-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:04:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:02:29.242464+00:00",
+  "finished_at": "2026-09-29T17:02:29.657623+00:00",
+  "stdout": "STALE_RUN_CANCEL_REQUESTS_SENT\r\n",
+  "stderr": "gh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:1\r\n+ gh run cancel 36600935355 --repo fengie/mhw-mods; gh run cancel 36601 ...\r\n+ ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:51\r\n+ gh run cancel 36600935355 --repo fengie/mhw-mods; gh run cancel 36601 ...\r\n+                                                   ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:101\r\n+ ... hw-mods; gh run cancel 36601107945 --repo fengie/mhw-mods; gh run can ...\r\n+                                                                ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:151\r\n+ ... hw-mods; gh run cancel 36601242332 --repo fengie/mhw-mods; gh run can ...\r\n+                                                                ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:201\r\n+ ... hw-mods; gh run cancel 36601088731 --repo fengie/mhw-mods; gh run can ...\r\n+                                                                ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1704-cancel-stale-ci-a1.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1704-cancel-stale-ci-a1.stderr.log",
+    "stdout_bytes": 32,
+    "stderr_bytes": 2573,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "e20d9167a9883c357d8c57607c702c1b732a151788231958bf6ef37e36572ef4"
+}
