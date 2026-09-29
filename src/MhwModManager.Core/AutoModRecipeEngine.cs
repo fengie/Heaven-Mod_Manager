@@ -17,24 +17,30 @@ public static class AutoModRecipeParser
         var dto = JsonSerializer.Deserialize<RecipeDto>(json, Options)
             ?? throw new JsonException("Auto Mod recipe JSON did not contain an object.");
 
-        var adapterCount = dto.Requires?.Adapters.Count ?? 0;
-        var adapters = new AutoModAdapterRequirement[adapterCount];
-        for (var i = 0; i < adapterCount; i++)
+        var requires = dto.Requires ?? throw new JsonException("Auto Mod recipe requires is required.");
+        var adapterDtos = requires.Adapters ?? throw new JsonException("Auto Mod recipe requires.adapters is required.");
+        var inputDtos = dto.Inputs ?? throw new JsonException("Auto Mod recipe inputs is required.");
+        var stepDtos = dto.Steps ?? throw new JsonException("Auto Mod recipe steps is required.");
+        var outputDtos = dto.Outputs ?? throw new JsonException("Auto Mod recipe outputs is required.");
+
+        var adapters = new AutoModAdapterRequirement[adapterDtos.Count];
+        for (var i = 0; i < adapterDtos.Count; i++)
         {
-            var requirement = dto.Requires!.Adapters[i];
+            var requirement = adapterDtos[i];
             adapters[i] = new AutoModAdapterRequirement(requirement.Id ?? string.Empty, requirement.Version ?? string.Empty);
         }
 
-        var inputKeys = dto.Inputs.Keys.ToArray();
+        var inputKeys = inputDtos.Keys.ToArray();
         Array.Sort(inputKeys, StringComparer.Ordinal);
         var inputs = new AutoModInputDescriptor[inputKeys.Length];
         for (var i = 0; i < inputKeys.Length; i++)
         {
             var key = inputKeys[i];
-            var input = dto.Inputs[key];
+            var input = inputDtos[key];
+            var inputType = input.Type ?? throw new JsonException(string.Concat("Auto Mod input type is required: ", key));
             inputs[i] = new AutoModInputDescriptor(
                 key,
-                input.Type,
+                inputType,
                 input.Label,
                 input.Required,
                 CloneNullable(input.Default),
@@ -46,14 +52,15 @@ public static class AutoModRecipeParser
                 input.Advanced);
         }
 
-        var steps = new AutoModRecipeStep[dto.Steps.Count];
-        for (var i = 0; i < dto.Steps.Count; i++)
+        var steps = new AutoModRecipeStep[stepDtos.Count];
+        for (var i = 0; i < stepDtos.Count; i++)
         {
-            var step = dto.Steps[i];
+            var step = stepDtos[i];
+            var operation = step.Op ?? throw new JsonException(string.Concat("Auto Mod step op is required: ", step.Id));
             steps[i] = new AutoModRecipeStep(
                 step.Id ?? string.Empty,
                 step.Adapter ?? string.Empty,
-                step.Op,
+                operation,
                 step.Source ?? string.Empty,
                 step.Target,
                 step.Field,
@@ -61,10 +68,10 @@ public static class AutoModRecipeParser
                 CloneNullable(step.Value));
         }
 
-        var outputs = new AutoModOutputDescriptor[dto.Outputs.Count];
-        for (var i = 0; i < dto.Outputs.Count; i++)
+        var outputs = new AutoModOutputDescriptor[outputDtos.Count];
+        for (var i = 0; i < outputDtos.Count; i++)
         {
-            var output = dto.Outputs[i];
+            var output = outputDtos[i];
             outputs[i] = new AutoModOutputDescriptor(output.Source ?? string.Empty, output.Path ?? string.Empty);
         }
 
@@ -106,14 +113,14 @@ public static class AutoModRecipeParser
         public string? Name { get; set; }
         public string? Game { get; set; }
         public RequiresDto? Requires { get; set; }
-        public Dictionary<string, InputDto> Inputs { get; set; } = new(StringComparer.Ordinal);
-        public List<StepDto> Steps { get; set; } = [];
-        public List<OutputDto> Outputs { get; set; } = [];
+        public Dictionary<string, InputDto>? Inputs { get; set; }
+        public List<StepDto>? Steps { get; set; }
+        public List<OutputDto>? Outputs { get; set; }
     }
 
     private sealed class RequiresDto
     {
-        public List<AdapterDto> Adapters { get; set; } = [];
+        public List<AdapterDto>? Adapters { get; set; }
     }
 
     private sealed class AdapterDto
@@ -124,7 +131,7 @@ public static class AutoModRecipeParser
 
     private sealed class InputDto
     {
-        public AutoModInputKind Type { get; set; }
+        public AutoModInputKind? Type { get; set; }
         public string? Label { get; set; }
         public bool Required { get; set; }
         public JsonElement? Default { get; set; }
@@ -140,7 +147,7 @@ public static class AutoModRecipeParser
     {
         public string? Id { get; set; }
         public string? Adapter { get; set; }
-        public AutoModOperationKind Op { get; set; }
+        public AutoModOperationKind? Op { get; set; }
         public string? Source { get; set; }
         public string? Target { get; set; }
         public string? Field { get; set; }
@@ -169,7 +176,7 @@ public static class AutoModRecipeValidator
         if (!IsRecipeId(recipe.Id))
             issues.Add(new AutoModValidationIssue("recipe.id", "Recipe ID must use the mhw.auto-mod.* stable-ID namespace.", recipe.Id));
 
-        if (!System.Version.TryParse(recipe.Version, out _))
+        if (!IsDottedVersion(recipe.Version))
             issues.Add(new AutoModValidationIssue("recipe.version", "Recipe version must be a dotted numeric version.", recipe.Version));
 
         if (string.IsNullOrWhiteSpace(recipe.Name))
@@ -325,7 +332,7 @@ public static class AutoModRecipeValidator
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!string.IsNullOrEmpty(value) &&
-            value.StartsWith("${", StringComparison.Ordinal) &&
+            value.Contains("${", StringComparison.Ordinal) &&
             !AutoModExpressionResolver.IsValidReferenceExpression(value))
         {
             issues.Add(new AutoModValidationIssue(code, "Expression must be one bounded input/catalog property reference.", subject));
@@ -365,6 +372,12 @@ public static class AutoModRecipeValidator
             or AutoModOperationKind.SetBitField
             or AutoModOperationKind.ReplaceEnum
             or AutoModOperationKind.ReplaceReference;
+    }
+
+    private static bool IsDottedVersion(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value.Contains('.', StringComparison.Ordinal) && System.Version.TryParse(value, out _);
     }
 
     private static bool IsRecipeId(string value)
@@ -555,6 +568,54 @@ public static class AutoModInputValidator
     }
 }
 
+
+public static class AutoModInputResolver
+{
+    public static IReadOnlyDictionary<string, JsonElement> ResolveWithDefaults(
+        AutoModRecipeV1 recipe,
+        IReadOnlyDictionary<string, JsonElement> values)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(recipe);
+        ArgumentNullException.ThrowIfNull(values);
+
+        var validation = AutoModInputValidator.Validate(recipe, values);
+        if (validation.Issues.Count != 0)
+            throw new InvalidOperationException(BuildValidationMessage(validation.Issues));
+
+        var resolved = new SortedDictionary<string, JsonElement>(StringComparer.Ordinal);
+        for (var i = 0; i < recipe.Inputs.Count; i++)
+        {
+            var descriptor = recipe.Inputs[i];
+            if (values.TryGetValue(descriptor.Key, out var supplied))
+            {
+                resolved.Add(descriptor.Key, supplied.Clone());
+                continue;
+            }
+
+            if (descriptor.DefaultValue.HasValue)
+                resolved.Add(descriptor.Key, descriptor.DefaultValue.Value.Clone());
+        }
+
+        return resolved;
+    }
+
+    private static string BuildValidationMessage(IReadOnlyList<AutoModValidationIssue> issues)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var builder = new StringBuilder("Auto Mod input validation failed:");
+        for (var i = 0; i < issues.Count; i++)
+        {
+            builder.Append(' ');
+            builder.Append(issues[i].Code);
+            builder.Append('=');
+            builder.Append(issues[i].Message);
+        }
+
+        return builder.ToString();
+    }
+}
+
 public static class AutoModExpressionResolver
 {
     public static bool IsValidReferenceExpression(string text)
@@ -678,16 +739,16 @@ public static class AutoModPatchPlanner
         ArgumentNullException.ThrowIfNull(registry);
 
         var recipeValidation = AutoModRecipeValidator.Validate(recipe, registry);
-        var inputValidation = AutoModInputValidator.Validate(recipe, inputs);
-        if (recipeValidation.Issues.Count != 0 || inputValidation.Issues.Count != 0)
-            throw new InvalidOperationException(BuildValidationMessage(recipeValidation, inputValidation));
+        if (recipeValidation.Issues.Count != 0)
+            throw new InvalidOperationException(BuildValidationMessage(recipeValidation));
 
+        var resolvedInputs = AutoModInputResolver.ResolveWithDefaults(recipe, inputs);
         var operations = new AutoModPatchOperation[recipe.Steps.Count];
         for (var i = 0; i < recipe.Steps.Count; i++)
         {
             var step = recipe.Steps[i];
-            var expected = ResolveNullable(step.ExpectedValue, inputs);
-            var value = ResolveNullable(step.Value, inputs);
+            var expected = ResolveNullable(step.ExpectedValue, resolvedInputs);
+            var value = ResolveNullable(step.Value, resolvedInputs);
 
             operations[i] = new AutoModPatchOperation(
                 i,
@@ -695,8 +756,8 @@ public static class AutoModPatchPlanner
                 step.AdapterId,
                 step.Operation,
                 step.Source,
-                AutoModExpressionResolver.ResolveText(step.Target, inputs),
-                AutoModExpressionResolver.ResolveText(step.Field, inputs),
+                AutoModExpressionResolver.ResolveText(step.Target, resolvedInputs),
+                AutoModExpressionResolver.ResolveText(step.Field, resolvedInputs),
                 expected,
                 value);
         }
@@ -719,14 +780,11 @@ public static class AutoModPatchPlanner
         return value.HasValue ? AutoModExpressionResolver.Resolve(value.Value, inputs) : null;
     }
 
-    private static string BuildValidationMessage(
-        AutoModValidationResult recipeValidation,
-        AutoModValidationResult inputValidation)
+    private static string BuildValidationMessage(AutoModValidationResult recipeValidation)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var builder = new StringBuilder("Auto Mod plan validation failed:");
         AppendIssues(builder, recipeValidation.Issues);
-        AppendIssues(builder, inputValidation.Issues);
         return builder.ToString();
     }
 
