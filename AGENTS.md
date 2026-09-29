@@ -3,6 +3,17 @@
 This repository is the canonical working state for MHW Manual Mod Manager.
 
 
+## Default execution semantics
+
+Unless the user explicitly says **read only**, **review only**, **summarize only**, **audit only**, or otherwise forbids mutation/execution, treat operational instructions as execution assignments.
+
+- Reading, planning, auditing, and explaining are prerequisites when useful; they are not substitutes for implementation.
+- Use the available tools and permissions to make concrete progress immediately.
+- If a preferred execution path is unavailable, try another supported path before declaring a blocker.
+- Do not hand work back merely because one tool, machine, or mode is unavailable when another authorized path can complete the task.
+- Preserve safety, ownership, verification, and repository policy while executing.
+- If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
+
 ## Mandatory `main` integration rule
 
 `GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
