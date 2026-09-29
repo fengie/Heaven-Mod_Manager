@@ -1,10 +1,14 @@
-name: One-shot superseded branch cleanup
+name: Branch lifecycle cleanup
 
 on:
+  pull_request:
+    types: [closed]
   push:
     branches: [main]
     paths:
       - ".github/workflows/one-shot-superseded-branch-cleanup.yml"
+  schedule:
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
