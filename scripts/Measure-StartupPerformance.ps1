@@ -132,7 +132,7 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
     finally {
         if ($process -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-            try { $process.WaitForExit(5000) } catch {}
+            try { [void]$process.WaitForExit(5000) } catch {}
         }
         $env:MOD_MANAGER_HOME = $oldHome
         $env:MOD_MANAGER_GAME_ROOT = $oldGame
@@ -167,7 +167,7 @@ try {
         New-Item -ItemType Directory -Force -Path $toolRoot | Out-Null
         Copy-Item -LiteralPath $sourceMods -Destination (Join-Path $toolRoot 'Mods') -Recurse
         $run = Invoke-StartupRun -Kind 'cold-state' -Iteration $i -ToolRoot $toolRoot -GameRoot $gameRoot -Exe $appExe
-        $runs.Add($run)
+        [void]$runs.Add($run)
         Write-Host ('STARTUP_PERF_RUN=' + ($run | ConvertTo-Json -Compress))
         $warmRoot = $toolRoot
     }
