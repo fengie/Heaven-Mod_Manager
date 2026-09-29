@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-1211-runner-health-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; Write-Output '--- runner processes ---'; Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Runner\\.(Listener|Worker)|run\\.cmd|runsvc' -or $_.CommandLine -match 'actions-runner|Runner\\.Listener' } | Select-Object ProcessId,Name,CommandLine | ConvertTo-Json -Depth 3; Write-Output '--- services/tasks ---'; Get-Service | Where-Object { $_.Name -match 'actions|runner' -or $_.DisplayName -match 'Actions Runner' } | Select-Object Name,DisplayName,Status,StartType | ConvertTo-Json -Depth 3; Get-ScheduledTask | Where-Object { $_.TaskName -match 'runner|heaven' } | Select-Object TaskName,State,TaskPath | ConvertTo-Json -Depth 3; Write-Output '--- runner dirs ---'; Get-ChildItem -Path $HOME -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'runner|actions' } | Select-Object FullName,LastWriteTime | ConvertTo-Json -Depth 3",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T12:11:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
