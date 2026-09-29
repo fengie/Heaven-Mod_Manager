@@ -1,10 +1,10 @@
 # 2026-09-29 v8.8.6 reconciliation checkpoint — CURRENT
 
-Canonical `main` was audited at `dd1411693e2da467ea5e1dfb5191b9793213ebdf`. PR #95 is closed unmerged as superseded. v8.8.6 release identity and the later profile/UI/updater-E2E/swarm-contract changes are already on main.
+Canonical `main` was re-audited through `38772a9bcf8547402de7f98ada0740d7a6aa070f`. PR #95 is closed unmerged as superseded. Agent Control 0.5.1 liveness/machine policy landed on main at `17ac640f`; updater cross-session ownership implementation, tests, and gate landed through `ef1dd35c`, `dd141169`, and `dfc02ee1`.
 
-Verification truth remains exact-SHA scoped: hosted run `36541891969` is the last fully closed source evidence for `5abe40304dfcb48f96e750bd7da3d0075315625b`; it does not verify later v8.8.6 commits. Exact-current-main release verification and the integrated updater 60→61 success plus injected-rollback E2E still need persisted evidence.
+Verification remains exact-SHA scoped: hosted run `36541891969` is the last fully closed source evidence for `5abe40304dfcb48f96e750bd7da3d0075315625b`; it does not verify later v8.8.6 commits. Exact-current-main release verification and installed-client updater 60→61 success plus injected rollback still need persisted evidence.
 
-Current active owner lanes were re-queried. PR #96 (liveness scheduler) is current-main based and mergeable; PR #98 (updater cross-session ownership) is diverged and non-mergeable; PR #99 (reliability stress) is test-only but behind main; PR #100 (dashboard) is diverged/non-mergeable; PR #101 (federation registry) and PR #103 (operator UI/CLI) are diverged and overlap shared Agent Control registry/package/UI surfaces. These are not reconciliation-owned product merges. Owners must sync to current main, resolve semantic overlap, verify, and deliver their completed work. See `_AGENT_CONTEXT/RECONCILIATION_2026-09-29.md`.
+Open PR #98 is now stale/diverged relative to updater ownership already delivered on main and should be reconciled/retired rather than merged blindly. Active Agent Control owner lanes are #101 federation registry, #100 dashboard, #105 operator UI/CLI, #104 security/authorization, and #99 reliability stress. Their shared registry/package/UI/server boundaries require semantic reconciliation after each owner syncs to current main.
 
 ---
 
