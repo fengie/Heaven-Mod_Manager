@@ -31,6 +31,14 @@
 - Never use a workaround to evade authentication, authorization, consent, safety controls, destructive-operation safeguards, or repository policy.
 - Report a genuine blocker only after reasonable authorized alternatives have been researched and exhausted or ruled out with evidence.
 
+## Long-running automation supervision
+- Persist user intent and progress metadata outside transient worker processes so restart recovery can resume rather than guess.
+- Separate worker supervision from controller supervision: a controller may replace failed/stale children, while an independent host/service/task layer must recover the controller itself.
+- Replace only after preserving durable work and proving ownership/termination when destructive takeover is involved.
+- Use provider/quota circuits and restart-intensity windows with backoff/cooldown; never turn a hard outage into an unbounded respawn storm.
+- A heartbeat proves process/channel liveness, not useful progress. Track an independent progress timestamp/evidence signal for stuck-worker detection.
+- Safety controls should suspend autonomous work without silently erasing durable intent unless the operator explicitly stops/cancels it.
+
 ## Verification integrity
 - Never claim a command, test, build, release, or manual check ran when it did not.
 - Never transfer verification from one revision or artifact to another without a valid identity/fingerprint rule.
