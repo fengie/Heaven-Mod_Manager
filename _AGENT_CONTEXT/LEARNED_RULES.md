@@ -244,3 +244,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Integration numbering note:** the support branch proposed LR-011 in parallel; canonical numbering assigns LR-014.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-015 — plugin-first routing precedes generic fallbacks
+
+- **Rule ID:** LR-015
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** agent execution routing, reusable tooling, plugin/toolbox capability discovery
+- **Rule:** Before using a generic shell, ad-hoc script, manual browser/UI sequence, broad remote-control tool, or direct API workaround, inspect and prefer the narrowest existing purpose-built plugin/capability that safely covers the task. When the ideal reusable capability is missing or materially incomplete, record an implementation-ready plan in `plugins/PLUGIN_GAP_BACKLOG.md` during the same task instead of leaving the idea only in chat.
+- **Trigger / evidence:** During an Agent Control desktop-shortcut task, a manual PowerShell path was initially proposed even though the private Heaven Local Bridge plugin was the intended computer-control route. Inspecting the toolbox exposed the correct plugin and a missing first-class shortcut operation; `desktop_shortcut_create` was then implemented and merged on PR #198, and the private plugin was updated to v0.7.0. The incident showed both failure modes: incorrect routing can bypass existing tools, and useful missing operations are easy to rediscover repeatedly unless they are made durable.
+- **Rationale:** Purpose-built plugins encode safety boundaries, machine ownership, validation, and reusable behavior that ad-hoc fallbacks bypass. Durable gap capture converts repeated manual work into an improving toolbox without blocking the immediate user task.
+- **Enforcement:** Agent and manager prompts must perform plugin/toolbox discovery before broad fallbacks, consult the canonical plugin backlog, avoid duplicate capability plans by checking packages/branches/PRs, and add/update a backlog entry with owner boundary, API contract, security constraints, dependencies, acceptance tests, priority, and status whenever a reusable gap is found. A safe authorized fallback may still complete the current task while the future capability remains planned.
+- **Relevant implementation:** PR #198 / main commit `4bf431aa4e911095a0f83b2d4e568f989118c2d4`; Heaven Local Bridge v0.7.0.
+- **Supersedes:** none
+- **Superseded by:** none
