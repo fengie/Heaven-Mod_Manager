@@ -12,14 +12,79 @@ $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $TaskName = 'Heaven Local Bridge'
 
 $env:GIT_TERMINAL_PROMPT = '0'
-New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
+$RecoveryDir = Join-Path (Join-Path $env:USERPROFILE 'HeavenBridge') 'bootstrap-recovery'
+New-Item -ItemType Directory -Force -Path $RuntimeDir,$RecoveryDir | Out-Null
+
+function Invoke-GitChecked {
+    param([Parameter(Mandatory = $true)][string[]]$GitArgs)
+    & git -C $RepoRoot @GitArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw ('git {0} failed with exit code {1}' -f ($GitArgs -join ' '), $LASTEXITCODE)
+    }
+}
+
+function Preserve-RelayCheckout {
+    param([Parameter(Mandatory = $true)][string]$Reason)
+
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $backupBranch = "heaven-bridge-recovery-$stamp"
+    $recordDir = Join-Path $RecoveryDir $stamp
+    New-Item -ItemType Directory -Force -Path $recordDir | Out-Null
+
+    $head = (& git -C $RepoRoot rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
+        throw 'Unable to identify current relay HEAD before recovery.'
+    }
+
+    & git -C $RepoRoot branch $backupBranch $head
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to preserve relay HEAD on backup branch $backupBranch."
+    }
+
+    (& git -C $RepoRoot status --short) | Set-Content -Path (Join-Path $recordDir 'status.txt') -Encoding UTF8
+    (& git -C $RepoRoot diff --binary) | Set-Content -Path (Join-Path $recordDir 'working-tree.patch') -Encoding UTF8
+    @{
+        reason = $Reason
+        preserved_at = (Get-Date).ToUniversalTime().ToString('o')
+        repo = $RepoRoot
+        head = $head
+        backup_branch = $backupBranch
+    } | ConvertTo-Json | Set-Content -Path (Join-Path $recordDir 'recovery.json') -Encoding UTF8
+
+    return $backupBranch
+}
 
 if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
     git clone --branch $Branch --single-branch $RepoUrl $RepoRoot
+    if ($LASTEXITCODE -ne 0) { throw "git clone failed with exit code $LASTEXITCODE" }
 } else {
-    git -C $RepoRoot fetch origin $Branch
-    git -C $RepoRoot checkout $Branch
-    git -C $RepoRoot pull --rebase origin $Branch
+    Invoke-GitChecked @('fetch', 'origin', $Branch)
+
+    $currentBranch = (& git -C $RepoRoot branch --show-current).Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to read relay branch.' }
+
+    $trackedDirty = @(& git -C $RepoRoot status --porcelain --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect relay working tree.' }
+
+    $countsText = (& git -C $RepoRoot rev-list --left-right --count "origin/$Branch...HEAD").Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to measure relay divergence.' }
+    $counts = @($countsText -split '\s+')
+    if ($counts.Count -lt 2) { throw "Unexpected relay divergence output: $countsText" }
+    $behind = [int]$counts[0]
+    $ahead = [int]$counts[1]
+
+    if ($currentBranch -ne $Branch -or $trackedDirty.Count -gt 0 -or $ahead -gt 0) {
+        $reason = "branch=$currentBranch trackedDirty=$($trackedDirty.Count) ahead=$ahead behind=$behind"
+        $backupBranch = Preserve-RelayCheckout -Reason $reason
+        Write-Warning "Preserved non-clean relay checkout as $backupBranch before recovery."
+
+        Invoke-GitChecked @('reset', '--hard', 'HEAD')
+        Invoke-GitChecked @('checkout', '-B', $Branch, "origin/$Branch")
+        Invoke-GitChecked @('reset', '--hard', "origin/$Branch")
+    } else {
+        Invoke-GitChecked @('checkout', $Branch)
+        Invoke-GitChecked @('merge', '--ff-only', "origin/$Branch")
+    }
 }
 
 if (-not (Test-Path $SourceWorker)) {
