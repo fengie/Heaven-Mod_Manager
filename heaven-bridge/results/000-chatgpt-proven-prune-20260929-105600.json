@@ -1,0 +1,21 @@
+{
+  "id": "000-chatgpt-proven-prune-20260929-105600",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:20:13.758989+00:00",
+  "finished_at": "2026-09-29T11:20:17.653317+00:00",
+  "stdout": "{\r\n    \"main\":  \"d477253e3ec568dc223f8d0b3eeacc1e21665953\",\r\n    \"deleted\":  [\r\n\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"active\":  [\r\n                   \"main\",\r\n                   \"agent/security-authorization-20260929\",\r\n                   \"agent/federation-registry-20260929\",\r\n                   \"integration/final-main-reconcile-20260929\",\r\n                   \"converge/final-v886-20260929b\",\r\n                   \"integration/release-lead-20260929-0543\",\r\n                   \"converge/main-20260929\",\r\n                   \"integration/pr90-reconcile-20260929\",\r\n                   \"agent/auto-updater-publication-fix-20260928\",\r\n                   \"integration/pr90-reconcile-local-20260929\",\r\n                   \"release/v8.8.5-20260929\",\r\n                   \"fix/v8.8.5-installed-label-trace\",\r\n                   \"agent/verification-reliability-20260929\"\r\n               ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]         (none)        -> origin/agent/bridge-uia-hardening-20260929\n   e4a24251..d477253e  main          -> origin/main\n   893d39c5..7750decc  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-chatgpt-proven-prune-20260929-105600.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-chatgpt-proven-prune-20260929-105600.stderr.log",
+    "stdout_bytes": 911,
+    "stderr_bytes": 234,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "e87c8b2f7ac6ce0a7da5cb8e1175c5cdd62441311f31a9618d2d6b992674475b"
+}
