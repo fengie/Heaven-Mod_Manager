@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-prune-updater-governance-20260929-1306-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:06:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T13:06:17.896388+00:00",
+  "finished_at": "2026-09-29T13:06:32.176367+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"fix/updater-release-gate-governance-20260929\",\r\n                    \"fix/updater-release-gate-verification-20260929\"\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   98205f6f..5e5b1633  fix/workflow-feature-closure-20260929 -> origin/fix/workflow-feature-closure-20260929\n   4a5363f4..12d2f5fa  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-release-gate-governance-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-release-gate-verification-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-governance-20260929-1306-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-governance-20260929-1306-a1.stderr.log",
+    "stdout_bytes": 224,
+    "stderr_bytes": 432,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d92047c2500291538dc921833ccde688c0aefe9596e5dc536589f252e3368cbb"
+}
