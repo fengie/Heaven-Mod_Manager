@@ -187,6 +187,11 @@ async function main() {
   }
 
   const currentSha = await git(spec.localWorktree, ["rev-parse", "HEAD"]);
+  let pushed = false;
+  if (currentSha !== spec.baseSha) {
+    await git(spec.localWorktree, ["push", "--set-upstream", "origin", spec.branchName]);
+    pushed = true;
+  }
   process.stdout.write(JSON.stringify({
     provider: "heaven-bridge",
     protocol: "chatgpt-heaven-bridge-v2",
@@ -194,6 +199,7 @@ async function main() {
     remoteJobId: executeId,
     patchBytes: patchBuffer.length,
     currentSha,
+    pushed,
     textOnly: patchBuffer.length === 0
   }) + "\n");
 }
