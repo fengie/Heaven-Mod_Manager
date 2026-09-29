@@ -47,6 +47,8 @@ def build_registry() -> CapabilityRegistry:
             CapabilitySpec("git.status", 1, "Read repository branch and working-tree status.", "repository.read", 30, False),
             CapabilitySpec("git.diff", 1, "Read a bounded repository diff.", "repository.read", 60, False),
             CapabilitySpec("git.verify_remote_main", 1, "Fetch origin/main and report exact local/remote identity.", "repository.verify", 120, False),
+            CapabilitySpec("verification.detect", 1, "Detect supported project families from bounded repository markers.", "verification.read", 60, False, 131_072),
+            CapabilitySpec("verification.run", 1, "Run one fixed build/test/lint/typecheck plan for a detected project.", "verification.run", 1800, True),
             CapabilitySpec("observability.logs.page", 1, "Page through sanitized in-memory audit records.", "observability.read", 5, False, 131_072),
             CapabilitySpec("observability.artifacts.page", 1, "Page a registered text artifact.", "observability.read", 5, False, 262_144),
         ]
