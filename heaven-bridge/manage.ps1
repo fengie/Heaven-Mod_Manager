@@ -113,6 +113,16 @@ function Get-TaskRunLevel {
     }
 }
 
+function Get-TaskUserId {
+    param([string]$Name)
+    try {
+        $task = Get-ScheduledTask -TaskName $Name -ErrorAction Stop
+        return [string]$task.Principal.UserId
+    } catch {
+        return 'missing'
+    }
+}
+
 function Get-LoopProgressState {
     if (-not (Test-Path $LoopProgress)) {
         return [ordered]@{ exists = $false; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $null }
@@ -204,6 +214,8 @@ function Show-Status {
     $canonicalRunLevel = Get-TaskRunLevel 'Heaven Local Bridge'
     $watchdogRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Watchdog'
     $sentinelRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Sentinel'
+    $sentinelUserId = Get-TaskUserId 'Heaven Local Bridge Sentinel'
+    $sentinelIsSystem = ($sentinelUserId -match '(?i)(^|\\)SYSTEM$' -or $sentinelUserId -eq 'S-1-5-18')
     $canonicalPid = if ($canonical.Count -eq 1) { [int]$canonical[0].ProcessId } else { $null }
     $healthy = (
         $canonical.Count -eq 1 -and
@@ -220,6 +232,7 @@ function Show-Status {
         $canonicalRunLevel -eq 'Highest' -and
         $watchdogRunLevel -eq 'Highest' -and
         $sentinelRunLevel -eq 'Highest' -and
+        $sentinelIsSystem -and
         $localHeartbeat.exists -and
         $localHeartbeat.parse_error -eq $null -and
         $localHeartbeat.pid -eq $canonicalPid -and
@@ -265,6 +278,8 @@ function Show-Status {
             watchdog_run_level = $watchdogRunLevel
             sentinel = Get-TaskState 'Heaven Local Bridge Sentinel'
             sentinel_run_level = $sentinelRunLevel
+            sentinel_user_id = $sentinelUserId
+            sentinel_is_system = [bool]$sentinelIsSystem
             legacy = Get-TaskState 'HeavenLocalBridge'
             legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
@@ -319,7 +334,8 @@ switch ($Action) {
             @(Get-SentinelWorkers).Count -ne 1 -or
             (Get-TaskRunLevel 'Heaven Local Bridge') -ne 'Highest' -or
             (Get-TaskRunLevel 'Heaven Local Bridge Watchdog') -ne 'Highest' -or
-            (Get-TaskRunLevel 'Heaven Local Bridge Sentinel') -ne 'Highest'
+            (Get-TaskRunLevel 'Heaven Local Bridge Sentinel') -ne 'Highest' -or
+            ((Get-TaskUserId 'Heaven Local Bridge Sentinel') -notmatch '(?i)(^|\\)SYSTEM$|^S-1-5-18$')
         ) {
             & $Bootstrap
         }
