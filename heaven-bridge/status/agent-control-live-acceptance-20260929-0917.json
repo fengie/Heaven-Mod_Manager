@@ -1,0 +1,9 @@
+{
+  "id": "agent-control-live-acceptance-20260929-0917",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:18:07.579874+00:00"
+}
