@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
+import { normalizePerpetualSwarmState, perpetualSwarmDecision, recordPerpetualCooldown, recordPerpetualWaveStart } from "./lib/perpetual-swarm-core.mjs";
 import {
   STATE_VERSION,
   AUTONOMY_PROFILES,
@@ -97,12 +98,14 @@ let autopilotTickRunning = false;
 let noWorkRecoveryTickRunning = false;
 let goToWorkRecoveryTickRunning = false;
 let swarmTailRecoveryTickRunning = false;
+let perpetualSwarmTickRunning = false;
 const noWorkRecoveryOperations = new Set();
 const goToWorkRecoveryOperations = new Set();
 const swarmTailRecoveryOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
 const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
 const GO_TO_WORK_RECOVERY_TICK_MS = Math.max(5000, Number(process.env.AGENT_CONTROL_GO_TO_WORK_RECOVERY_TICK_MS || 10000));
+const PERPETUAL_SWARM_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_PERPETUAL_SWARM_TICK_MS || 5000));
 
 const rolePresets = roleCatalog();
 
@@ -3144,6 +3147,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     providers: federation.providers,
     settings: state.settings,
     autopilot: state.autopilot,
+    perpetualSwarm: state.perpetualSwarm,
     autonomyProfiles: AUTONOMY_PROFILES,
     workflows: WORKFLOW_PRESETS,
     workers,
@@ -3709,6 +3713,11 @@ function startAutopilot(body = {}) {
 
   const state = loadState();
   assertMutationsAllowed(state);
+  if (state.perpetualSwarm?.enabled) {
+    const error = new Error("Perpetual Machine is active. Stop it before starting the bounded engineering autopilot.");
+    error.statusCode = 409;
+    throw error;
+  }
   if (state.autopilot?.enabled) {
     const error = new Error("An autopilot run is already active or paused. Resume or stop it before starting a new big direction.");
     error.statusCode = 409;
@@ -3952,6 +3961,387 @@ async function autopilotStep() {
   }
 }
 
+
+function perpetualMission(state, perpetual) {
+  const repositoryContext = readRepositoryContext();
+  const currentMission = deriveMission(state, repositoryContext);
+  const standing = String(perpetual?.objective || "").trim()
+    || String(currentMission || "").trim()
+    || "Continue the highest-value unfinished project work.";
+  return [
+    `Perpetual Machine generation ${Number(perpetual?.generation || 0) + 1}.`,
+    `Standing direction: ${standing}`,
+    currentMission && currentMission !== standing ? `Current canonical mission: ${currentMission}` : null,
+    "Re-establish current canonical repository/runtime truth before choosing work.",
+    "Do not repeat completed work. Select the next highest-value unfinished implementation, verification, repair, integration-preparation, or cleanup work supported by current state.",
+    "Coordinate with live ownership, preserve durable partial work, update prompts from new evidence, and materially change approach after a failed or blocked attempt.",
+    "Use direct non-Work execution. Never trigger ChatGPT Work unless the user explicitly requests Work for that exact task."
+  ].filter(Boolean).join("\n");
+}
+
+function startPerpetualMachine(body = {}) {
+  if (os.hostname().toLowerCase() !== "heaven2") {
+    const error = new Error("Perpetual Machine must run from heaven2, the control/credential authority.");
+    error.statusCode = 409;
+    throw error;
+  }
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  const now = isoNow();
+  const current = normalizePerpetualSwarmState(state.perpetualSwarm);
+  const objective = String(body.objective || current.objective || "").trim()
+    || deriveMission(state, readRepositoryContext())
+    || "Continue the highest-value unfinished project work.";
+
+  state.settings.autonomyLevel = "engineering-autopilot";
+  state.settings.dispatchPaused = false;
+  state.settings.draining = false;
+  if (state.autopilot?.enabled) {
+    state.autopilot = transitionAutopilot(state.autopilot, "waiting-for-direction", {
+      reason: "perpetual-machine-started",
+      patch: { enabled: false, paused: false }
+    });
+  }
+  state.perpetualSwarm = normalizePerpetualSwarmState({
+    ...current,
+    enabled: true,
+    paused: false,
+    objective,
+    workflowId: String(body.workflowId || current.workflowId || "usual-swarm").trim() || "usual-swarm",
+    baseBranch: String(body.baseBranch || current.baseBranch || "main").trim() || "main",
+    machine: String(body.machine || current.machine || "auto").trim() || "auto",
+    startedAt: current.enabled ? current.startedAt || now : now,
+    updatedAt: now,
+    lastActionAt: now,
+    lastAction: "start",
+    lastReason: body.reason || "operator-start",
+    lastError: null,
+    nextActionAt: null
+  });
+  addEvent(state, "perpetual.started", "Perpetual Machine started", {
+    reason: body.reason || "operator-start",
+    evidence: {
+      objective: state.perpetualSwarm.objective,
+      workflowId: state.perpetualSwarm.workflowId,
+      generation: state.perpetualSwarm.generation
+    }
+  });
+  saveState(state);
+  return state.perpetualSwarm;
+}
+
+function pausePerpetualMachine(reason = "operator-pause") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  const now = isoNow();
+  state.perpetualSwarm = normalizePerpetualSwarmState({
+    ...state.perpetualSwarm,
+    enabled: true,
+    paused: true,
+    updatedAt: now,
+    lastAction: "pause",
+    lastActionAt: now,
+    lastReason: reason
+  });
+  addEvent(state, "perpetual.paused", "Perpetual Machine paused", { reason });
+  saveState(state);
+  return state.perpetualSwarm;
+}
+
+function resumePerpetualMachine(reason = "operator-resume") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  state.settings.autonomyLevel = "engineering-autopilot";
+  state.settings.dispatchPaused = false;
+  state.settings.draining = false;
+  const now = isoNow();
+  state.perpetualSwarm = normalizePerpetualSwarmState({
+    ...state.perpetualSwarm,
+    enabled: true,
+    paused: false,
+    objective: String(state.perpetualSwarm?.objective || "").trim()
+      || deriveMission(state, readRepositoryContext())
+      || "Continue the highest-value unfinished project work.",
+    updatedAt: now,
+    lastAction: "resume",
+    lastActionAt: now,
+    lastReason: reason,
+    lastError: null,
+    nextActionAt: null
+  });
+  addEvent(state, "perpetual.resumed", "Perpetual Machine resumed", { reason });
+  saveState(state);
+  return state.perpetualSwarm;
+}
+
+function stopPerpetualMachine(reason = "operator-stop") {
+  const state = loadState();
+  assertMutationsAllowed(state, { safetyControl: true });
+  const now = isoNow();
+  state.perpetualSwarm = normalizePerpetualSwarmState({
+    ...state.perpetualSwarm,
+    enabled: false,
+    paused: false,
+    updatedAt: now,
+    lastAction: "stop",
+    lastActionAt: now,
+    lastReason: reason,
+    nextActionAt: null,
+    activeWaveId: null
+  });
+  addEvent(state, "perpetual.stopped", "Perpetual Machine stopped creating/replacing workers", {
+    reason,
+    evidence: { activeWorkersContinue: true }
+  });
+  saveState(state);
+  return state.perpetualSwarm;
+}
+
+function observePerpetualDecision(decision) {
+  const state = loadState();
+  const current = normalizePerpetualSwarmState(state.perpetualSwarm);
+  const nextActionAt = decision?.nextActionAt || null;
+  if (current.lastReason === decision?.reason && current.nextActionAt === nextActionAt) return current;
+  state.perpetualSwarm = normalizePerpetualSwarmState({
+    ...current,
+    lastReason: decision?.reason || null,
+    nextActionAt,
+    updatedAt: isoNow()
+  });
+  saveState(state);
+  return state.perpetualSwarm;
+}
+
+async function replacePerpetualStuckAgent(agentId, decision) {
+  const state = refreshState();
+  const source = state.agents.find(agent => agent.id === agentId);
+  const task = state.tasks.find(item => item.id === source?.taskId) || null;
+  if (!source || !task || !coreIsActiveStatus(source.status)) return null;
+  if (source.status === "capacity-blocked" || source.failureClass === "provider-capacity") return null;
+
+  const perpetual = normalizePerpetualSwarmState(state.perpetualSwarm);
+  const preserved = buildTakeoverForAgent(source.id, { persist: true, safetyControl: true });
+  await stopAgent(source.id);
+
+  const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
+  const replacementTask = [
+    `Replace stale/stuck agent ${source.id} without discarding its durable work.`,
+    `Reason: ${decision?.reason || "progress-timeout"}; recorded progress age: ${decision?.progressAgeMs ?? "unknown"} ms.`,
+    `Original task: ${task.objective || source.task || "unknown"}`,
+    `Original branch: ${source.branchName || task.branchName || "unknown"}.`,
+    preserved.takeoverPath ? `Persisted takeover record: ${preserved.takeoverPath}.` : null,
+    sourceWorktree ? `Preserved source worktree: ${sourceWorktree}. Inspect dirty/uncommitted work before editing elsewhere.` : "No preserved source worktree is available; recover from durable branch/commit/task evidence.",
+    "Inventory commits, changed files, artifacts, tests, PR/integration state, and newer canonical work before changing anything.",
+    "Finish only the remaining scope. Do not restart completed portions from scratch.",
+    "Own the recovery through targeted verification and a durable handoff; integrate/clean only when repository policy permits."
+  ].filter(Boolean).join("\n");
+
+  const replacement = await deployOne({
+    role: "recovery",
+    task: replacementTask,
+    baseBranch: source.branchName || source.requestedBaseBranch || source.baseBranch || "main",
+    model: source.model || "",
+    executionMode: "direct",
+    boundary: `perpetual-recovery:${source.id}`,
+    priority: Math.max(90, Number(source.priority || task.priority || 0)),
+    machine: recoveryMachineTarget(source.machine || task.machine, state.settings?.machinePolicies),
+    dependencies: [],
+    targetAgentId: source.id,
+    lane: `perpetual-${source.id.slice(0, 12)}`,
+    repositoryWriteAuthorized: Boolean(source.repositoryWriteAuthorized ?? task.repositoryWriteAuthorized),
+    acceptanceCriteria: [
+      "Preserve all useful durable work from the replaced agent.",
+      "Finish the remaining scope rather than merely auditing it.",
+      "Do not duplicate or overwrite newer canonical work.",
+      "Verify the recovered result before claiming completion."
+    ],
+    verification: task.verification || [],
+    additionalConstraints: [
+      "This worker is a one-for-one Perpetual Machine replacement for a stale/stuck lane.",
+      "Use direct/non-Work execution. Never hand off to Work unless the user explicitly requested Work for this exact task."
+    ],
+    recoveryContext: {
+      attempt: Math.max(1, Number(source.perpetualReplacementAttempt || 0) + 1),
+      retryOfAgentId: source.id,
+      retryOfTaskId: source.taskId || null,
+      rootAgentId: source.perpetualReplacementRootAgentId || source.id
+    },
+    swarmContext: {
+      workflowId: perpetual.workflowId || task.workflowId || "usual-swarm",
+      waveId: perpetual.activeWaveId || task.swarmWaveId || `perpetual:${perpetual.generation}`,
+      mission: perpetualMission(state, perpetual),
+      stepIndex: 0,
+      totalSteps: 1,
+      source: "perpetual-stuck-replacement"
+    }
+  });
+
+  const linked = loadState();
+  const original = linked.agents.find(item => item.id === source.id);
+  const created = linked.agents.find(item => item.id === replacement.id);
+  const createdTask = linked.tasks.find(item => item.id === replacement.taskId);
+  const now = isoNow();
+  if (original) {
+    original.perpetualReplacementAgentId = replacement.id;
+    original.perpetualReplacementReason = decision?.reason || "progress-timeout";
+    original.perpetualReplacementAt = now;
+    original.perpetualReplacementRootAgentId ||= source.id;
+  }
+  if (created) {
+    created.perpetualReplacement = true;
+    created.perpetualReplacementRootAgentId = original?.perpetualReplacementRootAgentId || source.id;
+    created.perpetualReplacementAttempt = Math.max(1, Number(source.perpetualReplacementAttempt || 0) + 1);
+  }
+  if (createdTask) {
+    createdTask.perpetualReplacement = true;
+    createdTask.perpetualReplacementRootAgentId = original?.perpetualReplacementRootAgentId || source.id;
+  }
+  linked.perpetualSwarm = normalizePerpetualSwarmState({
+    ...linked.perpetualSwarm,
+    replacementCount: Number(linked.perpetualSwarm?.replacementCount || 0) + 1,
+    lastReplacementAt: now,
+    lastActionAt: now,
+    lastAction: "replace-stuck",
+    lastReason: decision?.reason || "progress-timeout",
+    lastError: null,
+    nextActionAt: null,
+    updatedAt: now
+  });
+  addEvent(linked, "perpetual.replacement-dispatched", `${source.id} replaced by ${replacement.id}`, {
+    agentId: replacement.id,
+    taskId: replacement.taskId,
+    reason: decision?.reason || "progress-timeout",
+    evidence: {
+      sourceAgentId: source.id,
+      takeoverPath: preserved.takeoverPath || null,
+      progressAgeMs: decision?.progressAgeMs ?? null
+    }
+  });
+  addNotification(linked, {
+    severity: "warning",
+    title: "Stale agent replaced",
+    message: `${source.roleLabel || source.id} stopped making progress. Its takeover state was preserved and ${replacement.roleLabel || replacement.id} took over.`,
+    action: { type: "inspect-agent", agentId: replacement.id },
+    dedupeKey: `perpetual-replacement:${source.id}:${replacement.id}`
+  });
+  saveState(linked);
+  return created || replacement;
+}
+
+async function perpetualSwarmStep() {
+  if (perpetualSwarmTickRunning) return null;
+  perpetualSwarmTickRunning = true;
+  try {
+    let state = refreshState();
+    const perpetual = normalizePerpetualSwarmState(state.perpetualSwarm);
+    if (!perpetual.enabled || perpetual.paused) {
+      return { perpetualSwarm: perpetual, decision: { kind: "idle", reason: perpetual.paused ? "paused" : "disabled" } };
+    }
+
+    const capacity = providerCapacityCircuit(state);
+    const decision = perpetualSwarmDecision(state, { now: Date.now(), providerCapacity: capacity });
+
+    if (decision.kind === "idle" || decision.kind === "wait") {
+      return { perpetualSwarm: observePerpetualDecision(decision), decision };
+    }
+
+    if (decision.kind === "cooldown") {
+      const current = loadState();
+      current.perpetualSwarm = recordPerpetualCooldown(current.perpetualSwarm, {
+        at: isoNow(),
+        nextActionAt: decision.nextActionAt,
+        reason: decision.reason
+      });
+      addEvent(current, "perpetual.cooldown", "Perpetual Machine entered restart-storm cooldown", {
+        reason: decision.reason,
+        evidence: { nextActionAt: decision.nextActionAt, recentStarts: decision.recentStarts }
+      });
+      saveState(current);
+      return { perpetualSwarm: current.perpetualSwarm, decision };
+    }
+
+    if (decision.kind === "replace-stuck") {
+      const replacement = await replacePerpetualStuckAgent(decision.agentId, decision);
+      return { perpetualSwarm: loadState().perpetualSwarm, decision, replacementAgentId: replacement?.id || null };
+    }
+
+    if (decision.kind === "launch-wave") {
+      state = refreshState();
+      const current = normalizePerpetualSwarmState(state.perpetualSwarm);
+      const mission = perpetualMission(state, current);
+      const result = await executeWorkflow(current.workflowId || "usual-swarm", {
+        objective: mission,
+        baseBranch: current.baseBranch || "main",
+        machine: current.machine || "auto",
+        executionMode: "direct",
+        requireReconciledOwnership: true,
+        repositoryWriteAuthorized: true
+      });
+
+      const after = loadState();
+      if (result.created?.length) {
+        const waveId = after.settings?.swarmTailRecovery?.waveId || randomUUID();
+        after.perpetualSwarm = recordPerpetualWaveStart(after.perpetualSwarm, {
+          at: isoNow(),
+          waveId
+        });
+        addEvent(after, "perpetual.wave-started", `Perpetual Machine launched generation ${after.perpetualSwarm.generation}`, {
+          reason: decision.reason,
+          evidence: {
+            waveId,
+            createdAgentIds: result.created.map(agent => agent.id),
+            workflowId: current.workflowId || "usual-swarm"
+          }
+        });
+        saveState(after);
+        return { perpetualSwarm: after.perpetualSwarm, decision, result };
+      }
+
+      const details = (result.blocked || []).map(item => item?.error || String(item)).filter(Boolean);
+      const delayMs = Math.min(current.maxCooldownMs, current.restartCooldownMs * Math.pow(2, Math.min(8, current.cooldownLevel)));
+      after.perpetualSwarm = recordPerpetualCooldown(after.perpetualSwarm, {
+        at: isoNow(),
+        nextActionAt: new Date(Date.now() + delayMs).toISOString(),
+        reason: details.length ? "wave-blocked" : "wave-produced-no-workers"
+      });
+      after.perpetualSwarm.lastError = details.join(" | ") || null;
+      addEvent(after, "perpetual.wave-deferred", "Perpetual Machine could not launch a useful wave and will retry after cooldown", {
+        reason: after.perpetualSwarm.lastReason,
+        evidence: { details, nextActionAt: after.perpetualSwarm.nextActionAt }
+      });
+      saveState(after);
+      return { perpetualSwarm: after.perpetualSwarm, decision, result };
+    }
+
+    throw new Error(`Unknown Perpetual Machine decision: ${decision.kind}`);
+  } catch (error) {
+    const failed = loadState();
+    const current = normalizePerpetualSwarmState(failed.perpetualSwarm);
+    const delayMs = Math.min(current.maxCooldownMs, current.restartCooldownMs * Math.pow(2, Math.min(8, current.cooldownLevel)));
+    failed.perpetualSwarm = recordPerpetualCooldown(current, {
+      at: isoNow(),
+      nextActionAt: new Date(Date.now() + delayMs).toISOString(),
+      reason: "runtime-error"
+    });
+    failed.perpetualSwarm.lastError = error?.message || String(error);
+    addEvent(failed, "perpetual.error", "Perpetual Machine hit an error and scheduled an automatic retry", {
+      reason: failed.perpetualSwarm.lastError,
+      evidence: { nextActionAt: failed.perpetualSwarm.nextActionAt }
+    });
+    addNotification(failed, {
+      severity: "warning",
+      title: "Perpetual Machine recovered from an error",
+      message: `${failed.perpetualSwarm.lastError}. Automatic retry scheduled for ${failed.perpetualSwarm.nextActionAt}.`,
+      action: { type: "inspect-perpetual" },
+      dedupeKey: `perpetual-error:${failed.perpetualSwarm.lastError}`
+    });
+    saveState(failed);
+    return { perpetualSwarm: failed.perpetualSwarm, error: failed.perpetualSwarm.lastError };
+  } finally {
+    perpetualSwarmTickRunning = false;
+  }
+}
+
 function sendJson(res, status, value) {
   const body = JSON.stringify(value, null, 2);
   res.writeHead(status, {
@@ -4169,6 +4559,34 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && pathname === "/api/autopilot/step") {
       return sendJson(res, 200, await autopilotStep());
+    }
+
+    if (req.method === "GET" && pathname === "/api/perpetual") {
+      return sendJson(res, 200, refreshState().perpetualSwarm);
+    }
+
+    if (req.method === "POST" && pathname === "/api/perpetual/start") {
+      const body = await readJson(req);
+      return sendJson(res, 200, startPerpetualMachine(body));
+    }
+
+    if (req.method === "POST" && pathname === "/api/perpetual/pause") {
+      const body = await readJson(req);
+      return sendJson(res, 200, pausePerpetualMachine(body.reason || "operator-pause"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/perpetual/resume") {
+      const body = await readJson(req);
+      return sendJson(res, 200, resumePerpetualMachine(body.reason || "operator-resume"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/perpetual/stop") {
+      const body = await readJson(req);
+      return sendJson(res, 200, stopPerpetualMachine(body.reason || "operator-stop"));
+    }
+
+    if (req.method === "POST" && pathname === "/api/perpetual/step") {
+      return sendJson(res, 200, await perpetualSwarmStep());
     }
 
     if (req.method === "GET" && pathname === "/api/work-handoff-signatures") {
@@ -4404,6 +4822,12 @@ const autopilotTimer = setInterval(() => {
   void autopilotStep();
 }, AUTOPILOT_TICK_MS);
 autopilotTimer.unref?.();
+
+const perpetualSwarmTimer = setInterval(() => {
+  void perpetualSwarmStep();
+}, PERPETUAL_SWARM_TICK_MS);
+perpetualSwarmTimer.unref?.();
+void perpetualSwarmStep();
 
 const noWorkRecoveryTimer = setInterval(() => {
   void reconcileNoWorkRecoveries().then(() => reconcileSwarmTailRecoveries());
