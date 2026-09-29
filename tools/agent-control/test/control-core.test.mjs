@@ -71,6 +71,7 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
     id: "manager-1",
     role: "manager",
     status: "running",
+    heartbeatAt: new Date().toISOString(),
     task: "Fix updater",
     lane: null
   });
@@ -78,6 +79,7 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
     id: "support-1",
     role: "support",
     status: "running",
+    heartbeatAt: new Date().toISOString(),
     task: "Architecture audit",
     lane: "architecture"
   });
@@ -278,7 +280,7 @@ test("operator stop intent dominates an authoritative zero exit", () => {
 test("counted deployment is rejected before partial launch when capacity is insufficient", () => {
   const current = state();
   for (let i = 0; i < 7; i += 1) {
-    current.agents.push({ id: `active-${i}`, role: "support", status: "running" });
+    current.agents.push({ id: `active-${i}`, role: "support", status: "running", heartbeatAt: new Date().toISOString() });
   }
   const capacity = deploymentBatchCapacity(current, 2, 8);
   assert.deepEqual(capacity, {
@@ -421,7 +423,7 @@ test("local deployment capacity is not consumed by remote federated agents", () 
     state: "working",
     heartbeat_at: new Date().toISOString()
   });
-  current.agents.push({ id: "local-1", role: "support", status: "running" });
+  current.agents.push({ id: "local-1", role: "support", status: "running", heartbeatAt: new Date().toISOString() });
 
   const capacity = deploymentBatchCapacity(current, 2, 4);
   assert.equal(capacity.active, 1);

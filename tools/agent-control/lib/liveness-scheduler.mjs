@@ -66,7 +66,10 @@ export function managedAgentLiveness(agent, {
   const ageMs = heartbeatMs === null ? null : Math.max(0, Number(now) - heartbeatMs);
 
   if (!terminal) {
-    if (["interrupted", "orphaned"].includes(status)) {
+    if (heartbeatMs === null) {
+      freshness = "disconnected";
+      effectiveState = "disconnected";
+    } else if (["interrupted", "orphaned"].includes(status)) {
       freshness = "disconnected";
       effectiveState = "disconnected";
     } else if (status === "stale") {
