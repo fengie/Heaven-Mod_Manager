@@ -1,3 +1,11 @@
+# v8.8.19 — Smoother UI transitions
+
+- Add short transform/opacity transitions for top-level page changes and the blocking-operation overlay.
+- Add subtle shared hover/press feedback for buttons and sidebar navigation without animating layout dimensions.
+- Respect the Windows client-area animation preference so reduced-motion users get immediate state changes.
+- Preserve list virtualization, command bindings, keyboard behavior, and existing deployment/update semantics.
+- Add a regression test that prevents layout-heavy motion and pins the accessibility-aware transition hooks.
+
 # v8.8.18 — Maximum windowed Mods workspace
 
 - Make the Mods library consume nearly all available client space in windowed mode by cutting the page's outer padding from 60 horizontal pixels to 16 and tightening vertical spacing.
