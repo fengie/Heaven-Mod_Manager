@@ -1,0 +1,21 @@
+{
+  "id": "-------branchzero-delete-a-20260929-1105",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:05:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:05:57.373390+00:00",
+  "finished_at": "2026-09-29T11:06:24.039069+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"agent/updater-installed-e2e-20260929-manager\",\r\n                    \"agent/bridge-priority-scheduler-20260929\",\r\n                    \"feature/agent-control-panel-20260928\",\r\n                    \"agent/game-profile-id-containment-v8.8.5-reconcile\",\r\n                    \"ui/frontend-responsive-polish-20260928\",\r\n                    \"support/updater-publication-input-scope-20260928\"\r\n                ],\r\n    \"missing\":  [\r\n                    \"agent/heaven-hosted-runner-diagnose-20260929\",\r\n                    \"agent/smart-pack-planner-core\",\r\n                    \"integration/smart-pack-planner-main-20260929\",\r\n                    \"feature/agent-control-plane-v2-20260928\",\r\n                    \"agent/agent-control-federation-heartbeat-20260929\",\r\n                    \"agent/liveness-scheduler-machine-policy-20260929\"\r\n                ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]         (none)        -> origin/agent/replacefilew-failure-characterization-v2\n   7514053..3aba657  heaven-bridge -> origin/heaven-bridge\n * [new branch]      agent/bridge-uia-native-20260929 -> origin/agent/bridge-uia-native-20260929\n   c50fed8..40d4454  fix/codex-quota-dispatch-circuit-20260929 -> origin/fix/codex-quota-dispatch-circuit-20260929\n   6a8240d..290d4e2  main          -> origin/main\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/updater-installed-e2e-20260929-manager\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/bridge-priority-scheduler-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         feature/agent-control-panel-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/game-profile-id-containment-v8.8.5-reconcile\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         ui/frontend-responsive-polish-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         support/updater-publication-input-scope-20260928\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-------branchzero-delete-a-20260929-1105.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-------branchzero-delete-a-20260929-1105.stderr.log",
+    "stdout_bytes": 890,
+    "stderr_bytes": 1093,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "cc2534f5c55c2fb7f921acdc22b2cf7d7066845b9a37691fc17cd4dc29ffe5b5"
+}
