@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165250-resolve-catalog-conflict",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $wt='C:\\Users\\fengc\\agent-worktrees\\finish-catalog208'; $f=Join-Path $wt 'src\\MhwModManager.App\\MainWindow.xaml'; $t=Get-Content -Raw $f; $old=@'\n<<<<<<< HEAD\n                        <Button Content=\"Browse Mods\" Click=\"OpenCatalogClick\" Style=\"{StaticResource PrimaryButton}\" ToolTip=\"Browse supported mod providers, choose exact files, and install through the manager.\"/>\n=======\n>>>>>>> origin/main\n'@; $new=@'\n                        <Button Content=\"Browse Mods\" Click=\"OpenCatalogClick\" Style=\"{StaticResource PrimaryButton}\" ToolTip=\"Browse supported mod providers, choose exact files, and install through the manager.\"/>\n'@; if(-not $t.Contains($old)){throw 'catalog conflict marker block not found'}; $t=$t.Replace($old,$new); Set-Content -LiteralPath $f -Value $t -Encoding UTF8; git -C $wt add 'src/MhwModManager.App/MainWindow.xaml'; Write-Output 'UNMERGED:'; git -C $wt diff --name-only --diff-filter=U; Write-Output 'RELEASEDIFF:'; git -C $wt diff --cached origin/main -- VERSION.txt Directory.Build.props README.md CHANGELOG.md _AGENT_CONTEXT/CURRENT_REVISION.json _AGENT_CONTEXT/handoff-manifest.json | Select-Object -First 320; Write-Output 'DIFFCHECK:'; git -C $wt diff --check",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:52:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
