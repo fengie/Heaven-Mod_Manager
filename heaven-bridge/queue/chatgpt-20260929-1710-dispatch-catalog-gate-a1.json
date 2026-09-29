@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1710-dispatch-catalog-gate-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; gh workflow run workflow-feature-pr-gate.yml --repo fengie/mhw-mods --ref agent/unified-mod-catalog-20260929; if($LASTEXITCODE -ne 0){throw 'workflow dispatch failed'}; Start-Sleep 2; gh run list --repo fengie/mhw-mods --workflow workflow-feature-pr-gate.yml --branch agent/unified-mod-catalog-20260929 --limit 3 --json databaseId,headSha,status,conclusion,displayTitle"
+  },
+  "created_at": "2026-09-29T17:10:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
