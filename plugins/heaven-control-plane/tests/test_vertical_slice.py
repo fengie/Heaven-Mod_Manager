@@ -294,8 +294,120 @@ class VerticalSliceTests(unittest.TestCase):
                     for item in node.value.elts
                     if isinstance(item, ast.Constant) and isinstance(item.value, str)
                 )
-        required = {"health", "cancel", "proc_run", "fs_read", "fs_write", "fs_edit", "fs_info"}
+        required = {"health", "cancel", "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill", "proc_list_sessions", "fs_read", "fs_write", "fs_edit", "fs_info", "fs_search"}
         self.assertTrue(required.issubset(actions), required - actions)
+
+
+    def test_phase1_discovery_includes_sessions_and_filesystem_search(self):
+        result = self.control.invoke("control.discovery")
+        names = {item["name"] for item in result["data"]["capabilities"]}
+        self.assertTrue({
+            "execution.session.start",
+            "execution.session.read",
+            "execution.session.input",
+            "execution.session.stop",
+            "execution.session.list",
+            "filesystem.search",
+        }.issubset(names))
+
+    def test_session_start_maps_to_proc_start_with_bounds_and_host_handles(self):
+        result = self.control.invoke(
+            "execution.session.start",
+            {
+                "shell": "powershell",
+                "command": "Write-Output ready",
+                "cwd": r"C:\repo",
+                "idle_timeout_seconds": 120,
+                "max_runtime_seconds": 900,
+                "env_from_host": ["GITHUB_TOKEN"],
+            },
+        )
+        self.assertTrue(result["ok"])
+        action, params, timeout = self.transport.calls[-1]
+        self.assertEqual(action, "proc_start")
+        self.assertEqual(timeout, 30)
+        self.assertEqual(params["idle_timeout_seconds"], 120)
+        self.assertEqual(params["max_runtime_seconds"], 900)
+        self.assertEqual(params["env_from_host"], ["GITHUB_TOKEN"])
+
+    def test_session_lifecycle_maps_to_existing_bridge_primitives(self):
+        read = self.control.invoke("execution.session.read", {"session_id": "abc123", "max_chars": 5000})
+        self.assertTrue(read["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_read", {"session_id": "abc123", "max_chars": 5000}, 15))
+
+        send = self.control.invoke(
+            "execution.session.input",
+            {"session_id": "abc123", "input": "status", "newline": False},
+        )
+        self.assertTrue(send["ok"])
+        self.assertEqual(
+            self.transport.calls[-1],
+            ("proc_input", {"session_id": "abc123", "input": "status", "newline": False}, 15),
+        )
+
+        stop = self.control.invoke("execution.session.stop", {"session_id": "abc123", "force": True})
+        self.assertTrue(stop["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_kill", {"session_id": "abc123", "force": True}, 30))
+
+        listed = self.control.invoke("execution.session.list", {})
+        self.assertTrue(listed["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_list_sessions", {}, 15))
+
+    def test_session_validation_fails_closed_before_transport(self):
+        before = len(self.transport.calls)
+        bad_bool = self.control.invoke(
+            "execution.session.input",
+            {"session_id": "abc123", "input": "x", "newline": "yes"},
+        )
+        self.assertFalse(bad_bool["ok"])
+        self.assertEqual(bad_bool["error"]["code"], "INVALID_INPUT")
+
+        bad_path = self.control.invoke(
+            "execution.session.start",
+            {"shell": "powershell", "cwd": r"C:\repo\..\secret"},
+        )
+        self.assertFalse(bad_path["ok"])
+        self.assertEqual(bad_path["error"]["code"], "PATH_TRAVERSAL")
+        self.assertEqual(len(self.transport.calls), before)
+
+    def test_filesystem_search_maps_to_allowlisted_bridge_search(self):
+        result = self.control.invoke(
+            "filesystem.search",
+            {
+                "path": r"C:\repo",
+                "pattern": "CapabilitySpec",
+                "mode": "contents",
+                "regex": False,
+                "case_sensitive": True,
+                "max_results": 25,
+                "glob": "*.py",
+            },
+        )
+        self.assertTrue(result["ok"])
+        action, params, timeout = self.transport.calls[-1]
+        self.assertEqual(action, "fs_search")
+        self.assertEqual(timeout, 120)
+        self.assertEqual(params["mode"], "content")
+        self.assertEqual(params["pattern"], "CapabilitySpec")
+        self.assertEqual(params["max_results"], 25)
+        self.assertEqual(params["glob"], "*.py")
+
+    def test_filesystem_search_rejects_invalid_mode_and_traversal(self):
+        before = len(self.transport.calls)
+        invalid = self.control.invoke(
+            "filesystem.search",
+            {"path": r"C:\repo", "pattern": "x", "mode": "everything"},
+        )
+        self.assertFalse(invalid["ok"])
+        self.assertEqual(invalid["error"]["code"], "INVALID_SEARCH_MODE")
+
+        traversal = self.control.invoke(
+            "filesystem.search",
+            {"path": r"C:\repo\..\secret", "pattern": "x"},
+        )
+        self.assertFalse(traversal["ok"])
+        self.assertEqual(traversal["error"]["code"], "PATH_TRAVERSAL")
+        self.assertEqual(len(self.transport.calls), before)
 
 
 class CallableTransportTests(unittest.TestCase):
