@@ -49,11 +49,16 @@ Automatic enumeration of arbitrary ChatGPT project conversations is unavailable.
 
 ## Execution mode
 
-Normal Chat is the default. Do not deploy a local Codex worker unless the user explicitly requested Codex for the current task. ChatGPT Work is a separate product mode and must also be explicitly requested; never translate a Work request into Codex.
+Normal Chat is preferred. ChatGPT Work handoff is deny-by-default.
 
-Agent Control cannot auto-create arbitrary normal ChatGPT conversations. If no normal-Chat session is already available/registered, report that routing limitation and keep the task in Chat instead of silently falling back to Codex. A Codex quota/capacity failure must not trigger reviewer, takeover, replacement, or recovery spawns on the same blocked provider.
+- Never trigger, request, suggest, or route through a ChatGPT Work handoff unless the user explicitly asks for Work mode for the current task.
+- A long/complex task, file creation, code changes, browser/computer use, a failed tool, or missing preferred capability is not permission to switch to Work.
+- If the current ChatGPT conversation can execute the task, do the work here. Do not tell the user to switch modes as a fallback.
+- Agent Control cannot auto-create arbitrary normal ChatGPT conversations. When it must dispatch, use the default direct non-Work local worker path instead of failing closed. Heaven Local Bridge and repository tooling remain valid non-Work routes.
+- Work and Codex are distinct. An explicit Work request must not be translated into Codex, and ordinary Chat/direct/Codex execution must never escalate into Work.
+- A Codex quota/capacity failure must not trigger a retry storm on the same blocked provider; preserve work and route through another authorized non-Work path when possible.
 
-## Deploy a Codex agent only after explicit opt-in
+## Deploy an agent (non-Work by default)
 
 Prefer a temporary task file instead of shell-embedding the user's prompt.
 
@@ -61,7 +66,7 @@ Prefer a temporary task file instead of shell-embedding the user's prompt.
 2. Run:
 
 ```powershell
-node <agentctl-path> deploy --role <role> --task-file <temp-file> --base <branch> --priority <0-100> --execution-mode codex
+node <agentctl-path> deploy --role <role> --task-file <temp-file> --base <branch> --priority <0-100>
 ```
 
 Optional:
@@ -97,7 +102,7 @@ Never deploy a new implementation owner onto a named boundary that the snapshot 
 To deploy a reviewer against a managed agent's branch:
 
 ```powershell
-node <agentctl-path> review <agent-id> --execution-mode codex
+node <agentctl-path> review <agent-id>
 ```
 
 Use this when the user asks to review, audit, validate, or support a completed managed branch.
