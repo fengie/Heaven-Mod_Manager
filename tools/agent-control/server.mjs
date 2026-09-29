@@ -47,7 +47,8 @@ import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
 import {
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
-  recoveryBackoffMs
+  recoveryBackoffMs,
+  recoveryMachineTarget
 } from "./lib/no-work-recovery.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
@@ -1750,7 +1751,7 @@ async function recoverFederatedNoWorkAgent(agentId) {
       model: metadata.model || "",
       boundary: metadata.boundary || `federated-retry:${source.task_id || source.agent_id}`,
       priority: metadata.priority ?? 60,
-      machine: metadata.machine || source.machine || "auto",
+      machine: recoveryMachineTarget(metadata.machine || source.machine, state.settings?.machinePolicies),
       dependencies: Array.isArray(metadata.dependencies) ? metadata.dependencies : [],
       targetAgentId: metadata.target_agent_id || null,
       lane: metadata.lane || null,
