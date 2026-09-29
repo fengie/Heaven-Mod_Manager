@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-102300-ollama-models",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:23:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:21:12.718802+00:00",
+  "finished_at": "2026-09-29T10:21:13.143479+00:00",
+  "stdout": "[{\"name\":\"smollm2:1.7b\",\"size\":1820428533,\"modified_at\":\"2026-09-28T13:46:32.8129803-04:00\"},{\"name\":\"qwen3-vl:4b\",\"size\":3295636135,\"modified_at\":\"2026-09-28T13:45:57.589197-04:00\"},{\"name\":\"qwen3-embedding:0.6b\",\"size\":639150858,\"modified_at\":\"2026-09-28T13:44:56.3604387-04:00\"},{\"name\":\"qwen3:4b\",\"size\":2497293931,\"modified_at\":\"2026-09-28T13:44:43.3840268-04:00\"},{\"name\":\"gemma4:26b\",\"size\":18604148513,\"modified_at\":\"2026-09-28T06:31:45.598811-04:00\"},{\"name\":\"qwen2.5-coder:7b\",\"size\":4683087561,\"modified_at\":\"2026-09-28T06:17:01.4873004-04:00\"}]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-102300-ollama-models.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-102300-ollama-models.stderr.log",
+    "stdout_bytes": 558,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ddf0b87ca271ab1366f103243885912db3ab297e6d07d1af6a3e9cc5b04aaacb"
+}
