@@ -53,9 +53,9 @@ The private-repo ACL is the compatibility auth mode when no local HMAC key is co
 
 ## Self-healing host requirement
 
-A host is not bridge-ready merely because one worker process is running. The persistent control path requires the canonical worker plus the independent `Heaven Local Bridge Watchdog`, current runtime copies, an up-to-date Git-independent local heartbeat, elevated task registration, and the remote host heartbeat. Bootstrap must refresh both task definitions so they run indefinitely and retain the maximum Task Scheduler restart budget.
+A host is not bridge-ready merely because one worker process is running. The persistent control path requires the canonical interactive worker, the independent `Heaven Local Bridge Watchdog`, the separate SYSTEM-owned `Heaven Local Bridge Sentinel`, current runtime copies, an up-to-date Git-independent local heartbeat/progress signal, elevated task registration, the Startup fallback, and the remote host heartbeat. Bootstrap must refresh all scheduled definitions so they run indefinitely and retain the maximum Task Scheduler restart budget.
 
-When a bridge host is offline, prefer its independent watchdog/startup recovery path. Do not require the dead worker to execute its own repair. For `heaven2`, treat loss of this persistence as a P1 control-plane defect because desktop/control operations have no equivalent authorized fallback.
+The sentinel is deliberately in a different failure domain: it starts at machine boot as SYSTEM, does not execute bridge jobs, and repairs missing/disabled interactive worker/watchdog tasks plus the Startup fallback. On `heaven2` it also restores a missing recovery Agent Control shortcut. When a bridge control path is unavailable, prefer these local recovery owners and never require the dead worker to execute its own repair. Keep host presence separate from control-path health: an absent bridge heartbeat does not prove the machine itself is offline.
 
 ## Health and capability negotiation
 
