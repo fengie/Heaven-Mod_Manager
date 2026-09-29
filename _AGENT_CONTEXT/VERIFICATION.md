@@ -1,3 +1,18 @@
+# v8.8.6 canonical-main reconciliation — verification scope
+
+Reconciliation base: `ce74d6abafb02bf4b5af1b59237751dcac84c298`.
+
+The last fully closed hosted Windows verification remains run **36541891969** on exact source `5abe40304dfcb48f96e750bd7da3d0075315625b`. Canonical main has since advanced through v8.8.6 product/UI/updater-E2E changes, Agent Control 0.5.1 liveness, reliability coverage, security hardening, updater cross-session ownership, and swarm-contract changes. This checkpoint does **not** relabel the older run as verification for those commits.
+
+Pending before current v8.8.6 verification closure:
+- exact-current-main repository/release verification on the SHA actually checked;
+- installed-client updater E2E evidence for packaged 60→61 success;
+- injected rollback E2E evidence with exact restart/health identity and seeded user-data/unknown-file hash preservation.
+
+This checkpoint changes continuity metadata only. Heaven's local command quota was exhausted before continuity scripts could run, so no new handoff-validator, negative-fixture, product-test, release-gate, or cache-promotion result is claimed. JSON continuity structures were parsed before publication through the GitHub path.
+
+---
+
 # v8.8.4 final support reconciliation — local release closure
 
 Exact verified product/source commit: `b48c1ff865ab41841d8c7eb931fca19f371f960e`, based on canonical `317ba6c86d54012a65a41772109a72566d29c0a9`. Local Windows / .NET SDK 10.0.401 verification is **CLOSED/PASS** for this exact source; hosted exact-main verification remains pending.
