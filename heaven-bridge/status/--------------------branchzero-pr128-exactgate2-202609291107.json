@@ -1,9 +1,10 @@
 {
   "id": "--------------------branchzero-pr128-exactgate2-202609291107",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:04:54.386968+00:00"
+  "updated_at": "2026-09-29T11:05:25.999301+00:00",
+  "exit_code": 22
 }
