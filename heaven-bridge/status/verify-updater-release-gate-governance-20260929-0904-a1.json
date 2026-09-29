@@ -1,9 +1,10 @@
 {
   "id": "verify-updater-release-gate-governance-20260929-0904-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T13:05:16.286440+00:00"
+  "updated_at": "2026-09-29T13:07:53.119015+00:00",
+  "exit_code": 1
 }
