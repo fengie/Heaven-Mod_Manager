@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import tempfile
 import threading
@@ -21,6 +22,81 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIsInstance(health["data"]["elevated"], bool)
         self.assertIsInstance(info["data"]["elevated"], bool)
         self.assertEqual(health["data"]["elevated"], hb.is_process_elevated())
+
+    def test_wait_for_file_success_and_soft_timeout(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            target = root / "ready.flag"
+            target.write_text("ok", encoding="utf-8")
+            with patch.object(hb, "allowed_roots", return_value=[root]):
+                ready = hb.run_job(
+                    "wait-file-ready",
+                    {
+                        "action": "wait_for",
+                        "params": {
+                            "condition": "file_exists",
+                            "path": str(target),
+                            "timeout_seconds": 0.2,
+                            "interval_ms": 50,
+                        },
+                    },
+                    threading.Event(),
+                )
+                self.assertTrue(ready["data"]["satisfied"])
+                self.assertFalse(ready["data"]["timed_out"])
+                self.assertTrue(ready["data"]["observed"]["exists"])
+
+                missing = hb.run_job(
+                    "wait-file-missing",
+                    {
+                        "action": "wait_for",
+                        "params": {
+                            "condition": "file_exists",
+                            "path": str(root / "missing.flag"),
+                            "timeout_seconds": 0.05,
+                            "interval_ms": 50,
+                            "soft_timeout": True,
+                        },
+                    },
+                    threading.Event(),
+                )
+                self.assertFalse(missing["data"]["satisfied"])
+                self.assertTrue(missing["data"]["timed_out"])
+
+    def test_wait_for_honors_cancellation_and_advertises_capability(self):
+        event = threading.Event()
+        event.set()
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.wait_for_condition(
+                {
+                    "condition": "session_running",
+                    "session_id": "missing-session",
+                    "timeout_seconds": 1,
+                },
+                event,
+            )
+        self.assertEqual(ctx.exception.code, "WAIT_CANCELLED")
+
+        health = hb.run_job("health-wait", {"action": "health", "params": {}}, threading.Event())
+        self.assertIn("wait_for", health["data"]["actions"])
+
+    def test_wait_for_process_exists_reports_identity(self):
+        result = hb.run_job(
+            "wait-process",
+            {
+                "action": "wait_for",
+                "params": {
+                    "condition": "process_exists",
+                    "pid": os.getpid(),
+                    "timeout_seconds": 0.2,
+                    "interval_ms": 50,
+                },
+            },
+            threading.Event(),
+        )
+        self.assertTrue(result["data"]["satisfied"])
+        self.assertTrue(result["data"]["observed"]["exists"])
+        self.assertEqual(result["data"]["observed"]["pid"], os.getpid())
 
     def test_canonical_hash_ignores_signature_only(self):
         base = {
@@ -146,11 +222,11 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 4)
+        self.assertEqual(result["data"]["worker_version"], 6)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
-            "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
+            "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch", "desktop_shortcut_create",
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
             "gui_mouse_scroll", "gui_key", "gui_type",
@@ -167,6 +243,176 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
         self.assertTrue(result["data"]["features"]["uia"]["set_value_requires_relay_opt_in"])
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
+
+    def test_secret_channel_is_not_advertised_without_encrypted_inbox(self):
+        with tempfile.TemporaryDirectory() as td:
+            with patch.dict(
+                os.environ,
+                {
+                    "HEAVEN_BRIDGE_SECRET_INBOX": td,
+                    "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "0",
+                    "COMPUTERNAME": "heaven",
+                },
+            ):
+                result = hb.run_job(
+                    "health-secret-off",
+                    {"action": "health", "params": {}},
+                    threading.Event(),
+                )
+        self.assertFalse(result["data"]["features"]["secret_input"]["available"])
+        self.assertNotIn("gui_type_secret", result["data"]["actions"])
+
+    def test_secret_channel_requires_unc_and_live_encrypted_smb_connection(self):
+        with patch.dict(
+            os.environ,
+            {"HEAVEN_BRIDGE_SECRET_INBOX": r"C:\\local\\secrets", "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1"},
+            clear=False,
+        ):
+            self.assertFalse(hb.secret_channel_status()["available"])
+
+        encrypted = hb.subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":true}\n',
+            stderr="",
+        )
+        unencrypted = hb.subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":false}\n',
+            stderr="",
+        )
+        unc = r"\\heaven2\secrets"
+        with patch.object(hb.Path, "is_dir", return_value=True), \
+                patch.object(hb.subprocess, "run", return_value=encrypted):
+            self.assertTrue(hb.verify_secret_inbox_transport(unc))
+        with patch.object(hb.Path, "is_dir", return_value=True), \
+                patch.object(hb.subprocess, "run", return_value=unencrypted):
+            self.assertFalse(hb.verify_secret_inbox_transport(unc))
+
+    def test_secret_channel_ignores_legacy_encrypted_env_flag_without_verified_transport(self):
+        with patch.dict(
+            os.environ,
+            {
+                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\heaven2\secrets",
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+            },
+            clear=False,
+        ), patch.object(hb, "verify_secret_inbox_transport", return_value=False):
+            result = hb.secret_channel_status()
+        self.assertFalse(result["available"])
+        self.assertFalse(result["transport_verified"])
+
+    def test_secret_type_consumes_once_without_relaying_canary(self):
+        canary = "CANARY-secret-never-persist-7f2b"
+        handle = "a" * 48
+        hwnd = 4242
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            consumed = root / "consumed"
+            inbox.mkdir()
+            now_utc = datetime.now(timezone.utc)
+            envelope = {
+                "schema": hb.SECRET_ENVELOPE_SCHEMA,
+                "handle": handle,
+                "destination": "heaven",
+                "purpose": hb.SECRET_PURPOSE,
+                "created_at": now_utc.isoformat(),
+                "expires_at": (now_utc + timedelta(seconds=120)).isoformat(),
+                "target_binding": hb.secret_target_binding(hwnd, "heaven"),
+                "value": canary,
+            }
+            (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+            relay_job = {
+                "id": "secret-canary-job",
+                "source": hb.PROTOCOL,
+                "action": "gui_type_secret",
+                "params": {"handle": handle, "hwnd": hwnd},
+                "created_at": now_utc.isoformat(),
+            }
+            self.assertNotIn(canary, hb.canonical_job(relay_job).decode("utf-8"))
+
+            env = {
+                "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+                "COMPUTERNAME": "heaven",
+            }
+            typed = {}
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                    patch.object(hb, "verify_secret_inbox_transport", return_value=True), \
+                    patch.object(hb, "desktop_focus_window", return_value={"focused": True}), \
+                    patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
+                health = hb.run_job("health-secret-on", {"action": "health", "params": {}}, threading.Event())
+                self.assertTrue(health["data"]["features"]["secret_input"]["available"])
+                self.assertIn("gui_type_secret", health["data"]["actions"])
+                result = hb.run_job("secret-canary-job", relay_job, threading.Event())
+
+                self.assertEqual(result["data"], {"consumed": True, "typed": True})
+                self.assertEqual(typed["value"], canary)
+                self.assertNotIn(canary, json.dumps(result))
+                self.assertFalse((inbox / f"{handle}.json").exists())
+                self.assertTrue((consumed / f"{handle}.used").exists())
+
+                # Re-creating the same handle cannot replay it after the local guard exists.
+                (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+                with self.assertRaises(hb.BridgeError) as replay:
+                    hb.run_job("secret-replay-job", {**relay_job, "id": "secret-replay-job"}, threading.Event())
+                self.assertEqual(replay.exception.code, "SECRET_REPLAYED")
+
+    def test_secret_envelope_ttl_destination_and_binding_fail_closed(self):
+        hwnd = 9191
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            consumed = root / "consumed"
+            inbox.mkdir()
+            env = {
+                "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+                "COMPUTERNAME": "heaven",
+            }
+
+            def write_envelope(handle, *, destination="heaven", binding=None, created=None, expires=None):
+                created = created or datetime.now(timezone.utc)
+                expires = expires or (created + timedelta(seconds=120))
+                doc = {
+                    "schema": hb.SECRET_ENVELOPE_SCHEMA,
+                    "handle": handle,
+                    "destination": destination,
+                    "purpose": hb.SECRET_PURPOSE,
+                    "created_at": created.isoformat(),
+                    "expires_at": expires.isoformat(),
+                    "target_binding": binding or hb.secret_target_binding(hwnd, destination),
+                    "value": "hidden-value",
+                }
+                (inbox / f"{handle}.json").write_text(json.dumps(doc), encoding="utf-8")
+
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                    patch.object(hb, "verify_secret_inbox_transport", return_value=True):
+                expired_handle = "b" * 48
+                created = datetime.now(timezone.utc) - timedelta(minutes=3)
+                write_envelope(expired_handle, created=created, expires=created + timedelta(seconds=60))
+                with self.assertRaises(hb.BridgeError) as expired:
+                    hb.consume_secret_envelope(expired_handle, hwnd)
+                self.assertEqual(expired.exception.code, "SECRET_EXPIRED")
+
+                destination_handle = "c" * 48
+                write_envelope(destination_handle, destination="heaven2")
+                with self.assertRaises(hb.BridgeError) as wrong_destination:
+                    hb.consume_secret_envelope(destination_handle, hwnd)
+                self.assertEqual(wrong_destination.exception.code, "SECRET_DESTINATION_MISMATCH")
+
+                binding_handle = "d" * 48
+                write_envelope(binding_handle, binding="0" * 64)
+                with self.assertRaises(hb.BridgeError) as wrong_binding:
+                    hb.consume_secret_envelope(binding_handle, hwnd)
+                self.assertEqual(wrong_binding.exception.code, "SECRET_TARGET_MISMATCH")
+
+    def test_secret_type_rejects_secret_values_in_relay_params(self):
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.desktop_type_secret({"handle": "e" * 48, "hwnd": 123, "value": "must-not-cross-github"})
+        self.assertEqual(ctx.exception.code, "SECRET_RELAY_VALUE_BLOCKED")
 
     def test_queue_order_prefers_control_then_priority_then_fifo(self):
         current = datetime(2026, 9, 29, 10, 4, tzinfo=timezone.utc)
@@ -270,6 +516,24 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(result["data"], expected)
         move.assert_called_once_with({"x": 321, "y": 654})
+
+    def test_desktop_shortcut_create_routes_structured_request(self):
+        expected = {"path": r"C:\\Users\\Example\\Desktop\\Agent Control.lnk", "created": True}
+        payload = {
+            "name": "Agent Control",
+            "target": r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "args": ["-NoProfile"],
+            "overwrite": True,
+        }
+        with patch.object(hb, "desktop_create_shortcut", return_value=expected) as create:
+            result = hb.run_job(
+                "shortcut-create-test",
+                {"action": "desktop_shortcut_create", "params": payload},
+                threading.Event(),
+            )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["data"], expected)
+        create.assert_called_once()
 
     def test_uia_request_validation_and_structured_route(self):
         with self.assertRaises(hb.BridgeError) as missing:
@@ -419,14 +683,58 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
+    def test_local_watchdog_heartbeat_is_network_independent_and_pid_bound(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_HEARTBEAT", Path(td) / "worker-local-heartbeat.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_local_heartbeat()
+            row = json.loads(hb.LOCAL_HEARTBEAT.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertEqual(row["worker_version"], hb.WORKER_VERSION)
+        self.assertEqual(row["protocol"], hb.PROTOCOL)
+        self.assertIn("updated_at", row)
+
+    def test_loop_progress_is_pid_bound_and_local(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_PROGRESS", Path(td) / "worker-loop-progress.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_loop_progress()
+            row = json.loads(hb.LOCAL_PROGRESS.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertIn("updated_at", row)
+
+    def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")
+        manage = MODULE_PATH.with_name("manage.ps1").read_text(encoding="utf-8")
+        self.assertIn("-RestartCount 255", bootstrap)
+        self.assertIn("-ExecutionTimeLimit ([TimeSpan]::Zero)", bootstrap)
+        self.assertIn("$WatchdogTaskName = 'Heaven Local Bridge Watchdog'", bootstrap)
+        self.assertIn("Register-ScheduledTask", bootstrap)
+        self.assertIn("HeavenBridgeWatchdog.vbs", bootstrap)
+        self.assertIn("-StartupFallback", bootstrap)
+        self.assertIn("Remove-Item $StartupVbs", bootstrap)
+        self.assertIn("worker-local-heartbeat.json", watchdog)
+        self.assertIn("Startup fallback handed ownership to the scheduled watchdog", watchdog)
+        self.assertIn("local heartbeat stale", watchdog)
+        self.assertIn("worker queue loop stalled", watchdog)
+        self.assertIn("worker-loop-progress.json", watchdog)
+        self.assertIn('Global\\MHW.HeavenBridgeWatchdog', watchdog)
+        self.assertNotIn("git -C", watchdog)
+        self.assertIn("@('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
+
     def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         compile_idx = bootstrap.index("& $python -m py_compile $staged")
         suite_idx = bootstrap.index("& $python -m unittest -q 'heaven-bridge\\test_worker.py'")
         stop_idx = bootstrap.index("foreach ($oldPid in $oldWorkerIds)")
         start_idx = bootstrap.index("$candidate = Start-Process")
+        publish_idx = bootstrap.index("Move-Item $staged $RuntimeWorker -Force")
         self.assertLess(compile_idx, suite_idx)
-        self.assertLess(suite_idx, stop_idx)
+        self.assertLess(suite_idx, publish_idx)
+        self.assertLess(publish_idx, stop_idx)
         self.assertLess(stop_idx, start_idx)
         self.assertIn("process-lifetime singleton lock", bootstrap)
         self.assertIn("Copy-Item $BackupWorker $RuntimeWorker -Force", bootstrap)
