@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-catalog-resolve-xaml-01",
-  "state": "running",
+  "state": "completed",
   "action": "fs_edit",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:43:57.917836+00:00"
+  "updated_at": "2026-09-29T15:44:09.481531+00:00",
+  "exit_code": 0
 }
