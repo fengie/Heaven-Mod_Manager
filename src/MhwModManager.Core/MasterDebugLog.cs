@@ -21,6 +21,11 @@ public static class MasterDebugLog
     private static int hooksInstalled;
     private static long totalFirstChanceExceptions;
     private static readonly bool FirstChanceDetailEnabled = IsEnabled(Environment.GetEnvironmentVariable("MHW_FIRST_CHANCE_DETAIL"));
+    private static readonly bool MethodTraceDetailEnabled =
+        FirstChanceDetailEnabled
+        || IsEnabled(Environment.GetEnvironmentVariable("MHW_METHOD_TRACE_DETAIL"))
+        || IsEnabled(Environment.GetEnvironmentVariable("MOD_MANAGER_DIAGNOSTIC"))
+        || IsEnabled(Environment.GetEnvironmentVariable("MHWMM_DIAGNOSTIC"));
     [ThreadStatic] private static bool writing;
     [ThreadStatic] private static bool handlingFirstChance;
 
@@ -85,7 +90,7 @@ public static class MasterDebugLog
             Write("UNOBSERVED-TASK-GLOBAL", "TaskScheduler.UnobservedTaskException", args.Exception);
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().OrderBy(x => x.GetName().Name, StringComparer.OrdinalIgnoreCase))
             Write("ASSEMBLY", $"Already loaded {assembly.FullName}; location={SafeAssemblyLocation(assembly)}");
-        Write("MASTER", $"Global hooks installed: FirstChanceException, UnhandledException, UnobservedTaskException, AssemblyLoad, ProcessExit. firstChanceDetail={FirstChanceDetailEnabled}");
+        Write("MASTER", $"Global hooks installed: FirstChanceException, UnhandledException, UnobservedTaskException, AssemblyLoad, ProcessExit. firstChanceDetail={FirstChanceDetailEnabled}; methodTraceDetail={MethodTraceDetailEnabled}");
     }
 
     public static OperationScope Begin(
@@ -96,7 +101,7 @@ public static class MasterDebugLog
         [CallerFilePath] string sourceFile = "",
         [CallerLineNumber] int sourceLine = 0)
     {
-        return new OperationScope(area, operation, detail, caller, sourceFile, sourceLine);
+        return new OperationScope(area, operation, detail, caller, sourceFile, sourceLine, verbose: true);
     }
 
     public static OperationScope BeginMethod(
@@ -106,7 +111,7 @@ public static class MasterDebugLog
         [CallerLineNumber] int sourceLine = 0)
     {
         var component = Path.GetFileNameWithoutExtension(sourceFile);
-        return new OperationScope("METHOD", component + "." + member, detail, member, sourceFile, sourceLine);
+        return new OperationScope("METHOD", component + "." + member, detail, member, sourceFile, sourceLine, MethodTraceDetailEnabled);
     }
 
     public static async Task TraceAsync(string area, string operation, Func<Task> action, string? detail = null)
@@ -248,32 +253,40 @@ public static class MasterDebugLog
         private readonly string? previousOperation;
         private readonly ScopeFrame? previousScope;
         private readonly Stopwatch stopwatch = Stopwatch.StartNew();
+        private readonly bool verbose;
         private int outcome;
         private int disposed;
         private int observedExceptionCount;
         private string? firstObservedExceptionType;
         private string? firstObservedExceptionMessage;
 
-        internal OperationScope(string area, string operation, string? detail, string caller, string sourceFile, int sourceLine)
+        internal OperationScope(string area, string operation, string? detail, string caller, string sourceFile, int sourceLine, bool verbose)
         {
             this.area = area;
             this.operation = operation;
+            this.verbose = verbose;
             id = Guid.NewGuid().ToString("N")[..12];
             parentId = CurrentOperation.Value;
             previousOperation = CurrentOperation.Value;
             previousScope = CurrentScope.Value;
             CurrentOperation.Value = id;
             CurrentScope.Value = new ScopeFrame(this, previousScope);
-            var location = $"{Path.GetFileName(sourceFile)}:{sourceLine}";
-            Write(area, $"START {operation}; id={id}; parent={parentId ?? "<none>"}; caller={caller}; source={location}{FormatDetail(detail)}");
+            if (verbose)
+            {
+                var location = $"{Path.GetFileName(sourceFile)}:{sourceLine}";
+                Write(area, $"START {operation}; id={id}; parent={parentId ?? "<none>"}; caller={caller}; source={location}{FormatDetail(detail)}");
+            }
         }
 
         public void Success(string? detail = null)
         {
             if (Interlocked.CompareExchange(ref outcome, 1, 0) != 0) return;
             var errors = Volatile.Read(ref observedExceptionCount);
-            var status = errors == 0 ? "PASS" : "PASS-WITH-ERROR-CHECK";
-            Write(area, $"{status} {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
+            if (verbose || errors != 0)
+            {
+                var status = errors == 0 ? "PASS" : "PASS-WITH-ERROR-CHECK";
+                Write(area, $"{status} {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
+            }
         }
 
         public void Fail(Exception exception, string? detail = null)
@@ -302,7 +315,8 @@ public static class MasterDebugLog
                 var errors = Volatile.Read(ref observedExceptionCount);
                 if (errors == 0)
                 {
-                    Write(area, $"PASS-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
+                    if (verbose)
+                        Write(area, $"PASS-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
                 }
                 else
                 {
