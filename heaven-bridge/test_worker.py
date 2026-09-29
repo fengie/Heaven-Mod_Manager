@@ -222,7 +222,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 6)
+        self.assertEqual(result["data"]["worker_version"], 7)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
@@ -243,6 +243,11 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
         self.assertTrue(result["data"]["features"]["uia"]["set_value_requires_relay_opt_in"])
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
+        self.assertEqual(result["data"]["resources"]["configured_max_workers"], hb.MAX_WORKERS)
+        self.assertEqual(result["data"]["resources"]["logical_cpus"], hb.LOGICAL_CPUS)
+        self.assertGreaterEqual(result["data"]["resources"]["auto_max_workers"], 8)
+        self.assertLessEqual(result["data"]["resources"]["configured_max_workers"], 32)
+        self.assertIn("available_start_slots", result["data"]["resources"])
 
     def test_secret_channel_is_not_advertised_without_encrypted_inbox(self):
         with tempfile.TemporaryDirectory() as td:
