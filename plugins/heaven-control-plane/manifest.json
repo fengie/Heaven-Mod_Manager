@@ -1,0 +1,28 @@
+{
+  "schema": "heaven-control-plane/manifest/v1",
+  "name": "heaven-control-plane",
+  "version": "0.1.0",
+  "bridge_protocol": "chatgpt-heaven-bridge-v2",
+  "entrypoint": "heaven_control_plane.service:HeavenControlPlane",
+  "capability_schema": "heaven-control-plane/v1",
+  "security": {
+    "plaintext_secrets_in_relay": false,
+    "inline_secret_environment_values": false,
+    "host_secret_handles": true,
+    "filesystem_path_traversal_segments": false
+  },
+  "capabilities": [
+    "control.discovery",
+    "control.health",
+    "control.cancel",
+    "execution.run",
+    "filesystem.read",
+    "filesystem.write",
+    "filesystem.patch",
+    "git.status",
+    "git.diff",
+    "git.verify_remote_main",
+    "observability.logs.page",
+    "observability.artifacts.page"
+  ]
+}

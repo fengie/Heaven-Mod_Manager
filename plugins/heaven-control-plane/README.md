@@ -43,3 +43,26 @@ Prefer safe structured functions over raw shell. High-level workflows compose pr
 ## Compatibility
 
 `heaven-bridge/` remains active infrastructure until a verified migration says otherwise. Any migration must update every runtime/bootstrap/workflow/test/doc reference and preserve compatibility during rollout.
+
+
+## Implemented vertical slice (v0.1.0)
+
+The first production slice is implemented as a small Python standard-library package:
+
+- versioned capability registry plus structured success/error envelopes;
+- discovery, health, and cancellation conventions;
+- bounded structured command execution through existing Heaven Bridge `proc_run`;
+- bounded filesystem read/write/exact-patch adapters over `fs_read`, `fs_write`, and `fs_edit`;
+- Git status/diff/exact remote-`main` verification using a structured working directory instead of path interpolation;
+- payload-free bounded audit metadata and text-artifact pagination;
+- inline secret-environment rejection with host-side `env_from_host` handles;
+- traversal-segment rejection before filesystem/repository requests reach the bridge;
+- unit tests for success, malformed/oversized input, timeout mapping, cancellation mapping, path traversal, output truncation, pagination, and concurrent audit writes.
+
+Run the exact plugin gate from repository root:
+
+```powershell
+python .\plugins\heaven-control-plane\verify.py
+```
+
+The adapter is transport-injected on purpose: the active `heaven-bridge/` worker remains the runtime boundary while this package supplies stable contracts above its already-proven actions.
