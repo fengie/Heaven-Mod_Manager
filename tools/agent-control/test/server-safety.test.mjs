@@ -505,6 +505,18 @@ test("engineering autopilot exposes governed control routes and a periodic inter
   assert.match(autopilotCore, /operator-integration-approval-required/);
 });
 
+test("perpetual autopilot renews routing freshness without reviving stale assignments", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("function refreshPerpetualRoutingLease");
+  const end = source.indexOf("function persistAutopilotPhase", start);
+  assert.ok(start >= 0 && end > start);
+  const block = source.slice(start, end);
+  assert.match(block, /perpetual-controller-reconciliation/);
+  assert.match(block, /mode:\s*"overlay"/);
+  assert.match(block, /assignments:\s*\[\]/);
+  assert.doesNotMatch(block, /\.\.\.state\.settings\?\.routingManifest/);
+});
+
 test("swarm recovery dispatch is evaluated before waiting for the active wave to finish", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const start = source.indexOf("async function reconcileSwarmTailRecoveries");
