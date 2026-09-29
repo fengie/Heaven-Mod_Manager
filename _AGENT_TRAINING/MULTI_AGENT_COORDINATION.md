@@ -62,3 +62,15 @@ For each relevant branch record:
 - unresolved follow-up.
 
 A fresh integration agent should be able to answer, from the repository alone: what work exists, what was reviewed, what was merged, what was rejected, what was abandoned, and what remains unresolved.
+
+## Final orphaned-work sweep
+Before a swarm/session/milestone is complete:
+1. inventory active, stale, disconnected, failed, and replaced agents plus task leases;
+2. inspect branches/worktrees/commits from workers that stopped or stream-failed;
+3. identify unfinished verification, integration, cleanup, or documentation;
+4. preserve useful partial artifacts;
+5. dispatch replacement/recovery owners for every still-valid unresolved boundary;
+6. retire superseded work only after useful evidence is accounted for;
+7. rerun the completion gate after the recovery wave.
+
+Agent disappearance is not task completion.
