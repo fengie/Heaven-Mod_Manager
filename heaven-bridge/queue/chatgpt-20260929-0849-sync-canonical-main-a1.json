@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0849-sync-canonical-main-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo=\"$env:USERPROFILE\\mhw-mods-work-canonical\"; git -C $repo fetch --prune origin; if((git -C $repo status --porcelain).Length -ne 0){ throw 'canonical checkout dirty; refusing sync' }; if((git -C $repo branch --show-current).Trim() -ne 'main'){ throw 'canonical checkout not on main' }; git -C $repo merge --ff-only origin/main; Write-Output \"HEAD=$(git -C $repo rev-parse HEAD)\"; Write-Output \"VERSION=$(Get-Content (Join-Path $repo 'VERSION.txt') -Raw)\"; Write-Output 'LOG_BEGIN'; git -C $repo log -12 --oneline --decorate; Write-Output 'LOG_END'; Write-Output 'STATUS_BEGIN'; git -C $repo status --short --branch; Write-Output 'STATUS_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T08:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
