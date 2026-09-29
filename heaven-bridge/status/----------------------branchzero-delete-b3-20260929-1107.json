@@ -1,0 +1,9 @@
+{
+  "id": "----------------------branchzero-delete-b3-20260929-1107",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:08:35.527267+00:00"
+}
