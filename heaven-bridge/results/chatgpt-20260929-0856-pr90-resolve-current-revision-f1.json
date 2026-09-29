@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0856-pr90-resolve-current-revision-f1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:56:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:54:10.551465+00:00",
+  "finished_at": "2026-09-29T08:54:10.974762+00:00",
+  "stdout": "",
+  "stderr": "UNEXPECTED_CONFLICT_SET: _AGENT_CONTEXT/CURRENT_REVISION.json\r\nAt line:1 char:282\r\n+ ... ON.json')){ throw ('UNEXPECTED_CONFLICT_SET: '+($conf -join ',')) };  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (UNEXPECTED_CONF...T_REVISION.json:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : UNEXPECTED_CONFLICT_SET: _AGENT_CONTEXT/CURRENT_REVISION.json\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0856-pr90-resolve-current-revision-f1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0856-pr90-resolve-current-revision-f1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 446,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "dc1b4bc21adea62133d36da0b565b5162e0176ec6867db5ae31a455ab6f6a01c"
+}
