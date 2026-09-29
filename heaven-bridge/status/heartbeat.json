@@ -1,32 +1,12 @@
 {
   "host": "heaven",
-  "pid": 92824,
-  "worker_version": 3,
+  "pid": 55196,
+  "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T11:44:53.658428+00:00",
-  "running": [
-    {
-      "id": "chatgpt-20260929-111000-agentctl-help",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:44:00.318832+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-1113-control-plane-inspect",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:44:52.105410+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:44:52.136628+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-1114-control-plane-truth-01",
-      "action": "proc_run",
-      "started_at": "2026-09-29T11:44:52.157713+00:00"
-    }
-  ],
+  "elevated": false,
+  "updated_at": "2026-09-29T11:47:44.435656+00:00",
+  "running": [],
   "capabilities": [
     "app_launch",
     "cancel",
@@ -70,6 +50,16 @@
     "python",
     "screenshot",
     "system_info",
+    "uia_collapse",
+    "uia_expand",
+    "uia_find",
+    "uia_focus",
+    "uia_invoke",
+    "uia_select",
+    "uia_set_value",
+    "uia_toggle",
+    "uia_tree",
+    "wait_for",
     "window_close",
     "window_focus",
     "window_list",
