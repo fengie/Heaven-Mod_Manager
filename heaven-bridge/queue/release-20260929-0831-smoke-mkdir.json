@@ -1,0 +1,11 @@
+{
+  "id": "release-20260929-0831-smoke-mkdir",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_mkdir",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\release-smoke-20260929"
+  },
+  "created_at": "2026-09-29T08:31:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
