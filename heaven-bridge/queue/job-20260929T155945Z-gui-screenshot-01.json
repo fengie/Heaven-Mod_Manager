@@ -1,0 +1,11 @@
+{
+  "id": "job-20260929T155945Z-gui-screenshot-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:59:45Z",
+  "target_host": "heaven",
+  "action": "screenshot",
+  "params": {
+    "scope": "primary"
+  },
+  "priority": "high"
+}
