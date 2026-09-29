@@ -30,9 +30,11 @@ public static partial class PathRules
     public static bool IsSafeArchiveRelativePath(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (string.IsNullOrWhiteSpace(path)) return false;
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
         var p = path.Replace('/', '\\').Trim();
-        if (p.StartsWith('\\') || Path.IsPathRooted(p) || p.Contains(':')) return false;
+        if (p.StartsWith('\\') || Path.IsPathRooted(p) || p.Contains(':'))
+            return false;
         var segments = p.Split('\\', StringSplitOptions.RemoveEmptyEntries);
         return segments.Length > 0 && segments.All(s => !IsUnsafeSegment(s));
     }
@@ -40,10 +42,13 @@ public static partial class PathRules
     private static bool IsUnsafeSegment(string segment)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (segment is "." or ".." || string.IsNullOrWhiteSpace(segment)) return true;
-        if (segment.Contains(':') || segment.IndexOfAny(InvalidFileNameChars) >= 0) return true;
+        if (segment is "." or ".." || string.IsNullOrWhiteSpace(segment))
+            return true;
+        if (segment.Contains(':') || segment.IndexOfAny(InvalidFileNameChars) >= 0)
+            return true;
         var trimmed = segment.TrimEnd('.', ' ');
-        if (trimmed.Length == 0 || !trimmed.Equals(segment, StringComparison.Ordinal)) return true;
+        if (trimmed.Length == 0 || !trimmed.Equals(segment, StringComparison.Ordinal))
+            return true;
         var stem = Path.GetFileNameWithoutExtension(trimmed);
         return ReservedDeviceNames.Contains(stem);
     }
@@ -68,13 +73,15 @@ public static partial class PathRules
         component = string.Empty;
         var p = Normalize(path);
         var match = ArmorModelRegex().Match(p);
-        if (!match.Success) return false;
+        if (!match.Success)
+            return false;
         var matchedModelId = match.Groups[1].Value.ToLowerInvariant();
         modelId = matchedModelId;
 
         var segments = p.Split('\\');
         var modelIndex = Array.FindIndex(segments, s => s.Equals(matchedModelId, StringComparison.OrdinalIgnoreCase));
-        if (modelIndex < 0 || modelIndex + 1 >= segments.Length) return false;
+        if (modelIndex < 0 || modelIndex + 1 >= segments.Length)
+            return false;
         component = segments[modelIndex + 1].ToLowerInvariant() switch
         {
             "helm" => "head",
@@ -106,7 +113,11 @@ public static partial class PathRules
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "CON", "PRN", "AUX", "NUL" };
-        for (var i = 1; i <= 9; i++) { names.Add($"COM{i}"); names.Add($"LPT{i}"); }
+        for (var i = 1; i <= 9; i++)
+        {
+            names.Add($"COM{i}");
+            names.Add($"LPT{i}");
+        }
         return names;
     }
 
