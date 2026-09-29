@@ -107,9 +107,43 @@ DELETE FROM schema_info WHERE key='legacy_migration_complete';
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await db.ExecuteAsync("INSERT OR IGNORE INTO blobs(sha256,size,created_at,verified_at) VALUES($h,$s,$u,$u)",new Dictionary<string,object?>{{"$h",hash},{"$s",size},{"$u",DateTimeOffset.UtcNow.ToString("O")}},ct);
     }
-    private string EnsureLegacyBlob(string hash){
+    private string EnsureLegacyBlob(string hash)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var src=Path.Combine(LegacyBlobs,hash);if(!File.Exists(src))throw new FileNotFoundException($"v7 referenced blob is missing: {hash}",src);Directory.CreateDirectory(nextBlobRoot);var dst=Path.Combine(nextBlobRoot,hash);if(!File.Exists(dst)){try{if(!OperatingSystem.IsWindows()||!CreateHardLink(dst,src,0))throw new IOException("Hardlink failed");}catch{File.Copy(src,dst,false);}}return dst;}
+        var src=Path.Combine(LegacyBlobs,hash);
+        if(!File.Exists(src))throw new FileNotFoundException($"v7 referenced blob is missing: {hash}",src);
+
+        string sourceHash;
+        using(var sourceStream=File.OpenRead(src))
+            sourceHash=Convert.ToHexString(SHA256.HashData(sourceStream)).ToLowerInvariant();
+        if(!StringComparer.OrdinalIgnoreCase.Equals(sourceHash,hash))
+            throw new InvalidDataException($"Legacy v7 blob is corrupt: expected {hash}, got {sourceHash}");
+
+        Directory.CreateDirectory(nextBlobRoot);
+        var dst=Path.Combine(nextBlobRoot,hash);
+        if(File.Exists(dst))
+        {
+            string destinationHash;
+            using(var destinationStream=File.OpenRead(dst))
+                destinationHash=Convert.ToHexString(SHA256.HashData(destinationStream)).ToLowerInvariant();
+            if(StringComparer.OrdinalIgnoreCase.Equals(destinationHash,hash))return dst;
+
+            // A hash-named CAS path with the wrong bytes is never a valid object. Remove only
+            // this bad directory entry before recreating it so hardlinks are not overwritten
+            // in place and a failed attempt can converge on the next retry.
+            File.Delete(dst);
+        }
+
+        try
+        {
+            if(!OperatingSystem.IsWindows()||!CreateHardLink(dst,src,0))throw new IOException("Hardlink failed");
+        }
+        catch
+        {
+            File.Copy(src,dst,false);
+        }
+        return dst;
+    }
     private async Task<string?> InferProviderAsync(string path,string hash,CancellationToken ct){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var c=await db.OpenAsync(ct);await using var cmd=c.CreateCommand();cmd.CommandText="SELECT mf.mod_id FROM mod_files mf JOIN mods m ON m.id=mf.mod_id WHERE mf.path=$p AND mf.blob_sha256=$h AND m.enabled=1 ORDER BY m.priority DESC LIMIT 1";cmd.Parameters.AddWithValue("$p",path);cmd.Parameters.AddWithValue("$h",hash);return (string?)await cmd.ExecuteScalarAsync(ct);}
