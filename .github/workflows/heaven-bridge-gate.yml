@@ -37,10 +37,11 @@ jobs:
       - name: Check out exact bridge source
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
+      - name: Verify system Python
+        shell: pwsh
+        run: |
+          python --version
+          python -c "import sys; assert sys.version_info >= (3, 11), sys.version"
 
       - name: Compile bridge Python
         shell: pwsh
