@@ -48,6 +48,46 @@ function writeLastMessage(spec, text) {
   fs.writeFileSync(spec.lastMessagePath, value ? `${value}\n` : "", "utf8");
 }
 
+async function postLoopbackJson(port, pathname, value) {
+  const response = await fetch(`http://127.0.0.1:${Number(port || 7331)}${pathname}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(value)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`Agent Control evidence relay failed (${response.status}): ${body.error || response.statusText}`);
+  }
+  return body;
+}
+
+async function relayStructuredEvidence(spec, document) {
+  const evidence = Array.isArray(document?.evidence) ? document.evidence : [];
+  for (const item of evidence) {
+    await postLoopbackJson(
+      spec.controlPort,
+      `/api/tasks/${encodeURIComponent(spec.taskId)}/evidence`,
+      item
+    );
+  }
+
+  if (document?.reviewVerdict) {
+    if (!spec.targetAgentId) throw new Error("Remote review verdict is missing targetAgentId.");
+    await postLoopbackJson(
+      spec.controlPort,
+      `/api/integration/${encodeURIComponent(spec.targetAgentId)}/review-verdict`,
+      document.reviewVerdict
+    );
+  }
+
+  if (spec.role === "test" && evidence.length === 0) {
+    throw new Error("Remote verification worker exited without structured verification evidence.");
+  }
+  if (spec.role === "reviewer" && !document?.reviewVerdict) {
+    throw new Error("Remote reviewer exited without a structured review verdict.");
+  }
+}
+
 async function main() {
   const specPath = process.argv[2];
   if (!specPath) throw new Error("Runner spec path is required.");
@@ -100,6 +140,7 @@ async function main() {
   const remoteParent = path.win32.dirname(remoteWorktree);
   const remotePromptPath = path.win32.join(remoteParent, `${remoteLeaf}.agent-control-prompt.txt`);
   const remotePatchPath = path.win32.join(remoteParent, `${remoteLeaf}.agent-control.patch`);
+  const remoteEvidencePath = path.win32.join(remoteParent, `${remoteLeaf}.agent-control-evidence.json`);
 
   const basePrompt = fs.readFileSync(spec.promptPath, "utf8");
   const remotePrompt = [
@@ -109,6 +150,8 @@ async function main() {
     "- You are running in an isolated workspace on heaven; heaven2 remains control/credential authority.",
     "- Do not push, publish, change remotes, or move credentials.",
     "- Do not commit. Leave all source edits in the working tree; the controller will transfer a binary patch back to heaven2.",
+    "- Do not POST to 127.0.0.1 Agent Control routes from heaven; loopback there is the wrong machine.",
+    `- Before exiting, write structured evidence JSON to ${remoteEvidencePath}. Use {"evidence":[{"type":"verification","sourceSha":"...","command":"...","result":"pass|fail","details":"..."}],"reviewVerdict":{"verdict":"approved|changes-requested|rejected","reason":"...","evidence":{}}}. Omit reviewVerdict unless this is a review task.`,
     "- Run the requested verification that is possible in this workspace and report exact commands/results.",
     ""
   ].join("\n");
@@ -121,6 +164,15 @@ async function main() {
   });
   if (!bridgeResultSucceeded(promptWrite)) {
     throw new Error(`Heaven prompt write failed with ${promptWrite.status} / ${promptWrite.exit_code}.`);
+  }
+  const evidenceSeed = await runHeavenBridgeAction({
+    id: `${prefix}-evidence-seed`,
+    action: "fs_write",
+    params: { path: remoteEvidencePath, content: "{}\n", mode: "rewrite" },
+    timeoutMs: 120_000
+  });
+  if (!bridgeResultSucceeded(evidenceSeed)) {
+    throw new Error(`Heaven evidence seed failed with ${evidenceSeed.status} / ${evidenceSeed.exit_code}.`);
   }
 
   const executeCommand = buildRemoteCodexCommand({
@@ -145,10 +197,27 @@ async function main() {
     throw new Error(`Heaven Codex execution failed with authoritative status ${executed.status} / exit ${executed.exit_code}.`);
   }
 
+  const evidenceRead = await runHeavenBridgeAction({
+    id: `${prefix}-evidence-read`,
+    action: "fs_read",
+    params: { path: remoteEvidencePath, offset: 0, length: 5000 },
+    timeoutMs: 120_000
+  });
+  if (!bridgeResultSucceeded(evidenceRead)) {
+    throw new Error(`Heaven evidence read failed with ${evidenceRead.status} / ${evidenceRead.exit_code}.`);
+  }
+  let evidenceDocument = {};
+  try {
+    evidenceDocument = JSON.parse(String(evidenceRead.data?.content || "{}"));
+  } catch (error) {
+    throw new Error(`Remote worker evidence JSON is invalid: ${error.message || error}`);
+  }
+  await relayStructuredEvidence(spec, evidenceDocument);
+
   const patchCommand = [
     "$ErrorActionPreference = 'Stop'",
     `git -C ${psQuote(remoteWorktree)} add -A`,
-    `git -C ${psQuote(remoteWorktree)} diff --cached --binary ${psQuote(spec.baseSha)} -- . | Set-Content -LiteralPath ${psQuote(remotePatchPath)} -Encoding utf8`,
+    `git -C ${psQuote(remoteWorktree)} diff --cached --binary ${psQuote(spec.baseSha)} -- . | Out-File -LiteralPath ${psQuote(remotePatchPath)} -Encoding ascii`,
     `$bytes = (Get-Item -LiteralPath ${psQuote(remotePatchPath)}).Length`,
     "Write-Output ('PATCH_BYTES=' + $bytes)"
   ].join("; ");
