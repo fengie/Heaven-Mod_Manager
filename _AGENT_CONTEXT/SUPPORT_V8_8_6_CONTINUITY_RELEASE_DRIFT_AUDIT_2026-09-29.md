@@ -4,7 +4,7 @@
 
 `37ea6658d6004fee3d13cb51f27005638cae74bc` on `fengie/mhw-mods/main` immediately before this artifact was created.
 
-During the investigation, canonical `main` advanced from `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c` to `37ea6658d6004fee3d13cb51f27005638cae74bc`. That live movement is evidence of concurrent integration work and is the reason this support lane does **not** directly rewrite shared release/continuity files owned by reconciliation/release roles.
+During the investigation, canonical `main` advanced from `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c` through `68831fe4a6d15f7854ba45bf8f3454bfd0014f0b` to `37ea6658d6004fee3d13cb51f27005638cae74bc`. That live movement is evidence of concurrent integration work and is the reason this support lane does **not** directly rewrite shared release/continuity files owned by reconciliation/release roles.
 
 ## Scope
 
@@ -47,13 +47,15 @@ At the same canonical head, `_AGENT_CONTEXT/CURRENT_REVISION.json` says `current
 
 **Severity / impact:** high for agent coordination. A new agent following continuity literally can select obsolete work, attribute verification to the wrong source, or regress release state.
 
-### F3 — Exact-current-head verification is not established by the GitHub evidence checked here
+### F3 — Exact-current-product-head verification is not established by the GitHub evidence checked here
 
 For `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c`, GitHub returned no workflow runs and no combined commit statuses when queried.
 
-Canonical `main` then advanced to `37ea6658d6004fee3d13cb51f27005638cae74bc`. The new head contains production source changes in `src/MhwModManager.App/App.xaml.cs`, and no exact-head verification result was observed during this bounded investigation before artifact creation.
+Canonical `main` then advanced to production source commit `68831fe4a6d15f7854ba45bf8f3454bfd0014f0b` (generic-profile workspace containment in `src/MhwModManager.App/App.xaml.cs`). GitHub likewise returned no workflow runs or combined commit statuses for that exact source commit when queried.
 
-This does **not** prove tests fail. It means exact-current-head success must not be claimed from the older v8.8.4 / `5abe403...` evidence.
+The next canonical commit, `37ea6658d6004fee3d13cb51f27005638cae74bc`, changes only the installed-client updater E2E workflow context/trigger paths. GitHub returned no workflow runs or combined statuses for that commit at the time of this audit either.
+
+This does **not** prove tests fail. It means exact-current-product-head success must not be claimed from the older v8.8.4 / `5abe403...` evidence.
 
 **Severity / impact:** high for release provenance; unknown for runtime correctness.
 
@@ -61,10 +63,12 @@ This does **not** prove tests fail. It means exact-current-head success must not
 
 The v8.8.6 metadata completion commit was `0fb5cdaf2c5eed8a4058a94e70a8ff0ecf791f79`.
 
-Later canonical commits included:
+Later canonical product-source commits included:
 
 - `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c` — production trace instrumentation for `InstalledCountLabel`;
-- `37ea6658d6004fee3d13cb51f27005638cae74bc` — production generic-profile workspace containment in `App.xaml.cs`.
+- `68831fe4a6d15f7854ba45bf8f3454bfd0014f0b` — production generic-profile workspace containment in `App.xaml.cs`.
+
+A later workflow-only commit, `37ea6658d6004fee3d13cb51f27005638cae74bc`, adjusted updater installed-client E2E triggering/evidence location but did not itself modify production source.
 
 Repository policy requires shipped source changes to remain aligned with version/release/documentation identity. Because release/integration ownership is active, this audit does not choose a version number. The release owner should establish one final exact source candidate, then ensure version/docs/manifests describe that exact candidate before publication.
 
@@ -80,7 +84,7 @@ Do not reopen or blindly merge it merely because earlier observations showed it 
 
 ## Missing verification
 
-This support investigation did **not** run the Windows release gate, solution tests, updater E2E, or local scripts. No claim is made that current `main` passes those gates.
+This support investigation did **not** run the Windows release gate, solution tests, updater E2E, or local scripts. No claim is made that current product source passes those gates.
 
 The exact-current-head release owner / verification owner should run the repository-required gates after the source/version/continuity candidate stops moving.
 
