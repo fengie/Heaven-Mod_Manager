@@ -66,7 +66,7 @@ function Invoke-GitHubJson {
     $request['ContentType']='application/json'
     $request['Body']=($Body | ConvertTo-Json -Depth 20 -Compress)
   }
-  return Invoke-RestMethod @request
+  return (Invoke-RestMethod @request)
 }
 
 function Get-GitHubReleases {
@@ -82,18 +82,18 @@ function Get-GitHubReleases {
 function Get-GitHubReleaseByTag {
   param([Parameter(Mandatory=$true)][string]$Tag)
   $encoded=[Uri]::EscapeDataString($Tag)
-  return Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/releases/tags/$encoded"
+  return (Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/releases/tags/$encoded")
 }
 
 function Get-GitHubReleaseById {
   param([Parameter(Mandatory=$true)][long]$ReleaseId)
-  return Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/releases/$ReleaseId"
+  return (Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/releases/$ReleaseId")
 }
 
 function Get-GitHubTagRef {
   param([Parameter(Mandatory=$true)][string]$Tag)
   $encoded=[Uri]::EscapeDataString($Tag)
-  return Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/git/ref/tags/$encoded"
+  return (Invoke-GitHubJson -Uri "https://api.github.com/repos/$Repository/git/ref/tags/$encoded")
 }
 
 function Remove-GitHubTagRefIfExists {
