@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0819-agentcontrol-diagnose",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Continue'; Write-Output ('HEAD=' + (git rev-parse HEAD)); Write-Output ('NODE=' + (node --version)); Write-Output '===NPM COMMANDS==='; Get-Command npm -All | Select-Object CommandType,Name,Source,Definition | Format-List; Set-Location 'tools\\agent-control'; $files=@('server.mjs','agentctl.mjs','lib/control-core.mjs','lib/autopilot-core.mjs','lib/prompt-templates.mjs'); foreach($f in $files){ Write-Output ('===CHECK ' + $f + '==='); & node --check $f 2>&1 | ForEach-Object { Write-Output $_ }; Write-Output ('EXIT=' + $LASTEXITCODE) }; Write-Output '===NPM.CMD CHECK==='; & npm.cmd run check 2>&1 | ForEach-Object { Write-Output $_ }; Write-Output ('NPM_CHECK_EXIT=' + $LASTEXITCODE); Write-Output '===NPM.CMD TEST==='; & npm.cmd test 2>&1 | ForEach-Object { Write-Output $_ }; Write-Output ('NPM_TEST_EXIT=' + $LASTEXITCODE); exit 0"
+  },
+  "created_at": "2026-09-29T08:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "purpose": "Diagnose the reconciled Agent Control npm check exit without losing individual Node syntax-check and test evidence."
+}
