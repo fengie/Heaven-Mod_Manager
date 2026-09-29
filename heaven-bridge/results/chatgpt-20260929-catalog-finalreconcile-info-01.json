@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-20260929-catalog-finalreconcile-info-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:40:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:38:51.565013+00:00",
+  "finished_at": "2026-09-29T15:38:51.568071+00:00",
+  "host": "heaven",
+  "action": "fs_info",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\mhw-final-reconcile-20260929\\.git",
+    "exists": true,
+    "is_file": true,
+    "is_dir": false,
+    "size": 91,
+    "modified": "2026-09-29T09:35:37.504253+00:00"
+  },
+  "job_hash": "5d381149213d1e474e634368cde0e7adbca4733500c686516176266644685f80"
+}
