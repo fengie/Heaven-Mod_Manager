@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0829-codex-write-regression",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "python -m py_compile heaven-bridge\\worker.py; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; python -m unittest -v heaven-bridge\\test_worker.py; exit $LASTEXITCODE",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T08:28:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
