@@ -1,0 +1,10 @@
+{
+  "id": "chatgpt-bughunt-health-heaven2-20260929-1505",
+  "target_host": "heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "health",
+  "params": {},
+  "created_at": "2026-09-29T14:30:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
