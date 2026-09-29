@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-catalog-rebase-continue-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "cwd": "C:\\Users\\Xxkan\\mhw-catalog-pr208",
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; git add src/MhwModManager.App/MainWindow.xaml; $env:GIT_EDITOR='true'; git rebase --continue; $code=$LASTEXITCODE; Write-Output \"---EXIT:$code---\"; git status --short --branch; Write-Output '---UNMERGED---'; git diff --name-only --diff-filter=U; exit $code",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T15:46:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
