@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-local-agent-capability-probe-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Continue'; Write-Output '---OPENCODE---'; opencode --help 2>&1 | Select-Object -First 120; Write-Output ('OPENCODE_EXIT='+$LASTEXITCODE); Write-Output '---OLLAMA---'; ollama list 2>&1 | Select-Object -First 60; Write-Output ('OLLAMA_EXIT='+$LASTEXITCODE); Write-Output '---LOCAL LLAMA PORTS---'; Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object {$_.LocalPort -in 11434,8080,8000,1234} | Select-Object LocalAddress,LocalPort,OwningProcess | ConvertTo-Json -Depth 3"
+  },
+  "created_at": "2026-09-29T08:45:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
