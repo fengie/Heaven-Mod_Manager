@@ -23,6 +23,24 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Main_window_keeps_the_hero_first_visual_redesign()
+    {
+        var root=FindRepositoryRoot();
+        var app=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","App.xaml"));
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+
+        Assert.Contains("x:Key=\"HeroCard\"",app);
+        Assert.Contains("x:Key=\"MetricCard\"",app);
+        Assert.Contains("x:Key=\"ActionTile\"",app);
+        Assert.Contains("<RowDefinition Height=\"78\"/>",xaml);
+        Assert.Contains("Text=\"CURRENT SETUP\"",xaml);
+        Assert.Contains("Text=\"Quick actions\"",xaml);
+        Assert.Contains("<UniformGrid Grid.Row=\"2\" Columns=\"4\"",xaml);
+        Assert.DoesNotContain("Text=\"System status\"",xaml);
+        Assert.DoesNotContain("Text=\"Start here\"",xaml);
+    }
+
+    [Fact]
     public void Background_metadata_and_remote_visual_cache_are_hardened()
     {
         var root=FindRepositoryRoot();
