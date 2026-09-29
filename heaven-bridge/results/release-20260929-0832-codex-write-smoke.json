@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0832-codex-write-smoke",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:32:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:31:45.943890+00:00",
+  "finished_at": "2026-09-29T08:32:05.993893+00:00",
+  "stdout": "HEAVEN_CODEX_WRITE_OK\n",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\\HeavenBridge\\release-smoke-20260929\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ec4a-95d5-7973-9a28-3675d329324f\n--------\nuser\nIn the current working directory only, create a file named codex-write-proof.txt containing exactly HEAVEN_CODEX_WRITE_OK followed by a newline. Do not modify anything else. Then print exactly HEAVEN_CODEX_WRITE_OK as the final response.\ncodex\nI’ll create the file with the exact contents requested.\n\nexec\n\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command \"[System.IO.File]::WriteAllText((Join-Path (Get-Location) 'codex-write-proof.txt'), \\\"HEAVEN_CODEX_WRITE_OK\"'`n\", [System.Text.UTF8Encoding]::new($false))' in C:\\Users\\Xxkan\\HeavenBridge\\release-smoke-20260929\n succeeded in 165ms:\ncodex\nHEAVEN_CODEX_WRITE_OK\ntokens used\n16,471\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0832-codex-write-smoke.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0832-codex-write-smoke.stderr.log",
+    "stdout_bytes": 22,
+    "stderr_bytes": 965,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "e920c6f54839b98b5b97efe515d6c1cd0ded1f20dc89b2373acb8b93857f239b"
+}
