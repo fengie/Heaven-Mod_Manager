@@ -1,0 +1,21 @@
+{
+  "id": "000-branch-zero-targeted-20260929-105600",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:56:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:18:10.706390+00:00",
+  "finished_at": "2026-09-29T11:18:14.136193+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"remaining_remote_count\":  11,\r\n    \"main\":  \"e4a242515946aa210bb473d6667709af8058d302\"\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   678b672..e4a2425  main          -> origin/main\n   7e99622..bb3666f  agent/bridge-uia-hardening-20260929 -> origin/agent/bridge-uia-hardening-20260929\n   89e6d9b..893d39c  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-zero-targeted-20260929-105600.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-zero-targeted-20260929-105600.stderr.log",
+    "stdout_bytes": 181,
+    "stderr_bytes": 252,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9a94c47e1a0cff89d5df553531c362acab4b27f2d011e6d3af63e4068f1c3e7c"
+}
