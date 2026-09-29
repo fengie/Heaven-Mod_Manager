@@ -152,20 +152,26 @@ Before reaching for a generic shell command, ad-hoc script, manual browser/UI se
 
 For `heaven`, this means preferring the most specific implemented toolbox capability (for example a workflow/control-plane/desktop capability) and then Heaven Local Bridge structured actions before raw shell or manual GUI automation. Remote Desktop Commander remains forbidden unless the user explicitly authorizes it for the current request.
 
-### Mandatory plugin-gap capture
+### Mandatory plugin outage -> local replacement autostart
 
-Whenever work reveals a reusable capability that would make the same class of task safer, faster, more reliable, less manual, or more token-efficient, treat that as a plugin/toolbox gap.
+Whenever work reveals a reusable capability gap, preserve it durably. When a plugin, connector, or tool that is materially relevant to the current task is **proven unavailable in the current runtime**, escalate beyond ordinary gap capture: the same execution cycle must create/update the implementation plan **and start a local replacement project**.
+
+Current-runtime proof is required. Missing/removed capability, usage/quota pause, provider outage, unsupported required operation, or a broken integration after the normal supported connection flow are valid triggers. One failed call, stale health cache, or remembered limitation is not enough.
 
 Before the current engineering task is considered complete:
 
-- search existing plugin packages, active branches/PRs, and `plugins/PLUGIN_GAP_BACKLOG.md` to avoid duplicates;
-- if the capability is already implemented, route future work to that plugin and improve its discovery/docs if necessary;
-- if it is missing or materially incomplete, immediately add or update a durable plan in `plugins/PLUGIN_GAP_BACKLOG.md` for a future agent;
-- record the triggering use case, proposed owning plugin (or justification for a new plugin), capability/API shape, security boundary, dependencies, acceptance tests, priority, and status;
+- record the outage and its task impact in the `PLUGIN-PREFLIGHT` evidence;
+- search existing plugin packages, `heaven-bridge/`, active branches/PRs, and `plugins/PLUGIN_GAP_BACKLOG.md` to avoid duplicates;
+- if the capability is already implemented locally, route future work to it and improve discovery/compatibility docs rather than creating a second implementation;
+- if it is missing or materially incomplete, immediately create/update the durable backlog plan and create/claim the local project under `plugins/` (or extend the existing natural owner in place);
+- a current-task outage item must not be left merely `PLANNED` when repository mutation is available: claim it, record owner/project path, and make the first concrete implementation move (project README/plan plus a machine-readable contract, first test, or adapter boundary);
+- record the triggering use case, upstream capability surface, proposed local owner, capability/API shape, security boundary, dependencies/reuse, acceptance tests, priority, and status;
+- follow `plugins/LOCAL_REPLACEMENT_PROTOCOL.md`;
 - do not block the user's immediate task solely because the ideal plugin does not yet exist when a safe authorized fallback can complete the work;
-- do not leave plugin ideas only in chat, agent memory, or a transient handoff.
+- never design a local replacement to bypass provider quotas, OAuth/authentication, account permissions, anti-abuse controls, or other service-side authorization;
+- do not leave plugin ideas or outage plans only in chat, agent memory, or a transient handoff.
 
-Managers and future agents must treat the backlog as actionable engineering work: claim compatible items when capacity exists, keep ownership/status current, and integrate completed capabilities into verified remote `main`.
+Managers and future agents must treat outage-triggered replacement projects as active engineering work, not a someday backlog. Keep ownership/status current, reuse existing Heaven/bridge primitives, integrate completed capabilities into verified remote `main`, and close/supersede the backlog entry only with exact completion evidence.
 
 ## Mandatory immediate release-on-ready rule
 
