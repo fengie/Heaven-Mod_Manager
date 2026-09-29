@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-104138-persistent-dev-kill",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:41:38.651Z",
+  "ttl_seconds": 1200,
+  "action": "proc_kill",
+  "params": {
+    "session_id": "4c26cf188c344d81",
+    "force": true
+  },
+  "priority": "highest"
+}
