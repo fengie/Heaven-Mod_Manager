@@ -1,0 +1,10 @@
+{
+  "schema":"heaven-plugin/manifest/v1",
+  "name":"heaven-browser",
+  "version":"0.1.0",
+  "entrypoint":"heaven_browser.service:BrowserPlugin",
+  "capabilities":["browser.open","browser.navigate","browser.find_control","browser.invoke_control","browser.type_control","browser.screenshot","browser.wait_window"],
+  "depends_on":{"heaven-bridge":"chatgpt-heaven-bridge-v2"},
+  "limitations":{"dom_cdp":false,"console_network_capture":false},
+  "security":{"url_schemes":["http","https"],"secret_form_fill_supported":false}
+}

@@ -56,6 +56,16 @@ For Heaven plugin work:
 - `heaven-workflows/` — reusable repository verification/snapshot workflows and bounded parallel structured-capability execution.
 - `heaven-task-queue/` — SQLite dependency queue with worker leases, retries, heartbeats, and named resource locks.
 - `heaven-local-ai/` — bounded local Ollama generation and engineering-context compression through the control plane.
+- `heaven-git-ops/` — safe structured branch/integration/push workflows.
+- `heaven-process-services/` — process, Windows service, dev-server, and TCP health lifecycle.
+- `heaven-file-ops/` — bounded structured file metadata/list/copy/move/delete/binary operations.
+- `heaven-desktop/` — stable display/window/input/UIA/screenshot control over existing bridge primitives.
+- `heaven-browser/` — browser launch/navigation and accessible-control automation over desktop/UIA.
+- `heaven-state-store/` — durable artifacts, optimistic checkpoints, and machine-health history.
+- `heaven-database/` — contained SQLite inspection/query/mutation/integrity/backup operations.
+- `heaven-visual/` — local image probe/tile/resize/crop preprocessing.
+- `heaven-system-ops/` — Docker/WSL/Hyper-V/package/network/Tailscale/SSH/SCP operations.
+- `heaven-cluster/` — capability-aware multi-machine worker registry, selection, reservation, and dispatch.
 
 Run the full plugin workspace gate with:
 

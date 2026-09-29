@@ -12,6 +12,14 @@ TARGETS = [
     "heaven-local-ai",
     "heaven-git-ops",
     "heaven-process-services",
+    "heaven-file-ops",
+    "heaven-desktop",
+    "heaven-browser",
+    "heaven-state-store",
+    "heaven-database",
+    "heaven-visual",
+    "heaven-system-ops",
+    "heaven-cluster",
 ]
 
 failed = []

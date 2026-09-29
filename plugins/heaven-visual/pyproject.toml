@@ -1,0 +1,8 @@
+[project]
+name="heaven-visual"
+version="0.1.0"
+description="Cheap local image probing, tiling plans, and optional Pillow transforms"
+requires-python=">=3.10"
+
+[project.optional-dependencies]
+transforms=["Pillow>=10"]

@@ -1,0 +1,9 @@
+{
+  "schema":"heaven-plugin/manifest/v1",
+  "name":"heaven-desktop",
+  "version":"0.1.0",
+  "entrypoint":"heaven_desktop.service:DesktopPlugin",
+  "capabilities":["computer.observe","computer.find","computer.act","computer.screenshot"],
+  "depends_on":{"heaven-bridge":"chatgpt-heaven-bridge-v2"},
+  "security":{"secret_typing_exposed":false,"window_close_requires_confirmation":true,"uia_value_requires_relay_opt_in":true}
+}
