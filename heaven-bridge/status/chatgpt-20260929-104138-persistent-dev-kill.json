@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-104138-persistent-dev-kill",
+  "state": "running",
+  "action": "proc_kill",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:42:16.022310+00:00"
+}
