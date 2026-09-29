@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170900-updater-state-shortcut-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:09:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 60,
+    "command": "$root='C:\\\\Users\\\\fengc\\\\OneDrive\\\\Desktop\\\\mods\\\\MHW-Manual-Mod-Manager-v8.8.13-win-x64'; $u=Join-Path $env:LOCALAPPDATA 'MhwModManager\\Updater'; $o=[ordered]@{}; $o.Root=$root; foreach($f in @('build-identity.json','release-install.json','product-manifest.json')){ $p=Join-Path $root $f; if(Test-Path $p){ $o[$f]=Get-Content $p -Raw } else {$o[$f]='MISSING'} }; $p=Join-Path $u 'pending.json'; if(Test-Path $p){$o.Pending=Get-Content $p -Raw}else{$o.Pending='MISSING'}; $log=Join-Path $u 'updater.log'; if(Test-Path $log){$o.UpdaterLog=(Get-Content $log -Tail 120) -join [Environment]::NewLine}else{$o.UpdaterLog='MISSING'}; $o | ConvertTo-Json -Depth 4 -Compress"
+  }
+}
