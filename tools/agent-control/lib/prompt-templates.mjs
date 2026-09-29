@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.4";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.5";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -64,6 +64,7 @@ export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
   "_AGENT_CONTEXT/CURRENT_STATE.md",
   "_AGENT_CONTEXT/NEXT_STEPS.md",
   "_AGENT_CONTEXT/VERIFICATION.md",
+  "_AGENT_CONTEXT/BUG_PRECEDENTS.md",
   "_AGENT_CONTEXT/LEARNED_RULES.md"
 ]);
 
@@ -83,7 +84,7 @@ const REPOSITORY_PROTOCOL = [
   "Stay in the current ChatGPT conversation when it can execute the task. If a normal Chat session cannot be auto-created, continue through another authorized non-Work path such as the direct local worker, Heaven Local Bridge, or repository tooling. Do not stop solely to ask the operator to switch modes.",
   "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
   "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
-  "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
+  "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, active _AGENT_CONTEXT/BUG_PRECEDENTS.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
   "Managers must also read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt and operate as convergence owners, not passive status bots.",
   "main is the canonical integration target. Finished work belongs on verified remote main, not parked on a completed task branch or PR.",
   "The agent that creates or materially completes a change owns it through final diff inspection, focused verification, refresh against current origin/main, reconciliation, conflict resolution inside its owned boundary, rerun of affected checks, integration into main, push, and remote-main confirmation unless an explicit external gate prevents this.",
@@ -94,6 +95,7 @@ const REPOSITORY_PROTOCOL = [
   "If direct main delivery is genuinely impossible, record the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and the exact external action required. Report BLOCKED/PARTIAL rather than DONE.",
   "Never claim tests, pushes, merges, fixes, agent liveness, releases, or publication without observed evidence. Distinguish implemented, tested, independently reviewed, integrated locally, pushed to remote main, and shipped.",
   "Preserve the permanent recursive continuity constitution and require successors to propagate it again. Keep current revision, current state, next steps, verification evidence, ownership, remote-main status, unresolved risks, and reusable engineering lessons truthful.",
+  "BUG PREVENTION CLOSURE: every discovered bug, regression, false completion claim, broken integration, or process escape must be traced to root cause and violated invariant; recorded in _AGENT_CONTEXT/BUG_PRECEDENTS.md; converted into an applicable guideline/process hardening plus regression coverage or strongest durable verifier; checked across sibling cases; verified on the real risk surface; and propagated before DONE/FIXED/merge/release. Recurrence of a logged defect class means strengthen the prior prevention control itself.",
   "Do not weaken tests, verification, authorization, process ownership, recovery semantics, or safety gates merely to obtain a green result."
 ]
 
@@ -232,6 +234,7 @@ export function renderAgentPrompt({
     "- DONE requires the required artifact, relevant verification, and confirmation that the completed change is present on canonical remote main unless a documented external gate makes that impossible.",
     "- If blocked or partial, include the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and exact external action required.",
     "- If interrupted or incomplete, checkpoint recoverable work and leave concise takeover state instead of relying on chat history.",
+    "- Before finishing, if any bug/regression/process escape was encountered, confirm the canonical BUG_PRECEDENTS entry, preventive rule/process hardening, regression coverage/deterministic verifier, sibling-case review, and exact verification evidence are complete.",
     "- Before finishing, consider whether a durable discovery belongs in project Learned Rules or the company trainer."
   ].join("\n");
 
