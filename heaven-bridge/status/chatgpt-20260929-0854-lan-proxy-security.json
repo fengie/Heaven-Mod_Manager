@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0854-lan-proxy-security",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:53:49.310228+00:00"
+  "updated_at": "2026-09-29T08:54:07.336822+00:00",
+  "exit_code": 0
 }
