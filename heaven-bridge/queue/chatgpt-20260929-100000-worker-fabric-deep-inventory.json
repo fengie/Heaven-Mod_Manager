@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-100000-worker-fabric-deep-inventory",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 240,
+    "command": "$ErrorActionPreference='Continue'\n$svc = if(Test-Path 'C:\\HeavenServices\\services.json'){Get-Content 'C:\\HeavenServices\\services.json' -Raw}else{''}\n$composeFiles = if(Test-Path 'C:\\HeavenServices\\compose'){Get-ChildItem 'C:\\HeavenServices\\compose' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 80 FullName,Length,LastWriteTime}else{@()}\n$scripts = if(Test-Path 'C:\\HeavenServices\\scripts'){Get-ChildItem 'C:\\HeavenServices\\scripts' -File | Select-Object Name,Length,LastWriteTime}else{@()}\n$topMem = Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 20 ProcessName,Id,@{n='WorkingSetGB';e={[math]::Round($_.WorkingSet64/1GB,2)}},@{n='CPU';e={$_.CPU}}\n$ports = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object {$_.LocalPort -in 7331,7443,11434,3000,5678,8080,9000} | Select-Object LocalAddress,LocalPort,OwningProcess\n$wslProbe = (& wsl.exe -d Ubuntu -- bash -lc \"printf 'USER='; whoami; printf '\\nKERNEL='; uname -r; printf '\\nMEM='; free -h; printf '\\nDOCKER='; command -v docker || true; docker --version 2>/dev/null || true; printf '\\nCOMPOSE='; docker compose version 2>/dev/null || true; printf '\\nPODMAN='; command -v podman || true; printf '\\nRUNNING='; docker ps --format '{{.Names}}|{{.Image}}|{{.Status}}' 2>/dev/null || true; printf '\\nDF='; df -h /; printf '\\nOLLAMA='; command -v ollama || true; ollama ps 2>/dev/null || true\" 2>&1 | Out-String)\n$gpu = (& nvidia-smi --query-gpu=name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits 2>&1 | Out-String).Trim()\n[pscustomobject]@{servicesJson=$svc;composeFiles=$composeFiles;scripts=$scripts;topMemory=$topMem;listeners=$ports;wslProbe=$wslProbe;gpu=$gpu} | ConvertTo-Json -Depth 6 -Compress"
+  },
+  "created_at": "2026-09-29T10:00:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
