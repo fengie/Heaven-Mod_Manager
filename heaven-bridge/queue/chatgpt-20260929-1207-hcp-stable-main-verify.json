@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1207-hcp-stable-main-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop';\n$repo='C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods';\nif (-not (Test-Path (Join-Path $repo '.git'))) { throw 'canonical checkout unavailable' }\nSet-Location $repo;\nfor ($attempt=1; $attempt -le 3; $attempt++) {\n  git fetch origin main;\n  if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }\n  $before=(git rev-parse origin/main).Trim();\n  $wt=Join-Path $env:TEMP (\"mhw-hcp-stable-main-\" + $attempt + \"-\" + $before.Substring(0,8));\n  if (Test-Path $wt) { git worktree remove --force $wt 2>$null; if (Test-Path $wt) { Remove-Item -LiteralPath $wt -Recurse -Force } }\n  git worktree add --detach $wt $before;\n  if ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }\n  try {\n    Set-Location $wt;\n    python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py;\n    if ($LASTEXITCODE -ne 0) { throw 'py_compile failed' }\n    python heaven-bridge/test_worker.py;\n    if ($LASTEXITCODE -ne 0) { throw 'primary bridge tests failed' }\n    python heaven-bridge/tests/test_worker.py;\n    if ($LASTEXITCODE -ne 0) { throw 'compat bridge tests failed' }\n    python plugins/heaven-control-plane/verify.py;\n    if ($LASTEXITCODE -ne 0) { throw 'control-plane verify failed' }\n    git diff --check HEAD^ HEAD;\n    if ($LASTEXITCODE -ne 0) { throw 'git diff --check failed' }\n  }\n  finally {\n    Set-Location $repo;\n    git worktree remove --force $wt 2>$null\n  }\n  git fetch origin main;\n  if ($LASTEXITCODE -ne 0) { throw 'post-test git fetch failed' }\n  $after=(git rev-parse origin/main).Trim();\n  if ($after -eq $before) {\n    [pscustomobject]@{verified_head=$before; origin_main_after=$after; attempt=$attempt; result='PASS'} | ConvertTo-Json -Compress;\n    exit 0\n  }\n  Write-Output (\"main moved during attempt {0}: {1} -> {2}\" -f $attempt,$before,$after);\n}\nthrow 'main did not remain stable across three exact-main verification attempts'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T12:07:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
