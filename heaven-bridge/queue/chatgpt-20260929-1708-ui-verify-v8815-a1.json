@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1708-ui-verify-v8815-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'HeavenBridgeSource'\nif(-not (Test-Path (Join-Path $repo '.git'))){ throw \"Missing HeavenBridgeSource checkout at $repo\" }\ngit -C $repo fetch origin main --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\ngit -C $repo checkout --force main\ngit -C $repo reset --hard origin/main\n$sha=(git -C $repo rev-parse HEAD).Trim()\n$version=(Get-Content -LiteralPath (Join-Path $repo 'VERSION.txt') -Raw).Trim()\nWrite-Output \"SOURCE_SHA=$sha\"\nWrite-Output \"VERSION=$version\"\ndotnet build (Join-Path $repo 'src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release -p:NuGetAudit=false\nif($LASTEXITCODE -ne 0){ throw 'UI build failed' }\n$exe=Get-ChildItem -LiteralPath (Join-Path $repo 'src\\MhwModManager.App\\bin\\Release') -Recurse -Filter '*.exe' | Where-Object { $_.Name -match 'MHW|Mod Manager|MhwModManager' } | Select-Object -First 1\nif($null -eq $exe){ throw 'App executable not found after build' }\nGet-Process | Where-Object { $_.MainWindowTitle -match 'Mod Manager|Universal' } | Stop-Process -Force -ErrorAction SilentlyContinue\nStart-Process -FilePath $exe.FullName -WorkingDirectory $exe.DirectoryName\nStart-Sleep -Seconds 5\nGet-Process | Where-Object { $_.MainWindowTitle -ne '' -and ($_.MainWindowTitle -match 'Mod Manager|Universal') } | Select-Object Id,ProcessName,MainWindowTitle | Format-Table -AutoSize\nWrite-Output \"EXE=$($exe.FullName)\""
+  },
+  "created_at": "2026-09-29T17:08:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
