@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-verify-bridge-canonical-source-20260929-1638",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $work=Join-Path $env:USERPROFILE 'HeavenWork\\verify-bridge-canonical-source-20260929'; if(Test-Path $work){Remove-Item -Recurse -Force $work}; git clone --branch fix/bridge-canonical-source-bootstrap-20260929 --single-branch https://github.com/fengie/mhw-mods.git $work; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Set-Location $work; python -m unittest -q 'heaven-bridge\\test_worker.py'; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $tokens=$null; $errors=$null; [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $work 'heaven-bridge\\bootstrap.ps1'),[ref]$tokens,[ref]$errors); if($errors.Count -gt 0){$errors | Out-String | Write-Error; exit 3}; git diff --check; exit $LASTEXITCODE",
+    "timeout_seconds": 1800
+  },
+  "created_at": "2026-09-29T16:38:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
