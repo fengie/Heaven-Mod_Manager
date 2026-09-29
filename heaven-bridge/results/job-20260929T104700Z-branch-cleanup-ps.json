@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T104700Z-branch-cleanup-ps",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:47:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:49:33.482159+00:00",
+  "finished_at": "2026-09-29T11:49:43.589311+00:00",
+  "stdout": "",
+  "stderr": "git.exe : From https://github.com/fengie/mhw-mods\r\nAt line:4 char:41\r\n+ function G([string[]]$a,[switch]$ok){$o=& git @a 2>&1;$c=$LASTEXITCOD ...\r\n+                                         ~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (From https://github.com/fengie/mhw-mods:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T104700Z-branch-cleanup-ps.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T104700Z-branch-cleanup-ps.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 371,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "c83aa27152be2cc342ec962a4100fc3251afa6a180740ebd91120e29a4089d73"
+}
