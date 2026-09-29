@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1537-pr220-recipe-test",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:37:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:36:56.907471+00:00",
+  "finished_at": "2026-09-29T15:37:00.866461+00:00",
+  "stdout": "HEAD is now at 44d84b6c test: cover repeated recipe family restore\nTEST_SHA=44d84b6c552bae3f7d311ac824afed966e9d2ba6\r\nC:\\Program Files\\dotnet\\sdk\\10.0.401\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.PackageDependencyResolution.targets(266,5): error NETSDK1004: Assets file 'C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe\\tests\\MhwModManager.AutomationTests\\obj\\project.assets.json' not found. Run a NuGet package restore to generate this file. [C:\\Users\\Xxkan\\bughunt-worktrees\\pr220-recipe\\tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj]\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              agent/bughunt-recipe-family-idempotence-20260929 -> FETCH_HEAD\n + b05f5028...44d84b6c agent/bughunt-recipe-family-idempotence-20260929 -> origin/agent/bughunt-recipe-family-idempotence-20260929  (forced update)\nPreparing worktree (detached HEAD 44d84b6c)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1537-pr220-recipe-test.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1537-pr220-recipe-test.stderr.log",
+    "stdout_bytes": 562,
+    "stderr_bytes": 318,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "95376f30bc81660002dbc79ada469d166740f6c78cd3033b51d80118da06fd33"
+}
