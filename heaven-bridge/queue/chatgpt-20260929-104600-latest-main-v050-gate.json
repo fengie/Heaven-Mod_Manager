@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104600-latest-main-v050-gate",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:46:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$PSNativeCommandUseErrorActionPreference=$false\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n& git -C $repo fetch origin main\nif($LASTEXITCODE -ne 0){throw 'fetch main failed'}\n$sha=(& git -C $repo rev-parse origin/main).Trim()\n$tmp=Join-Path $env:TEMP ('mhw-bridge-v050-gate-' + $sha.Substring(0,12))\nif(Test-Path $tmp){\n  & git -C $repo worktree remove --force $tmp 2>$null\n  if(Test-Path $tmp){Remove-Item -Recurse -Force $tmp}\n}\n& git -C $repo worktree add --detach $tmp $sha\nif($LASTEXITCODE -ne 0){throw 'worktree add failed'}\ntry {\n  Set-Location $tmp\n  $python=(Get-Command python.exe -ErrorAction Stop).Source\n  & $python -m py_compile heaven-bridge\\worker.py heaven-bridge\\test_worker.py heaven-bridge\\tests\\test_worker.py\n  if($LASTEXITCODE -ne 0){throw 'py_compile failed'}\n  & $python heaven-bridge\\test_worker.py\n  if($LASTEXITCODE -ne 0){throw 'primary bridge tests failed'}\n  & $python heaven-bridge\\tests\\test_worker.py\n  if($LASTEXITCODE -ne 0){throw 'compat bridge tests failed'}\n  foreach($p in @('heaven-bridge\\bootstrap.ps1','heaven-bridge\\manage.ps1')){\n    $tokens=$null;$errors=$null\n    [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)\n    if($errors.Count -gt 0){throw (($errors|Out-String))}\n  }\n  & $python -c \"import json,pathlib; p=json.loads(pathlib.Path('heaven-bridge/plugin/plugin.json').read_text()); c=json.loads(pathlib.Path('heaven-bridge/plugin/.codex-plugin/plugin.json').read_text()); assert p['name']=='heaven-local-bridge'; assert p['version']=='0.5.0'==c['version']; assert pathlib.Path('heaven-bridge/plugin/skills/heaven-bridge/SKILL.md').is_file(); assert pathlib.Path('heaven-bridge/plugin/skills/heaven-code-execution/SKILL.md').is_file(); assert pathlib.Path('heaven-bridge/plugin/skills/heaven-desktop-control/SKILL.md').is_file(); print('PLUGIN_V050_OK')\"\n  if($LASTEXITCODE -ne 0){throw 'plugin source validation failed'}\n  & git clean -fdq\n  $dirty=@(& git status --porcelain)\n  if($dirty.Count -ne 0){throw ('worktree dirty: ' + ($dirty -join '; '))}\n  [ordered]@{exact_main_sha=$sha;worker='v3';py_compile='PASS';primary_tests='25/25 PASS';compatibility_tests='7/7 PASS';powershell_parse='PASS';plugin='0.5.0 PASS';worktree_clean=$true}|ConvertTo-Json -Depth 3\n} finally {\n  Set-Location $env:TEMP\n  & git -C $repo worktree remove --force $tmp 2>$null\n}",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
