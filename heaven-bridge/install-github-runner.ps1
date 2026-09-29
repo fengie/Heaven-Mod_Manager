@@ -1,5 +1,3 @@
-$ErrorActionPreference = 'Stop'
-
 param(
     [string]$Repository = 'fengie/mhw-mods',
     [string]$RunnerName = 'heaven',
@@ -7,6 +5,8 @@ param(
     [string[]]$Labels = @('heaven','local-bridge','mhw-mods'),
     [switch]$ForceReconfigure
 )
+
+$ErrorActionPreference = 'Stop'
 
 if ($env:OS -ne 'Windows_NT') { throw 'This installer is intended for the Windows Heaven worker.' }
 
