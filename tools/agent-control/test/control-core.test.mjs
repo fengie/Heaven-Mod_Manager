@@ -66,6 +66,9 @@ test("v2 state migrates without dropping durable records", () => {
   assert.equal(migrated.settings.defaultAgentExecutionMode, "direct");
   assert.equal(migrated.settings.requireExplicitCodexOptIn, false);
   assert.equal(migrated.settings.allowAutomaticWorkHandoff, false);
+  assert.equal(migrated.settings.swarmTailRecovery.enabled, true);
+  assert.equal(migrated.settings.swarmTailRecovery.maxWorkers, 4);
+  assert.equal(migrated.settings.swarmTailRecovery.maxAttemptsPerRoot, 2);
   assert.ok(migrated.federation);
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
 });
