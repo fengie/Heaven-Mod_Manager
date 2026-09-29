@@ -17,6 +17,7 @@ TARGETS = [
     "heaven-browser",
     "heaven-state-store",
     "heaven-database",
+    "heaven-visual",
 ]
 
 failed = []
