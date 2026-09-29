@@ -1,9 +1,10 @@
 {
   "id": "branchzero-prune-updater-family-20260929-1247-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:47:52.907679+00:00"
+  "updated_at": "2026-09-29T12:48:04.246635+00:00",
+  "exit_code": 1
 }
