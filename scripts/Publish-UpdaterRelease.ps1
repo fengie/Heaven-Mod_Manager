@@ -91,7 +91,7 @@ function Invoke-GitHubReleaseApi {
     $status=0
     try{$status=[int]$_.Exception.Response.StatusCode}catch{}
     if($AllowNotFound -and $status -eq 404){return $null}
-    throw "GitHub release API $Method $Uri failed (HTTP $status): $($_.Exception.Message)"
+    throw "GitHub release API $Method $Uri failed (HTTP ${status}): $($_.Exception.Message)"
   }
 }
 
@@ -153,7 +153,7 @@ function Send-GitHubUpdaterReleaseAsset {
   catch {
     $status=0
     try{$status=[int]$_.Exception.Response.StatusCode}catch{}
-    throw "GitHub release asset upload failed for $(Split-Path -Leaf $Path) (HTTP $status): $($_.Exception.Message)"
+    throw "GitHub release asset upload failed for $(Split-Path -Leaf $Path) (HTTP ${status}): $($_.Exception.Message)"
   }
 }
 
