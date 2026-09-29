@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1202-issue84-dispatch-rest-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:02:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:02:53.289740+00:00",
+  "finished_at": "2026-09-29T12:03:00.991750+00:00",
+  "stdout": "{\"id\":36565559667,\"status\":\"completed\",\"conclusion\":\"failure\",\"head_sha\":\"2861dad1b6002fad63b1b41510aa5e72d8a0ae45\",\"event\":\"workflow_dispatch\",\"created_at\":\"2026-09-29T12:02:55Z\",\"html_url\":\"https://github.com/fengie/mhw-mods/actions/runs/36565559667\"}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1202-issue84-dispatch-rest-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1202-issue84-dispatch-rest-a1.stderr.log",
+    "stdout_bytes": 255,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a1375893edbdff1abc13b809a818b5a948436be11d06db76f29b15e4c8e7d63d"
+}
