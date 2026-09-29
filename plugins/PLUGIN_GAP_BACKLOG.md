@@ -14,7 +14,9 @@ When a task reveals a reusable capability that would make the same class of work
 4. continue the current user task through the safest authorized fallback when possible;
 5. do not leave the plugin idea only in chat, memory, or a transient handoff.
 
-Managers should treat planned entries here as future-agent implementation candidates and claim them when dependency order and capacity permit. Preflight records must identify the runtime/session capability discovery they actually performed; stale tool lists or remembered availability do not count.
+**Outage escalation:** when the task-relevant plugin/connector/tool is proven unavailable in the current runtime, follow `LOCAL_REPLACEMENT_PROTOCOL.md`. The current agent must immediately create/update the durable plan, claim/start the local replacement project, and make the first concrete repository implementation move. Do not leave an outage-triggered item merely `PLANNED` when repository mutation is available. Reuse existing local primitives and create only the missing compatibility/adapter surface.
+
+Managers should treat ordinary planned entries as future-agent implementation candidates. Outage-triggered entries are active work and should be `CLAIMED` (or `BLOCKED` only with exact external/dependency evidence). Preflight records must identify the runtime/session capability discovery they actually performed; stale tool lists or remembered availability do not count.
 
 ## Status values
 
@@ -167,3 +169,19 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Acceptance tests:** PowerShell parse; worker unit/compatibility suites; exact-head Heaven Local Bridge gate; task settings prove no 72-hour execution limit and maximum restart count; watchdog source contains no Git dependency; live worker-kill recovery; live watchdog-kill/restart recovery; `STATUS` green on both `heaven2` and `heaven`.
 - **Owner / branch / PR:** owner = current reliability lane; branch = `fix/heaven2-bridge-self-heal-20260929`; PR #230.
 - **Completion evidence:** pending exact-head gate, canonical-main integration, transport sync, and live two-host recovery verification.
+
+
+## PG-009 — local Remote Desktop Commander compatibility replacement
+
+- **Status:** CLAIMED
+- **Priority:** Critical
+- **Triggering use case:** On 2026-09-29 the Remote Desktop Commander connector still reported registered/online devices but command execution was usage-paused, blocking a storage audit on `heaven2` while the host itself remained present.
+- **Why reusable:** Local machine administration must not depend on one external connector's usage window when equivalent authorized local capabilities already exist.
+- **Existing capability audit:** Heaven Local Bridge plus `heaven-control-plane`, `heaven-file-ops`, `heaven-process-services`, `heaven-desktop`, `heaven-browser`, and `heaven-system-ops` already implement most underlying primitives. The missing boundary is a stable compatibility/parity package, routing metadata, and explicit workflow parity so agents can switch locally without inventing ad-hoc commands.
+- **Proposed owner/plugin boundary:** `plugins/remote-desktop-commander-local/`. It owns compatibility mapping, routing/discovery metadata, parity tracking, and only thin missing adapters. It must not fork the existing bridge/desktop/filesystem/process implementations.
+- **Capability/API contract:** Map external-style device/filesystem/process/desktop/system operations to local providers; first concrete workflow is a bounded read-only storage audit returning drive usage, top directories, large caches/build roots, and largest files with explicit access-denied/error evidence. Health must distinguish host presence from transport readiness.
+- **Security / permission boundary:** Operates only through existing user-authorized Heaven control paths. No public listener, no secret persistence, no third-party quota/authentication bypass, and no widening of machine authority.
+- **Dependencies / reuse:** Existing `heaven-bridge/` transport and the Heaven plugin packages listed above. Follow `plugins/LOCAL_REPLACEMENT_PROTOCOL.md`.
+- **Acceptance tests:** storage audit succeeds on `heaven2` and `heaven` without Remote Desktop Commander; unavailable external connector does not cause retry storms; provider selection records current-runtime evidence; output is bounded; access failures are explicit; host presence and transport health remain separate; no secrets appear in results/logs.
+- **Owner / branch / PR:** owner = current local-replacement lane; project path = `plugins/remote-desktop-commander-local/`; integrated scaffold lives directly on canonical `main`.
+- **Completion evidence:** project README, implementation plan, and machine-readable replacement manifest created on 2026-09-29; M1 storage-audit workflow and routing integration remain active.
