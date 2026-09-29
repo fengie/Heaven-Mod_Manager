@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "heaven-local-bridge",
-  "version": "0.8.1",
-  "description": "Multi-host local-control and development bridge for the user's heaven2 operator machine and heaven worker, with self-healing local watchdog persistence: explicit host-targeted filesystem, code build/test execution, persistent processes, screenshots, desktop/UI control, local agents, worker-fabric offloading, and control-plane operations.",
+  "version": "0.8.2",
+  "description": "Multi-host local-control and development bridge for the user's heaven2 operator machine and heaven worker, with three-layer worker/watchdog/SYSTEM-sentinel persistence: explicit host-targeted filesystem, code build/test execution, persistent processes, screenshots, desktop/UI control, local agents, worker-fabric offloading, and control-plane operations.",
   "author": {
     "name": "Plugin owner"
   },
@@ -11,7 +11,7 @@
       "interface": {
         "displayName": "Heaven Local Bridge",
         "shortDescription": "Control heaven2; delegate heavy work to heaven",
-        "longDescription": "Use the private Heaven Local Bridge as the multi-host computer-control path. heaven2 is the operator/control-plane desktop, dashboard host, browser/UI automation target, and credential authority; heaven is a delegated worker/resource machine for builds, tests, scans, agents, indexing, and worker-fabric jobs. Every new bridge job must set target_host explicitly. Interactive/control work targets heaven2; heavy delegated execution targets heaven. Omitted target_host remains a backward-compatibility default for heaven only. Structured filesystem/process, screenshots, UI Automation, coordinate input, windows, app launch, shortcuts, controller checkpoints, and credential-safe GUI secret input remain available according to each host's advertised health/capabilities. Worker persistence is guarded by an independent local watchdog and Git-independent heartbeat so a dead or hung bridge can recover without using the bridge to repair itself.",
+        "longDescription": "Use the private Heaven Local Bridge as the multi-host computer-control path. heaven2 is the operator/control-plane desktop, dashboard host, browser/UI automation target, and credential authority; heaven is a delegated worker/resource machine for builds, tests, scans, agents, indexing, and worker-fabric jobs. Every new bridge job must set target_host explicitly. Interactive/control work targets heaven2; heavy delegated execution targets heaven. Omitted target_host remains a backward-compatibility default for heaven only. Structured filesystem/process, screenshots, UI Automation, coordinate input, windows, app launch, shortcuts, controller checkpoints, and credential-safe GUI secret input remain available according to each host's advertised health/capabilities. Worker persistence is guarded by an interactive watchdog, a separate SYSTEM-owned startup sentinel, a Startup-folder fallback, and Git-independent local heartbeat/progress signals so a dead, hung, or de-registered bridge can recover without using the bridge to repair itself.",
         "developerName": "Plugin owner",
         "category": "Productivity",
         "capabilities": [
