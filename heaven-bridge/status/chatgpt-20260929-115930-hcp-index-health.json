@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-115930-hcp-index-health",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:00:31.716649+00:00"
+  "updated_at": "2026-09-29T12:00:39.538017+00:00",
+  "exit_code": 0
 }
