@@ -1,0 +1,69 @@
+﻿MHW Manual Mod Manager v8.8.10 installed-client updater E2E closure
+source_sha=25f9ce08e40812256ac5342ec9976207e58719a2
+run_id=36579237948
+runner_os=Windows
+runner_arch=X64
+dotnet_sdk=10.0.401
+evidence_sha256=FFAEB2DF265486595EE9BAC6FD9EC89A0EC597E9C0E53AB7F51E4221253EB5DF
+provenance_sha256=4A35A4E610D2F97554092C22D888216AC1562325086553B7CBD383F1C7823F44
+installed_client_test_log_sha256=0991A236E4CDDFC437287A599A2D3704DE72C4980EF348B370B5428B70944653
+rollback_regression_log_sha256=5AC7CBA0E4006B8437D4D4EEE401ECBD2E4504E299AA7676168DF01194C1A64B
+
+=== EVIDENCE.JSON ===
+{
+  "schemaVersion": 1,
+  "oldTag": "updater-main-60",
+  "oldBuild": 60,
+  "oldSource": "ffd218b6ad4e9f4fea4b143d266712a6fa17a285",
+  "targetBuild": 174,
+  "targetSource": "25f9ce08e40812256ac5342ec9976207e58719a2",
+  "startedUtc": "2026-09-29T13:59:55.8395713+00:00",
+  "scenarioA": {
+    "status": "PASS",
+    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-a60bb19e5eb847158ef27497f6f8a410\\success-install",
+    "requestPath": "C:\\Users\\Xxkan\\AppData\\Local\\MhwModManager\\Updater\\transactions\\174-d5f06ff08d8c42f7b5ac3e8f229230e5\\apply-request.json",
+    "targetBuild": 174,
+    "targetSource": "25f9ce08e40812256ac5342ec9976207e58719a2",
+    "oldClientExitCode": 0,
+    "healthProcessId": 46600,
+    "healthAttemptId": "6c4aefd83a464a28b56a100bc5dea870",
+    "healthBuild": 174,
+    "healthSource": "25f9ce08e40812256ac5342ec9976207e58719a2",
+    "journalPhase": "Confirmed",
+    "sentinelSha256": {
+      "Mods/e2e-user.mod": "A07B3B13C359CAA1487A6123593EEF4366F9A2FB38182392BE6F04244CFF13BA",
+      "State/e2e-state.json": "B90D2BB9B54BFFD364F410D926F57FF416A7566E7C39BFDB401BFDB450BB5E44",
+      "e2e-unknown-user-file.txt": "16CC71C24DAC23CB320F57C4A5F638DD7B43AEE6105BC5C4799AE119BE02250F"
+    }
+  },
+  "scenarioB": {
+    "status": "PASS",
+    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-a60bb19e5eb847158ef27497f6f8a410\\rollback-install",
+    "journalPhase": "RolledBack",
+    "restoredBuild": 60,
+    "restoredSource": "ffd218b6ad4e9f4fea4b143d266712a6fa17a285",
+    "oldOwnedFileCount": 689,
+    "targetOnlyFileCount": 9,
+    "targetOnlyPaths": [
+      "docs/GAME-ADAPTER-SDK.md",
+      "docs/REPOSITORY-LAYOUT.md",
+      "docs/research/README.md",
+      "docs/research/RESEARCH-FAMILY-INFERENCE.md",
+      "docs/research/RESEARCH-MULTIGAME.md",
+      "docs/research/RESEARCH-VISUALS-AND-UPDATES.md",
+      "docs/WORKFLOWS.md",
+      "scripts/Test-UpdaterDisposable.ps1",
+      "scripts/Test-UpdaterDisposable.Tests.ps1"
+    ],
+    "sentinelSha256": {
+      "Mods/e2e-user.mod": "A07B3B13C359CAA1487A6123593EEF4366F9A2FB38182392BE6F04244CFF13BA",
+      "State/e2e-state.json": "B90D2BB9B54BFFD364F410D926F57FF416A7566E7C39BFDB401BFDB450BB5E44",
+      "e2e-unknown-user-file.txt": "16CC71C24DAC23CB320F57C4A5F638DD7B43AEE6105BC5C4799AE119BE02250F"
+    }
+  },
+  "productLog": [
+    "update backup created files=689",
+    "update rollback restored files=689"
+  ],
+  "completedUtc": "2026-09-29T14:01:25.7512185+00:00"
+}
