@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1258-repair-heaven-v2-runner-a2",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:56:33.126172+00:00"
+  "updated_at": "2026-09-29T12:59:36.149094+00:00",
+  "exit_code": 0
 }
