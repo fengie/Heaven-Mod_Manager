@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104310-operator-manage-test",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:43:10.613Z",
+  "ttl_seconds": 1800,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git -C C:\\Users\\Xxkan\\HeavenBridgeMainVerify fetch origin --prune; git -C C:\\Users\\Xxkan\\HeavenBridgeMainVerify checkout main; git -C C:\\Users\\Xxkan\\HeavenBridgeMainVerify reset --hard origin/main; & 'C:\\Users\\Xxkan\\HeavenBridgeMainVerify\\heaven-bridge\\manage.ps1' TEST",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeMainVerify",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
