@@ -81,6 +81,8 @@ Permanent development cycles must never finish with a separate direct ChatGPT ->
 
 Use `job_status` for current state and `cancel` when a long-running job should be stopped. Do not launch duplicate jobs merely because a result is delayed; unique IDs plus idempotency/result-cache recovery are the normal rule. Worker v3 supports bounded concurrency; Git publication is serialized separately.
 
+Priority scheduling: control-plane actions remain responsive even when non-control worker slots are saturated. Ordinary jobs honor `priority` (`highest`/`high`/`normal`/`low`, or numeric 0-100) and age upward over time so low-priority work cannot starve indefinitely.
+
 ## Screenshot and desktop control
 
 When `health` advertises desktop capabilities, use the structured screenshot/window/mouse/keyboard/app/clipboard actions. Screenshots may return local PNG paths; retrieve bytes with `fs_read_binary` only when necessary. Clipboard read relay requires explicit opt-in. Do not emulate desktop actions with raw shell when structured actions exist.
