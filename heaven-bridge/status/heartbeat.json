@@ -1,15 +1,16 @@
 {
   "host": "heaven",
-  "pid": 85088,
+  "pid": 48016,
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T00:33:42.421465+00:00",
+  "updated_at": "2026-09-29T08:10:23.348376+00:00",
   "running": [],
   "capabilities": [
     "cancel",
     "cmd",
     "codex",
+    "controller_checkpoint",
     "fs_copy",
     "fs_delete",
     "fs_edit",
