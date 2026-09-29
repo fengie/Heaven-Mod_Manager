@@ -243,9 +243,12 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
              patch.object(hb, "LOCKS_DIR", Path(td)), \
              patch.object(hb, "WORKER_LOCK_PATH", Path(td) / "worker-instance.lock"):
             handle = hb.acquire_worker_instance_lock()
-            self.assertFalse(handle.closed)
-            self.assertIn(str(os.getpid()), (Path(td) / "worker-instance.lock").read_text(encoding="utf-8"))
-            hb.release_worker_instance_lock()
+            try:
+                self.assertFalse(handle.closed)
+                handle.seek(0)
+                self.assertIn(str(os.getpid()), handle.read().decode("utf-8"))
+            finally:
+                hb.release_worker_instance_lock()
             self.assertTrue(handle.closed)
 
     def test_clean_stale_locks_preserves_worker_instance_lock(self):
