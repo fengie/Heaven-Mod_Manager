@@ -18,6 +18,48 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $server = 'heaven2'
 
+          $remoteScript = {
+            $ErrorActionPreference = 'Stop'
+            $batch = @(
+              "$env:USERPROFILE\local-ai-workspaces\mhw-mods\tools\agent-control\Start Agent Control.bat",
+              "$env:USERPROFILE\agent-control-panel\tools\agent-control\Start Agent Control.bat"
+            ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+
+            if (-not $batch) { throw 'Agent Control launcher was not found on heaven2.' }
+
+            $desktop = [Environment]::GetFolderPath('Desktop')
+            if (-not $desktop) { throw 'Could not resolve heaven2 Desktop.' }
+
+            $shortcutPath = Join-Path $desktop 'Heaven Agent Control.lnk'
+            $wsh = New-Object -ComObject WScript.Shell
+            $shortcut = $wsh.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $batch
+            $shortcut.WorkingDirectory = Split-Path -Parent $batch
+            $shortcut.Description = 'Open the Heaven Agent Control dashboard on heaven2'
+            $shortcut.IconLocation = 'C:\Windows\System32\Taskmgr.exe,0'
+            $shortcut.Save()
+
+            $verify = $wsh.CreateShortcut($shortcutPath)
+            if ($verify.TargetPath -ne $batch) { throw 'Shortcut target verification failed.' }
+
+            [pscustomobject]@{
+              host = $env:COMPUTERNAME
+              shortcut = $shortcutPath
+              target = $verify.TargetPath
+              working_directory = $verify.WorkingDirectory
+              icon = $verify.IconLocation
+            }
+          }
+
+          try {
+            $result = Invoke-Command -ComputerName $server -ScriptBlock $remoteScript -ErrorAction Stop
+            $result | ConvertTo-Json -Compress
+            exit 0
+          }
+          catch {
+            Write-Host "WinRM path unavailable: $($_.Exception.Message)"
+          }
+
           function New-AgentShortcut([string]$ShortcutPath, [string]$LocalBatch) {
             $wsh = New-Object -ComObject WScript.Shell
             $shortcut = $wsh.CreateShortcut($ShortcutPath)
@@ -39,34 +81,13 @@ jobs:
             }
           }
 
+          $usersRoot = "\\$server\c$\Users"
+          if (-not (Test-Path -LiteralPath $usersRoot -ErrorAction SilentlyContinue)) {
+            throw 'Neither WinRM nor the heaven2 admin share is available from the self-hosted runner.'
+          }
+
           $localBatch = $null
           $profileName = $null
-
-          if ($env:COMPUTERNAME -ieq $server) {
-            foreach ($candidate in @(
-              "$env:USERPROFILE\local-ai-workspaces\mhw-mods\tools\agent-control\Start Agent Control.bat",
-              "$env:USERPROFILE\agent-control-panel\tools\agent-control\Start Agent Control.bat"
-            )) {
-              if (Test-Path -LiteralPath $candidate) {
-                $localBatch = $candidate
-                $profileName = Split-Path -Leaf $env:USERPROFILE
-                break
-              }
-            }
-            if (-not $localBatch) { throw 'Agent Control launcher was not found on heaven2.' }
-
-            $desktop = [Environment]::GetFolderPath('Desktop')
-            if (-not $desktop) { throw 'Could not resolve heaven2 Desktop.' }
-            $result = New-AgentShortcut -ShortcutPath (Join-Path $desktop 'Heaven Agent Control.lnk') -LocalBatch $localBatch
-            $result | ConvertTo-Json -Compress
-            exit 0
-          }
-
-          $usersRoot = "\\$server\c$\Users"
-          if (-not (Test-Path -LiteralPath $usersRoot)) {
-            throw 'heaven2 admin share is not reachable from the self-hosted runner.'
-          }
-
           foreach ($profile in Get-ChildItem -LiteralPath $usersRoot -Directory -ErrorAction Stop) {
             $candidates = @(
               (Join-Path $profile.FullName 'local-ai-workspaces\mhw-mods\tools\agent-control\Start Agent Control.bat'),
