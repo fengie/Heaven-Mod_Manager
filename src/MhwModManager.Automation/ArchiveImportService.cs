@@ -103,10 +103,34 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         return Path.Combine(stagingRoot, $"{kind}-{Guid.NewGuid():N}");
     }
 
-    private static void TryDeleteOwnedStaging(string path)
+    private void TryDeleteOwnedStaging(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        try { if (Directory.Exists(path)) Directory.Delete(path, true); } catch { }
+        try
+        {
+            var stagingRoot = Path.GetFullPath(Path.Combine(modsRoot, CatalogService.ImportStagingDirectoryName)).TrimEnd(Path.DirectorySeparatorChar);
+            var candidate = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
+            if (!candidate.StartsWith(stagingRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing to delete non-staging path: {candidate}");
+                return;
+            }
+            if (Directory.Exists(stagingRoot) && (File.GetAttributes(stagingRoot) & FileAttributes.ReparsePoint) != 0)
+            {
+                MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing cleanup through reparse staging root: {stagingRoot}");
+                return;
+            }
+            if (Directory.Exists(candidate) && (File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
+            {
+                MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing recursive cleanup of reparse staging leaf: {candidate}");
+                return;
+            }
+            if (Directory.Exists(candidate)) Directory.Delete(candidate, true);
+        }
+        catch (Exception ex)
+        {
+            MasterDebugLog.Write("IMPORT-CLEANUP", $"Best-effort staging cleanup failed for '{path}': {ex.Message}");
+        }
     }
 
     private static string UniqueDirectory(string path)
