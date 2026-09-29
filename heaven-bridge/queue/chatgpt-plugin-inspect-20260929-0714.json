@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-plugin-inspect-20260929-0714",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; $roots=Get-ChildItem $env:USERPROFILE -Directory -Depth 4 | Where-Object { Test-Path (Join-Path $_.FullName '.git') }; foreach($r in $roots){ $url=(git -C $r.FullName remote get-url origin 2>$null); if($url -match 'fengie/mhw-mods'){ Write-Output ('REPO='+$r.FullName); Write-Output ('BRANCH='+(git -C $r.FullName branch --show-current)); Write-Output ('HEAD='+(git -C $r.FullName rev-parse HEAD)); Write-Output 'STATUS:'; git -C $r.FullName status --short; Write-Output '---' } }",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T11:14:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
