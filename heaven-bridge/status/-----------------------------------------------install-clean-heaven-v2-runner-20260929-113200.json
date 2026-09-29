@@ -1,9 +1,10 @@
 {
   "id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:32:30.533753+00:00"
+  "updated_at": "2026-09-29T11:35:43.862503+00:00",
+  "exit_code": 1
 }
