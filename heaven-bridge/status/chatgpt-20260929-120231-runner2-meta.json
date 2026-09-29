@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-120231-runner2-meta",
-  "state": "running",
+  "state": "completed",
   "action": "fs_read",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:03:28.347439+00:00"
+  "updated_at": "2026-09-29T12:03:50.041425+00:00",
+  "exit_code": 0
 }
