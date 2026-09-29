@@ -423,7 +423,8 @@ try {
 
     Invoke-CachedDotnetStep 'test:Core unit tests' '.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj' 'Tests' 'Core unit tests' @('test','.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
     Invoke-CachedDotnetStep 'test:Automation unit tests' '.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj' 'Tests' 'Automation unit tests' @('test','.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
-    if($env:OS -eq 'Windows_NT'){
+    $isWindowsHost = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+    if($isWindowsHost){
         Invoke-CachedDotnetStep 'test:Integration + fault injection' '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj' 'Tests' 'Integration + fault injection' @('test','.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
         Invoke-CachedDotnetStep 'test:Full automation self-test' '.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj' 'Tests' 'Full automation self-test' @('run','-c','Release','--project','.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-restore','--no-build','--',$BuildLogs) 'selftest' | Out-Null
     } else {
