@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0905-deploy-session-recovery-r7",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:05:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:03:23.967564+00:00",
+  "finished_at": "2026-09-29T09:03:24.383953+00:00",
+  "stdout": "HEAVEN_BRIDGE_SESSION_RECOVERY_DEPLOY_SCHEDULED\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0905-deploy-session-recovery-r7.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0905-deploy-session-recovery-r7.stderr.log",
+    "stdout_bytes": 49,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "31593afc4724faaa4855ca57963af629dd3292502097f035e1093a79e8ba8543"
+}
