@@ -21,10 +21,13 @@ $RuntimeDir = Join-Path $UserProfile '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
 $RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
+$BackupWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1.bak'
 $RuntimeSentinel = Join-Path $RuntimeDir 'heaven-bridge-sentinel.ps1'
+$BackupSentinel = Join-Path $RuntimeDir 'heaven-bridge-sentinel.ps1.bak'
 $SourceBridgeDir = Join-Path $UserProfile 'HeavenBridgeSource\heaven-bridge'
 $SourceWorker = Join-Path $SourceBridgeDir 'worker.py'
 $SourceWatchdog = Join-Path $SourceBridgeDir 'watchdog.ps1'
+$SourceSentinel = Join-Path $SourceBridgeDir 'sentinel.ps1'
 $StateDir = Join-Path $UserProfile 'HeavenBridge'
 $SentinelLog = Join-Path $StateDir 'sentinel.log'
 $StartupDir = Join-Path $UserProfile 'AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
@@ -149,13 +152,33 @@ function Ensure-RuntimeFiles {
         }
     }
 
-    if (-not (Test-Path $RuntimeWatchdog) -and (Test-Path $SourceWatchdog)) {
-        $tokens = $null
-        $errors = $null
-        [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $SourceWatchdog), [ref]$tokens, [ref]$errors)
-        if ($errors.Count -eq 0) {
-            Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
-            Write-SentinelLog 'Restored missing runtime watchdog from canonical local source mirror.'
+    if (-not (Test-Path $RuntimeWatchdog)) {
+        if (Test-Path $BackupWatchdog) {
+            Copy-Item $BackupWatchdog $RuntimeWatchdog -Force
+            Write-SentinelLog 'Restored missing runtime watchdog from known-good backup.'
+        } elseif (Test-Path $SourceWatchdog) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $SourceWatchdog), [ref]$tokens, [ref]$errors)
+            if ($errors.Count -eq 0) {
+                Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
+                Write-SentinelLog 'Restored missing runtime watchdog from canonical local source mirror.'
+            }
+        }
+    }
+
+    if (-not (Test-Path $RuntimeSentinel)) {
+        if (Test-Path $BackupSentinel) {
+            Copy-Item $BackupSentinel $RuntimeSentinel -Force
+            Write-SentinelLog 'Restored missing sentinel runtime from known-good backup.'
+        } elseif (Test-Path $SourceSentinel) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $SourceSentinel), [ref]$tokens, [ref]$errors)
+            if ($errors.Count -eq 0) {
+                Copy-Item $SourceSentinel $RuntimeSentinel -Force
+                Write-SentinelLog 'Restored missing sentinel runtime from canonical local source mirror.'
+            }
         }
     }
 }
