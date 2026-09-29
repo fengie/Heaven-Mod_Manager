@@ -56,7 +56,7 @@ Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
 - synchronous/persistent processes: `proc_run`, `proc_start`, `proc_input`, `proc_read`, `proc_kill`, `proc_list_sessions`, `proc_list`, `job_output_read`
 - job control/waits: `job_status`, `cancel`, `wait_for` (`file_*`, `process_*`, `session_*`, and `window_*` conditions with bounded timeout/cancellation evidence)
-- desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`
+- desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`, `secret_type`
 - semantic UIA: `uia_tree`, `uia_find`, `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`; mutation searches fail closed on ambiguity/truncation, password values are never exposed, and `uia_set_value` requires explicit non-secret relay opt-in
 - clipboard: `clipboard_read`, `clipboard_write` (relay reads require explicit opt-in)
 - controller/agents: `controller_checkpoint`, `codex`
@@ -86,7 +86,7 @@ Priority scheduling keeps control-plane actions responsive even when ordinary wo
 
 ## Screenshot and desktop control
 
-When `health` advertises desktop capabilities, use the structured screenshot/window/mouse/keyboard/app/clipboard actions. Screenshots may return local PNG paths; retrieve bytes with `fs_read_binary` only when necessary. Clipboard read relay requires explicit opt-in. Do not emulate desktop actions with raw shell when structured actions exist.
+When `health` advertises desktop capabilities, use the structured screenshot/window/mouse/keyboard/app/clipboard actions. Screenshots may return local PNG paths; retrieve bytes with `fs_read_binary` only when necessary. Clipboard read relay requires explicit opt-in. For credentials, use `secret_type` only when `health.data.features.secret_input.available=true`: GitHub carries only the opaque one-time handle and non-secret target selector, while `heaven2` places the short-lived host-bound envelope directly in the worker's configured trusted out-of-band inbox. Never put the secret value, ciphertext, or envelope contents in the relay. Do not emulate desktop actions with raw shell when structured actions exist.
 
 ## Worker fabric and automatic offloading
 
