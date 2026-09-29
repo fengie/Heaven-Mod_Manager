@@ -5,29 +5,8 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T15:45:33.493300+00:00",
-  "running": [
-    {
-      "id": "chatgpt-20260929-154400-heaven2-remote-probe",
-      "action": "proc_run",
-      "started_at": "2026-09-29T15:44:23.325141+00:00"
-    },
-    {
-      "id": "job-20260929T154510Z-pr224-exact-full-gate-01",
-      "action": "powershell",
-      "started_at": "2026-09-29T15:45:13.748046+00:00"
-    },
-    {
-      "id": "swarm-20260929-1546-sandbox-home",
-      "action": "fs_mkdir",
-      "started_at": "2026-09-29T15:45:31.989798+00:00"
-    },
-    {
-      "id": "swarm-20260929-1546-sandbox-game",
-      "action": "fs_mkdir",
-      "started_at": "2026-09-29T15:45:31.990831+00:00"
-    }
-  ],
+  "updated_at": "2026-09-29T15:50:35.786448+00:00",
+  "running": [],
   "capabilities": [
     "app_launch",
     "cancel",
