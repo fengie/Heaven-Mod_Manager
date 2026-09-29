@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-100300-read-services-registry",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:01:21.211051+00:00"
+  "updated_at": "2026-09-29T10:01:33.217088+00:00",
+  "exit_code": 0
 }
