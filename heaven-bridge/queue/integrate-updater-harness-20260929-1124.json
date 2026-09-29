@@ -1,0 +1,13 @@
+{
+  "id": "integrate-updater-harness-20260929-1124",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:24:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\ngit -C $repo fetch origin --prune\n$base=(git -C $repo rev-parse origin/main).Trim()\n$tmp=Join-Path $env:TEMP ('branchzero-updater-'+[guid]::NewGuid().ToString('N'))\ngit -C $repo worktree add --detach $tmp origin/main | Out-Null\ntry {\n git -C $tmp cherry-pick b8f9424e274644ff5e76590e7dd44b05fe7c01a6\n if($LASTEXITCODE -ne 0){$conf=@(git -C $tmp diff --name-only --diff-filter=U);[pscustomobject]@{status='conflict';base=$base;conflicts=$conf}|ConvertTo-Json -Compress;exit 21}\n powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $tmp 'scripts\\Test-UpdaterDisposable.Tests.ps1')\n if($LASTEXITCODE -ne 0){throw 'UPDATER_HARNESS_TEST_FAILED'}\n git -C $repo fetch origin\n if((git -C $repo rev-parse origin/main).Trim() -ne $base){throw 'MAIN_MOVED'}\n git -C $tmp push origin HEAD:main\n if($LASTEXITCODE -ne 0){throw 'PUSH_MAIN_FAILED'}\n [pscustomobject]@{status='integrated';base=$base;head=(git -C $tmp rev-parse HEAD).Trim()}|ConvertTo-Json -Compress\n} finally { git -C $repo worktree remove --force $tmp 2>$null | Out-Null }"
+  },
+  "priority": "highest"
+}
