@@ -1,0 +1,18 @@
+{
+  "id": "chatgpt-20260929-1042-ux-audit-status",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T14:42:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:28:25.623376+00:00",
+  "finished_at": "2026-09-29T15:28:25.623376+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "[WinError 267] The directory name is invalid"
+  },
+  "stderr": "[WinError 267] The directory name is invalid",
+  "stdout": "",
+  "job_hash": "dcc96bf0c06a9530a8584b41ebb39dcb9d3173b0f12a9d23fe1d8ef8220cc76c"
+}
