@@ -1,0 +1,9 @@
+{
+  "id": "branchzero-delete-pr151-20260929-1218-a1",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T12:19:06.617257+00:00"
+}
