@@ -14,6 +14,7 @@ on:
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
       - '.github/workflows/heaven-bridge-gate.yml'
+      - 'plugins/heaven-control-plane/**'
   pull_request:
     paths:
       - 'heaven-bridge/worker.py'
@@ -25,6 +26,7 @@ on:
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
       - '.github/workflows/heaven-bridge-gate.yml'
+      - 'plugins/heaven-control-plane/**'
   workflow_dispatch:
 
 permissions:
@@ -32,7 +34,7 @@ permissions:
 
 concurrency:
   group: heaven-local-bridge-gate-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify-windows:
@@ -60,10 +62,15 @@ jobs:
           python heaven-bridge/test_worker.py
           python heaven-bridge/tests/test_worker.py
 
+      - name: Run Heaven control-plane vertical slice tests
+        shell: pwsh
+        run: |
+          python plugins/heaven-control-plane/verify.py
+
       - name: Parse operator PowerShell
         shell: pwsh
         run: |
-          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/uia.ps1')) {
+          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/install-github-runner.ps1', 'heaven-bridge/uia.ps1')) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(
