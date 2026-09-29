@@ -80,8 +80,18 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
     public string StateLabel=>HasStagedChanges
-        ? StagedEnabledMembers switch{0=>"Staged • OFF",var n when n==MemberCount=>"Staged • ON",_=>$"Staged • {StagedEnabledMembers}/{MemberCount}"}
-        : StagedEnabledMembers switch{0=>"OFF",var n when n==MemberCount=>"ON",_=>$"PARTIAL • {StagedEnabledMembers}/{MemberCount}"};
+        ? StagedEnabledMembers switch
+        {
+            0=>"Will disable",
+            var n when n==MemberCount=>"Will enable",
+            _=>$"Will enable {StagedEnabledMembers}/{MemberCount} parts"
+        }
+        : StagedEnabledMembers switch
+        {
+            0=>"Disabled",
+            var n when n==MemberCount=>"Enabled",
+            _=>$"Partially enabled {StagedEnabledMembers}/{MemberCount}"
+        };
 
     [ObservableProperty]private bool? stagedEnabled;
     [ObservableProperty]private EffectiveModState effectiveState=EffectiveModState.Disabled;
@@ -98,11 +108,11 @@ public partial class ModRowViewModel:ObservableObject
     public bool HasIssue=>!string.IsNullOrWhiteSpace(IssueBadge);
     public string EffectLabel=>EffectiveState switch
     {
-        EffectiveModState.FullyEffective=>"Effective",
-        EffectiveModState.PartiallyOverridden=>$"Composed • {ShadowedFiles} overridden",
-        EffectiveModState.FullySuperseded=>"Superseded",
-        EffectiveModState.NeedsChoice=>"Pick one",
-        EffectiveModState.NeedsRevalidation=>"Revalidate",
+        EffectiveModState.FullyEffective=>"Working",
+        EffectiveModState.PartiallyOverridden=>$"Partly overridden • {ShadowedFiles} file(s)",
+        EffectiveModState.FullySuperseded=>"Not currently used",
+        EffectiveModState.NeedsChoice=>"Needs your choice",
+        EffectiveModState.NeedsRevalidation=>"Needs a check",
         _=>"Disabled"
     };
 
