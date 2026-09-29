@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-pr-queue-prune-20260929-1412-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T14:12:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:27:13.055349+00:00",
+  "finished_at": "2026-09-29T15:27:25.227846+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)           -> origin/fix/mod-workflows-current-main-20260929\n - [deleted]           (none)           -> origin/fix/release-windows-host-detection-20260929\n - [deleted]           (none)           -> origin/fix/updater-release-gate-closure-20260929\n - [deleted]           (none)           -> origin/fix/workflow-feature-closure-20260929\n - [deleted]           (none)           -> origin/recovery/complete-mod-workflows-20260929\n * [new branch]        agent/bug-hunt-swarm-20260929 -> origin/agent/bug-hunt-swarm-20260929\n * [new branch]        agent/bughunt-inbox-partial-cleanup-20260929 -> origin/agent/bughunt-inbox-partial-cleanup-20260929\n * [new branch]        agent/bughunt-recipe-family-idempotence-20260929 -> origin/agent/bughunt-recipe-family-idempotence-20260929\n * [new branch]        agent/fomod-staging-cleanup-20260929 -> origin/agent/fomod-staging-cleanup-20260929\n * [new branch]        agent/heaven-bridge-detached-recovery-20260929 -> origin/agent/heaven-bridge-detached-recovery-20260929\n * [new branch]        agent/heaven-bridge-recover-20260929 -> origin/agent/heaven-bridge-recover-20260929\n * [new branch]        agent/heaven-file-ops-20260929 -> origin/agent/heaven-file-ops-20260929\n * [new branch]        agent/import-publication-isolation-20260929 -> origin/agent/import-publication-isolation-20260929\n * [new branch]        agent/mod-retirement-20260929 -> origin/agent/mod-retirement-20260929\n * [new branch]        agent/unified-mod-catalog-20260929 -> origin/agent/unified-mod-catalog-20260929\n * [new branch]        fix-mod-retirement-lifecycle-20260929 -> origin/fix-mod-retirement-lifecycle-20260929\n * [new branch]        fix/legacy-migration-corrupt-cas-20260929 -> origin/fix/legacy-migration-corrupt-cas-20260929\n   2d6f0122..cce71d8c  heaven-bridge    -> origin/heaven-bridge\n   28deaa7a..452fa3ca  main             -> origin/main\n * [new branch]        release-8.8.11-verification-fix -> origin/release-8.8.11-verification-fix\n * [new tag]           archive/branch-cleanup-20260929/feature-branch-lifecycle-enforcement-20260929 -> archive/branch-cleanup-20260929/feature-branch-lifecycle-enforcement-20260929\n * [new tag]           updater-main-174 -> updater-main-174\n * [new tag]           updater-main-175 -> updater-main-175\n * [new tag]           updater-main-177 -> updater-main-177\n * [new tag]           updater-main-178 -> updater-main-178\nTo https://github.com/fengie/mhw-mods.git\n ! [remote rejected]   agent/bughunt-inbox-partial-cleanup-20260929 (cannot lock ref 'refs/heads/agent/bughunt-inbox-partial-cleanup-20260929': unable to resolve reference 'refs/heads/agent/bughunt-inbox-partial-cleanup-20260929')\nerror: failed to push some refs to 'https://github.com/fengie/mhw-mods.git'\ndelete failed for agent/bughunt-inbox-partial-cleanup-20260929\r\nAt line:22 char:27\r\n+   if($LASTEXITCODE -ne 0){throw \"delete failed for $b\"}\r\n+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (delete failed f...leanup-20260929:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : delete failed for agent/bughunt-inbox-partial-cleanup-20260929\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-pr-queue-prune-20260929-1412-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-pr-queue-prune-20260929-1412-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 3219,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3254a31f9a1126021bfc88079a5ded578a64b9491ba5462f1384d6ff9dd1b7a4"
+}
