@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}"
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Loaded="OnWindowLoaded">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
         <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
         <KeyBinding Key="F5" Command="{Binding RefreshAnalysisNowCommand}"/>
     </Window.InputBindings>
-    <Grid>
+    <Grid x:Name="RootLayout">
         <Grid.RowDefinitions>
             <RowDefinition Height="78"/>
             <RowDefinition Height="*"/>
@@ -58,7 +59,11 @@
         </Border>
 
         <!-- Sidebar + pages -->
-        <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTab}">
+        <TabControl x:Name="MainTabs"
+                    Grid.Row="1"
+                    TabStripPlacement="Left"
+                    SelectedIndex="{Binding SelectedTab}"
+                    SelectionChanged="OnMainTabSelectionChanged">
             <TabItem Header="Dashboard">
                 <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid Width="{Binding ViewportWidth,ElementName=DashboardScroll}" MaxWidth="1320" HorizontalAlignment="Left" Margin="32,30,36,36">
@@ -874,8 +879,25 @@
         </Border>
 
         <!-- Blocking operation overlay -->
-        <Border Grid.RowSpan="3" Background="#C30A0D11" Visibility="{Binding BusyVisibility}" Panel.ZIndex="50">
-            <Border Width="470" Padding="28" Background="{StaticResource Panel}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border x:Name="BusyOverlay"
+                Grid.RowSpan="3"
+                Background="#C30A0D11"
+                Visibility="{Binding BusyVisibility}"
+                IsVisibleChanged="OnBusyOverlayIsVisibleChanged"
+                Panel.ZIndex="50">
+            <Border x:Name="BusyDialogCard"
+                    Width="470"
+                    Padding="28"
+                    Background="{StaticResource Panel}"
+                    BorderBrush="{StaticResource Border}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
                 <StackPanel>
                     <Border Width="38" Height="38" CornerRadius="19" Background="{StaticResource AccentDim}" HorizontalAlignment="Left">
                         <TextBlock Text="…" Foreground="{StaticResource AccentBright}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
