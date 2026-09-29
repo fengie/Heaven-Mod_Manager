@@ -215,6 +215,8 @@ The action fails closed when the existing cycle no longer matches `expected_prev
 - per-job status files are published under `heaven-bridge/status/`.
 - `heartbeat.json` periodically publishes worker version, protocol, capabilities, and running job IDs.
 
+Priority scheduling: control-plane actions (`health`, `job_status`, `cancel`, controller checkpoints, and session-control actions) are serviced ahead of ordinary work and bypass the ordinary start-rate limiter. Non-control jobs honor `priority` (`highest`/`high`/`normal`/`low`, or numeric 0-100) with time-based aging so older lower-priority work eventually advances instead of starving behind a continuous high-priority stream.
+
 Heartbeat commits are deliberately infrequent to avoid relay commit spam.
 
 ## Local desktop control
