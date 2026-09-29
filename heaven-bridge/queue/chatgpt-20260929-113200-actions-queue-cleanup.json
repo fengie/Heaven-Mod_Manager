@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-113200-actions-queue-cleanup",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $gh=(Get-Command gh.exe -ErrorAction Stop).Source; & $gh --version | Select-Object -First 1; $ids=@(36559140396,36561310967,36561233175,36560601435,36560577974,36560425564,36560035466,36560032693,36559839393,36559815352,36559778308,36559751985,36559676021,36559637229,36559356211,36558923887,36558838625); foreach($runId in $ids){ & $gh run cancel $runId --repo fengie/mhw-mods 2>&1; Write-Output ('CANCEL_EXIT_'+$runId+'='+$LASTEXITCODE) }; Write-Output 'ACTIONS_QUEUE_CLEANUP_DONE'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T11:32:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
