@@ -64,6 +64,7 @@ Core capabilities:
 - structured cursor, mouse button/click/scroll, keyboard shortcut, and Unicode text input
 - structured app launch without shell interpolation
 - clipboard text read/write with relay-aware privacy guards
+- credential-safe one-time secret typing from a locally configured heaven2 authority inbox; GitHub carries only an opaque handle and non-secret target binding
 - local Codex dispatch using an absolute user npm path fallback
 
 Clipboard reads require an explicit per-job `allow_relay: true` opt-in because clipboard contents are returned through the private GitHub relay. Never use clipboard or GUI text actions to transmit secrets through this relay.
@@ -246,11 +247,39 @@ Interaction actions:
 
 Desktop selectors fail closed on ambiguous window matches unless `first_match:true` is explicitly supplied. Clipboard reads are additionally capped and report truncation.
 
-### Sensitive input boundary
+### Credential-safe secret input
 
-The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, or controller state.
+The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, logs, screenshots metadata, or controller state.
 
-For full credential-safe desktop parity, secrets should be referenced by a local named-secret handle owned by the credential authority and resolved only on the destination machine; the secret value itself must never enter GitHub. Until that channel is implemented, credential entry remains outside the bridge's safe structured surface.
+Worker v4 supports `secret_type` for credentials that must be typed into an already identifiable window without putting the value in GitHub. The relay job contains only an opaque one-time handle plus a non-secret target selector (`hwnd`, `pid`, or `title`). The worker resolves and focuses that target before it claims the handle, then reads the secret from a locally configured inbox, validates destination/purpose/target/TTL, records a non-secret replay marker, deletes the claimed envelope, and injects the value directly with Win32 `SendInput`. Results contain only `{"consumed":true,"typed":true}`; no value, length, hash, preview, or secret-derived error text is returned.
+
+Set up the authority on `heaven2`:
+
+1. Create a dedicated folder that is **not** inside the repository or Heaven Bridge state directories.
+2. Share it only to the `heaven` worker identity. Require SMB encryption on that share and restrict NTFS/share ACLs to the heaven2 authority account plus the heaven worker account.
+3. On `heaven2`, set `HEAVEN_BRIDGE_SECRET_AUTHORITY_INBOX` to the local folder path.
+4. On `heaven`, set `HEAVEN_BRIDGE_SECRET_INBOX` to the encrypted SMB path for the same folder.
+5. Restart/recover the bridge. `health.features.secret_input.available` must be `true` before secret entry is attempted.
+
+Stage a secret **only on heaven2** with the interactive helper; it never accepts the secret on the command line:
+
+```powershell
+$ticket = .\heaven-bridge\stage-secret.ps1 -TargetJson '{"title":"Credential Window"}' | ConvertFrom-Json
+```
+
+The prompt is hidden. The returned `$ticket.handle` is safe to place in the GitHub relay together with the same target binding:
+
+```json
+{
+  "action": "secret_type",
+  "params": {
+    "handle": "<opaque handle>",
+    "target": { "title": "Credential Window" }
+  }
+}
+```
+
+Handles are short-lived (maximum 120 seconds by default), destination-bound to `heaven`, target-bound, and single-use. Missing/expired/replayed/mismatched handles fail closed. If typing fails after consumption, issue a new handle; a consumed credential is never replayed. Recovery is cleanup-only: remove stale hidden `.claim-*.json` files from the authority inbox while the worker is stopped, verify the SMB/ACL configuration, then restart and stage a new secret. Never copy a claimed envelope into GitHub or bridge state to recover it.
 
 ## Agent code, build, and test workflow
 
@@ -299,7 +328,7 @@ Use the operator gate from the repository root:
 .\heaven-bridge\manage.ps1 TEST
 ```
 
-That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
+That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, one-time secret TTL/destination/target/replay handling and relay-redaction, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
 
 ## Security boundary
 
