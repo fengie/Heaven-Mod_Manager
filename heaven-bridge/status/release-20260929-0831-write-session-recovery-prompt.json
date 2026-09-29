@@ -1,9 +1,10 @@
 {
   "id": "release-20260929-0831-write-session-recovery-prompt",
-  "state": "running",
+  "state": "completed",
   "action": "fs_write",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:32:56.664365+00:00"
+  "updated_at": "2026-09-29T08:33:20.006727+00:00",
+  "exit_code": 0
 }
