@@ -4,15 +4,15 @@ A zero-dependency local control plane for the MHW programming-agent swarm.
 
 This is the execution layer that sits above the repository's existing agent doctrine and continuity system:
 
-**You → normal Chat / registered ChatGPT sessions by default → control plane coordination → review/integration queue → Git/CI**
+**You → current normal Chat when available → Agent Control → direct non-Work workers as needed → review/integration queue → Git/CI**
 
-Local Codex workers are an explicit opt-in execution path, never the default or a fallback.
+ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
 ## What v0.5.5 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
-- Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is the default; a local Codex worker is launched only when the request explicitly sets `executionMode: "codex"` (CLI: `--execution-mode codex`).
-- Agent Control cannot auto-create arbitrary normal ChatGPT conversations. If no normal-Chat session is available/registered, dispatch fails closed instead of silently consuming Codex quota.
+- Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is preferred when already available, but local dispatch defaults to a direct non-Work worker path so execution does not stop merely because arbitrary ChatGPT conversations cannot be auto-created.
+- Agent Control never initiates ChatGPT Work mode. Work is an external, explicit current-task opt-in; ordinary dispatch, review, retry, recovery, and autopilot flows remain non-Work.
 - Enforces a mandatory pre-response repository-training gate: every spawned worker must have all required training/continuity sources present and non-empty, receives their exact hashes in a training manifest, and is instructed to read them plus task-relevant source/tests before it may process the task prompt.
 - Gives every deployed agent its own Git worktree; it reuses a safe compatible unowned branch when available and creates a new `agent/control-*` branch only when no strong safe match exists.
 - Maintains a local process/task registry plus a normalized federated agent registry of:
@@ -109,10 +109,10 @@ node .\agentctl.mjs autopilot-start --task "Build the current big direction" --m
 node .\agentctl.mjs autopilot-pause
 node .\agentctl.mjs autopilot-resume
 node .\agentctl.mjs autopilot-stop
-# Normal Chat is the default; local deploy/review commands will fail closed unless Codex is explicitly requested.
-node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928 --execution-mode codex
-node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90 --execution-mode codex
-node .\agentctl.mjs review <agent-id> --execution-mode codex
+# Default deploy/review stays on a direct non-Work execution path. ChatGPT Work is never an automatic handoff.
+node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928
+node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90
+node .\agentctl.mjs review <agent-id>
 node .\agentctl.mjs log <agent-id>
 node .\agentctl.mjs stop <agent-id>
 ```
@@ -178,7 +178,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
 - `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
 - `AGENT_CONTROL_HEAVEN_REPO_URL` — optional repository URL used by remote Heaven workspace preparation
-- `CODEX_EXE` — optional explicit path to `codex.exe`; used only for tasks that explicitly opt into Codex execution. Otherwise the newest ChatGPT Codex install is not invoked.
+- `CODEX_EXE` — optional explicit path to `codex.exe` for the direct local non-Work worker path; otherwise the newest ChatGPT Codex install is discovered automatically when a local worker is needed.
 
 ## Safety / isolation
 
