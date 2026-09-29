@@ -1,11 +1,11 @@
 ---
 name: heaven-bridge
-description: Primary computer-control and development path for the user's `heaven` worker. Use for local filesystem, code build/test/debug execution, persistent dev processes, binary transfer, search, terminal, process/session, screenshot/desktop control, automation, durable controller state, local-agent work, worker-fabric offloading, and token-efficient local preprocessing. Use this bridge instead of Remote Desktop Commander; do not fall back to Remote Desktop Commander unless the user explicitly authorizes it in the current request.
+description: Primary multi-host computer-control and development path for the user's `heaven2` operator machine and `heaven` worker. Use for local filesystem, code build/test/debug execution, persistent dev processes, binary transfer, search, terminal, process/session, screenshot/desktop control, automation, durable controller state, local-agent work, worker-fabric offloading, and token-efficient local preprocessing. Use this bridge instead of Remote Desktop Commander; do not fall back to Remote Desktop Commander unless the user explicitly authorizes it in the current request.
 ---
 
 # Heaven Local Bridge v6
 
-Use this as the default computer-control path for `heaven`.
+Use this as the default computer-control path for the two-machine topology: `heaven2` is the operator/control desktop and `heaven` is a delegated worker/resource machine.
 
 ## Canonical source vs transport branch
 
@@ -17,13 +17,15 @@ Use this as the default computer-control path for `heaven`.
 
 ## Architecture and machine policy
 
-- ChatGPT -> private GitHub relay branch -> local worker on `heaven` -> Windows/files/processes/local agents/desktop -> result/status back through GitHub.
+- ChatGPT -> private GitHub relay branch -> host-targeted local worker on `heaven2` or `heaven` -> Windows/files/processes/local agents/desktop -> result/status back through GitHub.
 - Queue: `heaven-bridge/queue/<job-id>.json` on the `heaven-bridge` transport branch.
 - Results: `heaven-bridge/results/<job-id>.json`.
-- Status: `heaven-bridge/status/<job-id>.json` and `heaven-bridge/status/heartbeat.json`.
+- Per-host heartbeat: `heaven-bridge/status/hosts/<host>/heartbeat.json`. The old `heaven-bridge/status/heartbeat.json` is a compatibility mirror for `heaven` only.
 - Protocol remains `chatgpt-heaven-bridge-v2` for compatibility.
 - Healthy implementation reports `data.worker_version: 6`.
-- `heaven` is the worker/execution machine. `heaven2` is the main/control machine and credential authority.
+- `heaven2` is the operator/control-plane machine, human-facing desktop, dashboard/control-panel host, browser/UI automation host, and credential authority.
+- `heaven` is a worker/resource machine for builds, tests, scans, indexing, local agents, worker-fabric jobs, and other delegated execution.
+- Generic computer/desktop/control requests target `heaven2`. Use `heaven` interactively only when the user explicitly asks for that worker desktop or a worker-specific GUI validation requires it.
 - Keep secrets on `heaven2` unless runtime access is explicitly required. Never place secrets in queue/results/logs/commits.
 - Do not expose an unauthenticated raw shell to the public internet.
 - Do not use Remote Desktop Commander for heaven work unless the user explicitly authorizes it in the current request. A broken bridge is a bridge-repair task, not implicit permission to switch remote-control providers.
@@ -36,6 +38,7 @@ Create a unique job file on the `heaven-bridge` transport branch:
 {
   "id": "chatgpt-YYYYMMDD-HHMMSS-<suffix>",
   "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
   "created_at": "<current ISO-8601 UTC timestamp>",
   "ttl_seconds": 3600,
   "action": "<action>",
@@ -44,13 +47,13 @@ Create a unique job file on the `heaven-bridge` transport branch:
 }
 ```
 
-The `id` must match the queue filename. Use a current timestamp: the worker rejects expired jobs and jobs too far in the future. After dispatch, read `status/<id>.json` for running/completed state and `results/<id>.json` for the authoritative result. Queue creation alone is not completion.
+The `id` must match the queue filename. New plugin-generated jobs must set `target_host` explicitly. Use `heaven2` for interactive/control work and `heaven` for delegated heavy execution. Omitting `target_host` is supported only for backward compatibility and defaults to `heaven`. Use a current timestamp: the worker rejects expired jobs and jobs too far in the future. After dispatch, read `status/<id>.json` for running/completed state and `results/<id>.json` for the authoritative result. Queue creation alone is not completion.
 
 The private-repo ACL is the compatibility auth mode when no local HMAC key is configured. If `HEAVEN_BRIDGE_HMAC_KEY` is configured on the worker, jobs must follow the worker's HMAC-SHA256 signing format; do not invent or transmit the secret through GitHub.
 
 ## Health and capability negotiation
 
-Start a new workflow with `health` when worker state matters. Healthy v6 must report `status: completed`, `host: heaven`, `data.worker_version: 6`, `data.protocol: chatgpt-heaven-bridge-v2`, `data.elevated: true` when admin work is required, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
+Start a new workflow with `health` when worker state matters. Healthy v6 must report `status: completed` and a `host` matching the requested `target_host`, `data.worker_version: 6`, `data.protocol: chatgpt-heaven-bridge-v2`, `data.elevated: true` when admin work is required, and advertised actions/capabilities. Also inspect `heaven-bridge/status/hosts/<target_host>/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
 
 Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
@@ -87,7 +90,7 @@ Priority scheduling keeps control-plane actions responsive even when ordinary wo
 
 ## Screenshot and desktop control
 
-When `health` advertises desktop capabilities, use the structured screenshot/window/mouse/keyboard/app/clipboard actions. Screenshots may return local PNG paths; retrieve bytes with `fs_read_binary` only when necessary. Clipboard read relay requires explicit opt-in. Do not emulate desktop actions with raw shell when structured actions exist.
+When host-targeted `health` advertises desktop capabilities, use the structured screenshot/window/mouse/keyboard/app/clipboard actions. Unless the user explicitly names heaven's desktop, set `target_host: heaven2` for these actions. Screenshots may return local PNG paths; retrieve bytes with `fs_read_binary` only when necessary. Clipboard read relay requires explicit opt-in. Do not emulate desktop actions with raw shell when structured actions exist.
 
 ## Worker fabric and automatic offloading
 
