@@ -4,6 +4,7 @@ import re
 from typing import Any, Callable, Mapping, Protocol
 
 from ..protocol import CapabilitySpec, ControlPlaneError, bounded_int, require_mapping, require_string
+from ..verification import choose_project_type, detect_project_types, plan_verification
 
 BRIDGE_PROTOCOL = "chatgpt-heaven-bridge-v2"
 _ALLOWED_SHELLS = {"powershell", "cmd", "python"}
@@ -101,6 +102,54 @@ class HeavenBridgeAdapter:
                 {"exit_code": int(exit_code), "stderr": str(response.get("stderr") or "")[:2048]},
             )
         return response
+
+    @staticmethod
+    def _require_command_success(
+        response: Mapping[str, Any],
+        *,
+        code: str,
+        message: str,
+    ) -> Mapping[str, Any]:
+        exit_code = response.get("exit_code")
+        if exit_code is not None and int(exit_code) != 0:
+            raise ControlPlaneError(
+                code,
+                message,
+                {
+                    "exit_code": int(exit_code),
+                    "stderr": str(response.get("stderr") or "")[-2048:],
+                },
+            )
+        return response
+
+    def _detect_project(self, repo: str, timeout_seconds: int) -> Mapping[str, Any]:
+        items: list[Any] = []
+        offset = 0
+        for _ in range(5):
+            response = self._request(
+                "fs_list",
+                {"path": repo, "depth": 1, "max_items": 1000, "offset": offset},
+                timeout_seconds,
+            )
+            listing = response.get("data")
+            if not isinstance(listing, Mapping) or not isinstance(listing.get("items"), list):
+                raise ControlPlaneError("INVALID_BRIDGE_RESULT", "fs_list result is malformed")
+            items.extend(listing["items"])
+            if not bool(listing.get("has_more")):
+                return detect_project_types({"items": items})
+            next_offset = listing.get("next_offset")
+            try:
+                parsed_offset = int(next_offset)
+            except (TypeError, ValueError) as exc:
+                raise ControlPlaneError("INVALID_BRIDGE_RESULT", "fs_list pagination offset is malformed") from exc
+            if parsed_offset <= offset:
+                raise ControlPlaneError("INVALID_BRIDGE_RESULT", "fs_list pagination did not advance")
+            offset = parsed_offset
+        raise ControlPlaneError(
+            "PROJECT_SCAN_TRUNCATED",
+            "project marker scan exceeded 5000 filesystem entries",
+            {"maximum_items": 5000},
+        )
 
     def invoke(self, capability: CapabilitySpec, payload: Mapping[str, Any]) -> Mapping[str, Any]:
         data = require_mapping(payload)
@@ -257,6 +306,41 @@ class HeavenBridgeAdapter:
                 "glob": require_string(data.get("glob", "*"), "glob", max_length=1024),
             }
             return self._request("fs_search", params, capability.timeout_seconds)
+
+        if capability.name == "verification.detect":
+            repo = _safe_path(data.get("repo"), "repo")
+            return self._detect_project(repo, capability.timeout_seconds)
+
+        if capability.name == "verification.run":
+            repo = _safe_path(data.get("repo"), "repo")
+            detection = self._detect_project(repo, min(capability.timeout_seconds, 60))
+            project_type = choose_project_type(detection, data.get("project_type"))
+            plan = plan_verification(project_type, data.get("kind"))
+            timeout = bounded_int(
+                data.get("timeout_seconds"),
+                "timeout_seconds",
+                default=plan.timeout_seconds,
+                minimum=1,
+                maximum=plan.timeout_seconds,
+            )
+            response = self._request(
+                "proc_run",
+                {
+                    "shell": "powershell",
+                    "command": plan.command,
+                    "cwd": repo,
+                    "timeout_seconds": timeout,
+                },
+                timeout + 15,
+            )
+            response = self._require_command_success(
+                response,
+                code="VERIFICATION_FAILED",
+                message=f"{plan.kind} verification failed",
+            )
+            plan_data = plan.as_dict()
+            plan_data["timeout_seconds"] = timeout
+            return {"project": detection, "plan": plan_data, "result": response}
 
         if capability.name in {"git.status", "git.diff", "git.verify_remote_main"}:
             cwd = _safe_path(data.get("repo"), "repo")
