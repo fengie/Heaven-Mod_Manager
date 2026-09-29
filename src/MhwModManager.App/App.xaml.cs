@@ -72,6 +72,7 @@ public sealed partial class App:Application, IDisposable
         {
             splash.SetDetail("Locating the active game and its isolated state database…");
             var paths=startup.Run("bootstrap.paths.discover",AppPaths.Discover);
+            Environment.SetEnvironmentVariable("MOD_MANAGER_HOME",paths.ToolRoot);
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
 
@@ -208,29 +209,10 @@ public sealed partial class App:Application, IDisposable
         if(string.IsNullOrWhiteSpace(explicitRoot))explicitRoot=Environment.GetEnvironmentVariable("MHW_MASTER_DEBUG_ROOT");
         if(!string.IsNullOrWhiteSpace(explicitRoot))return Path.GetFullPath(explicitRoot);
 
-        var managerHome=Environment.GetEnvironmentVariable("MOD_MANAGER_HOME");
-        if(string.IsNullOrWhiteSpace(managerHome))managerHome=Environment.GetEnvironmentVariable("MHW_MANAGER_HOME");
-        if(!string.IsNullOrWhiteSpace(managerHome))return Path.GetFullPath(managerHome);
-
-        var baseRoot=AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
-        try
-        {
-            var versionDir=new DirectoryInfo(baseRoot);
-            var releaseDir=versionDir.Parent;
-            var projectRoot=releaseDir?.Parent;
-            if(releaseDir is not null
-               && projectRoot is not null
-               && string.Equals(releaseDir.Name,"release",StringComparison.OrdinalIgnoreCase)
-               && File.Exists(Path.Combine(projectRoot.FullName,"Build.bat")))
-            {
-                return projectRoot.FullName;
-            }
-        }
-        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-        {
-            UnifiedDebugLog.Write("APP-BOOTSTRAP","Could not auto-resolve project-root master log; using application directory.",ex);
-        }
-        return baseRoot;
+        return AppPaths.ResolveToolRoot(
+            Environment.GetEnvironmentVariable("MOD_MANAGER_HOME"),
+            Environment.GetEnvironmentVariable("MHW_MANAGER_HOME"),
+            AppContext.BaseDirectory);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -322,13 +304,40 @@ public sealed record AppPaths(
     public string ExecutablePath=>Game.ExecutablePath;
     public string LiveModRoot=>Game.LiveModRoot;
 
+    public static string ResolveToolRoot(string? managerHome,string? legacyManagerHome,string baseDirectory)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var configured=string.IsNullOrWhiteSpace(managerHome)?legacyManagerHome:managerHome;
+        if(!string.IsNullOrWhiteSpace(configured))return Path.GetFullPath(configured);
+
+        var baseRoot=Path.GetFullPath(baseDirectory).TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
+        try
+        {
+            var versionDir=new DirectoryInfo(baseRoot);
+            var releaseDir=versionDir.Parent;
+            var projectRoot=releaseDir?.Parent;
+            if(releaseDir is not null
+               && projectRoot is not null
+               && string.Equals(releaseDir.Name,"release",StringComparison.OrdinalIgnoreCase)
+               && File.Exists(Path.Combine(projectRoot.FullName,"Build.bat")))
+            {
+                return projectRoot.FullName;
+            }
+        }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            MasterDebugLog.Write("APP-BOOTSTRAP","Could not infer manager home from release layout; using application directory.",ex);
+        }
+        return baseRoot;
+    }
+
     public static AppPaths Discover()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var tool=Environment.GetEnvironmentVariable("MOD_MANAGER_HOME");
-        if(string.IsNullOrWhiteSpace(tool))tool=Environment.GetEnvironmentVariable("MHW_MANAGER_HOME");
-        if(string.IsNullOrWhiteSpace(tool))tool=AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-        tool=Path.GetFullPath(tool);
+        var tool=ResolveToolRoot(
+            Environment.GetEnvironmentVariable("MOD_MANAGER_HOME"),
+            Environment.GetEnvironmentVariable("MHW_MANAGER_HOME"),
+            AppContext.BaseDirectory);
         var state=Path.Combine(tool,"State");
         var registry=new GameProfileRegistry(state);
         var active=registry.GetActive();
