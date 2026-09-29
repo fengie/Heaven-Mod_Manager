@@ -15,6 +15,13 @@ spec.loader.exec_module(hb)
 
 
 class HeavenBridgeWorkerTests(unittest.TestCase):
+    def test_health_and_system_info_report_elevation_boolean(self):
+        health = hb.run_job("health-elevation", {"action": "health", "params": {}}, threading.Event())
+        info = hb.run_job("system-elevation", {"action": "system_info", "params": {}}, threading.Event())
+        self.assertIsInstance(health["data"]["elevated"], bool)
+        self.assertIsInstance(info["data"]["elevated"], bool)
+        self.assertEqual(health["data"]["elevated"], hb.is_process_elevated())
+
     def test_canonical_hash_ignores_signature_only(self):
         base = {
             "id": "x1",
@@ -139,7 +146,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 3)
+        self.assertEqual(result["data"]["worker_version"], 4)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
@@ -147,11 +154,99 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
             "gui_mouse_scroll", "gui_key", "gui_type",
+            "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
+            "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
         ):
             self.assertIn(action, result["data"]["actions"])
         self.assertTrue(result["data"]["capabilities"]["session_restart_recovery"])
         self.assertEqual(result["data"]["capabilities"]["desktop_control"], os.name == "nt")
         self.assertTrue(result["data"]["capabilities"]["clipboard_relay_requires_opt_in"])
+        self.assertEqual(result["data"]["capability_schema"], 2)
+        self.assertEqual(result["data"]["features"]["uia"]["backend"], "windows-uia-powershell")
+        self.assertFalse(result["data"]["features"]["uia"]["password_values_exposed"])
+        self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
+
+    def test_queue_order_prefers_control_then_priority_then_fifo(self):
+        current = datetime(2026, 9, 29, 10, 4, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs = {
+                "normal-old.json": {"action": "proc_run", "priority": "normal", "created_at": "2026-09-29T10:00:00Z"},
+                "highest-new.json": {"action": "proc_run", "priority": "highest", "created_at": "2026-09-29T10:02:00Z"},
+                "highest-old.json": {"action": "proc_run", "priority": "highest", "created_at": "2026-09-29T10:01:00Z"},
+                "control-low.json": {"action": "cancel", "priority": "lowest", "created_at": "2026-09-29T10:03:00Z"},
+            }
+            paths = []
+            for name, job in jobs.items():
+                path = root / name
+                path.write_text(__import__("json").dumps(job), encoding="utf-8")
+                paths.append(path)
+            ordered = [
+                p.name for p in sorted(paths, key=lambda path: hb.queue_order_key(path, current=current))
+            ]
+            self.assertEqual(ordered, ["control-low.json", "highest-old.json", "highest-new.json", "normal-old.json"])
+
+    def test_queue_order_malformed_job_does_not_break_sort(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bad = root / "bad.json"
+            bad.write_text("{not-json", encoding="utf-8")
+            normal = root / "normal.json"
+            normal.write_text('{"action":"proc_run","priority":"normal","created_at":"2026-09-29T10:00:00Z"}', encoding="utf-8")
+            ordered = sorted([normal, bad], key=hb.queue_order_key)
+            self.assertEqual({p.name for p in ordered}, {"bad.json", "normal.json"})
+
+    def test_queue_order_ages_low_priority_work(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            old_low = root / "old-low.json"
+            old_low.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run",
+                    "priority": "low",
+                    "created_at": (current - timedelta(minutes=20)).isoformat(),
+                }),
+                encoding="utf-8",
+            )
+            fresh_high = root / "fresh-high.json"
+            fresh_high.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run",
+                    "priority": "highest",
+                    "created_at": (current - timedelta(seconds=1)).isoformat(),
+                }),
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [fresh_high, old_low],
+                key=lambda path: hb.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "old-low.json")
+
+    def test_queue_order_accepts_numeric_priority(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            urgent = root / "urgent.json"
+            urgent.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run", "priority": 95, "created_at": current.isoformat()
+                }),
+                encoding="utf-8",
+            )
+            background = root / "background.json"
+            background.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run", "priority": 10, "created_at": current.isoformat()
+                }),
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [background, urgent],
+                key=lambda path: hb.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "urgent.json")
 
     def test_clipboard_read_requires_explicit_relay_opt_in(self):
         with self.assertRaises(hb.BridgeError) as ctx:
@@ -173,6 +268,35 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(result["data"], expected)
         move.assert_called_once_with({"x": 321, "y": 654})
+
+    def test_uia_request_validation_and_structured_route(self):
+        with self.assertRaises(hb.BridgeError) as missing:
+            hb._validate_uia_request({}, "uia_invoke")
+        self.assertEqual(missing.exception.code, "UIA_SELECTOR_REQUIRED")
+        with self.assertRaises(hb.BridgeError) as unknown:
+            hb._validate_uia_request({"selector": {"regex": "unsafe"}}, "uia_find")
+        self.assertEqual(unknown.exception.code, "INVALID_UIA_SELECTOR")
+        request = hb._validate_uia_request(
+            {"selector": {"automation_id": "SaveButton", "control_type": "Button"}, "wait_ms": 999999},
+            "uia_invoke",
+        )
+        self.assertEqual(request["wait_ms"], hb.UIA_MAX_WAIT_MS)
+        expected = {"invoked": True, "element": {"automation_id": "SaveButton"}}
+        with patch.object(hb, "desktop_uia", return_value=expected) as semantic:
+            result = hb.run_job(
+                "uia-route-test",
+                {"action": "uia_invoke", "params": {"selector": {"automation_id": "SaveButton"}}},
+                threading.Event(),
+            )
+        self.assertEqual(result["data"], expected)
+        semantic.assert_called_once()
+
+    def test_uia_backend_never_reads_password_values(self):
+        script = MODULE_PATH.with_name("uia.ps1").read_text(encoding="utf-8")
+        self.assertIn("IsPassword", script)
+        self.assertIn("UIA_PASSWORD_VALUE_BLOCKED", script)
+        self.assertNotIn("Current.Value", script)
+        self.assertNotIn("Cached.Value", script)
 
     def test_codex_batch_wrapper_uses_call_arguments(self):
         captured = {}
