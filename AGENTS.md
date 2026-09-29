@@ -98,6 +98,18 @@ Before the current engineering task is considered complete:
 
 Managers and future agents must treat the backlog as actionable engineering work: claim compatible items when capacity exists, keep ownership/status current, and integrate completed capabilities into verified remote `main`.
 
+## Mandatory private-to-public updater release publication
+
+The canonical source repository is private `fengie/mhw-mods`; the credential-free updater feed is public `fengie/mhw-mod-manager-release`.
+
+- Every successful updater release published from the private repository must be mirrored to the public release repository as part of the same release operation.
+- The canonical automation is `.github/workflows/windows-release-gate.yml`: publish the immutable private updater release with `scripts/Publish-UpdaterRelease.ps1`, then mirror it with `scripts/Publish-PublicUpdaterRelease.ps1`.
+- A release-owning agent must not report **SHIPPED**, **DONE**, or release-complete until it verifies that the latest private and public updater releases have the same `updater-main-<build>` tag, expected ZIP + `update-manifest.json` assets, and matching server SHA-256 digests for both assets.
+- The public release body/source provenance must identify the private source SHA/build. Public updater assets must remain downloadable without private-repository credentials.
+- If private publication succeeds but public mirroring fails or is unconfigured, the release is **PARTIAL/BLOCKED**, not complete. Repair/retry the public mirror before closing the release task; do not silently leave clients on an older public feed.
+- Never commit or print `MHW_PUBLIC_RELEASE_TOKEN` or other credential values. Only the configured secret reference belongs in workflow/repository text.
+- `scripts/Test-UpdaterReleasePolicy.ps1` must keep a regression assertion that the release workflow invokes both private publication and public mirroring in that order and wires the public-release secret.
+
 ## Mandatory `main` integration rule
 
 `GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
