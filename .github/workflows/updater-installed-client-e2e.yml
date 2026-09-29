@@ -26,6 +26,29 @@ permissions:
   contents: write
 
 jobs:
+  bom-regression-on-heaven:
+    name: Validate updater BOM fix on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 20
+    env:
+      MHW_RUN_UPDATER_INSTALLED_E2E: '0'
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v7
+      - name: Restore integration tests
+        shell: powershell
+        run: dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
+      - name: Build integration tests
+        shell: powershell
+        run: dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+      - name: Run integration suite with live updater E2E disabled
+        shell: powershell
+        run: |
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          if (!(Test-Path -LiteralPath $runner)) { throw "Missing test runner: $runner" }
+          & $runner
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
   installed-client-e2e:
     name: Real packaged 60 to 61 update and rollback
     runs-on: windows-latest

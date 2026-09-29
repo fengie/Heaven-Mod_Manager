@@ -311,7 +311,8 @@ try{
     minimumUpdaterProtocol=1
     publishedUtc=$buildIdentityUtc
   }
-  $updateManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $updateManifestPath -Encoding UTF8
+  $updateManifestJson=$updateManifest | ConvertTo-Json -Depth 8
+  [IO.File]::WriteAllText($updateManifestPath,$updateManifestJson,[Text.UTF8Encoding]::new($false))
 
   & (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $zip -ManifestPath $updateManifestPath -ExpectedSourceSha $sourceSha -ExpectedBuildNumber $buildNumber
 

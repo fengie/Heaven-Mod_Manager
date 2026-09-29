@@ -8,6 +8,10 @@ $ErrorActionPreference='Stop'
 
 $artifact=(Resolve-Path -LiteralPath $ArtifactPath).Path
 $manifestFile=(Resolve-Path -LiteralPath $ManifestPath).Path
+$manifestBytes=[IO.File]::ReadAllBytes($manifestFile)
+if($manifestBytes.Length -ge 3 -and $manifestBytes[0] -eq 0xEF -and $manifestBytes[1] -eq 0xBB -and $manifestBytes[2] -eq 0xBF){
+  throw 'update-manifest.json must be UTF-8 without a BOM so existing updater clients can parse it.'
+}
 $manifest=Get-Content -LiteralPath $manifestFile -Raw | ConvertFrom-Json
 
 if([int]$manifest.schemaVersion -ne 1){throw "Unsupported update manifest schema: $($manifest.schemaVersion)"}
