@@ -1,0 +1,22 @@
+{
+  "id": "chatgpt-20260929-0906-recovered-input-reject",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:05:27.288970+00:00",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T09:07:09.732983+00:00",
+  "finished_at": "2026-09-29T09:07:09.732983+00:00",
+  "host": "heaven",
+  "action": "proc_input",
+  "error": {
+    "code": "SESSION_INPUT_UNAVAILABLE",
+    "message": "stdin cannot be reattached after worker restart; recovered session is read/kill only",
+    "details": {
+      "session_id": "52a0a247627d416d",
+      "pid": 86572
+    }
+  },
+  "stderr": "stdin cannot be reattached after worker restart; recovered session is read/kill only",
+  "stdout": "",
+  "job_hash": "c3ffc69e64cb9a8024e4dd39b8ff1293f0fbc49d33576f62ad07b03e99b2c137"
+}
