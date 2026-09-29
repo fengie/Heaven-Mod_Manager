@@ -7,15 +7,15 @@
   "currentVersion": "8.8.6",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify current v8.8.6 canonical main on its exact SHA; complete the integrated updater installed-client 60-to-61 success and injected-rollback E2E; then reconcile active owner PRs without blind branch replay",
+  "nextMilestone": "verify current v8.8.6 canonical main on its exact SHA; complete installed-client updater 60-to-61 success and injected-rollback E2E; retire/supersede stale PR #98 and reconcile active Agent Control owner PRs without blind branch replay",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.5 Agent Control federation and release recovery",
   "status": "v8.8.6-integrated-current-main-verification-and-updater-e2e-pending",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "dd1411693e2da467ea5e1dfb5191b9793213ebdf",
-  "verificationScopeNote": "Last fully closed hosted verification remains source 5abe40304dfcb48f96e750bd7da3d0075315625b, run 36541891969; it remains exact-source historical proof and is not extended to later commits. Canonical main at reconciliation base dd1411693e2da467ea5e1dfb5191b9793213ebdf is v8.8.6 and includes later Agent Control/Heaven Bridge integration, persisted game-profile containment, responsive UI integration, the installed-client updater E2E harness/workflow follow-ups, and main-first swarm prompt contracts. Exact-current-main release verification and installed-client E2E evidence must be observed and persisted before those later changes are called fully verified. Active PRs #96, #98, #99, #100, #101, and #103 are separate owner lanes and require current-main reconciliation before integration.",
+  "candidateSourceCommit": "38772a9bcf8547402de7f98ada0740d7a6aa070f",
+  "verificationScopeNote": "Last fully closed hosted verification remains source 5abe40304dfcb48f96e750bd7da3d0075315625b, run 36541891969; it remains exact-source historical proof and is not extended to later commits. Canonical main was re-audited through 38772a9bcf8547402de7f98ada0740d7a6aa070f: Agent Control 0.5.1 liveness/machine policy and updater cross-session ownership implementation/tests/gate are now on main, alongside v8.8.6 profile/UI/updater-E2E/swarm-contract work. Exact-current-main release verification and installed-client E2E evidence still require observed persisted results. Open PR #98 is now a stale/diverged branch relative to updater ownership work already delivered on main and must not be blindly merged; active Agent Control PRs #99/#100/#101/#104/#105 remain owner lanes requiring current-main semantic reconciliation.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,7 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
-    "2026-09-29 reconciliation: canonical v8.8.6 main audited at dd1411693e2da467ea5e1dfb5191b9793213ebdf; release PR #95 closed as superseded; active PRs #96/#98/#99/#100/#101/#103 classified by current divergence and ownership; older hosted verification remains scoped to 5abe40304dfcb48f96e750bd7da3d0075315625b; no overlapping branch was blindly merged.",
+    "2026-09-29 reconciliation: canonical v8.8.6 main re-audited through 38772a9bcf8547402de7f98ada0740d7a6aa070f; PR #95 closed superseded; Agent Control 0.5.1 liveness and updater cross-session ownership are now on main; PR #98 is stale/diverged relative to that delivered updater work; active Agent Control PRs #99/#100/#101/#104/#105 remain owner lanes; older hosted verification stays scoped to 5abe40304dfcb48f96e750bd7da3d0075315625b.",
     "2026-09-29 updater hosted/publication closure: PR #91 merged at 5abe40304dfcb48f96e750bd7da3d0075315625b; Windows Release Gate 36541891969 passed 25/25; functions 748/748 promoted; Build-Release produced updater build 61 ZIP SHA-256 C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420; immutable updater-main-61 published against exact source with exactly ZIP + update-manifest.json; evidence persistence 4f0e2402d3a61e9ba3db005f026b02ccb4aba7de; only disposable old-to-new and injected-rollback installed-client E2E remain.",
     "2026-09-28 v8.8.4 exact local closure: b48c1ff865ab41841d8c7eb931fca19f371f960e passed Verify-Release 25/25, functions 748/748 with 7,921 call sites / 0 uncovered, Core 79/79, Automation 31/31, Integration 199/199, self-test 11/11, strict builds/analyzers, ReadyToRun/helper publish and Build-Release; updater build 326; ZIP SHA-256 0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154; hosted exact-main pending.",
     "2026-09-28 v8.8.4 final harvest: rebuilt from canonical 317ba6c after main advanced with v8.8.3 archive cleanup, preserving that newer code/evidence while squashing only reviewed support work.",
