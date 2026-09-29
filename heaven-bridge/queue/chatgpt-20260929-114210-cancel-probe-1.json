@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-114210-cancel-probe-1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:42:11Z",
+  "ttl_seconds": 3600,
+  "action": "cancel",
+  "params": {
+    "job_id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133"
+  },
+  "priority": "highest"
+}
