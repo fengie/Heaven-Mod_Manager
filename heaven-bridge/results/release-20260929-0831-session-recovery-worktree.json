@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0831-session-recovery-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:31:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:32:34.680597+00:00",
+  "finished_at": "2026-09-29T08:32:35.499399+00:00",
+  "stdout": "HEAD is now at 9836b91 heaven bridge status release-20260929-0831-session-recovery-worktree running\nBASE_HEAD=9836b9103067d0001ca5e249587db940634b9c9d\r\n",
+  "stderr": "Preparing worktree (detached HEAD 9836b91)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0831-session-recovery-worktree.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0831-session-recovery-worktree.stderr.log",
+    "stdout_bytes": 152,
+    "stderr_bytes": 43,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "643c574292807636040048ea6994450f1f34ee74a20c757cfcd8407c545d7645"
+}
