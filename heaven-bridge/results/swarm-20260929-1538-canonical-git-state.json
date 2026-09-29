@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-1538-canonical-git-state",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:38:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:34:49.067480+00:00",
+  "finished_at": "2026-09-29T15:34:49.697975+00:00",
+  "stdout": "ad3de9e78232fe9f66dace188c3e31dd4ced7a7c\n77dd75b5381a17b11473d8c4294573df8d64cf74\n## main...origin/main [behind 388]\n M .verification/function-status.json\n M .verification/stage-status.json\n M MHW-DEBUG-ALL.log\n?? BuildLogs/\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1538-canonical-git-state.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1538-canonical-git-state.stderr.log",
+    "stdout_bytes": 225,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "dc202f9a91f6f54a0ed9f5618563e9ef5f31160bc5909eef32da13f04791e5d5"
+}
