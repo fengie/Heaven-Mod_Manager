@@ -1,0 +1,14 @@
+{
+  "id": "----------------chatgpt-quota-circuit-test-20260929-1105-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $dest=Join-Path $env:TEMP 'mhw-quota-circuit-test'; if(Test-Path -LiteralPath $dest){Remove-Item -LiteralPath $dest -Recurse -Force}; git clone --depth 1 --branch fix/codex-quota-dispatch-circuit-20260929 https://github.com/fengie/mhw-mods.git $dest; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Push-Location (Join-Path $dest 'tools\\agent-control'); try { npm run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; npm test; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE} } finally { Pop-Location }; git -C $dest diff --check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output 'QUOTA_CIRCUIT_TEST_PASS'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T11:05:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
