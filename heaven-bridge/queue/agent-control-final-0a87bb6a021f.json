@@ -1,0 +1,14 @@
+{
+  "id": "agent-control-final-0a87bb6a021f",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference = 'Stop'; $repo = Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; $dest = Join-Path $env:TEMP 'agent-control-final-0a87bb6a021f'; if (Test-Path -LiteralPath $dest) { try { git -C $repo worktree remove --force $dest | Out-Null } catch {}; if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force } }; git -C $repo fetch origin 'feature/agent-control-plane-v2-20260928' | Out-Null; git -C $repo cat-file -e '0a87bb6a021fabd76f1de452dcb721ee35d58e40^{commit}'; git -C $repo worktree add --detach $dest '0a87bb6a021fabd76f1de452dcb721ee35d58e40' | Out-Null; try {; Set-Location (Join-Path $dest 'tools\\agent-control'); Write-Output ('VERIFY_SHA=' + (git rev-parse HEAD)); Write-Output ('NODE=' + (node --version)); node --check 'server.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:server.mjs' }; node --check 'agentctl.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:agentctl.mjs' }; node --check 'lib/control-core.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/control-core.mjs' }; node --check 'lib/federated-registry.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/federated-registry.mjs' }; node --check 'lib/heaven-bridge-provider.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/heaven-bridge-provider.mjs' }; node --check 'lib/heaven-bridge-runner.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/heaven-bridge-runner.mjs' }; node --check 'lib/autopilot-core.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/autopilot-core.mjs' }; node --check 'lib/prompt-templates.mjs'; if ($LASTEXITCODE -ne 0) { throw 'CHECK_FAILED:lib/prompt-templates.mjs' }; Write-Output 'SYNTAX_CHECKS=PASS'; cmd.exe /d /s /c \"npm test\"; if ($LASTEXITCODE -ne 0) { throw ('npm test failed with ' + $LASTEXITCODE) }; Write-Output 'AGENT_CONTROL_TESTS=PASS'; } finally { Set-Location $env:TEMP; git -C $repo worktree remove --force $dest | Out-Null }"
+  },
+  "created_at": "2026-09-29T09:26:05.167Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
