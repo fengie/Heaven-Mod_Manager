@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-quota-merged-20260929-1116",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:16:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:23:39.147724+00:00",
+  "finished_at": "2026-09-29T11:23:47.187252+00:00",
+  "stdout": "{\"branch\":\"fix/codex-quota-dispatch-circuit-20260929\",\"deleted\":true,\"proof\":\"all 5 changed blobs identical on origin/main\",\"main\":\"88980a0909c23f5ee6ade784ed21fa3aa520889b\"}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   e9eee75a..38b6f627  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/codex-quota-dispatch-circuit-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-quota-merged-20260929-1116.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-quota-merged-20260929-1116.stderr.log",
+    "stdout_bytes": 176,
+    "stderr_bytes": 208,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b152a8e295986d51647baa4e7ca044ee1513d1dd1f43bc8527370e0d712e20eb"
+}
