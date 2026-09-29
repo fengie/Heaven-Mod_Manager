@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0850-issue118-worktree2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:50:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:50:41.059718+00:00",
+  "finished_at": "2026-09-29T12:50:43.304151+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nYou cannot call a method on a null-valued expression.\r\nAt line:1 char:221\r\n+ ... afe-secret-input-20260929'; if ((git branch --list $b).Trim()) { git  ...\r\n+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : InvokeMethodOnNull\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-issue118-worktree2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-issue118-worktree2.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 458,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c5c4158460c3e5658e23855b904a18a2a5cb7d0c38aa09e6a4dd42cd23c845ce"
+}
