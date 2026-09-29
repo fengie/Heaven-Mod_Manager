@@ -1,0 +1,11 @@
+{
+  "id": "0002-manager-20260929-1052-status-hardening",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:51:00Z",
+  "ttl_seconds": 21600,
+  "action": "job_status",
+  "params": {
+    "job_id": "001-manager-20260929-1050-bridge-hardening-a1"
+  },
+  "priority": "highest"
+}
