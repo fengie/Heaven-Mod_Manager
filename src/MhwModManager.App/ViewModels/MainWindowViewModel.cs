@@ -150,6 +150,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         _=AutoMetadataLoopAsync(backgroundCts.Token);
     }
 
+    public async Task RefreshAfterCatalogInstallAsync()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await RunBusy("catalog.install.refresh","Refreshing installed mods","Reading the newly installed catalog files…",false,async ct=>
+        {
+            await ReloadMods(ct);
+            await RefreshAnalysis(ct);
+        });
+    }
+
     private async Task AutoMetadataLoopAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
