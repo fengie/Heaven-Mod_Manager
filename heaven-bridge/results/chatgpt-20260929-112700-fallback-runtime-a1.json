@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-112700-fallback-runtime-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:27:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:47:30.469341+00:00",
+  "finished_at": "2026-09-29T11:47:31.310262+00:00",
+  "stdout": "HOST=\r\ncodex=C:\\Users\\Xxkan\\AppData\\Roaming\\npm\\codex.ps1\r\nollama=MISSING\r\naider=MISSING\r\npython=C:\\Users\\Xxkan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\r\nnode=C:\\Program Files\\nodejs\\node.exe\r\ngit=C:\\Program Files\\Git\\cmd\\git.exe\r\n--- ACTIONS RUNNER SERVICES ---\r\n--- REPO ---\r\nmain\n81ab2a7992826c2d6fd04d769a91e5ae174557b5\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-112700-fallback-runtime-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-112700-fallback-runtime-a1.stderr.log",
+    "stdout_bytes": 334,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "cd0cd1deae528afa63d13a053927824059b01eaec07325b9c6fa19075e39917c"
+}
