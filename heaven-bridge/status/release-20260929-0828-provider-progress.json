@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0828-provider-progress",
+  "state": "running",
+  "action": "job_output_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:25:14.042485+00:00"
+}
