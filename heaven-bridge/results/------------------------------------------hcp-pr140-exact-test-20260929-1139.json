@@ -1,0 +1,21 @@
+{
+  "id": "------------------------------------------hcp-pr140-exact-test-20260929-1139",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:39:56.014967+00:00",
+  "finished_at": "2026-09-29T11:39:56.841271+00:00",
+  "stdout": "",
+  "stderr": "fatal: not a git repository (or any of the parent directories): .git\nfatal: not a git repository (or any of the parent directories): .git\ngit : fatal: not a git repository (or any of the parent directories): .git\r\nAt line:17 char:3\r\n+   git -C $root worktree remove --force $wt 2>$null\r\n+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: not a gi...ectories): .git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\------------------------------------------hcp-pr140-exact-test-20260929-1139.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\------------------------------------------hcp-pr140-exact-test-20260929-1139.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 502,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "25323ebe0c1ff902da6468f62b332a2a108b9ca21ea349b598a7509b16737d06"
+}
