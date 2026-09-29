@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0815-bridge-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; git status --short --branch; python -m py_compile heaven-bridge\\worker.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -m unittest -v heaven-bridge\\test_worker.py; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T08:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "purpose": "Verify the Codex batch invocation repair and full Heaven Bridge regression suite before runtime deployment."
+}
