@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-opencode-ollama-config-smoke-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:52:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:48:22.280430+00:00",
+  "finished_at": "2026-09-29T08:48:35.126819+00:00",
+  "stdout": "{\"name\": \"read\", \"arguments\": {\"path\": \"<path-to-historical-context>\"}}\r\n",
+  "stderr": "opencode.exe : \u001b[0m\r\nAt line:22 char:3\r\n+   & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --f ...\r\n+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (\u001b[0m:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-ollama-config-smoke-a4.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-ollama-config-smoke-a4.stderr.log",
+    "stdout_bytes": 73,
+    "stderr_bytes": 322,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1ef3de5be76651eccc8320687032c894910aa062c6f302ca395fd3c331819c10"
+}
