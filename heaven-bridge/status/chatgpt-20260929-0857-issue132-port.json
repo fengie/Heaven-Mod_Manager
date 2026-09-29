@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0857-issue132-port",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T13:01:21.233567+00:00"
+  "updated_at": "2026-09-29T13:01:41.675655+00:00",
+  "exit_code": 2
 }
