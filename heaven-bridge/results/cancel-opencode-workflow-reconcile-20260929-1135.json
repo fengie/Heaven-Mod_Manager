@@ -1,0 +1,17 @@
+{
+  "id": "cancel-opencode-workflow-reconcile-20260929-1135",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:35:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:31:23.211950+00:00",
+  "finished_at": "2026-09-29T11:31:23.211950+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "reconcile-complete-workflows-local-agent-20260929-1132",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "22322402dd4437a619a834a39337c70429c39057cd8d51dfedb28e083188ef7e"
+}
