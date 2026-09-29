@@ -1,0 +1,14 @@
+{
+  "id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:33:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": 100,
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference='Continue'\n$r='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$wt='C:\\Users\\Xxkan\\HeavenBridge\\workflow-backend-probe'\n$branch='integration/complete-mod-workflows-backend-20260929'\ngit -C $r fetch origin --prune | Out-Null\nif(Test-Path $wt){git -C $r worktree remove --force $wt 2>$null|Out-Null}\ngit -C $r worktree prune | Out-Null\ngit -C $r show-ref --verify --quiet \"refs/heads/$branch\"\nif($LASTEXITCODE -eq 0){git -C $r branch -D $branch|Out-Null}\ngit -C $r worktree add -b $branch $wt origin/main | Out-Host\nif($LASTEXITCODE -ne 0){throw 'worktree add failed'}\n$files=@(\n'src/MhwModManager.Automation/FomodInstallerService.cs',\n'src/MhwModManager.Automation/RulesEditorService.cs',\n'src/MhwModManager.Automation/UpdateMigrationService.cs',\n'src/MhwModManager.Core/GameAdapters.cs',\n'src/MhwModManager.Core/WorkflowAnalysis.cs',\n'tests/MhwModManager.AutomationTests/WorkflowTests.cs'\n)\nforeach($f in $files){\n  git -C $wt checkout origin/codex/complete-mod-workflows -- $f\n  if($LASTEXITCODE -ne 0){throw \"checkout failed $f\"}\n}\ngit -C $wt diff --check\n$diffCheck=$LASTEXITCODE\n$testOut=Join-Path $wt 'BuildLogs\\workflow-backend-probe-test.log'\nNew-Item -ItemType Directory -Force (Split-Path $testOut -Parent)|Out-Null\n& dotnet test (Join-Path $wt 'tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj') -c Release *> $testOut\n$testExit=$LASTEXITCODE\n$tail=@(Get-Content $testOut -Tail 180 -ErrorAction SilentlyContinue)\n[pscustomobject]@{\n  main=(git -C $wt rev-parse HEAD).Trim()\n  branch=$branch\n  diff_check=$diffCheck\n  test_exit=$testExit\n  status=@(git -C $wt status --short)\n  errors=@($tail)\n}|ConvertTo-Json -Depth 8"
+  }
+}
