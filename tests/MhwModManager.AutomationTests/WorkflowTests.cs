@@ -161,7 +161,7 @@ public sealed class WorkflowTests : IDisposable
         var mod = Assert.Single(await db.GetModsAsync(Token));
         Assert.Equal(destination, mod.SourcePath);
         Assert.False(Directory.Exists(staging));
-        Assert.DoesNotContain(CatalogService.ImportStagingDirectoryName, mod.SourcePath, StringComparison.OrdinalIgnoreCase);
+        Assert.False(mod.SourcePath.Contains(CatalogService.ImportStagingDirectoryName, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
