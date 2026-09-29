@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-104851-branch-converge",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:31:50.841109+00:00"
+  "updated_at": "2026-09-29T11:32:56.614811+00:00",
+  "exit_code": 0
 }
