@@ -1,0 +1,21 @@
+{
+  "id": "final-workflows-selective-merge-20260929-1140",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:40:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:54:29.506222+00:00",
+  "finished_at": "2026-09-29T11:54:31.950991+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   2360e2b6..7fbb708b  heaven-bridge -> origin/heaven-bridge\nfatal: invalid reference: origin/integration/complete-mod-workflows-final-20260929\nPush-Location : Cannot find path 'C:\\Users\\Xxkan\\agent-worktrees\\complete-workflows-final-20260929' because it does \r\nnot exist.\r\nAt line:8 char:1\r\n+ Push-Location $wt\r\n+ ~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\Xxkan\\...-final-20260929:String) [Push-Location], ItemNotFound \r\n   Exception\r\n    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.PushLocationCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\final-workflows-selective-merge-20260929-1140.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\final-workflows-selective-merge-20260929-1140.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 606,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "466a0e062a129b08db08cfe1df95b4c07b95db7d1350d9c278fd350bc3bde688"
+}
