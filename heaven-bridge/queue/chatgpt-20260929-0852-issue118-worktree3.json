@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0852-issue118-worktree3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:52:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 300,
+    "command": "git fetch origin main && (if exist C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input git worktree remove --force C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input) && (git show-ref --verify --quiet refs/heads/fix/credential-safe-secret-input-20260929 && git branch -D fix/credential-safe-secret-input-20260929 || ver > nul) && git worktree add -b fix/credential-safe-secret-input-20260929 C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input origin/main && git -C C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input status --short --branch && git -C C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input rev-parse HEAD"
+  }
+}
