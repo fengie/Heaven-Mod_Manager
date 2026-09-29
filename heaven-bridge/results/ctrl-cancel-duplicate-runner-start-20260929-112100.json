@@ -1,0 +1,17 @@
+{
+  "id": "ctrl-cancel-duplicate-runner-start-20260929-112100",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:21:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:48:16.002859+00:00",
+  "finished_at": "2026-09-29T11:48:16.002859+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "ea276fd5f38f7e87f32bb49ab6aa4aa86b09dcd57d7a245f06146797fd5676b1"
+}
