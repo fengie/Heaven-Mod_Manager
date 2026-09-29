@@ -1,0 +1,15 @@
+{
+  "data": {
+    "mod_files": [
+      {
+        "id": "fixture-file-id",
+        "name": "Main File",
+        "is_active": true,
+        "last_file_uploaded_at": "2026-09-29T12:00:00Z",
+        "versions_count": 1,
+        "archived_count": 0,
+        "removed_count": 0
+      }
+    ]
+  }
+}
