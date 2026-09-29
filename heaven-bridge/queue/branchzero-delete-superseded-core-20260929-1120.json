@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-delete-superseded-core-20260929-1120",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:20:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\ngit -C $repo fetch origin --prune\n$deleted=@(); $skipped=@()\nfunction Delete-Guarded([string]$b,[string]$expected,[scriptblock]$guard){\n  $line=(git -C $repo ls-remote origin (\"refs/heads/\"+$b))\n  if(-not $line){$script:skipped += [pscustomobject]@{branch=$b;reason='already-absent'};return}\n  $actual=($line -split '\\s+')[0]\n  if($actual -ne $expected){throw \"tip changed for $b expected=$expected actual=$actual\"}\n  & $guard\n  git -C $repo push origin --delete $b\n  if($LASTEXITCODE -ne 0){throw \"delete failed for $b\"}\n  $script:deleted += $b\n}\nDelete-Guarded 'fix/codex-quota-dispatch-circuit-20260929' '40d4454fd6f5eabda9650acb58246025daff5ecc' {\n  $paths=@('tools/agent-control/README.md','tools/agent-control/lib/control-core.mjs','tools/agent-control/package.json','tools/agent-control/server.mjs','tools/agent-control/test/control-core.test.mjs')\n  foreach($p in $paths){\n    $a=(git -C $repo rev-parse (\"origin/main:\"+$p)).Trim()\n    $c=(git -C $repo rev-parse (\"origin/fix/codex-quota-dispatch-circuit-20260929:\"+$p)).Trim()\n    if($a -ne $c){throw \"quota payload diverged at $p\"}\n  }\n}\nDelete-Guarded 'agent/bridge-uia-native-20260929' 'e52328aea7a2cfa26a63a35e07003c736c9c571a' {\n  $worker=git -C $repo show 'origin/main:heaven-bridge/worker.py'\n  $uia=git -C $repo show 'origin/main:heaven-bridge/uia.ps1'\n  $readme=git -C $repo show 'origin/main:heaven-bridge/README.md'\n  if(($worker -notmatch 'uia_tree') -or ($worker -notmatch 'uia_set_value')){throw 'main lacks worker-v4 UIA routes'}\n  if(($uia -notmatch 'UIAutomation') -or ($readme -notmatch 'Semantic Windows UI Automation')){throw 'main lacks landed semantic UIA implementation/docs'}\n}\nDelete-Guarded 'agent-bridge' '30fcf1d6a4946aaa8f760ab9b5141453b6b87e69' {\n  $worker=git -C $repo show 'origin/main:heaven-bridge/worker.py'\n  $readme=git -C $repo show 'origin/main:heaven-bridge/README.md'\n  if(($worker -notmatch 'chatgpt-heaven-bridge-v2') -or ($readme -notmatch 'canonical worker source')){throw 'canonical Python bridge proof missing'}\n}\ngit -C $repo fetch origin --prune\n[pscustomobject]@{deleted=$deleted;skipped=$skipped;main=(git -C $repo rev-parse origin/main).Trim()}|ConvertTo-Json -Depth 5 -Compress",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 240
+  },
+  "priority": "highest"
+}
