@@ -27,6 +27,7 @@ on:
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
       - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
+      - 'tests/MhwModManager.Tests/**'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 
