@@ -2102,20 +2102,20 @@ async function dismissGoToWorkPrompt(agent, decision, config) {
       throw new Error("Opened ChatGPT recovery window could not be identified safely.");
     }
 
-    const goButtonSelector = { name: "Go to Work", control_type: "Button", enabled: true, offscreen: false };
-    let goButton = await runHeaven2DesktopAction("uia_find", {
+    const continueWorkSelector = { name_contains: "Continue in Work", control_type: "Button", enabled: true, offscreen: false };
+    let continueWork = await runHeaven2DesktopAction("uia_find", {
       hwnd: openedHwnd,
-      selector: goButtonSelector,
+      selector: continueWorkSelector,
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12,
       wait_ms: 8000
     }, 45_000);
 
-    if (!Number(goButton?.count)) {
-      goButton = await runHeaven2DesktopAction("uia_find", {
+    if (!Number(continueWork?.count)) {
+      continueWork = await runHeaven2DesktopAction("uia_find", {
         hwnd: openedHwnd,
-        selector: { name_contains: "Go to Work", enabled: true, offscreen: false },
+        selector: { name_contains: "Continue in ChatGPT Work", enabled: true, offscreen: false },
         scope: "descendants",
         max_nodes: 1000,
         max_depth: 12,
@@ -2123,28 +2123,28 @@ async function dismissGoToWorkPrompt(agent, decision, config) {
       }, 30_000);
     }
 
-    if (!Number(goButton?.count)) {
-      outcome = { dismissed: false, verified: true, reason: "go-to-work-card-not-present" };
+    if (!Number(continueWork?.count)) {
+      outcome = { dismissed: false, verified: true, reason: "work-handoff-card-not-present" };
       return outcome;
     }
 
-    const noButtonSelector = { name: "No", control_type: "Button", enabled: true, offscreen: false };
-    const noButton = await runHeaven2DesktopAction("uia_find", {
+    const stayInChatSelector = { name_contains: "Stay in Chat", control_type: "Button", enabled: true, offscreen: false };
+    const stayInChat = await runHeaven2DesktopAction("uia_find", {
       hwnd: openedHwnd,
-      selector: noButtonSelector,
+      selector: stayInChatSelector,
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12,
       wait_ms: 3000
     }, 30_000);
 
-    if (Number(noButton?.count) !== 1) {
-      throw new Error(`Go to Work card was found, but the recovery window exposed ${Number(noButton?.count) || 0} unambiguous No buttons.`);
+    if (Number(stayInChat?.count) !== 1) {
+      throw new Error(`Work handoff card was found, but the recovery window exposed ${Number(stayInChat?.count) || 0} unambiguous Stay in Chat buttons.`);
     }
 
     await runHeaven2DesktopAction("uia_invoke", {
       hwnd: openedHwnd,
-      selector: noButtonSelector,
+      selector: stayInChatSelector,
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12
@@ -2153,17 +2153,17 @@ async function dismissGoToWorkPrompt(agent, decision, config) {
     await waitMs(700);
     const remaining = await runHeaven2DesktopAction("uia_find", {
       hwnd: openedHwnd,
-      selector: goButtonSelector,
+      selector: continueWorkSelector,
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12
     }, 30_000);
 
     if (Number(remaining?.count) > 0) {
-      throw new Error("Go to Work card remained visible after Agent Control invoked No.");
+      throw new Error("Work handoff card remained visible after Agent Control invoked Stay in Chat.");
     }
 
-    outcome = { dismissed: true, verified: true, reason: "no-invoked-and-card-cleared" };
+    outcome = { dismissed: true, verified: true, reason: "stay-in-chat-invoked-and-card-cleared" };
     return outcome;
   } finally {
     if (Number.isInteger(openedHwnd) && openedHwnd > 0) {
@@ -2203,7 +2203,7 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
       stored.source_metadata.go_to_work_recovery_last_dismissed_at = checkedAt;
       stored.source_metadata.go_to_work_recovery_dismiss_count =
         Math.max(0, Number(stored.source_metadata.go_to_work_recovery_dismiss_count) || 0) + 1;
-      addEvent(next, "federation.go-to-work-dismissed", `${agentId} had its Go to Work handoff rejected automatically`, {
+      addEvent(next, "federation.go-to-work-dismissed", `${agentId} had its Work handoff rejected automatically`, {
         agentIds: [agentId],
         reason: decision.reason,
         evidence: { verified: outcome?.verified === true }
@@ -2223,14 +2223,14 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
       stored.source_metadata.go_to_work_recovery_last_error = error?.message || String(error);
       stored.source_metadata.go_to_work_recovery_error_count =
         Math.max(0, Number(stored.source_metadata.go_to_work_recovery_error_count) || 0) + 1;
-      addEvent(next, "federation.go-to-work-recovery-error", `Automatic Go to Work dismissal failed for ${agentId}`, {
+      addEvent(next, "federation.go-to-work-recovery-error", `Automatic Work handoff dismissal failed for ${agentId}`, {
         agentIds: [agentId],
         reason: stored.source_metadata.go_to_work_recovery_last_error
       });
       if (stored.source_metadata.go_to_work_recovery_error_count >= 3) {
         addNotification(next, {
           severity: "warning",
-          title: "Go to Work auto-dismiss needs attention",
+          title: "Work handoff auto-dismiss needs attention",
           message: `${agentId}: ${stored.source_metadata.go_to_work_recovery_last_error}`,
           action: { type: "inspect-agent", agentId },
           dedupeKey: `go-to-work-recovery-error:${agentId}`
