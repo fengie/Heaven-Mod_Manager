@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-114700-runner-recovery-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $dirs=@('C:\\Users\\Xxkan\\actions-runner-heaven','C:\\Users\\Xxkan\\actions-runner-heaven-v2'); $runnerDirs=@(); foreach($d in $dirs){ if(Test-Path $d){ $runnerDirs += [pscustomobject]@{path=$d; runnerFile=(Test-Path (Join-Path $d '.runner')); runCmd=(Test-Path (Join-Path $d 'run.cmd')); svcCmd=(Test-Path (Join-Path $d 'svc.cmd')); version=((Get-Content (Join-Path $d '.runner') -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue).agentName) } }; $procs=Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Runner\\.(Listener|Worker)' -or $_.CommandLine -match 'actions-runner' } | Select-Object ProcessId,Name,CommandLine; $tasks=Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match 'runner|github|heaven' } | Select-Object TaskName,State,TaskPath; $services=Get-CimInstance Win32_Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'actions|runner|github' -or $_.DisplayName -match 'actions|runner|github' } | Select-Object Name,DisplayName,State,StartMode,PathName; $bridgePath='C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py'; $bridgeVersion=$null; if(Test-Path $bridgePath){ $m=Select-String -Path $bridgePath -Pattern 'WORKER_VERSION\\s*=\\s*(\\d+)' -AllMatches | Select-Object -First 1; if($m){$bridgeVersion=$m.Matches[0].Groups[1].Value} }; $repos=@('C:\\Users\\Xxkan\\HeavenBridgeMainVerify','C:\\Users\\Xxkan\\mhw-mods-work-canonical','C:\\Users\\Xxkan\\agent-control-panel'); $repoStates=@(); foreach($r in $repos){ if(Test-Path (Join-Path $r '.git')){ Push-Location $r; try{$repoStates += [pscustomobject]@{path=$r; branch=(git branch --show-current); head=(git rev-parse HEAD); originMain=(git ls-remote origin refs/heads/main | ForEach-Object { ($_ -split '\\s+')[0] }); status=@(git status --short)} } finally { Pop-Location } } }; [pscustomobject]@{runnerDirs=$runnerDirs;processes=$procs;tasks=$tasks;services=$services;bridgeRuntimeVersion=$bridgeVersion;repos=$repoStates} | ConvertTo-Json -Depth 6 -Compress",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T11:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
