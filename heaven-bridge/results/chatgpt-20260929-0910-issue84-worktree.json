@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0910-issue84-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:10:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T13:08:16.698878+00:00",
+  "finished_at": "2026-09-29T13:08:20.540617+00:00",
+  "stdout": "HEAD is now at e4a24251 bridge: fall back to per-user startup for self-hosted runner\ne4a242515946aa210bb473d6667709af8058d302\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nPreparing worktree (new branch 'fix/updater-release-verification-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0910-issue84-worktree.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0910-issue84-worktree.stderr.log",
+    "stdout_bytes": 126,
+    "stderr_bytes": 164,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "572ef0a1f2fcd9a36f4daaeef17d4684d7e0c8d656a4e1a24c96816296a9a875"
+}
