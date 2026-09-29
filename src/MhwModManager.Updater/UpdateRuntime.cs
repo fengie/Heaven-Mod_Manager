@@ -8,14 +8,22 @@ namespace MhwModManager.Updater;
 
 public sealed class UpdateMutexLease : IDisposable
 {
-    private readonly Semaphore semaphore;
+    private readonly Thread ownerThread;
+    private readonly ManualResetEventSlim ready = new(false);
+    private readonly ManualResetEventSlim release = new(false);
+    private Exception? acquireError;
     private bool ownsLease;
+    private bool disposed;
 
-    private UpdateMutexLease(Semaphore semaphore, bool ownsLease)
+    private UpdateMutexLease(string name, TimeSpan timeout)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        this.semaphore = semaphore;
-        this.ownsLease = ownsLease;
+        ownerThread = new Thread(() => OwnerMain(name, timeout))
+        {
+            IsBackground = true,
+            Name = "MHWMM update mutex owner"
+        };
+        ownerThread.Start();
     }
 
     public static UpdateMutexLease Acquire(string installRoot, TimeSpan timeout)
@@ -23,30 +31,72 @@ public sealed class UpdateMutexLease : IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod($"installRoot={installRoot}");
         var normalized = Path.GetFullPath(installRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized.ToUpperInvariant())));
-        var semaphore = new Semaphore(1, 1, $"Global\\MHWMM.Update.{hash[..24]}");
+        var lease = new UpdateMutexLease($"Global\\MHWMM.Update.{hash[..24]}", timeout);
+        lease.ready.Wait();
+
+        if (lease.acquireError is not null)
+        {
+            var error = lease.acquireError;
+            lease.Dispose();
+            throw error;
+        }
+        if (!lease.ownsLease)
+        {
+            lease.Dispose();
+            throw new IOException("Another update is already applying to this installation.");
+        }
+
+        return lease;
+    }
+
+    private void OwnerMain(string name, TimeSpan timeout)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
-            var acquired = semaphore.WaitOne(timeout);
-            if (!acquired)
-                throw new IOException("Another update is already applying to this installation.");
-            return new UpdateMutexLease(semaphore, true);
+            using var mutex = new Mutex(false, name);
+            try
+            {
+                ownsLease = mutex.WaitOne(timeout);
+            }
+            catch (AbandonedMutexException)
+            {
+                // Windows grants ownership while reporting that the prior owner
+                // terminated without releasing the mutex. That is exactly the
+                // crash-recovery behavior required by the updater lease.
+                ownsLease = true;
+            }
+
+            if (!ownsLease)
+            {
+                acquireError = new IOException("Another update is already applying to this installation.");
+                return;
+            }
+
+            ready.Set();
+            release.Wait();
+            mutex.ReleaseMutex();
+            ownsLease = false;
         }
-        catch
+        catch (Exception ex)
         {
-            semaphore.Dispose();
-            throw;
+            acquireError = ex;
+        }
+        finally
+        {
+            ready.Set();
         }
     }
 
     public void Dispose()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (ownsLease)
-        {
-            ownsLease = false;
-            semaphore.Release();
-        }
-        semaphore.Dispose();
+        if (disposed) return;
+        disposed = true;
+        release.Set();
+        ownerThread.Join();
+        ready.Dispose();
+        release.Dispose();
         GC.SuppressFinalize(this);
     }
 }
