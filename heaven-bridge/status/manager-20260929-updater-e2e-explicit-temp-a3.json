@@ -1,9 +1,10 @@
 {
   "id": "manager-20260929-updater-e2e-explicit-temp-a3",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:41:50.388896+00:00"
+  "updated_at": "2026-09-29T08:42:02.929181+00:00",
+  "exit_code": 1
 }
