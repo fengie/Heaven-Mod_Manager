@@ -1,3 +1,13 @@
+# 2026-09-29 v8.8.6 reconciliation checkpoint — CURRENT
+
+Canonical `main` was audited at `dd1411693e2da467ea5e1dfb5191b9793213ebdf`. PR #95 is closed unmerged as superseded. v8.8.6 release identity and the later profile/UI/updater-E2E/swarm-contract changes are already on main.
+
+Verification truth remains exact-SHA scoped: hosted run `36541891969` is the last fully closed source evidence for `5abe40304dfcb48f96e750bd7da3d0075315625b`; it does not verify later v8.8.6 commits. Exact-current-main release verification and the integrated updater 60→61 success plus injected-rollback E2E still need persisted evidence.
+
+Current active owner lanes were re-queried. PR #96 (liveness scheduler) is current-main based and mergeable; PR #98 (updater cross-session ownership) is diverged and non-mergeable; PR #99 (reliability stress) is test-only but behind main; PR #100 (dashboard) is diverged/non-mergeable; PR #101 (federation registry) and PR #103 (operator UI/CLI) are diverged and overlap shared Agent Control registry/package/UI surfaces. These are not reconciliation-owned product merges. Owners must sync to current main, resolve semantic overlap, verify, and deliver their completed work. See `_AGENT_CONTEXT/RECONCILIATION_2026-09-29.md`.
+
+---
+
 # 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
 
 Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
