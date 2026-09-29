@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0822-bridge-regression-fixed-f1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:22:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Continue'; $testCommit=(git log -1 --format=%H -- heaven-bridge/tests/test_worker.py).Trim(); Write-Output ('TEST_FILE_COMMIT='+$testCommit); if($testCommit -ne 'a7b15c81f9a216136a3720318ef0184bff75ce9f'){throw ('Unexpected test revision: '+$testCommit)}; python -m py_compile heaven-bridge\\worker.py heaven-bridge\\test_worker.py heaven-bridge\\tests\\test_worker.py; $compile=$LASTEXITCODE; Write-Output ('PY_COMPILE_EXIT='+$compile); python -m unittest -v heaven-bridge\\test_worker.py; $primary=$LASTEXITCODE; Write-Output ('PRIMARY_EXIT='+$primary); python -m unittest -v heaven-bridge\\tests\\test_worker.py; $legacy=$LASTEXITCODE; Write-Output ('SECONDARY_EXIT='+$legacy); if($compile -ne 0){exit 41}; if($primary -ne 0){exit 42}; if($legacy -ne 0){exit 43}; exit 0"
+  },
+  "priority": "highest"
+}
