@@ -1,0 +1,11 @@
+{
+  "id": "----branchzero-status-1-20260929-1059",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:59:00Z",
+  "ttl_seconds": 1800,
+  "action": "job_status",
+  "params": {
+    "job_id": "chatgpt-20260929-104850-branch-zero-safe-clean-a1"
+  },
+  "priority": "highest"
+}
