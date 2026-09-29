@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-agent-control-deploy-f238c429",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$repo = Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; $ac = Join-Path $repo 'tools\\agent-control'; Set-Location $repo; git fetch origin main --prune; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $branch = (git branch --show-current).Trim(); if ($branch -ne 'main') { Write-Error \"Canonical checkout is on $branch, expected main\"; exit 20 }; $dirty = git status --porcelain; if ($dirty) { Write-Error 'Canonical checkout is dirty; refusing destructive deployment'; $dirty; exit 21 }; git merge --ff-only origin/main; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $head = (git rev-parse HEAD).Trim(); if ($head -ne 'f238c429193d037343b0b060ba2e1c06587d5284') { Write-Error \"Unexpected main HEAD $head\"; exit 22 }; $targets = Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -match 'tools[\\\\/]agent-control[\\\\/]server\\.mjs' -or (($_.CommandLine -match 'server\\.mjs') -and ($_.ExecutablePath -match 'node')) }; foreach ($p in $targets) { try { Stop-Process -Id $p.ProcessId -Force -ErrorAction Stop } catch {} }; Start-Sleep -Milliseconds 700; $env:AGENT_CONTROL_REPO = $repo; Start-Process -FilePath 'node' -ArgumentList 'server.mjs' -WorkingDirectory $ac -WindowStyle Minimized; Start-Sleep -Seconds 2; $status = Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -TimeoutSec 10; $version = (Get-Content (Join-Path $ac 'package.json') -Raw | ConvertFrom-Json).version; git push origin --delete fix/agent-control-no-work-recovery-20260929 2>$null; Write-Output (ConvertTo-Json @{ head=$head; version=$version; status=$status; deleted_branch=($LASTEXITCODE -eq 0) } -Depth 8 -Compress); exit 0",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:52:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
