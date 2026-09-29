@@ -216,14 +216,18 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
-    def test_bootstrap_verifies_replacement_before_retiring_old_worker(self):
+    def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        compile_idx = bootstrap.index("& $python -m py_compile $staged")
+        suite_idx = bootstrap.index("& $python -m unittest -q 'heaven-bridge\\test_worker.py'")
+        stop_idx = bootstrap.index("foreach ($oldPid in $oldWorkerIds)")
         start_idx = bootstrap.index("$candidate = Start-Process")
-        verify_idx = bootstrap.index("$candidateAlive = Get-Process")
-        retire_idx = bootstrap.index("# Retire only pre-upgrade workers")
-        self.assertLess(start_idx, verify_idx)
-        self.assertLess(verify_idx, retire_idx)
-        self.assertIn("existing worker(s) were left untouched", bootstrap)
+        self.assertLess(compile_idx, suite_idx)
+        self.assertLess(suite_idx, stop_idx)
+        self.assertLess(stop_idx, start_idx)
+        self.assertIn("process-lifetime singleton lock", bootstrap)
+        self.assertIn("Copy-Item $BackupWorker $RuntimeWorker -Force", bootstrap)
+        self.assertIn("backup worker was restored and restarted", bootstrap)
         self.assertIn("Start-ScheduledTask -TaskName $TaskName", bootstrap)
 
     def test_bootstrap_preserves_relay_before_destructive_realign(self):
