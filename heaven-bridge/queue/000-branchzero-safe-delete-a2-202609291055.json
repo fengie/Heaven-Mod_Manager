@@ -1,0 +1,14 @@
+{
+  "id": "000-branchzero-safe-delete-a2-202609291055",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-safe-branch-delete'\nif(-not (Test-Path (Join-Path $repo '.git'))){ throw \"missing repo $repo\" }\ngit -C $repo fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw \"fetch failed $LASTEXITCODE\" }\n$branches = git -C $repo for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object { $_ -and $_ -notin @('HEAD','main','heaven-bridge') -and $_ -ne 'origin' } | Sort-Object -Unique\n$deleted=@(); $kept=@(); $failed=@()\nforeach($b in $branches){\n  git -C $repo merge-base --is-ancestor (\"origin/\"+$b) origin/main 2>$null\n  $ancestor = ($LASTEXITCODE -eq 0)\n  $patchEquivalent = $false\n  if(-not $ancestor){\n    $cherry = @(git -C $repo cherry origin/main (\"origin/\"+$b) 2>$null)\n    if($LASTEXITCODE -eq 0){\n      $plus = @($cherry | Where-Object { $_ -match '^\\+' })\n      $patchEquivalent = ($plus.Count -eq 0)\n    }\n  }\n  if($ancestor -or $patchEquivalent){\n    & git -C $repo push origin --delete $b 2>&1 | Out-Host\n    if($LASTEXITCODE -eq 0){ $deleted += $b } else { $failed += $b }\n  } else {\n    $kept += $b\n  }\n}\ngit -C $repo fetch origin --prune | Out-Null\n$remaining = @(git -C $repo for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object { $_ -and $_ -notin @('HEAD','main','heaven-bridge') -and $_ -ne 'origin' } | Sort-Object -Unique)\n[pscustomobject]@{\n  main=(git -C $repo rev-parse origin/main)\n  deleted_count=$deleted.Count\n  deleted=$deleted\n  kept_unique_count=$kept.Count\n  kept_unique=$kept\n  failed_count=$failed.Count\n  failed=$failed\n  disposable_remaining_count=$remaining.Count\n  remaining=$remaining\n} | ConvertTo-Json -Depth 5",
+    "cwd": "C:\\Users\\Xxkan\\mhw-safe-branch-delete",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T10:55:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
