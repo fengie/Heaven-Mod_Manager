@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ops/heaven-bridge-shortcut-recovery-20260929
+  pull_request:
+    branches:
+      - main
 
 jobs:
   recover-and-create-shortcut:
