@@ -22,8 +22,11 @@ test("rejects non-ChatGPT URLs from source metadata", () => {
   }), null);
 });
 
-test("recognizes go-to-work handoff wording", () => {
+test("recognizes the real ChatGPT Work handoff card wording", () => {
   assert.equal(goToWorkPromptHint("Go to Work"), true);
+  assert.equal(goToWorkPromptHint("Continue in ChatGPT Work"), true);
+  assert.equal(goToWorkPromptHint("Continue in Work"), true);
+  assert.equal(goToWorkPromptHint("Stay in Chat"), true);
   assert.equal(goToWorkPromptHint("The agent is waiting for a normal reply"), false);
 });
 

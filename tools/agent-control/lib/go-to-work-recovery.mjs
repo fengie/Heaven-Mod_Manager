@@ -56,7 +56,9 @@ export function goToWorkPromptHint(value) {
   return [
     "go to work",
     "switch to work",
+    "continue in chatgpt work",
     "continue in work",
+    "stay in chat",
     "handoff to work",
     "work handoff"
   ].some(pattern => text.includes(pattern));
