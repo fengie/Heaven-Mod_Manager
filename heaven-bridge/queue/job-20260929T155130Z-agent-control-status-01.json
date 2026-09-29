@@ -1,0 +1,10 @@
+{
+  "id": "job-20260929T155130Z-agent-control-status-01",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T15:51:30Z",
+  "target_host": "heaven2",
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$paths=@(\n (Join-Path $env:USERPROFILE 'agent-control-panel\\tools\\agent-control\\agentctl.mjs'),\n (Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods\\tools\\agent-control\\agentctl.mjs')\n)\n$ctl=$paths | Where-Object { Test-Path $_ } | Select-Object -First 1\nif(-not $ctl){ throw 'agentctl.mjs not found on heaven2' }\nWrite-Output \"AGENTCTL=$ctl\"\nnode $ctl status\nnode $ctl snapshot\nnode $ctl workers\nnode $ctl leases\nnode $ctl queue\nnode $ctl branches\nnode $ctl routing",
+  "cwd": "C:\\",
+  "timeout_seconds": 180
+}
