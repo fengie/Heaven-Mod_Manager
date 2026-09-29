@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-100510-branch-cleanup-execute-41aa",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:05:10Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:06:39.129280+00:00",
+  "finished_at": "2026-09-29T10:06:39.557217+00:00",
+  "stdout": "",
+  "stderr": "At line:138 char:72\r\n+ ... not (& git show-ref --verify --quiet refs/remotes/origin/main; $LASTE ...\r\n+                                                                  ~\r\nMissing closing ')' in expression.\r\nAt line:138 char:72\r\n+ ... ot (& git show-ref --verify --quiet refs/remotes/origin/main; $LASTEX ...\r\n+                                                                 ~\r\nMissing closing ')' after expression in 'if' statement.\r\nAt line:131 char:30\r\n+     foreach($line in $locals){\r\n+                              ~\r\nMissing closing '}' in statement block or type definition.\r\nAt line:122 char:6\r\n+   try{\r\n+      ~\r\nMissing closing '}' in statement block or type definition.\r\nAt line:138 char:93\r\n+ ... ref --verify --quiet refs/remotes/origin/main; $LASTEXITCODE -eq 0)){\r\n+                                                                       ~\r\nThe Try statement is missing its Catch or Finally block.\r\nAt line:120 char:30\r\n+ foreach($repo in $clonePaths){\r\n+                              ~\r\nMissing closing '}' in statement block or type definition.\r\nAt line:138 char:93\r\n+ ... ref --verify --quiet refs/remotes/origin/main; $LASTEXITCODE -eq 0)){\r\n+                                                                       ~\r\nUnexpected token ')' in expression or statement.\r\nAt line:138 char:94\r\n+ ... ref --verify --quiet refs/remotes/origin/main; $LASTEXITCODE -eq 0)){\r\n+                                                                        ~\r\nUnexpected token ')' in expression or statement.\r\nAt line:153 char:5\r\n+     }\r\n+     ~\r\nUnexpected token '}' in expression or statement.\r\nAt line:156 char:3\r\n+   } finally {Pop-Location}\r\n+   ~\r\nUnexpected token '}' in expression or statement.\r\nNot all parse errors were reported.  Correct the reported errors and try again.\r\n    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : MissingEndParenthesisInExpression\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100510-branch-cleanup-execute-41aa.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100510-branch-cleanup-execute-41aa.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1943,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "83c97806dd2b6b6b71672ffac82c4f6e0e9630d69b726ca595eaf64890b7ea08"
+}
