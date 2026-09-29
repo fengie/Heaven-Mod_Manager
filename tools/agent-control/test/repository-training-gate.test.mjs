@@ -57,5 +57,5 @@ test("manager prompt requires manager-specific training", () => {
 });
 
 test("prompt library version records the training-gate revision", () => {
-  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.29.5");
+  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.29.6");
 });
