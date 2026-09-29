@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-102700-desktop-control-tests2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:27:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 600,
+    "command": "python -m py_compile heaven-bridge\\worker.py heaven-bridge\\test_worker.py; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; python heaven-bridge\\test_worker.py"
+  },
+  "priority": "highest"
+}
