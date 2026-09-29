@@ -312,15 +312,7 @@
   <script>
     const $ = id => document.getElementById(id);
     const state = { snapshot:null, busy:false };
-    const presetObjectives = {
-      continue: "Continue the highest-value unfinished project work. Inspect current state first, coordinate with existing agents, implement useful changes, verify them, integrate completed work into canonical main, clean temporary branches, and keep going until a real governed blocker.",
-      swarm: "Continue useful project work with the usual swarm topology. Coordinate ownership, avoid collisions, implement rather than only audit, verify changes, integrate completed work into canonical main, and clean temporary branches.",
-      fix: "Find the highest-impact real bugs in the current project, reproduce them, fix root causes, add regression coverage, verify user-facing behavior and integrations, record prevention lessons, integrate verified fixes into canonical main, and continue to the next useful bug.",
-      planned: "Implement the highest-value planned and unfinished features already supported by project context. Coordinate ownership, complete code and tests, verify behavior, integrate finished work into canonical main, and continue while useful work remains.",
-      verify: "Run the project's strongest relevant verification and release gates, investigate every failure, repair root causes, add regression coverage where appropriate, re-run verification, and leave canonical main in a verified state.",
-      backlog: "Reduce project backlog safely: inspect open issues, pull requests, and non-main branches; finish or integrate useful work, close truly completed or obsolete items with evidence, delete stale temporary branches, and preserve anything still valuable.",
-      release: "Finish the current user-facing version for release. Resolve remaining blockers, run required release gates, verify updater and publication behavior, integrate to canonical main, and publish immediately when project rules authorize release."
-    };
+    const defaultSwarmObjective = "Continue the highest-value unfinished project work. Inspect current state first, coordinate with existing agents, implement useful changes, verify them, integrate completed work into canonical main, clean temporary branches, and keep going until a real governed blocker.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
     const age = ms => {
@@ -705,7 +697,7 @@
     }
 
     async function startSwarm(objectiveOverride="") {
-      const objective = (objectiveOverride || $("task").value.trim() || presetObjectives.continue).trim();
+      const objective = (objectiveOverride || $("task").value.trim() || defaultSwarmObjective).trim();
       $("task").value = objective;
       if (state.busy) return;
       state.busy = true;
