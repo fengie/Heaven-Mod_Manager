@@ -28,7 +28,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         {
             var info=new[]
             {
-                "MHW Manual Mod Manager v8.3.0 support bundle",
+                $"MHW Manual Mod Manager v{GetProductVersion()} support bundle",
                 $"Generated: {DateTimeOffset.UtcNow:O}",
                 $"OS: {Environment.OSVersion}",
                 $"Runtime: {Environment.Version}",
@@ -73,6 +73,13 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         {
             try{if(Directory.Exists(temp))Directory.Delete(temp,true);}catch{}
         }
+    }
+
+    private static string GetProductVersion()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var version=typeof(SupportBundleService).Assembly.GetName().Version;
+        return version is null ? "unknown" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private async Task<string?> ReadScalarAsync(string sql,CancellationToken ct)
