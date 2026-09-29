@@ -1,13 +1,13 @@
 ---
 name: agent-control
-description: Operate the user's Heaven-hosted MHW agent control plane. Use when the user asks to inspect the swarm, list agents/workers/tasks/leases, deploy an MHW coding agent, launch a reviewer, read an agent's output, stop a managed agent, synchronize Git branch state, or inspect the integration queue.
+description: Operate the user's heaven2-hosted MHW agent control plane. Use when the user asks to inspect the swarm, list agents/workers/tasks/leases, deploy an MHW coding agent, launch a reviewer, read an agent's output, stop a managed agent, synchronize Git branch state, or inspect the integration queue.
 ---
 
 # Heaven Agent Control
 
-Use the user's authorized **Heaven Local Bridge** to operate the local controller on the device named `heaven`. Do not silently substitute Remote Desktop Commander when Heaven Local Bridge can perform the action.
+Use the user's authorized **Heaven Local Bridge** to operate the local controller on the device named `heaven2`. Every bridge job that starts, reads, or controls Agent Control must set top-level `"target_host": "heaven2"`; the controller's `127.0.0.1` belongs to heaven2. Do not silently substitute Remote Desktop Commander when Heaven Local Bridge can perform the action.
 
-`heaven` is the default heavy execution worker. `heaven2` is the main/control machine and credential authority; use it only when the task genuinely requires its credentials, canonical Windows/MHW state, or explicit local execution.
+`heaven2` is the operator/control-plane machine and credential authority. All Agent Control dashboards, CLI/controller interaction, human-facing control surfaces, browser/UI automation, and routine desktop interaction belong there. `heaven` is a worker/resource machine used for heavy builds, tests, scans, local agents, indexing, and other delegated execution. Do not move the control plane or operator UI to `heaven` merely because work executes there.
 
 ## Locate the CLI
 
@@ -16,7 +16,7 @@ Prefer these paths in order:
 1. `%USERPROFILE%\agent-control-panel\tools\agent-control\agentctl.mjs`
 2. `%USERPROFILE%\local-ai-workspaces\mhw-mods\tools\agent-control\agentctl.mjs`
 
-Use Heaven Local Bridge to test which path exists. Do not guess a third path without inspecting the machine.
+Use Heaven Local Bridge with `target_host: heaven2` to test which path exists. Do not guess a third path without inspecting the machine.
 
 ## Ensure the controller is running
 
@@ -51,7 +51,7 @@ Automatic enumeration of arbitrary ChatGPT project conversations is unavailable.
 
 Prefer a temporary task file instead of shell-embedding the user's prompt.
 
-1. Use Heaven Local Bridge to create a UTF-8 task file under `%TEMP%`, containing exactly the task the user wants assigned.
+1. Use Heaven Local Bridge with `target_host: heaven2` to create a UTF-8 task file under `%TEMP%`, containing exactly the task the user wants assigned.
 2. Run:
 
 ```powershell
