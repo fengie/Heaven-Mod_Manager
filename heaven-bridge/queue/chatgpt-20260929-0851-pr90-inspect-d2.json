@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0851-pr90-inspect-d2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; $h='origin/agent/game-profile-id-containment-v8.8.5-reconcile'; git -C $r fetch origin --prune; $mb=(git -C $r merge-base origin/main $h).Trim(); 'MERGE_BASE='+$mb; 'HEAD='+(git -C $r rev-parse $h); 'AHEAD_BEHIND='+(git -C $r rev-list --left-right --count origin/main...$h); 'UNIQUE_COMMITS_BEGIN'; git -C $r log --reverse --format='%H|%s' $mb..$h; 'UNIQUE_COMMITS_END'; 'FILES_BEGIN'; git -C $r diff --name-status origin/main...$h; 'FILES_END'; 'DIFFCHECK_BEGIN'; git -C $r diff --check origin/main...$h; 'DIFFCHECK_END'; 'MERGETREE_BEGIN'; $mt=git -C $r merge-tree $mb origin/main $h; $conf=$mt | Select-String -Pattern '<<<<<<<|>>>>>>>|both modified|CONFLICT'; if($conf){$conf}else{'NO_CONFLICT_MARKERS'}; 'MERGETREE_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T08:51:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
