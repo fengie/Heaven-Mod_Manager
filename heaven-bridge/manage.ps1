@@ -25,6 +25,7 @@ $SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
 $RuntimeWatchdog = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-bridge-watchdog.ps1'
 $LocalHeartbeat = Join-Path $env:USERPROFILE 'HeavenBridge\worker-local-heartbeat.json'
+$LoopProgress = Join-Path $env:USERPROFILE 'HeavenBridge\worker-loop-progress.json'
 $HostId = if ($env:HEAVEN_BRIDGE_HOST) { $env:HEAVEN_BRIDGE_HOST.Trim().ToLowerInvariant() } elseif ($env:COMPUTERNAME) { $env:COMPUTERNAME.Trim().ToLowerInvariant() } else { 'heaven' }
 $ScopedHeartbeat = Join-Path $RelayBridgeDir ("status\hosts\{0}\heartbeat.json" -f $HostId)
 $LegacyHeartbeat = Join-Path $RelayBridgeDir 'status\heartbeat.json'
@@ -100,6 +101,25 @@ function Get-TaskRunLevel {
     }
 }
 
+function Get-LoopProgressState {
+    if (-not (Test-Path $LoopProgress)) {
+        return [ordered]@{ exists = $false; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $null }
+    }
+    try {
+        $row = Get-Content -Raw -Path $LoopProgress | ConvertFrom-Json
+        $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
+        return [ordered]@{
+            exists = $true
+            updated_at = [string]$row.updated_at
+            pid = if ($null -eq $row.pid) { $null } else { [int]$row.pid }
+            age_seconds = [Math]::Max(0, [int]([DateTimeOffset]::UtcNow - $updated).TotalSeconds)
+            parse_error = $null
+        }
+    } catch {
+        return [ordered]@{ exists = $true; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $_.Exception.Message }
+    }
+}
+
 function Get-HeartbeatState {
     $heartbeatPath = $ScopedHeartbeat
     if (-not (Test-Path $heartbeatPath) -and $HostId -eq 'heaven' -and (Test-Path $LegacyHeartbeat)) {
@@ -159,6 +179,7 @@ function Show-Status {
 
     $heartbeat = Get-HeartbeatState
     $localHeartbeat = Get-LocalHeartbeatState
+    $loopProgress = Get-LoopProgressState
     $canonicalRunLevel = Get-TaskRunLevel 'Heaven Local Bridge'
     $watchdogRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Watchdog'
     $canonicalPid = if ($canonical.Count -eq 1) { [int]$canonical[0].ProcessId } else { $null }
@@ -178,6 +199,11 @@ function Show-Status {
         $localHeartbeat.pid -eq $canonicalPid -and
         $localHeartbeat.age_seconds -ne $null -and
         $localHeartbeat.age_seconds -le 120 -and
+        $loopProgress.exists -and
+        $loopProgress.parse_error -eq $null -and
+        $loopProgress.pid -eq $canonicalPid -and
+        $loopProgress.age_seconds -ne $null -and
+        $loopProgress.age_seconds -le 900 -and
         $heartbeat.exists -and
         $heartbeat.host -eq $HostId -and
         $heartbeat.protocol -eq 'chatgpt-heaven-bridge-v2' -and
@@ -201,6 +227,7 @@ function Show-Status {
         source_matches_runtime = [bool]($sourceHash -and $sourceHash -eq $runtimeHash)
         watchdog_source_matches_runtime = [bool]($watchdogSourceHash -and $watchdogSourceHash -eq $watchdogRuntimeHash)
         local_heartbeat = $localHeartbeat
+        loop_progress = $loopProgress
         heartbeat = $heartbeat
         scheduled_task = @{
             canonical = Get-TaskState 'Heaven Local Bridge'
@@ -298,6 +325,7 @@ switch ($Action) {
             throw 'One or more canonical Heaven Bridge workers are still running.'
         }
         Remove-Item $LocalHeartbeat -Force -ErrorAction SilentlyContinue
+        Remove-Item $LoopProgress -Force -ErrorAction SilentlyContinue
         Write-Output 'HEAVEN_BRIDGE_STOPPED'
     }
 
