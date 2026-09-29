@@ -1,0 +1,33 @@
+{
+  "id": "chatgpt-20260929-170800-read-sentinel-install-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:08:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:08:21.791349+00:00",
+  "finished_at": "2026-09-29T17:08:21.802207+00:00",
+  "host": "heaven2",
+  "action": "proc_read",
+  "data": {
+    "session_id": "1eabfef154a140b8",
+    "pid": 46328,
+    "running": false,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": null,
+    "cwd": "C:\\Users\\fengc",
+    "started_at": "2026-09-29T17:07:48.384590+00:00",
+    "last_activity_at": "2026-09-29T17:08:21.791349+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 1800,
+    "max_runtime_seconds": 3600,
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\sessions\\1eabfef154a140b8.out.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\sessions\\1eabfef154a140b8.err.log",
+    "recovered": true,
+    "stdin_available": false,
+    "recovery_state": "exited",
+    "stdout": "branch 'main' set up to track 'origin/main'.\nYour branch is up to date with 'origin/main'.\nHEAD is now at 0c601e8 Bridge: test sentinel self-restore and SYSTEM ownership\nRemoving heaven-bridge/__pycache__/\nINSTALL_SOURCE=0c601e8bf489832870a8ba9261670ea5ce83263b\r\nYour branch is up to date with 'origin/heaven-bridge'.\nAlready up to date.\nbranch 'main' set up to track 'origin/main'.\nYour branch is up to date with 'origin/main'.\nHEAD is now at 0c601e8 Bridge: test sentinel self-restore and SYSTEM ownership\nHEAVEN_BRIDGE_SOURCE revision=0c601e8bf489832870a8ba9261670ea5ce83263b refreshed=True branch=main\r\nHEAVEN_BRIDGE_STARTED pid=42968 worker=C:\\Users\\fengc\\.mhw-local-tools\\heaven-desktop-worker.py python=C:\\Users\\fengc\\AppData\\Local\\Programs\\Python\\Python312\\pythonw.exe task_managed=True task_run_level=Highest watchdog_pid=3916 watchdog_managed=True watchdog_run_level=Highest sentinel_pid=47724 sentinel_run_level=Highest\r\n{\r\n    \"healthy\":  true,\r\n    \"host\":  \"heaven2\",\r\n    \"repo\":  \"C:\\\\Users\\\\fengc\\\\HeavenBridgeRepo\",\r\n    \"branch\":  \"heaven-bridge\",\r\n    \"tracked_or_untracked_changes\":  [\r\n\r\n                                     ],\r\n    \"canonical_worker_count\":  1,\r\n    \"canonical_worker_pids\":  [\r\n                                  42968\r\n                              ],\r\n    \"watchdog_count\":  1,\r\n    \"watchdog_pids\":  [\r\n                          3916\r\n                      ],\r\n    \"sentinel_count\":  1,\r\n    \"sentinel_pids\":  [\r\n                          47724\r\n                      ],\r\n    \"legacy_worker_count\":  0,\r\n    \"legacy_worker_pids\":  [\r\n\r\n                           ],\r\n    \"source_matches_runtime\":  true,\r\n    \"watchdog_source_matches_runtime\":  true,\r\n    \"sentinel_source_matches_runtime\":  true,\r\n    \"local_heartbeat\":  {\r\n                            \"exists\":  true,\r\n                            \"updated_at\":  \"2026-09-29T17:07:59.444713+00:00\",\r\n                            \"pid\":  42968,\r\n                            \"age_seconds\":  14,\r\n                            \"parse_error\":  null\r\n                        },\r\n    \"loop_progress\":  {\r\n                          \"exists\":  true,\r\n                          \"updated_at\":  \"2026-09-29T17:08:11.897253+00:00\",\r\n                          \"pid\":  42968,\r\n                          \"age_seconds\":  2,\r\n                          \"parse_error\":  null\r\n                      },\r\n    \"heartbeat\":  {\r\n                      \"exists\":  true,\r\n                      \"host\":  \"heaven2\",\r\n                      \"updated_at\":  \"2026-09-29T17:07:59.449798+00:00\",\r\n                      \"worker_version\":  6,\r\n                      \"protocol\":  \"chatgpt-heaven-bridge-v2\",\r\n                      \"elevated\":  true,\r\n                      \"age_seconds\":  14\r\n                  },\r\n    \"scheduled_task\":  {\r\n                           \"sentinel\":  \"Running\",\r\n                           \"watchdog_run_level\":  \"Highest\",\r\n                           \"canonical\":  \"Running\",\r\n                           \"sentinel_is_system\":  true,\r\n                           \"legacy_run_level\":  \"missing\",\r\n                           \"watchdog\":  \"Running\",\r\n                           \"sentinel_user_id\":  \"SYSTEM\",\r\n                           \"canonical_run_level\":  \"Highest\",\r\n                           \"sentinel_run_level\":  \"Highest\",\r\n                           \"legacy\":  \"missing\"\r\n                       },\r\n    \"startup_fallback\":  true,\r\n    \"legacy_worker_startup_fallback\":  false\r\n}\r\n",
+    "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nReset branch 'main'\nFrom https://github.com/fengie/mhw-mods\n * branch              heaven-bridge -> FETCH_HEAD\nAlready on 'heaven-bridge'\nFrom https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nReset branch 'main'\n----------------------------------------------------------------------\r\nRan 49 tests in 0.227s\r\n\r\nOK\r\n"
+  },
+  "job_hash": "4cbed0dd6542fda87cf5546dcb79a53be743ea5beca891ad8ea2c7802a9186bb"
+}
