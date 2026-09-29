@@ -1,0 +1,12 @@
+{
+  "id": "ctrl-cancel-duplicate-runner-start-20260929-112100",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:21:00Z",
+  "ttl_seconds": 3600,
+  "action": "cancel",
+  "params": {
+    "job_id": "---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1",
+    "reason": "installer already created durable Startup fallback and runner is online"
+  },
+  "priority": "highest"
+}
