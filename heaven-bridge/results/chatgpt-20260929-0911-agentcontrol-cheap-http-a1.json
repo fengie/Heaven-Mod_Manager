@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0911-agentcontrol-cheap-http-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:11:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:11:18.497126+00:00",
+  "finished_at": "2026-09-29T09:11:18.930619+00:00",
+  "stdout": "{\"url\":\"http://127.0.0.1:7331/\",\"status\":200,\"ms\":93,\"len\":23956}\r\n{\"url\":\"http://127.0.0.1:7331/api/providers\",\"status\":null,\"ms\":4,\"error\":\"The remote server returned an error: (404) Not Found.\"}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0911-agentcontrol-cheap-http-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0911-agentcontrol-cheap-http-a1.stderr.log",
+    "stdout_bytes": 199,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "6421524bf0862ca208e5c0ca796cb8500bf0876db74acaf53c9e6fc273b0d2a5"
+}
