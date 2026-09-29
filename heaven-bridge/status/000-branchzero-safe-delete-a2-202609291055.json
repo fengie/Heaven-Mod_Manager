@@ -1,9 +1,10 @@
 {
   "id": "000-branchzero-safe-delete-a2-202609291055",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:17:53.477144+00:00"
+  "updated_at": "2026-09-29T11:18:46.637539+00:00",
+  "exit_code": 0
 }
