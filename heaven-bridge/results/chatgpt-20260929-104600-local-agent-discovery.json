@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104600-local-agent-discovery",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:46:00+00:00",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:25:21.993004+00:00",
+  "finished_at": "2026-09-29T11:25:22.821932+00:00",
+  "stdout": "===commands===\r\nollama=MISSING\r\naider=MISSING\r\ndocker=MISSING\r\npython=C:\\Users\\Xxkan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\r\ngit=C:\\Program Files\\Git\\cmd\\git.exe\r\n===ollama===\r\n===docker===\r\n===python-packages===\r\naider_chat=False\r\npywinauto=False\r\nuiautomation=False\r\ncomtypes=False\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104600-local-agent-discovery.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104600-local-agent-discovery.stderr.log",
+    "stdout_bytes": 297,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8f7096883907dfba5b937eae5f2c5ef85a7b698c9d741f5220512c3d56ba620f"
+}
