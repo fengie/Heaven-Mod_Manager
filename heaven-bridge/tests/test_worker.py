@@ -30,9 +30,13 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
     def test_health_capabilities(self):
         result = self.run_job(self.make_job("health", job_id="health-capabilities"))
         self.assertEqual(result["status"], "completed")
-        self.assertEqual(result["data"]["worker_version"], 6)
+        self.assertEqual(result["data"]["worker_version"], 7)
         self.assertEqual(result["data"]["protocol"], "chatgpt-heaven-bridge-v2")
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
+        self.assertEqual(result["data"]["resources"]["configured_max_workers"], worker.MAX_WORKERS)
+        self.assertEqual(result["data"]["resources"]["logical_cpus"], worker.LOGICAL_CPUS)
+        self.assertGreaterEqual(result["data"]["resources"]["auto_max_workers"], 8)
+        self.assertLessEqual(result["data"]["resources"]["configured_max_workers"], 32)
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read"):
             self.assertIn(action, result["data"]["actions"])
 

@@ -173,7 +173,7 @@ public sealed class DeploymentTests : IDisposable
         {
             if (stage != "after-file-write" || sequence != 1) return;
             aWroteLiveBytes.Set();
-            if (!releaseA.Wait(TimeSpan.FromSeconds(20)))
+            if (!releaseA.Wait(TimeSpan.FromSeconds(20), TestToken))
                 throw new TimeoutException("Timed out waiting to resume the first deployment.");
         });
         var planA = new DeploymentPlan("race-a", DateTimeOffset.UtcNow,

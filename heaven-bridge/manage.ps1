@@ -14,6 +14,7 @@ $Bootstrap = Join-Path $BridgeDir 'bootstrap.ps1'
 $GitStateHelper = Join-Path $BridgeDir 'git-state.ps1'
 $WorkerSource = Join-Path $BridgeDir 'worker.py'
 $WatchdogSource = Join-Path $BridgeDir 'watchdog.ps1'
+$SentinelSource = Join-Path $BridgeDir 'sentinel.ps1'
 $RelayWorkerSource = Join-Path $RelayBridgeDir 'worker.py'
 $RelayWatchdogSource = Join-Path $RelayBridgeDir 'watchdog.ps1'
 $PrimaryTests = Join-Path $BridgeDir 'test_worker.py'
@@ -24,6 +25,7 @@ $SecretEnvelopeHelper = Join-Path $BridgeDir 'New-HeavenSecretEnvelope.ps1'
 $SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
 $RuntimeWatchdog = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-bridge-watchdog.ps1'
+$RuntimeSentinel = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-bridge-sentinel.ps1'
 $LocalHeartbeat = Join-Path $env:USERPROFILE 'HeavenBridge\worker-local-heartbeat.json'
 $LoopProgress = Join-Path $env:USERPROFILE 'HeavenBridge\worker-loop-progress.json'
 $HostId = if ($env:HEAVEN_BRIDGE_HOST) { $env:HEAVEN_BRIDGE_HOST.Trim().ToLowerInvariant() } elseif ($env:COMPUTERNAME) { $env:COMPUTERNAME.Trim().ToLowerInvariant() } else { 'heaven' }
@@ -48,6 +50,16 @@ function Get-WatchdogWorkers {
             Where-Object {
                 $_.CommandLine -and
                 $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+            }
+    )
+}
+
+function Get-SentinelWorkers {
+    @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.CommandLine -and
+                $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-sentinel.ps1*'
             }
     )
 }
@@ -96,6 +108,16 @@ function Get-TaskRunLevel {
     try {
         $task = Get-ScheduledTask -TaskName $Name -ErrorAction Stop
         return [string]$task.Principal.RunLevel
+    } catch {
+        return 'missing'
+    }
+}
+
+function Get-TaskUserId {
+    param([string]$Name)
+    try {
+        $task = Get-ScheduledTask -TaskName $Name -ErrorAction Stop
+        return [string]$task.Principal.UserId
     } catch {
         return 'missing'
     }
@@ -150,6 +172,7 @@ function Get-HeartbeatState {
 function Show-Status {
     $canonical = @(Get-CanonicalWorkers)
     $watchdogs = @(Get-WatchdogWorkers)
+    $sentinels = @(Get-SentinelWorkers)
     $legacy = @(Get-LegacyWorkers)
 
     $branch = $null
@@ -164,6 +187,8 @@ function Show-Status {
     $runtimeHash = $null
     $watchdogSourceHash = $null
     $watchdogRuntimeHash = $null
+    $sentinelSourceHash = $null
+    $sentinelRuntimeHash = $null
     if (Test-Path $RelayWorkerSource) {
         $sourceHash = (Get-FileHash $RelayWorkerSource -Algorithm SHA256).Hash
     }
@@ -176,24 +201,38 @@ function Show-Status {
     if (Test-Path $RuntimeWatchdog) {
         $watchdogRuntimeHash = (Get-FileHash $RuntimeWatchdog -Algorithm SHA256).Hash
     }
+    if (Test-Path $SentinelSource) {
+        $sentinelSourceHash = (Get-FileHash $SentinelSource -Algorithm SHA256).Hash
+    }
+    if (Test-Path $RuntimeSentinel) {
+        $sentinelRuntimeHash = (Get-FileHash $RuntimeSentinel -Algorithm SHA256).Hash
+    }
 
     $heartbeat = Get-HeartbeatState
     $localHeartbeat = Get-LocalHeartbeatState
     $loopProgress = Get-LoopProgressState
     $canonicalRunLevel = Get-TaskRunLevel 'Heaven Local Bridge'
     $watchdogRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Watchdog'
+    $sentinelRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Sentinel'
+    $sentinelUserId = Get-TaskUserId 'Heaven Local Bridge Sentinel'
+    $sentinelIsSystem = ($sentinelUserId -match '(?i)(^|\\)SYSTEM$' -or $sentinelUserId -eq 'S-1-5-18')
     $canonicalPid = if ($canonical.Count -eq 1) { [int]$canonical[0].ProcessId } else { $null }
     $healthy = (
         $canonical.Count -eq 1 -and
         $watchdogs.Count -eq 1 -and
+        $sentinels.Count -eq 1 -and
         $legacy.Count -eq 0 -and
         $branch -eq 'heaven-bridge' -and
         $sourceHash -and
         $sourceHash -eq $runtimeHash -and
         $watchdogSourceHash -and
         $watchdogSourceHash -eq $watchdogRuntimeHash -and
+        $sentinelSourceHash -and
+        $sentinelSourceHash -eq $sentinelRuntimeHash -and
         $canonicalRunLevel -eq 'Highest' -and
         $watchdogRunLevel -eq 'Highest' -and
+        $sentinelRunLevel -eq 'Highest' -and
+        $sentinelIsSystem -and
         $localHeartbeat.exists -and
         $localHeartbeat.parse_error -eq $null -and
         $localHeartbeat.pid -eq $canonicalPid -and
@@ -222,10 +261,13 @@ function Show-Status {
         canonical_worker_pids = @($canonical | ForEach-Object { [int]$_.ProcessId })
         watchdog_count = $watchdogs.Count
         watchdog_pids = @($watchdogs | ForEach-Object { [int]$_.ProcessId })
+        sentinel_count = $sentinels.Count
+        sentinel_pids = @($sentinels | ForEach-Object { [int]$_.ProcessId })
         legacy_worker_count = $legacy.Count
         legacy_worker_pids = @($legacy | ForEach-Object { [int]$_.ProcessId })
         source_matches_runtime = [bool]($sourceHash -and $sourceHash -eq $runtimeHash)
         watchdog_source_matches_runtime = [bool]($watchdogSourceHash -and $watchdogSourceHash -eq $watchdogRuntimeHash)
+        sentinel_source_matches_runtime = [bool]($sentinelSourceHash -and $sentinelSourceHash -eq $sentinelRuntimeHash)
         local_heartbeat = $localHeartbeat
         loop_progress = $loopProgress
         heartbeat = $heartbeat
@@ -234,6 +276,10 @@ function Show-Status {
             canonical_run_level = $canonicalRunLevel
             watchdog = Get-TaskState 'Heaven Local Bridge Watchdog'
             watchdog_run_level = $watchdogRunLevel
+            sentinel = Get-TaskState 'Heaven Local Bridge Sentinel'
+            sentinel_run_level = $sentinelRunLevel
+            sentinel_user_id = $sentinelUserId
+            sentinel_is_system = [bool]$sentinelIsSystem
             legacy = Get-TaskState 'HeavenLocalBridge'
             legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
@@ -263,7 +309,7 @@ function Invoke-Tests {
     & $SecretEnvelopeIoTests
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    foreach ($path in @($Bootstrap, $PSCommandPath, $WatchdogSource, $GitStateHelper, $GitStateTests, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
+    foreach ($path in @($Bootstrap, $PSCommandPath, $WatchdogSource, $SentinelSource, $GitStateHelper, $GitStateTests, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile(
@@ -285,8 +331,11 @@ switch ($Action) {
         if (
             @(Get-CanonicalWorkers).Count -ne 1 -or
             @(Get-WatchdogWorkers).Count -ne 1 -or
+            @(Get-SentinelWorkers).Count -ne 1 -or
             (Get-TaskRunLevel 'Heaven Local Bridge') -ne 'Highest' -or
-            (Get-TaskRunLevel 'Heaven Local Bridge Watchdog') -ne 'Highest'
+            (Get-TaskRunLevel 'Heaven Local Bridge Watchdog') -ne 'Highest' -or
+            (Get-TaskRunLevel 'Heaven Local Bridge Sentinel') -ne 'Highest' -or
+            ((Get-TaskUserId 'Heaven Local Bridge Sentinel') -notmatch '(?i)(^|\\)SYSTEM$|^S-1-5-18$')
         ) {
             & $Bootstrap
         }
@@ -304,8 +353,13 @@ switch ($Action) {
     'STOP' {
         # Stop the watchdog first or it can correctly interpret the intentional
         # worker shutdown as a failure and immediately resurrect it.
-        foreach ($taskName in @('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')) {
+        foreach ($taskName in @('Heaven Local Bridge Sentinel', 'Heaven Local Bridge Watchdog', 'Heaven Local Bridge')) {
             try { Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue } catch {}
+        }
+        foreach ($proc in @(Get-SentinelWorkers)) {
+            try { Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop } catch {
+                Write-Warning "Failed to stop sentinel PID $($proc.ProcessId): $($_.Exception.Message)"
+            }
         }
         foreach ($proc in @(Get-WatchdogWorkers)) {
             try { Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop } catch {
@@ -318,6 +372,9 @@ switch ($Action) {
             }
         }
         Start-Sleep -Milliseconds 500
+        if (@(Get-SentinelWorkers).Count -gt 0) {
+            throw 'One or more Heaven Bridge sentinels are still running.'
+        }
         if (@(Get-WatchdogWorkers).Count -gt 0) {
             throw 'One or more Heaven Bridge watchdogs are still running.'
         }

@@ -31,17 +31,29 @@ Relay paths:
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
-## Worker v6
+## Worker v7
 
 Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and compatibility mirror; do not merge its operational job history wholesale into `main`.
 
-Bootstrap keeps two separate local checkouts: `%USERPROFILE%\HeavenBridgeRepo` tracks the operational `heaven-bridge` relay, while the disposable `%USERPROFILE%\HeavenBridgeSource` tracks canonical `main`. Worker/watchdog runtime files and their regression suite are installed only from the canonical-main source mirror. A bootstrap launched from the relay/runtime copy refreshes that mirror and then hands execution to `main`'s bootstrap, so later recovery fixes do not depend on manually mirroring the bootstrap file into transport. If GitHub is temporarily unavailable, bootstrap may use that mirror only when it is already a clean `main` checkout; otherwise recovery fails closed rather than trusting relay drift or local edits.
+Bootstrap keeps two separate local checkouts: `%USERPROFILE%\HeavenBridgeRepo` tracks the operational `heaven-bridge` relay, while the disposable `%USERPROFILE%\HeavenBridgeSource` tracks canonical `main`. Worker/watchdog runtime files and their regression suite are installed only from the canonical-main source mirror. A bootstrap launched from the relay/runtime copy is self-contained for its initial Git recovery logic, refreshes that mirror, and then hands execution to `main`'s bootstrap, so it does not depend on neighboring relay helper files being present and later recovery fixes do not depend on manually mirroring the bootstrap file into transport. If GitHub is temporarily unavailable, bootstrap may use that mirror only when it is already a clean `main` checkout; otherwise recovery fails closed rather than trusting relay drift or local edits.
 
 `heaven-bridge/worker.py` is the canonical worker source path. `bootstrap.ps1` installs the canonical-main copy to:
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
-The worker preserves v2 protocol compatibility and reports `worker_version: 6`.
+The worker preserves v2 protocol compatibility and reports `worker_version: 7`.
+
+Worker v7 scales the heavy-worker pool automatically instead of using the old fixed 4-worker default. The default ceiling is derived from logical CPU count (75% of logical CPUs, minimum 8, maximum 24), while `HEAVEN_BRIDGE_MAX_WORKERS` can raise the configured ceiling up to 32. Before launching another ordinary job, the worker preserves the larger of a 4 GiB RAM reserve or 12% of physical memory and budgets 1.25 GiB of free memory per newly admitted worker. Starts are also ramped per queue tick instead of spawning the entire backlog at once. Control-plane actions remain responsive even when ordinary worker capacity is saturated.
+
+Tuning knobs:
+
+- `HEAVEN_BRIDGE_MAX_WORKERS` — explicit worker ceiling, hard-capped at 32.
+- `HEAVEN_BRIDGE_MEMORY_RESERVE_GB` — minimum free-RAM reserve, default 4 GiB.
+- `HEAVEN_BRIDGE_MEMORY_RESERVE_PERCENT` — proportional RAM reserve, default 12%.
+- `HEAVEN_BRIDGE_MEMORY_PER_WORKER_GB` — admission budget per additional worker, default 1.25 GiB.
+- `HEAVEN_BRIDGE_MAX_STARTS_PER_TICK` — ramp-up burst cap, auto-derived from worker ceiling and capped at 16.
+
+Health and relay heartbeat payloads expose the configured ceiling, effective capacity, logical CPU count, current memory headroom, and available start slots so Agent Control can diagnose whether the worker is CPU/config-limited or memory-limited.
 
 Core capabilities:
 
@@ -54,7 +66,7 @@ Core capabilities:
 - bounded structured `wait_for` polling for files, processes, sessions, and windows with cancellation/timeout evidence
 - process-tree termination
 - job cancellation and status
-- bounded concurrent job execution
+- adaptive high-concurrency job execution with CPU-derived default capacity, RAM headroom admission control, and bounded start bursts
 - TTL/replay/idempotency checks
 - optional HMAC-SHA256 authentication
 - structured error codes
@@ -77,18 +89,19 @@ Clipboard reads require an explicit per-job `allow_relay: true` opt-in because c
 
 The bridge must not depend on the bridge itself for recovery.
 
-Bootstrap installs two independent elevated interactive tasks on every bridge host:
+Bootstrap installs three recovery layers on every bridge host:
 
-- `Heaven Local Bridge` — the canonical worker.
-- `Heaven Local Bridge Watchdog` — a Git/network-independent local watchdog.
+- `Heaven Local Bridge` — the canonical interactive worker.
+- `Heaven Local Bridge Watchdog` — a Git/network-independent interactive watchdog.
+- `Heaven Local Bridge Sentinel` — a separate SYSTEM-owned machine-start supervisor that repairs the two interactive task definitions and the Startup fallback if they disappear or are disabled.
 
-Both task definitions are refreshed on every bootstrap, use `MultipleInstances IgnoreNew`, restart once per minute with the maximum Task Scheduler restart count, and explicitly set an infinite execution time limit. This avoids both finite restart-budget exhaustion and Windows Task Scheduler's default 72-hour execution limit.
+All scheduled definitions use `MultipleInstances IgnoreNew`, restart once per minute with the maximum Task Scheduler restart count, and explicitly set an infinite execution time limit. The worker/watchdog run in the logged-in user's interactive session; the sentinel deliberately uses a different principal and machine-start trigger so one user-session persistence failure cannot remove every recovery owner.
 
 The worker writes `%USERPROFILE%\HeavenBridge\worker-local-heartbeat.json` every 15 seconds from a dedicated local thread and `worker-loop-progress.json` from the queue-processing loop. The watchdog checks the exact canonical worker process plus these local signals every 30 seconds. A missing worker is restarted immediately; a dead/frozen process heartbeat is repaired after 120 seconds, and a queue loop that makes no progress for 15 minutes is recycled. The longer loop window avoids treating ordinary transient Git/network stalls as immediate process failure. The watchdog never needs GitHub, relay state, or a healthy worker to make the repair decision.
 
-Task Scheduler is not the sole persistence path. Bootstrap installs a Startup-folder watchdog recovery shim. That shim first hands ownership to the elevated scheduled watchdog; only when Task Scheduler cannot provide it does the shim remain as the direct recovery owner. The old direct-worker Startup fallback is explicitly removed so it cannot race the elevated task and capture the worker singleton with a non-elevated process.
+Task Scheduler is not the sole persistence path. Bootstrap also installs a Startup-folder watchdog recovery shim. That shim first hands ownership to the elevated scheduled watchdog; only when Task Scheduler cannot provide it does the shim remain as the direct recovery owner. The SYSTEM sentinel continuously recreates that shim and the interactive task definitions if they are removed or disabled. On `heaven2`, it also restores a missing recovery `Heaven Agent Control.lnk`; the normal Agent Control launcher upgrades that recovery link to the branded shortcut on launch. The old direct-worker Startup fallback remains retired so it cannot race the elevated task and capture the worker singleton with a non-elevated process.
 
-`manage.ps1 STATUS` is healthy only when the worker, watchdog, current runtime copies, scheduled-task run levels, local heartbeat, and remote relay heartbeat all agree. `STOP` deliberately stops the watchdog before the worker so an intentional shutdown is not auto-repaired.
+`manage.ps1 STATUS` is healthy only when the worker, watchdog, SYSTEM sentinel, current runtime copies, scheduled-task run levels, local heartbeat, and remote relay heartbeat all agree. `STOP` deliberately stops the watchdog before the worker so an intentional shutdown is not auto-repaired.
 
 Install/repair this persistence on **both `heaven2` and `heaven`**. A host is not considered bridge-ready merely because a worker process happens to exist.
 

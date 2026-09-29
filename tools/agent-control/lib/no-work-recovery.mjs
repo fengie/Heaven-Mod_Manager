@@ -7,6 +7,68 @@ export const NO_WORK_TERMINAL_STATUSES = new Set([
   "disconnected"
 ]);
 
+export const SWARM_TAIL_UNFINISHED_STATUSES = new Set([
+  "failed",
+  "interrupted"
+]);
+
+export function swarmTailRecoveryRootId(agent) {
+  return String(agent?.swarmTailRecoveryRootAgentId || agent?.recoveryRootAgentId || agent?.id || "").trim();
+}
+
+export function isSwarmTailUnfinishedCandidate(agent, task = null) {
+  const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
+  if (!SWARM_TAIL_UNFINISHED_STATUSES.has(status)) return false;
+  if (status === "capacity-blocked" || agent?.failureClass === "provider-capacity") return false;
+  if (["retry-pending", "retry-waiting", "retry-dispatched"].includes(String(agent?.recoveryStatus || ""))) return false;
+  if (String(agent?.recoveryStatus || "") === "work-verified-complete") return false;
+  if (agent?.stopRequestedAt || agent?.completionEvidence === "verified-operator-stop") return false;
+  const taskStatus = String(task?.status || "").trim().toLowerCase();
+  if (["done", "candidate", "finished", "stopped"].includes(taskStatus)) return false;
+  return Boolean(String(task?.objective || agent?.task || "").trim());
+}
+
+export function planSwarmTailRecoveryBatch(state, {
+  maxWorkers = 4,
+  maxAttemptsPerRoot = 2,
+  since = null
+} = {}) {
+  const agents = Array.isArray(state?.agents) ? state.agents : [];
+  const sinceMs = Date.parse(String(since || ""));
+  const inScope = agent => {
+    if (!Number.isFinite(sinceMs)) return true;
+    const startedMs = Date.parse(String(agent?.startedAt || agent?.source_metadata?.started_at || ""));
+    return Number.isFinite(startedMs) && startedMs >= sinceMs;
+  };
+  if (agents.some(agent => inScope(agent) && ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(agent?.status || "")))) {
+    return [];
+  }
+  const tasksById = new Map((Array.isArray(state?.tasks) ? state.tasks : []).map(task => [task.id, task]));
+  const limit = Math.max(1, Math.floor(Number(maxWorkers) || 4));
+  const maxAttempts = Math.max(1, Math.floor(Number(maxAttemptsPerRoot) || 2));
+  const selected = [];
+  const seenRoots = new Set();
+
+  for (const agent of agents) {
+    if (!inScope(agent)) continue;
+    const task = tasksById.get(agent?.taskId) || null;
+    if (!isSwarmTailUnfinishedCandidate(agent, task)) continue;
+    const rootId = swarmTailRecoveryRootId(agent);
+    if (!rootId || seenRoots.has(rootId)) continue;
+
+    const lineage = agents.filter(candidate => swarmTailRecoveryRootId(candidate) === rootId && candidate.id !== rootId);
+    if (lineage.some(candidate => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(candidate?.status || "")))) continue;
+    if (lineage.some(candidate => String(candidate?.status || "") === "done")) continue;
+    const attempts = lineage.filter(candidate => candidate?.swarmTailRecovery === true || candidate?.retryOfAgentId).length;
+    if (attempts >= maxAttempts) continue;
+
+    seenRoots.add(rootId);
+    selected.push({ agent, task, rootId, attempt: attempts + 1 });
+    if (selected.length >= limit) break;
+  }
+  return selected;
+}
+
 const EXECUTION_OPENING_PATTERNS = [
   /\b(?:i['’]?m|i am)\s+treating\s+this\s+as\s+an?\s+execution\s+assignment\b/i,
   /\bnot\s+a\s+review\b.{0,160}\b(?:i['’]?ll|i will)\s+use\b/i,

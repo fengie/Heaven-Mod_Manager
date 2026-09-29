@@ -1,3 +1,26 @@
+# v8.8.17 — Reliable mod discovery after update restart
+
+- Preserve the canonical manager-home path explicitly across updater handoff and application restart so the first launch after an update reads the real Mods and State directories instead of an install-local empty library.
+- Recover the manager home from the known project release layout when no manager-home environment variable is present, matching diagnostic-root behavior.
+- Export the resolved manager home for child processes and restore both manager-home environment variables during updated and rollback launches.
+- Add regression coverage for release-layout root recovery and serialized updater handoff identity.
+
+# v8.8.16 — Larger mod library workspace
+
+- Give the Mods library more vertical room by compacting the controls around it instead of shrinking mod rows.
+- Place Filters and Bulk Actions side-by-side on wide layouts while preserving natural wrapping on narrower windows.
+- Keep pending-change summary and actions on one row when space allows, recovering another row of height for the library.
+- Tighten the Mods page vertical margins and add a structural UX regression covering the larger-library layout.
+
+# v8.8.15 — True visual overhaul
+
+- Replace the two-row command strip with a single calmer app bar that keeps game context and primary actions visible without dominating the window.
+- Rebuild the Dashboard around a current-setup hero, explicit next actions, a compact four-metric strip, and separate Setup Details / Quick Actions areas.
+- Replace the old gold-heavy flat panel treatment with a cohesive deep-navy and teal visual system across shared WPF cards, navigation, buttons, focus states, and action tiles.
+- Preserve the existing deployment, updater, conflict-resolution, filesystem, and diagnostics behavior by reusing the same commands and bindings.
+- Add a structural UX regression so the application cannot silently return to the old four-card + “System status” / “Start here” dashboard while still passing copy-only tests.
+- Derive support-bundle, startup-trace, and structured-log release identity from the executing assembly so diagnostic evidence cannot silently report obsolete v8.3.0/v8.8.6 versions.
+
 # v8.8.14 — Fail-closed Smart Inbox rollback
 
 - Make published-package rollback report failure instead of swallowing cleanup errors after source archival fails.

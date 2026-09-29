@@ -460,7 +460,7 @@ test("federated bridge observations drive normalized live counts without duplica
   assert.equal(snapshot.body.federatedAgents.length, 1);
 
   const persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
-  assert.equal(persisted.version, 5);
+  assert.equal(persisted.version, 8);
   assert.equal(persisted.federation.agents.length, 1);
 });
 

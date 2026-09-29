@@ -5,6 +5,7 @@ import { renderAgentPrompt } from "../lib/prompt-templates.mjs";
 import { reconcileObservation } from "../lib/federated-registry.mjs";
 import {
   applyPreLaunchFailure,
+  agentExecutionModeDecision,
   autonomyPermissionDecision,
   defaultControlState,
   deploymentBatchCapacity,
@@ -56,14 +57,52 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 5);
+  assert.equal(migrated.version, 8);
   assert.equal(migrated.autopilot.phase, "waiting-for-direction");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
   assert.equal(migrated.controller.sessionId, "new-session");
   assert.equal(migrated.settings.autonomyLevel, "assist");
+  assert.equal(migrated.settings.defaultAgentExecutionMode, "direct");
+  assert.equal(migrated.settings.requireExplicitCodexOptIn, false);
+  assert.equal(migrated.settings.allowAutomaticWorkHandoff, false);
+  assert.equal(migrated.settings.goToWorkRecovery.enabled, true);
+  assert.equal(migrated.settings.goToWorkRecovery.browser, "brave");
+  assert.equal(migrated.settings.swarmTailRecovery.enabled, true);
+  assert.equal(migrated.settings.swarmTailRecovery.maxWorkers, 4);
+  assert.equal(migrated.settings.swarmTailRecovery.maxAttemptsPerRoot, 2);
   assert.ok(migrated.federation);
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
+});
+
+test("agent execution keeps working on a non-Work path by default", () => {
+  const implicit = agentExecutionModeDecision();
+  assert.equal(implicit.allowed, true);
+  assert.equal(implicit.mode, "direct");
+  assert.equal(implicit.requestedMode, "chat");
+  assert.equal(implicit.workModeAllowed, false);
+  assert.equal(implicit.code, null);
+  assert.match(implicit.reason, /direct non-Work local worker path/i);
+
+  const chat = agentExecutionModeDecision("chat");
+  assert.equal(chat.allowed, true);
+  assert.equal(chat.mode, "direct");
+  assert.equal(chat.workModeAllowed, false);
+
+  const direct = agentExecutionModeDecision("direct");
+  assert.equal(direct.allowed, true);
+  assert.equal(direct.mode, "direct");
+
+  const codex = agentExecutionModeDecision("codex");
+  assert.equal(codex.allowed, true);
+  assert.equal(codex.mode, "codex");
+  assert.equal(codex.workModeAllowed, false);
+
+  const work = agentExecutionModeDecision("work");
+  assert.equal(work.allowed, false);
+  assert.equal(work.workModeAllowed, true);
+  assert.equal(work.code, "WORK_MODE_EXPLICIT_EXTERNAL");
+  assert.match(work.reason, /never triggers/i);
 });
 
 test("usual swarm fills only missing roles and distinct support lanes", () => {
@@ -92,8 +131,8 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
   assert.equal(plan.steps.filter(item => item.role === "manager").length, 0);
   assert.equal(plan.steps.filter(item => item.role === "main").length, 1);
   const support = plan.steps.filter(item => item.role === "support");
-  assert.equal(support.length, 3);
-  assert.equal(new Set(support.map(item => item.lane)).size, 3);
+  assert.equal(support.length, 7);
+  assert.equal(new Set(support.map(item => item.lane)).size, 7);
   assert.ok(!support.some(item => item.lane === "architecture"));
 });
 
@@ -198,7 +237,7 @@ test("support current programmer blocks cleanly without a primary", () => {
 
 test("updater support lanes are intentionally different", () => {
   const lanes = supportLanesFor("harden updater rollback and packaging");
-  assert.deepEqual(lanes.map(item => item.id), ["architecture", "tests", "adversarial", "windows"]);
+  assert.deepEqual(lanes.map(item => item.id), ["architecture", "tests", "adversarial", "windows", "performance", "migration", "release", "observability"]);
 });
 
 test("natural language command bar maps common operator language", () => {

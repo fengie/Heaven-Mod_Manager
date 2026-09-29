@@ -312,3 +312,45 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant implementation:** PR #230 establishes independent bridge recovery; this rule governs diagnosis and wording when any control path fails.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-019 — independent recovery owners must not share one failure domain
+
+- **Rule ID:** LR-019
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** persistent local agents, watchdogs, task schedulers, startup recovery, operator control planes
+- **Rule:** A recovery owner is not genuinely independent when it shares the same principal, trigger, scheduler lifetime, or mutable runtime dependency as the component it is supposed to repair. Critical control paths need at least one recovery owner in a different failure domain, plus a non-scheduler fallback where practical.
+- **Trigger / evidence:** The first heaven2 self-healing repair added an interactive watchdog and Startup-folder fallback, but the canonical worker and watchdog still depended on the same user-session Scheduled Task subsystem. A simultaneous user-task deletion, disablement, or definition failure could strand both until another bootstrap.
+- **Rationale:** Redundant processes are not redundant recovery if one configuration failure can disable them together. Separating the repair supervisor into a SYSTEM-owned machine-start task lets it restore user-scoped task definitions and the Startup fallback without relying on the bridge worker or its interactive watchdog.
+- **Enforcement:** Heaven Local Bridge health requires the interactive worker, interactive watchdog, SYSTEM sentinel, Startup fallback, local heartbeat/progress signals, and runtime-copy integrity. The sentinel must never execute arbitrary bridge jobs or carry secrets; it is limited to repairing persistence and the heaven2 recovery shortcut. STOP/bootstrap handoffs quiesce the sentinel first to avoid intentional-shutdown races.
+- **Relevant implementation:** Heaven Local Bridge plugin v0.8.2; `heaven-bridge/sentinel.ps1`, bootstrap/manage health enforcement, and bridge gate regressions.
+- **Supersedes:** none
+- **Superseded by:** none
+
+
+
+---
+
+## LR-020 — operator validation instances must not masquerade as installed clients
+
+- **Rule ID:** LR-020
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** heaven2 UI validation, updater-installed clients, desktop shortcuts, operator-facing version verification
+- **Rule:** A development or validation instance of a user-facing application must not remain visible on the operator desktop after its validation purpose ends, and it must never be used as proof that the updater-managed installed client is current. Verify the installed client through its canonical launcher and process path/build identity, then clean up temporary validation processes.
+- **Trigger / evidence:** A v8.8.15 MHW Mod Manager validation build was left running from a HeavenBridgeSource/build-output path on heaven2 while the desktop shortcut correctly targeted the updater-managed packaged install, which was still on build 192/v8.8.14. The public build-193/v8.8.15 feed became available minutes later. The two visible windows therefore appeared to be an updated app and an old shortcut even though they were distinct installations. After the canonical install updated to build 193, launching the actual desktop shortcut was verified to start the packaged v8.8.15 executable.
+- **Rationale:** Operator-visible validation windows can be mistaken for the real installed product, especially when updater publication and client polling overlap. Folder names can also remain version-stamped from the original extraction even though updater-managed contents change in place.
+- **Enforcement:** Track and terminate non-installed validation app processes at task completion unless the user explicitly requests otherwise. For release/operator verification, launch the actual canonical shortcut or launcher and assert resulting executable path plus packaged build identity/version. Do not infer installed version from a parent folder name, shortcut name, or a separate validation window.
+- **Related policy:** `AGENTS.md` Operator validation / installed-client identity invariant.
+- **Supersedes:** none
+- **Superseded by:** none
+
+## 2026-09-29 — Every escaped bug must harden the system
+
+- Treat every discovered bug, regression, broken integration, false completion claim, or process escape as evidence that a prevention layer was missing or insufficient.
+- Do not stop at the direct fix. Record root cause and violated invariant, add/update the canonical bug precedent, strengthen the relevant guideline/process, add regression coverage when feasible, verify on the real risk surface, and propagate the lesson to future agents.
+- Existing passing tests do not prove prevention was adequate when a bug escaped; add the missing test class or deterministic verifier.
+- Managers and reviewers must reject bug fixes that lack applicable precedent, prevention, regression, and verification evidence.
+- Repeated defects from an existing precedent mean the prior control itself failed and must be strengthened.

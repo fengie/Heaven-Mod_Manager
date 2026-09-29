@@ -1,6 +1,11 @@
 # Agent Control Federation / Registry v2 — 2026-09-29
 
 
+> **Mandatory defect-prevention precedent (2026-09-29):** Bugs are prevention failures, not routine cleanup. Read `_AGENT_CONTEXT/BUG_PRECEDENTS.md` as mandatory training. Any discovered bug/regression/process escape must complete the chain **root cause → precedent log → guideline/process hardening → regression coverage → real-risk verification → propagation** before `DONE`/`FIXED`/merge/release. Managers must reject fixes that skip applicable prevention evidence; recurrence of a logged defect class requires strengthening the prior control itself.
+
+
+> **Mandatory execution-mode rule (2026-09-29):** Normal Chat is preferred, but work must continue on an authorized non-Work path when a normal Chat session cannot be auto-created. Never invoke, suggest, request, or hand off to ChatGPT Work unless the user explicitly asks for Work mode for the current task; that permission is task-local and never inherited. Direct local/Codex/Heaven Bridge execution is allowed as a non-Work fallback rather than failing closed. Quota/capacity failures must not trigger retry storms on the same blocked provider.
+
 > **Mandatory task/plugin preflight (2026-09-29):** Every agent must re-read its complete assigned task, discover the actual plugins/connectors/skills available in that runtime, load/read the instructions for materially relevant capabilities, and select/activate the correct purpose-built route **before** planning or task-specific action. User-named plugins are routing requirements unless positively proven unavailable/unsafe/insufficient. Every worker must preserve `PLUGIN-PREFLIGHT` evidence; managers must reject workers that skipped discovery or claimed a plugin was unavailable from stale assumptions.
 
 > **Plugin platform update (2026-09-29):** new plugin work is centralized under `plugins/`. Read `_AGENT_CONTEXT/PLUGIN_PLATFORM_2026-09-29.md`, `plugins/README.md`, and `plugins/IMPLEMENTATION_SWARM_PROMPT.md` before creating or restructuring plugin/control-plane code. The active `heaven-bridge/` tree remains a compatibility/runtime boundary; new control-plane implementation begins under `plugins/heaven-control-plane/`.

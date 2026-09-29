@@ -47,7 +47,18 @@ The snapshot combines managed local workers with the normalized federated regist
 
 Automatic enumeration of arbitrary ChatGPT project conversations is unavailable. When a stable ChatGPT session identity is available through the bridge, register/heartbeat it rather than inventing telemetry.
 
-## Deploy an agent
+## Execution mode
+
+Normal Chat is preferred. ChatGPT Work handoff is deny-by-default.
+
+- Never trigger, request, suggest, or route through a ChatGPT Work handoff unless the user explicitly asks for Work mode for the current task.
+- A long/complex task, file creation, code changes, browser/computer use, a failed tool, or missing preferred capability is not permission to switch to Work.
+- If the current ChatGPT conversation can execute the task, do the work here. Do not tell the user to switch modes as a fallback.
+- Agent Control cannot auto-create arbitrary normal ChatGPT conversations. When it must dispatch, use the default direct non-Work local worker path instead of failing closed. Heaven Local Bridge and repository tooling remain valid non-Work routes.
+- Work and Codex are distinct. An explicit Work request must not be translated into Codex, and ordinary Chat/direct/Codex execution must never escalate into Work.
+- A Codex quota/capacity failure must not trigger a retry storm on the same blocked provider; preserve work and route through another authorized non-Work path when possible.
+
+## Deploy an agent (non-Work by default)
 
 Prefer a temporary task file instead of shell-embedding the user's prompt.
 

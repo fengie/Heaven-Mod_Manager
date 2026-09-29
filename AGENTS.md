@@ -9,7 +9,7 @@ Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, 
 Before the first task-facing response or action, the agent must:
 
 1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
-2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
+2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
 3. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` before responding or dispatching work.
 4. Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming an answer or plan.
 5. Treat the repository itself as the source of truth. Stale chat context, old SHAs, filenames, summaries, or prior-agent prose do not satisfy this gate.
@@ -21,6 +21,46 @@ Agent Control must enforce this mechanically for spawned workers: required train
 Every successor and sub-agent inherits this same gate. **No untrained agent gets to answer first and “catch up” afterward.**
 
 
+
+## Mandatory bug-prevention and precedent protocol
+
+Bugs are prevention failures, not routine cleanup. Every agent must optimize for preventing defects from escaping into canonical `main`, releases, updater paths, or user-visible behavior.
+
+### Prevention-first execution
+- Before changing a risky or user-facing path, identify its invariants, failure modes, state transitions, integration boundaries, restart/update/rollback behavior, and likely regression surface. Do not rely on the happy path alone.
+- Read relevant entries in `_AGENT_CONTEXT/BUG_PRECEDENTS.md` before implementation or review. Existing precedents are binding engineering constraints for materially similar work.
+- Reproduce a reported defect before fixing it when feasible. Convert the reproduction into an automated regression test or durable verifier whenever technically practical.
+- A fix is incomplete if it only patches the observed symptom. Identify the root cause and the missed invariant, contract, test, review step, or process control that allowed the bug to escape.
+- Verification must match the risk. Unit tests alone are insufficient for bugs involving integration, startup, updater/install flows, persistence, concurrency, process lifetime, UI state, machine routing, branch/integration state, or real user-visible behavior.
+- For operator-facing behavior, verify the actual user path on the appropriate machine/environment when available; do not substitute an internal API/unit assertion for an observable UI/runtime claim.
+- Review changed code for adjacent instances of the same defect class. Fix or explicitly rule out sibling cases before closure.
+
+### Mandatory bug-to-precedent closure
+Whenever any bug, regression, escaped defect, false completion claim, broken integration, or process failure is discovered, the owning agent must complete this chain before marking the work done:
+
+**bug → root cause → precedent log → guideline/process change → regression coverage → verification evidence → propagation**
+
+The agent must immediately add or update an entry in `_AGENT_CONTEXT/BUG_PRECEDENTS.md` containing, at minimum:
+1. date and affected subsystem;
+2. user-visible or engineering symptom;
+3. root cause;
+4. the invariant/assumption that was violated;
+5. why existing tests/review/process failed to catch it;
+6. the direct corrective fix;
+7. the preventive rule or process change;
+8. regression tests/verifiers added or strengthened;
+9. exact verification evidence and environment;
+10. adjacent/sibling cases checked;
+11. links/SHAs/PRs/issues when available.
+
+If the incident reveals a reusable lesson, also update `_AGENT_CONTEXT/LEARNED_RULES.md`, `AGENTS.md`, training templates, verifier scripts, Agent Control enforcement, or other durable governance as appropriate. Process bugs require process fixes, not just product-code fixes.
+
+### Completion and review gate
+- `DONE`, `FIXED`, `SHIPPED`, merge, and release claims are forbidden while the required precedent entry, preventive change, regression coverage, or verification evidence is missing.
+- Managers/reviewers/integration agents must reject or redispatch work that fixes a bug without completing the prevention chain.
+- When a regression test cannot reasonably be automated, record why and add the strongest durable deterministic verification available.
+- If the preventive rule can be mechanically enforced, prefer enforcement in code/tests/CI/Agent Control over prose alone.
+- Repeated occurrence of an already logged defect class is a severity escalation: inspect why the prior prevention control failed and strengthen that control before closing the new incident.
 
 ## Mandatory task-review and plugin activation gate
 
@@ -49,6 +89,17 @@ Unless the user explicitly says **read only**, **review only**, **summarize only
 - Preserve safety, ownership, verification, and repository policy while executing.
 - If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
 
+## Mandatory no-Work-handoff execution mode
+
+Normal Chat is the preferred interactive surface. ChatGPT Work is deny-by-default.
+
+- Never invoke, suggest, request, or hand off to ChatGPT Work unless the user explicitly asks for Work mode for the current task. Permission is task-local and never carries forward to a later task, retry, reviewer, replacement, or sub-agent.
+- If the current ChatGPT session can execute the task with available tools, execute it in the current chat. Do not ask the user to switch modes merely because the task is long, multi-step, involves code/files/computer use, or one tool failed.
+- Agent Control must keep work moving on an authorized non-Work path when arbitrary normal-Chat spawning is unavailable. The direct local worker/Codex/Heaven Bridge/repository route may be used as a non-Work execution fallback instead of failing closed or handing work back.
+- Work and Codex are distinct execution surfaces. `executionMode="work"` is external-only and must never be silently translated into Codex; ordinary chat/direct/Codex execution must never escalate into Work.
+- A provider usage-limit/quota error is a routing signal. Preserve unfinished work and use another authorized non-Work path where possible; do not create retry storms on the same blocked provider.
+- Managers, reviewers, recovery agents, plugins, and successors must preserve this rule recursively and include it in dispatched prompts.
+
 ## Heaven Local Bridge execution policy
 
 For computer work on the device named `heaven`, use the repository-backed **Heaven Local Bridge** as the default execution path.
@@ -56,7 +107,7 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Prefer Heaven Local Bridge for filesystem access, command execution, builds/tests, persistent processes, local agents, screenshots, and structured desktop actions.
 - Do not silently fall back to Remote Desktop Commander. Use Remote Desktop Commander for `heaven` only when the user explicitly authorizes it in the current request.
 - Treat a bridge failure as a bridge repair/recovery problem first.
-- Bridge persistence is part of machine readiness: both `heaven2` and `heaven` must keep the canonical worker plus independent local watchdog installed, elevated, current, and self-healing. A transient worker process without the watchdog/local-heartbeat recovery path is not a healthy control channel. If this invariant fails, repair persistence before treating the host as available.
+- Bridge persistence is part of machine readiness: both `heaven2` and `heaven` must keep the canonical interactive worker, independent local watchdog, and separate SYSTEM-owned sentinel installed, elevated/current, and self-healing. The sentinel must use a different principal/startup failure domain and repair the interactive task definitions plus Startup fallback. A transient worker process without all recovery owners/local-heartbeat paths is not a healthy control channel. If this invariant fails, repair persistence before treating the host as available.
 - `heaven` is the worker/execution machine; `heaven2` is the main/control and credential-authority machine.
 - **Operator-surface invariant:** the user interacts with `heaven2`. Dashboards, control panels, Agent Control, browser/UI automation, screenshots intended for operator interaction, app/window/mouse/keyboard work, and other human-facing desktop operations default to `heaven2`.
 - Treat `heaven` as a delegated resource/worker by default. Do not move control panels or routine user interaction there merely because builds/tests/agents execute there. Interactive control of `heaven` requires an explicit worker-desktop request or a genuinely worker-specific GUI validation.
@@ -217,3 +268,14 @@ A failed ChatGPT/agent response stream is **not** proof that the assigned work f
 - Mark work complete only from durable completion evidence (for example explicit completion verification, or integrated/merged-to-main evidence plus passing verification/acceptance evidence). A cheerful final message alone is not completion proof.
 - Automatic replacement is allowed only when no durable work is detected, and it must remain bounded/backed off as Agent Control's retry policy requires.
 - Managers/reviewers must apply this rule after UI/WebSocket/network/stream failures and use repository/CI/worker evidence as the source of truth.
+
+
+## Operator validation / installed-client identity invariant
+
+Development and validation launches on the operator machine must never be left looking like the user's installed MHW Mod Manager.
+
+- Any agent, test, UI-validation task, or automation that launches `MHW Mod Manager.exe` from a repository checkout, build output, validation checkout, staging directory, or other non-installed path on `heaven2` must track that process and close it when validation is complete, unless the user explicitly asked to keep that exact validation instance open.
+- Never use a still-running development/validation window as evidence that the updater-managed desktop installation has reached the same version. Treat process executable path, packaged `build-identity.json`, and installed executable version as the identity proof.
+- After a user-facing updater release is publicly mirrored, operator-facing verification on `heaven2` must include launching the actual desktop shortcut (or other canonical user launcher) and verifying that the resulting process resolves to the updater-managed install and expected published build.
+- The updater mutates a packaged install in place, so a version string embedded in the parent folder name may be stale. Do not infer the running version from the folder name or shortcut label.
+- If a temporary validation instance and the installed client are both present, close the temporary instance before presenting or validating the installed client so the user cannot mistake one for the other.

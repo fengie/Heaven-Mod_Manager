@@ -86,10 +86,14 @@ Deploy options:
   --count N
   --base BRANCH
   --model MODEL
+  --execution-mode chat|direct|codex
   --boundary NAME
   --priority 0-100
   --machine auto|HOSTNAME
   --depends TASK_ID[,TASK_ID...]
+
+Normal Chat is preferred. Because the local controller cannot auto-create arbitrary ChatGPT chats, chat/default dispatch continues through the direct non-Work local worker path instead of stopping.
+Agent Control never requests ChatGPT Work mode. Use --execution-mode codex only when you want to label the local-worker route explicitly.
 
 Examples:
   node agentctl.mjs snapshot
@@ -274,6 +278,7 @@ try {
         count: Number(flags.count || 1),
         baseBranch: flags.base || "main",
         model: flags.model || "",
+        executionMode: flags["execution-mode"] || "chat",
         boundary: flags.boundary || "",
         priority: flags.priority === undefined ? 50 : Number(flags.priority),
         machine: flags.machine || "auto",
@@ -291,6 +296,7 @@ try {
       body: JSON.stringify({
         task: task || undefined,
         model: flags.model || "",
+        executionMode: flags["execution-mode"] || "chat",
         boundary: flags.boundary || "",
         priority: flags.priority === undefined ? undefined : Number(flags.priority),
         machine: flags.machine || "auto",

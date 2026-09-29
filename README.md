@@ -1,4 +1,22 @@
-# v8.8.14 Universal Mod Manager
+# v8.8.17 Universal Mod Manager
+
+## v8.8.17 — reliable first-launch mod discovery
+
+The manager now preserves its canonical data root across automatic-update restarts instead of relying on inherited updater process state. The first launch after updating therefore reads the same populated `Mods` and `State` directories as a normal shortcut launch, so reopening the application should no longer be required just to make installed mods appear.
+
+Release-layout launches also recover the manager home from the project root when no explicit manager-home variable is present, and the resolved path is exported for subsequent child processes. Regression coverage pins both release-layout fallback and updater handoff behavior.
+
+## v8.8.16 — larger mod library workspace
+
+The Mods page now gives the library substantially more vertical room on normal desktop widths. Filters and bulk actions share one responsive toolbar row when space allows, the pending-change controls sit beside their summary instead of consuming another full row, and the surrounding vertical margins are tighter. Narrow windows can still wrap the toolbar naturally, while the mod rows and existing commands keep their current behavior.
+
+## v8.8.15 — true visual overhaul
+
+The application shell and Dashboard now have a genuinely different information architecture rather than another wording-only pass. The old two-row command strip and dominant 2×2 stat-card grid are replaced by a single app bar, a current-setup hero with the next actions directly attached, a compact metric strip, and separate Setup Details / Quick Actions areas.
+
+The shared WPF visual system now uses deeper navy surfaces, teal interaction accents, larger-radius cards, clearer selected navigation, and reusable action tiles across the app. Deployment, updater, conflict, rollback, filesystem, and diagnostics behavior is unchanged; the redesign reuses the existing commands and bindings.
+
+Runtime diagnostics now also report the executing build identity instead of stale hard-coded v8.3.0/v8.8.6 labels in support bundles, startup trace records, and structured logs.
 
 ## v8.8.14 — fail-closed Smart Inbox rollback
 

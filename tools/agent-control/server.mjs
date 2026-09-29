@@ -13,6 +13,7 @@ import {
   AUTONOMY_PROFILES,
   WORKFLOW_PRESETS,
   applyPreLaunchFailure,
+  agentExecutionModeDecision,
   autonomyPermissionDecision,
   canUseMachineForRepositoryWrite,
   classifyAuthoritativeExit,
@@ -41,16 +42,19 @@ import {
 import {
   bridgeResultSucceeded,
   cancelHeavenBridgeJob,
-  inspectHeavenBridge
+  inspectHeavenBridge,
+  runHeaven2BridgeAction
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
 import {
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
+  planSwarmTailRecoveryBatch,
   recoveryBackoffMs,
   recoveryMachineTarget,
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
+import { planGoToWorkRecoveries } from "./lib/go-to-work-recovery.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -67,8 +71,8 @@ const CONTROLLER_HOST = String(process.env.AGENT_CONTROL_CONTROLLER_HOST || "hea
 const ALLOW_NON_CONTROLLER_HOST = process.env.AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST === "1";
 const REPO = process.env.AGENT_CONTROL_REPO || path.join(os.homedir(), "local-ai-workspaces", "mhw-mods");
 const WORKTREE_ROOT = process.env.AGENT_WORKTREE_ROOT || path.join(os.homedir(), "agent-worktrees");
-const MAX_DEPLOY_COUNT = Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 8);
-const MAX_ACTIVE_AGENTS = Number(process.env.AGENT_CONTROL_MAX_ACTIVE || 8);
+const MAX_DEPLOY_COUNT = Math.max(1, Math.min(48, Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 24) || 24));
+const MAX_ACTIVE_AGENTS = Math.max(1, Math.min(48, Number(process.env.AGENT_CONTROL_MAX_ACTIVE || 24) || 24));
 const EVENT_LIMIT = 1000;
 const NOTIFICATION_LIMIT = 250;
 const LEASE_TTL_MS = Number(process.env.AGENT_CONTROL_LEASE_TTL_MS || 120000);
@@ -81,9 +85,14 @@ let degradedReason = null;
 let deployMutex = Promise.resolve();
 let autopilotTickRunning = false;
 let noWorkRecoveryTickRunning = false;
+let goToWorkRecoveryTickRunning = false;
+let swarmTailRecoveryTickRunning = false;
 const noWorkRecoveryOperations = new Set();
+const goToWorkRecoveryOperations = new Set();
+const swarmTailRecoveryOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
 const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
+const GO_TO_WORK_RECOVERY_TICK_MS = Math.max(5000, Number(process.env.AGENT_CONTROL_GO_TO_WORK_RECOVERY_TICK_MS || 10000));
 
 const rolePresets = roleCatalog();
 
@@ -1076,6 +1085,7 @@ async function deployOne({
   task,
   baseBranch,
   model,
+  executionMode = "",
   boundary,
   priority,
   machine,
@@ -1090,6 +1100,14 @@ async function deployOne({
 }) {
   if (!rolePresets[role]) throw new Error(`Unknown role: ${role}`);
   if (!task || !task.trim()) throw new Error("Task is required.");
+
+  const execution = agentExecutionModeDecision(executionMode);
+  if (!execution.allowed) {
+    const error = new Error(execution.reason);
+    error.code = execution.code;
+    error.statusCode = 409;
+    throw error;
+  }
 
   const state = refreshState();
   assertMutationsAllowed(state, { dispatch: true });
@@ -1155,6 +1173,7 @@ async function deployOne({
     objective: task.trim(),
     role,
     roleLabel: rolePresets[role].label,
+    executionMode: execution.mode,
     status: "reserved",
     priority: normalizedPriority,
     lane,
@@ -1365,6 +1384,7 @@ async function deployOne({
     id,
     role,
     roleLabel: rolePresets[role].label,
+    executionMode: execution.mode,
     taskId,
     task: task.trim(),
     targetAgentId,
@@ -1562,6 +1582,61 @@ function noWorkRecoveryConfig(state) {
     maxDispatchFailures: Math.max(1, Math.floor(Number(raw.maxDispatchFailures) || 5)),
     retryBackoffMs: Math.max(1_000, Number(raw.retryBackoffMs) || 15_000),
     maxBackoffMs: Math.max(1_000, Number(raw.maxBackoffMs) || 300_000)
+  };
+}
+
+function goToWorkRecoveryConfig(state) {
+  const raw = state?.settings?.goToWorkRecovery || {};
+  const browser = String(raw.browser || "brave").trim().toLowerCase();
+  return {
+    enabled: raw.enabled !== false,
+    browser: ["brave", "edge", "chrome"].includes(browser) ? browser : "brave",
+    staleAfterMs: Math.max(10_000, Number(raw.staleAfterMs) || 45_000),
+    cooldownMs: Math.max(10_000, Number(raw.cooldownMs) || 60_000),
+    maxPerSweep: Math.max(1, Math.min(8, Math.floor(Number(raw.maxPerSweep) || 2)))
+  };
+}
+
+function browserExecutable(browser) {
+  return {
+    brave: "brave.exe",
+    edge: "msedge.exe",
+    chrome: "chrome.exe"
+  }[browser] || "brave.exe";
+}
+
+function bridgeDesktopJobId(action) {
+  return `agent-control-${String(action || "desktop").replace(/[^a-z0-9_-]+/gi, "-")}-${Date.now()}-${randomUUID().slice(0, 8)}`;
+}
+
+async function runHeaven2DesktopAction(action, params, timeoutMs = 60_000) {
+  const result = await runHeaven2BridgeAction({
+    id: bridgeDesktopJobId(action),
+    action,
+    params,
+    timeoutMs,
+    priority: "high"
+  });
+  if (!bridgeResultSucceeded(result)) {
+    throw new Error(`Heaven2 desktop action ${action} failed with status ${result?.status || "unknown"} / exit ${result?.exit_code ?? "unknown"}.`);
+  }
+  return result?.data ?? null;
+}
+
+function waitMs(ms) {
+  return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
+function swarmTailRecoveryConfig(state) {
+  const raw = state?.settings?.swarmTailRecovery || {};
+  return {
+    enabled: raw.enabled !== false,
+    maxWorkers: Math.max(1, Math.min(MAX_ACTIVE_AGENTS, Math.floor(Number(raw.maxWorkers) || 4))),
+    maxAttemptsPerRoot: Math.max(1, Math.floor(Number(raw.maxAttemptsPerRoot) || 2)),
+    armedAt: raw.armedAt || null,
+    armedWorkflowId: raw.armedWorkflowId || null,
+    armedMission: raw.armedMission || null,
+    waveId: raw.waveId || null
   };
 }
 
@@ -1915,6 +1990,197 @@ async function recoverFederatedNoWorkAgent(agentId) {
   }
 }
 
+
+async function dismissGoToWorkPrompt(agent, decision, config) {
+  const operationId = String(agent?.agent_id || "");
+  if (!operationId || goToWorkRecoveryOperations.has(operationId)) return null;
+  goToWorkRecoveryOperations.add(operationId);
+
+  let openedHwnd = null;
+  let outcome = null;
+  try {
+    const beforeRows = await runHeaven2DesktopAction("window_list", { limit: 400, visible_only: true }, 45_000);
+    const before = new Set((Array.isArray(beforeRows) ? beforeRows : []).map(row => Number(row?.hwnd)).filter(Number.isFinite));
+
+    await runHeaven2DesktopAction("app_launch", {
+      path: browserExecutable(config.browser),
+      args: ["--new-window", decision.url],
+      detached: true
+    }, 45_000);
+
+    for (const pause of [1200, 1800, 2500]) {
+      await waitMs(pause);
+      const rows = await runHeaven2DesktopAction("window_list", { limit: 400, visible_only: true }, 45_000);
+      const candidates = (Array.isArray(rows) ? rows : []).filter(row =>
+        !before.has(Number(row?.hwnd))
+        && /chatgpt/i.test(String(row?.title || ""))
+      );
+      if (candidates.length) {
+        openedHwnd = Number(candidates[0].hwnd);
+        break;
+      }
+    }
+
+    if (!Number.isInteger(openedHwnd) || openedHwnd <= 0) {
+      throw new Error("Opened ChatGPT recovery window could not be identified safely.");
+    }
+
+    const goButtonSelector = { name: "Go to Work", control_type: "Button", enabled: true, offscreen: false };
+    let goButton = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: goButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12,
+      wait_ms: 8000
+    }, 45_000);
+
+    if (!Number(goButton?.count)) {
+      goButton = await runHeaven2DesktopAction("uia_find", {
+        hwnd: openedHwnd,
+        selector: { name_contains: "Go to Work", enabled: true, offscreen: false },
+        scope: "descendants",
+        max_nodes: 1000,
+        max_depth: 12,
+        wait_ms: 2000
+      }, 30_000);
+    }
+
+    if (!Number(goButton?.count)) {
+      outcome = { dismissed: false, verified: true, reason: "go-to-work-card-not-present" };
+      return outcome;
+    }
+
+    const noButtonSelector = { name: "No", control_type: "Button", enabled: true, offscreen: false };
+    const noButton = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: noButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12,
+      wait_ms: 3000
+    }, 30_000);
+
+    if (Number(noButton?.count) !== 1) {
+      throw new Error(`Go to Work card was found, but the recovery window exposed ${Number(noButton?.count) || 0} unambiguous No buttons.`);
+    }
+
+    await runHeaven2DesktopAction("uia_invoke", {
+      hwnd: openedHwnd,
+      selector: noButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12
+    }, 30_000);
+
+    await waitMs(700);
+    const remaining = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: goButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12
+    }, 30_000);
+
+    if (Number(remaining?.count) > 0) {
+      throw new Error("Go to Work card remained visible after Agent Control invoked No.");
+    }
+
+    outcome = { dismissed: true, verified: true, reason: "no-invoked-and-card-cleared" };
+    return outcome;
+  } finally {
+    if (Number.isInteger(openedHwnd) && openedHwnd > 0) {
+      try {
+        await runHeaven2DesktopAction("window_close", { hwnd: openedHwnd }, 30_000);
+      } catch {}
+    }
+    goToWorkRecoveryOperations.delete(operationId);
+  }
+}
+
+async function recoverGoToWorkAgent(agentId, decision, config) {
+  const state = refreshState();
+  const live = state.federation?.agents?.find(item => item.agent_id === agentId);
+  if (!live) return null;
+  const metadata = live.source_metadata && typeof live.source_metadata === "object"
+    ? live.source_metadata
+    : (live.source_metadata = {});
+
+  const checkedAt = isoNow();
+  try {
+    const outcome = await dismissGoToWorkPrompt(live, decision, config);
+    const next = loadState();
+    const stored = next.federation?.agents?.find(item => item.agent_id === agentId);
+    if (!stored) return outcome;
+    stored.source_metadata = stored.source_metadata && typeof stored.source_metadata === "object"
+      ? stored.source_metadata
+      : {};
+    stored.source_metadata.go_to_work_recovery_last_checked_at = checkedAt;
+    stored.source_metadata.go_to_work_recovery_status = outcome?.dismissed ? "dismissed" : "not-present";
+    stored.source_metadata.go_to_work_recovery_reason = outcome?.reason || decision.reason;
+    stored.source_metadata.go_to_work_recovery_error_count = 0;
+    if (outcome?.dismissed) {
+      stored.source_metadata.go_to_work_pending = false;
+      stored.source_metadata.work_handoff_pending = false;
+      stored.source_metadata.handoff_pending = false;
+      stored.source_metadata.go_to_work_recovery_last_dismissed_at = checkedAt;
+      stored.source_metadata.go_to_work_recovery_dismiss_count =
+        Math.max(0, Number(stored.source_metadata.go_to_work_recovery_dismiss_count) || 0) + 1;
+      addEvent(next, "federation.go-to-work-dismissed", `${agentId} had its Go to Work handoff rejected automatically`, {
+        agentIds: [agentId],
+        reason: decision.reason,
+        evidence: { verified: outcome?.verified === true }
+      });
+    }
+    saveState(next);
+    return outcome;
+  } catch (error) {
+    const next = loadState();
+    const stored = next.federation?.agents?.find(item => item.agent_id === agentId);
+    if (stored) {
+      stored.source_metadata = stored.source_metadata && typeof stored.source_metadata === "object"
+        ? stored.source_metadata
+        : {};
+      stored.source_metadata.go_to_work_recovery_last_checked_at = checkedAt;
+      stored.source_metadata.go_to_work_recovery_status = "error";
+      stored.source_metadata.go_to_work_recovery_last_error = error?.message || String(error);
+      stored.source_metadata.go_to_work_recovery_error_count =
+        Math.max(0, Number(stored.source_metadata.go_to_work_recovery_error_count) || 0) + 1;
+      addEvent(next, "federation.go-to-work-recovery-error", `Automatic Go to Work dismissal failed for ${agentId}`, {
+        agentIds: [agentId],
+        reason: stored.source_metadata.go_to_work_recovery_last_error
+      });
+      if (stored.source_metadata.go_to_work_recovery_error_count >= 3) {
+        addNotification(next, {
+          severity: "warning",
+          title: "Go to Work auto-dismiss needs attention",
+          message: `${agentId}: ${stored.source_metadata.go_to_work_recovery_last_error}`,
+          action: { type: "inspect-agent", agentId },
+          dedupeKey: `go-to-work-recovery-error:${agentId}`
+        });
+      }
+      saveState(next);
+    }
+    return null;
+  }
+}
+
+async function reconcileGoToWorkRecoveries() {
+  if (goToWorkRecoveryTickRunning) return;
+  goToWorkRecoveryTickRunning = true;
+  try {
+    const state = refreshState();
+    const config = goToWorkRecoveryConfig(state);
+    if (!config.enabled || state.settings?.emergencyStop || state.settings?.readOnly) return;
+    const plan = planGoToWorkRecoveries(state.federation, config);
+    for (const item of plan) {
+      await recoverGoToWorkAgent(item.agent.agent_id, item.decision, config);
+    }
+  } finally {
+    goToWorkRecoveryTickRunning = false;
+  }
+}
+
 async function reconcileNoWorkRecoveries() {
   if (noWorkRecoveryTickRunning) return;
   noWorkRecoveryTickRunning = true;
@@ -1937,6 +2203,191 @@ async function reconcileNoWorkRecoveries() {
     for (const agent of federated) await recoverFederatedNoWorkAgent(agent.agent_id);
   } finally {
     noWorkRecoveryTickRunning = false;
+  }
+}
+
+async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
+  const operationId = `swarm-tail:${rootId}`;
+  if (swarmTailRecoveryOperations.has(operationId)) return null;
+  swarmTailRecoveryOperations.add(operationId);
+  try {
+    const state = refreshState();
+    if (state.settings?.dispatchPaused || state.settings?.emergencyStop || state.settings?.readOnly) return null;
+    const source = state.agents.find(item => item.id === sourceId);
+    const task = state.tasks.find(item => item.id === source?.taskId) || null;
+    if (!source || !task) return null;
+
+    const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
+    const recoveryTask = [
+      `Finish unfinished work left by crashed/interrupted agent ${source.id}.`,
+      `Original task: ${task.objective || source.task || "unknown"}`,
+      `Original branch: ${source.branchName || task.branchName || "unknown"}.`,
+      sourceWorktree ? `Preserved source worktree: ${sourceWorktree}. Inspect and recover any uncommitted changes before editing elsewhere.` : "No preserved source worktree is available; recover from durable branch/commit/task evidence.",
+      "Do not restart completed portions from scratch. First inventory durable commits, dirty files, artifacts, tests, PRs, and integration state; then finish only what remains.",
+      "Own the work through verification, integration to current canonical main when repository policy permits, remote-main confirmation, and safe cleanup."
+    ].join("\n");
+
+    const replacement = await deployOne({
+      role: "recovery",
+      task: recoveryTask,
+      baseBranch: source.branchName || source.requestedBaseBranch || source.baseBranch || "main",
+      model: source.model || "",
+      executionMode: "direct",
+      boundary: `swarm-tail-recovery:${rootId}`,
+      priority: Math.max(90, Number(source.priority || task.priority || 0)),
+      machine: recoveryMachineTarget(source.machine || task.machine, state.settings?.machinePolicies),
+      dependencies: [],
+      targetAgentId: source.id,
+      lane: `swarm-tail-${rootId.slice(0, 12)}`,
+      repositoryWriteAuthorized: Boolean(source.repositoryWriteAuthorized ?? task.repositoryWriteAuthorized),
+      acceptanceCriteria: [
+        "Preserve all useful durable work from the failed agent.",
+        "Finish the remaining scope instead of merely auditing it.",
+        "Do not duplicate or overwrite newer canonical work.",
+        "Integrate and clean up only after targeted verification succeeds."
+      ],
+      verification: task.verification || [],
+      additionalConstraints: [
+        `This is end-of-swarm cleanup attempt ${attempt} for recovery root ${rootId}.`,
+        "Use the default direct/non-Work execution path. Never hand off to Work unless the user explicitly requested Work for this task."
+      ],
+      recoveryContext: {
+        attempt,
+        retryOfAgentId: source.id,
+        retryOfTaskId: source.taskId || null,
+        rootAgentId: rootId
+      }
+    });
+
+    const linked = loadState();
+    const original = linked.agents.find(item => item.id === source.id);
+    const created = linked.agents.find(item => item.id === replacement.id);
+    const originalTask = linked.tasks.find(item => item.id === source.taskId);
+    const createdTask = linked.tasks.find(item => item.id === replacement.taskId);
+    if (original) {
+      original.swarmTailRecoveryStatus = "dispatched";
+      original.swarmTailRecoveryReplacementAgentId = replacement.id;
+      original.swarmTailRecoveryReplacementTaskId = replacement.taskId;
+      original.swarmTailRecoveryRootAgentId = rootId;
+    }
+    if (created) {
+      created.swarmTailRecovery = true;
+      created.swarmTailRecoveryRootAgentId = rootId;
+      created.swarmTailRecoveryAttempt = attempt;
+    }
+    if (originalTask) {
+      originalTask.nextAction = `End-of-swarm recovery agent ${replacement.id} is finishing the remaining work.`;
+    }
+    if (createdTask) {
+      createdTask.swarmTailRecovery = true;
+      createdTask.swarmTailRecoveryRootAgentId = rootId;
+      createdTask.swarmTailRecoveryAttempt = attempt;
+    }
+    addEvent(linked, "swarm.tail-recovery-dispatched", `${source.id} unfinished work assigned to ${replacement.id}`, {
+      agentId: replacement.id,
+      taskId: replacement.taskId,
+      reason: "end-of-swarm-unfinished-work",
+      evidence: { sourceAgentId: source.id, sourceTaskId: source.taskId, rootAgentId: rootId, attempt }
+    });
+    addNotification(linked, {
+      severity: "info",
+      title: "Cleanup wave dispatched",
+      message: `${replacement.roleLabel || replacement.id} is finishing unfinished work from ${source.roleLabel || source.id}.`,
+      action: { type: "inspect-agent", agentId: replacement.id },
+      dedupeKey: `swarm-tail:${rootId}:${attempt}`
+    });
+    saveState(linked);
+    return created || replacement;
+  } catch (error) {
+    const failed = loadState();
+    const source = failed.agents.find(item => item.id === sourceId);
+    if (source) {
+      source.swarmTailRecoveryStatus = "dispatch-failed";
+      source.swarmTailRecoveryLastError = error?.message || String(error);
+      addEvent(failed, "swarm.tail-recovery-dispatch-failed", `Cleanup-wave dispatch failed for ${sourceId}`, {
+        agentId: sourceId,
+        taskId: source.taskId,
+        reason: source.swarmTailRecoveryLastError,
+        evidence: { rootAgentId: rootId, attempt }
+      });
+      saveState(failed);
+    }
+    return null;
+  } finally {
+    swarmTailRecoveryOperations.delete(operationId);
+  }
+}
+
+async function reconcileSwarmTailRecoveries() {
+  if (swarmTailRecoveryTickRunning) return;
+  swarmTailRecoveryTickRunning = true;
+  try {
+    const state = refreshState();
+    const config = swarmTailRecoveryConfig(state);
+    if (!config.enabled || !config.armedAt || state.settings?.dispatchPaused || state.settings?.emergencyStop || state.settings?.readOnly) return;
+    const armedMs = Date.parse(String(config.armedAt));
+    if (!Number.isFinite(armedMs)) return;
+    const scopedAgents = state.agents.filter(agent => {
+      const startedMs = Date.parse(String(agent?.startedAt || ""));
+      return Number.isFinite(startedMs) && startedMs >= armedMs;
+    });
+    if (scopedAgents.some(agent => coreIsActiveStatus(agent.status))) return;
+
+    const batch = planSwarmTailRecoveryBatch(state, {
+      maxWorkers: config.maxWorkers,
+      maxAttemptsPerRoot: config.maxAttemptsPerRoot,
+      since: config.armedAt
+    });
+    if (batch.length) {
+      for (const item of batch) {
+        await recoverSwarmTailAgent(item.agent.id, item.rootId, item.attempt);
+      }
+      return;
+    }
+
+    const rootIds = new Set(scopedAgents
+      .filter(agent => ["failed", "interrupted"].includes(String(agent.status || "")))
+      .map(agent => String(agent.swarmTailRecoveryRootAgentId || agent.recoveryRootAgentId || agent.id || "").trim())
+      .filter(Boolean));
+    const unresolvedRoots = [...rootIds].filter(rootId => !scopedAgents.some(agent =>
+      String(agent.swarmTailRecoveryRootAgentId || agent.recoveryRootAgentId || agent.id || "").trim() === rootId
+      && String(agent.status || "") === "done"
+    ));
+
+    const completed = loadState();
+    const previous = completed.settings.swarmTailRecovery || {};
+    completed.settings.swarmTailRecovery = {
+      ...previous,
+      armedAt: null,
+      armedWorkflowId: null,
+      armedMission: null,
+      waveId: null,
+      lastCompletedAt: isoNow(),
+      lastUnresolvedRoots: unresolvedRoots
+    };
+    addEvent(completed, unresolvedRoots.length ? "swarm.tail-recovery-exhausted" : "swarm.tail-recovery-complete",
+      unresolvedRoots.length
+        ? `Cleanup wave ended with ${unresolvedRoots.length} unresolved recovery root(s)`
+        : "Cleanup wave completed with no unresolved crashed-agent work", {
+        reason: unresolvedRoots.length ? "recovery-attempts-exhausted" : "swarm-clean",
+        evidence: {
+          workflowId: config.armedWorkflowId,
+          waveId: config.waveId,
+          unresolvedRoots
+        }
+      });
+    if (unresolvedRoots.length) {
+      addNotification(completed, {
+        severity: "warning",
+        title: "Cleanup wave needs attention",
+        message: `${unresolvedRoots.length} crashed-agent work item(s) remain after automatic recovery attempts.`,
+        action: { type: "inspect-workers", ids: unresolvedRoots },
+        dedupeKey: `swarm-tail-unresolved:${config.waveId || config.armedAt}`
+      });
+    }
+    saveState(completed);
+  } finally {
+    swarmTailRecoveryTickRunning = false;
   }
 }
 
@@ -2505,6 +2956,12 @@ async function deployReview(targetAgentId, body = {}) {
   assertAutonomyPermission(state, "request-review", "review dispatch");
   const target = state.agents.find(agent => agent.id === targetAgentId);
   if (!target) throw new Error("Target agent not found.");
+  if (target.status === "capacity-blocked") {
+    const error = new Error("The target agent is quota/capacity-blocked. Do not spawn a reviewer or takeover worker for a provider-capacity failure; keep the unfinished task visible and use normal Chat unless the user explicitly opts into Codex later.");
+    error.code = "REVIEW_TARGET_CAPACITY_BLOCKED";
+    error.statusCode = 409;
+    throw error;
+  }
 
   const task = body.task?.trim() || [
     `Review the work produced by agent ${target.id}.`,
@@ -2518,6 +2975,7 @@ async function deployReview(targetAgentId, body = {}) {
     task,
     baseBranch: target.branchName,
     model: body.model || "",
+    executionMode: body.executionMode || "",
     boundary: body.boundary || `review:${target.branchName}`,
     priority: body.priority ?? Math.max(60, Number(target.priority || 50)),
     machine: body.machine || "auto",
@@ -2552,6 +3010,7 @@ async function previewWorkflow(workflowId, body = {}) {
 
 async function executeWorkflow(workflowId, body = {}) {
   return withDeployLock(async () => {
+    const workflowStartedAt = isoNow();
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
     assertWorkflowAutonomy(state, workflowId);
@@ -2593,6 +3052,7 @@ async function executeWorkflow(workflowId, body = {}) {
           task: work.task,
           baseBranch: body.baseBranch || plan.baseBranch || "main",
           model: body.model || "",
+          executionMode: body.executionMode || "",
           boundary: work.boundary,
           priority: work.priority,
           machine: work.machine || body.machine || "auto",
@@ -2614,6 +3074,30 @@ async function executeWorkflow(workflowId, body = {}) {
         blocked.push({ work, error: error.message || String(error) });
         break;
       }
+    }
+    const shouldArmTailRecovery = created.length > 0 && (workflowId === "usual-swarm" || plan.steps.length > 1);
+    if (shouldArmTailRecovery) {
+      const linked = loadState();
+      linked.settings.swarmTailRecovery = {
+        ...(linked.settings.swarmTailRecovery || {}),
+        enabled: linked.settings.swarmTailRecovery?.enabled !== false,
+        maxWorkers: linked.settings.swarmTailRecovery?.maxWorkers || 4,
+        maxAttemptsPerRoot: linked.settings.swarmTailRecovery?.maxAttemptsPerRoot || 2,
+        armedAt: workflowStartedAt,
+        armedWorkflowId: workflowId,
+        armedMission: plan.mission || body.objective || null,
+        waveId: randomUUID()
+      };
+      addEvent(linked, "swarm.tail-recovery-armed", `Cleanup wave armed for ${workflowId}`, {
+        reason: "swarm-workflow-started",
+        evidence: {
+          workflowId,
+          waveId: linked.settings.swarmTailRecovery.waveId,
+          armedAt: workflowStartedAt,
+          createdAgentIds: created.map(agent => agent.id)
+        }
+      });
+      saveState(linked);
     }
     return { plan, created, blocked };
   });
@@ -3541,6 +4025,7 @@ const server = http.createServer(async (req, res) => {
             task: body.task || "",
             baseBranch: body.baseBranch || "main",
             model: body.model || "",
+            executionMode: body.executionMode || "",
             boundary: effectiveBoundary,
             priority: body.priority,
             machine: body.machine || "auto",
@@ -3695,10 +4180,16 @@ const autopilotTimer = setInterval(() => {
 autopilotTimer.unref?.();
 
 const noWorkRecoveryTimer = setInterval(() => {
-  void reconcileNoWorkRecoveries();
+  void reconcileNoWorkRecoveries().then(() => reconcileSwarmTailRecoveries());
 }, NO_WORK_RECOVERY_TICK_MS);
 noWorkRecoveryTimer.unref?.();
-void reconcileNoWorkRecoveries();
+void reconcileNoWorkRecoveries().then(() => reconcileSwarmTailRecoveries());
+
+const goToWorkRecoveryTimer = setInterval(() => {
+  void reconcileGoToWorkRecoveries();
+}, GO_TO_WORK_RECOVERY_TICK_MS);
+goToWorkRecoveryTimer.unref?.();
+void reconcileGoToWorkRecoveries();
 
 const branchCleanupTimer = setInterval(() => {
   void reconcileIntegratedBranchCleanup();
