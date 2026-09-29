@@ -16,7 +16,7 @@ on:
       - 'src/MhwModManager.Storage/DeploymentMetadata.cs'
       - 'src/MhwModManager.Storage/ProfileRepository.cs'
       - 'src/MhwModManager.Storage/ManagerDatabaseWorkflowExtensions.cs'
-      - 'src/MhwModManager.Storage/ManagerDatabase.cs'
+      - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
       - 'src/MhwModManager.App/WorkflowWindow.xaml'
