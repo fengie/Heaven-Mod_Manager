@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0851-runtime-failure-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:51:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Error 'intentional-release-smoke-failure'; exit 17",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "priority": "highest"
+}
