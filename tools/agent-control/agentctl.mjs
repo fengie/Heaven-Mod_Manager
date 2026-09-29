@@ -219,7 +219,8 @@ try {
         boundary: flags.boundary || "",
         priority: flags.priority === undefined ? 50 : Number(flags.priority),
         machine: flags.machine || "auto",
-        dependencies: dependencies(flags)
+        dependencies: dependencies(flags),
+        repositoryWriteAuthorized: true
       })
     }));
   } else if (command === "review") {
@@ -234,7 +235,8 @@ try {
         model: flags.model || "",
         boundary: flags.boundary || "",
         priority: flags.priority === undefined ? undefined : Number(flags.priority),
-        machine: flags.machine || "auto"
+        machine: flags.machine || "auto",
+        repositoryWriteAuthorized: true
       })
     }));
   } else if (command === "stop") {
