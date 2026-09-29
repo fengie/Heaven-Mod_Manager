@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0908-issue118-publish",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:08:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T13:05:34.327243+00:00",
+  "finished_at": "2026-09-29T13:05:35.183152+00:00",
+  "stdout": "",
+  "stderr": "plugin version marker missing: heaven-bridge/plugin/plugin.json\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0908-issue118-publish.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0908-issue118-publish.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 65,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3c9bf08ad5246c25ab8e43bd964001b147da16d92e9eca7aba8c8d6201b54324"
+}
