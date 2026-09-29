@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-111000-agentctl-help",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:10:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:44:08.485418+00:00",
+  "finished_at": "2026-09-29T11:44:23.335041+00:00",
+  "stdout": "AGENTCTL_NOT_FOUND\r\n[{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\_work\\\\mhw-mods\\\\mhw-mods\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-control-panel\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\agent-manager-051-release-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\agent-manager-final-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\agent-manager-final2-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\agent-manager-remote-check-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\agent-manager-ship-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\complete-workflows-final-20260929-chatgpt-a2\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\complete-workflows-final-r2-20260929-chatgpt\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\converge-main-20260929-0530\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\main-20260929104715-d4eza\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\manager-20260929104713-ln9yh\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\reconciliation-20260929-0542\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\security-authz-20260929\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\support-20260929104718-nqrmb\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\support-20260929104724-nyxyj\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\\\\support-20260929104726-lae4b\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\branch-zero-reconcile\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\branchzero-pr127\\\\tools\\\\agent-control\\\\agentctl.mjs\"},{\"FullName\":\"C:\\\\Users\\\\Xxkan\\\\branchzero-pr128-gate\\\\tools\\\\agent-control\\\\agentctl.mjs\"}]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111000-agentctl-help.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111000-agentctl-help.stderr.log",
+    "stdout_bytes": 2259,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "cfc4195615fffb095726181456723682c9f094ab526d9ae6d4516902605554b5"
+}
