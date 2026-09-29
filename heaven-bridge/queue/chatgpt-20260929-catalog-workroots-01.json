@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-catalog-workroots-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_list",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork",
+    "depth": 3,
+    "max_items": 500
+  },
+  "created_at": "2026-09-29T15:36:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
