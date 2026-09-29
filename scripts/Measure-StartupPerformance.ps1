@@ -166,14 +166,18 @@ try {
         $toolRoot = Join-Path $fixtureRoot ("cold-$i")
         New-Item -ItemType Directory -Force -Path $toolRoot | Out-Null
         Copy-Item -LiteralPath $sourceMods -Destination (Join-Path $toolRoot 'Mods') -Recurse
-        $runs.Add((Invoke-StartupRun -Kind 'cold-state' -Iteration $i -ToolRoot $toolRoot -GameRoot $gameRoot -Exe $appExe))
+        $run = Invoke-StartupRun -Kind 'cold-state' -Iteration $i -ToolRoot $toolRoot -GameRoot $gameRoot -Exe $appExe
+        $runs.Add($run)
+        Write-Host ('STARTUP_PERF_RUN=' + ($run | ConvertTo-Json -Compress))
         $warmRoot = $toolRoot
     }
 
     if (-not $warmRoot) { throw 'At least one cold iteration is required to seed warm-state measurements.' }
 
     for ($i = 1; $i -le $WarmIterations; $i++) {
-        $runs.Add((Invoke-StartupRun -Kind 'warm-state' -Iteration $i -ToolRoot $warmRoot -GameRoot $gameRoot -Exe $appExe))
+        $run = Invoke-StartupRun -Kind 'warm-state' -Iteration $i -ToolRoot $warmRoot -GameRoot $gameRoot -Exe $appExe
+        $runs.Add($run)
+        Write-Host ('STARTUP_PERF_RUN=' + ($run | ConvertTo-Json -Compress))
     }
 
     $metricNames = @(
