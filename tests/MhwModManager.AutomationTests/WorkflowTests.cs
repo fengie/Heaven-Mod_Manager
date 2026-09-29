@@ -94,14 +94,14 @@ public sealed class WorkflowTests : IDisposable
         await service.SaveAsync(new("ab", RuleKind.Overlay, RuleScope.ModPair, "a", "b", "b", null, "b overlays a", true, DateTimeOffset.UtcNow), Token);
         await Assert.ThrowsAsync<InvalidDataException>(() => service.SaveAsync(new("ba", RuleKind.Overlay, RuleScope.ModPair, "b", "a", "a", null, "cycle", true, DateTimeOffset.UtcNow), Token));
         await Assert.ThrowsAsync<InvalidDataException>(() => service.SaveAsync(new("exact", RuleKind.ExactWinner, RuleScope.ExactPath, null, null, "b", @"nativePC\missing.tex", "bad", true, DateTimeOffset.UtcNow), Token));
-        Assert.Single((await db.LoadPlannerSnapshotAsync(Token)).Rules);
+        Assert.Single((await new PlannerSnapshotRepository(db).LoadAsync(Token)).Rules);
     }
     [Fact]
     public async Task InspectorAndProfileDiffUseActualPlannerWinner()
     {
         var db = await DatabaseAsync(); await SeedAsync(db, "a", true); await SeedAsync(db, "b", true);
         await new RulesEditorService(db).SaveAsync(new("exact", RuleKind.ExactWinner, RuleScope.ExactPath, null, null, "a", @"nativePC\a.tex", "explicit choice", true, DateTimeOffset.UtcNow), Token);
-        var snapshot = await db.LoadPlannerSnapshotAsync(Token); var planner = new DeploymentPlanner(new ConflictEngine());
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(Token); var planner = new DeploymentPlanner(new ConflictEngine());
         var asset = Assert.Single(WorkflowAnalysis.Explore(snapshot, planner));
         Assert.Equal("a", asset.WinnerId); Assert.Contains(asset.Evidence, e => e.Decisive && e.Source == "Manual rule");
         var diff = WorkflowAnalysis.Compare(snapshot, planner, new Dictionary<string, (bool, int)> { ["a"] = (true, 1) }, new Dictionary<string, (bool, int)> { ["b"] = (true, 2) });
@@ -167,14 +167,14 @@ public sealed class WorkflowTests : IDisposable
         await db.SetFamilyIdAsync("old", "family", Token);
         await new RulesEditorService(db).SaveAsync(new("pin", RuleKind.ExactWinner, RuleScope.ExactPath, null, null, "old", @"nativePC\a.tex", "pin", true, DateTimeOffset.UtcNow), Token);
         var planner = new DeploymentPlanner(new ConflictEngine()); var executor = new DeploymentExecutor(db, blobs, hash, game);
-        Assert.True((await executor.ApplyAsync(planner.Build(await db.LoadPlannerSnapshotAsync(Token)), "initial", ct: Token)).Success);
+        Assert.True((await executor.ApplyAsync(planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(Token)), "initial", ct: Token)).Success);
         var migration = new UpdateMigrationService(db, planner, executor);
         var result = await migration.UpgradeAsync("old", "new", Token); Assert.True(result.Success, result.Exception?.ToString());
-        var updated = await db.LoadPlannerSnapshotAsync(Token);
+        var updated = await new PlannerSnapshotRepository(db).LoadAsync(Token);
         Assert.True(updated.Mods.Single(m => m.Id == "old").IsSuperseded); Assert.Equal("family", updated.Mods.Single(m => m.Id == "new").FamilyId);
         Assert.Equal("new", Assert.Single(updated.Rules).WinnerModId);
         Assert.True((await executor.UndoLastAsync(Token)).Success);
-        var restored = await db.LoadPlannerSnapshotAsync(Token);
+        var restored = await new PlannerSnapshotRepository(db).LoadAsync(Token);
         Assert.False(restored.Mods.Single(m => m.Id == "old").IsSuperseded); Assert.Null(restored.Mods.Single(m => m.Id == "new").FamilyId);
         Assert.Equal("old", Assert.Single(restored.Rules).WinnerModId);
         Assert.Equal("old", restored.CurrentManifest[@"nativePC\a.tex"].ProviderModId);
@@ -194,11 +194,11 @@ public sealed class WorkflowTests : IDisposable
             await db.ReplaceModFilesAsync(id, [new(id, @"nativePC\a.tex", await blobs.CaptureAsync(source, Token), null, id.Length, DateTimeOffset.UtcNow, FileClass.Texture)], Token);
         }
         var planner = new DeploymentPlanner(new ConflictEngine()); var normal = new DeploymentExecutor(db, blobs, hashing, game);
-        Assert.True((await normal.ApplyAsync(planner.Build(await db.LoadPlannerSnapshotAsync(Token)), "baseline", ct: Token)).Success);
+        Assert.True((await normal.ApplyAsync(planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(Token)), "baseline", ct: Token)).Success);
         var crashing = new DeploymentExecutor(db, blobs, hashing, game, (step, _) => { if (step == fault) throw new SimulatedCrashException("test crash"); });
         await Assert.ThrowsAsync<SimulatedCrashException>(() => new UpdateMigrationService(db, planner, crashing).UpgradeAsync("old", "new", Token));
         await normal.RecoverIncompleteAsync(Token);
-        var snapshot = await db.LoadPlannerSnapshotAsync(Token);
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(Token);
         Assert.Equal(committed, snapshot.Mods.Single(m => m.Id == "old").IsSuperseded);
         Assert.Equal(committed ? "new" : "old", snapshot.CurrentManifest[@"nativePC\a.tex"].ProviderModId);
         Assert.Equal(committed ? "new" : "old", await File.ReadAllTextAsync(normal.Destination(@"nativePC\a.tex"), Token));
@@ -217,12 +217,12 @@ public sealed class WorkflowTests : IDisposable
         }
         await db.SetFamilyIdAsync("old", "original-family", Token);
         var planner = new DeploymentPlanner(new ConflictEngine()); var executor = new DeploymentExecutor(db, blobs, hashing, game);
-        Assert.True((await executor.ApplyAsync(planner.Build(await db.LoadPlannerSnapshotAsync(Token)), "baseline", ct: Token)).Success);
+        Assert.True((await executor.ApplyAsync(planner.Build(await new PlannerSnapshotRepository(db).LoadAsync(Token)), "baseline", ct: Token)).Success);
         var preview = await new UpdateMigrationService(db, planner, executor).PreviewAsync("old", "new", Token);
         await db.SetFamilyIdAsync("new", "external-edit", Token);
         var result = await executor.ApplyWithMetadataAsync(preview.Plan, "stale migration", preview.Metadata, preview.Snapshot.Mods.ToDictionary(m => m.Id, m => (m.Enabled, m.Priority)), ct: Token);
         Assert.False(result.Success); Assert.True(result.RollbackCompleted);
-        var snapshot = await db.LoadPlannerSnapshotAsync(Token);
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(Token);
         Assert.Equal("external-edit", snapshot.Mods.Single(m => m.Id == "new").FamilyId);
         Assert.False(snapshot.Mods.Single(m => m.Id == "old").IsSuperseded);
         Assert.Equal("old", await File.ReadAllTextAsync(executor.Destination(@"nativePC\a.tex"), Token));
@@ -249,7 +249,7 @@ public sealed class WorkflowTests : IDisposable
         var db = await DatabaseAsync(); await SeedAsync(db, "a", true); await SeedAsync(db, "b", true);
         await db.ReplaceModFilesAsync("b", [new("b", @"nativePC\other.tex", new string('b', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)], Token);
         await new RulesEditorService(db).SaveAsync(new("no", RuleKind.Incompatible, RuleScope.ModPair, "a", "b", null, null, "Known interaction", true, DateTimeOffset.UtcNow), Token);
-        var plan = new DeploymentPlanner(new ConflictEngine()).Build(await db.LoadPlannerSnapshotAsync(Token));
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(await new PlannerSnapshotRepository(db).LoadAsync(Token));
         Assert.True(plan.IsBlocked); Assert.Empty(plan.Changes); Assert.Contains(plan.Conflicts, d => d.Blocking && d.RuleId == "no");
     }
 
