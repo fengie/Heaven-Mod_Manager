@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-branch-prune-integrated-hcp-20260929-1218",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:22:15.843957+00:00",
+  "finished_at": "2026-09-29T12:22:22.893157+00:00",
+  "stdout": "{\"deleted\":[\"agent/hcp-verification-wire-20260929-0806\"],\"deleted_count\":1,\"skipped\":[{\"branch\":\"agent/hcp-processes-20260929-0804\",\"reason\":\"tip-changed\",\"expected\":\"3551c01404fa1852a07d333486c2d33fb12703aa\",\"actual\":\"9f45477fd487c4219a53544cd97ec8c247d34381\"}],\"failed\":[]}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-prune-integrated-hcp-20260929-1218.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-prune-integrated-hcp-20260929-1218.stderr.log",
+    "stdout_bytes": 277,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f85b7e5580505cacff511fd88b474cc9b7beae687c7ed857fa2f5a7a975a677a"
+}
