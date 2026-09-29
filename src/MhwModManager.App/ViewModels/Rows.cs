@@ -54,6 +54,8 @@ public partial class ModRowViewModel:ObservableObject
     public string DisplayName{get;}
     public string SourcePath{get;}
     public string SourceSummary{get;}
+    public string SourceName{get;}
+    public string IdentityHint{get;}
     public string? Category{get;}
     public IReadOnlyList<ModDescriptor> Members{get;}
     public IReadOnlyList<ModDescriptor> ArchivedMembers{get;}
@@ -110,6 +112,16 @@ public partial class ModRowViewModel:ObservableObject
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
         SourcePath=family.Members.Count==1?family.Members[0].SourcePath:string.Empty;
         SourceSummary=family.Members.Count==1?family.Members[0].SourcePath:$"{family.Members.Count} source packages";
+        SourceName=family.Members.Count==1?System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(SourcePath)):$"{family.Members.Count} source packages";
+        if(string.IsNullOrWhiteSpace(SourceName))SourceName=DisplayName;
+        var identity=SourceName;
+        if(StringComparer.OrdinalIgnoreCase.Equals(identity,DisplayName))identity="Single package";
+        else if(identity.StartsWith(DisplayName,StringComparison.OrdinalIgnoreCase))
+        {
+            var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
+            if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
+        }
+        IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));

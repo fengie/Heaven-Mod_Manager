@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}"
-        Width="1500" Height="920" MinWidth="1180" MinHeight="720"
+        Width="1480" Height="900" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
@@ -11,7 +11,7 @@
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="76"/>
+            <RowDefinition Height="94"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
@@ -19,52 +19,64 @@
         <!-- Top command bar -->
         <Border Grid.Row="0" Background="#0D1117" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="43"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="42" Height="42" CornerRadius="9" Background="{StaticResource AccentDim}" BorderBrush="#665020" BorderThickness="1">
-                        <TextBlock Text="UM" Foreground="{StaticResource AccentBright}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Universal Mod Manager" FontSize="18" FontWeight="SemiBold"/>
-                            <Border Margin="10,1,0,0" Padding="7,2" CornerRadius="10" Background="#231F15" BorderBrush="#4A3A1E" BorderThickness="1">
-                                <TextBlock Text="{Binding CurrentProgramBuildText}" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
-                            </Border>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="440"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" MaxWidth="440" HorizontalAlignment="Left">
+                        <Border Width="42" Height="42" CornerRadius="9" Background="{StaticResource AccentDim}" BorderBrush="#665020" BorderThickness="1">
+                            <TextBlock Text="UM" Foreground="{StaticResource AccentBright}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Universal Mod Manager" Foreground="{StaticResource Text}" FontSize="18" FontWeight="SemiBold"/>
+                                <Border Margin="10,1,0,0" Padding="7,2" CornerRadius="10" Background="#231F15" BorderBrush="#4A3A1E" BorderThickness="1">
+                                    <TextBlock Text="{Binding CurrentProgramBuildText}" Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock MaxWidth="350" Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="{Binding HeaderSummary}" TextTrimming="CharacterEllipsis" ToolTip="{Binding HeaderSummary}"/>
                         </StackPanel>
-                        <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="12" Text="{Binding HeaderSummary}"/>
                     </StackPanel>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Button Content="JUST PLAY" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Automatic save backup + health gate + launch observation + last-known-good tracking."/>
+                        <Button Content="Apply" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" ToolTip="Apply staged mod changes transactionally. Ctrl+Enter."/>
+                    </StackPanel>
+                </Grid>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,0">
-                    <ComboBox Width="230" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
-                    <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
-                    <Button Content="Scan games" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
-                    <Button Content="+ Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
-                    <Button Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" ToolTip="Undo the last committed deployment. Ctrl+Z."/>
-                    <Button Content="Health" Command="{Binding HealthCommand}" Style="{StaticResource QuietButton}"/>
-                    <Border Width="1" Height="28" Background="{StaticResource Border}" Margin="8,0,10,0"/>
-                    <Button Content="Import" Command="{Binding ImportArchiveCommand}"/>
-                    <Button Content="JUST PLAY" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Automatic save backup + health gate + launch observation + last-known-good tracking."/>
-                    <Button Content="Vanilla" Command="{Binding LaunchSafeModeCommand}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
-                    <Button Content="Apply changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"/>
-                </StackPanel>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="ACTIVE GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                        <ComboBox Width="180" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" AutomationProperties.Name="Active game" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
+                        <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Button Content="Import" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Import a mod archive into this game's managed library."/>
+                        <Button Content="Scan" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
+                        <Button Content="+ Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
+                        <Button Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
+                        <Button Content="Vanilla" Command="{Binding LaunchSafeModeCommand}" Style="{StaticResource QuietButton}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Border>
 
         <!-- Sidebar + pages -->
         <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTab}">
             <TabItem Header="Dashboard">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="30,28,34,34" MaxWidth="1260" HorizontalAlignment="Left">
+                <Grid HorizontalAlignment="Stretch">
+                <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Width="{Binding ViewportWidth,ElementName=DashboardScroll}" MaxWidth="1324" HorizontalAlignment="Left">
+                    <Grid Margin="30,28,34,34">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -77,59 +89,58 @@
                             <TextBlock Text="Your active setup, deployment state, and anything that actually needs attention." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
 
-                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,24,0,18">
-                            <Border Style="{StaticResource Card}" Margin="0,0,10,0">
+                        <UniformGrid Grid.Row="1" Columns="2" Margin="-5,19,-5,13">
+                            <Border Style="{StaticResource Card}" Margin="5">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Good}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="ENABLED" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding EnabledCount}" FontSize="32" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                        <TextBlock Text="mods currently active" Foreground="{StaticResource Muted}" FontSize="11"/>
+                                        <TextBlock Text="mods currently active" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
-                            <Border Style="{StaticResource Card}" Margin="4,0,6,0">
+                            <Border Style="{StaticResource Card}" Margin="5">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="#6FA6E8" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="EFFECTIVE" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding FullyEffectiveCount}" FontSize="32" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" composed • "/><Run Text="{Binding RevalidationCount,Mode=OneWay}"/><Run Text=" revalidate"/></TextBlock>
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" composed • "/><Run Text="{Binding RevalidationCount,Mode=OneWay}"/><Run Text=" revalidate"/></TextBlock>
                                     </StackPanel>
                                 </Grid>
                             </Border>
-                            <Border Style="{StaticResource Card}" Margin="6,0,4,0">
+                            <Border Style="{StaticResource Card}" Margin="5">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Warn}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="ATTENTION" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding BlockerCount}" FontSize="32" FontWeight="SemiBold" Foreground="{StaticResource Warn}" Margin="0,6,0,0"/>
-                                        <TextBlock Text="blocking decisions" Foreground="{StaticResource Muted}" FontSize="11"/>
+                                        <TextBlock Text="blocking decisions" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
-                            <Border Style="{StaticResource Card}" Margin="10,0,0,0">
+                            <Border Style="{StaticResource Card}" Margin="5">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Accent}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="STAGED" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding StagedCount}" FontSize="32" FontWeight="SemiBold" Foreground="{StaticResource AccentBright}" Margin="0,6,0,0"/>
-                                        <TextBlock Text="changes not yet applied" Foreground="{StaticResource Muted}" FontSize="11"/>
+                                        <TextBlock Text="changes not yet applied" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
                         </UniformGrid>
 
                         <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Border Style="{StaticResource Card}">
                                 <StackPanel>
                                     <Grid>
@@ -152,19 +163,19 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource Card}">
                                 <StackPanel>
                                     <TextBlock Text="Quick actions" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Text="Common operations" Style="{StaticResource PageSubtitle}"/>
-                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="JUST PLAY — backup, health-check &amp; launch" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
+                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="JUST PLAY" ToolTip="Back up saves, run the health gate, launch, observe, and track last-known-good state." Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Process Smart Inbox" Command="{Binding ProcessInboxCommand}" ToolTip="Drop archives/folders into Inbox and let the manager classify/import them automatically."/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Restore last known good" Command="{Binding RestoreLastGoodCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Auto-diagnose startup crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Diagnose startup crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Safe duplicate cleanup" Command="{Binding SmartCleanupCommand}"/>
                                     <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export collection recipe" Command="{Binding ExportRecipeCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview staged changes (dry run)" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Inspect normal overlaps" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for program updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified private release feed. Network or authentication failures never block normal manager use."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview staged changes" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Inspect overlaps" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for program updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified program release feed. Network or authentication failures never block normal manager use."/>
                                     <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply staged changes" Command="{Binding ApplyCommand}"/>
                                 </StackPanel>
                             </Border>
@@ -184,49 +195,77 @@
                             </Grid>
                         </Border>
                     </Grid>
+                    </Grid>
                 </ScrollViewer>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Mods">
-                <Grid Margin="28,26,32,28">
+                <Grid Width="{Binding ActualWidth,RelativeSource={RelativeSource AncestorType=ContentPresenter}}" HorizontalAlignment="Stretch">
+                <Grid Margin="28,20,32,20">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
-                            <TextBlock Text="Multipart packages are collapsed into logical mods. One toggle controls the main file, optional parts, patches, and revisions together." Style="{StaticResource PageSubtitle}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
+                                <Border Margin="12,5,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Top">
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold">
+                                        <Run Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Stage what you want active, inspect the result, then apply once." Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Enable visible" Command="{Binding EnableSelectedCommand}"/>
-                            <Button Content="Disable visible" Command="{Binding DisableSelectedCommand}"/>
-                            <Button Content="Re-index visible" Command="{Binding ReindexSelectedCommand}"/>
-                            <Button Content="Sync metadata + visuals" Command="{Binding SyncMetadataCommand}" ToolTip="Refresh Nexus/local lineage, cached thumbnails, update availability, and superseded revisions."/>
+                        <WrapPanel Grid.Row="1" Margin="0,10,0,0" HorizontalAlignment="Left">
+                            <Button Content="Sync metadata" Command="{Binding SyncMetadataCommand}" Style="{StaticResource QuietButton}" ToolTip="Refresh Nexus/local lineage, cached thumbnails, update availability, and superseded revisions."/>
                             <Button Content="Adopt manual files" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
-                        </StackPanel>
+                        </WrapPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Margin="0,20,0,12" Background="{StaticResource Panel}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="9" Padding="12">
-                        <StackPanel>
+                    <Border Grid.Row="1" Margin="0,14,0,10" Style="{StaticResource SubtleCard}">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="⌕" FontSize="20" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="2,0,10,0"/>
-                                <TextBox x:Name="ModSearchBox" Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="2" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" ToolTip="Search logical mod, component, category, source package, issue reason, or family part. Ctrl+F jumps here."/>
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="12,0,4,0"><Run Text="View: "/><Run Text="{Binding ModViewMode,Mode=OneWay}"/><Run Text=" • "/><Run Text="{Binding VisibleModCount,Mode=OneWay}"/><Run Text=" shown"/></TextBlock>
+                                <StackPanel Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <TextBlock Text="SEARCH MODS" Style="{StaticResource Eyebrow}"/>
+                                    <TextBlock Margin="0,2,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F"/>
+                                </StackPanel>
+                                <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search logical mod, component, category, source package, issue reason, or family part. Ctrl+F jumps here."/>
+                                <Border Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource StatusBadge}">
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleModCount,Mode=OneWay}"/><Run Text=" shown · "/><Run Text="{Binding ModViewMode,Mode=OneWay}"/></TextBlock>
+                                </Border>
                             </Grid>
-                            <WrapPanel Margin="0,10,0,0">
-                                <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" ToolTip="Show the complete logical mod library."/>
-                                <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" ToolTip="Show mods staged on, including partial logical families."/>
-                                <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" ToolTip="Show only unapplied changes."/>
-                                <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" ToolTip="Show mods with detected Nexus updates."/>
-                                <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" ToolTip="Show persisted crash/GPU suspects."/>
-                                <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" ToolTip="Show version-sensitive mods that need revalidation after a game update."/>
-                                <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" ToolTip="Show enabled logical mods that currently contribute zero effective files."/>
-                            </WrapPanel>
-                        </StackPanel>
+                            <Grid Grid.Row="1" Margin="0,12,0,0">
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="SMART VIEWS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
+                                    <WrapPanel>
+                                            <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" ToolTip="Show the complete logical mod library."/>
+                                            <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" ToolTip="Show mods staged on, including partial logical families."/>
+                                            <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" ToolTip="Show only unapplied changes."/>
+                                            <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" ToolTip="Show mods with detected Nexus updates."/>
+                                            <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" ToolTip="Show persisted crash/GPU suspects."/>
+                                            <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" ToolTip="Show version-sensitive mods that need revalidation after a game update."/>
+                                            <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" ToolTip="Show enabled logical mods that currently contribute zero effective files."/>
+                                    </WrapPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                                    <TextBlock Text="BULK ACTIONS · SHOWN MODS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
+                                    <WrapPanel>
+                                        <Button Content="Enable shown" Command="{Binding EnableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as enabled."/>
+                                        <Button Content="Disable shown" Command="{Binding DisableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as disabled."/>
+                                        <Button Content="Re-index" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" ToolTip="Re-index every mod currently visible in this search and smart view."/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
                     </Border>
 
-                    <Border Grid.Row="2" CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="0">
-                        <DataGrid ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="64">
+                    <Grid Grid.Row="2">
+                        <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
+                        <DataGrid ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
                             <DataGrid.RowDetailsTemplate>
                                 <DataTemplate>
                                     <Border Margin="72,2,18,10" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
@@ -282,13 +321,12 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="PRIORITY" Binding="{Binding Priority}" Width="82" IsReadOnly="True"/>
-                                <DataGridTemplateColumn Header="MOD" Width="2.4*">
+                                <DataGridTemplateColumn Header="MOD" Width="2.8*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding PartsLabel}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}"/>
+                                                <TextBlock Text="{Binding IdentityHint}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}"/>
                                                 <TextBlock Text="{Binding IssueBadge}" Foreground="{StaticResource Warn}" FontSize="10" FontWeight="SemiBold" ToolTip="{Binding IssueReason}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
@@ -309,15 +347,12 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="150" IsReadOnly="True"/>
-                                <DataGridTemplateColumn Header="STATE" Width="140">
+                                <DataGridTemplateColumn Header="STATE" Width="132">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border BorderThickness="1" CornerRadius="11" Padding="8,3" HorizontalAlignment="Left">
+                                            <Border HorizontalAlignment="Left">
                                                 <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="#151A20"/>
-                                                        <Setter Property="BorderBrush" Value="#303844"/>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource StatusBadge}">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding StateLabel}" Value="ON">
                                                                 <Setter Property="Background" Value="#13241C"/>
@@ -345,7 +380,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="EFFECT" Width="170">
+                                <DataGridTemplateColumn Header="EFFECT" Width="155">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel ToolTip="{Binding EffectiveReason}">
@@ -355,22 +390,68 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="SOURCE" Binding="{Binding SourceSummary}" Width="1.3*" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="PRIORITY" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
+                                <DataGridTemplateColumn Header="SOURCE" Width="1.2*" SortMemberPath="SourceSummary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding SourceName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
-                    </Border>
-                    <Grid Grid.Row="3" Margin="2,10,0,0">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding StagedSummary}"/>
-                            <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Margin="0,3,0,0" Text="{Binding PlanPreviewText}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Button Content="Preview changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
-                            <Button Content="Discard staged" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Return every logical mod to its currently applied state. No files are changed."/>
-                            <Button Content="Apply staged" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Commit the staged plan transactionally. Ctrl+Enter."/>
-                        </StackPanel>
+                        </Border>
+                        <Border Background="#E60A0D11" CornerRadius="9" BorderBrush="{StaticResource Border}" BorderThickness="1" Padding="12" IsHitTestVisible="True">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding InstalledCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540" Margin="16,8">
+                                <TextBlock Text="Your mod library is empty" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Import a mod archive or adopt existing manual files to create your first managed entry."/>
+                                <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="Import archive" Command="{Binding ImportArchiveCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Import a mod archive into this game's managed library."/>
+                                    <Button Content="Adopt manual files" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from the configured mod folder into a tracked source package without modifying the live tree."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#E60A0D11" CornerRadius="9" BorderBrush="{StaticResource Border}" BorderThickness="1" Padding="12" IsHitTestVisible="True">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VisibleModCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                        <DataTrigger Binding="{Binding InstalledCount}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520" Margin="16,8">
+                                <TextBlock Text="No mods match this view" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="The library is intact. Clear the search and smart-view filter to show every mod again."/>
+                                <Button Margin="0,16,0,0" HorizontalAlignment="Center" Content="Clear filters" Command="{Binding ClearModFiltersCommand}" Style="{StaticResource PrimaryButton}"/>
+                            </StackPanel>
+                        </Border>
                     </Grid>
+                    <Border Grid.Row="3" Margin="0,8,0,0" Style="{StaticResource SubtleCard}" Padding="10">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <StackPanel>
+                                <TextBlock Foreground="{StaticResource Text}" FontSize="12" FontWeight="SemiBold" Text="{Binding StagedSummary}"/>
+                                <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Margin="0,3,0,0" Text="{Binding PlanPreviewText}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <WrapPanel Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Right">
+                                <Button Content="Preview changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
+                                <Button Content="Discard staged" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Return every logical mod to its currently applied state. No files are changed."/>
+                                <Button Content="Apply staged changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Commit the staged plan transactionally. Ctrl+Enter."/>
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
                 </Grid>
             </TabItem>
 
@@ -449,7 +530,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Report game crash" Command="{Binding ReportGameCrashCommand}" ToolTip="Rank mods from the last modded launch against the previous successful launch."/>
-                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Use after ERR12 / graphics-device / renderer failure. Texture-heavy newly changed mods receive additional suspicion weight."/>
+                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource AttentionButton}" ToolTip="Use after ERR12 / graphics-device / renderer failure. Texture-heavy newly changed mods receive additional suspicion weight."/>
                         </StackPanel>
                     </Grid>
 
@@ -476,10 +557,19 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Good}" FontSize="11" Text="No suspect mods are currently flagged.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IssueCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
 
-                    <DataGrid Grid.Row="2" Margin="0,0,0,14" ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <Grid Grid.Row="2" Margin="0,0,0,14">
+                    <DataGrid ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Unresolved conflicts">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="TYPE" Binding="{Binding Kind}" Width="145"/>
                             <DataGridTextColumn Header="PROVIDERS" Binding="{Binding Providers}" Width="2*"/>
@@ -489,7 +579,25 @@
                             <DataGridTextColumn Header="CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Border Grid.Row="3" Style="{StaticResource Card}" Padding="14">
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers><DataTrigger Binding="{Binding BlockerCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="No unresolved conflict choices" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                            <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="The current staged setup does not need a manual winner decision."/>
+                        </StackPanel>
+                    </Border>
+                    </Grid>
+                    <Border Grid.Row="3" Padding="14">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                <Style.Triggers><DataTrigger Binding="{Binding SelectedConflict}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <StackPanel>
                             <TextBlock Text="Choose one effective mod" FontWeight="SemiBold"/>
                             <TextBlock Text="Choose only if these are true alternatives. If the detector missed a main + optional/component relationship, use 'Make main + chain others' to teach it permanently; source folders are never merged or moved." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
@@ -527,7 +635,7 @@
                     <Border Grid.Row="1" Margin="0,20,0,12" Style="{StaticResource Card}" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding NewProfileName}" ToolTip="Profile name"/>
+                            <TextBox Text="{Binding NewProfileName}" AutomationProperties.Name="New profile name" ToolTip="Name for the loadout you are about to save."/>
                             <Button Grid.Column="1" Margin="8,0,0,0" Content="Save current" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                 <Button Content="Stage selected" Command="{Binding StageProfileCommand}"/>
@@ -535,13 +643,27 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <DataGrid Grid.Row="2" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
-                            <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
-                            <DataGridTextColumn Header="UPDATED" Binding="{Binding UpdatedAt}" Width="220"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Saved profiles">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
+                                <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
+                                <DataGridTextColumn Header="UPDATED" Binding="{Binding UpdatedAt}" Width="220"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding Profiles.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No saved profiles yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Name the current loadout above, then choose Save current."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </TabItem>
 
@@ -560,14 +682,28 @@
                             <Button Content="Export support bundle" Command="{Binding ExportSupportCommand}"/>
                         </StackPanel>
                     </Grid>
-                    <DataGrid Grid.Row="1" Margin="0,20,0,10" ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
-                            <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="120"/>
-                            <DataGridTextColumn Header="OPERATION" Binding="{Binding Description}" Width="2.5*"/>
-                            <DataGridTextColumn Header="TRANSACTION ID" Binding="{Binding Id}" Width="250"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="1" Margin="0,20,0,10">
+                        <DataGrid ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
+                                <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="120"/>
+                                <DataGridTextColumn Header="OPERATION" Binding="{Binding Description}" Width="2.5*"/>
+                                <DataGridTextColumn Header="TRANSACTION ID" Binding="{Binding Id}" Width="250"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding ActivityRows.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No activity recorded yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Transactions, recovery operations, and diagnostics will appear here."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                     <TextBlock Grid.Row="2" Foreground="{StaticResource Muted}" FontSize="11" Text="Support bundles contain logs, state summaries, and diagnostics—not your mod blobs or large game assets."/>
                 </Grid>
             </TabItem>
@@ -605,15 +741,29 @@
                                    Text="Shared textures, base resources, patches, and family components often overlap intentionally. Select a row and use Explain selected to see why one provider wins—or why the manager refuses to guess."/>
                     </Border>
 
-                    <DataGrid Grid.Row="2" ItemsSource="{Binding OverlapRows}" SelectedItem="{Binding SelectedOverlap,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="ASSET" Binding="{Binding DisplayName}" Width="2*"/>
-                            <DataGridTextColumn Header="PROVIDERS" Binding="{Binding ProviderCount}" Width="90"/>
-                            <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="140"/>
-                            <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="3*"/>
-                            <DataGridTextColumn Header="DETAIL" Binding="{Binding Detail}" Width="3*"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding OverlapRows}" SelectedItem="{Binding SelectedOverlap,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Asset overlaps">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ASSET" Binding="{Binding DisplayName}" Width="2*"/>
+                                <DataGridTextColumn Header="PROVIDERS" Binding="{Binding ProviderCount}" Width="90"/>
+                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="140"/>
+                                <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="3*"/>
+                                <DataGridTextColumn Header="DETAIL" Binding="{Binding Detail}" Width="3*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyStatePanel}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding OverlapCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No shared assets detected" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="There is nothing to explain here for the current staged setup."/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
                     <Border Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource Card}" Padding="14">
                         <Grid>

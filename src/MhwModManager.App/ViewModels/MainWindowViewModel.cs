@@ -74,6 +74,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string HeaderSummary=>$"{EnabledCount} enabled • {FullyEffectiveCount} fully effective • {ComposedCount} composed • {BlockerCount} choice(s) • {IssueCount} suspect(s) • {RevalidationCount} revalidate";
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public int InstalledCount=>Mods.Count;
+    public string InstalledCountLabel=>$"{InstalledCount} logical {(InstalledCount==1?"mod":"mods")}";
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
     public int EnabledCount=>Mods.Count(x=>x.StagedEnabled!=false);
     public int StagedCount=>Mods.Count(x=>x.HasStagedChanges);
@@ -223,7 +224,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try
         {
             await Task.Delay(160,ct);
-            await Application.Current.Dispatcher.InvokeAsync(ModsView.Refresh);
+            await Application.Current.Dispatcher.InvokeAsync(()=>
+            {
+                ModsView.Refresh();
+                OnPropertyChanged(nameof(VisibleModCount));
+            });
         }
         catch(OperationCanceledException){}
     }
@@ -268,6 +273,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(EnabledViewLabel));
         OnPropertyChanged(nameof(StagedViewLabel));
         OnPropertyChanged(nameof(UpdatesViewLabel));
+        OnPropertyChanged(nameof(InstalledCountLabel));
         OnPropertyChanged(nameof(IssuesViewLabel));
         OnPropertyChanged(nameof(RevalidateViewLabel));
         OnPropertyChanged(nameof(SupersededViewLabel));
@@ -510,6 +516,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"mode={mode}");
         ModViewMode=string.IsNullOrWhiteSpace(mode)?"All":mode;
+        SelectedTab=1;
+    }
+
+    [RelayCommand]
+    private void ClearModFilters()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        SearchText=string.Empty;
+        ModViewMode="All";
         SelectedTab=1;
     }
 
