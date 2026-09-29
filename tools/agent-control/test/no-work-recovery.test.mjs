@@ -105,7 +105,7 @@ test("stream loss with durable work is preserved as incomplete", () => {
     state: "disconnected",
     last_action_summary: "Connection dropped while I was integrating the changes.",
     source_metadata: { pr_number: 219, changed_files: ["tools/agent-control/server.mjs"] }
-  }, { streamLost: true });
+  }, { streamLost: true, durableEvidenceChecked: true });
   assert.equal(result.recoveryStatus, "work-detected-incomplete");
   assert.equal(result.retry, false);
   assert.equal(result.action, "reconcile-existing-work");
@@ -121,7 +121,7 @@ test("verified durable integration is complete even when the response stream is 
     }
   };
   assert.equal(hasVerifiedCompletionEvidence(agent), true);
-  const result = terminationReconciliationDecision(agent, { streamLost: true });
+  const result = terminationReconciliationDecision(agent, { streamLost: true, durableEvidenceChecked: true });
   assert.equal(result.recoveryStatus, "work-verified-complete");
   assert.equal(result.retry, false);
   assert.equal(result.action, "complete");
@@ -132,7 +132,7 @@ test("stream loss with no durable work is retryable even if partial prose was em
     state: "interrupted",
     last_action_summary: "I inspected the task and was about to start the implementation.",
     source_metadata: { stream_lost: true }
-  }, { streamLost: true });
+  }, { streamLost: true, durableEvidenceChecked: true });
   assert.equal(result.recoveryStatus, "no-durable-work-detected-retry");
   assert.equal(result.retry, true);
 });
@@ -144,4 +144,32 @@ test("ordinary completed prose without durable proof is not blindly retried", ()
   });
   assert.equal(result.recoveryStatus, "work-unverified");
   assert.equal(result.retry, false);
+});
+
+
+test("stream loss without an authoritative durable scan fails closed", () => {
+  const result = terminationReconciliationDecision({
+    state: "interrupted",
+    last_action_summary: "I was working when the response stream disappeared.",
+    source_metadata: { stream_lost: true }
+  }, { streamLost: true, durableEvidenceChecked: false });
+  assert.equal(result.recoveryStatus, "work-unverified");
+  assert.equal(result.retry, false);
+  assert.equal(result.reason, "durable-evidence-scan-incomplete");
+});
+
+test("release-required work is complete only after release verification", () => {
+  const incomplete = {
+    state: "disconnected",
+    source_metadata: {
+      pr_merged: true,
+      verification_passed: true,
+      release_required: true,
+      release_verified: false
+    }
+  };
+  assert.equal(hasVerifiedCompletionEvidence(incomplete), false);
+  const complete = structuredClone(incomplete);
+  complete.source_metadata.release_verified = true;
+  assert.equal(hasVerifiedCompletionEvidence(complete), true);
 });
