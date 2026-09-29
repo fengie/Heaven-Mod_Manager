@@ -36,6 +36,8 @@ $statePath = Join-Path $appDir 'agent-control-watchdog-state.json'
 $lockPath = Join-Path $appDir 'agent-control-watchdog.lock'
 $agentDir = Join-Path $RepoRoot 'tools\agent-control'
 $serverPath = Join-Path $agentDir 'server.mjs'
+$dataDir = if ([string]::IsNullOrWhiteSpace($env:AGENT_CONTROL_DATA_DIR)) { Join-Path $agentDir 'data' } else { $env:AGENT_CONTROL_DATA_DIR }
+$controllerPidPath = Join-Path $dataDir 'controller-process.json'
 $healthUri = 'http://127.0.0.1:7331/api/status'
 $port = 7331
 
@@ -106,13 +108,24 @@ function Get-AgentControlListenerPid {
 function Test-IsOwnedAgentControlProcess {
     param([int]$ProcessId)
     if (-not $ProcessId) { return $false }
+
     try {
+        if (-not (Test-Path -LiteralPath $controllerPidPath)) { return $false }
+        $identity = Get-Content -LiteralPath $controllerPidPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ([int]$identity.pid -ne $ProcessId) { return $false }
+        if ($identity.port -and [int]$identity.port -ne $port) { return $false }
+
         $process = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction Stop
         $command = [string]$process.CommandLine
         if ([string]::IsNullOrWhiteSpace($command)) { return $false }
-        return $command -match '(?i)node(?:\.exe)?' -and
-               $command -match '(?i)server\.mjs' -and
-               $command -match '(?i)agent-control'
+
+        $serverIdentity = [string]$identity.serverPath
+        if (-not [string]::IsNullOrWhiteSpace($serverIdentity)) {
+            $expectedName = [System.IO.Path]::GetFileName($serverIdentity)
+            if ($command -notmatch [Regex]::Escape($expectedName)) { return $false }
+        }
+
+        return $command -match '(?i)node(?:\.exe)?' -and $command -match '(?i)server\.mjs'
     } catch {
         return $false
     }
