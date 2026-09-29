@@ -2,6 +2,19 @@
 
 This repository is the canonical working state for MHW Manual Mod Manager.
 
+
+## Mandatory `main` integration rule
+
+`GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
+
+- `main` is the canonical integration branch.
+- Task branches are temporary workspaces only.
+- The agent that creates a completed change owns it through validation, synchronization with current `main`, conflict resolution, integration into `main`, pushing `main`, and verification that the change is present on remote `main`.
+- A task is not complete merely because code is written, committed, pushed to a side branch, or a PR exists.
+- If remote `main` moves during integration, reconcile and retry; never abandon finished work on a side branch solely because of the race.
+- Never knowingly break `main` just to merge quickly; validation remains mandatory.
+- `GLOBAL_GIT_DIRECTIVE.md` overrides older workflow guidance that parks ordinary completed work on long-lived branches for a separate integration agent.
+
 Before modifying code or durable project state:
 
 1. Verify the actual canonical `main` HEAD; repository state overrides stale chat/prompt state.
