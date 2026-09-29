@@ -1,0 +1,14 @@
+{
+  "id": "recycle-actions-runner-20260929-1125",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $runnerDir=Join-Path $env:USERPROFILE 'actions-runner-heaven'; $listeners=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like \"$runnerDir*\" }); Write-Output ('BEFORE_LISTENERS='+$listeners.Count); foreach($p in $listeners){ Write-Output ('KILL_TREE_PID='+$p.ProcessId); & taskkill.exe /PID $p.ProcessId /T /F | Write-Output }; Start-Sleep -Seconds 3; $runCmd=Join-Path $runnerDir 'run.cmd'; $cmdExe=Join-Path ([Environment]::SystemDirectory) 'cmd.exe'; Start-Process -WindowStyle Hidden -FilePath $cmdExe -ArgumentList ('/d /c \"\"{0}\"\"' -f $runCmd) -WorkingDirectory $runnerDir | Out-Null; Start-Sleep -Seconds 7; $after=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like \"$runnerDir*\" }); Write-Output ('AFTER_LISTENERS='+$after.Count); $after | Select-Object ProcessId,Name,ExecutablePath,CommandLine | ConvertTo-Json -Depth 3 | Write-Output; if($after.Count -ne 1){throw \"Expected exactly one listener after recycle, found $($after.Count)\"}; Write-Output 'ACTIONS_RUNNER_RECYCLED'"
+  },
+  "created_at": "2026-09-29T11:25:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
