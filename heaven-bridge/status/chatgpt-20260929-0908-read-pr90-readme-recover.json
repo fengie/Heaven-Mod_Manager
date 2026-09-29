@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0908-read-pr90-readme-recover",
+  "state": "running",
+  "action": "job_output_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:08:32.148875+00:00"
+}
