@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-170200-build-ui255-heaven2",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T17:01:11.202476+00:00"
+  "updated_at": "2026-09-29T17:01:27.140412+00:00",
+  "exit_code": 128
 }
