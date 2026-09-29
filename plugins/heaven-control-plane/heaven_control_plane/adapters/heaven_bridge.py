@@ -59,6 +59,14 @@ def _validated_env(payload: Mapping[str, Any]) -> tuple[dict[str, str] | None, l
     return env, handles
 
 
+def _boolean(value: Any, field: str, *, default: bool = False) -> bool:
+    if value is None:
+        return default
+    if not isinstance(value, bool):
+        raise ControlPlaneError("INVALID_INPUT", f"{field} must be a boolean")
+    return value
+
+
 class HeavenBridgeAdapter:
     """Compatibility adapter from stable control-plane names to existing bridge actions."""
 
@@ -126,6 +134,67 @@ class HeavenBridgeAdapter:
                 params["env_from_host"] = handles
             return self._request("proc_run", params, timeout + 15)
 
+        if capability.name == "execution.session.start":
+            shell = str(data.get("shell") or "powershell").lower()
+            if shell not in _ALLOWED_SHELLS:
+                raise ControlPlaneError("INVALID_SHELL", f"shell must be one of {sorted(_ALLOWED_SHELLS)}")
+            params: dict[str, Any] = {
+                "shell": shell,
+                "idle_timeout_seconds": bounded_int(
+                    data.get("idle_timeout_seconds"),
+                    "idle_timeout_seconds",
+                    default=1800,
+                    minimum=60,
+                    maximum=86_400,
+                ),
+                "max_runtime_seconds": bounded_int(
+                    data.get("max_runtime_seconds"),
+                    "max_runtime_seconds",
+                    default=21_600,
+                    minimum=300,
+                    maximum=172_800,
+                ),
+            }
+            if data.get("command") is not None:
+                params["command"] = require_string(data.get("command"), "command", max_length=32_768)
+            if data.get("cwd") is not None:
+                params["cwd"] = _safe_path(data.get("cwd"), "cwd")
+            env, handles = _validated_env(data)
+            if env is not None:
+                params["env"] = env
+            if handles is not None:
+                params["env_from_host"] = handles
+            return self._request("proc_start", params, capability.timeout_seconds)
+
+        if capability.name == "execution.session.read":
+            params = {
+                "session_id": require_string(data.get("session_id"), "session_id", max_length=64),
+                "max_chars": bounded_int(
+                    data.get("max_chars"), "max_chars", default=60_000, minimum=1000, maximum=500_000
+                ),
+            }
+            return self._request("proc_read", params, capability.timeout_seconds)
+
+        if capability.name == "execution.session.input":
+            params = {
+                "session_id": require_string(data.get("session_id"), "session_id", max_length=64),
+                "input": require_string(data.get("input", ""), "input", allow_empty=True, max_length=65_536),
+                "newline": _boolean(data.get("newline"), "newline", default=True),
+            }
+            return self._request("proc_input", params, capability.timeout_seconds)
+
+        if capability.name == "execution.session.stop":
+            params = {
+                "session_id": require_string(data.get("session_id"), "session_id", max_length=64),
+                "force": _boolean(data.get("force"), "force", default=True),
+            }
+            return self._request("proc_kill", params, capability.timeout_seconds)
+
+        if capability.name == "execution.session.list":
+            if data:
+                raise ControlPlaneError("INVALID_INPUT", "execution.session.list does not accept parameters")
+            return self._request("proc_list_sessions", {}, capability.timeout_seconds)
+
         if capability.name == "filesystem.read":
             params = {
                 "path": _safe_path(data.get("path")),
@@ -170,6 +239,24 @@ class HeavenBridgeAdapter:
                 "replace_all": False,
             }
             return self._request("fs_edit", params, capability.timeout_seconds)
+
+        if capability.name == "filesystem.search":
+            mode = str(data.get("mode") or "both").lower()
+            aliases = {"name": "name", "names": "name", "content": "content", "contents": "content", "both": "both"}
+            if mode not in aliases:
+                raise ControlPlaneError("INVALID_SEARCH_MODE", "mode must be name/names, content/contents, or both")
+            params = {
+                "path": _safe_path(data.get("path")),
+                "pattern": require_string(data.get("pattern"), "pattern", max_length=4096),
+                "mode": aliases[mode],
+                "regex": _boolean(data.get("regex"), "regex"),
+                "case_sensitive": _boolean(data.get("case_sensitive"), "case_sensitive"),
+                "max_results": bounded_int(
+                    data.get("max_results"), "max_results", default=100, minimum=1, maximum=1000
+                ),
+                "glob": require_string(data.get("glob", "*"), "glob", max_length=1024),
+            }
+            return self._request("fs_search", params, capability.timeout_seconds)
 
         if capability.name in {"git.status", "git.diff", "git.verify_remote_main"}:
             cwd = _safe_path(data.get("repo"), "repo")

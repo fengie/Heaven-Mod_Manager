@@ -45,7 +45,7 @@ Prefer safe structured functions over raw shell. High-level workflows compose pr
 `heaven-bridge/` remains active infrastructure until a verified migration says otherwise. Any migration must update every runtime/bootstrap/workflow/test/doc reference and preserve compatibility during rollout.
 
 
-## Implemented vertical slice (v0.1.1)
+## Implemented platform slice (v0.2.0)
 
 The first production slice is implemented as a small Python standard-library package:
 
@@ -60,7 +60,9 @@ The first production slice is implemented as a small Python standard-library pac
 - inline secret-environment rejection with host-side `env_from_host` handles;
 - traversal-segment rejection before filesystem/repository requests reach the bridge;
 - explicit overwrite confirmation for existing-file rewrites, unique-only v1 text patching, and bridge-error propagation into structured control-plane failures;
-- unit tests for success, malformed/oversized input, invalid request IDs, permission denial, timeout mapping, cancellation mapping, path traversal, output truncation, artifact secret refusal, pagination, bridge action compatibility, and concurrent audit writes.
+- persistent session start/read/input/stop/list adapters over the bridge session lifecycle primitives;
+- bounded allowlisted filesystem name/content search over `fs_search`;
+- unit tests for success, malformed/oversized input, invalid request IDs, permission denial, timeout mapping, cancellation mapping, path traversal, session/search validation, output truncation, artifact secret refusal, pagination, bridge action compatibility, and concurrent audit writes.
 
 Run the exact plugin gate from repository root:
 
@@ -69,3 +71,8 @@ python .\plugins\heaven-control-plane\verify.py
 ```
 
 The adapter is transport-injected on purpose: the active `heaven-bridge/` worker remains the runtime boundary while this package supplies stable contracts above its already-proven actions.
+
+
+## Phase 1 tranche: persistent sessions and search
+
+Version 0.2.0 extends the verified control-plane slice without introducing a second runtime. Persistent execution maps to Heaven Bridge `proc_start`, `proc_read`, `proc_input`, `proc_kill`, and `proc_list_sessions`; filesystem search maps to the existing allowlisted `fs_search` primitive. Session/search inputs are bounded and validated, mutating session operations carry destructive metadata, and bridge failures continue to propagate as structured control-plane errors.
