@@ -316,6 +316,10 @@ test("operator stop intent dominates an authoritative zero exit", () => {
     lastMessage: "You've hit your usage limit. Try again later."
   }, 1), "capacity-blocked");
   assert.equal(classifyAuthoritativeExit({
+    status: "capacity-blocked",
+    lastMessage: "You've hit your usage limit. Try again later."
+  }, 0), "capacity-blocked");
+  assert.equal(classifyAuthoritativeExit({
     status: "running",
     lastMessage: "429 insufficient_quota"
   }, 1), "capacity-blocked");
