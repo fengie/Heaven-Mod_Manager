@@ -74,40 +74,45 @@ jobs:
           dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Run updater runtime ownership regressions
+      - name: Run full integration suite including updater E2E and ownership regressions
         shell: powershell
         run: |
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
           $log = Join-Path $evidence 'runtime-ownership-tests.log'
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" --filter-class "MhwModManager.IntegrationTests.UpdateRuntimeTests" 2>&1 |
-            Tee-Object -FilePath $log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run real packaged updater E2E
-        shell: powershell
-        run: |
-          $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
-          $log = Join-Path $evidence 'installed-client-e2e-test.log'
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" --filter-trait "Category=UpdaterInstalledClientE2E" 2>&1 |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" 2>&1 |
             Tee-Object -FilePath $log
           $exit = $LASTEXITCODE
           if ($exit -ne 0) { exit $exit }
           if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
-            throw 'Updater E2E returned success without producing evidence.json.'
+            throw 'Full integration suite returned success without producing updater E2E evidence.json.'
           }
+          Copy-Item -LiteralPath $log -Destination (Join-Path $evidence 'installed-client-e2e-test.log') -Force
 
-      - name: Re-run focused rollback regression guards
+      - name: Verify updater success and rollback evidence
         shell: powershell
         run: |
-          $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
-          $log = Join-Path $evidence 'rollback-regression-tests.log'
-          $methods = @(
-            "MhwModManager.IntegrationTests.UpdateInstallerTests.Failure_after_first_replacement_restores_exact_previous_payload",
-            "MhwModManager.IntegrationTests.UpdateInstallerTests.Failure_after_stale_owned_deletion_restores_deleted_and_replaced_files"
-          )
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" --filter-method $methods 2>&1 |
-            Tee-Object -FilePath $log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $evidenceDir = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          $log = Join-Path $evidenceDir 'rollback-regression-tests.log'
+          if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
+            throw 'Updater E2E evidence.json is missing.'
+          }
+          $doc = Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw | ConvertFrom-Json
+          if ($doc.status -eq 'FAIL') {
+            throw "Updater E2E evidence reports failure: $($doc.failureType): $($doc.failureMessage)"
+          }
+          if ($doc.scenarioA.status -ne 'PASS') {
+            throw "Installed-client update scenario did not pass: $($doc.scenarioA.status)"
+          }
+          if ($doc.scenarioB.status -ne 'PASS') {
+            throw "Injected rollback scenario did not pass: $($doc.scenarioB.status)"
+          }
+          @(
+            'full_integration_suite=PASS'
+            ('scenarioA=' + $doc.scenarioA.status)
+            ('scenarioB=' + $doc.scenarioB.status)
+            ('restoredBuild=' + $doc.scenarioB.restoredBuild)
+            ('restoredSource=' + $doc.scenarioB.restoredSource)
+          ) | Set-Content -LiteralPath $log -Encoding UTF8
 
       - name: Collect updater runtime log
         if: always()
