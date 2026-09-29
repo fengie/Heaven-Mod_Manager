@@ -1,0 +1,14 @@
+{
+  "id": "00-chatgpt-branchzero-audit-20260929-1115",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:15:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\nSet-Location $repo\ngit fetch origin --prune\n$branches=@(\n'agent/bridge-uia-hardening-20260929',\n'agent/bridge-uia-native-20260929',\n'agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm',\n'agent/launch-observation-atomicity-20260928',\n'agent/swarm-contract-v3-20260929-0540',\n'agent-bridge',\n'codex/complete-mod-workflows',\n'fix/codex-quota-dispatch-circuit-20260929'\n)\n$worktrees=@{}\n$p=$null\nforeach($line in @(git worktree list --porcelain)){\n if($line -like 'worktree *'){$p=$line.Substring(9)}\n elseif($line -like 'branch refs/heads/*' -and $p){$worktrees[$line.Substring(18)]=$p}\n elseif([string]::IsNullOrWhiteSpace($line)){$p=$null}\n}\n$out=@()\nforeach($b in $branches){\n git show-ref --verify --quiet (\"refs/remotes/origin/\"+$b)\n if($LASTEXITCODE -ne 0){$out += [pscustomobject]@{branch=$b;state='missing'};continue}\n $tip=(git rev-parse (\"origin/\"+$b)).Trim()\n $counts=(git rev-list --left-right --count (\"origin/main...origin/\"+$b)).Trim() -split '\\s+'\n $cherry=@(git cherry origin/main (\"origin/\"+$b))\n $plus=@($cherry|Where-Object{$_ -like '+ *'})\n $minus=@($cherry|Where-Object{$_ -like '- *'})\n $subjects=@()\n foreach($line in $plus){$sha=($line -split '\\s+')[1];$subjects+=(git show -s --format='%H|%s' $sha).Trim()}\n $out += [pscustomobject]@{\n   branch=$b;tip=$tip;behind=[int]$counts[0];ahead=[int]$counts[1];\n   patch_unique_count=$plus.Count;patch_equivalent_count=$minus.Count;\n   patch_unique_commits=$subjects;\n   worktree=if($worktrees.ContainsKey($b)){$worktrees[$b]}else{$null}\n }\n}\n[pscustomobject]@{main=(git rev-parse origin/main).Trim();branches=$out} | ConvertTo-Json -Depth 6"
+  },
+  "priority": "highest"
+}
