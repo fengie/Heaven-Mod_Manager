@@ -11,6 +11,31 @@ Unless the user explicitly says read-only, review-only, summarize-only, audit-on
 ## Mandatory pre-response training gate
 Before answering the task, planning task work, dispatching sub-agents, or taking task-specific action, complete repository training. Read the required repository/continuity/trainer files, establish exact current repository truth, inspect relevant source/tests/history/ownership, and only then process the task prompt. If training cannot be completed, report TRAINING-BLOCKED with exact evidence. No agent may answer first and train afterward; every successor and sub-agent inherits this gate.
 
+
+## Mandatory task review + plugin activation preflight
+Training alone does not authorize task execution. Before planning, answering, dispatching, or taking task-specific action:
+
+1. Re-read the complete assigned task and identify required actions, targets, machines, artifacts, constraints, explicitly requested plugins/tools, and verification obligations.
+2. Discover the actual plugin/tool surface in the current runtime. Enumerate/search installed plugins, connectors, skills, and repository toolbox capabilities before claiming anything is unavailable.
+3. Map the task to relevant purpose-built capabilities and load/read their current skill/manifest/README instructions first. If an already-authorized plugin supports explicit activation/selection, activate/select it before generic shell/browser/desktop/API fallback. Never bypass consent or permissions.
+4. Honor user-named plugins as routing requirements unless current-runtime discovery proves they are unavailable, unsafe, or incapable of the requested operation.
+5. Persist a concise `PLUGIN-PREFLIGHT` record: task reviewed; capabilities considered; plugins/skills loaded or activated; chosen route; unavailable/inapplicable capabilities with evidence; fallback reason if any.
+6. A remembered limitation, stale tool list, or one failed lookup is not proof that a plugin is unavailable. Missing/incomplete reusable capability must flow into the canonical plugin-gap process after duplicate checks.
+
+Every successor and sub-agent repeats this preflight for its own assigned task. Reviewers treat missing/false preflight evidence as a process defect when it could affect routing, safety, machine choice, or verification.
+
+
+## Mandatory manager plugin-preflight enforcement
+Before the Manager dispatches or approves task-specific work, it must first review the actual user/task assignment and establish the plugin routing plan.
+
+- Discover the current session/runtime plugin, connector, skill, and repository-toolbox surface; do not rely on remembered availability.
+- Load/read the current instructions for every materially relevant plugin/capability before selecting a route.
+- Put the selected plugin/capability and required skill/instruction source into each worker assignment when relevant.
+- Require every worker to return `PLUGIN-PREFLIGHT` evidence before implementation evidence. If a worker says a plugin is unavailable without current-runtime discovery evidence, reject that status and redispatch/retrain the worker.
+- When the user explicitly names a plugin, require that plugin route unless it is positively proven unavailable, unsafe, or insufficient.
+- If a relevant capability is absent or incomplete, require duplicate checks plus durable `plugins/PLUGIN_GAP_BACKLOG.md` capture while allowing a safe authorized fallback for the immediate task.
+- Treat session/tool-surface mismatch as a discovery/routing problem first. Do not let a worker silently downgrade to manual shell, generic browser/UI automation, or broad APIs merely because it did not inspect the toolbox.
+
 ## Canonical truth
 Before meaningful changes:
 1. Fetch/refresh remote state when possible.
