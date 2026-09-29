@@ -391,7 +391,7 @@ async function remoteHeadSha(branch = "main") {
 }
 
 function isTerminalStatus(status) {
-  return ["done", "failed", "finished", "stopped", "interrupted", "orphaned"].includes(status);
+  return ["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"].includes(status);
 }
 
 function releaseLeaseForAgent(state, agent, reason) {
@@ -412,6 +412,11 @@ function updateTaskForAgent(state, agent) {
   task.branchName = agent.branchName;
   if (agent.status === "done") task.status = "candidate";
   else if (agent.status === "failed") task.status = "failed";
+  else if (agent.status === "capacity-blocked") {
+    task.status = "blocked";
+    task.blockers = Array.from(new Set([...(task.blockers || []), "codex-provider-capacity"]));
+    task.nextAction = "Continue deterministic builds/tests/computer-control through direct Heaven Bridge actions or proc_run; retry Codex agent dispatch after provider capacity resets.";
+  }
   else if (agent.status === "stopped") task.status = "stopped";
   else if (agent.status === "finished") task.status = "finished";
   else task.status = agent.status;
@@ -1026,12 +1031,16 @@ async function deployOne({
     if (item && ownsExit) {
       item.exitCode = code;
       item.signal = signal || null;
+      item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
       item.status = classifyAuthoritativeExit(item, code);
       item.finishedAt = isoNow();
       item.updatedAt = isoNow();
       item.heartbeatAt = item.finishedAt;
-      item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
-      item.completionEvidence = item.status === "stopped" ? "verified-operator-stop" : "authoritative-exit";
+      item.completionEvidence = item.status === "stopped"
+        ? "verified-operator-stop"
+        : item.status === "capacity-blocked"
+          ? "provider-capacity"
+          : "authoritative-exit";
       item.currentSha = currentSha || item.currentSha || null;
       releaseLeaseForAgent(current, item, `authoritative-process-exit:${code ?? "unknown"}`);
       updateTaskForAgent(current, item);
@@ -1054,6 +1063,14 @@ async function deployOne({
           message: `${item.roleLabel || id} exited after an operator stop request and is not eligible for integration.`,
           action: { type: "inspect-agent", agentId: id },
           dedupeKey: `stopped:${id}`
+        });
+      } else if (item.status === "capacity-blocked") {
+        addNotification(current, {
+          severity: "warning",
+          title: "Agent provider capacity reached",
+          message: `${item.roleLabel || id} could not continue because Codex provider capacity is exhausted. The Heaven Bridge remains available for direct builds, tests, filesystem/process work, and computer control.`,
+          action: { type: "inspect-agent", agentId: id },
+          dedupeKey: `capacity-blocked:${id}`
         });
       } else if (item.status === "done") {
         addNotification(current, {
