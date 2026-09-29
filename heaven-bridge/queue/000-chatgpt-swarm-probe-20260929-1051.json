@@ -1,0 +1,14 @@
+{
+  "id": "000-chatgpt-swarm-probe-20260929-1051",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:49:57.206Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; Write-Output '===SUPERVISOR==='; Get-Process -Id 103260 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime,CPU,Responding | ConvertTo-Json -Compress; Write-Output '===STATE==='; Get-Content -Raw 'C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\data\\cycles\\cycle-20260929104636-yytns.json'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "priority": "highest"
+}
