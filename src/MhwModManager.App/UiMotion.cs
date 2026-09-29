@@ -1,3 +1,4 @@
+using MhwModManager.Core;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,88 +16,100 @@ public static class UiMotion
             typeof(UiMotion),
             new PropertyMetadata(false, OnEnableHoverFeedbackChanged));
 
-    public static bool GetEnableHoverFeedback(DependencyObject obj) =>
-        (bool)obj.GetValue(EnableHoverFeedbackProperty);
-
-    public static void SetEnableHoverFeedback(DependencyObject obj, bool value) =>
-        obj.SetValue(EnableHoverFeedbackProperty, value);
-
-    private static void OnEnableHoverFeedbackChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static bool GetEnableHoverFeedback(DependencyObject obj)
     {
-        if (d is not Control control) return;
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return (bool)obj.GetValue(EnableHoverFeedbackProperty);
+    }
 
-        if ((bool)e.OldValue)
+    public static void SetEnableHoverFeedback(DependencyObject obj,bool value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        obj.SetValue(EnableHoverFeedbackProperty,value);
+    }
+
+    private static void OnEnableHoverFeedbackChanged(DependencyObject d,DependencyPropertyChangedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(d is not Control control)return;
+
+        if((bool)e.OldValue)
         {
-            control.MouseEnter -= OnMouseEnter;
-            control.MouseLeave -= OnMouseLeave;
-            control.PreviewMouseLeftButtonDown -= OnMouseDown;
-            control.PreviewMouseLeftButtonUp -= OnMouseUp;
+            control.MouseEnter-=OnMouseEnter;
+            control.MouseLeave-=OnMouseLeave;
+            control.PreviewMouseLeftButtonDown-=OnMouseDown;
+            control.PreviewMouseLeftButtonUp-=OnMouseUp;
         }
 
-        if (!(bool)e.NewValue) return;
+        if(!(bool)e.NewValue)return;
 
-        control.RenderTransformOrigin = new Point(0.5, 0.5);
-        control.RenderTransform = new ScaleTransform(1, 1);
-        control.MouseEnter += OnMouseEnter;
-        control.MouseLeave += OnMouseLeave;
-        control.PreviewMouseLeftButtonDown += OnMouseDown;
-        control.PreviewMouseLeftButtonUp += OnMouseUp;
+        control.RenderTransformOrigin=new Point(0.5,0.5);
+        control.RenderTransform=new ScaleTransform(1,1);
+        control.MouseEnter+=OnMouseEnter;
+        control.MouseLeave+=OnMouseLeave;
+        control.PreviewMouseLeftButtonDown+=OnMouseDown;
+        control.PreviewMouseLeftButtonUp+=OnMouseUp;
     }
 
-    private static void OnMouseEnter(object sender, MouseEventArgs e)
+    private static void OnMouseEnter(object sender,MouseEventArgs e)
     {
-        if (sender is Control control) AnimateTo(control, 1.01, 0.96, 110);
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(sender is Control control)AnimateTo(control,1.01,0.96,110);
     }
 
-    private static void OnMouseLeave(object sender, MouseEventArgs e)
+    private static void OnMouseLeave(object sender,MouseEventArgs e)
     {
-        if (sender is Control control) AnimateTo(control, 1, 1, 130);
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(sender is Control control)AnimateTo(control,1,1,130);
     }
 
-    private static void OnMouseDown(object sender, MouseButtonEventArgs e)
+    private static void OnMouseDown(object sender,MouseButtonEventArgs e)
     {
-        if (sender is Control control) AnimateTo(control, 0.985, 0.88, 65);
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(sender is Control control)AnimateTo(control,0.985,0.88,65);
     }
 
-    private static void OnMouseUp(object sender, MouseButtonEventArgs e)
+    private static void OnMouseUp(object sender,MouseButtonEventArgs e)
     {
-        if (sender is not Control control) return;
-        AnimateTo(control, control.IsMouseOver ? 1.01 : 1, control.IsMouseOver ? 0.96 : 1, 90);
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(sender is not Control control)return;
+        AnimateTo(control,control.IsMouseOver?1.01:1,control.IsMouseOver?0.96:1,90);
     }
 
-    private static void AnimateTo(Control control, double scale, double opacity, int durationMs)
+    private static void AnimateTo(Control control,double scale,double opacity,int durationMs)
     {
-        if (control.RenderTransform is not ScaleTransform transform)
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(control.RenderTransform is not ScaleTransform transform)
         {
-            transform = new ScaleTransform(1, 1);
-            control.RenderTransform = transform;
+            transform=new ScaleTransform(1,1);
+            control.RenderTransform=transform;
         }
 
-        if (!SystemParameters.ClientAreaAnimation)
+        if(!SystemParameters.ClientAreaAnimation)
         {
-            control.BeginAnimation(UIElement.OpacityProperty, null);
-            transform.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-            transform.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-            control.Opacity = opacity;
-            transform.ScaleX = scale;
-            transform.ScaleY = scale;
+            control.BeginAnimation(UIElement.OpacityProperty,null);
+            transform.BeginAnimation(ScaleTransform.ScaleXProperty,null);
+            transform.BeginAnimation(ScaleTransform.ScaleYProperty,null);
+            control.Opacity=opacity;
+            transform.ScaleX=scale;
+            transform.ScaleY=scale;
             return;
         }
 
-        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var duration = new Duration(TimeSpan.FromMilliseconds(durationMs));
+        var easing=new CubicEase{EasingMode=EasingMode.EaseOut};
+        var duration=new Duration(TimeSpan.FromMilliseconds(durationMs));
 
         control.BeginAnimation(
             UIElement.OpacityProperty,
-            new DoubleAnimation { To = opacity, Duration = duration, EasingFunction = easing },
+            new DoubleAnimation{To=opacity,Duration=duration,EasingFunction=easing},
             HandoffBehavior.SnapshotAndReplace);
         transform.BeginAnimation(
             ScaleTransform.ScaleXProperty,
-            new DoubleAnimation { To = scale, Duration = duration, EasingFunction = easing },
+            new DoubleAnimation{To=scale,Duration=duration,EasingFunction=easing},
             HandoffBehavior.SnapshotAndReplace);
         transform.BeginAnimation(
             ScaleTransform.ScaleYProperty,
-            new DoubleAnimation { To = scale, Duration = duration, EasingFunction = easing },
+            new DoubleAnimation{To=scale,Duration=duration,EasingFunction=easing},
             HandoffBehavior.SnapshotAndReplace);
     }
 }
