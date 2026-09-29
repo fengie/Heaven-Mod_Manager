@@ -210,8 +210,8 @@ function Show-Status {
             legacy = Get-TaskState 'HeavenLocalBridge'
             legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
-        startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWorker.vbs')
-        watchdog_startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWatchdog.vbs')
+        startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWatchdog.vbs')
+        legacy_worker_startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWorker.vbs')
     }
 
     $report | ConvertTo-Json -Depth 6
