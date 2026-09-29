@@ -1,0 +1,9 @@
+{
+  "id": "cancel-opencode-workflow-reconcile-20260929-1135",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:31:03.198892+00:00"
+}
