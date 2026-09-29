@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-102732-window-list",
-  "state": "running",
+  "state": "completed",
   "action": "window_list",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:28:39.840465+00:00"
+  "updated_at": "2026-09-29T10:29:05.185246+00:00",
+  "exit_code": 0
 }
