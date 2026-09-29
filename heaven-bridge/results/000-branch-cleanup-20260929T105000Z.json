@@ -1,0 +1,21 @@
+{
+  "id": "000-branch-cleanup-20260929T105000Z",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:50:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:51:32.841209+00:00",
+  "finished_at": "2026-09-29T10:51:42.425902+00:00",
+  "stdout": "",
+  "stderr": "missing governance GLOBAL_GIT_DIRECTIVE.md\r\nAt line:24 char:55\r\n+ ... eq){if(!(Test-Path(Join-Path $r $f))){throw \"missing governance $f\"}}\r\n+                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (missing governa...IT_DIRECTIVE.md:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : missing governance GLOBAL_GIT_DIRECTIVE.md\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-cleanup-20260929T105000Z.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-cleanup-20260929T105000Z.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 406,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "c382b9afff33370ce229e7262cdac4368443aac6306385db58bdb96e526d3ad7"
+}
