@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0853-pr90-merge-start-e1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:53:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:53:18.623915+00:00",
+  "finished_at": "2026-09-29T08:53:20.878779+00:00",
+  "stdout": "branch 'integration/pr90-reconcile-local-20260929' set up to track 'origin/agent/game-profile-id-containment-v8.8.5-reconcile'.\nHEAD is now at e25b68d Sync PR90 CURRENT_REVISION for v8.8.5 verification\nAuto-merging _AGENT_CONTEXT/CURRENT_REVISION.json\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/CURRENT_REVISION.json\nAutomatic merge failed; fix conflicts and then commit the result.\nMERGE_EXIT=1\r\nSTATUS_BEGIN\r\n## integration/pr90-reconcile-local-20260929...origin/agent/game-profile-id-containment-v8.8.5-reconcile\nM  .verification/function-status.json\nM  .verification/stage-status.json\nM  _AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md\nUU _AGENT_CONTEXT/CURRENT_REVISION.json\nM  _AGENT_CONTEXT/CURRENT_STATE.md\nM  _AGENT_CONTEXT/EVIDENCE/v8.8.4-hosted-windows-closure.log\nA  _AGENT_CONTEXT/MANAGER_SWARM_STATUS_2026-09-29.md\nM  _AGENT_CONTEXT/NEXT_STEPS.md\nM  _AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md\nM  scripts/Publish-UpdaterRelease.ps1\nM  scripts/Test-UpdaterReleasePolicy.ps1\nSTATUS_END\r\nCONFLICTS_BEGIN\r\n_AGENT_CONTEXT/CURRENT_REVISION.json\nCONFLICTS_END\r\nHEAD=e25b68da3685585fafa8809eedb452a04ea99c82\r\nMAIN=1583300aea9ac3ae20750d1ad0af6592f6993acc\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * [new branch]      agent/heaven-bridge-session-recovery-20260929 -> origin/agent/heaven-bridge-session-recovery-20260929\n   fa6224a..470e3d6  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (new branch 'integration/pr90-reconcile-local-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0853-pr90-merge-start-e1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0853-pr90-merge-start-e1.stderr.log",
+    "stdout_bytes": 1178,
+    "stderr_bytes": 298,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ff9c6f090ef278e7fb4cc73f45cf0232f0e8da19f0e59d0672d93d820d6cc93b"
+}
