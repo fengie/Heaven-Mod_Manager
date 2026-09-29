@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.19",
+  "currentVersion": "8.8.20",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify the exact v8.8.19 candidate including Auto Modder hardening and the updater progress/loading screen, then immediately publish and verify the private/public updater release",
+  "nextMilestone": "verify the exact v8.8.20 Auto Populate candidate, integrate it into current main, then immediately publish and verify the private/public updater release",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.18 maximum windowed Mods workspace",
-  "status": "v8.8.19-auto-mod-and-updater-progress-candidate",
+  "immediateParentRevision": "v8.8.19 Auto Modder foundation",
+  "status": "v8.8.20-auto-populate-candidate",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": "e874b3e168ba37f3a54e3cfeb54fe98a08d9ab90",
-  "verificationScopeNote": "v8.8.19 combines the Auto Modder foundation with a visible updater progress window that reports real prepare/install/restart/health-verification stages. Progress UI failures are isolated from update safety. Historical verification remains exact-SHA evidence only; fresh exact-head Windows verification is required before release.",
+  "verificationScopeNote": "v8.8.20 adds one-click Auto Populate with conservative dependency/resource closure and existing planner conflict validation. Historical closed verification remains exact-SHA evidence only; this changed production source requires fresh exact-head Windows verification before release.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 v8.8.20 Auto Populate candidate: the Mods page can compute and immediately apply a deterministic maximal conflict-free installed setup; explicit dependencies, inferred main/base packages, required file/texture providers, native loader packages, and pinned shared-resource providers are included only when the entire closure remains valid and non-blocking.",
     "2026-09-29 v8.8.19 updater UX candidate: the updater helper now shows a responsive progress window across prepare/install/restart/health-verification, surfaces rollback/failure state, cannot be closed mid-apply, and treats progress reporting as observational so UI callback failures cannot change update outcome.",
     "2026-09-29 v8.8.17 candidate: startup recovers canonical manager-home identity from explicit configuration or the known release layout; updater handoff serializes/restores ManagerHomeRoot so updated and rollback launches target the populated Mods/State tree without requiring a reopen.",
     "2026-09-29 v8.8.16 candidate: enlarge the Mods library workspace by placing Filters and Bulk Actions side-by-side on wide layouts with natural wrapping, keeping pending-change summary/actions on one row when space allows, tightening vertical page margins, and adding a structural UX regression without changing mod-row behavior or commands.",
@@ -143,7 +144,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact v8.8.17 repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
+  "nextRequiredAction": "Run exact v8.8.20 repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
