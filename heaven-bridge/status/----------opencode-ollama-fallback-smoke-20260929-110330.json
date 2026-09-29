@@ -1,9 +1,10 @@
 {
   "id": "----------opencode-ollama-fallback-smoke-20260929-110330",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:03:11.031163+00:00"
+  "updated_at": "2026-09-29T11:03:55.517385+00:00",
+  "exit_code": 1
 }
