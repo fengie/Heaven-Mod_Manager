@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170400-build-ui-main96fd-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $p=Join-Path $env:USERPROFILE 'MhwUiValidation'; if(-not (Test-Path (Join-Path $p '.git'))){ if(Test-Path $p){Remove-Item -LiteralPath $p -Recurse -Force}; git clone --branch main --single-branch https://github.com/fengie/mhw-mods.git $p; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE} }; git -C $p fetch origin main; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; git -C $p checkout --detach 96fd12edce2075e77aa489fcc6a7ee6b36b6085f; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; git -C $p clean -fdx; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; dotnet restore (Join-Path $p 'src\\MhwModManager.App\\MhwModManager.App.csproj') -p:NuGetAudit=false; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; dotnet build (Join-Path $p 'src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release --no-restore -p:NuGetAudit=false; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; Write-Output ('UI_VALIDATION_HEAD='+(git -C $p rev-parse HEAD)); Write-Output ('APP_DLL='+(Join-Path $p 'src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.dll'))",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T17:04:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
