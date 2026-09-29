@@ -1,6 +1,7 @@
 param(
     [switch]$Once,
     [switch]$DryRun,
+    [switch]$StartupFallback,
     [ValidateRange(5, 300)]
     [int]$IntervalSeconds = 30,
     [ValidateRange(30, 900)]
@@ -159,6 +160,31 @@ function Invoke-WatchdogCheck {
 
     if ($heartbeat.age_seconds -ne $null -and $heartbeat.age_seconds -gt $StaleSeconds) {
         Restart-WorkerSafely -Reason "local heartbeat stale by $($heartbeat.age_seconds)s"
+    }
+}
+
+if ($StartupFallback) {
+    # A Startup-folder launch is deliberately non-elevated. Prefer the already
+    # registered Highest watchdog task so the persistent owner retains admin/UI
+    # capability. Only remain as the direct fallback when Task Scheduler cannot
+    # provide another watchdog instance.
+    try {
+        Start-ScheduledTask -TaskName 'Heaven Local Bridge Watchdog' -ErrorAction Stop
+        Start-Sleep -Seconds 3
+        $otherWatchdog = @(
+            Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.ProcessId -ne $PID -and
+                    $_.CommandLine -and
+                    $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+                }
+        )
+        if ($otherWatchdog.Count -gt 0) {
+            Write-WatchdogLog 'Startup fallback handed ownership to the scheduled watchdog.'
+            exit 0
+        }
+    } catch {
+        Write-WatchdogLog ("Scheduled watchdog handoff unavailable; keeping Startup fallback: {0}" -f $_.Exception.Message)
     }
 }
 
