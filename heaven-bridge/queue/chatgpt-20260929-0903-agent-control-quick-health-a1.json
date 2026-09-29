@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0903-agent-control-quick-health-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$sw=[Diagnostics.Stopwatch]::StartNew(); try { $r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:7331/api/autopilot' -TimeoutSec 5; $sw.Stop(); [ordered]@{ok=$true;status=[int]$r.StatusCode;elapsed_ms=$sw.ElapsedMilliseconds;body=$r.Content} | ConvertTo-Json -Depth 6 } catch { $sw.Stop(); [ordered]@{ok=$false;elapsed_ms=$sw.ElapsedMilliseconds;error=$_.Exception.Message} | ConvertTo-Json; exit 41 }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 15
+  },
+  "created_at": "2026-09-29T09:03:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
