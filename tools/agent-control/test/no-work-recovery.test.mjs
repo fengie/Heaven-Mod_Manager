@@ -67,6 +67,18 @@ test("recovery routes only to registered machines", () => {
   assert.equal(recoveryMachineTarget("", policies), "auto");
 });
 
+test("dirty uncommitted work is preserved instead of auto-retried", () => {
+  const result = noWorkTerminationDecision({
+    status: "failed",
+    baseSha: "aaaaaaaa",
+    currentSha: "aaaaaaaa",
+    worktreeDirty: true,
+    lastMessage: "I’m treating this as an execution assignment."
+  });
+  assert.equal(result.noWork, false);
+  assert.equal(result.reason, "substantive-work-evidence");
+});
+
 test("ordinary terminal summary is not retried merely because no commit exists", () => {
   const result = noWorkTerminationDecision({
     status: "done",
