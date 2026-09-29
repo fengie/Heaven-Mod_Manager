@@ -1,3 +1,13 @@
+﻿# Current highest-priority next steps — 2026-09-29
+
+1. **Updater implementation/publication is integrated and hosted-verified** at source `5abe40304dfcb48f96e750bd7da3d0075315625b`, Windows run **36541891969**, updater build **61**, tag `updater-main-61`.
+2. Run the final disposable packaged-client E2E: a real older installed package discovers/applies build 61, preserves seeded `Mods`, `State`, and unknown-file hashes, and restarts with the exact target identity/health acknowledgement.
+3. Run the paired injected startup/health-failure case and prove rollback restores the exact previous owned payload/executable identity while preserving the same seeded user-data hashes.
+4. Persist exact E2E evidence. Only after both cases pass may the updater be labeled end-to-end complete.
+5. Keep PR #90 separate; reconcile it onto current main and re-run its exact-candidate verification before making it ready again.
+
+---
+
 # v8.8.4 final support reconciliation — current next steps
 
 1. Canonical v8.8.4 was pushed after a final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source.
