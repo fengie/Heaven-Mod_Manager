@@ -1,0 +1,21 @@
+{
+  "id": "0000-branch-zero-wave-20260929-105800",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:58:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:21:23.034701+00:00",
+  "finished_at": "2026-09-29T11:21:27.267602+00:00",
+  "stdout": "{\r\n    \"main\":  \"b7d5f7c6c0d789cd592ecd92c51c67002369a1af\",\r\n    \"deleted\":  [\r\n\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"missing\":  [\r\n                    \"fix/release-classifier-workflow-scope-20260929\",\r\n                    \"feature/agent-control-plane-v2-20260928\",\r\n                    \"agent/liveness-scheduler-machine-policy-20260929\",\r\n                    \"agent/agent-control-federation-heartbeat-20260929\",\r\n                    \"feature/agent-control-panel-20260928\",\r\n                    \"agent/game-profile-id-containment-v8.8.5-reconcile\",\r\n                    \"ui/frontend-responsive-polish-20260928\",\r\n                    \"release/v8.8.5-20260929\",\r\n                    \"agent/smart-pack-planner-core\",\r\n                    \"support/updater-publication-input-scope-20260928\",\r\n                    \"integration/smart-pack-planner-main-20260929\",\r\n                    \"integration/smart-pack-planner-main-r2-20260929\",\r\n                    \"agent/heaven-hosted-runner-diagnose-20260929\"\r\n                ],\r\n    \"remaining_count\":  9,\r\n    \"remaining\":  [\r\n                      \"agent/bridge-uia-native-20260929\",\r\n                      \"agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\",\r\n                      \"agent/launch-observation-atomicity-20260928\",\r\n                      \"agent/swarm-contract-v3-20260929-0540\",\r\n                      \"agent-bridge\",\r\n                      \"codex/complete-mod-workflows\",\r\n                      \"fix/codex-quota-dispatch-circuit-20260929\",\r\n                      \"heaven-bridge\",\r\n                      \"main\"\r\n                  ],\r\n    \"active_worktrees\":  [\r\n                             \"main\",\r\n                             \"agent/security-authorization-20260929\",\r\n                             \"agent/federation-registry-20260929\",\r\n                             \"integration/final-main-reconcile-20260929\",\r\n                             \"converge/final-v886-20260929b\",\r\n                             \"integration/release-lead-20260929-0543\",\r\n                             \"converge/main-20260929\",\r\n                             \"integration/pr90-reconcile-20260929\",\r\n                             \"agent/auto-updater-publication-fix-20260928\",\r\n                             \"integration/pr90-reconcile-local-20260929\",\r\n                             \"release/v8.8.5-20260929\",\r\n                             \"fix/v8.8.5-installed-label-trace\",\r\n                             \"agent/verification-reliability-20260929\"\r\n                         ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   7750decc..500df228  heaven-bridge -> origin/heaven-bridge\nFrom https://github.com/fengie/mhw-mods\n   d477253e..b7d5f7c6  main       -> origin/main\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\0000-branch-zero-wave-20260929-105800.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\0000-branch-zero-wave-20260929-105800.stderr.log",
+    "stdout_bytes": 2560,
+    "stderr_bytes": 190,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b321fcabaceea2eedf650c6e7d12adced5e70df445c3fa220f8cbf09effd37dc"
+}
