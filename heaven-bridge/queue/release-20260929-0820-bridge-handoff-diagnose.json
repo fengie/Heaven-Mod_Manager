@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0820-bridge-handoff-diagnose",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 90,
+    "command": "$ErrorActionPreference='Continue';\nWrite-Output '=== HASHES ===';\nGet-FileHash \"$env:USERPROFILE\\.mhw-local-tools\\heaven-desktop-worker.py\" -Algorithm SHA256 | Select-Object Path,Hash | Format-List;\nGet-FileHash \"$env:USERPROFILE\\HeavenBridgeRepo\\heaven-bridge\\worker.py\" -Algorithm SHA256 | Select-Object Path,Hash | Format-List;\nWrite-Output '=== WORKERS ===';\nGet-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -like '*heaven-desktop-worker.py*' -or $_.CommandLine -like '*heaven-bridge\\worker.py*') } | Select-Object ProcessId,CreationDate,CommandLine | Format-List;\nWrite-Output '=== TASK ===';\ntry { Get-ScheduledTask -TaskName 'Heaven Local Bridge' | Select-Object TaskName,State | Format-List } catch { Write-Output ('TASK_ERR='+$_.Exception.Message) };\nWrite-Output '=== LOG ===';\nif(Test-Path \"$env:USERPROFILE\\HeavenBridge\\worker.log\"){Get-Content \"$env:USERPROFILE\\HeavenBridge\\worker.log\" -Tail 120}"
+  },
+  "created_at": "2026-09-29T08:20:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
