@@ -14,6 +14,7 @@ TARGETS = [
     "heaven-process-services",
     "heaven-file-ops",
     "heaven-desktop",
+    "heaven-browser",
 ]
 
 failed = []

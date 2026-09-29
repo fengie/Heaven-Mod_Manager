@@ -1,0 +1,5 @@
+[project]
+name="heaven-browser"
+version="0.1.0"
+description="Desktop browser automation over Heaven Bridge window/UIA primitives"
+requires-python=">=3.10"
