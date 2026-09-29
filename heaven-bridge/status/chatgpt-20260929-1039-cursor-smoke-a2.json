@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-1039-cursor-smoke-a2",
+  "state": "running",
+  "action": "gui_cursor_get",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:39:44.848889+00:00"
+}
