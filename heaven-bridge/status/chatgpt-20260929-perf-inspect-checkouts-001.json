@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-perf-inspect-checkouts-001",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:19:55.275744+00:00"
+  "updated_at": "2026-09-29T16:20:12.426966+00:00",
+  "exit_code": 0
 }
