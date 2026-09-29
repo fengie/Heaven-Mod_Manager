@@ -1,0 +1,14 @@
+{
+  "id": "hcp140-c8b1-exact-20260929-1145",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:44:30Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 1200,
+    "cwd": "%USERPROFILE%",
+    "command": "$ErrorActionPreference='Stop'\n$root=$env:HEAVEN_BRIDGE_REPO\nif ([string]::IsNullOrWhiteSpace($root)) { $root=Join-Path $env:USERPROFILE 'HeavenBridgeRepo' }\n$root=(Resolve-Path $root).Path\n$wt=Join-Path $env:USERPROFILE 'HeavenWorktrees\\hcp140-c8b1-exact-20260929-1145'\nif (Test-Path $wt) { git -C $root worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }\ngit -C $root fetch --quiet origin refs/heads/agent/hcp-phase0-hardening-20260929-1138\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\ngit -C $root worktree add --detach $wt c8b1e3479ef2ca556f6b289b4b7cb7e28b70d6c8\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n$code=0\ntry {\n  Push-Location $wt\n  python plugins/heaven-control-plane/verify.py\n  if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE }\n  if ($code -eq 0) { python heaven-bridge/test_worker.py; if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE } }\n  if ($code -eq 0) { python heaven-bridge/tests/test_worker.py; if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE } }\n  if ($code -eq 0) { git diff --check; if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE } }\n} finally {\n  Pop-Location -ErrorAction SilentlyContinue\n  git -C $root worktree remove --force $wt 2>$null\n}\nif ($code -ne 0) { exit $code }\nWrite-Output 'hcp140-c8b1-exact-20260929-1145_OK'\nWrite-Output 'HEAD=c8b1e3479ef2ca556f6b289b4b7cb7e28b70d6c8'"
+  }
+}
