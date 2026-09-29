@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-20260929-1039-cursor-smoke-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:39:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:39:52.044166+00:00",
+  "finished_at": "2026-09-29T10:39:52.044166+00:00",
+  "host": "heaven",
+  "action": "gui_cursor_get",
+  "data": {
+    "x": 959,
+    "y": 542
+  },
+  "job_hash": "ec06e69695ee5386d22e5a93e5edd1564089520322428b725c457abe51d0165f"
+}
