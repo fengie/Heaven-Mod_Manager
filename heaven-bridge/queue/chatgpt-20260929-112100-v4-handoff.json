@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-112100-v4-handoff",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:21:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'\n$src=Join-Path $env:USERPROFILE 'HeavenBridgeRepo\\heaven-bridge\\worker.py'\n$runtimeDir=Join-Path $env:USERPROFILE '.mhw-local-tools'\n$dst=Join-Path $runtimeDir 'heaven-desktop-worker.py'\n$bak=Join-Path $runtimeDir 'heaven-desktop-worker.py.pre-v4.bak'\n$python=(Get-Command python.exe -ErrorAction Stop).Source\nif(-not (Test-Path $src)){throw \"Missing relay worker source: $src\"}\n$staged=Join-Path $runtimeDir 'heaven-desktop-worker.py.v4.new'\nCopy-Item $src $staged -Force\n& $python -m py_compile $staged\nif($LASTEXITCODE -ne 0){throw 'v4 staged worker failed syntax compile'}\nif(Test-Path $dst){Copy-Item $dst $bak -Force}\n$handoff=Join-Path $env:TEMP 'heaven-bridge-v4-handoff.ps1'\n$body=@'\n$ErrorActionPreference='Stop'\nStart-Sleep -Seconds 6\n$runtimeDir=Join-Path $env:USERPROFILE '.mhw-local-tools'\n$src=Join-Path $runtimeDir 'heaven-desktop-worker.py.v4.new'\n$dst=Join-Path $runtimeDir 'heaven-desktop-worker.py'\n$bak=Join-Path $runtimeDir 'heaven-desktop-worker.py.pre-v4.bak'\n$pythonw=(Get-Command pythonw.exe -ErrorAction Stop).Source\n$log=Join-Path (Join-Path $env:USERPROFILE 'HeavenBridge') 'v4-handoff.log'\ntry {\n  Copy-Item $src $dst -Force\n  $workers=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -and $_.CommandLine -like '*\\.mhw-local-tools\\heaven-desktop-worker.py*' })\n  foreach($w in $workers){ try { Stop-Process -Id $w.ProcessId -Force -ErrorAction Stop } catch {} }\n  Start-Sleep -Seconds 2\n  $new=Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('\"'+$dst+'\"') -WorkingDirectory $env:USERPROFILE -PassThru\n  Start-Sleep -Seconds 5\n  if(-not (Get-Process -Id $new.Id -ErrorAction SilentlyContinue)){ throw 'v4 worker exited during startup window' }\n  ('V4_HANDOFF_OK pid='+$new.Id+' at='+(Get-Date).ToUniversalTime().ToString('o')) | Set-Content -LiteralPath $log -Encoding UTF8\n} catch {\n  ('V4_HANDOFF_FAILED '+$_.Exception.Message+' at='+(Get-Date).ToUniversalTime().ToString('o')) | Set-Content -LiteralPath $log -Encoding UTF8\n  if(Test-Path $bak){\n    Copy-Item $bak $dst -Force\n    Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('\"'+$dst+'\"') -WorkingDirectory $env:USERPROFILE | Out-Null\n  }\n}\n'@\nSet-Content -LiteralPath $handoff -Value $body -Encoding UTF8\nStart-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',$handoff) | Out-Null\nWrite-Output 'V4_HANDOFF_SCHEDULED'\nWrite-Output ('SOURCE_SHA256='+(Get-FileHash $staged -Algorithm SHA256).Hash)"
+  }
+}
