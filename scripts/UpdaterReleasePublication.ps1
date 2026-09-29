@@ -9,7 +9,8 @@ function Invoke-UpdaterDraftPublication {
     [Parameter(Mandatory=$true)][scriptblock]$VerifyDraft,
     [Parameter(Mandatory=$true)][scriptblock]$RefreshMain,
     [Parameter(Mandatory=$true)][scriptblock]$DeleteDraft,
-    [Parameter(Mandatory=$true)][scriptblock]$PublishDraft
+    [Parameter(Mandatory=$true)][scriptblock]$PublishDraft,
+    [scriptblock]$EvaluateRefreshedMain=$null
   )
 
   $draftCreated=$false
@@ -34,13 +35,27 @@ function Invoke-UpdaterDraftPublication {
     $remoteMain=$remoteMain.Trim()
 
     if(-not [string]::Equals($remoteMain,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
-      $cleanupAttempted=$true
-      $null = & $DeleteDraft
-      $draftCreated=$false
-      return [pscustomobject]@{
-        Published=$false
-        Reason='stale-main-after-upload'
-        RemoteMainSha=$remoteMain
+      if($null -eq $EvaluateRefreshedMain){
+        $mainDecision=[pscustomobject]@{Publish=$false;Reason='stale-main-after-upload'}
+      } else {
+        $decisionOutput=@(& $EvaluateRefreshedMain $remoteMain)
+        if($decisionOutput.Count -ne 1){
+          throw "Updater publication main-drift evaluator returned $($decisionOutput.Count) values; expected exactly one decision."
+        }
+        $mainDecision=$decisionOutput[0]
+        if($null -eq $mainDecision -or $null -eq $mainDecision.PSObject.Properties['Publish'] -or $null -eq $mainDecision.PSObject.Properties['Reason']){
+          throw 'Updater publication main-drift evaluator returned an invalid decision.'
+        }
+      }
+      if(-not [bool]$mainDecision.Publish){
+        $cleanupAttempted=$true
+        $null = & $DeleteDraft
+        $draftCreated=$false
+        return [pscustomobject]@{
+          Published=$false
+          Reason=[string]$mainDecision.Reason
+          RemoteMainSha=$remoteMain
+        }
       }
     }
 
