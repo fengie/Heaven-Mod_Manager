@@ -1,0 +1,22 @@
+{
+  "id": "chatgpt-20260929-0830-probe-err-k2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:30:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:27:18.533289+00:00",
+  "finished_at": "2026-09-29T08:27:18.541872+00:00",
+  "host": "heaven",
+  "action": "job_output_read",
+  "data": {
+    "job_id": "chatgpt-20260929-0829-codex-workspacewrite-probe-j1",
+    "stream": "stderr",
+    "offset": 0,
+    "length": 977,
+    "total_bytes": 977,
+    "next_offset": 977,
+    "eof": true,
+    "content": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\\AppData\\Local\\Temp\\heaven-codex-workspacewrite-probe\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ec45-fca5-78a1-be8d-f9cd6f493ab9\n--------\nuser\nCreate a file named proof.txt in the current working directory containing exactly WORKSPACE_WRITE_OK followed by a newline. Do not modify anything else. Then finish.\r\n\ncodex\nI’ll create `proof.txt` with the exact requested content.\n\nexec\n\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command \"[System.IO.File]::WriteAllText((Join-Path (Get-Location) 'proof.txt'), \\\"WORKSPACE_WRITE_OK\"'`n\", [System.Text.UTF8Encoding]::new($false))' in C:\\Users\\Xxkan\\AppData\\Local\\Temp\\heaven-codex-workspacewrite-probe\n succeeded in 139ms:\ncodex\nCreated `proof.txt` containing exactly `WORKSPACE_WRITE_OK` followed by a newline.\ntokens used\n16,504\n"
+  },
+  "job_hash": "cc3ce34ae6406a1167a5fbcc99682a14cd368d2e6f6e9b1846e58f1af02907df"
+}
