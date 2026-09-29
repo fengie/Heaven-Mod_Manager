@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-proven-20260929-1125-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:25:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:27:54.975767+00:00",
+  "finished_at": "2026-09-29T11:28:05.416730+00:00",
+  "stdout": "{\"deleted\":[],\"skipped\":[{\"branch\":\"agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\",\"reason\":\"already-absent\"},{\"branch\":\"agent/launch-observation-atomicity-20260928\",\"reason\":\"already-absent\"},{\"branch\":\"integration/launch-observation-atomicity-main-20260929\",\"reason\":\"already-absent\"},{\"branch\":\"fix/codex-quota-dispatch-circuit-20260929\",\"reason\":\"already-absent\"},{\"branch\":\"agent/bridge-uia-native-20260929\",\"reason\":\"already-absent\"},{\"branch\":\"agent-bridge\",\"reason\":\"already-absent\"}],\"failed\":[],\"remaining\":[\"codex/complete-mod-workflows\",\"fix/heaven-gate-concurrency-20260929\",\"integration/complete-mod-workflows-main-20260929\"],\"remaining_count\":3,\"main\":\"febcf269db162f8d82030bf7c0c5e2b16d05751f\"}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/integration/launch-observation-atomicity-main-20260929\n   cdf7e3fd..7a954a67  heaven-bridge -> origin/heaven-bridge\nFrom https://github.com/fengie/mhw-mods\n   7a954a67..32804a1e  heaven-bridge -> origin/heaven-bridge\n   e96000bc..febcf269  integration/complete-mod-workflows-main-20260929 -> origin/integration/complete-mod-workflows-main-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-proven-20260929-1125-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-proven-20260929-1125-a1.stderr.log",
+    "stdout_bytes": 739,
+    "stderr_bytes": 435,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a2b0a67accd010ec7dc78a0e4659efac01e597b662e82e90444adab3c9334625"
+}
