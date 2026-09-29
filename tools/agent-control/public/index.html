@@ -496,7 +496,8 @@
             model:$("model").value.trim(),
             boundary:$("boundary").value.trim(),
             priority:Number($("priority").value || 50),
-            machine:$("machine").value || "auto"
+            machine:$("machine").value || "auto",
+            repositoryWriteAuthorized:true
           })
         });
         toast(`Deployed ${result.agents.length} ${role} agent${result.agents.length === 1 ? "" : "s"}.`);
@@ -519,7 +520,7 @@
 
     async function reviewAgent(id) {
       try {
-        await api(`/api/agents/${id}/review`, {method:"POST",body:"{}"});
+        await api(`/api/agents/${id}/review`, {method:"POST",body:JSON.stringify({repositoryWriteAuthorized:true})});
         toast("Reviewer deployed.");
         await refresh();
       } catch (error) { toast(error.message); }
