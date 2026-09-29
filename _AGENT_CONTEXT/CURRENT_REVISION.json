@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.17",
+  "currentVersion": "8.8.19",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify and integrate the v8.8.17 startup mod-discovery/updater-relaunch repair, then immediately publish and verify the private/public updater release",
+  "nextMilestone": "verify the v8.8.19 smoother UI transition candidate on the exact current-main-based head, merge to canonical main, then immediately publish and verify the private/public updater release",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.16 larger mod library workspace",
-  "status": "v8.8.17-startup-mod-discovery-candidate",
+  "immediateParentRevision": "v8.8.18 maximum windowed Mods workspace",
+  "status": "v8.8.19-smooth-ui-transitions-verification",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": "a9a9bfe46b73046e649c94cafe514754786abb45",
-  "verificationScopeNote": "v8.8.17 changes startup manager-home resolution and updater restart identity so the populated canonical Mods/State tree is used on the first post-update launch. Existing verification remains historical exact-SHA evidence only; fresh exact-head Windows verification is required before release.",
+  "verificationScopeNote": "v8.8.19 adds lightweight transform/opacity motion for shared button/navigation feedback, top-level page changes, and the blocking-operation overlay while honoring the Windows client-area animation preference. Existing verification remains historical exact-SHA evidence only; fresh exact-head Windows verification is required before release.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 v8.8.19 candidate: add short transform/opacity transitions for page navigation, blocking-operation presentation, and shared button/sidebar interaction feedback; honor SystemParameters.ClientAreaAnimation and avoid layout-dimension animation so large virtualized mod lists retain performance.",
     "2026-09-29 v8.8.17 candidate: startup recovers canonical manager-home identity from explicit configuration or the known release layout; updater handoff serializes/restores ManagerHomeRoot so updated and rollback launches target the populated Mods/State tree without requiring a reopen.",
     "2026-09-29 v8.8.16 candidate: enlarge the Mods library workspace by placing Filters and Bulk Actions side-by-side on wide layouts with natural wrapping, keeping pending-change summary/actions on one row when space allows, tightening vertical page margins, and adding a structural UX regression without changing mod-row behavior or commands.",
     "2026-09-29 v8.8.15 integration: real hero-first visual redesign from PR #237, preserving existing backend commands/bindings; its stale-head gate already proved strict build 0 warnings/errors plus Core 104/104, Automation 66/66, Integration 214/214, with only continuity version metadata failing.",
@@ -142,7 +143,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact v8.8.17 repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
+  "nextRequiredAction": "Run exact v8.8.19 Windows repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
