@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-1546-build-main",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; dotnet restore .\\src\\MhwModManager.App\\MhwModManager.App.csproj -p:NuGetAudit=false; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; dotnet build .\\src\\MhwModManager.App\\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false -warnaserror; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T15:46:03Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
