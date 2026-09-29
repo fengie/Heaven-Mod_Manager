@@ -460,7 +460,7 @@ test("federated bridge observations drive normalized live counts without duplica
   assert.equal(snapshot.body.federatedAgents.length, 1);
 
   const persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
-  assert.equal(persisted.version, 8);
+  assert.equal(persisted.version, 9);
   assert.equal(persisted.federation.agents.length, 1);
 });
 
@@ -503,6 +503,26 @@ test("engineering autopilot exposes governed control routes and a periodic inter
   assert.match(source, /git\(\["ls-remote", "origin", "refs\/heads\/main"\]\)/);
   const autopilotCore = fs.readFileSync(path.resolve(HERE, "..", "lib", "autopilot-core.mjs"), "utf8");
   assert.match(autopilotCore, /operator-integration-approval-required/);
+});
+
+test("perpetual machine exposes restart-safe routes and internal supervisor loop", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  for (const route of [
+    "/api/perpetual",
+    "/api/perpetual/start",
+    "/api/perpetual/pause",
+    "/api/perpetual/resume",
+    "/api/perpetual/stop",
+    "/api/perpetual/step"
+  ]) {
+    assert.match(source, new RegExp(route.replaceAll("/", "\\/")));
+  }
+  assert.match(source, /setInterval\(\(\) => \{\s*void perpetualSwarmStep\(\)/);
+  assert.match(source, /providerCapacityCircuit\(state\)/);
+  assert.match(source, /buildTakeoverForAgent\(source\.id, \{ persist: true, safetyControl: true \}\)/);
+  assert.match(source, /await stopAgent\(source\.id\)/);
+  assert.match(source, /executionMode: "direct"/);
+  assert.match(source, /perpetual-stuck-replacement/);
 });
 
 test("swarm recovery dispatch is evaluated before waiting for the active wave to finish", () => {
