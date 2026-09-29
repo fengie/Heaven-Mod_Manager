@@ -1,0 +1,21 @@
+{
+  "id": "hcp140-combined-exact-20260929-1148",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:47:30Z",
+  "status": "failed",
+  "exit_code": 128,
+  "started_at": "2026-09-29T11:56:37.785524+00:00",
+  "finished_at": "2026-09-29T11:56:39.614987+00:00",
+  "stdout": "",
+  "stderr": "fatal: invalid reference: 1936984c9c61f0de05707759cc6b22d8822fdbec\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\hcp140-combined-exact-20260929-1148.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\hcp140-combined-exact-20260929-1148.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 67,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b373f0f8a032eac2a512f04125bdb7e00d3fed258ac62ecae0b06a21dce5032b"
+}
