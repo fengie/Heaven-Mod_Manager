@@ -188,7 +188,11 @@ public sealed class DeploymentTests : IDisposable
         try
         {
             var executorB = new DeploymentExecutor(db, blobs, hashing, game);
-            resultB = await executorB.ApplyAsync(planB, "second concurrent deployment", ct: TestToken);
+            var taskB = executorB.ApplyAsync(planB, "second concurrent deployment", ct: TestToken);
+            await Task.Delay(150, TestToken);
+            Assert.False(taskB.IsCompleted, "A second executor must wait for the active deployment lease.");
+            releaseA.Set();
+            resultB = await taskB;
         }
         finally
         {
@@ -205,6 +209,7 @@ public sealed class DeploymentTests : IDisposable
         Assert.True(
             StringComparer.OrdinalIgnoreCase.Equals(liveHash, manifest.ExpectedLiveSha256),
             $"Live bytes {liveHash} disagree with committed manifest {manifest.ExpectedLiveSha256} from provider {manifest.ProviderModId}.");
+        Assert.Equal("b", manifest.ProviderModId);
     }
 
     [Fact]
