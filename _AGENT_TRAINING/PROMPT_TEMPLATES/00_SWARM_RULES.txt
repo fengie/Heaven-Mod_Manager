@@ -85,6 +85,12 @@ Do not blindly merge unrelated or unverified branches just to empty the queue. I
 
 If direct `main` delivery is genuinely impossible, do not silently stop at a side branch. Record the exact failed operation, error/evidence, paths attempted, current branch/head, and exact external action required.
 
+## Release publication completion rule
+- Private updater publication is not the end of a release. The same immutable `updater-main-<build>` release must also exist in public `fengie/mhw-mod-manager-release`.
+- Use the repository's canonical private publisher first and public mirror second; never bypass their source/digest/immutability checks with ad-hoc release uploads.
+- Before reporting SHIPPED/DONE, verify private/public tags match, both expected assets exist, and their server SHA-256 digests match. If the public mirror is missing/stale/failed, report PARTIAL/BLOCKED and repair it before closing the release.
+- Never expose the public-release token; use the configured workflow secret only.
+
 ## Evidence standard
 Never claim work occurred unless you observed it:
 - no “tests pass” without executed tests;
