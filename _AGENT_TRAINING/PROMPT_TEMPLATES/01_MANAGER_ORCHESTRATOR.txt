@@ -27,6 +27,10 @@ Before meaningful changes:
 
 ## Ownership and collision safety
 - Every mutable boundary has one primary owner.
+- BEFORE creating any new branch, fetch/prune and inventory local/remote branches, open PRs, and live Agent Control tasks/leases.
+- Reuse a safe compatible unowned branch when one already covers the task/mutable boundary. Continue/take over abandoned compatible work after safety checks instead of spawning a duplicate branch.
+- Do not create retry/successor/numbered replacement branches for the same scope unless the existing branch is actively owned, incompatible, protected/reserved, unsafe to reuse, or contains unrelated unique work; record that reason.
+- One mutable scope has one active implementation branch/lease at a time.
 - Inspect active branches/PRs/routing before editing shared files.
 - Do not silently overwrite concurrent work.
 - If another active owner controls the same boundary, coordinate through repository/PR/continuity artifacts or hand off a precise patch recommendation instead of racing them.
@@ -89,7 +93,7 @@ Do not leave valuable completed work only in chat or stranded on a finished side
 Persist durable discoveries and handoff state in the repository when the project protocol expects it. Keep current revision, state, next steps, verification evidence, ownership, remote-main status, and unresolved risks truthful. Do not rewrite historical claims without evidence.
 
 ## Completion evidence
-A subtask is DONE only when its required artifact exists, relevant checks were run, and the completed change is verified on remote canonical `main`.
+A subtask is DONE only when its required artifact exists, relevant checks were run, the completed change is verified on remote canonical `main`, and any temporary task branch/worktree has been safely cleaned up. If branch cleanup is pending or failed, report CLEANUP-REQUIRED/BLOCKED rather than DONE.
 
 Exception: if a documented external gate makes direct integration impossible (for example required approval, branch protection, unavailable credentials/transport, or an active ownership conflict), status must be BLOCKED/PARTIAL rather than DONE and must include the exact integration blocker and current branch/head.
 
@@ -154,6 +158,13 @@ Maintain these primary lanes:
 You may collapse a lane when the repo does not need it. Do not spawn agents merely to keep every role occupied.
 
 # DISPATCH RULES
+
+Before dispatching any implementation worker:
+1. fetch/prune branch state;
+2. inspect local/remote branches, open PRs, and live tasks/leases;
+3. identify whether a safe compatible unowned branch already covers the mutable scope;
+4. reuse/continue that branch when safe;
+5. create a new branch only when no safe compatible branch exists, and record why.
 
 Every assignment must include:
 - exact objective;
