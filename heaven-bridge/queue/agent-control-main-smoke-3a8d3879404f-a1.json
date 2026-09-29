@@ -1,0 +1,14 @@
+{
+  "id": "agent-control-main-smoke-3a8d3879404f-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference = 'Stop'; $repo = Join-Path $HOME 'local-ai-workspaces\\mhw-mods'; $wt = Join-Path $env:TEMP 'agent-control-main-smoke-3a8d3879404f'; if (Test-Path $wt) { git -C $repo worktree remove --force $wt 2>$null; if (Test-Path $wt) { Remove-Item -Recurse -Force $wt } }; git -C $repo fetch origin --prune; git -C $repo worktree add --detach $wt 3a8d3879404f7dc049593362089b8239c39f5254; $control=Join-Path $wt 'tools\\agent-control'; $env:AGENT_CONTROL_REPO=$wt; $env:AGENT_CONTROL_PORT='17331'; $env:AGENT_CONTROL_HOST='127.0.0.1'; $server=Start-Process -FilePath node -ArgumentList 'server.mjs' -WorkingDirectory $control -PassThru -WindowStyle Hidden; try {;   $ready=$false;   for($i=0;$i -lt 30;$i++){ try { $s=Invoke-RestMethod -Uri 'http://127.0.0.1:17331/api/status' -TimeoutSec 2; if($s){$ready=$true;break} } catch {}; Start-Sleep -Milliseconds 250 };   if(-not $ready){ throw 'Agent Control server did not become ready' };   $env:AGENT_CONTROL_URL='http://127.0.0.1:17331';   Push-Location $control;   $cli = & node .\\agentctl.mjs status | Out-String;   $snap = & node .\\agentctl.mjs snapshot | Out-String;   Pop-Location;   $html=(Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:17331/' -TimeoutSec 3).Content;   if($cli -notmatch 'running'){ throw 'CLI status did not report running' };   if($snap -notmatch 'federation'){ throw 'snapshot missing federation' };   if($html -notmatch 'Agent Control'){ throw 'dashboard HTML missing Agent Control marker' };   Write-Output 'SMOKE_SERVER=PASS'; Write-Output 'SMOKE_CLI=PASS'; Write-Output 'SMOKE_DASHBOARD=PASS'; } finally {;   if($server -and -not $server.HasExited){ Stop-Process -Id $server.Id -Force };   Remove-Item Env:AGENT_CONTROL_URL -ErrorAction SilentlyContinue;   git -C $repo worktree remove --force $wt 2>$null; }"
+  },
+  "created_at": "2026-09-29T09:29:20Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
