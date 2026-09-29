@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-hcp-exact-main-448ad1f-20260929-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "~",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $relay=Join-Path $HOME 'HeavenBridgeRepo'; $origin=(git -C $relay remote get-url origin).Trim(); $tmp=Join-Path $env:TEMP ('hcp-main-'+[guid]::NewGuid().ToString('N')); git clone --quiet --branch main --single-branch $origin $tmp; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; try { $sha=(git -C $tmp rev-parse HEAD).Trim(); if($sha -ne '448ad1f7f60783780474c2c27cc5b2592a599cc8'){ throw ('main moved before gate: '+$sha) }; Set-Location $tmp; python .\\plugins\\heaven-control-plane\\verify.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; python .\\heaven-bridge\\test_worker.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; python .\\heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; git diff --check; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output ('EXACT_MAIN_VERIFIED='+$sha) } finally { Set-Location $HOME; Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }"
+  },
+  "created_at": "2026-09-29T12:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
