@@ -1,0 +1,9 @@
+{
+  "id": "--------------------------delete-ledger-superseded-20260929-1107",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:08:14.491699+00:00"
+}
