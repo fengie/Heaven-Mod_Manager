@@ -125,14 +125,14 @@ public partial class WorkflowWindow : Window
     private async void OpenRecipe(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dialog = new OpenFileDialog { Filter = "Loadout recipes|*.ummpack;*.mhwrecipe;*.json" };
+        var dialog = new OpenFileDialog { Filter = "Portable mod lists|*.ummpack;*.mhwrecipe;*.json" };
         if (dialog.ShowDialog(this) != true) return;
         await RunAsync(async () => { recipePath = null; var preview = await services.Recipe.PreviewAsync(dialog.FileName); RecipeRows.ItemsSource = preview.Matches; recipePath = dialog.FileName; Status.Text = $"{preview.Matches.Count(m => m.CanRestore)}/{preview.Matches.Count} entries can be restored. Inspect unresolved entries before saving."; });
     }
     private async void ExportRecipe(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dialog = new SaveFileDialog { Filter = "Portable loadout|*.mhwrecipe|UMM recipe|*.ummpack", FileName = "loadout.mhwrecipe" };
+        var dialog = new SaveFileDialog { Filter = "Portable mod list|*.mhwrecipe|Universal Mod Manager list|*.ummpack", FileName = "mod-list.mhwrecipe" };
         if (dialog.ShowDialog(this) != true) return;
         await RunAsync(async () => { await services.Recipe.ExportAsync(dialog.FileName); Status.Text = "Exported the current mod list: " + dialog.FileName; });
     }
@@ -141,7 +141,7 @@ public partial class WorkflowWindow : Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunAsync(async () =>
         {
-            if (recipePath is null) throw new InvalidOperationException("Open a recipe first.");
+            if (recipePath is null) throw new InvalidOperationException("Open a mod list first.");
             await EnsureNewProfileNameAsync(RecipeName.Text);
             var id = await services.Recipe.ImportAsync(recipePath, RecipeName.Text);
             await RefreshAsync(); ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource).First(p => p.Id == id);
@@ -153,7 +153,7 @@ public partial class WorkflowWindow : Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunAsync(async () =>
         {
-            if (recipePath is null) throw new InvalidOperationException("Open and review a recipe first.");
+            if (recipePath is null) throw new InvalidOperationException("Open and review a mod list first.");
             var count = await services.Recipe.RestoreFamiliesAsync(recipePath); await RefreshAsync();
             Status.Text = $"Restored {count} known mod relationship(s). Existing local rules were kept; review File Decisions before applying changes.";
         });
@@ -314,7 +314,7 @@ public partial class WorkflowWindow : Window
             if (!result.Success) throw result.Exception ?? new InvalidOperationException(result.Message);
             AppliedMigration = true; RequestedStage = null;
             stage = (await services.Database.GetModsAsync()).ToDictionary(m => m.Id, m => (m.Enabled, m.Priority), StringComparer.OrdinalIgnoreCase);
-            await RefreshAsync(); Status.Text = result.Message + " Old package superseded; its source files remain available for Undo.";
+            await RefreshAsync(); Status.Text = result.Message + " The older package was replaced, but its source files remain available for Undo.";
         });
     }
 }
