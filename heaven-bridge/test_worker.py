@@ -683,6 +683,32 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
+    def test_local_watchdog_heartbeat_is_network_independent_and_pid_bound(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_HEARTBEAT", Path(td) / "worker-local-heartbeat.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_local_heartbeat()
+            row = json.loads(hb.LOCAL_HEARTBEAT.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertEqual(row["worker_version"], hb.WORKER_VERSION)
+        self.assertEqual(row["protocol"], hb.PROTOCOL)
+        self.assertIn("updated_at", row)
+
+    def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")
+        manage = MODULE_PATH.with_name("manage.ps1").read_text(encoding="utf-8")
+        self.assertIn("-RestartCount 255", bootstrap)
+        self.assertIn("-ExecutionTimeLimit ([TimeSpan]::Zero)", bootstrap)
+        self.assertIn("$WatchdogTaskName = 'Heaven Local Bridge Watchdog'", bootstrap)
+        self.assertIn("Register-ScheduledTask", bootstrap)
+        self.assertIn("HeavenBridgeWatchdog.vbs", bootstrap)
+        self.assertIn("worker-local-heartbeat.json", watchdog)
+        self.assertIn("local heartbeat stale", watchdog)
+        self.assertNotIn("git -C", watchdog)
+        self.assertIn("@('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
+
     def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         compile_idx = bootstrap.index("& $python -m py_compile $staged")
