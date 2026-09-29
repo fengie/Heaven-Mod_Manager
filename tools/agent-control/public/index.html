@@ -46,6 +46,14 @@
     .control-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
     .control-grid .wide { grid-column:1 / -1; }
     .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:10px 0 12px; }
+    .quick-action,.quick-autopilot { min-height:58px; text-align:left; font-weight:800; padding:12px 13px; }
+    .quick-action small,.quick-autopilot small { display:block; margin-top:3px; color:var(--muted); font-weight:500; line-height:1.25; }
+    .quick-action.primary small { color:#dceaff; }
+    .deploy-now { width:100%; min-height:48px; font-size:15px; margin-top:10px; }
+    details.advanced { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
+    details.advanced summary { cursor:pointer; color:var(--muted); font-weight:800; user-select:none; padding:7px 0; }
+    details.advanced[open] summary { color:var(--text); }
     button {
       border:1px solid var(--line); background:var(--panel2); color:var(--text);
       border-radius:11px; padding:10px 12px; cursor:pointer; transition:.14s ease;
@@ -108,57 +116,71 @@
 
     <div class="grid">
       <aside class="card composer">
-        <div class="section-title"><h2>Deploy</h2><span class="pill" id="repoPill">repo</span></div>
+        <div class="section-title"><h2>One-click launch</h2><span class="pill" id="repoPill">repo</span></div>
 
-        <label for="task">Objective</label>
-        <textarea id="task" placeholder="Example: Audit updater rollback for race conditions. Commit and push any verified fixes."></textarea>
-
-        <div class="row2">
-          <div>
-            <label for="baseBranch">Base branch</label>
-            <input id="baseBranch" value="main" spellcheck="false" />
-          </div>
-          <div>
-            <label for="machine">Worker</label>
-            <select id="machine"><option value="auto">Auto / heaven</option></select>
-          </div>
+        <div class="quick-grid">
+          <button class="quick-action primary" id="quickContinue" data-preset="continue">▶ Continue Project<small>Pick the highest-value unfinished work and keep going.</small></button>
+          <button class="quick-action" id="quickSwarm" data-preset="swarm">🐝 Usual Swarm<small>Manager + primary programmer + support lanes.</small></button>
+          <button class="quick-action" id="quickFix" data-preset="fix">🐛 Fix Bugs<small>Find, reproduce, fix, regress, and verify.</small></button>
+          <button class="quick-action" id="quickPlan" data-preset="planned">🧱 Implement Planned<small>Take the next useful planned features to completion.</small></button>
+          <button class="quick-action" id="quickVerify" data-preset="verify">✅ Verify & Repair<small>Run gates, repair failures, and leave evidence.</small></button>
+          <button class="quick-action" id="quickBacklog" data-preset="backlog">🔀 Clean Backlog<small>Resolve useful issues/PRs/branches and clean stale work.</small></button>
+          <button class="quick-action" id="quickRelease" data-preset="release">🚀 Release Ready<small>Finish release gates and publish when allowed.</small></button>
+          <button class="quick-autopilot" id="quickAutopilot">♾ Start Autopilot<small>Keep advancing routine engineering until a governed gate.</small></button>
         </div>
 
-        <label for="boundary">Mutable boundary lease <span style="font-weight:400">(optional)</span></label>
-        <input id="boundary" placeholder="Example: updater-release-pipeline" spellcheck="false" />
-        <div class="tiny">Leave blank for an isolated per-agent lease. Name a boundary when you want collision prevention across related work.</div>
+        <label for="task">Custom objective <span style="font-weight:400">(optional)</span></label>
+        <textarea id="task" style="min-height:92px" placeholder="Leave blank and click Deploy Usual Swarm to continue the highest-value unfinished work."></textarea>
+        <button class="primary deploy-now" id="deploySwarm">Deploy Usual Swarm</button>
+        <div class="tiny">No typing required. The button uses a safe default objective when this box is blank.</div>
 
-        <div class="row3">
-          <div>
-            <label for="model">Model override</label>
-            <input id="model" placeholder="Codex default" spellcheck="false" />
-          </div>
-          <div>
-            <label for="priority">Priority</label>
-            <input id="priority" type="number" min="0" max="100" value="50" />
-          </div>
-          <div>
-            <label for="count">Count</label>
-            <input id="count" type="number" min="1" max="8" value="1" />
-          </div>
-        </div>
+        <details class="advanced">
+          <summary>Advanced deploy options</summary>
 
-        <label>One-click role</label>
-        <div class="role-grid">
-          <button class="primary deploy" data-role="support">Support</button>
-          <button class="deploy" data-role="reviewer">Reviewer</button>
-          <button class="deploy" data-role="test">Test</button>
-          <button class="deploy" data-role="main">Main</button>
-          <button class="deploy" data-role="manager">Manager</button>
-          <button class="deploy" data-role="integration">Integration</button>
-          <button class="deploy" data-role="recovery">Recovery</button>
-          <button class="deploy" data-role="release">Release</button>
-        </div>
+          <div class="row2">
+            <div>
+              <label for="baseBranch">Base branch</label>
+              <input id="baseBranch" value="main" spellcheck="false" />
+            </div>
+            <div>
+              <label for="machine">Worker</label>
+              <select id="machine"><option value="auto">Auto / heaven</option></select>
+            </div>
+          </div>
 
-        <label>One-click swarm</label>
-        <button class="primary" id="deploySwarm" style="width:100%">Deploy Usual Swarm</button>
-        <div class="tiny">Uses the existing <span class="tag">usual-swarm</span> workflow to fill only missing useful Manager, Primary Programmer, and support lanes after ownership, capacity, and lease checks.</div>
-        <div class="tiny">Controller capacity is enforced before launch. Remote placement is used only when a real worker transport/provider is connected; unsupported placement fails closed.</div>
+          <label for="boundary">Mutable boundary lease <span style="font-weight:400">(optional)</span></label>
+          <input id="boundary" placeholder="Example: updater-release-pipeline" spellcheck="false" />
+          <div class="tiny">Leave blank for an isolated per-agent lease. Name a boundary when you want collision prevention across related work.</div>
+
+          <div class="row3">
+            <div>
+              <label for="model">Model override</label>
+              <input id="model" placeholder="Default execution model" spellcheck="false" />
+            </div>
+            <div>
+              <label for="priority">Priority</label>
+              <input id="priority" type="number" min="0" max="100" value="50" />
+            </div>
+            <div>
+              <label for="count">Count</label>
+              <input id="count" type="number" min="1" max="8" value="1" />
+            </div>
+          </div>
+
+          <label>Deploy one role</label>
+          <div class="role-grid">
+            <button class="primary deploy" data-role="support">Support</button>
+            <button class="deploy" data-role="reviewer">Reviewer</button>
+            <button class="deploy" data-role="test">Test</button>
+            <button class="deploy" data-role="main">Main</button>
+            <button class="deploy" data-role="manager">Manager</button>
+            <button class="deploy" data-role="integration">Integration</button>
+            <button class="deploy" data-role="recovery">Recovery</button>
+            <button class="deploy" data-role="release">Release</button>
+          </div>
+        </details>
+
+        <div class="tiny">Controller capacity, ownership, leases, and server-side authorization remain authoritative. Unsupported remote placement still fails closed.</div>
       </aside>
 
       <main>
@@ -285,6 +307,15 @@
   <script>
     const $ = id => document.getElementById(id);
     const state = { snapshot:null, busy:false };
+    const presetObjectives = {
+      continue: "Continue the highest-value unfinished project work. Inspect current state first, coordinate with existing agents, implement useful changes, verify them, integrate completed work into canonical main, clean temporary branches, and keep going until a real governed blocker.",
+      swarm: "Continue useful project work with the usual swarm topology. Coordinate ownership, avoid collisions, implement rather than only audit, verify changes, integrate completed work into canonical main, and clean temporary branches.",
+      fix: "Find the highest-impact real bugs in the current project, reproduce them, fix root causes, add regression coverage, verify user-facing behavior and integrations, record prevention lessons, integrate verified fixes into canonical main, and continue to the next useful bug.",
+      planned: "Implement the highest-value planned and unfinished features already supported by project context. Coordinate ownership, complete code and tests, verify behavior, integrate finished work into canonical main, and continue while useful work remains.",
+      verify: "Run the project's strongest relevant verification and release gates, investigate every failure, repair root causes, add regression coverage where appropriate, re-run verification, and leave canonical main in a verified state.",
+      backlog: "Reduce project backlog safely: inspect open issues, pull requests, and non-main branches; finish or integrate useful work, close truly completed or obsolete items with evidence, delete stale temporary branches, and preserve anything still valuable.",
+      release: "Finish the current user-facing version for release. Resolve remaining blockers, run required release gates, verify updater and publication behavior, integrate to canonical main, and publish immediately when project rules authorize release."
+    };
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
     const age = ms => {
@@ -582,12 +613,13 @@
       }
     }
 
-    async function autopilotAction(action) {
+    async function autopilotAction(action, objectiveOverride="") {
       try {
         const body = action === "start"
-          ? { objective: $("autopilotObjective").value.trim() }
+          ? { objective: (objectiveOverride || $("autopilotObjective").value.trim()).trim() }
           : { reason: `ui-${action}` };
         if (action === "start" && !body.objective) return toast("Set a big direction first.");
+        if (action === "start") $("autopilotObjective").value = body.objective;
         await api(`/api/autopilot/${action}`, { method:"POST", body:JSON.stringify(body) });
         toast(`Autopilot ${action} requested.`);
         await refresh();
@@ -650,12 +682,19 @@
     }
 
     function setDeployControlsDisabled(disabled) {
-      document.querySelectorAll(".deploy, #deploySwarm").forEach(button => button.disabled = disabled);
+      document.querySelectorAll(".deploy, .quick-action, .quick-autopilot, #deploySwarm").forEach(button => button.disabled = disabled);
     }
 
-    async function deploySwarm() {
-      const objective = $("task").value.trim();
-      if (!objective) return toast("Give the swarm an objective first.");
+    async function runPreset(key) {
+      const objective = presetObjectives[key];
+      if (!objective) return toast("Unknown quick action.");
+      $("task").value = objective;
+      await deploySwarm(objective);
+    }
+
+    async function deploySwarm(objectiveOverride="") {
+      const objective = (objectiveOverride || $("task").value.trim() || presetObjectives.continue).trim();
+      $("task").value = objective;
       if (state.busy) return;
       state.busy = true;
       setDeployControlsDisabled(true);
@@ -749,7 +788,9 @@
     }
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
-    $("deploySwarm").addEventListener("click", deploySwarm);
+    document.querySelectorAll(".quick-action[data-preset]").forEach(button => button.addEventListener("click", () => runPreset(button.dataset.preset)));
+    $("quickAutopilot").addEventListener("click", () => autopilotAction("start", presetObjectives.continue));
+    $("deploySwarm").addEventListener("click", () => deploySwarm());
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
     $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
