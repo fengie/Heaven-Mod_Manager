@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1114-control-plane-truth-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repos=@(); Get-ChildItem -Path $HOME -Directory -Force | ForEach-Object { $p=$_.FullName; if(Test-Path (Join-Path $p '.git')){ $repos += $p } }; [pscustomobject]@{Home=$HOME; Repos=$repos} | ConvertTo-Json -Depth 4",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T11:14:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
