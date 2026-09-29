@@ -1,0 +1,14 @@
+{
+  "id": "----------------------------------------------------------------------------uia131-local-review-qwen3-20260929-1115",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:15:01+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo=Join-Path $HOME 'HeavenBridgeRepo'; $tmp=Join-Path $HOME ('uia131-review-'+[guid]::NewGuid().ToString('N')); $url=(git -C $repo remote get-url origin).Trim(); try { git clone --quiet $url $tmp; Push-Location $tmp; try { git fetch --quiet origin main agent/bridge-uia-hardening-20260929; $diff=(git diff --no-ext-diff --unified=20 origin/main...origin/agent/bridge-uia-hardening-20260929 -- heaven-bridge/worker.py heaven-bridge/uia.ps1 heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py heaven-bridge/plugin); $prompt=@\"\nYou are an independent security/reliability reviewer. Review ONLY the following diff for Heaven Local Bridge Windows UI Automation hardening. Find concrete bugs, race/security issues, broken PowerShell/Python semantics, missing tests, or compatibility regressions. Do not propose stylistic churn. Respond with: VERDICT PASS or NEEDS_FIX, then concise findings ordered by severity. The desired invariants are: semantic UI mutations fail closed when uniqueness cannot be proven; relay-carried UIA text is never mistaken for credential-safe secret input; password values are not read or set; bounded behavior; existing worker capabilities preserved.\n\nDIFF:\n$diff\n\"@; $body=@{model='qwen3:4b';prompt=$prompt;stream=$false;options=@{temperature=0.1}}|ConvertTo-Json -Depth 8; $resp=Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/generate' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 300; Write-Output $resp.response } finally { Pop-Location } } finally { if(Test-Path $tmp){Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue} }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "priority": "highest"
+}
