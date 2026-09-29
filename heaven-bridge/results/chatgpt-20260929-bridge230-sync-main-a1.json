@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-bridge230-sync-main-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:17:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:18:20.062705+00:00",
+  "finished_at": "2026-09-29T16:18:26.557330+00:00",
+  "stdout": "Merge made by the 'ort' strategy.\n .github/workflows/workflow-feature-pr-gate.yml     |    9 +\n .verification/function-status.json                 | 1933 ++++++++++----------\n .verification/stage-status.json                    |   72 +-\n .../updater-installed-client-e2e-v8.8.13.log       |   73 +\n .../EVIDENCE/v8.8.13-heaven-windows-closure.log    |   57 +\n .../PROMPT_TEMPLATES/00_SWARM_RULES.txt            |    3 +\n .../PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt   |    8 +\n scripts/Test-AgentHandoff-NegativeFixtures.ps1     |    5 +-\n scripts/Test-AgentHandoff.ps1                      |   11 +-\n src/MhwModManager.Storage/LegacyV7Migrator.cs      |   38 +-\n .../LegacyMigrationTests.cs                        |   74 +\n 11 files changed, 1301 insertions(+), 982 deletions(-)\n create mode 100644 _AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.13.log\n create mode 100644 _AGENT_CONTEXT/EVIDENCE/v8.8.13-heaven-windows-closure.log\n create mode 100644 tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs\nPR230_SYNC_OK head=0492367d925ac592aa24f7dbe2ae6ebdb3d0456b base=fe422eb7911b503a00adf7015281372c0b867aac\r\n",
+  "stderr": "To https://github.com/fengie/mhw-mods.git\n   bfcaa51b..0492367d  HEAD -> fix/heaven2-bridge-self-heal-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-bridge230-sync-main-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-bridge230-sync-main-a1.stderr.log",
+    "stdout_bytes": 1136,
+    "stderr_bytes": 111,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "52add5a1f82b27dac57c1864b6094e85f12697284078cb3cdc1418380720dbb5"
+}
