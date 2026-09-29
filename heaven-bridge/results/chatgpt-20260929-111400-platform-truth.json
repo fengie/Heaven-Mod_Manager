@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-111400-platform-truth",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:14:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:46:32.538920+00:00",
+  "finished_at": "2026-09-29T11:46:37.775323+00:00",
+  "stdout": "HOME=C:\\Users\\Xxkan\r\nC:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\r\nC:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods\r\nC:\\Users\\Xxkan\\actions-runner-heaven\\_work\\_PipelineMapping\\fengie\\mhw-mods\r\nC:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111400-platform-truth.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111400-platform-truth.stderr.log",
+    "stdout_bytes": 258,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "00d550dcd615b2f003cccab994a05fb74458946b4f5b4395b3783ba4500f6223"
+}
