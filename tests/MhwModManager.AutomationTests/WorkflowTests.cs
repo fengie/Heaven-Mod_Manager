@@ -186,6 +186,58 @@ public sealed class WorkflowTests : IDisposable
     }
 
     [Fact]
+    public async Task SmartInboxRollbackFailureDoesNotReportCleanSkip()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "inbox-rollback-failure-mods");
+        var inbox = Path.Combine(root, "inbox-rollback-failure-inbox");
+        var state = Path.Combine(root, "inbox-rollback-failure-state");
+        Directory.CreateDirectory(mods);
+        Directory.CreateDirectory(inbox);
+
+        var source = Path.Combine(inbox, "Pack");
+        Directory.CreateDirectory(Path.Combine(source, "nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(source, "nativePC", "item.tex"), "ITEM", Token);
+        await File.WriteAllTextAsync(Path.Combine(inbox, "Processed"), "blocks Processed directory creation", Token);
+
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var categories = new AutoCategoryService(db);
+        var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), state);
+        string? blockedFile = null;
+        var service = new SmartInboxService(
+            db,
+            new ArchiveInspector(),
+            catalog,
+            nexus,
+            categories,
+            inbox,
+            mods,
+            faultInjector: (point, destination) =>
+            {
+                if (point != SmartInboxFaultPoint.AfterPublishBeforeSourceArchive) return;
+                blockedFile = Directory.EnumerateFiles(destination, "*", SearchOption.AllDirectories).Single();
+                File.SetAttributes(blockedFile, File.GetAttributes(blockedFile) | FileAttributes.ReadOnly);
+            });
+
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => service.ProcessAsync(Token));
+
+            Assert.Contains("rollback", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.True(Directory.Exists(source));
+            Assert.True(Directory.Exists(Path.Combine(mods, "Pack")));
+            Assert.Empty(await db.GetModsAsync(Token));
+        }
+        finally
+        {
+            if (blockedFile is not null && File.Exists(blockedFile))
+                File.SetAttributes(blockedFile, File.GetAttributes(blockedFile) & ~FileAttributes.ReadOnly);
+        }
+    }
+
+    [Fact]
     public async Task SmartInboxFailedArchiveIsNeverCatalogedWhenLaterItemSucceeds()
     {
         var db = await DatabaseAsync();

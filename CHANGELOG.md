@@ -1,3 +1,10 @@
+# v8.8.14 — Fail-closed Smart Inbox rollback
+
+- Make published-package rollback report failure instead of swallowing cleanup errors after source archival fails.
+- Stop Smart Inbox processing when both source archival and published rollback fail, preserving both failures instead of recording a clean skipped item.
+- Preserve cancellation semantics while surfacing rollback residue as part of the cancellation failure.
+- Add a deterministic Windows regression that makes the published file undeletable and proves the run fails closed.
+
 # v8.8.13 — Repeatable recipe family restore
 
 - Make repeated explicit family restoration from the same portable recipe idempotent instead of misclassifying the manager-created local family as a conflict.

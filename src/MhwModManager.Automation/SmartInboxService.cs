@@ -6,7 +6,12 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
 
-public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null)
+public enum SmartInboxFaultPoint
+{
+    AfterPublishBeforeSourceArchive
+}
+
+public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null, Action<SmartInboxFaultPoint,string>? faultInjector = null)
 {
     public async Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
@@ -53,6 +58,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
                 staging = null;
                 publishedDestination = destination;
+                faultInjector?.Invoke(SmartInboxFaultPoint.AfterPublishBeforeSourceArchive, destination);
                 MoveToProcessed(entry);
                 publishedDestination = null;
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
@@ -61,20 +67,33 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
             {
-                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                var rollbackFailure = ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                if (rollbackFailure is not null)
+                    throw new IOException(
+                        $"Smart Inbox could not archive source '{entry}' and rollback of published package '{publishedDestination}' also failed.",
+                        new AggregateException(ex, rollbackFailure));
                 ct.ThrowIfCancellationRequested();
                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
                 results.Add(new(entry, null, false, AutomationCategory.Unknown, ex.Message));
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                var rollbackFailure = ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                if (rollbackFailure is not null)
+                    throw new OperationCanceledException(
+                        $"Smart Inbox cancellation could not roll back published package '{publishedDestination}'.",
+                        new AggregateException(ex, rollbackFailure),
+                        ex.CancellationToken);
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
-                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                var rollbackFailure = ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                if (rollbackFailure is not null)
+                    throw new IOException(
+                        $"Smart Inbox failed and rollback of published package '{publishedDestination}' also failed.",
+                        new AggregateException(ex, rollbackFailure));
                 throw;
             }
             finally
