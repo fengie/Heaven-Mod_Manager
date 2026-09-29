@@ -232,6 +232,10 @@ Assert-Equal $true ($multiRefreshError -like 'Final updater publication main ref
 # the authoritative Git REST ref. The one remaining local current-build tag
 # check is deliberately the pre-publication orphan-tag refusal.
 $publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
+Assert-Equal $true $publishSource.Contains('function Ensure-GitHubCli') 'publication self-bootstraps GitHub CLI'
+Assert-Equal $true $publishSource.Contains('https://api.github.com/repos/cli/cli/releases/latest') 'GitHub CLI bootstrap uses official release API'
+Assert-Equal $true $publishSource.Contains('Official GitHub CLI archive did not expose a SHA-256 digest.') 'GitHub CLI bootstrap requires asset digest'
+Assert-Equal $false $publishSource.Contains('GitHub CLI (gh) is required for updater publication.') 'publication does not require preinstalled GitHub CLI'
 $restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
 Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
