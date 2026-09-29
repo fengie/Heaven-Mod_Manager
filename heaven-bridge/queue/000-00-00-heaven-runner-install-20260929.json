@@ -1,0 +1,14 @@
+{
+  "id": "000-00-00-heaven-runner-install-20260929",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:00:12.935Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop';\n$repo='C:\\Users\\Xxkan\\HeavenBridgeRepo';\ngit -C $repo fetch origin main;\nif($LASTEXITCODE -ne 0){throw 'fetch main failed'}\n$tmp=Join-Path $env:TEMP 'install-github-runner-heaven.ps1';\ngit -C $repo show origin/main:heaven-bridge/install-github-runner.ps1 | Set-Content -LiteralPath $tmp -Encoding UTF8;\nif($LASTEXITCODE -ne 0){throw 'extract runner installer failed'}\n& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $tmp;\n$code=$LASTEXITCODE;\nRemove-Item $tmp -Force -ErrorAction SilentlyContinue;\nexit $code"
+  },
+  "priority": "highest"
+}
