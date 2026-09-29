@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-pr127-current-main-validate-20260929-1100-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:00:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; $wt='C:\\Users\\Xxkan\\validate-pr127-current-main'; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null; if(Test-Path $wt){Remove-Item -Recurse -Force $wt} }; git -C $repo fetch origin main agent/bridge-priority-scheduler-20260929 --prune; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $repo worktree add --detach $wt origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; try { Push-Location $wt; git checkout -b validate-pr127-local; git merge --no-commit --no-ff origin/agent/bridge-priority-scheduler-20260929; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; foreach($p in @('heaven-bridge/worker.py','heaven-bridge/test_worker.py','heaven-bridge/tests/test_worker.py')){ if(!(Test-Path $p)){throw \"missing $p\"} }; python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python heaven-bridge/test_worker.py -q; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -m unittest discover -s heaven-bridge/tests -v; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git diff --check HEAD^ HEAD 2>$null; if($LASTEXITCODE -ne 0){ git diff --check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE} }; [pscustomobject]@{ok=$true;base=(git rev-parse origin/main).Trim();head=(git rev-parse origin/agent/bridge-priority-scheduler-20260929).Trim();merge_tree=(git write-tree).Trim()}|ConvertTo-Json } finally { Pop-Location -ErrorAction SilentlyContinue; git -C $repo worktree remove --force $wt 2>$null }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "priority": "highest"
+}
