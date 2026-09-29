@@ -52,20 +52,9 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
         // descriptors before the no-key artwork pass so the first manual sync can use them immediately.
         mods=await db.GetModsAsync(ct);
 
-        // Nexus/Vortex archives normally do not contain their web screenshots. Even without an API
-        // key, recover a main preview from known Nexus page identity. Force sync may fill the whole
-        // library; background sync is deliberately capped so it never turns into a page-scraping storm.
-        var publicBudget=forceLive?60:8;
-        foreach(var mod in mods.Where(m=>!string.IsNullOrWhiteSpace(m.NexusModId)).OrderByDescending(m=>m.Enabled).ThenByDescending(m=>m.Priority))
-        {
-            if(publicBudget<=0)break;
-            ct.ThrowIfCancellationRequested();
-            if(await HasUsablePreviewAsync(mod.Id,ct))continue;
-            var added=await TryRefreshPublicNexusVisualAsync(mod,forceLive,ct);
-            if(added>0)publicVisualCount+=added;
-            publicBudget--;
-        }
-
+        // Nexus catalog/metadata network access is API-only. Do not fetch or parse Nexus HTML
+        // pages as a fallback; if authenticated API artwork is unavailable, keep existing local
+        // or declared previews and let the UI degrade gracefully.
         var key=ReadApiKey();
         var apiCount=0;
         var visualCount=0;
@@ -435,54 +424,6 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
         }
     }
 
-    private async Task<int> TryRefreshPublicNexusVisualAsync(ModDescriptor mod,bool force,CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; nexus={mod.NexusModId}");
-        if(string.IsNullOrWhiteSpace(mod.NexusModId)||string.IsNullOrWhiteSpace(gameDomain))return 0;
-        var stampKey="visual-public-last:"+mod.Id;
-        var last=await db.GetSettingAsync(stampKey,ct);
-        if(!force&&DateTimeOffset.TryParse(last,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal,out var previous)&&DateTimeOffset.UtcNow-previous<TimeSpan.FromDays(2))return 0;
-        await db.SetSettingAsync(stampKey,DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture),ct);
-        try
-        {
-            var page=$"https://www.nexusmods.com/{gameDomain}/mods/{Uri.EscapeDataString(mod.NexusModId)}";
-            using var request=new HttpRequestMessage(HttpMethod.Get,page);
-            request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml");
-            request.Headers.Referrer=new Uri("https://www.nexusmods.com/");
-            MasterDebugLog.Write("HTTP",$"Public Nexus visual request START mod={mod.NexusModId}");
-            using var response=await NexusHttp.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,ct);
-            MasterDebugLog.Write("HTTP",$"Public Nexus visual request END mod={mod.NexusModId}; status={(int)response.StatusCode} {response.StatusCode}");
-            if(!response.IsSuccessStatusCode)return 0;
-            var length=response.Content.Headers.ContentLength;if(length is>4_000_000)return 0;
-            var html=await response.Content.ReadAsStringAsync(ct);
-            if(html.Length>4_000_000)return 0;
-            var url=ExtractMetaImageUrl(html);
-            if(url is null)return 0;
-            var cached=await CacheRemoteImageAsync(mod.Id,url,ct);
-            if(cached is null)return 0;
-            await PersistVisualsAsync(mod,[cached],ct);
-            MasterDebugLog.Write("VISUALS",$"Public Nexus artwork fallback refreshed mod={mod.DisplayName}; nexus={mod.NexusModId}");
-            return 1;
-        }
-        catch(HttpRequestException ex){MasterDebugLog.Write("VISUALS",$"Public Nexus artwork fallback failed mod={mod.DisplayName}",ex);return 0;}
-        catch(IOException ex){MasterDebugLog.Write("VISUALS",$"Public Nexus artwork cache failed mod={mod.DisplayName}",ex);return 0;}
-    }
-
-    private static string? ExtractMetaImageUrl(string html)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        foreach(var match in MetaTagRegex().Matches(html).Cast<Match>())
-        {
-            var tag=match.Value;
-            if(!MetaPropertyRegex().IsMatch(tag))continue;
-            var content=MetaContentRegex().Match(tag);if(!content.Success)continue;
-            var url=System.Net.WebUtility.HtmlDecode(content.Groups[1].Value).Trim();
-            if(url.StartsWith("//",StringComparison.Ordinal))url="https:"+url;
-            if(IsRemotePreviewUrl(url))return url;
-        }
-        return null;
-    }
-
     private static bool IsRemotePreviewUrl(string? value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -615,10 +556,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
     private string? ReadApiKey()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var env=Environment.GetEnvironmentVariable("NEXUS_API_KEY");if(!string.IsNullOrWhiteSpace(env))return env.Trim();
-        var path=Path.Combine(nextStateRoot,"nexus-api-key.txt");
-        if(!File.Exists(path))return null;
-        var value=File.ReadAllText(path).Trim();return value.Length==0?null:value;
+        return new CatalogCredentialStore(nextStateRoot).ReadSecret("nexus");
     }
 
     private static async Task<JsonDocument?> GetJsonAsync(string relative,string apiKey,CancellationToken ct)

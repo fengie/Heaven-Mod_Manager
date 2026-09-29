@@ -30,6 +30,19 @@ public partial class MainWindow:Window
         ((MainWindowViewModel)DataContext).StartProgramUpdater();
     }
 
+    public Task RefreshAfterCatalogInstallAsync()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ((MainWindowViewModel)DataContext).RefreshAfterCatalogInstallAsync();
+    }
+
+    private void OpenCatalogClick(object sender,RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var catalog=new CatalogWindow{Owner=this};
+        catalog.ShowDialog();
+    }
+
 
     private void OnPreviewKeyDown(object sender,KeyEventArgs e)
     {

@@ -60,6 +60,7 @@
                         <Button Content="Use This Game" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Button Content="Browse Mods" Click="OpenCatalogClick" Style="{StaticResource PrimaryButton}" ToolTip="Browse supported mod providers, choose exact files, and install through the manager."/>
                         <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Choose a downloaded mod archive and add it to this game's library."/>
                         <Button Content="Find Installed Games" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
                         <Button Content="Add Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
