@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0846-bridge-status-gate",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:45:39.108301+00:00"
+  "updated_at": "2026-09-29T08:46:02.226743+00:00",
+  "exit_code": 1
 }
