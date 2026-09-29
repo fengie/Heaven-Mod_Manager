@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T102000Z-find-mhw-repo",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:21:09.629028+00:00"
+  "updated_at": "2026-09-29T10:21:33.733407+00:00",
+  "exit_code": 0
 }
