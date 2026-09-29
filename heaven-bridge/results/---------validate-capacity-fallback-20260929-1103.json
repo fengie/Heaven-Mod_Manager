@@ -1,0 +1,21 @@
+{
+  "id": "---------validate-capacity-fallback-20260929-1103",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:03:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:05:32.337263+00:00",
+  "finished_at": "2026-09-29T11:05:34.768524+00:00",
+  "stdout": "\n> heaven-agent-control@0.5.1 check\n> node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/liveness-scheduler.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs\n\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-capacity-fallback-1103'...\nnpm run check failed\r\nAt line:1 char:379\r\n+ ... n check; if($LASTEXITCODE -ne 0){throw 'npm run check failed'}; npm t ...\r\n+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (npm run check failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : npm run check failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------validate-capacity-fallback-20260929-1103.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------validate-capacity-fallback-20260929-1103.stderr.log",
+    "stdout_bytes": 387,
+    "stderr_bytes": 426,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "02972bd28da3076bd262b7477996b5a0a0a701f5830ddf3fa5448d941371af6f"
+}
