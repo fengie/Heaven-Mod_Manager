@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T154105Z-runner-workspace-inventory-02",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:40:03.882400+00:00"
+  "updated_at": "2026-09-29T15:40:19.562019+00:00",
+  "exit_code": 0
 }
