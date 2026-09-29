@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-exact-test-31db2157be72-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:18:48.601Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T09:18:56.180508+00:00",
+  "finished_at": "2026-09-29T09:18:58.603778+00:00",
+  "stdout": "HEAD is now at 31db215 Authorize scoped Heaven work from CLI dispatch\nv22.13.1\r\n\n> heaven-agent-control@0.5.0 check\n> node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs\n\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   59b08ac..31db215  feature/agent-control-plane-v2-20260928 -> origin/feature/agent-control-plane-v2-20260928\n   9dc3674..dabdf5d  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (detached HEAD 31db215)\nnpm run check failed\r\nAt line:1 char:728\r\n+ ... ck;   if ($LASTEXITCODE -ne 0) { throw 'npm run check failed' };   np ...\r\n+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (npm run check failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : npm run check failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-exact-test-31db2157be72-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-exact-test-31db2157be72-a1.stderr.log",
+    "stdout_bytes": 424,
+    "stderr_bytes": 600,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f36023e800c50dcd832334e095ce995885810d01bd9111eeb901356066648480"
+}
