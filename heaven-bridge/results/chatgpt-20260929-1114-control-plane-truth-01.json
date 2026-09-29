@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1114-control-plane-truth-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:14:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:45:15.170706+00:00",
+  "finished_at": "2026-09-29T11:45:15.800193+00:00",
+  "stdout": "{\r\n    \"Home\":  \"C:\\\\Users\\\\Xxkan\",\r\n    \"Repos\":  [\r\n                  \"C:\\\\Users\\\\Xxkan\\\\agent-control-panel\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\branch-zero-reconcile\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\branchzero-pr127\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\branchzero-pr128-gate\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\branchzero-pr128-gate2\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeDevV3-1538\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeMainVerify\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeRepo\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeRepo.recovery-20260929-0808\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeRuntimeRepo\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-agent-control-release-verify\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-federation-registry-20260929\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-final-reconcile-20260929\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-final-v886-b\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-integration-release-20260929-0543\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-main-converge-20260929\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-main-finalize-20260929-0540\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-auto-updater-agent\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-c11-verify\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-pr90-integration\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-updater-publication-fix\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-updater-review-0731-a91\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-updater-support-20260928\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-mods-work-canonical\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-patcheq-clean\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-pr59-finalverify\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-pr90-integration\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-release-885\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-safe-branch-delete\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-safe-branch-delete2\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-support-harvest-verify-a66296b\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-swarm-contract-v3-verify\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-trace-fix-885\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-updater-lr003-restart-audit\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-updater-publication-race-review\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-updater-support\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-updater-support-lr003\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\mhw-verification-reliability-20260929\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\pa01f25-alexandra-chamas-feng-cheng-li\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\pa02f25-alexandra-chamas-feng-cheng-li_2_\",\r\n                  \"C:\\\\Users\\\\Xxkan\\\\pa03s25-alexandra-chamas-feng-cheng-li_3_\"\r\n              ]\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1114-control-plane-truth-01.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1114-control-plane-truth-01.stderr.log",
+    "stdout_bytes": 2831,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1b8d0bf54bfae1f306c67993a9e5357fac0e2755308dbe739e33a6d750848e98"
+}
