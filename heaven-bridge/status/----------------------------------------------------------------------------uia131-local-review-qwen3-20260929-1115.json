@@ -1,0 +1,9 @@
+{
+  "id": "----------------------------------------------------------------------------uia131-local-review-qwen3-20260929-1115",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:15:52.735125+00:00"
+}
