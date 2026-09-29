@@ -8,7 +8,7 @@ Keep the private development repository (`fengie/mhw-mods`) private while allowi
 
 The updater's public feed is:
 
-`fengie/mhw-mod-manager-releases`
+`fengie/mhw-mod-manager-release`
 
 That repository is release-only. It should contain no source tree, Heaven runner configuration, agent context, debug logs, private CI material, or development secrets.
 
@@ -37,7 +37,7 @@ Development/unmanaged installs remain unable to self-update.
 
 ## Publication boundary
 
-The private Windows Release Gate remains the only builder/verifier. Publication to the public repository must happen only after the private gate has produced and verified the same immutable package and manifest. Cross-repository publication must use a narrowly scoped credential that can write releases to `fengie/mhw-mod-manager-releases` and nothing broader.
+The private Windows Release Gate remains the only builder/verifier. Publication to the public repository must happen only after the private gate has produced and verified the same immutable package and manifest. Cross-repository publication must use a narrowly scoped credential that can write releases to `fengie/mhw-mod-manager-release` and nothing broader.
 
 Do not run untrusted public pull-request code on the Heaven self-hosted runner.
 
