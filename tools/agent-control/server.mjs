@@ -178,6 +178,17 @@ function assertWorkflowAutonomy(state, workflowId) {
   return assertAutonomyPermission(state, permission, `workflow execution "${workflowId}"`);
 }
 
+function assertAnyAutonomyPermission(state, permissions, action) {
+  const candidates = permissions.map(permission => autonomyPermissionDecision(state, permission));
+  const allowed = candidates.find(decision => decision.allowed);
+  if (allowed) return allowed;
+  const error = new Error(
+    `Autonomy level "${candidates[0]?.level || "unknown"}" does not permit ${action}; requires one of: ${permissions.join(", ")}.`
+  );
+  error.statusCode = 403;
+  throw error;
+}
+
 async function withDeployLock(fn) {
   const previous = deployMutex;
   let release;
@@ -1663,13 +1674,18 @@ function createImprovementProposal(body = {}) {
 function recordTaskEvidence(taskId, body = {}) {
   const state = loadState();
   assertMutationsAllowed(state);
-  assertAutonomyPermission(state, "maintain-continuity", "task evidence mutation");
+  const evidenceType = String(body.type || "note").trim().toLowerCase();
+  if (evidenceType === "verification") {
+    assertAnyAutonomyPermission(state, ["run-tests", "maintain-continuity"], "verification evidence mutation");
+  } else {
+    assertAutonomyPermission(state, "maintain-continuity", "task evidence mutation");
+  }
   const task = state.tasks.find(item => item.id === taskId);
   if (!task) throw new Error("Task not found.");
   const evidence = {
     id: `evidence-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     recordedAt: isoNow(),
-    type: String(body.type || "note"),
+    type: evidenceType,
     sourceSha: body.sourceSha || null,
     command: body.command || null,
     result: body.result || null,
@@ -1695,7 +1711,7 @@ function setReviewVerdict(agentId, body = {}) {
   }
   const state = loadState();
   assertMutationsAllowed(state);
-  assertAutonomyPermission(state, "prepare-integration", "integration review verdict");
+  assertAnyAutonomyPermission(state, ["request-review", "prepare-integration"], "integration review verdict");
   const agent = state.agents.find(item => item.id === agentId);
   if (!agent) throw new Error("Candidate agent not found.");
   agent.reviewVerdict = verdict;
