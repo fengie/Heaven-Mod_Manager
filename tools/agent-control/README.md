@@ -34,9 +34,10 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
-- Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
-- Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
-- Engineering autopilot requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
+- Adds a durable engineering-autopilot state machine for a user-supplied big direction. Bounded mode remains sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
+- The normal one-click startup now launches **Perpetual Cycle**: reconcile canonical truth → stabilize/implement → verify → review → bounded repair/reverify → integrate the approved exact candidate → PR/branch/issue hygiene → next-cycle expansion/continuity → reset per-cycle ownership → repeat.
+- Persists autopilot phase, transition/repair/retry budgets, perpetual cycle number, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
+- Engineering autopilot requires structured verification/review evidence and current ownership truth; perpetual mode renews an expired routing-freshness lease from current registered controller/federated state without reviving stale assignments.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 - Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
 - Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
@@ -108,6 +109,7 @@ node .\agentctl.mjs emergency-stop
 node .\agentctl.mjs stop-swarm
 node .\agentctl.mjs autopilot
 node .\agentctl.mjs autopilot-start --task "Build the current big direction" --max-repairs 3
+node .\agentctl.mjs autopilot-start --task "Continuously improve the project" --perpetual --max-cycles 0 --max-phase-retries 2
 node .\agentctl.mjs autopilot-pause
 node .\agentctl.mjs autopilot-resume
 node .\agentctl.mjs autopilot-stop
@@ -199,13 +201,14 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - Broad `usual-swarm` execution requires current reconciled ownership context.
 - An authoritative routing manifest fills only manager-declared open slots; claimed external ownership counts as occupied, while stale/superseded claims do not block a lane forever.
 - Autonomy permissions are checked server-side before workflow execution, direct deployment, review dispatch, persisted takeover/evidence mutation, integration verdict mutation, and self-improvement execution.
-- Engineering autopilot is control-authority-bound to `heaven2`; it rechecks remote `main` with `git ls-remote` and requires a current routing manifest before advancing.
+- Engineering autopilot is control-authority-bound to `heaven2`; it rechecks remote `main` with `git ls-remote` before advancing.
 - On `heaven2`, `auto` placement prefers `heaven`. Dispatch fails closed if the dedicated relay checkout or authenticated worker heartbeat cannot be proven healthy; it does not silently fall back to heavy execution on `heaven2`.
-- Governed engineering-autopilot dispatch explicitly authorizes only the scoped remote repository work it creates. The Heaven runner does not push or publish: it executes Codex in an isolated remote checkout, transfers a binary patch back, and commits only in the controller-owned local worktree.
+- Bounded autopilot still stops at its final integration approval boundary. **Perpetual Cycle** crosses that boundary only for an independently approved candidate and then requires refreshed remote-main ancestry proof for that exact candidate tip before the cycle can proceed.
+- If the routing freshness lease expires, perpetual mode creates a short-lived `overlay` lease from freshly reconciled controller/federated state with **no inherited assignments**, so stale manager claims are not resurrected. Registered live ownership still suppresses duplicate lanes.
+- Perpetual mode ignores the ordinary transition-count budget; `maxCycles=0` means unlimited. It still fails closed on missing structured evidence, manual-reconciliation states, worker-capacity/lease failures, exhausted repair or phase-retry budgets, degraded/read-only/emergency state, and other governed safety boundaries.
+- Repository hygiene never deletes unique or ambiguous work merely to reduce counts. PRs/issues are closed and branches are removed only with evidence that the work is integrated, completed, obsolete, or otherwise safe to retire.
 - Stopping a bridge-backed worker first requires an authoritative cancellation result for the owned remote job before terminating the local runner process or releasing its lease.
-- Autopilot stops at stale ownership, missing structured verification/review evidence, worker-capacity or lease preflight failure, exhausted repair budget, degraded/read-only/emergency state, and the final integration approval boundary.
-- The controller does not merge, release, or publish branches automatically.
-- Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
+- Release publication remains separately governed by repository release policy; Perpetual Cycle does not weaken release gates.
 
 ## ChatGPT plugin
 
