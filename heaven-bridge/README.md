@@ -61,6 +61,26 @@ Core capabilities:
 
 Clipboard reading is intentionally not enabled by default because clipboards commonly contain credentials or other sensitive data.
 
+## Operator quickstart
+
+Run these from the repository root on `heaven`:
+
+```powershell
+.\heaven-bridge\manage.ps1 START
+.\heaven-bridge\manage.ps1 STATUS
+.\heaven-bridge\manage.ps1 TEST
+.\heaven-bridge\manage.ps1 STOP
+.\heaven-bridge\manage.ps1 RECOVER
+```
+
+- `START` uses the hardened bootstrap when the canonical v3 worker is not already running, then performs the same health checks as `STATUS`.
+- `STATUS` verifies there is exactly one canonical v3 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current. It exits nonzero when any of those invariants are false.
+- `TEST` compiles the worker and both committed test suites, runs both suites, and parses the PowerShell bootstrap/operator scripts.
+- `STOP` stops only the canonical v3 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
+- `RECOVER` runs the hardened bootstrap and then requires `STATUS` to become healthy. Bootstrap preserves a dirty/diverged relay HEAD and tracked diff under `%USERPROFILE%\HeavenBridge\bootstrap-recovery` before realigning the disposable relay checkout.
+
+If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v3 heartbeat is healthy.
+
 ## Job schema
 
 ```json
@@ -210,14 +230,13 @@ The relay branch is not a canonical development branch for the wider project.
 
 ## Testing
 
-From the repository root:
+Use the operator gate from the repository root:
 
 ```powershell
-python -m py_compile heaven-bridge\worker.py
-python -m unittest -v heaven-bridge\test_worker.py
+.\heaven-bridge\manage.ps1 TEST
 ```
 
-The test suite covers TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, and health capabilities.
+That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
 
 ## Security boundary
 
