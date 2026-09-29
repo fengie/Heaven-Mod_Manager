@@ -71,6 +71,26 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], [decision], ["Remove at least one rule in the displayed cycle."]);
         }
 
+        var explicitIncompatibilities = effectiveRules
+            .Where(r => r.Kind == RuleKind.Incompatible &&
+                        r.Scope == RuleScope.ModPair &&
+                        r.LeftModId is not null &&
+                        r.RightModId is not null &&
+                        enabled.ContainsKey(r.LeftModId) &&
+                        enabled.ContainsKey(r.RightModId))
+            .Select(r => new ConflictDecision(
+                "<rules>",
+                ConflictKind.Incompatible,
+                true,
+                null,
+                "explicit-incompatible",
+                $"Enabled mods '{r.LeftModId}' and '{r.RightModId}' are explicitly marked incompatible.",
+                Confidence.Explicit,
+                r.Id))
+            .ToArray();
+        if (explicitIncompatibilities.Length > 0)
+            return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], explicitIncompatibilities, ["Disable one incompatible mod or remove the explicit incompatibility rule before deployment."]);
+
         var ruleIndex = ConflictRuleIndex.Create(effectiveRules);
         var decisions = new List<ConflictDecision>(providers.Count);
         var decisionByPath = new Dictionary<string,ConflictDecision>(providers.Count, StringComparer.OrdinalIgnoreCase);
