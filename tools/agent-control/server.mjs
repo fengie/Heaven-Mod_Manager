@@ -2536,7 +2536,6 @@ async function reconcileSwarmTailRecoveries() {
       const startedMs = Date.parse(String(agent?.startedAt || ""));
       return Number.isFinite(startedMs) && startedMs >= armedMs;
     });
-    if (scopedAgents.some(agent => coreIsActiveStatus(agent.status))) return;
 
     const batch = planSwarmTailRecoveryBatch(state, {
       maxWorkers: config.maxWorkers,
@@ -2549,6 +2548,11 @@ async function reconcileSwarmTailRecoveries() {
       }
       return;
     }
+
+    // Keep the recovery pool armed while any lane in this wave is still alive.
+    // Dead lanes are replaced immediately above; wave completion is evaluated only
+    // after all original/recovery workers have settled.
+    if (scopedAgents.some(agent => coreIsActiveStatus(agent.status))) return;
 
     const rootIds = new Set(scopedAgents
       .filter(agent => ["failed", "interrupted"].includes(String(agent.status || "")))
