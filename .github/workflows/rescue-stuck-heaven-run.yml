@@ -1,0 +1,26 @@
+name: Rescue stuck Heaven runner
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/rescue-stuck-heaven-run.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  force-cancel-stale-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Force-cancel stale self-hosted run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$GH_REPO/actions/runs/36559140396/force-cancel"
+          echo "Requested force-cancel for workflow run 36559140396"
