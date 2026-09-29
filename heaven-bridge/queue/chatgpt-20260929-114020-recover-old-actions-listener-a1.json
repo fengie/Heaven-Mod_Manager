@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-114020-recover-old-actions-listener-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:40:20Z",
+  "ttl_seconds": 1800,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60,
+    "command": "$ErrorActionPreference='Stop'\n$dir=Join-Path $env:USERPROFILE 'actions-runner-heaven'\n$workers=@(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.Name -eq 'Runner.Worker.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir,[System.StringComparison]::OrdinalIgnoreCase) })\n$killed=@()\nforeach($w in $workers){\n  $parent=Get-CimInstance Win32_Process -Filter (\"ProcessId=\"+$w.ParentProcessId) -ErrorAction SilentlyContinue\n  if(-not $parent -or $parent.Name -ne 'Runner.Listener.exe'){ Stop-Process -Id $w.ProcessId -Force -ErrorAction Stop; $killed += $w.ProcessId }\n}\nStart-Sleep -Seconds 2\n$listener=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir,[System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)\nif(-not $listener){\n  $run=Join-Path $dir 'run.cmd'\n  if(-not (Test-Path $run)){ throw ('missing runner entrypoint: '+$run) }\n  $cmdExe=Join-Path ([Environment]::SystemDirectory) 'cmd.exe'\n  Start-Process -FilePath $cmdExe -ArgumentList ('/d /c \"\"{0}\"\"' -f $run) -WorkingDirectory $dir -WindowStyle Hidden | Out-Null\n  Start-Sleep -Seconds 5\n}\n$final=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -in @('Runner.Listener.exe','Runner.Worker.exe') -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir,[System.StringComparison]::OrdinalIgnoreCase) } | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath)\n[pscustomobject]@{killed_orphan_workers=$killed; final=$final} | ConvertTo-Json -Depth 5"
+  },
+  "priority": "highest"
+}
