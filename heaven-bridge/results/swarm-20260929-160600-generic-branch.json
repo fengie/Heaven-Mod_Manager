@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-160600-generic-branch",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:06:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:07:28.788748+00:00",
+  "finished_at": "2026-09-29T16:07:31.012745+00:00",
+  "stdout": "## fix/game-registry-corrupt-preserve-20260929\n424af5fe0493351d802f75666919ac99cd8c7c58\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\n   2fe9ff1b..424af5fe  main       -> origin/main\nPrevious HEAD position was 2fe9ff1b fix: accept valid learned-rules startup linkage\nHEAD is now at 424af5fe Fix active training handoff validator v2 (#229)\nSwitched to a new branch 'fix/game-registry-corrupt-preserve-20260929'\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160600-generic-branch.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160600-generic-branch.stderr.log",
+    "stdout_bytes": 88,
+    "stderr_bytes": 364,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ee3e4e3d44d140b05e66f8b40c5fbaf68937448fbff6fc4339d8ec3c985ac170"
+}
