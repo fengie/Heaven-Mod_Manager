@@ -101,7 +101,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
     public string StagedViewLabel=>$"Pending ({StagedCount})";
     public string UpdatesViewLabel=>$"Updates ({UpdateCount})";
-    public string IssuesViewLabel=>$"Issues ({IssueCount})";
+    public string IssuesViewLabel=>$"Problems ({IssueCount})";
     public string RevalidateViewLabel=>$"Needs check ({RevalidationCount})";
     public string SupersededViewLabel=>$"Not used ({SupersededCount})";
 
