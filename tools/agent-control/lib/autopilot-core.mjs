@@ -43,6 +43,13 @@ export function defaultAutopilotState() {
     integrationAgentId: null,
     hygieneAgentId: null,
     expansionAgentId: null,
+    pendingReplacement: null,
+    replacementCount: 0,
+    recoveryHistory: [],
+    recoveryCooldownLevel: 0,
+    nextRetryAt: null,
+    lastRecoveryAt: null,
+    lastRecoveryReason: null,
     startedAt: null,
     updatedAt: null,
     lastTransitionAt: null,
@@ -78,6 +85,17 @@ export function normalizeAutopilotState(value = {}) {
     maxPhaseRetries: Number.isFinite(Number(value?.maxPhaseRetries))
       ? Math.max(0, Math.min(20, Number(value.maxPhaseRetries)))
       : base.maxPhaseRetries,
+    pendingReplacement: value?.pendingReplacement && typeof value.pendingReplacement === "object"
+      ? { ...value.pendingReplacement }
+      : null,
+    replacementCount: Math.max(0, Math.floor(Number(value?.replacementCount || 0) || 0)),
+    recoveryHistory: Array.isArray(value?.recoveryHistory)
+      ? value.recoveryHistory.filter(item => typeof item === "string" && Number.isFinite(Date.parse(item))).slice(-100)
+      : [],
+    recoveryCooldownLevel: Math.max(0, Math.min(12, Math.floor(Number(value?.recoveryCooldownLevel || 0) || 0))),
+    nextRetryAt: value?.nextRetryAt && Number.isFinite(Date.parse(value.nextRetryAt)) ? value.nextRetryAt : null,
+    lastRecoveryAt: value?.lastRecoveryAt && Number.isFinite(Date.parse(value.lastRecoveryAt)) ? value.lastRecoveryAt : null,
+    lastRecoveryReason: value?.lastRecoveryReason ? String(value.lastRecoveryReason) : null,
     enabled: Boolean(value?.enabled),
     paused: Boolean(value?.paused)
   };
