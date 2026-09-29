@@ -22,7 +22,7 @@ on:
       - 'src/MhwModManager.App/App.xaml.cs'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   installed-client-e2e:
@@ -79,7 +79,7 @@ jobs:
         run: |
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
           $log = Join-Path $evidence 'installed-client-e2e-test.log'
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --filter "FullyQualifiedName~UpdaterInstalledClientE2ETests" --logger "console;verbosity=detailed" 2>&1 |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" -- --filter-class MhwModManager.IntegrationTests.UpdaterInstalledClientE2ETests 2>&1 |
             Tee-Object -FilePath $log
           $exit = $LASTEXITCODE
           if ($exit -ne 0) { exit $exit }
@@ -92,10 +92,15 @@ jobs:
         run: |
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
           $log = Join-Path $evidence 'rollback-regression-tests.log'
-          $filter = "FullyQualifiedName~UpdateInstallerTests.Failure_after_first_replacement_restores_exact_previous_payload|FullyQualifiedName~UpdateInstallerTests.Failure_after_stale_owned_deletion_restores_deleted_and_replaced_files"
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --filter $filter --logger "console;verbosity=detailed" 2>&1 |
-            Tee-Object -FilePath $log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $methods = @(
+            "MhwModManager.IntegrationTests.UpdateInstallerTests.Failure_after_first_replacement_restores_exact_previous_payload",
+            "MhwModManager.IntegrationTests.UpdateInstallerTests.Failure_after_stale_owned_deletion_restores_deleted_and_replaced_files"
+          )
+          foreach ($method in $methods) {
+            dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" -- --filter-method $method 2>&1 |
+              Tee-Object -FilePath $log -Append
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - name: Collect updater runtime log
         if: always()
@@ -116,3 +121,68 @@ jobs:
           retention-days: 30
           path: |
             ${{ github.workspace }}\BuildLogs\updater-installed-e2e\**
+
+      - name: Persist successful installed-client E2E evidence
+        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        shell: powershell
+        run: |
+          if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
+            throw 'Successful updater E2E did not produce evidence.json.'
+          }
+
+          git fetch origin main
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to fetch origin/main before persisting updater E2E evidence.'
+          }
+          $remoteMain = (git rev-parse origin/main).Trim()
+          if ($remoteMain -ne $env:GITHUB_SHA) {
+            Write-Host "::notice::Skipping updater E2E evidence persistence for $env:GITHUB_SHA because main advanced to $remoteMain. The exact evidence remains in the workflow artifact."
+            exit 0
+          }
+
+          $evidenceDir = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          $evidenceHash = (Get-FileHash -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Algorithm SHA256).Hash
+          $provenancePath = Join-Path $evidenceDir 'provenance.txt'
+          $testLogPath = Join-Path $evidenceDir 'installed-client-e2e-test.log'
+          $rollbackLogPath = Join-Path $evidenceDir 'rollback-regression-tests.log'
+          $provenanceHash = if (Test-Path -LiteralPath $provenancePath) { (Get-FileHash -LiteralPath $provenancePath -Algorithm SHA256).Hash } else { 'missing' }
+          $testLogHash = if (Test-Path -LiteralPath $testLogPath) { (Get-FileHash -LiteralPath $testLogPath -Algorithm SHA256).Hash } else { 'missing' }
+          $rollbackLogHash = if (Test-Path -LiteralPath $rollbackLogPath) { (Get-FileHash -LiteralPath $rollbackLogPath -Algorithm SHA256).Hash } else { 'missing' }
+
+          $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.6.log'
+          @(
+            'MHW Manual Mod Manager v8.8.6 installed-client updater E2E closure'
+            ('source_sha=' + $env:GITHUB_SHA)
+            ('run_id=' + $env:GITHUB_RUN_ID)
+            ('runner_os=' + $env:RUNNER_OS)
+            ('runner_arch=' + $env:RUNNER_ARCH)
+            ('dotnet_sdk=' + (& dotnet --version))
+            ('evidence_sha256=' + $evidenceHash)
+            ('provenance_sha256=' + $provenanceHash)
+            ('installed_client_test_log_sha256=' + $testLogHash)
+            ('rollback_regression_log_sha256=' + $rollbackLogHash)
+            ''
+            '=== EVIDENCE.JSON ==='
+            (Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw)
+          ) | Set-Content -LiteralPath $closurePath -Encoding UTF8
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $closurePath
+          git commit -m 'Persist updater installed-client E2E evidence [skip ci]'
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to create updater installed-client E2E evidence commit.'
+          }
+          git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) {
+            git fetch origin main
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
+            }
+            $remoteMain = (git rev-parse origin/main).Trim()
+            if ($remoteMain -ne $env:GITHUB_SHA) {
+              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced to $remoteMain during the push race."
+              exit 0
+            }
+            throw "Failed to persist updater E2E evidence while origin/main still points at exact source $env:GITHUB_SHA."
+          }

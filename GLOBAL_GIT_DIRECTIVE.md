@@ -33,11 +33,15 @@ After completing your assigned task:
 9. Merge or fast-forward the completed work into `main`.
 10. Push `main` to the remote repository.
 11. Fetch/inspect the remote again and verify that the expected commit/change is actually present on remote `main`.
-12. Only then may the task be considered complete.
+12. If you used a temporary task branch, confirm it contains no unique commits absent from remote `main`.
+13. Delete the completed local task branch.
+14. Delete the corresponding remote task branch if it exists and is no longer needed.
+15. Prune stale remote-tracking refs and verify the cleanup.
+16. Only then may the task be considered complete.
 
 The desired lifecycle is:
 
-`task → implement → test → sync main → reconcile → merge into main → push main → verify remote main → done`
+`task → implement → test → sync main → reconcile → merge into main → push main → verify remote main → delete completed branch → done`
 
 NOT:
 
@@ -59,14 +63,37 @@ Use short-lived branches when isolation is useful, such as:
 
 Once the task is complete and integrated:
 
-- the branch should contain no unique completed work that is absent from `main`;
-- remove obsolete branches when safe;
+- the branch must contain no unique completed work that is absent from remote `main`;
+- delete the completed local task branch;
+- delete the corresponding remote task branch when it exists and is no longer needed;
+- prune stale remote-tracking refs after deletion;
 - do not continuously generate successor branches for trivial work;
 - do not leave dozens of completed branches for an integration agent to clean up later.
 
+Branch deletion is part of task completion, not optional housekeeping.
+
 If the work can safely be performed directly against current `main` without disrupting another active change, that is acceptable too.
 
-The important requirement is that **completed validated work reaches `main` immediately**.
+The important requirement is that **completed validated work reaches `main` immediately**, and temporary branches are removed after that integration is verified.
+
+---
+
+# BRANCH DELETION SAFETY
+
+Delete aggressively only after proving the work is safe on canonical remote `main`.
+
+Before deleting any branch:
+
+1. Fetch the latest remote state.
+2. Verify the expected change is present on `origin/main`.
+3. Verify the branch has no unique/unmerged commits that still need preservation.
+4. Confirm the branch is not the currently checked-out branch.
+5. Confirm the branch is not `main`, the repository default branch, a protected branch, an active release branch, or a branch explicitly retained by repository policy or the user.
+6. If all checks pass, delete the local branch and its remote counterpart.
+
+Never delete a branch merely because its name looks stale or because a PR is closed. Preserve any branch that still contains unique work until that work is explicitly integrated, superseded, archived, or otherwise dispositioned.
+
+For routine completed task branches, the default is deletion immediately after verified integration.
 
 ---
 
@@ -196,7 +223,7 @@ If repository rules require PRs:
 - perform required checks/reviews;
 - merge it once requirements are satisfied;
 - confirm the resulting commit is on `main`;
-- clean up the branch when appropriate.
+- delete the completed task branch locally and remotely once safety checks pass.
 
 Do not mark the underlying task complete merely because a PR exists.
 
@@ -219,7 +246,8 @@ Managers should actively detect:
 - duplicated branches containing equivalent changes;
 - agents handing integration responsibilities to unrelated agents;
 - branches diverging significantly from `main`;
-- work reported as "done" when it exists only locally or on a side branch.
+- work reported as "done" when it exists only locally or on a side branch;
+- merged task branches that were never deleted.
 
 When found, instruct the originating agent to integrate its work immediately whenever possible.
 
@@ -259,7 +287,7 @@ A task is NOT complete merely because:
 
 For repository changes, the default definition of **DONE** is:
 
-> The implementation is validated, reconciled with current `main`, merged into `main`, pushed to the remote, and verified as present on remote `main`.
+> The implementation is validated, reconciled with current `main`, merged into `main`, pushed to the remote, verified as present on remote `main`, and any completed temporary task branch has been safely deleted.
 
 ---
 
@@ -330,5 +358,7 @@ From this point forward, every agent should operate under this assumption:
 > The agent responsible for the change is also responsible for synchronizing, reconciling, merging, pushing, and verifying that change on `main`.
 
 > Do not create downstream cleanup work for other agents when you are capable of completing the integration yourself.
+
+> Once a temporary task branch is safely integrated and verified on remote `main`, delete it locally and remotely.
 
 This directive overrides any older workflow instruction that encourages agents to leave ordinary completed work on long-lived feature branches for a separate integration agent to merge later.
