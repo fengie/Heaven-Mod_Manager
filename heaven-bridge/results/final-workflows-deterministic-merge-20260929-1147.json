@@ -1,0 +1,21 @@
+{
+  "id": "final-workflows-deterministic-merge-20260929-1147",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:47:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:56:33.979429+00:00",
+  "finished_at": "2026-09-29T11:56:37.621992+00:00",
+  "stdout": "branch 'integration/complete-mod-workflows-final-1147' set up to track 'origin/main'.\nHEAD is now at 6fbd1e6e ci: supersede stale Heaven bridge gate runs\nAuto-merging .verification/function-status.json\nCONFLICT (content): Merge conflict in .verification/function-status.json\nAuto-merging AGENTS.md\nAuto-merging CHANGELOG.md\nCONFLICT (content): Merge conflict in CHANGELOG.md\nAuto-merging README.md\nCONFLICT (content): Merge conflict in README.md\nAuto-merging _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md\nAuto-merging _AGENT_CONTEXT/CURRENT_REVISION.json\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/CURRENT_REVISION.json\nAuto-merging _AGENT_CONTEXT/CURRENT_STATE.md\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/CURRENT_STATE.md\nAuto-merging _AGENT_CONTEXT/DECISIONS.md\nAuto-merging _AGENT_CONTEXT/KNOWN_ISSUES.md\nAuto-merging _AGENT_CONTEXT/NEXT_STEPS.md\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/NEXT_STEPS.md\nAuto-merging _AGENT_CONTEXT/README_FIRST.md\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/README_FIRST.md\nAuto-merging _AGENT_CONTEXT/SOURCE_MAP.md\nAuto-merging _AGENT_CONTEXT/VERIFICATION.md\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/VERIFICATION.md\nAuto-merging _AGENT_CONTEXT/handoff-manifest.json\nCONFLICT (content): Merge conflict in _AGENT_CONTEXT/handoff-manifest.json\nAuto-merging src/MhwModManager.App/App.xaml.cs\nAuto-merging src/MhwModManager.App/MainWindow.xaml\nCONFLICT (content): Merge conflict in src/MhwModManager.App/MainWindow.xaml\nAuto-merging src/MhwModManager.App/ViewModels/MainWindowViewModel.cs\nCONFLICT (content): Merge conflict in src/MhwModManager.App/ViewModels/MainWindowViewModel.cs\nAuto-merging src/MhwModManager.Automation/CrashBisectorEngine.cs\nCONFLICT (content): Merge conflict in src/MhwModManager.Automation/CrashBisectorEngine.cs\nAuto-merging src/MhwModManager.Automation/ModTrustService.cs\nAuto-merging src/MhwModManager.Automation/SmartInboxService.cs\nCONFLICT (content): Merge conflict in src/MhwModManager.Automation/SmartInboxService.cs\nAuto-merging src/MhwModManager.Filesystem/DeploymentExecutor.cs\nAuto-merging tests/MhwModManager.AutomationTests/AutomationLogicTests.cs\nAuto-merging tools/MhwModManager.SelfTest/Program.cs\nCONFLICT (content): Merge conflict in tools/MhwModManager.SelfTest/Program.cs\nAutomatic merge failed; fix conflicts and then commit the result.\nEXPECTED_MERGE_CONFLICTS\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   30837bfb..6fbd1e6e  main          -> origin/main\n   0d600ac2..c98f1321  agent/hcp-indexing-20260929-0746 -> origin/agent/hcp-indexing-20260929-0746\n   eb589095..dba39d8a  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (new branch 'integration/complete-mod-workflows-final-1147')\nException calling \"ReadAllText\" with \"1\" argument(s): \"Could not find a part of the path \r\n'C:\\Users\\Xxkan\\src\\MhwModManager.App\\MainWindow.xaml'.\"\r\nAt line:27 char:3\r\n+   $x=[IO.File]::ReadAllText($xaml)\r\n+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : DirectoryNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\final-workflows-deterministic-merge-20260929-1147.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\final-workflows-deterministic-merge-20260929-1147.stderr.log",
+    "stdout_bytes": 2464,
+    "stderr_bytes": 725,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0b6bd316446552554f34b68a55b78c57c4adda499c9705754e422531207a6f6c"
+}
