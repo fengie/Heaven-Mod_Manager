@@ -22,7 +22,7 @@ concurrency:
 jobs:
   test:
     name: Verify control plane on Heaven
-    runs-on: [self-hosted, Windows, X64, heaven-v2]
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     steps:
       - name: Check out exact source

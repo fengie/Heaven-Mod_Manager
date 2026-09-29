@@ -18,7 +18,7 @@ permissions:
 jobs:
   node-verification:
     name: Node verification on Heaven
-    runs-on: [self-hosted, Windows, X64, heaven-v2]
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     defaults:
       run:
