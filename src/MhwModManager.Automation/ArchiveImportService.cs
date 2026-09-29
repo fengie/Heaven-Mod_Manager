@@ -27,14 +27,20 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
 
         var name = Path.GetFileNameWithoutExtension(archivePath);
         var destination = UniqueDirectory(Path.Combine(modsRoot, name));
-        var staging = destination + ".importing";
-        if (Directory.Exists(staging)) Directory.Delete(staging, true);
-
-        await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
-        await Task.Run(() => NormalizeSingleWrapper(staging), ct);
-        Directory.Move(staging, destination);
-        await catalog.RefreshFoldersAsync(ct);
-        return new(destination, Path.GetFileName(destination));
+        var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
+        var staging = ImportPublicationWorkspace.Allocate(modsRoot, "archive");
+        try
+        {
+            await archive.ExtractSafelyAsync(archivePath, staging, workspaceRoot, ct);
+            await Task.Run(() => NormalizeSingleWrapper(staging), ct);
+            ImportPublicationWorkspace.Publish(staging, destination);
+            await catalog.RefreshFoldersAsync(ct);
+            return new(destination, Path.GetFileName(destination));
+        }
+        finally
+        {
+            ImportPublicationWorkspace.Cleanup(staging);
+        }
     }
 
     public async Task<FomodImportPreparation> PrepareFomodAsync(string archivePath, CancellationToken ct = default)
@@ -46,10 +52,11 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
 
         var displayName = Path.GetFileNameWithoutExtension(archivePath);
         var destination = UniqueDirectory(Path.Combine(modsRoot, displayName));
-        var staging = Path.Combine(modsRoot, $".fomod-{Guid.NewGuid():N}.staging");
+        var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
+        var staging = ImportPublicationWorkspace.Allocate(modsRoot, "fomod-source");
         try
         {
-            await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
+            await archive.ExtractSafelyAsync(archivePath, staging, workspaceRoot, ct);
             await Task.Run(() => NormalizeSingleWrapper(staging), ct);
             if (!FomodInstallerService.HasInstaller(staging))
                 throw new InvalidDataException("Archive does not contain exactly one supported FOMOD installer.");
@@ -57,7 +64,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         }
         catch
         {
-            try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { }
+            ImportPublicationWorkspace.Cleanup(staging);
             throw;
         }
     }
@@ -69,15 +76,20 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"destination={preparation.DestinationPath}");
+        var modsRoot = Path.GetDirectoryName(Path.GetFullPath(preparation.DestinationPath))
+            ?? throw new InvalidOperationException("FOMOD destination must be inside a Mods root.");
+        var installationStaging = ImportPublicationWorkspace.Allocate(modsRoot, "fomod-install");
         try
         {
-            await preparation.Installer.InstallAsync(selected, game, preparation.DestinationPath, ct);
+            await preparation.Installer.InstallAsync(selected, game, installationStaging, ct);
+            ImportPublicationWorkspace.Publish(installationStaging, preparation.DestinationPath);
             await catalog.RefreshFoldersAsync(ct);
             return new(preparation.DestinationPath, preparation.DisplayName);
         }
         finally
         {
-            try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+            ImportPublicationWorkspace.Cleanup(installationStaging);
+            ImportPublicationWorkspace.Cleanup(preparation.StagingPath);
         }
     }
 
@@ -85,7 +97,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
     public Task CancelFomodAsync(FomodImportPreparation preparation)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"staging={preparation.StagingPath}");
-        try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+        ImportPublicationWorkspace.Cleanup(preparation.StagingPath);
         return Task.CompletedTask;
     }
 
