@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1258-git-auth-check",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git ls-remote https://github.com/fengie/mhw-mods.git HEAD; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T12:58:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
