@@ -1,9 +1,10 @@
 {
   "id": "integrate-swarm-contract-20260929-1125",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:53:14.911105+00:00"
+  "updated_at": "2026-09-29T11:53:46.351308+00:00",
+  "exit_code": 21
 }
