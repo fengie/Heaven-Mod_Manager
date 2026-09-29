@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-complete-workflows-reconcile-20260929-1228-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:28:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:27:29.394630+00:00",
+  "finished_at": "2026-09-29T12:30:58.179713+00:00",
+  "stdout": "{\"type\":\"step_start\",\"timestamp\":1790685019622,\"sessionID\":\"ses_f12dd910dffeeEbBDbcqb37DBi\",\"part\":{\"id\":\"prt_0ed24fde5001tydkKfelHriGk5\",\"sessionID\":\"ses_f12dd910dffeeEbBDbcqb37DBi\",\"messageID\":\"msg_0ed24c81d001NRDQvqhOfoJtLs\",\"type\":\"step-start\"}}\r\n{\"type\":\"text\",\"timestamp\":1790685057407,\"sessionID\":\"ses_f12dd910dffeeEbBDbcqb37DBi\",\"part\":{\"id\":\"prt_0ed24c81d001NRDQvqhOfoJtLs_text-0\",\"sessionID\":\"ses_f12dd910dffeeEbBDbcqb37DBi\",\"messageID\":\"msg_0ed24c81d001NRDQvqhOfoJtLs\",\"type\":\"text\",\"text\":\"{\\n  \\\"name\\\": \\\"write\\\",\\n  \\\"arguments\\\": {\\n    \\\"path\\\": \\\"conversation_summary.json\\\",\\n    \\\"content\\\": \\\"{\\\\\\\"conversation\\\\\\\":{\\\\\\\"objectives\\\\\\\":[\\\\\\\"The user needs help summarizing a conversation for another agent to resume work.\\\\\\\"],\\\\\\\"requirements\\\\\\\":[\\\\\\\"Summarize the conversation in a structured format that includes the user's and assistant's statements, decisions, and the current state of work.\\\\\\\"],\\\\\\\"decisions\\\\\\\":[\\\\\\\"The summary will be in JSON format.\\\\\\\",\\\\\\\"The summary will include sections for objectives, requirements, decisions, work state, next move, relevant files, and important context.\\\\\\\"],\\\\\\\"work_state\\\\\\\":\\\\\\\"Active\\\\\\\",\\\\\\\"next_move\\\\\\\":[\\\\\\\"Complete and return the structured summary.\\\\\\\"],\\\\\\\"relevant_files\\\\\\\":[],\\\\\\\"important_context\\\\\\\":[]}}\\\"\\n  }\\n}\",\"time\":{\"start\":1790685005905,\"end\":1790685057407}}}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-reconcile-20260929-1228-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-reconcile-20260929-1228-a1.stderr.log",
+    "stdout_bytes": 1360,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "35982a54dc1bb70b446ac30dd584735fa796b364102ac830426ce5d6a95e0778"
+}
