@@ -1,15 +1,15 @@
 # v8.8.6 canonical-main reconciliation — verification scope
 
-Reconciliation base: `dd1411693e2da467ea5e1dfb5191b9793213ebdf`.
+Latest reconciliation observation: `38772a9bcf8547402de7f98ada0740d7a6aa070f`.
 
-The last fully closed hosted Windows verification remains run **36541891969** on exact source `5abe40304dfcb48f96e750bd7da3d0075315625b`. That evidence remains valid for that exact source only. Canonical main has advanced through later v8.8.6 product, updater-E2E, Agent Control, and swarm-contract changes, so this reconciliation does **not** relabel run 36541891969 as current-main verification.
+The last fully closed hosted Windows verification remains run **36541891969** on exact source `5abe40304dfcb48f96e750bd7da3d0075315625b`. Later main now includes v8.8.6 product/UI/updater-E2E changes, Agent Control 0.5.1 liveness, updater cross-session ownership, and swarm-contract changes. This reconciliation does **not** relabel the older run as verification for those commits.
 
 Pending before current v8.8.6 verification closure:
 - exact-current-main repository/release verification on the SHA actually checked;
 - installed-client updater E2E evidence for packaged 60→61 success;
 - injected rollback E2E evidence with restart/health identity and seeded user-data/unknown-file hash preservation.
 
-This reconciliation changes continuity metadata only. Because the local Heaven command quota was exhausted before the continuity scripts could run, no new `Test-AgentHandoff.ps1`, negative-fixture, product-test, release-gate, or verification-cache result is claimed here. JSON structure was parsed before publication through the GitHub execution path.
+This checkpoint changes continuity metadata only. The local Heaven command quota was exhausted before continuity scripts could run, so no new handoff-validator, negative-fixture, product-test, release-gate, or cache-promotion result is claimed. JSON continuity files were structurally parsed before publication through the GitHub execution path.
 
 ---
 
