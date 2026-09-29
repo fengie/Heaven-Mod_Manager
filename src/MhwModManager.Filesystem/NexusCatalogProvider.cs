@@ -68,7 +68,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
             return new(false, "Nexus rejected that API key.");
         }
 
-        credentials.WriteSecret(ProviderId, request.Secret);
+        CatalogCredentialStore.WriteSecret(ProviderId, request.Secret);
         health = new(ProviderId, CatalogProviderState.Connected, "Connected to Nexus Mods.", health.RateLimit, DateTimeOffset.UtcNow);
         return new(true, "Nexus Mods connected.");
     }
@@ -321,10 +321,10 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
         return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
     }
 
-    private static IReadOnlyList<CatalogMod> ParseModArray(JsonDocument? doc, GameProfile game)
+    private static CatalogMod[] ParseModArray(JsonDocument? doc, GameProfile game)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={game.Id}");
-        if (doc is null || doc.RootElement.ValueKind != JsonValueKind.Array) return Array.Empty<CatalogMod>();
+        if (doc is null || doc.RootElement.ValueKind != JsonValueKind.Array) return [];
         return doc.RootElement.EnumerateArray().Select(item => ParseMod(item, game)).ToArray();
     }
 
