@@ -1,0 +1,21 @@
+{
+  "id": "---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:19:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:19:29.114178+00:00",
+  "finished_at": "2026-09-29T11:19:30.145202+00:00",
+  "stdout": "{\"runner_dir\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\",\"startup_launcher\":\"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\HeavenGitHubActionsRunner.cmd\",\"listener_count\":1,\"listeners\":[{\"ProcessId\":87740,\"Name\":\"Runner.Listener.exe\",\"ExecutablePath\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Listener.exe\",\"CommandLine\":\"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\\\\\bin\\\\Runner.Listener.exe\\\"  run \"}]}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1.stderr.log",
+    "stdout_bytes": 457,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c19f7966647e0f1403a7dc17b29712802ffaf119ab49c21522782803fff1d03f"
+}
