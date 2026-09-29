@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-local-agent-capability-probe-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:45:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:42:40.279402+00:00",
+  "finished_at": "2026-09-29T08:42:41.701361+00:00",
+  "stdout": "---OPENCODE---\r\nOPENCODE_EXIT=\r\n---OLLAMA---\r\nOLLAMA_EXIT=\r\n---LOCAL LLAMA PORTS---\r\n[\r\n    {\r\n        \"LocalAddress\":  \"127.0.0.1\",\r\n        \"LocalPort\":  11434,\r\n        \"OwningProcess\":  65584\r\n    },\r\n    {\r\n        \"LocalAddress\":  \"127.0.0.1\",\r\n        \"LocalPort\":  8080,\r\n        \"OwningProcess\":  20628\r\n    },\r\n    {\r\n        \"LocalAddress\":  \"127.0.0.1\",\r\n        \"LocalPort\":  8000,\r\n        \"OwningProcess\":  20628\r\n    }\r\n]\r\n",
+  "stderr": "opencode : The term 'opencode' is not recognized as the name of a cmdlet, function, script file, or operable program. \r\nCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:67\r\n+ ... reference='Continue'; Write-Output '---OPENCODE---'; opencode --help  ...\r\n+                                                          ~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (opencode:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\nollama : The term 'ollama' is not recognized as the name of a cmdlet, function, script file, or operable program. \r\nCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:192\r\n+ ... DE_EXIT='+$LASTEXITCODE); Write-Output '---OLLAMA---'; ollama list 2> ...\r\n+                                                            ~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (ollama:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-local-agent-capability-probe-a4.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-local-agent-capability-probe-a4.stderr.log",
+    "stdout_bytes": 439,
+    "stderr_bytes": 1093,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "79562de58d7dbf961ac560d45d8a4801238c271ceb0c402f62c4a6939d831fc4"
+}
