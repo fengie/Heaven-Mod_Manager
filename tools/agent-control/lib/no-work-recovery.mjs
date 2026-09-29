@@ -30,10 +30,17 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
 
 export function planSwarmTailRecoveryBatch(state, {
   maxWorkers = 4,
-  maxAttemptsPerRoot = 2
+  maxAttemptsPerRoot = 2,
+  since = null
 } = {}) {
   const agents = Array.isArray(state?.agents) ? state.agents : [];
-  if (agents.some(agent => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(agent?.status || "")))) {
+  const sinceMs = Date.parse(String(since || ""));
+  const inScope = agent => {
+    if (!Number.isFinite(sinceMs)) return true;
+    const startedMs = Date.parse(String(agent?.startedAt || agent?.source_metadata?.started_at || ""));
+    return Number.isFinite(startedMs) && startedMs >= sinceMs;
+  };
+  if (agents.some(agent => inScope(agent) && ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(agent?.status || "")))) {
     return [];
   }
   const tasksById = new Map((Array.isArray(state?.tasks) ? state.tasks : []).map(task => [task.id, task]));
@@ -43,6 +50,7 @@ export function planSwarmTailRecoveryBatch(state, {
   const seenRoots = new Set();
 
   for (const agent of agents) {
+    if (!inScope(agent)) continue;
     const task = tasksById.get(agent?.taskId) || null;
     if (!isSwarmTailUnfinishedCandidate(agent, task)) continue;
     const rootId = swarmTailRecoveryRootId(agent);
