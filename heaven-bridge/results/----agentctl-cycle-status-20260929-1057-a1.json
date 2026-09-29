@@ -1,0 +1,21 @@
+{
+  "id": "----agentctl-cycle-status-20260929-1057-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:57:47.828170+00:00",
+  "finished_at": "2026-09-29T10:57:48.248635+00:00",
+  "stdout": "{\n  \"id\": \"cycle-20260929104636-yytns\",\n  \"status\": \"running\",\n  \"stage\": \"initial-wave\",\n  \"createdAt\": \"2026-09-29T10:46:36.168Z\",\n  \"startedAt\": \"2026-09-29T10:46:54.724Z\",\n  \"updatedAt\": \"2026-09-29T10:57:34.133Z\",\n  \"objectivePreview\": \"Continue advancing Heaven Local Bridge v0.4.0 in fengie/mhw-mods. EXECUTE changes; do not merely review. Coordinate a small local swarm (implementation + security review + testing/integration). Do not use Remote Desktop Commander.\\n\\nPrioriti\",\n  \"baseBranch\": \"main\",\n  \"supervisorPid\": 103260,\n  \"waves\": [\n    {\n      \"name\": \"manager\",\n      \"launchedAt\": \"2026-09-29T10:47:26.791Z\",\n      \"agentIds\": [\n        \"manager-20260929104713-ln9yh\"\n      ]\n    },\n    {\n      \"name\": \"primary\",\n      \"launchedAt\": \"2026-09-29T10:47:26.793Z\",\n      \"agentIds\": [\n        \"main-20260929104715-d4eza\"\n      ]\n    },\n    {\n      \"name\": \"support\",\n      \"launchedAt\": \"2026-09-29T10:47:26.795Z\",\n      \"agentIds\": [\n        \"support-20260929104718-nqrmb\",\n        \"support-20260929104724-nyxyj\",\n        \"support-20260929104726-lae4b\"\n      ]\n    }\n  ],\n  \"agents\": {\n    \"manager-20260929104713-ln9yh\": {\n      \"id\": \"manager-20260929104713-ln9yh\",\n      \"role\": \"manager\",\n      \"taskId\": \"task-20260929104713-ln9yh\",\n      \"branchName\": \"agent/control-manager-coordinate-this-development-obje-20260929104713-ln9yh\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"manager\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"main-20260929104715-d4eza\": {\n      \"id\": \"main-20260929104715-d4eza\",\n      \"role\": \"main\",\n      \"taskId\": \"task-20260929104715-d4eza\",\n      \"branchName\": \"agent/control-main-continue-advancing-heaven-local--20260929104715-d4eza\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"primary\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104718-nqrmb\": {\n      \"id\": \"support-20260929104718-nqrmb\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104718-nqrmb\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104718-nqrmb\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104724-nyxyj\": {\n      \"id\": \"support-20260929104724-nyxyj\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104724-nyxyj\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104724-nyxyj\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    },\n    \"support-20260929104726-lae4b\": {\n      \"id\": \"support-20260929104726-lae4b\",\n      \"role\": \"support\",\n      \"taskId\": \"task-20260929104726-lae4b\",\n      \"branchName\": \"agent/control-support-support-the-primary-implementati-20260929104726-lae4b\",\n      \"baseBranch\": \"main\",\n      \"status\": \"running\",\n      \"wave\": \"support\",\n      \"lastMessage\": \"\",\n      \"finishedAt\": null\n    }\n  },\n  \"result\": null,\n  \"error\": null\n}\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----agentctl-cycle-status-20260929-1057-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----agentctl-cycle-status-20260929-1057-a1.stderr.log",
+    "stdout_bytes": 3073,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f67056422f5e70280da11e6860e6a8829de0113920ccb4abf7992851599bb393"
+}
