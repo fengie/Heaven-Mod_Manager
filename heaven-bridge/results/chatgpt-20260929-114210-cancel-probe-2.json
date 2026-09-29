@@ -1,0 +1,17 @@
+{
+  "id": "chatgpt-20260929-114210-cancel-probe-2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:42:12Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:49:16.885812+00:00",
+  "finished_at": "2026-09-29T11:49:16.885812+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "-----------------------------------------runner-probe-1134",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "8ceaccd3811a89f0920c5ae63caeba1d249f76375c711dcd0f1e87db1adf4a1a"
+}
