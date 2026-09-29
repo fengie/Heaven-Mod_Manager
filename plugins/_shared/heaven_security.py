@@ -198,6 +198,8 @@ class PermissionBroker:
     @staticmethod
     def _permission(value: Any, field: str) -> str:
         permission = str(value or "").strip()
+        if permission == "*":
+            return permission
         if not _PERMISSION_RE.fullmatch(permission):
             raise ValueError(f"{field} is invalid")
         return permission
