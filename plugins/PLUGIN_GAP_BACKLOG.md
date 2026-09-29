@@ -81,7 +81,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 
 ## PG-003 — secure secret handles and permission broker
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** High
 - **Triggering use case:** System, release, SSH, package, browser, and API workflows increasingly need credentials, but the toolbox intentionally refuses to persist secrets in task payloads, state checkpoints, logs, or plugin metadata.
 - **Why reusable:** Nearly every privileged workflow needs the same safe pattern for referencing a secret without copying its plaintext into durable state or agent-visible logs.
@@ -91,12 +91,12 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** No plaintext secret values in SQLite, logs, checkpoints, manifests, test fixtures, exceptions, or Git. Mutation authorization must fail closed. Secret handles are scoped, expiring where the backing store supports it, and non-exportable through normal plugin APIs.
 - **Dependencies / reuse:** Reuse plugin manifests, Heaven Control Plane execution environment injection, OS credential facilities where available, and ChatGPT connector authorization when the action is connector-native.
 - **Acceptance tests:** secret values never appear in serialized outputs/log capture; expired/unknown handles fail closed; capability permission declarations are validated; denied mutations do not reach transport; tests use fake handles only.
-- **Owner / branch / PR:** unclaimed.
-- **Completion evidence:** pending.
+- **Owner / branch / PR:** owner = current plugin platform lane; branch = `plugin-security-broker-sync-20260929`; PR #290.
+- **Completion evidence:** pending exact-head Heaven Plugin Toolbox Gate and canonical-main merge.
 
 ## PG-004 — distributed task queue and cluster integration
 
-- **Status:** PLANNED
+- **Status:** DONE
 - **Priority:** High
 - **Triggering use case:** `heaven-task-queue` can lease work and `heaven-cluster` can select machines, but they are currently independent building blocks.
 - **Why reusable:** Every multi-machine agent/build/index/test workflow needs one consistent path from queued task -> compatible worker -> lease/capacity reservation -> execution receipt -> retry/release.
@@ -106,8 +106,8 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Queue payloads continue to forbid secrets. Dispatcher may use opaque secret handles only after PG-003. Worker endpoint/capability data is not itself authority to execute a privileged action.
 - **Dependencies / reuse:** `heaven-task-queue`, `heaven-cluster`, `heaven-state-store`, and existing bridge/control-plane transports.
 - **Acceptance tests:** race between two dispatchers never double-claims a task or over-reserves a worker; stale workers are skipped; lease expiry/retry works; cancellation releases reservations; execution receipts are durable and bounded.
-- **Owner / branch / PR:** unclaimed.
-- **Completion evidence:** pending.
+- **Owner / branch / PR:** completed by queue/cluster integration lane; PR #288.
+- **Completion evidence:** merged to canonical `main` as `07182c8d61edfe304b5d5394c43c6b6ac9653ae5`; exact-head Plugin Toolbox Gate run #54 (`36613089091`) passed on the Heaven self-hosted runner, including unified plugin verification and whitespace checks.
 
 ## PG-005 — CI and release orchestrator
 

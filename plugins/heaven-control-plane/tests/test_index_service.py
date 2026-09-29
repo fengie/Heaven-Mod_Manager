@@ -12,6 +12,7 @@ if str(PLUGIN_ROOT) not in sys.path:
 
 from heaven_control_plane.adapters.heaven_bridge import HeavenBridgeAdapter
 from heaven_control_plane.indexing import IndexCapabilityProvider, RepositoryIndex
+from heaven_control_plane.protocol import PLUGIN_VERSION
 from heaven_control_plane.service import HeavenControlPlane
 
 
@@ -104,7 +105,7 @@ class IndexServiceIntegrationTests(unittest.TestCase):
 
     def test_manifest_advertises_supported_optional_indexing_surface(self):
         manifest = json.loads((PLUGIN_ROOT / "manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest["version"], "0.4.0")
+        self.assertEqual(manifest["version"], PLUGIN_VERSION)
         self.assertEqual(manifest["optional_providers"]["indexing"], "IndexCapabilityProvider")
         self.assertTrue(
             {

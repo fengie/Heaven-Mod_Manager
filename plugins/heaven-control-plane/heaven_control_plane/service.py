@@ -19,6 +19,12 @@ from .protocol import (
     validate_request_size,
 )
 from .registry import CapabilityRegistry, build_registry
+from .security import (
+    PermissionBroker,
+    SecretHandleResolver,
+    authorization_resource,
+    resolve_secret_bindings,
+)
 
 
 class HeavenControlPlane:
@@ -31,6 +37,8 @@ class HeavenControlPlane:
         artifacts: ArtifactStore | None = None,
         index_provider: IndexCapabilityProvider | None = None,
         granted_permissions: Iterable[str] | None = None,
+        permission_broker: PermissionBroker | None = None,
+        secret_resolver: SecretHandleResolver | None = None,
     ):
         if isinstance(granted_permissions, str):
             raise ValueError("granted_permissions must be an iterable of permission names, not a string")
@@ -39,6 +47,8 @@ class HeavenControlPlane:
         self.registry = registry or build_registry(include_indexing=index_provider is not None)
         self.audit_log = audit_log or AuditLog()
         self.artifacts = artifacts or ArtifactStore()
+        self.permission_broker = permission_broker or PermissionBroker()
+        self.secret_resolver = secret_resolver
         self.granted_permissions = (
             frozenset(str(value).strip() for value in granted_permissions if str(value).strip())
             if granted_permissions is not None
@@ -71,14 +81,26 @@ class HeavenControlPlane:
                 effective_permissions = frozenset(
                     str(value).strip() for value in permissions if str(value).strip()
                 )
-            if "*" not in effective_permissions and capability.permission not in effective_permissions:
-                raise ControlPlaneError(
-                    "PERMISSION_DENIED",
-                    "capability permission was not granted",
-                    {"required_permission": capability.permission},
-                )
             data = require_mapping({} if payload is None else payload)
             input_bytes = validate_request_size(data)
+            decision = self.permission_broker.authorize(
+                capability=capability.name,
+                required_permission=capability.permission,
+                resource=authorization_resource(data),
+                mutation=capability.destructive,
+                granted_permissions=effective_permissions,
+            )
+            if not decision.allowed:
+                raise ControlPlaneError(
+                    "PERMISSION_DENIED",
+                    decision.reason,
+                    {"required_permission": decision.required_permission},
+                )
+            data = resolve_secret_bindings(
+                data,
+                capability_name=capability.name,
+                resolver=self.secret_resolver,
+            )
 
             if capability.name == "control.discovery":
                 raw: Any = {
