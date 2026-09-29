@@ -1,6 +1,7 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using MhwModManager.Automation;
 using MhwModManager.Core;
 
 namespace MhwModManager.App.ViewModels;
