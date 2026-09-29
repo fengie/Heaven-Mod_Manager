@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-1544-main-worktree-fabf715f",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:43:23.456641+00:00"
+  "updated_at": "2026-09-29T15:43:34.139286+00:00",
+  "exit_code": 0
 }
