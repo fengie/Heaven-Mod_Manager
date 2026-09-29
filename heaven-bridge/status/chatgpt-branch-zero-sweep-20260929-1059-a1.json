@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-branch-zero-sweep-20260929-1059-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:49:37.764899+00:00"
+  "updated_at": "2026-09-29T11:50:08.259619+00:00",
+  "exit_code": 1
 }
