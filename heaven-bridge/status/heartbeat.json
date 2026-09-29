@@ -1,11 +1,11 @@
 {
   "host": "heaven",
-  "pid": 73996,
+  "pid": 34956,
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T14:32:31.076577+00:00",
+  "updated_at": "2026-09-29T15:25:15.491022+00:00",
   "running": [],
   "capabilities": [
     "app_launch",
@@ -66,5 +66,7 @@
     "window_list",
     "window_move",
     "window_state"
-  ]
+  ],
+  "control_host": "heaven2",
+  "legacy_default_host": "heaven"
 }
