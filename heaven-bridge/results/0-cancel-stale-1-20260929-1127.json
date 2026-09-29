@@ -1,0 +1,17 @@
+{
+  "id": "0-cancel-stale-1-20260929-1127",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:27:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:28:22.566873+00:00",
+  "finished_at": "2026-09-29T11:28:22.566873+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "chatgpt-20260929-104740-canonicalized-branch-cleanup-a2",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "9f516c771e20ae2091958f8f3be62072c359344a15267f9871fb8e627f2017ee"
+}
