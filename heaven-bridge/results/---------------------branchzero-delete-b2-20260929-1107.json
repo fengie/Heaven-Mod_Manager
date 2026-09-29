@@ -1,0 +1,21 @@
+{
+  "id": "---------------------branchzero-delete-b2-20260929-1107",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:07:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:09:56.669144+00:00",
+  "finished_at": "2026-09-29T11:10:29.771426+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"agent/reconciliation-continuity-20260929-0542-github\",\r\n                    \"agent/reconciliation-continuity-20260929-final-github\",\r\n                    \"agent/reconciliation-continuity-20260929-r3\",\r\n                    \"agent/support-agent-control-v2-product-workflow-audit-20260928\",\r\n                    \"agent/support-archive-streaming-failure-cleanup-audit-20260928\",\r\n                    \"agent/support-auto-updater-release-security-audit-20260928\",\r\n                    \"agent/support-auto-updater-runtime-recovery-audit-20260928\",\r\n                    \"agent/support-updater-binary-asset-accept-20260928\"\r\n                ],\r\n    \"missing\":  [\r\n                    \"agent/support-bundle-share-safety-20260928\",\r\n                    \"agent/support-continuity-drift-reconciliation-20260928\",\r\n                    \"agent/support-continuity-drift-repair-20260928\",\r\n                    \"agent/support-pr-disposition-ledger-20260928\"\r\n                ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]         (none)        -> origin/agent/support-continuity-drift-reconciliation-20260928\n - [deleted]         (none)        -> origin/agent/support-continuity-drift-repair-20260928\n - [deleted]         (none)        -> origin/agent/support-pr-disposition-ledger-20260928\n - [deleted]         (none)        -> origin/agent/support-updater-wpf-integration-audit-20260928\n   d38e6f7..72edfac  heaven-bridge -> origin/heaven-bridge\n   ca65d31..e52328a  agent/bridge-uia-native-20260929 -> origin/agent/bridge-uia-native-20260929\n   cb8a6bb..f19d402  main          -> origin/main\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/reconciliation-continuity-20260929-0542-github\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/reconciliation-continuity-20260929-final-github\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/reconciliation-continuity-20260929-r3\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-agent-control-v2-product-workflow-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-archive-streaming-failure-cleanup-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-auto-updater-release-security-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-auto-updater-runtime-recovery-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-binary-asset-accept-20260928\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------branchzero-delete-b2-20260929-1107.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------branchzero-delete-b2-20260929-1107.stderr.log",
+    "stdout_bytes": 1005,
+    "stderr_bytes": 1576,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4ce6a4b77fd6c5d67ea5dcc93052780110a832141c4b93cb604e0f78cdf50a85"
+}
