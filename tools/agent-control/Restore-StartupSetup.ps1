@@ -82,6 +82,9 @@ try {
         }
         agent_control = [ordered]@{
             requested = $false
+            watchdog_task_found = $false
+            watchdog_task_started = $false
+            watchdog_fallback_present = $false
             already_listening = $false
             started = $false
             healthy = $false
@@ -183,6 +186,31 @@ try {
     $agentControlEnabled = if ($null -eq $profile.agent_control) { $true } else { [bool]$profile.agent_control }
     if ($agentControlEnabled) {
         $result.agent_control.requested = $true
+
+        $agentWatchdogTaskName = 'Heaven Agent Control Watchdog'
+        if (Get-Command Get-ScheduledTask -ErrorAction SilentlyContinue) {
+            try {
+                $agentWatchdogTask = Get-ScheduledTask -TaskName $agentWatchdogTaskName -ErrorAction SilentlyContinue
+                if ($agentWatchdogTask) {
+                    $result.agent_control.watchdog_task_found = $true
+                    if ([string]$agentWatchdogTask.State -ne 'Running') {
+                        Start-ScheduledTask -TaskName $agentWatchdogTaskName -ErrorAction Stop
+                        $result.agent_control.watchdog_task_started = $true
+                        Write-RestoreLog ("Started scheduled task: {0}" -f $agentWatchdogTaskName)
+                    }
+                }
+            } catch {
+                Write-RestoreLog ("Could not start Agent Control watchdog task {0}: {1}" -f $agentWatchdogTaskName, $_.Exception.Message)
+            }
+        }
+
+        $startupDir = [Environment]::GetFolderPath('Startup')
+        $agentWatchdogFallback = if ([string]::IsNullOrWhiteSpace($startupDir)) { $null } else { Join-Path $startupDir 'HeavenAgentControlWatchdog.vbs' }
+        $result.agent_control.watchdog_fallback_present = [bool]($agentWatchdogFallback -and (Test-Path -LiteralPath $agentWatchdogFallback))
+        if (-not $result.agent_control.watchdog_task_found -and -not $result.agent_control.watchdog_fallback_present) {
+            Write-RestoreLog 'Agent Control watchdog persistence was not found; direct startup will still restore the server, and Install-StartupRestore.ps1 should be rerun to install continuous supervision.'
+        }
+
         $port = 7331
         $result.agent_control.already_listening = Test-LocalTcpPort -Port $port
 
@@ -224,7 +252,7 @@ try {
     }
 
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $statusPath -Encoding UTF8
-    Write-RestoreLog ("Restore complete: bridgeTasks={0}; agentControlHealthy={1}; localPlugins={2}" -f $result.heaven_bridge.scheduled_tasks_found, $result.agent_control.healthy, $result.plugin_workspace.manifest_count)
+    Write-RestoreLog ("Restore complete: bridgeTasks={0}; agentControlHealthy={1}; agentWatchdog={2}; localPlugins={3}" -f $result.heaven_bridge.scheduled_tasks_found, $result.agent_control.healthy, $result.agent_control.watchdog_task_found, $result.plugin_workspace.manifest_count)
 
     $openDashboard = if ($null -eq $profile.open_dashboard) { $false } else { [bool]$profile.open_dashboard }
     if ($openDashboard -and $result.agent_control.healthy) {
