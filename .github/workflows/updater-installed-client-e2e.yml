@@ -2,31 +2,18 @@ name: Updater Installed Client E2E
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/updater-installed-client-e2e.yml'
-      - 'tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj'
-      - 'tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs'
-      - 'tests/MhwModManager.IntegrationTests/UpdateInstallerTests.cs'
-      - 'src/MhwModManager.Updater/**'
-      - 'src/MhwModManager.Updater.Helper/**'
-      - 'src/MhwModManager.App/App.xaml.cs'
-  pull_request:
-    paths:
-      - '.github/workflows/updater-installed-client-e2e.yml'
-      - 'tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs'
-      - 'tests/MhwModManager.IntegrationTests/UpdateInstallerTests.cs'
-      - 'src/MhwModManager.Updater/**'
-      - 'src/MhwModManager.Updater.Helper/**'
-      - 'src/MhwModManager.App/App.xaml.cs'
+  workflow_run:
+    workflows:
+      - Windows Release Gate
+    types:
+      - completed
 
 permissions:
   contents: write
 
 jobs:
   installed-client-e2e:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     name: Real packaged updater update and rollback
     # GitHub-hosted Windows currently fails before runner allocation; use the repaired Heaven runner.
     runs-on: [self-hosted, Windows, X64, mhw-mods]
@@ -159,7 +146,7 @@ jobs:
             ${{ github.workspace }}\BuildLogs\updater-installed-e2e\**
 
       - name: Persist successful installed-client E2E evidence
-        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: success() && github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         shell: powershell
         run: |
           if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
