@@ -258,7 +258,25 @@ try {
 
     $taskName = "GitHub Actions Runner - $RunnerName"
     $configured = Test-Path (Join-Path $RunnerDirectory '.runner')
-    if ($ForceReconfigure -and $configured) {
+
+    # Existing runner registrations can silently drift from the labels expected by
+    # workflow YAML. Detect that drift and reconfigure automatically so jobs do
+    # not remain queued forever with runner_id=0.
+    $desiredLabels = @($Labels | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    $recordBefore = $null
+    $missingLabels = @()
+    if ($configured) {
+        try { $recordBefore = Get-RunnerRecord } catch {}
+        if ($recordBefore) {
+            $actualLabels = @($recordBefore.labels | ForEach-Object { [string]$_.name })
+            $missingLabels = @($desiredLabels | Where-Object { $_ -notin $actualLabels })
+        } else {
+            $missingLabels = @($desiredLabels)
+        }
+    }
+
+    $needsReconfigure = [bool]($ForceReconfigure -or ($configured -and $missingLabels.Count -gt 0))
+    if ($needsReconfigure -and $configured) {
         Stop-RunnerTask -TaskName $taskName
         Remove-ExistingConfiguration
         $configured = $false
