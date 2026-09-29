@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.16",
+  "currentVersion": "8.8.17",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.15 true visual overhaul and diagnostic identity repair",
+  "immediateParentRevision": "v8.8.16 larger mod library workspace",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.16 enlarges the Mods library workspace by compacting surrounding controls while preserving existing mod-row behavior and responsive wrapping. Treat all earlier verification as SHA-scoped. Require a fresh exact-head Windows release gate for v8.8.16, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.17 repairs first-launch mod discovery after updater relaunch by preserving and recovering canonical manager-home identity. Treat all verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",

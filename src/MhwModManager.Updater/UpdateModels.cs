@@ -255,7 +255,8 @@ public sealed record UpdateApplyRequest(
     string HealthFile,
     string HealthToken,
     int CurrentProcessId,
-    IReadOnlyList<string> RestartArguments);
+    IReadOnlyList<string> RestartArguments,
+    string? ManagerHomeRoot = null);
 
 public sealed record UpdateJournal(
     UpdateJournalPhase Phase,
