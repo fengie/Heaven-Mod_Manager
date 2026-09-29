@@ -4,32 +4,27 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T10:58:23.204812+00:00",
+  "updated_at": "2026-09-29T11:03:53.489644+00:00",
   "running": [
     {
-      "id": "---manager-20260929-1054-priority-gate",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:56:45.374197+00:00"
+      "id": "--------branch-prune-20260929-1103",
+      "action": "powershell",
+      "started_at": "2026-09-29T11:02:42.162337+00:00"
     },
     {
-      "id": "-------releasefix-finalgate-11a9d3-62-20260929-105635",
+      "id": "----------opencode-ollama-fallback-smoke-20260929-110330",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:57:12.664871+00:00"
+      "started_at": "2026-09-29T11:03:07.122149+00:00"
     },
     {
-      "id": "----agentctl-cycle-status-20260929-1057-a1",
+      "id": "--------selfhosted-runner-install-20260929-1101",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:57:12.675013+00:00"
+      "started_at": "2026-09-29T11:03:20.655720+00:00"
     },
     {
-      "id": "----validate-main-priority-20260929-1058-a2",
+      "id": "-------------------branchzero-semantic-prune1-202609291106",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:57:51.011638+00:00"
-    },
-    {
-      "id": "0-actions-diag-20260929-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:58:21.703032+00:00"
+      "started_at": "2026-09-29T11:03:51.988526+00:00"
     }
   ],
   "capabilities": [
