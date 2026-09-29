@@ -1,0 +1,30 @@
+{
+  "id": "release-20260929-0823-bootstrap-read",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:21:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:23:15.167000+00:00",
+  "finished_at": "2026-09-29T08:23:15.177604+00:00",
+  "host": "heaven",
+  "action": "proc_read",
+  "data": {
+    "session_id": "0952f8c655fd4614",
+    "pid": 93744,
+    "running": false,
+    "exit_code": 1,
+    "shell": "powershell",
+    "command": "& 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T08:21:51.819977+00:00",
+    "last_activity_at": "2026-09-29T08:23:15.167000+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 600,
+    "max_runtime_seconds": 1200,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\0952f8c655fd4614.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\0952f8c655fd4614.err.log",
+    "stdout": "Your branch is up to date with 'origin/heaven-bridge'.\nAlready up to date.\n",
+    "stderr": "From https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\nAlready on 'heaven-bridge'\nRegister-ScheduledTask : Access is denied.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1:131 char:5\r\n+     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigg ...\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : PermissionDenied: (PS_ScheduledTask:Root/Microsoft/...S_ScheduledTask) [Register-Schedul \r\n   edTask], CimException\r\n    + FullyQualifiedErrorId : HRESULT 0x80070005,Register-ScheduledTask\r\n \r\nReplacement Heaven Local Bridge worker failed before handoff; existing worker(s) were left untouched.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1:156 char:5\r\n+     throw 'Replacement Heaven Local Bridge worker failed before hando ...\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Replacement Hea...left untouched.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Replacement Heaven Local Bridge worker failed before handoff; existing worker(s) were le \r\n   ft untouched.\r\n \r\n"
+  },
+  "job_hash": "7e721684b0f7ec3ec2f0936da5bb1c16a36a3463af5c811e4ca2a2f60952b500"
+}
