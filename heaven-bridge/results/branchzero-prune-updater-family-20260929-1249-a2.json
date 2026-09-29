@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-prune-updater-family-20260929-1249-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:49:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:49:19.035015+00:00",
+  "finished_at": "2026-09-29T12:49:46.313453+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"fix/heaven-default-routing-20260929\",\r\n                    \"fix/updater-bom-release-closure-20260929\",\r\n                    \"fix/updater-e2e-heaven-runner-20260929\",\r\n                    \"fix/updater-e2e-latest-release-20260929\",\r\n                    \"fix/updater-final-closure-20260929\",\r\n                    \"fix/updater-heaven-routing-20260929\",\r\n                    \"fix/updater-release-heaven-closure-20260929\"\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"remaining\":  [\r\n                      \"origin\",\r\n                      \"origin/fix/bridge-secret-channel-20260929\",\r\n                      \"origin/fix/credential-safe-secret-input-20260929\",\r\n                      \"origin/fix/heaven-secret-input-20260929\",\r\n                      \"origin/fix/issue-118-secret-input-20260929\",\r\n                      \"origin/heaven-bridge\",\r\n                      \"origin/main\",\r\n                      \"origin/recovery/complete-mod-workflows-20260929\"\r\n                  ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * [new branch]        fix/bridge-secret-channel-20260929 -> origin/fix/bridge-secret-channel-20260929\n * [new branch]        fix/credential-safe-secret-input-20260929 -> origin/fix/credential-safe-secret-input-20260929\n   83fec76c..5509b0c4  fix/heaven-secret-input-20260929 -> origin/fix/heaven-secret-input-20260929\n   83fec76c..2b851644  fix/issue-118-secret-input-20260929 -> origin/fix/issue-118-secret-input-20260929\n   244b33a1..adc5b4a4  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/heaven-default-routing-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-bom-release-closure-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-e2e-heaven-runner-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-e2e-latest-release-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-final-closure-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-heaven-routing-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/updater-release-heaven-closure-20260929\nFrom https://github.com/fengie/mhw-mods\n   5509b0c4..457c1ab6  fix/heaven-secret-input-20260929 -> origin/fix/heaven-secret-input-20260929\n   adc5b4a4..8d3d07b6  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-family-20260929-1249-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-family-20260929-1249-a2.stderr.log",
+    "stdout_bytes": 1035,
+    "stderr_bytes": 1451,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b9eb119965e874c3f22eb37cb331bd5e8af28eb9660547fc0e3b3fc1eeda3c75"
+}
