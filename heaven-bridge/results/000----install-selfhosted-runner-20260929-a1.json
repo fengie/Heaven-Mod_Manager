@@ -1,0 +1,21 @@
+{
+  "id": "000----install-selfhosted-runner-20260929-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:01:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:07:35.486794+00:00",
+  "finished_at": "2026-09-29T11:07:37.912383+00:00",
+  "stdout": "Your branch is behind 'origin/main' by 170 commits, and can be fast-forwarded.\n  (use \"git pull\" to update your local branch)\nHEAD is now at 81ab2a7 docs: add plugin implementation swarm directive\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n   0a6e6c1..81ab2a7  main       -> origin/main\nSwitched to branch 'main'\nThis installer is intended for the Windows Heaven worker.\r\nAt C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods\\heaven-bridge\\install-github-runner.ps1:10 char:33\r\n+ ... dows_NT') { throw 'This installer is intended for the Windows Heaven  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (This installer ... Heaven worker.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : This installer is intended for the Windows Heaven worker.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000----install-selfhosted-runner-20260929-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000----install-selfhosted-runner-20260929-a1.stderr.log",
+    "stdout_bytes": 197,
+    "stderr_bytes": 680,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "74f2e4a8274f2dbcc7388cbda75e5b79f710041e86f6ced11a086ff6b4b955d3"
+}
