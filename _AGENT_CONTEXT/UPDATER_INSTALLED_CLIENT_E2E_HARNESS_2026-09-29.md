@@ -34,14 +34,14 @@ The hosted workflow uses a disposable GitHub Windows runner and a repository-sco
 
 ### Scenario A — real immutable build 60 -> 61
 
-The test downloads and verifies the real immutable build-60 package, creates a disposable packaged installation, seeds user-owned `Mods`, `State`, and an unknown file, then uses the production updater client to discover and stage the latest immutable release.
+The test downloads and verifies the real immutable build-60 package, creates a disposable packaged installation, seeds user-owned `Mods`, `State`, and an unknown file, configures an isolated fake generic-game profile, and launches the **real packaged build-60 application**. Its own production background updater must discover and stage the latest immutable release, prepare/copy the build-60 helper, shut down the old client, apply the update, and restart the packaged target.
 
-The candidate must be exactly build 61 / source
+The discovered candidate must be exactly build 61 / source
 `5abe40304dfcb48f96e750bd7da3d0075315625b`.
 
-The test then prepares the production helper handoff, launches the copied shipped helper, and requires the restarted packaged build-61 application to write the production startup-health acknowledgement. The test requires:
+The harness observes the production transaction files emitted by that real client/helper chain and requires the restarted packaged build-61 application to write the production startup-health acknowledgement. The test requires:
 
-- helper exit code 0;
+- the old packaged client exits cleanly after handing off;
 - installed build/source exactly 61 / target source SHA;
 - exact health token/build/source evidence;
 - journal phase `Confirmed`;
