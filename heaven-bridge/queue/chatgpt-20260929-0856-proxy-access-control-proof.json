@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0856-proxy-access-control-proof",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$p='C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-agent-control-proxy.mjs'; $i=0; Get-Content -LiteralPath $p | ForEach-Object { $i++; if($i -le 180){ $line=$_ -replace '(?i)(token|secret|password|api[_-]?key)\\s*[:=]\\s*[\"'']?[^\"'';\\s]+','$1=<REDACTED>'; '{0:D3}: {1}' -f $i,$line } }"
+  },
+  "created_at": "2026-09-29T08:56:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
