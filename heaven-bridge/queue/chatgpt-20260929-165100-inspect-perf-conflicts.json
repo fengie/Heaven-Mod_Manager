@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165100-inspect-perf-conflicts",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$wt='C:\\Users\\fengc\\agent-worktrees\\finish-perf219'; Write-Output '=== CHANGELOG.md CONFLICT ==='; git -C $wt diff --cc -- 'CHANGELOG.md'; Write-Output '=== Directory.Build.props CONFLICT ==='; git -C $wt diff --cc -- 'Directory.Build.props'; Write-Output '=== README.md CONFLICT ==='; git -C $wt diff --cc -- 'README.md'; Write-Output '=== plugins/PLUGIN_GAP_BACKLOG.md CONFLICT ==='; git -C $wt diff --cc -- 'plugins/PLUGIN_GAP_BACKLOG.md'; Write-Output '=== tests/MhwModManager.IntegrationTests/XamlBindingSafetyTests.cs CONFLICT ==='; git -C $wt diff --cc -- 'tests/MhwModManager.IntegrationTests/XamlBindingSafetyTests.cs'; ",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:51:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
