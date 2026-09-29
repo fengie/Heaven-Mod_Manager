@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0818-bridge-regression-v2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:18:00Z",
+  "status": "failed",
+  "exit_code": 128,
+  "started_at": "2026-09-29T08:18:31.312004+00:00",
+  "finished_at": "2026-09-29T08:18:32.533432+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\nfatal: Cannot rebase onto multiple branches.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0818-bridge-regression-v2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0818-bridge-regression-v2.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 134,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1364ae97a426e26e87e79c5cf75be475959ed1b9d99e1b509e40fbb9d323a070"
+}
