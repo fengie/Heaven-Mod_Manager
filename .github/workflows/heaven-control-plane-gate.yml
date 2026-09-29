@@ -29,27 +29,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify system Python
-        shell: pwsh
+        shell: powershell
         run: |
           python --version
           python -c "import sys; assert sys.version_info >= (3, 10), sys.version"
 
       - name: Compile bridge and control-plane Python
-        shell: pwsh
+        shell: powershell
         run: |
           python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py
           python -m compileall -q plugins/heaven-control-plane/heaven_control_plane plugins/heaven-control-plane/tests plugins/heaven-control-plane/verify.py
 
       - name: Run Heaven Bridge regressions
-        shell: pwsh
+        shell: powershell
         run: |
           python heaven-bridge/test_worker.py
           python heaven-bridge/tests/test_worker.py
 
       - name: Run Heaven control-plane vertical slice tests
-        shell: pwsh
+        shell: powershell
         run: python plugins/heaven-control-plane/verify.py
 
       - name: Check patch whitespace
-        shell: pwsh
+        shell: powershell
         run: git diff --check HEAD^ HEAD
