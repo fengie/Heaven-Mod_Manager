@@ -1,0 +1,14 @@
+{
+  "id": "000-branch-zero-targeted-20260929-105600",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:56:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nSet-Location $repo\ngit fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\n\n$targets=@(\n 'integration/smart-pack-planner-main-r2-20260929',\n 'integration/smart-pack-planner-main-20260929',\n 'agent/smart-pack-planner-core',\n 'fix/release-classifier-workflow-scope-20260929'\n)\n\n$worktrees=@{}\n$path=$null\nforeach($line in @(git worktree list --porcelain)){\n  if($line -like 'worktree *'){ $path=$line.Substring(9) }\n  elseif($line -like 'branch refs/heads/*' -and $path){ $worktrees[$line.Substring(18)]=$path }\n  elseif([string]::IsNullOrWhiteSpace($line)){ $path=$null }\n}\n\n$deleted=@(); $skipped=@()\nforeach($b in $targets){\n  git show-ref --verify --quiet \"refs/remotes/origin/$b\"\n  if($LASTEXITCODE -ne 0){ continue }\n\n  if($worktrees.ContainsKey($b)){\n    $wt=$worktrees[$b]\n    $dirty=@(git -C $wt status --porcelain)\n    if($dirty.Count -gt 0){\n      $skipped += [ordered]@{branch=$b;reason='dirty-active-worktree';worktree=$wt}\n      continue\n    }\n    git worktree remove --force $wt\n    if($LASTEXITCODE -ne 0){\n      $skipped += [ordered]@{branch=$b;reason='clean-worktree-remove-failed';worktree=$wt}\n      continue\n    }\n    git show-ref --verify --quiet \"refs/heads/$b\"\n    if($LASTEXITCODE -eq 0){ git branch -D $b | Out-Null }\n  }\n\n  git push origin --delete $b\n  if($LASTEXITCODE -eq 0){ $deleted += $b }\n  else { $skipped += [ordered]@{branch=$b;reason='remote-delete-failed'} }\n}\n\ngit fetch origin --prune | Out-Null\n[ordered]@{\n  deleted=$deleted\n  skipped=$skipped\n  remaining_remote_count=@(git for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object {$_ -ne 'origin/HEAD'}).Count\n  main=(git rev-parse origin/main | Out-String).Trim()\n} | ConvertTo-Json -Depth 4"
+  },
+  "priority": "highest"
+}
