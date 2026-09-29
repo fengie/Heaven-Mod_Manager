@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-opencode-ollama-smoke-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; $d=Join-Path $env:TEMP 'opencode-ollama-smoke'; New-Item -ItemType Directory -Force -Path $d | Out-Null; & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format default 'Return exactly LOCAL_AGENT_OK and do not edit files.' $d 2>&1 | Select-Object -First 240; Write-Output ('EXIT='+$LASTEXITCODE)"
+  },
+  "created_at": "2026-09-29T08:49:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
