@@ -41,6 +41,7 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 24. **Exact identity beats labels.** Folder names, shortcut names, UI titles, branch names, cached status, and chat summaries are hints; verify canonical revision/build/path/hash/process/ref identity.
 25. **Primary data surfaces get first claim on constrained space.** On dense desktop/table/library pages, keep the core data workspace star/fill-sized and prevent auxiliary filters/actions/help from consuming extra vertical rows at supported window sizes; prefer horizontal overflow, trimming, tooltips, or compact controls and verify the real constrained/windowed path.
 26. **Sequential durable IDs need collision-safe allocation.** Concurrent writers must not infer the same next integer from stale state; serialize/reserve allocation or use collision-resistant IDs, and make integration validate uniqueness before canonicalization.
+27. **Structural regression tests must evolve atomically with intentional structure changes.** When a UI/schema/layout refactor deliberately replaces the structure a regression asserts, update the test in the same change to encode the new durable invariant and run the full relevant suite before merge; stale structural tests on canonical main turn release gates into false alarms.
 
 ## Future-project rule
 
