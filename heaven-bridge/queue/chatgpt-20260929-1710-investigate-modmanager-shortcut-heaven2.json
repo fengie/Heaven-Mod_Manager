@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1710-investigate-modmanager-shortcut-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:10:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='SilentlyContinue'\n$desk=[Environment]::GetFolderPath('Desktop')\n$ws=New-Object -ComObject WScript.Shell\n$links=Get-ChildItem $desk -Filter *.lnk | ForEach-Object {\n  $s=$ws.CreateShortcut($_.FullName)\n  if($_.Name -match 'MHW|Mod|Manager'){\n    [pscustomobject]@{Name=$_.Name;Path=$_.FullName;Target=$s.TargetPath;Arguments=$s.Arguments;WorkingDirectory=$s.WorkingDirectory;IconLocation=$s.IconLocation}\n  }\n}\n$procs=Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'MHW|Mod|Manager' } | ForEach-Object {\n  $p=$_\n  $ver=$null\n  if($p.ExecutablePath -and (Test-Path $p.ExecutablePath)){ $ver=(Get-Item $p.ExecutablePath).VersionInfo.ProductVersion }\n  [pscustomobject]@{Pid=$p.ProcessId;Name=$p.Name;Exe=$p.ExecutablePath;Version=$ver;CommandLine=$p.CommandLine}\n}\n$cands=@()\n$roots=@(\n  \"$env:LOCALAPPDATA\\Programs\",\n  \"$env:LOCALAPPDATA\\MHW*\",\n  \"$env:APPDATA\",\n  \"$env:USERPROFILE\\Desktop\",\n  \"$env:USERPROFILE\\OneDrive\\Desktop\",\n  \"$env:USERPROFILE\\Downloads\",\n  \"$env:USERPROFILE\\local-ai-workspaces\\mhw-mods\"\n)\nforeach($r in $roots){\n  Get-ChildItem -Path $r -Recurse -File -Filter *.exe -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'MHW|ModManager|ManualMod|Manager' } | ForEach-Object {\n    $v=$_.VersionInfo\n    $cands += [pscustomobject]@{Path=$_.FullName;ProductVersion=$v.ProductVersion;FileVersion=$v.FileVersion;LastWriteTime=$_.LastWriteTimeUtc}\n  }\n}\n[pscustomobject]@{Desktop=$desk;Links=$links;Processes=$procs;Candidates=$cands} | ConvertTo-Json -Depth 5 -Compress"
+  },
+  "priority": "highest"
+}
