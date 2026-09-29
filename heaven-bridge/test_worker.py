@@ -143,6 +143,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel", "controller_checkpoint"):
             self.assertIn(action, result["data"]["actions"])
+        self.assertTrue(result["data"]["capabilities"]["session_restart_recovery"])
 
     def test_codex_batch_wrapper_uses_call_arguments(self):
         captured = {}
@@ -254,6 +255,132 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             finally:
                 hb.release_worker_instance_lock()
             self.assertTrue(handle.closed)
+
+    def _recovered_session_entry(self, root, sid="session1", pid=4242, token="token-a"):
+        started = datetime.now(timezone.utc).isoformat()
+        return {
+            "proc": None,
+            "out_f": None,
+            "err_f": None,
+            "pid": pid,
+            "process_identity": {"pid": pid, "creation_token": token},
+            "stdout_path": Path(root) / f"{sid}.out.log",
+            "stderr_path": Path(root) / f"{sid}.err.log",
+            "shell": "powershell",
+            "command": None,
+            "cwd": str(root),
+            "started_at": started,
+            "started_mono": None,
+            "last_activity_mono": None,
+            "last_activity_at": started,
+            "idle_timeout_seconds": 600,
+            "max_runtime_seconds": 3600,
+            "exit_code": None,
+            "recovered": True,
+            "stdin_available": False,
+        }
+
+    def test_session_metadata_persists_and_recovers_without_command(self):
+        class FakeProc:
+            pid = 4242
+            stdin = object()
+
+            def poll(self):
+                return None
+
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "SESSIONS_DIR", Path(td)), \
+             patch.object(hb, "SESSIONS", {}), \
+             patch.object(hb.subprocess, "Popen", return_value=FakeProc()), \
+             patch.object(hb, "process_identity", return_value={"pid": 4242, "creation_token": "token-a"}):
+            snapshot = hb.start_session({
+                "shell": "powershell",
+                "command": "Write-Output TOP_LEVEL_COMMAND_MUST_NOT_BE_PERSISTED",
+                "cwd": td,
+            })
+            sid = snapshot["session_id"]
+            metadata_path = Path(td) / f"{sid}.json"
+            row = __import__("json").loads(metadata_path.read_text(encoding="utf-8"))
+            self.assertEqual(row["session_id"], sid)
+            self.assertEqual(row["process_identity"]["creation_token"], "token-a")
+            self.assertNotIn("command", row)
+            self.assertNotIn("TOP_LEVEL_COMMAND_MUST_NOT_BE_PERSISTED", metadata_path.read_text(encoding="utf-8"))
+
+            hb._close_session_handles(hb.SESSIONS[sid])
+            hb.SESSIONS.clear()
+            recovered = hb.recover_sessions()
+            self.assertEqual(recovered, {"loaded": 1, "live": 1, "blocked": 0})
+            restored = hb.session_snapshot(sid, hb.SESSIONS[sid])
+            self.assertTrue(restored["running"])
+            self.assertTrue(restored["recovered"])
+            self.assertFalse(restored["stdin_available"])
+            self.assertIsNone(restored["command"])
+
+    def test_recovered_proc_kill_requires_identity_and_verifies_exit(self):
+        with tempfile.TemporaryDirectory() as td:
+            sid = "recovered-kill"
+            entry = self._recovered_session_entry(td, sid=sid)
+            alive = {"value": True}
+
+            def fake_identity(pid):
+                if alive["value"]:
+                    return {"pid": pid, "creation_token": "token-a"}
+                return None
+
+            def fake_kill(pid, force=True):
+                alive["value"] = False
+
+            with patch.object(hb, "SESSIONS", {sid: entry}), \
+                 patch.object(hb, "SESSIONS_DIR", Path(td)), \
+                 patch.object(hb, "process_identity", side_effect=fake_identity), \
+                 patch.object(hb, "kill_process_tree", side_effect=fake_kill) as kill:
+                result = hb.run_job(
+                    "kill-recovered",
+                    {"action": "proc_kill", "params": {"session_id": sid, "force": True}},
+                    threading.Event(),
+                )
+            kill.assert_called_once_with(4242, True)
+            self.assertFalse(result["data"]["running"])
+            self.assertEqual(result["data"]["recovery_state"], "exited")
+
+    def test_recovered_proc_kill_refuses_pid_identity_mismatch(self):
+        with tempfile.TemporaryDirectory() as td:
+            sid = "recovered-mismatch"
+            entry = self._recovered_session_entry(td, sid=sid)
+            with patch.object(hb, "SESSIONS", {sid: entry}), \
+                 patch.object(hb, "process_identity", return_value={"pid": 4242, "creation_token": "token-b"}), \
+                 patch.object(hb, "kill_process_tree") as kill:
+                with self.assertRaises(hb.BridgeError) as ctx:
+                    hb.run_job(
+                        "kill-mismatch",
+                        {"action": "proc_kill", "params": {"session_id": sid}},
+                        threading.Event(),
+                    )
+            self.assertEqual(ctx.exception.code, "SESSION_IDENTITY_MISMATCH")
+            kill.assert_not_called()
+
+    def test_recovered_proc_input_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            sid = "recovered-input"
+            entry = self._recovered_session_entry(td, sid=sid)
+            with patch.object(hb, "SESSIONS", {sid: entry}):
+                with self.assertRaises(hb.BridgeError) as ctx:
+                    hb.run_job(
+                        "input-recovered",
+                        {"action": "proc_input", "params": {"session_id": sid, "input": "hello"}},
+                        threading.Event(),
+                    )
+            self.assertEqual(ctx.exception.code, "SESSION_INPUT_UNAVAILABLE")
+
+    def test_recovered_dead_session_is_not_reported_running(self):
+        with tempfile.TemporaryDirectory() as td:
+            sid = "recovered-dead"
+            entry = self._recovered_session_entry(td, sid=sid)
+            with patch.object(hb, "process_identity", return_value=None):
+                snapshot = hb.session_snapshot(sid, entry)
+            self.assertFalse(snapshot["running"])
+            self.assertEqual(snapshot["recovery_state"], "exited")
+            self.assertIsNone(snapshot["exit_code"])
 
     def test_clean_stale_locks_preserves_worker_instance_lock(self):
         with tempfile.TemporaryDirectory() as td:
