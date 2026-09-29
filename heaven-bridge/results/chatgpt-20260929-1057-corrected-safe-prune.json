@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1057-corrected-safe-prune",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:42:59.942493+00:00",
+  "finished_at": "2026-09-29T11:43:08.244087+00:00",
+  "stdout": "DELETED_COUNT=1\r\nchore/repo-root-cleanup-20260929|ancestor\r\nKEPT_COUNT=4\r\nagent/hcp-hardening-review-20260929-1137-a1|unique=1\r\nagent/hcp-phase0-hardening-20260929-1138|unique=7\r\nagent/hcp-sessions-search-20260929|unique=8\r\ncodex/complete-mod-workflows|unique=10\r\nREMAINING_NON_MAIN_COUNT=5\r\nREMAINING\r\nagent/hcp-hardening-review-20260929-1137-a1\r\nagent/hcp-phase0-hardening-20260929-1138\r\nagent/hcp-sessions-search-20260929\r\ncodex/complete-mod-workflows\r\nheaven-bridge\r\n",
+  "stderr": "git.exe : From https://github.com/fengie/mhw-mods\r\nAt line:5 char:1\r\n+ & git -C $r fetch origin --prune '+refs/heads/*:refs/remotes/origin/* ...\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (From https://github.com/fengie/mhw-mods:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n * [new branch]        agent/hcp-hardening-review-20260929-1137-a1 -> \r\norigin/agent/hcp-hardening-review-20260929-1137-a1\r\n   00744de0..c8b1e347  agent/hcp-phase0-hardening-20260929-1138 -> origin/agent/hcp-phase0-hardening-20260929-1138\r\n   610e6d3d..dd2769b0  agent/hcp-sessions-search-20260929 -> origin/agent/hcp-sessions-search-20260929\r\n   94593567..5c50b90e  chore/repo-root-cleanup-20260929 -> origin/chore/repo-root-cleanup-20260929\r\n   45606413..78d9a1d0  heaven-bridge -> origin/heaven-bridge\r\n   94593567..5b7d20e8  main          -> origin/main\r\ngit.exe : To https://github.com/fengie/mhw-mods.git\r\nAt line:41 char:3\r\n+   & git -C $r push origin --delete -- $b 2>&1 | Out-Host\r\n+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (To https://gith...ie/mhw-mods.git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n - [deleted]           chore/repo-root-cleanup-20260929\r\ngit.exe : From https://github.com/fengie/mhw-mods\r\nAt line:44 char:1\r\n+ & git -C $r fetch origin --prune 2>&1 | Out-Host\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (From https://github.com/fengie/mhw-mods:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n   78d9a1d0..034d1e9c  heaven-bridge -> origin/heaven-bridge\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1057-corrected-safe-prune.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1057-corrected-safe-prune.stderr.log",
+    "stdout_bytes": 471,
+    "stderr_bytes": 1736,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "044d8a7d92445a28b9ca2a12296d5b2a58ca72e27827839ba2d1d38cc694e516"
+}
