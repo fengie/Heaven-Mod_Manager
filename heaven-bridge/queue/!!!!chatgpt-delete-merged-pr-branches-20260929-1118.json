@@ -1,0 +1,13 @@
+{
+  "id": "!!!!chatgpt-delete-merged-pr-branches-20260929-1118",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:18:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Continue'\n$relay=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$url=(git -C $relay remote get-url origin).Trim()\n$targets=@(\n @{branch='fix/codex-quota-dispatch-circuit-20260929';sha='40d4454fd6f5eabda9650acb58246025daff5ecc'},\n @{branch='agent/bridge-uia-hardening-20260929';sha='bb3666f17582b8d1dd15e036c3f472510490abc8'}\n)\n$deleted=@();$skipped=@();$failed=@()\nforeach($t in $targets){\n $line=(git ls-remote $url (\"refs/heads/\"+$t.branch) 2>$null)\n if(-not $line){$skipped += [pscustomobject]@{branch=$t.branch;reason='already-absent'};continue}\n $sha=($line -split '\\s+')[0]\n if($sha -ne $t.sha){$skipped += [pscustomobject]@{branch=$t.branch;reason='tip-changed';expected=$t.sha;actual=$sha};continue}\n git -C $relay push origin (\":refs/heads/\"+$t.branch) *> $null\n if($LASTEXITCODE -eq 0){$deleted += $t.branch}else{$failed += $t.branch}\n}\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;skipped=$skipped;failed=$failed} | ConvertTo-Json -Depth 5 -Compress"
+  },
+  "priority": "highest"
+}
