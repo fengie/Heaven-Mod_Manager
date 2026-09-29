@@ -1,0 +1,9 @@
+{
+  "id": "0-cancel-stale-2-20260929-1127",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:28:48.933993+00:00"
+}
