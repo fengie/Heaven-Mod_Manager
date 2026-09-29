@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-160900-edit-registry-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_edit",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\tests\\MhwModManager.IntegrationTests\\MultiGameTests.cs",
+    "old_string": "        Assert.Empty(registry.Load());\n        Assert.Equal(json,File.ReadAllText(registry.RegistryPath));\n    }\n\n    [Fact]\n    public void App_paths_ignore_malicious_active_profile_before_creating_workspace_paths()\n",
+    "new_string": "        Assert.Empty(registry.Load());\n        Assert.Equal(json,File.ReadAllText(registry.RegistryPath));\n    }\n\n    [Fact]\n    public void Registry_mutation_preserves_malformed_existing_registry()\n    {\n        var game=Path.Combine(root,\"malformed-registry-game\");Directory.CreateDirectory(game);\n        var exe=Path.Combine(game,\"Game.exe\");File.WriteAllBytes(exe,[0x4d,0x5a]);\n        var state=Path.Combine(root,\"malformed-registry-state\");Directory.CreateDirectory(state);\n        var registry=new GameProfileRegistry(state);\n        const string malformed=\"{ this is not valid json\";\n        File.WriteAllText(registry.RegistryPath,malformed);\n\n        Assert.Throws<InvalidDataException>(()=>registry.AddGenericFromExecutable(exe));\n        Assert.Equal(malformed,File.ReadAllText(registry.RegistryPath));\n    }\n\n    [Fact]\n    public void Registry_mutation_preserves_existing_invalid_profile_entries()\n    {\n        var game=Path.Combine(root,\"invalid-registry-game\");Directory.CreateDirectory(game);\n        var exe=Path.Combine(game,\"Game.exe\");File.WriteAllBytes(exe,[0x4d,0x5a]);\n        var invalid=GameProfile.Generic(\"safe-game\",\"Safe Game\",game,\"Game.exe\",\"\") with { Id=@\"..\\escaped\" };\n        var state=Path.Combine(root,\"invalid-registry-state\");Directory.CreateDirectory(state);\n        var registry=new GameProfileRegistry(state);\n        var json=JsonSerializer.Serialize(new[]{invalid},JsonOptions);\n        File.WriteAllText(registry.RegistryPath,json);\n\n        var replacement=GameProfile.Generic(\"replacement\",\"Replacement\",game,\"Game.exe\",\"\");\n        Assert.Throws<InvalidDataException>(()=>registry.Upsert(replacement));\n        Assert.Equal(json,File.ReadAllText(registry.RegistryPath));\n    }\n\n    [Fact]\n    public void App_paths_ignore_malicious_active_profile_before_creating_workspace_paths()\n",
+    "replace_all": false
+  },
+  "created_at": "2026-09-29T16:09:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
