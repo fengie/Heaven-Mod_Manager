@@ -1,4 +1,4 @@
-name: Temporary Heaven Bridge Recovery
+name: Temporary Swarm Verification
 
 on:
   pull_request:
@@ -9,31 +9,55 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
-    name: Diagnose Heaven Local Bridge recovery
+  verify-retirement:
+    name: Verify PR 212 mod retirement
     runs-on: [self-hosted, Windows, X64, mhw-mods]
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect bridge state
+        with:
+          ref: a7dd6d9fb9c9fa547b03b55660ca0e14b2682bbd
+          fetch-depth: 0
+      - name: Restore and build automation tests
         shell: powershell
         run: |
-          Write-Host "Identity: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
-          $principal = New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
-          Write-Host "Elevated: $($principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))"
-          Get-ScheduledTask -TaskName 'Heaven Local Bridge' -ErrorAction SilentlyContinue | Select-Object TaskName,State,@{n='RunLevel';e={$_.Principal.RunLevel}},@{n='UserId';e={$_.Principal.UserId}} | Format-List
-          Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*heaven-desktop-worker.py*' } | Select-Object ProcessId,ParentProcessId,CommandLine | Format-List
-          .\heaven-bridge\manage.ps1 STATUS
-          Write-Host "STATUS exit: $LASTEXITCODE"
-      - name: Capture recovery exception location
-        if: always()
+          dotnet restore .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-restore -p:NuGetAudit=false -warnaserror
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run retirement regressions and full automation suite
         shell: powershell
         run: |
-          try {
-            .\heaven-bridge\bootstrap.ps1
-          } catch {
-            Write-Host "TYPE=$($_.Exception.GetType().FullName)"
-            Write-Host "MESSAGE=$($_.Exception.Message)"
-            Write-Host "STACK=$($_.ScriptStackTrace)"
-            throw
-          }
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~ModRetirementTests"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false
+          exit $LASTEXITCODE
+      - name: Patch sanity
+        shell: powershell
+        run: git diff --check 48cb5eec4415bdc44a9ec88272fc353ba9850940...HEAD
+
+  verify-fomod:
+    name: Verify PR 210 FOMOD staging
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 28cf4b1f68a8000d71a45c08706c5b63948493c1
+          fetch-depth: 0
+      - name: Restore and build app plus workflow tests
+        shell: powershell
+        run: |
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet restore .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false -warnaserror
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-restore -p:NuGetAudit=false -warnaserror
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run workflow regressions
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~WorkflowTests"
+          exit $LASTEXITCODE
