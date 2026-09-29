@@ -44,18 +44,18 @@ Create a unique job file on the `heaven-bridge` transport branch:
 }
 ```
 
-The `id` must match the queue filename. Use a current timestamp: v3 rejects expired jobs and jobs too far in the future. After dispatch, read `status/<id>.json` for running/completed state and `results/<id>.json` for the authoritative result. Queue creation alone is not completion.
+The `id` must match the queue filename. Use a current timestamp: v4 rejects expired jobs and jobs too far in the future. After dispatch, read `status/<id>.json` for running/completed state and `results/<id>.json` for the authoritative result. Queue creation alone is not completion.
 
 The private-repo ACL is the compatibility auth mode when no local HMAC key is configured. If `HEAVEN_BRIDGE_HMAC_KEY` is configured on the worker, jobs must follow the worker's HMAC-SHA256 signing format; do not invent or transmit the secret through GitHub.
 
 ## Health and capability negotiation
 
-Start a new workflow with `health` when worker state matters. Healthy v4 must report `status: completed`, `host: heaven`, `data.worker_version: 4`, `data.protocol: chatgpt-heaven-bridge-v2`, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
+Start a new workflow with `health` when worker state matters. Healthy v4 must report `status: completed`, `host: heaven`, `data.worker_version: 4`, `data.protocol: chatgpt-heaven-bridge-v2`, `data.elevated: true` when admin work is required, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
 
 Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
 - synchronous/persistent processes: `proc_run`, `proc_start`, `proc_input`, `proc_read`, `proc_kill`, `proc_list_sessions`, `proc_list`, `job_output_read`
-- job control: `job_status`, `cancel`
+- job control/waits: `job_status`, `cancel`, `wait_for` (`file_*`, `process_*`, `session_*`, and `window_*` conditions with bounded timeout/cancellation evidence)
 - desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`
 - semantic UIA: `uia_tree`, `uia_find`, `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`; mutation searches fail closed on ambiguity/truncation, password values are never exposed, and `uia_set_value` requires explicit non-secret relay opt-in
 - clipboard: `clipboard_read`, `clipboard_write` (relay reads require explicit opt-in)
@@ -80,7 +80,9 @@ Permanent development cycles must never finish with a separate direct ChatGPT ->
 
 ## Job status, concurrency, cancellation
 
-Use `job_status` for current state and `cancel` when a long-running job should be stopped. Do not launch duplicate jobs merely because a result is delayed; unique IDs plus idempotency/result-cache recovery are the normal rule. Worker v3 supports bounded concurrency; Git publication is serialized separately.\n\nPriority scheduling keeps control-plane actions responsive even when ordinary worker slots are saturated. Ordinary jobs accept named priorities or numeric 0-100 values and age upward over time, preventing lower-priority work from starving indefinitely.
+Use `job_status` for current state and `cancel` when a long-running job should be stopped. Do not launch duplicate jobs merely because a result is delayed; unique IDs plus idempotency/result-cache recovery are the normal rule. Worker v4 supports bounded concurrency; Git publication is serialized separately.
+
+Priority scheduling keeps control-plane actions responsive even when ordinary worker slots are saturated. Ordinary jobs accept named priorities or numeric 0-100 values and age upward over time, preventing lower-priority work from starving indefinitely.
 
 ## Screenshot and desktop control
 
