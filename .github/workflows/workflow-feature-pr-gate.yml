@@ -59,6 +59,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet restore .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build workflow product and tests
         shell: powershell
@@ -66,6 +68,14 @@ jobs:
           dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet build .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run focused UX and XAML regressions
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~UxHardeningTests|FullyQualifiedName~XamlBindingSafetyTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused workflow regressions
