@@ -1,0 +1,9 @@
+{
+  "id": "00-pr128-local-gate-20260929-1102",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:07:28.098784+00:00"
+}
