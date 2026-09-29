@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0851-pr90-inspect-d2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:51:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:50:11.593327+00:00",
+  "finished_at": "2026-09-29T08:50:13.618405+00:00",
+  "stdout": "MERGE_BASE=fd2866efafcc0dd845353a6c0e78931f13ec5040\r\nHEAD=e25b68da3685585fafa8809eedb452a04ea99c82\r\nAHEAD_BEHIND=10\t12\r\nUNIQUE_COMMITS_BEGIN\r\n9b861dbcb375bb659ca7837855e994a1876d49c8|Add canonical game-profile ID validation\na9f4dd17e013d4e78f2cd049304ee02933b03c76|Reject unsafe persisted profile IDs\nf9103f4ba812a63a71dcb748b99100bbdbefbe83|Contain generic profile workspace paths\n90b466f6f07c0460ee630be58716e584a380dc08|Test canonical profile ID contract\nf05512bab21ef841afddef091d1e43ae93b04000|Add hostile persisted profile regression coverage\nb0bf642c94c685bf244dc01e9040e657fc3db093|Bump reconciled containment release to v8.8.5\neff36f466989193ef50dc6ab05415e53c8473610|Set v8.8.5 containment release metadata\n67400c7d8dcc93e1e2596de8ff74534286499ea6|Document v8.8.5 containment repair\nbc927218df9ebacc350b52c94ce691a4aa86df7f|Align startup diagnostics with v8.8.5\n7fbbbd88837f9a600e5bf4cfab13f79e857160c7|Fix PR90 integration test App project reference\n9bf048a8e49038d29b11123ebbee494b5125c477|Sync PR90 handoff manifest version to 8.8.5\ne25b68da3685585fafa8809eedb452a04ea99c82|Sync PR90 CURRENT_REVISION for v8.8.5 verification\nUNIQUE_COMMITS_END\r\nFILES_BEGIN\r\nM\tCHANGELOG.md\nM\tDirectory.Build.props\nM\tVERSION.txt\nM\t_AGENT_CONTEXT/CURRENT_REVISION.json\nM\t_AGENT_CONTEXT/handoff-manifest.json\nM\tsrc/MhwModManager.App/App.xaml.cs\nM\tsrc/MhwModManager.Core/GameProfiles.cs\nM\tsrc/MhwModManager.Filesystem/GameProfileRegistry.cs\nM\ttests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj\nM\ttests/MhwModManager.IntegrationTests/MultiGameTests.cs\nM\ttests/MhwModManager.Tests/GameProfileTests.cs\nFILES_END\r\nDIFFCHECK_BEGIN\r\nDIFFCHECK_END\r\nMERGETREE_BEGIN\r\n\r\n+<<<<<<< .our\r\n+>>>>>>> .their\r\n+<<<<<<< .our\r\n+>>>>>>> .their\r\n     public void Generic_conflict_engine_never_guesses_same_path_texture_winner()\r\nMERGETREE_END\r\n\r\n\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   8b665d2..0ef4572  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0851-pr90-inspect-d2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0851-pr90-inspect-d2.stderr.log",
+    "stdout_bytes": 1843,
+    "stderr_bytes": 99,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "929e9c707648eecadc498e28014a3eb7810a62e6abf9420a4a1669a273c97dd0"
+}
