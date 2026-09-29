@@ -1,0 +1,13 @@
+{
+  "id": "!!!!!!!!chatgpt-old-branch-disposition-audit-20260929-1119",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:19:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 240,
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\nSet-Location $repo\ngit fetch origin --prune\n$branches=@(\n'agent/bridge-uia-native-20260929',\n'agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm',\n'agent/launch-observation-atomicity-20260928',\n'agent/swarm-contract-v3-20260929-0540',\n'agent-bridge',\n'codex/complete-mod-workflows'\n)\n$out=@()\nforeach($b in $branches){\n git show-ref --verify --quiet (\"refs/remotes/origin/\"+$b)\n if($LASTEXITCODE -ne 0){$out += [pscustomobject]@{branch=$b;state='missing'};continue}\n $tip=(git rev-parse (\"origin/\"+$b)).Trim()\n $unique=@(git log --format='%H|%ad|%s' --date=iso-strict (\"origin/main..origin/\"+$b))\n $files=@(git diff --name-only (\"origin/main...origin/\"+$b))\n $out += [pscustomobject]@{branch=$b;tip=$tip;unique_count=$unique.Count;unique_commits=$unique;files=$files}\n}\n[pscustomobject]@{main=(git rev-parse origin/main).Trim();branches=$out} | ConvertTo-Json -Depth 6"
+  },
+  "priority": "highest"
+}
