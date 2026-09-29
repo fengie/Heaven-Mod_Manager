@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104100-releasefix-build887-62",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:41:00Z",
+  "ttl_seconds": 14400,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods-releasefix-887-20260929-1032",
+    "command": "$ErrorActionPreference='Stop'; $env:OS='Windows_NT'; $env:CI='true'; $env:GITHUB_SHA='f924d42c68af06785286329a1e8ae92c7eff2d58'; $env:GITHUB_REF='refs/heads/main'; $env:MHW_UPDATE_SOURCE_SHA='f924d42c68af06785286329a1e8ae92c7eff2d58'; $env:MHW_UPDATE_BUILD_NUMBER='62'; powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\\scripts\\Build-Release.ps1'; $build=$LASTEXITCODE; Write-Output ('BUILD_EXIT=' + $build); if($build -ne 0){exit $build}; powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\\scripts\\Test-UpdaterReleasePolicy.ps1'; $policy=$LASTEXITCODE; Write-Output ('POLICY_EXIT=' + $policy); if($policy -ne 0){exit $policy}; $manifest=Get-Content -Raw -LiteralPath '.\\artifacts\\update-manifest.json' | ConvertFrom-Json; Write-Output ('MANIFEST_VERSION=' + $manifest.version); Write-Output ('MANIFEST_BUILD=' + $manifest.buildNumber); Write-Output ('MANIFEST_SOURCE=' + $manifest.sourceSha); Write-Output ('MANIFEST_ASSET=' + $manifest.assetName); $zip=Join-Path '.\\artifacts' $manifest.assetName; $hash=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant(); Write-Output ('ARTIFACT_SHA256=' + $hash); Write-Output ('ARTIFACT_BYTES=' + (Get-Item -LiteralPath $zip).Length); exit 0",
+    "timeout_seconds": 7200
+  },
+  "priority": "highest"
+}
