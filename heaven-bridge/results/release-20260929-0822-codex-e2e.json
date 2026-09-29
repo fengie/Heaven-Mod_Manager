@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0822-codex-e2e",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:22:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:17:55.982444+00:00",
+  "finished_at": "2026-09-29T08:18:02.608032+00:00",
+  "stdout": "HEAVEN_CODEX_E2E_OK\n",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ec3d-eca7-7a00-8c67-54c0631ad85a\n--------\nuser\nReturn exactly this text and nothing else: HEAVEN_CODEX_E2E_OK\ncodex\nHEAVEN_CODEX_E2E_OK\ntokens used\n15,864\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0822-codex-e2e.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0822-codex-e2e.stderr.log",
+    "stdout_bytes": 20,
+    "stderr_bytes": 346,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "29fe32a6e312bf93b3d95a8fc1631f9baa12bde41ec97f679396b9bdb9686986"
+}
