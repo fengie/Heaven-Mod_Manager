@@ -1,0 +1,17 @@
+{
+  "id": "ctrl-jobstatus-agentctl-inspect-20260929-112000",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:20:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:48:03.706146+00:00",
+  "finished_at": "2026-09-29T11:48:03.706146+00:00",
+  "host": "heaven",
+  "action": "job_status",
+  "data": {
+    "job_id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1",
+    "state": "done",
+    "finished_at": "2026-09-29T11:45:32.834056+00:00"
+  },
+  "job_hash": "2238ca59c1cb24f2c0ef30500483ce7bbf15118a684ed0ab7469228f37046ba6"
+}
