@@ -1,0 +1,21 @@
+{
+  "id": "--------------------branchzero-delete-b1-20260929-1107",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:07:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:10:00.442311+00:00",
+  "finished_at": "2026-09-29T11:10:26.734778+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   72edfac..3dfe850  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         integration/bridge-priority-aging-main-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         integration/bridge-priority-aging-main-r2-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/game-profile-id-containment-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/game-profile-id-containment-v2-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/auto-updater-postupload-publication-pre-reconcile-20260928\nTo https://github.com/fengie/mhw-mods.git\n ! [remote rejected] agent/v881-updater-publication-handoff-20260928 (cannot lock ref 'refs/heads/agent/v881-updater-publication-handoff-20260928': unable to resolve reference 'refs/heads/agent/v881-updater-publication-handoff-20260928')\nerror: failed to push some refs to 'https://github.com/fengie/mhw-mods.git'\nDELETE_FAILED:agent/v881-updater-publication-handoff-20260928\r\nAt line:1 char:986\r\n+ ...  | Out-Host; if($LASTEXITCODE -ne 0){throw \"DELETE_FAILED:$b\"}; $dele ...\r\n+                                          ~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (DELETE_FAILED:a...andoff-20260928:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : DELETE_FAILED:agent/v881-updater-publication-handoff-20260928\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\--------------------branchzero-delete-b1-20260929-1107.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\--------------------branchzero-delete-b1-20260929-1107.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1465,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9301591d355457aa09bac97d6f943623c6f5930ff456e8706a51225e8e6e7be9"
+}
