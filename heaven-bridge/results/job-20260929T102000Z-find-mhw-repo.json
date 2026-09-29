@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T102000Z-find-mhw-repo",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:20:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:21:15.924313+00:00",
+  "finished_at": "2026-09-29T10:21:30.566190+00:00",
+  "stdout": "{\r\n    \"path\":  \"C:\\\\Users\\\\Xxkan\\\\local-ai-workspaces\\\\mhw-mods\",\r\n    \"origin\":  \"https://github.com/fengie/mhw-mods.git\"\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T102000Z-find-mhw-repo.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T102000Z-find-mhw-repo.stderr.log",
+    "stdout_bytes": 128,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "b1069b4a2f406683f3137fb2376a5b397ba5f903fef8ae95ef7af2ae997b77c3"
+}
