@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1548-recover-pr214",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; git fetch origin main fix/legacy-migration-corrupt-cas-20260929; $p='C:\\Users\\Xxkan\\HeavenWork\\recover-pr214'; if(Test-Path $p){ git worktree remove --force $p }; git worktree add -b recover-pr214-temp $p origin/main; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; git -C $p cherry-pick 6e9b3cdf900c7f2dea21b8c2cf4136e805efb061 cd5d2a0c96d3e2cc32edbc8fc5768373c0243112 9c4dcc590b67b800305347869f99432cbc1dd24a 59ce506daf7656d53b3053ec6bfafcdafcbc174c; if($LASTEXITCODE -ne 0){ git -C $p status --short; exit $LASTEXITCODE }; $head=(git -C $p rev-parse HEAD).Trim(); git -C $p push --force-with-lease origin HEAD:fix/legacy-migration-corrupt-cas-20260929; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output \"RECOVERED_HEAD=$head\"; git -C $p log --oneline -5"
+  },
+  "created_at": "2026-09-29T15:48:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
