@@ -1,0 +1,21 @@
+{
+  "id": "----agentctl-help-20260929-1055-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:54:51.510603+00:00",
+  "finished_at": "2026-09-29T10:54:51.932963+00:00",
+  "stdout": "Heaven Agent Control CLI  Durable local jobs: executor-start | executor-stop | submit_job <json-file-or-> | list_jobs | get_job <id> | cancel_job <id> | tail_logs <id> | read_logs <id> [byte-offset] [limit]  Commands:   status   snapshot   list   tasks   leases   workers   queue   branches   sync   deploy --role support --task \"...\" [options]   deploy --role support --task-file C:\\path\\task.txt [options]   deploy --role support --task-base64 BASE64_UTF8 [options]   cycle --task \"...\" [cycle options]   cycle --task-file C:\\path\\objective.txt [cycle options]   cycle --task-base64 BASE64_UTF8 [cycle options]   cycles   cycle-status <cycle-id>   cycle-stop <cycle-id>   review <agent-id> [--task \"...\"] [--task-file C:\\path\\review.txt]   stop <agent-id>   log <agent-id>  Deploy options:   --count N   --base BRANCH   --model MODEL   --boundary NAME   --priority 0-100   --machine auto|HOSTNAME   --depends TASK_ID[,TASK_ID...]  Cycle options:   --support N         Bounded support agents in initial wave (default 2, max 4)   --base BRANCH       Starting base branch (default main)   --model MODEL       Optional model override for every stage   --boundary NAME     Cycle boundary prefix   --priority 0-100    Priority for spawned tasks (default 80)   --poll-ms N         Local supervisor poll interval (default 15000)   --max-minutes N     Maximum local cycle runtime (default 720)  Examples:   node agentctl.mjs snapshot   node agentctl.mjs deploy --role support --task \"Audit updater rollback\" --count 2   node agentctl.mjs cycle --task-file C:\\Temp\\objective.txt --support 2 --priority 90   node agentctl.mjs cycle --task-base64 BASE64_UTF8 --support 2 --priority 90   node agentctl.mjs cycle-status cycle-20260928... \n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----agentctl-help-20260929-1055-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----agentctl-help-20260929-1055-a1.stderr.log",
+    "stdout_bytes": 1727,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "954d0762fd61ae3a0bbcbcf832b52b63729aecdd3f940f56b01c38f0442d0301"
+}
