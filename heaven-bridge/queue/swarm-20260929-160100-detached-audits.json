@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-160100-detached-audits",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $items=@(\n    'C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929',\n    'C:\\Users\\Xxkan\\HeavenWork\\audit-startup-recovery-20260929',\n    'C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929'\n  ); foreach($p in $items){ if(Test-Path $p){ throw \"path exists: $p\" } }; foreach($p in $items){ git worktree add --detach $p origin/main; if($LASTEXITCODE -ne 0){ throw \"worktree add failed: $p\" } }; git worktree list | Select-String 'audit-(watcher|startup|generic)'",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:01:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
