@@ -1,0 +1,21 @@
+{
+  "id": "000-00-00-heaven-runner-install-20260929",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:00:12.935Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:07:39.248865+00:00",
+  "finished_at": "2026-09-29T11:07:41.487821+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nThis installer is intended for the Windows Heaven worker.\r\nAt C:\\Users\\Xxkan\\AppData\\Local\\Temp\\install-github-runner-heaven.ps1:9 char:33\r\n+ ... dows_NT') { throw 'This installer is intended for the Windows Heaven  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (This installer ... Heaven worker.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : This installer is intended for the Windows Heaven worker.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-00-00-heaven-runner-install-20260929.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-00-00-heaven-runner-install-20260929.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 589,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d6194c2cf607680ee2d09b648d2d94d6ce5c38865c9f15d01cfbfaa65918b39f"
+}
