@@ -95,7 +95,7 @@
       <div>
         <div class="eyebrow">MHW Swarm · Control Plane</div>
         <h1>Agent Control</h1>
-        <div class="sub">One runtime view of tasks, workers, branch leases, agents, outputs, and integration candidates. Managed agents always receive isolated Git worktrees.</div>
+        <div class="sub">Federated runtime view of ChatGPT sessions, local workers, control-machine state, GitHub/CI, leases, outputs, and integration candidates.</div>
       </div>
       <div class="toolbar">
         <div class="pill" id="connection">Connecting…</div>
@@ -152,16 +152,16 @@
           <button class="deploy" data-role="recovery">Recovery</button>
           <button class="deploy" data-role="release">Release</button>
         </div>
-        <div class="tiny">Controller capacity is enforced before launch. This v1 schedules on its local host only; multi-machine registration is the next layer.</div>
+        <div class="tiny">Controller capacity is enforced before launch. Remote placement is used only when a real worker transport/provider is connected; unsupported placement fails closed.</div>
       </aside>
 
       <main>
         <div class="stats">
-          <div class="card stat"><span>Running</span><strong id="running">0</strong></div>
+          <div class="card stat"><span>Live agents</span><strong id="running">0</strong></div>
           <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
           <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
           <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
-          <div class="card stat"><span>Total agents</span><strong id="total">0</strong></div>
+          <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
         </div>
 
         <section class="card section">
@@ -190,6 +190,15 @@
 
         <section class="card section">
           <div class="section-title">
+            <h2>Federated swarm</h2>
+            <span class="pill" id="federationSummary">0 live</span>
+          </div>
+          <div class="tiny" id="providerSummary">Providers loading…</div>
+          <div class="agent-list" id="federatedAgents" style="margin-top:12px"></div>
+        </section>
+
+        <section class="card section">
+          <div class="section-title">
             <h2>Managed agents</h2>
             <span class="pill" id="agentSummary">0</span>
           </div>
@@ -211,7 +220,7 @@
         <section class="card section">
           <div class="section-title"><h2>Observed swarm branches</h2><span class="pill" id="branchSummary">0</span></div>
           <div class="branch-list" id="branches"></div>
-          <div class="tiny">Branch discovery can show work produced outside this control plane. It cannot enumerate unrelated ChatGPT web conversations because ChatGPT does not expose a general active-chat registry.</div>
+          <div class="tiny">Branch discovery complements the federated registry. Automatic ChatGPT project-session enumeration is unavailable, so ChatGPT sessions must register through the bridge/API using stable source identities.</div>
         </section>
       </main>
     </div>
@@ -279,6 +288,44 @@
           </div>
           <div class="progress"><span style="width:${pct}%"></span></div>
         </div>`;
+      }).join("");
+    }
+
+    function renderFederatedAgents(snapshot) {
+      const federation = snapshot.federation || {};
+      const counts = federation.counts || {};
+      const agents = snapshot.federatedAgents || [];
+      const providers = federation.providers || [];
+      $("federationSummary").textContent = `${counts.live ?? 0} live · ${counts.stale ?? 0} stale · ${counts.disconnected ?? 0} disconnected`;
+      $("providerSummary").textContent = providers.map(provider =>
+        `${provider.label || provider.id}: ${provider.status || "unknown"} [discover=${provider.discovery || "unknown"}, register=${provider.registration || "unknown"}]`
+      ).join(" · ") || "No providers registered.";
+
+      if (!agents.length) {
+        $("federatedAgents").innerHTML = '<div class="empty">No normalized agents observed yet. Local workers appear automatically; external sessions can register through the federation API/CLI.</div>';
+        return;
+      }
+
+      $("federatedAgents").innerHTML = agents.map(a => {
+        const providersText = (a.providers || [a.provider]).filter(Boolean).join(", ");
+        const stateText = a.effective_state || a.state || "unknown";
+        const freshness = a.freshness || "unknown";
+        const branch = a.branch ? ` · ${escapeHtml(a.branch)}` : "";
+        const pr = a.pr_number ? ` · PR #${escapeHtml(a.pr_number)}` : "";
+        return `
+          <article class="agent">
+            <div class="agent-top">
+              <div>
+                <div class="agent-name"><span class="dot ${statusClass(stateText)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(stateText)} · ${escapeHtml(freshness)}</span></div>
+                <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml(providersText || "unknown provider")} · ${escapeHtml(a.machine || "—")}</div>
+              </div>
+              <span class="tag">heartbeat ${age(a.heartbeat_age_ms)}</span>
+            </div>
+            <div class="task">${escapeHtml(a.task || a.last_action_summary || "No task summary")}</div>
+            <div class="meta">${escapeHtml(a.task_id || "no task id")}${branch}${pr}</div>
+            ${a.last_action_summary ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last action:</strong> ${escapeHtml(a.last_action_summary)}</div>` : ""}
+          </article>
+        `;
       }).join("");
     }
 
@@ -388,7 +435,7 @@
       $("total").textContent = t.total ?? 0;
 
       const controller = snapshot.controller || {};
-      $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} running`;
+      $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} live`;
       $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
 
       const autopilot = snapshot.autopilot || {};
@@ -403,6 +450,7 @@
       if (!$("autopilotObjective").value && autopilot.objective) $("autopilotObjective").value = autopilot.objective;
 
       renderWorkers(snapshot);
+      renderFederatedAgents(snapshot);
       renderAgents(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
