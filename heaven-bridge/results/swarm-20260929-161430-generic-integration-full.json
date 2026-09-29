@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-161430-generic-integration-full",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:14:30Z",
+  "status": "failed",
+  "exit_code": 5,
+  "started_at": "2026-09-29T16:13:00.819029+00:00",
+  "finished_at": "2026-09-29T16:13:04.048555+00:00",
+  "stdout": "\u001b[mC:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\tests\\MhwModManager.IntegrationTests\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.IntegrationTests.dll (net10.0-windows10.0.19041.0) \u001b[31mZero tests ran\u001b[m\r\nExit code: 5\r\n\r\n\u001b[31mTest run summary: Zero tests ran\r\n\u001b[31m  error: 1\r\n\u001b[m\r\n\u001b[m  total: 0\r\n  failed: 0\r\n  succeeded: 0\r\n  skipped: 0\r\n  duration: 206ms\r\nTest run completed with non-success exit code: 5 (see: https://aka.ms/testingplatform/exitcodes)\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-161430-generic-integration-full.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-161430-generic-integration-full.stderr.log",
+    "stdout_bytes": 475,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "80378c12ae6e7e33e8a9d41e3e673d79d0eb38e14cf0a8413f5d59dfa7b174dc"
+}
