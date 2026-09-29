@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-hcp-verification-wire-verify-20260929-1208-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "~",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $relay=Join-Path $HOME 'HeavenBridgeRepo'; $origin=(git -C $relay remote get-url origin).Trim(); $tmp=Join-Path $env:TEMP ('hcp-vwire-'+[guid]::NewGuid().ToString('N')); git clone --quiet --branch agent/hcp-verification-wire-20260929-0806 --single-branch $origin $tmp; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; try { $sha=(git -C $tmp rev-parse HEAD).Trim(); Set-Location $tmp; python .\\plugins\\heaven-control-plane\\verify.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; python .\\heaven-bridge\\test_worker.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; python .\\heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; python -m py_compile .\\plugins\\heaven-control-plane\\heaven_control_plane\\adapters\\heaven_bridge.py .\\plugins\\heaven-control-plane\\heaven_control_plane\\verification.py; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; git diff --check; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output ('VERIFIED_VERIFICATION_WIRE_SHA='+$sha) } finally { Set-Location $HOME; Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }"
+  },
+  "created_at": "2026-09-29T12:08:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
