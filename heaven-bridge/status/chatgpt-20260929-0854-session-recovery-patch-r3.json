@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0854-session-recovery-patch-r3",
-  "state": "running",
+  "state": "done",
   "action": "python",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:56:32.638360+00:00"
+  "updated_at": "2026-09-29T08:57:01.495085+00:00",
+  "exit_code": 0
 }
