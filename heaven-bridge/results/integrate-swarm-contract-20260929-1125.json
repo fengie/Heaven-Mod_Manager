@@ -1,0 +1,21 @@
+{
+  "id": "integrate-swarm-contract-20260929-1125",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:25:00Z",
+  "status": "failed",
+  "exit_code": 21,
+  "started_at": "2026-09-29T11:53:24.166197+00:00",
+  "finished_at": "2026-09-29T11:53:27.801058+00:00",
+  "stdout": "Auto-merging tools/agent-control/lib/prompt-templates.mjs\nCONFLICT (content): Merge conflict in tools/agent-control/lib/prompt-templates.mjs\n{\"status\":\"conflict\",\"base\":\"30837bfb3e29667b7c5be806c9867635957fa161\",\"commit\":\"aa1500f0e16f4a2182dfd6397888417e4912b8ff\",\"conflicts\":[\"tools/agent-control/lib/prompt-templates.mjs\"]}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   7c0e482c..0e9d96bd  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (detached HEAD 30837bfb)\nerror: could not apply aa1500f0... Enforce main-first swarm delivery in runtime prompts\nhint: After resolving the conflicts, mark them with\nhint: \"git add/rm <pathspec>\", then run\nhint: \"git cherry-pick --continue\".\nhint: You can instead skip this commit with \"git cherry-pick --skip\".\nhint: To abort and get back to the state before \"git cherry-pick\",\nhint: run \"git cherry-pick --abort\".\nhint: Disable this message with \"git config advice.mergeConflict false\"\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-swarm-contract-20260929-1125.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-swarm-contract-20260929-1125.stderr.log",
+    "stdout_bytes": 327,
+    "stderr_bytes": 607,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2a85fe5c7c4b0a7828687b7fda3ba9248c83feaf44e13fd3d14b1ae9f1b97252"
+}
