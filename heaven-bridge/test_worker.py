@@ -722,6 +722,9 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("HEAVEN_BRIDGE_BOOTSTRAP_HANDOFF", bootstrap)
         self.assertIn("& $SourceBootstrap", bootstrap)
         self.assertIn("if ($currentBootstrap -ne $canonicalBootstrap)", bootstrap)
+        self.assertIn("function Get-HeavenBridgeGitCurrentBranch", bootstrap)
+        self.assertNotIn("$GitStateHelper", bootstrap)
+        self.assertNotIn(". $GitStateHelper", bootstrap)
         self.assertNotIn("$SourceWorker = Join-Path $RepoRoot", bootstrap)
         self.assertNotIn("$SourceWatchdog = Join-Path $RepoRoot", bootstrap)
 
