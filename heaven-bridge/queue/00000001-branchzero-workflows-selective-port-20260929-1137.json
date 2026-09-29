@@ -1,0 +1,14 @@
+{
+  "id": "00000001-branchzero-workflows-selective-port-20260929-1137",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:30Z",
+  "ttl_seconds": 10800,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n$wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-workflows-final-int'\n$branch='integration/complete-mod-workflows-final-20260929'\ngit -C $repo fetch origin --prune | Out-Null\nif(Test-Path $wt){ git -C $repo worktree remove --force $wt | Out-Null }\ngit -C $repo show-ref --verify --quiet \"refs/heads/$branch\"\nif($LASTEXITCODE -eq 0){ git -C $repo branch -D $branch | Out-Null }\ngit -C $repo worktree add -b $branch $wt origin/main | Out-Null\nSet-Location $wt\n$base=(git rev-parse HEAD).Trim()\n\ngit cherry-pick -n 02fa1dd5c3e98d319067043598bfdfd32617e65f\n$cpExit=$LASTEXITCODE\n$conflicts=@(git diff --name-only --diff-filter=U)\n\n# Current main wins all textual conflicts initially; cleanly-applicable implementation hunks/new files stay.\nforeach($p in $conflicts){ git checkout --ours -- $p | Out-Null; git add -- $p | Out-Null }\n\n# Never import stale release/continuity/verification/CI state from the old branch.\n$stale=@(\n '.github/workflows/windows-workflows.yml',\n '.gitignore',\n '.verification/function-status.json',\n 'CHANGELOG.md',\n 'README.md',\n '_AGENT_CONTEXT'\n)\nforeach($p in $stale){ if(Test-Path $p){ git restore --source=HEAD --staged --worktree -- $p | Out-Null } }\n\ngit add -A\n$diffcheckCode=0\ngit diff --cached --check\n$diffcheckCode=$LASTEXITCODE\n\n$autoOut=Join-Path $env:TEMP 'mhw-workflows-auto-test.log'\n$appOut=Join-Path $env:TEMP 'mhw-workflows-app-build.log'\n& dotnet test 'tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj' -c Release *> $autoOut\n$auto=$LASTEXITCODE\n& dotnet build 'src\\MhwModManager.App\\MhwModManager.App.csproj' -c Release *> $appOut\n$app=$LASTEXITCODE\n\n$status=@(git status --short)\n$stat=(git diff --cached --stat | Out-String).Trim()\n$autoTail=(Get-Content -LiteralPath $autoOut -Tail 100 | Out-String).Trim()\n$appTail=(Get-Content -LiteralPath $appOut -Tail 100 | Out-String).Trim()\n[ordered]@{\n base=$base\n cherry_pick_exit=$cpExit\n conflicts_resolved_with_current_main=$conflicts\n diff_check_exit=$diffcheckCode\n automation_test_exit=$auto\n app_build_exit=$app\n diff_stat=$stat\n status=$status\n automation_tail=$autoTail\n app_build_tail=$appTail\n worktree=$wt\n branch=$branch\n} | ConvertTo-Json -Depth 6\nexit 0"
+  },
+  "priority": 100
+}
