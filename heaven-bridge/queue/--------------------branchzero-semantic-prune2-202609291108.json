@@ -1,0 +1,14 @@
+{
+  "id": "--------------------branchzero-semantic-prune2-202609291108",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\ngit -C $repo fetch origin --prune | Out-Host\n$targets=@('agent/bridge-priority-scheduler-20260929','integration/bridge-priority-aging-main-20260929','integration/bridge-priority-aging-main-r2-20260929','agent/game-profile-id-containment-20260928','agent/game-profile-id-containment-v2-20260928','agent/game-profile-id-containment-v8.8.5-reconcile','feature/agent-control-panel-20260928','feature/agent-command-center-20260928','ui/frontend-responsive-polish-20260928','ui/frontend-ux-overhaul','support/updater-publication-input-scope-20260928','agent/updater-installed-e2e-20260929-manager','agent/programmer-updater-rest-handoff-20260928','agent/reconciliation-continuity-20260929-0542-github','agent/reconciliation-continuity-20260929-final-github','agent/reconciliation-continuity-20260929-r3','agent/support-continuity-drift-reconciliation-20260928','agent/support-continuity-drift-repair-20260928','agent/support-pr-disposition-ledger-20260928','agent/v881-updater-publication-handoff-20260928','agent/support-agent-control-v2-product-workflow-audit-20260928','agent/support-archive-streaming-failure-cleanup-audit-20260928','agent/support-auto-updater-release-security-audit-20260928','agent/support-auto-updater-runtime-recovery-audit-20260928','agent/support-updater-c10-manager-review-20260928','agent/support-updater-lr003-restart-audit-20260928','agent/support-updater-packaging-audit-20260928','agent/support-updater-wpf-integration-audit-20260928','agent/replacefilew-failure-characterization-20260927')\n$active=@()\nforeach($line in @(git -C $repo worktree list --porcelain)){\n  if($line -like 'branch refs/heads/*'){ $active += $line.Substring(18) }\n}\n$deleted=@();$skipped=@();$missing=@();$failed=@()\nforeach($b in $targets){\n  git -C $repo show-ref --verify --quiet (\"refs/remotes/origin/\"+$b)\n  if($LASTEXITCODE -ne 0){$missing+=$b;continue}\n  if($b -in $active){$skipped += \"$b|active-worktree\";continue}\n  & git -C $repo push origin --delete $b 2>&1 | Out-Host\n  if($LASTEXITCODE -eq 0){$deleted+=$b}else{$failed+=$b}\n}\ngit -C $repo fetch origin --prune | Out-Null\n$remaining=@(git -C $repo for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object {$_ -ne 'origin/HEAD'})\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;skipped=$skipped;missing=$missing;failed=$failed;remaining_count=$remaining.Count;main=(git -C $repo rev-parse origin/main).Trim()} | ConvertTo-Json -Depth 5",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T11:08:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
