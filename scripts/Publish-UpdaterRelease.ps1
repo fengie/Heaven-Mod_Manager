@@ -79,9 +79,13 @@ try {
     if($existing.Count -ne 1){throw "Multiple releases unexpectedly use tag $tag."}
     if([bool]$existing[0].isDraft){throw "Updater release $tag exists only as a draft; refusing to overwrite or publish it automatically."}
     if(-not [bool]$existing[0].isImmutable){throw "Updater release $tag exists but is not immutable; refusing to trust it as an update feed."}
-    & git show-ref --verify --quiet "refs/tags/$tag"
-    if($LASTEXITCODE -ne 0){throw "Published updater release $tag has no fetched Git tag."}
-    $tagSha=(& git rev-list -n 1 "refs/tags/$tag").Trim()
+    # An immutable release can be visible through GitHub's APIs before its tag is
+    # advertised by Git transport. Retry verification must therefore use the same
+    # authoritative REST ref as the immediate post-publication path.
+    $existingRefOutput=@(& gh api "repos/$Repository/git/ref/tags/$tag")
+    if($LASTEXITCODE -ne 0){throw "Existing updater tag $tag could not be inspected for verification."}
+    $existingRefJson=$existingRefOutput -join [Environment]::NewLine
+    $tagSha=Get-UpdaterTagCommitFromRefJson -Json $existingRefJson -ExpectedTag $tag
     if($tagSha -ne $ExpectedSourceSha){throw "Existing updater release $tag points to $tagSha instead of $ExpectedSourceSha."}
 
     $existingApi=& gh api "repos/$Repository/releases/tags/$tag"
