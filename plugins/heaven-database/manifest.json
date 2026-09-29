@@ -1,0 +1,9 @@
+{
+  "schema":"heaven-plugin/manifest/v1",
+  "name":"heaven-database",
+  "version":"0.1.0",
+  "entrypoint":"heaven_database.service:DatabasePlugin",
+  "capabilities":["database.schema","database.query","database.execute","database.integrity_check","database.backup"],
+  "database_engines":["sqlite"],
+  "security":{"query_only_enforced_by_sqlite":true,"mutations_require_confirmation":true,"allowed_root_containment":true,"cross_database_attach_blocked":true}
+}
