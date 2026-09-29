@@ -71,12 +71,12 @@ jobs:
       - name: Measure current main baseline
         shell: powershell
         run: |
-          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 120
+          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
 
       - name: Measure candidate
         shell: powershell
         run: |
-          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 120
+          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
 
       - name: Build before-after report
         shell: powershell
@@ -97,6 +97,11 @@ jobs:
               'peak_working_set_mb',
               'idle_working_set_mb',
               'catalog_refresh_ms',
+              'armor_import_ms',
+              'nexus_refresh_ms',
+              'game_build_ms',
+              'recovery_ms',
+              'automation_ms',
               'main_window_initialize_ms',
               'master_log_mb'
           )
