@@ -410,6 +410,10 @@ function requireProvider(federation, providerId) {
   if (!provider) {
     throw new Error('Unsupported federation provider "' + providerId + '". Register an adapter before ingesting observations.');
   }
+  if (provider.status === "unsupported" ||
+      (provider.discovery === "unavailable" && provider.registration === "unavailable")) {
+    throw new Error('Federation provider "' + id + '" is preserved for compatibility but has no installed adapter.');
+  }
   return provider;
 }
 
@@ -441,6 +445,10 @@ export function recordProviderHeartbeat(federation, providerId, {
   const id = normalizeProviderId(providerId);
   if (!id) throw new Error("provider id is required");
   requireProvider(federation, id);
+  if (metadata !== null && metadata !== undefined &&
+      (typeof metadata !== "object" || Array.isArray(metadata))) {
+    throw new Error("provider heartbeat metadata must be an object when provided.");
+  }
   const heartbeatAt = normalizeRequiredDate(at, "provider heartbeat at", iso(Date.now()));
   return upsertProvider(federation, id, {
     status: String(status || "online"),
@@ -463,6 +471,9 @@ export function normalizeObservation(federation, rawObservation, { now = Date.no
   if (rawObservation.correlation !== undefined &&
       (rawObservation.correlation === null || typeof rawObservation.correlation !== "object" || Array.isArray(rawObservation.correlation))) {
     throw new Error("correlation must be an object when provided.");
+  }
+  if (rawObservation.correlation_keys !== undefined && !Array.isArray(rawObservation.correlation_keys)) {
+    throw new Error("correlation_keys must be an array when provided.");
   }
   const correlation = rawObservation.correlation ? { ...rawObservation.correlation } : {};
   const heartbeatAt = normalizeRequiredDate(
