@@ -1,4 +1,4 @@
-# cleanup trigger: 2026-09-29T10:09-04:00
+# cleanup trigger: 2026-09-29T10:16-04:00
 name: One-shot superseded branch cleanup
 
 on:
@@ -71,6 +71,30 @@ jobs:
               ["agent/hcp-index-wiring-20260929", { sha: "b2ca4d8e75b7c1de48b7b403ac35c7a0bed5a023", reason: "superseded by merged HCP v0.4.0 integration PR #153" }],
               ["integration/hcp-index-wiring-20260929", { sha: "b4b5a2e58d37b4f6638af4516c08f381192e1d46", reason: "superseded by merged HCP v0.4.0 integration PR #153" }],
               ["fix/updater-heaven-routing-20260929", { sha: "61e9fd266746f4e0c4ca5f28b65ffd8f88107e28", reason: "superseded by merged PR #148 with safer Heaven runner handling" }]
+              ["agent/fix-release-gate-20260929-0926", { sha: "5f3adee2a7426f93d59436552c8afa30b06b0d47", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["feature/public-updater-feed-20260929", { sha: "8c00e278f0603c86f566e71437a2be22440c7a57", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["feature/public-updater-mirror-20260929", { sha: "d898e6aeb64369990785baec5662436ea4958c35", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/build-release-windows-detection-20260929", { sha: "ce3dd3594c67e606ed68d059fedbd9989dbda8a8", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/build-release-windows-host-detection-20260929", { sha: "1fd30c477d0f6464643744fcf041d8a11d842c26", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/clean-heaven-publication-workflow-20260929", { sha: "e987673eaa7c16cd3d6aba51929d2da43d3ff5a9", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/heaven-release-publisher-no-gh-20260929", { sha: "4f28fb3347fb01276d4efd2ee673aac26d51a8f7", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/heaven-rest-release-publication-20260929", { sha: "f4f4c65420d9f8e757626e66b86f626cbed1207e", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/heaven-rest-updater-publication-20260929", { sha: "f6a84c2d342226bb7b070f7bc5bfe995234265ff", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/heaven-updater-publication-runtime-20260929", { sha: "285367b0b7e02b2d2bab1a23ebd5dc11bab70aa8", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/mod-workflows-current-main-20260929", { sha: "ee0fc111f904d4e78d19bbf94a64af7f8de79bb5", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/post-171-release-regressions-20260929", { sha: "7df71b76e40768176a58b682fff6509d4f2f3133", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/public-updater-mirror-clean-20260929", { sha: "822c5d7656e96848bbe0e8884ce0ff750b18c87d", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/release-build-windows-detection-20260929", { sha: "121bb7567f0a011d9e28a693a80ad517be7505a5", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/release-gate-remaining-blockers-20260929", { sha: "cf820bd4dd5cccad07b5b3f80c9ddee62be29a7c", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/release-runtime-cleanup-20260929", { sha: "fac8987b1f8090647ceac2bc66f02d8995eaa4c5", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/release-windows-host-detection-20260929", { sha: "85b5ca269e284389774c60a9e5ddaf892375766a", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/repair-corrupt-release-gate-and-publisher-20260929", { sha: "acf25b9f8c134a38a6477d75b871090024c750db", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/rest-updater-publication-20260929", { sha: "b358576ecca192117c7c3f0c46f44f273f744274", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/updater-release-gate-verification-final-20260929", { sha: "5243d536285c7eb7c72004710231f3274115908d", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/updater-rest-publication-20260929", { sha: "f337608722149ce3d9e9c20e17bada8a6fb7dc8b", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/v8.8.10-release-continuity-20260929", { sha: "622ad3641fe9952e58c1afb65f5f8fef0f8b347e", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["fix/v8.8.10-release-verification-regressions-20260929", { sha: "e87937d0602ed8986196d056e9981ad4cb333025", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
+              ["recovery/complete-mod-workflows-20260929", { sha: "cae2407e5245ab27339967f2b5522a37c1e60152", reason: "user-directed stale branch cleanup; no open PR at audit time" }],
             ]);
 
             for (const branchInfo of branches) {
@@ -199,6 +223,27 @@ jobs:
                   reason: "moved-during-audit"
                 });
                 continue;
+              }
+
+              // Preserve the exact branch tip as a lightweight archive tag before deletion
+              // so user-directed cleanup remains recoverable without branch clutter.
+              const archiveName = `archive/branch-cleanup-20260929/${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}`;
+              try {
+                await github.rest.git.createRef({
+                  owner,
+                  repo,
+                  ref: `refs/tags/${archiveName}`,
+                  sha: branchSha
+                });
+              } catch (e) {
+                if (e.status !== 422) throw e;
+                const existingArchive = await github.rest.git.getRef({
+                  owner, repo, ref: `tags/${archiveName}`
+                });
+                if (existingArchive.data.object.sha !== branchSha) {
+                  core.setFailed(`Archive tag collision for ${branch}`);
+                  return;
+                }
               }
 
               await github.rest.git.deleteRef({
