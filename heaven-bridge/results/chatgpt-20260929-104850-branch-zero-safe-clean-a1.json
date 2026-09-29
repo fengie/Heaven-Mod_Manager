@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104850-branch-zero-safe-clean-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:50Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:31:54.737434+00:00",
+  "finished_at": "2026-09-29T11:32:00.829347+00:00",
+  "stdout": "{\r\n    \"main\":  \"fc8ac4248f70b2447bf37480398050e8d1d9c50e\",\r\n    \"deleted_count\":  1,\r\n    \"deleted\":  [\r\n                    {\r\n                        \"branch\":  \"agent/heaven-control-plane-phase0-20260929\",\r\n                        \"proof\":  \"ancestor-of-main\"\r\n                    }\r\n                ],\r\n    \"skipped_count\":  1,\r\n    \"skipped\":  [\r\n                    {\r\n                        \"branch\":  \"codex/complete-mod-workflows\",\r\n                        \"reason\":  \"unique-work-remains\"\r\n                    }\r\n                ],\r\n    \"errors\":  [\r\n\r\n               ],\r\n    \"remaining_count\":  3,\r\n    \"remaining\":  [\r\n                      \"codex/complete-mod-workflows\",\r\n                      \"heaven-bridge\",\r\n                      \"main\"\r\n                  ],\r\n    \"active_worktrees\":  [\r\n                             \"main\",\r\n                             \"agent/security-authorization-20260929\",\r\n                             \"audit/complete-workflows-current-main-20260929\",\r\n                             \"reconcile/smart-pack-current-main-20260929\",\r\n                             \"agent/federation-registry-20260929\",\r\n                             \"integration/final-main-reconcile-20260929\",\r\n                             \"converge/final-v886-20260929b\",\r\n                             \"integration/release-lead-20260929-0543\",\r\n                             \"converge/main-20260929\",\r\n                             \"integration/pr90-reconcile-20260929\",\r\n                             \"agent/auto-updater-publication-fix-20260928\",\r\n                             \"integration/pr90-reconcile-local-20260929\",\r\n                             \"release/v8.8.5-20260929\",\r\n                             \"fix/v8.8.5-installed-label-trace\",\r\n                             \"agent/verification-reliability-20260929\"\r\n                         ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/fix/heaven-gate-concurrency-20260929\n - [deleted]           (none)        -> origin/integration/complete-mod-workflows-main-20260929\n   655f8048..fc8ac424  main          -> origin/main\n * [new branch]        agent/heaven-control-plane-phase0-20260929 -> origin/agent/heaven-control-plane-phase0-20260929\n   05347b2b..1a6ae265  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           agent/heaven-control-plane-phase0-20260929\nFrom https://github.com/fengie/mhw-mods\n   1a6ae265..fb0308d0  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104850-branch-zero-safe-clean-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104850-branch-zero-safe-clean-a1.stderr.log",
+    "stdout_bytes": 1854,
+    "stderr_bytes": 661,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "6dd5733b22a56dfe5361e4b9e8d6956a2bd57a3fbd82db10b6a921d38f291bb3"
+}
