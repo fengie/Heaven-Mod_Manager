@@ -6,10 +6,14 @@ $Branch = 'heaven-bridge'
 $RuntimeDir = Join-Path $env:USERPROFILE '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
+$RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
 $SourceWorker = Join-Path $RepoRoot 'heaven-bridge\worker.py'
+$SourceWatchdog = Join-Path $RepoRoot 'heaven-bridge\watchdog.ps1'
 $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
+$StartupWatchdogVbs = Join-Path $Startup 'HeavenBridgeWatchdog.vbs'
 $TaskName = 'Heaven Local Bridge'
+$WatchdogTaskName = 'Heaven Local Bridge Watchdog'
 $GitStateHelper = Join-Path $PSScriptRoot 'git-state.ps1'
 
 . $GitStateHelper
@@ -114,9 +118,25 @@ if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
 if (-not (Test-Path $SourceWorker)) {
     throw "Bridge worker source missing: $SourceWorker"
 }
+if (-not (Test-Path $SourceWatchdog)) {
+    throw "Bridge watchdog source missing: $SourceWatchdog"
+}
 
 $python = (Get-Command python.exe -ErrorAction Stop).Source
 $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
+$powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
+
+$watchdogTokens = $null
+$watchdogErrors = $null
+[void][System.Management.Automation.Language.Parser]::ParseFile(
+    (Resolve-Path $SourceWatchdog),
+    [ref]$watchdogTokens,
+    [ref]$watchdogErrors
+)
+if ($watchdogErrors.Count -gt 0) {
+    $watchdogErrors | Format-List | Out-String | Write-Error
+    throw 'Watchdog syntax validation failed.'
+}
 
 $staged = Join-Path $RuntimeDir 'heaven-desktop-worker.py.new'
 Copy-Item $SourceWorker $staged -Force
@@ -131,8 +151,10 @@ if (Test-Path $RuntimeWorker) {
     Copy-Item $RuntimeWorker $BackupWorker -Force
 }
 Move-Item $staged $RuntimeWorker -Force
+Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
 
-# Startup-folder fallback. Use an absolute pythonw path so a reduced logon PATH cannot break startup.
+# Startup-folder fallbacks are deliberately independent of Task Scheduler.
+# The watchdog fallback repairs the canonical worker without GitHub or the bridge itself.
 $escapedPythonw = $pythonw.Replace('"', '""')
 $escapedWorker = $RuntimeWorker.Replace('"', '""')
 $vbs = @"
@@ -140,6 +162,14 @@ Set sh = CreateObject("WScript.Shell")
 sh.Run """$escapedPythonw"" ""$escapedWorker""", 0, False
 "@
 Set-Content -Path $StartupVbs -Value $vbs -Encoding ASCII
+
+$escapedPowerShell = $powershell.Replace('"', '""')
+$escapedWatchdog = $RuntimeWatchdog.Replace('"', '""')
+$watchdogVbs = @"
+Set sh = CreateObject("WScript.Shell")
+sh.Run """$escapedPowerShell"" -NoProfile -ExecutionPolicy Bypass -File ""$escapedWatchdog""", 0, False
+"@
+Set-Content -Path $StartupWatchdogVbs -Value $watchdogVbs -Encoding ASCII
 
 # Validate the exact repository source before any running worker is stopped.
 # This is intentionally stronger than syntax-only validation: bootstrap must not
@@ -165,53 +195,64 @@ if (Test-Path $TestWorker) {
 # jobs do not need per-command UAC elevation.
 $taskInstalled = $false
 $taskRunLevel = 'Unavailable'
-$existingTask = $null
+$watchdogTaskInstalled = $false
+$watchdogRunLevel = 'Unavailable'
+
 try {
-    $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
-    $taskRunLevel = [string]$existingTask.Principal.RunLevel
-} catch {}
-
-if ($existingTask -and $taskRunLevel -eq 'Highest') {
-    # Keep an already-elevated task. Its action points at the stable runtime path,
-    # which bootstrap refreshes above on every update.
-    $taskInstalled = $true
-} else {
-    try {
-        $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        if ([string]::IsNullOrWhiteSpace($identityName)) {
-            throw 'Unable to resolve the current Windows identity for the scheduled-task principal.'
-        }
-
-        $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
-        $trigger = New-ScheduledTaskTrigger -AtLogOn
-        $settings = New-ScheduledTaskSettingsSet `
-            -AllowStartIfOnBatteries `
-            -DontStopIfGoingOnBatteries `
-            -StartWhenAvailable `
-            -MultipleInstances IgnoreNew `
-            -RestartCount 12 `
-            -RestartInterval (New-TimeSpan -Minutes 1)
-        $principal = New-ScheduledTaskPrincipal `
-            -UserId $identityName `
-            -LogonType Interactive `
-            -RunLevel Highest
-
-        Register-ScheduledTask `
-            -TaskName $TaskName `
-            -Action $action `
-            -Trigger $trigger `
-            -Settings $settings `
-            -Principal $principal `
-            -Force | Out-Null
-
-        $taskRunLevel = [string](Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop).Principal.RunLevel
-        if ($taskRunLevel -ne 'Highest') {
-            throw "Scheduled task registered but reports unexpected RunLevel '$taskRunLevel'."
-        }
-        $taskInstalled = $true
-    } catch {
-        Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; Startup VBS remains configured. A one-time elevated registration is required before the bridge can hold an administrator token. $($_.Exception.Message)"
+    $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    if ([string]::IsNullOrWhiteSpace($identityName)) {
+        throw 'Unable to resolve the current Windows identity for the scheduled-task principal.'
     }
+
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $settings = New-ScheduledTaskSettingsSet `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -StartWhenAvailable `
+        -MultipleInstances IgnoreNew `
+        -RestartCount 255 `
+        -RestartInterval (New-TimeSpan -Minutes 1) `
+        -ExecutionTimeLimit ([TimeSpan]::Zero)
+    $principal = New-ScheduledTaskPrincipal `
+        -UserId $identityName `
+        -LogonType Interactive `
+        -RunLevel Highest
+
+    # Always refresh the definition. Keeping an old Highest task would preserve
+    # stale restart limits or Windows' default 72-hour execution limit.
+    $workerAction = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
+    Register-ScheduledTask `
+        -TaskName $TaskName `
+        -Action $workerAction `
+        -Trigger $trigger `
+        -Settings $settings `
+        -Principal $principal `
+        -Force | Out-Null
+
+    $taskRunLevel = [string](Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop).Principal.RunLevel
+    if ($taskRunLevel -ne 'Highest') {
+        throw "Scheduled task registered but reports unexpected RunLevel '$taskRunLevel'."
+    }
+    $taskInstalled = $true
+
+    $watchdogAction = New-ScheduledTaskAction `
+        -Execute $powershell `
+        -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
+    Register-ScheduledTask `
+        -TaskName $WatchdogTaskName `
+        -Action $watchdogAction `
+        -Trigger $trigger `
+        -Settings $settings `
+        -Principal $principal `
+        -Force | Out-Null
+
+    $watchdogRunLevel = [string](Get-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction Stop).Principal.RunLevel
+    if ($watchdogRunLevel -ne 'Highest') {
+        throw "Watchdog task registered but reports unexpected RunLevel '$watchdogRunLevel'."
+    }
+    $watchdogTaskInstalled = $true
+} catch {
+    Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; independent Startup fallbacks remain configured. A one-time elevated registration is required before both tasks can hold an administrator token. $($_.Exception.Message)"
 }
 
 function Get-HeavenBridgeWorker {
@@ -288,4 +329,22 @@ if (-not $proc) {
     throw 'Replacement Heaven Local Bridge worker failed and backup restart also failed; Startup fallback remains configured.'
 }
 
-Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel)
+$watchdogManaged = $false
+if ($watchdogTaskInstalled) {
+    try {
+        Start-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction Stop
+        Start-Sleep -Seconds 2
+        $watchdogManaged = $true
+    } catch {
+        Write-Warning "Watchdog Task Scheduler start failed; falling back to direct watchdog start. $($_.Exception.Message)"
+    }
+}
+if (-not $watchdogManaged) {
+    Start-Process -WindowStyle Hidden -FilePath $powershell -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', ('"{0}"' -f $RuntimeWatchdog)
+    ) -WorkingDirectory $env:USERPROFILE | Out-Null
+}
+
+Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_managed={5} watchdog_run_level={6}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogManaged, $watchdogRunLevel)
