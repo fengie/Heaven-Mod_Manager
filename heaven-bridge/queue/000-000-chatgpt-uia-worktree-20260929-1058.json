@@ -1,0 +1,14 @@
+{
+  "id": "000-000-chatgpt-uia-worktree-20260929-1058",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'; $repo=Join-Path $HOME 'local-ai-workspaces\\mhw-mods'; $wt=Join-Path $HOME 'local-ai-workspaces\\mhw-mods-chatgpt-uia-20260929'; git -C $repo fetch origin --prune; if($LASTEXITCODE -ne 0){throw 'fetch failed'}; if(Test-Path $wt){git -C $repo worktree remove --force $wt 2>$null}; git -C $repo branch -D agent/chatgpt-bridge-uia-local-20260929 2>$null; git -C $repo worktree add -b agent/chatgpt-bridge-uia-local-20260929 $wt origin/main; if($LASTEXITCODE -ne 0){throw 'worktree add failed'}; Write-Output ('WT='+$wt); git -C $wt rev-parse HEAD; git -C $wt status --short"
+  },
+  "created_at": "2026-09-29T10:58:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
