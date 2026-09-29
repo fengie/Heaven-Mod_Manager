@@ -32,17 +32,30 @@ For Heaven plugin work:
    - merge to `main`, push, verify remote `main`, then remove any temporary branch.
 5. Never leave two independently maintained copies of the same plugin implementation.
 
+## Implemented packages
+
+- `heaven-control-plane/` — stable structured execution, filesystem, Git verification, build/test plans, indexing, and observability over the existing Heaven Local Bridge.
+- `heaven-workflows/` — reusable repository verification/snapshot workflows and bounded parallel structured-capability execution.
+- `heaven-task-queue/` — SQLite dependency queue with worker leases, retries, heartbeats, and named resource locks.
+- `heaven-local-ai/` — bounded local Ollama generation and engineering-context compression through the control plane.
+
+Run the full plugin workspace gate with:
+
+```powershell
+python .\plugins\verify.py
+```
+
 ## Initial layout
 
 ```text
 plugins/
   README.md
   IMPLEMENTATION_SWARM_PROMPT.md
+  verify.py
   heaven-control-plane/
-    README.md
-    src/
-    tests/
-    manifests/
+  heaven-workflows/
+  heaven-task-queue/
+  heaven-local-ai/
   _shared/
   _tooling/
 ```
