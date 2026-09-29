@@ -7,6 +7,7 @@ import {
   applyPreLaunchFailure,
   agentExecutionModeDecision,
   autonomyPermissionDecision,
+  buildSwarmPromptEvolutionContext,
   defaultControlState,
   deploymentBatchCapacity,
   migrateControlState,
@@ -41,13 +42,78 @@ test("prompt rendering preserves provenance and machine policy", () => {
       branchName: "agent/test"
     },
     machine: "heaven",
-    repositoryWriteAuthorized: false
+    repositoryWriteAuthorized: false,
+    swarmEvolutionContext: [
+      "Prompt generation 4. A prior support lane finished the architecture audit.",
+      "Do not repeat completed work; adapt to the latest blocker."
+    ]
   });
   assert.equal(result.templateId, "role.support");
   assert.match(result.templateVersion, /^2026\./);
   assert.equal(result.sha256.length, 64);
   assert.match(result.rendered, /do not clone, fetch, pull, push/i);
   assert.match(result.rendered, /recursive continuity/i);
+  assert.match(result.rendered, /LIVE SWARM EVOLUTION CONTEXT/i);
+  assert.match(result.rendered, /Prompt generation 4/i);
+  assert.equal(result.swarmContextHash?.length, 64);
+});
+
+test("swarm prompt evolution refreshes from live outcomes and prompt lineage", () => {
+  const current = state();
+  current.tasks.push(
+    {
+      id: "task-done", role: "support", status: "done", objective: "Architecture audit finished",
+      updatedAt: "2026-09-29T18:00:00.000Z", blockers: []
+    },
+    {
+      id: "task-failed", role: "support", status: "failed", objective: "Old retry strategy",
+      updatedAt: "2026-09-29T18:01:00.000Z", blockers: ["provider quota exhausted"]
+    },
+    {
+      id: "task-live", role: "main", status: "running", objective: "Implement the current boundary",
+      updatedAt: "2026-09-29T18:02:00.000Z", blockers: []
+    }
+  );
+  current.promptHistory.unshift({
+    templateId: "role.support",
+    sha256: "a".repeat(64),
+    swarmWaveId: "wave-previous",
+    createdAt: "2026-09-29T18:03:00.000Z"
+  });
+
+  const first = buildSwarmPromptEvolutionContext(current, {
+    workflowId: "usual-swarm",
+    mission: "Finish Agent Control",
+    waveId: "wave-current",
+    stepIndex: 0,
+    totalSteps: 3,
+    source: "one-click-workflow"
+  });
+  const firstText = first.lines.join("\n");
+  assert.equal(first.generation, 2);
+  assert.match(firstText, /Architecture audit finished/);
+  assert.match(firstText, /provider quota exhausted/);
+  assert.match(firstText, /Implement the current boundary/);
+  assert.match(firstText, /role\.support:aaaaaaaaaaaa@wave-previous/);
+  assert.match(firstText, /Adapt instead of replaying/i);
+
+  current.promptHistory.unshift({
+    templateId: "role.main",
+    sha256: "b".repeat(64),
+    swarmWaveId: "wave-current",
+    createdAt: "2026-09-29T18:04:00.000Z"
+  });
+  const second = buildSwarmPromptEvolutionContext(current, {
+    workflowId: "usual-swarm",
+    mission: "Finish Agent Control",
+    waveId: "wave-current",
+    stepIndex: 1,
+    totalSteps: 3,
+    source: "one-click-workflow"
+  });
+  assert.equal(second.generation, 3);
+  assert.notDeepEqual(second.lines, first.lines);
+  assert.match(second.lines.join("\n"), /step 2\/3/);
 });
 
 test("v2 state migrates without dropping durable records", () => {
