@@ -50,6 +50,7 @@ MAX_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_MAX_TTL", "86400"))
 FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_FUTURE_SKEW", "300"))
 HEARTBEAT_SECONDS = max(120, int(os.environ.get("HEAVEN_BRIDGE_HEARTBEAT_SECONDS", "300")))
 RATE_LIMIT_PER_MINUTE = max(10, int(os.environ.get("HEAVEN_BRIDGE_RATE_PER_MINUTE", "60")))
+QUEUE_PRIORITY_AGING_SECONDS = max(30, int(os.environ.get("HEAVEN_BRIDGE_PRIORITY_AGING_SECONDS", "300")))
 DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
 DEFAULT_SESSION_MAX = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX", "14400"))
 SESSION_METADATA_VERSION = 1
@@ -366,6 +367,43 @@ def validate_job_time(job, current=None):
     if age < -FUTURE_SKEW_SECONDS:
         raise BridgeError("JOB_FROM_FUTURE", "job created_at is too far in the future", {"skew_seconds": int(-age)})
     return {"created_at": created.isoformat(), "ttl_seconds": ttl, "age_seconds": int(age)}
+
+
+def queue_order_key(job, current=None):
+    """Return a deterministic queue ordering key.
+
+    Control-plane actions always outrank ordinary work. Non-control jobs use
+    explicit priority plus age promotion so a steady stream of newer
+    high-priority work cannot starve an older lower-priority job forever.
+    """
+    current = current or utcnow()
+    action = str(job.get("action") or job.get("kind") or "codex").lower()
+    try:
+        created = parse_time(job.get("created_at"))
+    except BridgeError:
+        created = current
+
+    if action in CONTROL_ACTIONS:
+        return (-1, created.timestamp(), str(job.get("id") or ""))
+
+    raw = job.get("priority", "normal")
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        numeric = max(0.0, min(float(raw), 100.0))
+        if numeric >= 75:
+            base = 0
+        elif numeric >= 50:
+            base = 1
+        elif numeric >= 25:
+            base = 2
+        else:
+            base = 3
+    else:
+        base = {"highest": 0, "high": 1, "normal": 2, "low": 3}.get(str(raw or "normal").strip().lower(), 2)
+
+    age_seconds = max(0.0, (current - created).total_seconds())
+    promotions = int(age_seconds // QUEUE_PRIORITY_AGING_SECONDS)
+    effective = max(0, base - promotions)
+    return (effective, created.timestamp(), str(job.get("id") or ""))
 
 
 def auth_mode():
@@ -2238,7 +2276,8 @@ def process_queue(executor):
     RESULTS.mkdir(parents=True, exist_ok=True)
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
 
-    files = sorted(QUEUE.glob("*.json"), key=queue_order_key)
+    files = sorted(QUEUE.glob("*.json"))
+    candidates = []
     for path in files:
         job_id = path.stem
         if not safe_id(job_id):
@@ -2273,11 +2312,26 @@ def process_queue(executor):
                 restore_cached_result(job_id, previous)
             continue
 
-        if not rate_limit_ok():
-            log("rate limit reached; deferring new jobs")
-            break
-
         action = str(job.get("action") or job.get("kind") or "codex").lower()
+        candidates.append((queue_order_key(job), path, job, digest, action))
+
+    candidates.sort(key=lambda item: (item[0], item[1].name))
+
+    for _order, path, job, digest, action in candidates:
+        job_id = path.stem
+
+        if action not in CONTROL_ACTIONS:
+            with STATE_LOCK:
+                active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
+            if active_noncontrol >= MAX_WORKERS:
+                # Keep scanning: control-plane jobs are sorted ahead of ordinary
+                # work and future iterations may gain capacity as workers finish.
+                continue
+            if not rate_limit_ok():
+                # Control actions bypass the general start-rate limit so cancel,
+                # status, health and session-control requests remain responsive.
+                break
+
         if not claim(job_id):
             continue
         cancel_event = threading.Event()
@@ -2290,11 +2344,6 @@ def process_queue(executor):
         else:
             future = executor.submit(execute_job, job_id, job, digest, cancel_event)
             info["future"] = future
-
-        with STATE_LOCK:
-            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
-        if active_noncontrol >= MAX_WORKERS:
-            break
 
 
 def clean_stale_locks():
