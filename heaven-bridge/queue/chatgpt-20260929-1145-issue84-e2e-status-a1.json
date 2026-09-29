@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-1145-issue84-e2e-status-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $repoPath = Join-Path $HOME 'HeavenBridgeRepo'; Write-Output ('HOST=' + $env:COMPUTERNAME); git -C $repoPath fetch origin main --quiet; Write-Output ('MAIN=' + (git -C $repoPath rev-parse origin/main)); Write-Output '--- workflow runs ---'; gh run list --repo fengie/mhw-mods --workflow updater-installed-client-e2e.yml --limit 12 --json databaseId,status,conclusion,headSha,event,createdAt,updatedAt,url 2>&1; Write-Output '--- workflow source head ---'; git -C $repoPath show origin/main:.github/workflows/updater-installed-client-e2e.yml 2>&1 | Select-Object -First 120; Write-Output '--- issue84 test symbols ---'; git -C $repoPath grep -n -E 'updater-main-60|updater-main-61|Injected|rollback|unknown.file|health' origin/main -- tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs 2>&1 | Select-Object -First 120",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T11:45:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
