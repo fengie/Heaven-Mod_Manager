@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-branchzero-inspect-20260929-1119-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:50:34.581710+00:00"
+  "updated_at": "2026-09-29T11:51:07.249011+00:00",
+  "exit_code": 0
 }
