@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0902-pr90-failure-details-i1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$wt=\"$env:USERPROFILE\\mhw-mods-pr90-integration\"; Set-Location $wt; $json=Get-ChildItem BuildLogs\\verification-report-*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1; 'REPORT='+$json.FullName; $doc=Get-Content -Raw $json.FullName | ConvertFrom-Json; $doc.results | Where-Object { $_.status -ne 'PASS' } | ConvertTo-Json -Depth 8; 'FAIL_LINES_BEGIN'; $log=Get-ChildItem BuildLogs\\verify-*.log | Sort-Object LastWriteTime -Descending | Select-Object -First 1; Select-String -Path $log.FullName -Pattern 'FAIL:|failed|Failed|ERROR|Exception' -Context 3,8 | ForEach-Object {$_.ToString()}; 'FAIL_LINES_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T09:02:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
