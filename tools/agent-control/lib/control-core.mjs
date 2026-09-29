@@ -634,6 +634,80 @@ function newestCandidate(state) {
   return state.agents.find(agent => isIntegrationEligible(agent)) || state.agents.find(agent => agent.status === "done") || null;
 }
 
+function promptEvolutionText(value, maxLength = 220) {
+  const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+  if (!normalized) return "";
+  return normalized.length <= maxLength ? normalized : `${normalized.slice(0, Math.max(0, maxLength - 1))}…`;
+}
+
+function promptEvolutionTimestamp(item) {
+  const parsed = Date.parse(item?.updatedAt || item?.finishedAt || item?.startedAt || item?.requestedAt || item?.createdAt || "");
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function summarizePromptEvolutionTask(item) {
+  const id = promptEvolutionText(item?.id || item?.taskId || "task", 48) || "task";
+  const role = promptEvolutionText(item?.role || "unknown", 28) || "unknown";
+  const status = promptEvolutionText(item?.status || "unknown", 32) || "unknown";
+  const objective = promptEvolutionText(item?.objective || item?.task || item?.nextAction || "no objective", 180) || "no objective";
+  return `${id} [${role}/${status}] ${objective}`;
+}
+
+export function buildSwarmPromptEvolutionContext(state, {
+  workflowId = "swarm",
+  mission = "",
+  waveId = null,
+  stepIndex = 0,
+  totalSteps = 1,
+  source = "workflow"
+} = {}) {
+  const tasks = Array.isArray(state?.tasks) ? [...state.tasks] : [];
+  const promptHistory = Array.isArray(state?.promptHistory) ? state.promptHistory : [];
+  const recentTasks = tasks.sort((a, b) => promptEvolutionTimestamp(b) - promptEvolutionTimestamp(a));
+  const completedStatuses = new Set(["done", "completed", "integrated", "shipped"]);
+  const activeStatuses = new Set(["reserved", "starting", "running", "working", "tool_wait", "reviewing", "verifying", "idle"]);
+  const problemStatuses = new Set(["failed", "blocked", "capacity-blocked", "interrupted", "orphaned", "stale", "disconnected"]);
+
+  const completed = recentTasks
+    .filter(item => completedStatuses.has(String(item?.status || "").toLowerCase()))
+    .slice(0, 4)
+    .map(summarizePromptEvolutionTask);
+  const active = recentTasks
+    .filter(item => activeStatuses.has(String(item?.status || "").toLowerCase()))
+    .slice(0, 6)
+    .map(summarizePromptEvolutionTask);
+  const problems = recentTasks
+    .filter(item => problemStatuses.has(String(item?.status || "").toLowerCase()) || (Array.isArray(item?.blockers) && item.blockers.length))
+    .slice(0, 4)
+    .map(item => {
+      const blockers = Array.isArray(item?.blockers)
+        ? item.blockers.map(value => promptEvolutionText(typeof value === "string" ? value : value?.message || value?.reason || JSON.stringify(value), 120)).filter(Boolean).slice(0, 2)
+        : [];
+      return blockers.length ? `${summarizePromptEvolutionTask(item)}; blockers: ${blockers.join(" / ")}` : summarizePromptEvolutionTask(item);
+    });
+  const lineage = promptHistory.slice(0, 5).map(item => {
+    const hash = promptEvolutionText(item?.sha256 || "unknown", 64).slice(0, 12);
+    const template = promptEvolutionText(item?.templateId || "prompt", 48) || "prompt";
+    const priorWave = promptEvolutionText(item?.swarmWaveId || "", 48);
+    return `${template}:${hash}${priorWave ? `@${priorWave}` : ""}`;
+  });
+
+  const generation = promptHistory.length + 1;
+  const safeTotal = Math.max(1, Number(totalSteps) || 1);
+  const safeStep = Math.min(safeTotal, Math.max(1, (Number(stepIndex) || 0) + 1));
+  const lines = [
+    `This context was synthesized immediately before launch from current Agent Control state. Prompt generation ${generation}; source ${promptEvolutionText(source, 40) || "workflow"}; workflow ${promptEvolutionText(workflowId, 64) || "swarm"}; wave ${promptEvolutionText(waveId || "untracked", 64)}; step ${safeStep}/${safeTotal}.`,
+    `Current swarm mission: ${promptEvolutionText(mission || "Continue the current verified repository mission.", 320)}`,
+    `Active or already-claimed work: ${active.length ? active.join(" | ") : "none observed in controller task state"}.`,
+    `Recently completed work that should not be repeated: ${completed.length ? completed.join(" | ") : "none observed yet"}.`,
+    `Recent failures, interruptions, or blockers that should change the next approach: ${problems.length ? problems.join(" | ") : "none observed"}.`,
+    `Recent prompt lineage: ${lineage.length ? lineage.join(" | ") : "no prior prompt history"}.`,
+    "Adapt instead of replaying: do not redo completed work, preserve durable partial work, route around currently owned boundaries, and materially change the approach after a failed or blocked attempt.",
+    "This launch snapshot is advisory and can become stale immediately. After the mandatory training gate, current repository, runtime, ownership, and verification evidence override this section."
+  ];
+  return { generation, lines };
+}
+
 export function planWorkflow(workflowId, {
   state,
   mission,
