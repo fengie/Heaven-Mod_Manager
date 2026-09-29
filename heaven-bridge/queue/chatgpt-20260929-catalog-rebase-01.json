@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-catalog-rebase-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "cwd": "C:\\Users\\Xxkan\\mhw-catalog-pr208",
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; git fetch --prune origin; git rebase origin/main; $code=$LASTEXITCODE; Write-Output \"---EXIT:$code---\"; git status --short --branch; Write-Output '---UNMERGED---'; git diff --name-only --diff-filter=U; exit $code",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T15:43:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
