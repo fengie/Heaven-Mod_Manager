@@ -8,6 +8,7 @@ public sealed class ConflictEngine
 
     public ConflictEngine(GameProfile? game = null)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         richMhwSemantics = GameAdapters.Resolve(game).SupportsMhwConflictSemantics;
     }
     /// <summary>Compatibility overload used by focused unit tests and external callers.</summary>
