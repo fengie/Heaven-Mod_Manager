@@ -1,0 +1,20 @@
+{
+  "id": "cancel-final-workflows-local-only-merge-20260929-1143",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:47:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:41:34.079060+00:00",
+  "finished_at": "2026-09-29T11:41:34.079060+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "error": {
+    "code": "JOB_FROM_FUTURE",
+    "message": "job created_at is too far in the future",
+    "details": {
+      "skew_seconds": 325
+    }
+  },
+  "stderr": "job created_at is too far in the future",
+  "stdout": ""
+}
