@@ -37,13 +37,13 @@ public sealed class AutoPopulateServiceTests : IDisposable
             [ModFile("base", @"nativePC\armor\base.mod3", "base", FileClass.Structural)],
             TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("addon",
-            [ModFile("addon", @"nativePC\armor\body.mod3", "addon", FileClass.Structural)],
+            [ModFile("addon", @"nativePC\armor\body.bin", "addon", FileClass.GameData)],
             TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("texture",
             [ModFile("texture", @"nativePC\shared\skin.tex", "skin", FileClass.Texture)],
             TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("conflict",
-            [ModFile("conflict", @"nativePC\armor\body.mod3", "other", FileClass.Structural)],
+            [ModFile("conflict", @"nativePC\armor\body.bin", "other", FileClass.GameData)],
             TestContext.Current.CancellationToken);
 
         var game = GameProfile.MonsterHunterWorld(gameRoot);
