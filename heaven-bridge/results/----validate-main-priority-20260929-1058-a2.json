@@ -1,0 +1,21 @@
+{
+  "id": "----validate-main-priority-20260929-1058-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:58:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:58:31.612573+00:00",
+  "finished_at": "2026-09-29T10:58:35.054188+00:00",
+  "stdout": "HEAD is now at 38772a9 chore: run one-shot obsolete branch cleanup\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nPreparing worktree (detached HEAD 38772a9)\n[Errno 2] No such file or directory: 'heaven-bridge/worker.py'",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----validate-main-priority-20260929-1058-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----validate-main-priority-20260929-1058-a2.stderr.log",
+    "stdout_bytes": 67,
+    "stderr_bytes": 191,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "cf9d74c4b98a4f3e3ee73312dd8242aa91c0c8c7a16fe2622c11c00a99f20163"
+}
