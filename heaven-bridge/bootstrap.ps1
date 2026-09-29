@@ -12,6 +12,7 @@ $RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
 $SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\worker.py'
 $SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\watchdog.ps1'
 $SourceTestWorker = Join-Path $SourceRepoRoot 'heaven-bridge\test_worker.py'
+$SourceBootstrap = Join-Path $SourceRepoRoot 'heaven-bridge\bootstrap.ps1'
 $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $StartupWatchdogVbs = Join-Path $Startup 'HeavenBridgeWatchdog.vbs'
@@ -172,12 +173,29 @@ if (-not (Test-Path $SourceWatchdog)) {
 if (-not (Test-Path $SourceTestWorker)) {
     throw "Bridge regression suite missing from canonical source mirror: $SourceTestWorker"
 }
+if (-not (Test-Path $SourceBootstrap)) {
+    throw "Bridge bootstrap missing from canonical source mirror: $SourceBootstrap"
+}
 
 $SourceRevision = (& git -C $SourceRepoRoot rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($SourceRevision)) {
     throw 'Unable to resolve canonical bridge source revision.'
 }
 Write-Output ("HEAVEN_BRIDGE_SOURCE revision={0} refreshed={1} branch={2}" -f $SourceRevision, $sourceRefreshSucceeded, $SourceBranch)
+
+# A relay/runtime copy of bootstrap is only a stable entrypoint. After it has
+# refreshed the canonical source mirror, hand execution to main's bootstrap so
+# future bootstrap fixes do not require manual transport-branch synchronization.
+$currentBootstrap = [System.IO.Path]::GetFullPath($PSCommandPath)
+$canonicalBootstrap = [System.IO.Path]::GetFullPath((Resolve-Path $SourceBootstrap).Path)
+if ($currentBootstrap -ne $canonicalBootstrap) {
+    Write-Output ("HEAVEN_BRIDGE_BOOTSTRAP_HANDOFF source={0}" -f $canonicalBootstrap)
+    & $SourceBootstrap
+    if (-not $?) {
+        throw 'Canonical Heaven Bridge bootstrap handoff failed.'
+    }
+    exit 0
+}
 
 $python = (Get-Command python.exe -ErrorAction Stop).Source
 $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
