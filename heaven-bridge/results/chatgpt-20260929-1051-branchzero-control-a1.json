@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1051-branchzero-control-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:51:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:39:44.849963+00:00",
+  "finished_at": "2026-09-29T11:39:52.290905+00:00",
+  "stdout": "",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ecf6-b5e5-7c61-ba57-341567dc346d\n--------\nuser\nEXECUTE, do not just audit. Mission: reconcile and delete the agent-control/infrastructure branch family in fengie/mhw-mods with main canonical. Scope ONLY: agent/agent-control-federation-heartbeat-20260929, agent/liveness-scheduler-machine-policy-20260929, agent/swarm-contract-v3-20260929-0540, agent-bridge, feature/agent-command-center-20260928, feature/agent-control-panel-20260928, feature/agent-control-plane-v2-20260928. Also inspect any newly-created agent-control branches matching those themes that appear while you work, but do not touch product/release branches handled by another agent. Locate the canonical development checkout under C:\\Users\\Xxkan; do NOT use HeavenBridgeRepo as the dev checkout. Fetch/prune origin. For each branch, compare semantic content against latest main, including work squashed/cherry-picked under different SHAs. Integrate any genuinely missing useful work onto latest main only after relevant tests/checks; push and verify origin/main; then delete source local+remote branch. Delete superseded/merged branches immediately once proven. Coordinate with current main and never undo other agents. Do NOT delete the heaven-bridge relay branch; it is required transport for this running job. Finish with exact origin/main SHA, integrated/deleted branch ledger, concrete blockers, and remaining remote count.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1051-branchzero-control-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1051-branchzero-control-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2014,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "af1ceea727f1c7a514a907564860421374380bd44f0daa8a91654833c960f57a"
+}
