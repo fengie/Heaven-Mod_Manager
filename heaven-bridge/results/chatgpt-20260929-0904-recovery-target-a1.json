@@ -1,0 +1,31 @@
+{
+  "id": "chatgpt-20260929-0904-recovery-target-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:04:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:04:01.779112+00:00",
+  "finished_at": "2026-09-29T09:04:01.791745+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "data": {
+    "session_id": "da25e55fb97c4e36",
+    "pid": 18688,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "Write-Output 'RECOVERY_TARGET_STARTED'; Start-Sleep -Seconds 240; Write-Output 'RECOVERY_TARGET_NATURAL_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T09:04:01.790356+00:00",
+    "last_activity_at": "2026-09-29T09:04:01.790356+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 600,
+    "max_runtime_seconds": 900,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\da25e55fb97c4e36.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\da25e55fb97c4e36.err.log",
+    "recovered": false,
+    "stdin_available": true,
+    "recovery_state": "local-live"
+  },
+  "job_hash": "5a78af557fcb06bb6f5956b6f5aef75d945e896a76fd260d5d7582d99a583f0f"
+}
