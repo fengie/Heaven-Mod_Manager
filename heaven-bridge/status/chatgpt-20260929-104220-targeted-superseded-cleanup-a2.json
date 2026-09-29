@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-104220-targeted-superseded-cleanup-a2",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:46:22.923021+00:00"
+  "updated_at": "2026-09-29T10:47:00.543061+00:00",
+  "exit_code": 0
 }
