@@ -10,12 +10,18 @@ public static class ManagerDatabaseWorkflowExtensions
 {
     public static Task<PlannerSnapshot> LoadPlannerSnapshotAsync(
         this ManagerDatabase db,
-        CancellationToken ct = default) =>
-        new PlannerSnapshotRepository(db).LoadAsync(ct);
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new PlannerSnapshotRepository(db).LoadAsync(ct);
+    }
 
     public static Task<PlannerSnapshot> LoadPlannerSnapshotAsync(
         this ManagerDatabase db,
         IReadOnlyCollection<string>? fileModIds,
-        CancellationToken ct = default) =>
-        new PlannerSnapshotRepository(db).LoadAsync(fileModIds, ct);
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new PlannerSnapshotRepository(db).LoadAsync(fileModIds, ct);
+    }
 }
