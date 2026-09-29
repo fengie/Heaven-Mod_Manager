@@ -37,9 +37,9 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
         http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    public string ProviderId => "nexus";
-    public string DisplayName => "Nexus Mods";
-    public CatalogProviderCapabilities Capabilities =>
+    public string ProviderId { get; } = "nexus";
+    public string DisplayName { get; } = "Nexus Mods";
+    public CatalogProviderCapabilities Capabilities { get; } =
         CatalogProviderCapabilities.Search |
         CatalogProviderCapabilities.Browse |
         CatalogProviderCapabilities.Categories |
@@ -371,7 +371,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"mod={providerModId}");
         var id = GetString(file, "file_id") ?? GetString(file, "id") ?? "unknown";
-        var category = ParseFileCategory(GetString(file, "category_name"), GetLong(file, "category_id"));
+        var category = ParseFileCategory(GetString(file, "category_name"));
         var sizeKb = GetLong(file, "size_kb");
         var size = GetLong(file, "size") ?? (sizeKb is null ? null : checked(sizeKb.Value * 1024L));
         return new(
@@ -390,7 +390,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
             ProviderMetadata: file.GetRawText());
     }
 
-    internal static CatalogFileCategory ParseFileCategory(string? categoryName, long? categoryId)
+    internal static CatalogFileCategory ParseFileCategory(string? categoryName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = categoryName?.Trim().Replace(' ', '_').Replace('-', '_').ToLowerInvariant();
@@ -403,15 +403,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
             "old_version" or "old_versions" => CatalogFileCategory.OldVersion,
             "archived" => CatalogFileCategory.Archived,
             "removed" or "deleted" => CatalogFileCategory.Removed,
-            _ => categoryId switch
-            {
-                1 => CatalogFileCategory.Main,
-                2 => CatalogFileCategory.Update,
-                3 => CatalogFileCategory.Optional,
-                4 => CatalogFileCategory.OldVersion,
-                5 => CatalogFileCategory.Miscellaneous,
-                _ => CatalogFileCategory.Unknown
-            }
+            _ => CatalogFileCategory.Unknown
         };
     }
 
