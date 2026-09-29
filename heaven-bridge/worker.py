@@ -33,6 +33,7 @@ SCREENSHOTS_DIR = STATE / "screenshots"
 LOCKS_DIR = STATE / "locks"
 CACHE_DIR = STATE / "result-cache"
 PROCESSED_LOG = STATE / "processed.jsonl"
+WORKER_LOCK_PATH = LOCKS_DIR / "worker-instance.lock"
 CONTROLLER_STATE_PATH = "heaven-bridge/controller/state.json"
 
 MAX_TIMEOUT = int(os.environ.get("HEAVEN_BRIDGE_MAX_TIMEOUT", "7200"))
@@ -143,6 +144,57 @@ def atomic_write_bytes(path, data):
     os.replace(tmp, path)
 
 
+_WORKER_LOCK_HANDLE = None
+
+
+def acquire_worker_instance_lock():
+    global _WORKER_LOCK_HANDLE
+    LOCKS_DIR.mkdir(parents=True, exist_ok=True)
+    handle = WORKER_LOCK_PATH.open("a+b")
+    try:
+        handle.seek(0)
+        if handle.read(1) == b"":
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as e:
+        handle.close()
+        raise BridgeError("WORKER_ALREADY_RUNNING", "another Heaven Bridge worker already holds the instance lock") from e
+    handle.seek(0)
+    handle.truncate()
+    handle.write(f"{os.getpid()} {now()}".encode("utf-8"))
+    handle.flush()
+    _WORKER_LOCK_HANDLE = handle
+    return handle
+
+
+def release_worker_instance_lock():
+    global _WORKER_LOCK_HANDLE
+    handle = _WORKER_LOCK_HANDLE
+    _WORKER_LOCK_HANDLE = None
+    if handle is None:
+        return
+    try:
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    except OSError:
+        pass
+    finally:
+        handle.close()
+
+
 def git(*args, check=True, timeout=120):
     p = subprocess.run(
         ["git", *args],
@@ -190,6 +242,11 @@ def publish_json(relative_path, body, message, max_attempts=6):
         last = None
         for attempt in range(max_attempts):
             try:
+                # Recover tracked worker-owned relay state left dirty by an interrupted
+                # publisher before attempting a rebase. Otherwise one stale status file
+                # can make every pull fail while heartbeat commits accumulate locally.
+                for owned_path in ("heaven-bridge/status", "heaven-bridge/results", CONTROLLER_STATE_PATH):
+                    git("add", "-u", owned_path, check=False)
                 git("add", relative_path)
                 git("commit", "-m", message, check=False)
                 pull = git("pull", "--rebase", "origin", BRANCH, check=False)
@@ -1270,6 +1327,8 @@ def clean_stale_locks():
     LOCKS_DIR.mkdir(parents=True, exist_ok=True)
     cutoff = time.time() - max(MAX_TIMEOUT, DEFAULT_SESSION_MAX, 21600)
     for p in LOCKS_DIR.glob("*.lock"):
+        if p == WORKER_LOCK_PATH:
+            continue
         try:
             if p.stat().st_mtime < cutoff:
                 p.unlink(missing_ok=True)
@@ -1278,33 +1337,37 @@ def clean_stale_locks():
 
 
 def main():
-    for d in (STATE, SESSIONS_DIR, OUTPUTS_DIR, SCREENSHOTS_DIR, LOCKS_DIR, CACHE_DIR):
-        d.mkdir(parents=True, exist_ok=True)
-    load_processed()
-    clean_stale_locks()
-    log(f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} auth={auth_mode()}")
-    audit("worker_start", pid=os.getpid(), version=WORKER_VERSION, protocol=PROTOCOL, auth_mode=auth_mode())
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix="heaven-job")
+    acquire_worker_instance_lock()
     try:
-        while True:
-            try:
-                cleanup_sessions()
-                heartbeat()
-                process_queue(executor)
-                time.sleep(1.5)
-            except KeyboardInterrupt:
-                break
-            except Exception as e:
-                log(f"loop error: {e}")
-                audit("loop_error", error_code=error_dict(e).get("code"), message=str(e)[:1000])
-                time.sleep(5)
+        for d in (STATE, SESSIONS_DIR, OUTPUTS_DIR, SCREENSHOTS_DIR, LOCKS_DIR, CACHE_DIR):
+            d.mkdir(parents=True, exist_ok=True)
+        load_processed()
+        clean_stale_locks()
+        log(f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} auth={auth_mode()}")
+        audit("worker_start", pid=os.getpid(), version=WORKER_VERSION, protocol=PROTOCOL, auth_mode=auth_mode())
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix="heaven-job")
+        try:
+            while True:
+                try:
+                    cleanup_sessions()
+                    heartbeat()
+                    process_queue(executor)
+                    time.sleep(1.5)
+                except KeyboardInterrupt:
+                    break
+                except Exception as e:
+                    log(f"loop error: {e}")
+                    audit("loop_error", error_code=error_dict(e).get("code"), message=str(e)[:1000])
+                    time.sleep(5)
+        finally:
+            with STATE_LOCK:
+                for info in RUNNING.values():
+                    info["cancel_event"].set()
+            executor.shutdown(wait=False, cancel_futures=True)
+            audit("worker_stop", pid=os.getpid())
+            log("worker exiting")
     finally:
-        with STATE_LOCK:
-            for info in RUNNING.values():
-                info["cancel_event"].set()
-        executor.shutdown(wait=False, cancel_futures=True)
-        audit("worker_stop", pid=os.getpid())
-        log("worker exiting")
+        release_worker_instance_lock()
 
 
 if __name__ == "__main__":
