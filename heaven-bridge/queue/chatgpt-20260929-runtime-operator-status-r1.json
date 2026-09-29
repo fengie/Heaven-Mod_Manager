@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-runtime-operator-status-r1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 120,
+    "command": "& '.\\heaven-bridge\\manage.ps1' STATUS; $rc=$LASTEXITCODE; Write-Output ('STATUS_EXIT='+$rc); exit 0"
+  },
+  "created_at": "2026-09-29T08:43:30Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Release stabilization: current operator STATUS recheck after bridge recovery; read-only diagnostic."
+}
