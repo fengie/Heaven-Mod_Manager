@@ -1,9 +1,10 @@
 {
   "id": "000-chatgpt-swarm-probe2-202609291055",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:20:16.676767+00:00"
+  "updated_at": "2026-09-29T11:20:42.451365+00:00",
+  "exit_code": 0
 }
