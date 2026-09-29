@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import tempfile
 import threading
@@ -203,6 +204,108 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             hb.build_env({"env": {"API_KEY": "do-not-put-secrets-here"}})
         self.assertEqual(ctx.exception.code, "SECRET_INLINE_ENV_BLOCKED")
 
+    def test_secret_input_health_fails_closed_when_unconfigured(self):
+        with patch.dict(os.environ, {"HEAVEN_BRIDGE_SECRET_INBOX": ""}, clear=False):
+            result = hb.run_job("health-secret-unconfigured", {"action": "health", "params": {}}, threading.Event())
+        self.assertIn("secret_type", result["data"]["actions"])
+        self.assertFalse(result["data"]["features"]["secret_input"]["available"])
+        self.assertFalse(result["data"]["capabilities"]["credential_safe_secret_input"])
+        self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
+
+    def test_secret_type_consumes_once_without_relaying_secret_metadata(self):
+        canary = "CANARY-secret-7f1f6a8b"
+        handle = "A" * 24
+        target = {"title": "Credential Window"}
+        current = datetime.now(timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            markers = root / "markers"
+            inbox.mkdir()
+            envelope = {
+                "version": 1,
+                "destination": "heaven",
+                "purpose": "secret_type",
+                "created_at": current.isoformat(),
+                "expires_at": (current + timedelta(seconds=60)).isoformat(),
+                "target": target,
+                "secret": canary,
+            }
+            (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+            job = {"action": "secret_type", "params": {"handle": handle, "target": target}}
+            self.assertNotIn(canary, json.dumps(job))
+
+            with patch.dict(
+                os.environ,
+                {"HEAVEN_BRIDGE_SECRET_INBOX": str(inbox), "COMPUTERNAME": "heaven"},
+                clear=False,
+            ), patch.object(hb, "SECRET_CONSUMED_DIR", markers), \
+                 patch.object(hb, "desktop_focus_window", return_value={"hwnd": 1, "focused": True}), \
+                 patch.object(hb, "_send_unicode_text", return_value=len(canary)) as send:
+                result = hb.run_job("secret-type-test", job, threading.Event())
+                self.assertEqual(result["data"], {"consumed": True, "typed": True})
+                self.assertNotIn(canary, json.dumps(result))
+                self.assertFalse((inbox / f"{handle}.json").exists())
+                self.assertTrue(any(markers.glob("*.used")))
+                send.assert_called_once_with(canary, "secret_type")
+
+                (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+                with self.assertRaises(hb.BridgeError) as replay:
+                    hb.run_job("secret-type-replay", job, threading.Event())
+                self.assertEqual(replay.exception.code, "SECRET_REPLAY_BLOCKED")
+
+    def test_secret_envelope_rejects_expiry_destination_and_target_mismatch(self):
+        target = {"title": "Credential Window"}
+        current = datetime.now(timezone.utc)
+
+        def write_case(inbox, handle, **overrides):
+            envelope = {
+                "version": 1,
+                "destination": "heaven",
+                "purpose": "secret_type",
+                "created_at": current.isoformat(),
+                "expires_at": (current + timedelta(seconds=60)).isoformat(),
+                "target": target,
+                "secret": "canary-do-not-relay",
+            }
+            envelope.update(overrides)
+            (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            markers = root / "markers"
+            inbox.mkdir()
+            with patch.dict(
+                os.environ,
+                {"HEAVEN_BRIDGE_SECRET_INBOX": str(inbox), "COMPUTERNAME": "heaven"},
+                clear=False,
+            ), patch.object(hb, "SECRET_CONSUMED_DIR", markers):
+                cases = [
+                    ("B" * 24, {"expires_at": (current - timedelta(seconds=1)).isoformat()}, "SECRET_EXPIRED", target),
+                    ("C" * 24, {"destination": "heaven2"}, "SECRET_DESTINATION_MISMATCH", target),
+                    ("D" * 24, {"target": {"title": "Other Window"}}, "SECRET_TARGET_MISMATCH", target),
+                ]
+                for handle, overrides, code, request_target in cases:
+                    write_case(inbox, handle, **overrides)
+                    with self.assertRaises(hb.BridgeError) as ctx:
+                        hb._consume_secret_envelope(handle, request_target, current=current)
+                    self.assertEqual(ctx.exception.code, code)
+                    self.assertFalse((inbox / f"{handle}.json").exists())
+
+    def test_secret_channel_rejects_missing_inbox_and_invalid_handle(self):
+        with patch.dict(os.environ, {"HEAVEN_BRIDGE_SECRET_INBOX": ""}, clear=False):
+            with self.assertRaises(hb.BridgeError) as unavailable:
+                hb._consume_secret_envelope("A" * 24, {"title": "Credential Window"})
+            self.assertEqual(unavailable.exception.code, "SECRET_CHANNEL_UNAVAILABLE")
+
+        with tempfile.TemporaryDirectory() as td:
+            inbox = Path(td)
+            with patch.dict(os.environ, {"HEAVEN_BRIDGE_SECRET_INBOX": str(inbox)}, clear=False):
+                with self.assertRaises(hb.BridgeError) as invalid:
+                    hb._consume_secret_envelope("short", {"title": "Credential Window"})
+            self.assertEqual(invalid.exception.code, "INVALID_SECRET_HANDLE")
+
     def test_structured_error_shape(self):
         err = hb.BridgeError("EXAMPLE_CODE", "example", {"x": 1})
         body = hb.failure_result(
@@ -228,7 +331,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
-            "gui_mouse_scroll", "gui_key", "gui_type",
+            "gui_mouse_scroll", "gui_key", "gui_type", "secret_type",
             "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
             "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
         ):
