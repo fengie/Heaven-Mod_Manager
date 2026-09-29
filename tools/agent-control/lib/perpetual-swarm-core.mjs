@@ -135,6 +135,15 @@ export function perpetualSwarmDecision(controlState, {
     return { kind: "wait", reason: "cooldown", nextActionAt: new Date(nextActionMs).toISOString() };
   }
 
+  if (providerCapacity?.blocked) {
+    return {
+      kind: "wait",
+      reason: "provider-capacity",
+      nextActionAt: providerCapacity.blockedUntil || null,
+      sourceAgentId: providerCapacity.sourceAgentId || null
+    };
+  }
+
   const active = activeAgents(controlState);
   const stuck = stuckCandidate(active, perpetual, now);
   if (stuck) {
@@ -154,15 +163,6 @@ export function perpetualSwarmDecision(controlState, {
   const tail = controlState?.settings?.swarmTailRecovery;
   if (tail?.enabled !== false && tail?.armedAt) {
     return { kind: "wait", reason: "tail-recovery-active", waveId: tail.waveId || null };
-  }
-
-  if (providerCapacity?.blocked) {
-    return {
-      kind: "wait",
-      reason: "provider-capacity",
-      nextActionAt: providerCapacity.blockedUntil || null,
-      sourceAgentId: providerCapacity.sourceAgentId || null
-    };
   }
 
   const lastWaveMs = timestamp(perpetual.lastWaveStartedAt);
