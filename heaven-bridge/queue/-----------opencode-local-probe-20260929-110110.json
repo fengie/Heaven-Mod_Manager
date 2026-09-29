@@ -1,0 +1,14 @@
+{
+  "id": "-----------opencode-local-probe-20260929-110110",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:01:10Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60,
+    "command": "$ErrorActionPreference='Continue'; $oc=(Get-Command opencode.exe -ErrorAction SilentlyContinue); if(-not $oc){$oc=(Get-Command opencode -ErrorAction SilentlyContinue)}; Write-Output ('OPENCODE=' + $(if($oc){$oc.Source}else{'missing'})); if($oc){ & $oc.Source --version; Write-Output '---paths---'; & $oc.Source debug paths; Write-Output '---ollama---'; try { (Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 5).models | Select-Object name,model | ConvertTo-Json -Compress } catch { Write-Output ('OLLAMA_ERROR=' + $_.Exception.Message) } }"
+  },
+  "priority": "highest"
+}
