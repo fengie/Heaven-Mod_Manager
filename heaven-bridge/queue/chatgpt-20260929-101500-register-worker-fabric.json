@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-101500-register-worker-fabric",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 90,
+    "command": "$ErrorActionPreference='Stop'\n$path='C:\\HeavenServices\\services.json'\n$items=@(Get-Content $path -Raw | ConvertFrom-Json)\n$items=@($items | Where-Object {$_.name -ne 'Heaven Worker Fabric'})\n$entry=[pscustomobject]@{\n  name='Heaven Worker Fabric'\n  category='isolated local workers'\n  version='heaven/worker-node22:2026.09'\n  install_method='Docker Compose in Ubuntu WSL2'\n  executable_container='heaven-worker-01..08'\n  URL=''\n  host='Docker bridge only'\n  port=0\n  healthcheck='Docker healthcheck: Node + Python + Git'\n  startup_mechanism='base 01-04: Docker restart unless-stopped; burst 05-08: opt-in'\n  data_path='Docker named volumes; C:\\HeavenServices\\worker-fabric\\shared; C:\\HeavenServices\\worker-fabric\\artifacts'\n  config_path='C:\\HeavenServices\\worker-fabric\\docker-compose.yml'\n  update_command='powershell -File C:\\HeavenServices\\scripts\\heaven-workers.ps1 BUILD'\n  enabled=$true\n  notes='4 healthy base workers at 4 CPU/2 GiB each; 4 verified burst workers at 2 CPU/1 GiB each; no published ports; no host credential mounts'\n}\n$items += $entry\n$json=$items | ConvertTo-Json -Depth 8\n[IO.File]::WriteAllText($path,$json,(New-Object Text.UTF8Encoding($true)))\n$check=@(Get-Content $path -Raw | ConvertFrom-Json | Where-Object {$_.name -eq 'Heaven Worker Fabric'})\nif($check.Count -ne 1){throw \"registry verification failed: $($check.Count)\"}\n$check | ConvertTo-Json -Depth 5 -Compress"
+  },
+  "created_at": "2026-09-29T10:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
