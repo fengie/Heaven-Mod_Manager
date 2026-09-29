@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0904-recovery-target-a1",
+  "state": "running",
+  "action": "proc_start",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:03:51.702710+00:00"
+}
