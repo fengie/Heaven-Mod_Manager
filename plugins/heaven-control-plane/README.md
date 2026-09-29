@@ -45,7 +45,7 @@ Prefer safe structured functions over raw shell. High-level workflows compose pr
 `heaven-bridge/` remains active infrastructure until a verified migration says otherwise. Any migration must update every runtime/bootstrap/workflow/test/doc reference and preserve compatibility during rollout.
 
 
-## Implemented platform slice (v0.4.0)
+## Implemented platform slice (v0.5.0)
 
 The first production slice is implemented as a small Python standard-library package:
 
@@ -87,3 +87,10 @@ Version 0.3.0 adds `verification.detect` and `verification.run`. Detection reads
 ## Phase 1 tranche: repository indexing capability wiring
 
 Version 0.4.0 exposes the already-verified bounded repository index through an optional local provider without duplicating Heaven Bridge runtime behavior. Construct `RepositoryIndex` for the repository root, wrap it in `IndexCapabilityProvider`, and pass it as `HeavenControlPlane(index_provider=...)`. Discovery advertises `index.refresh`, `index.stats`, `index.search.text`, and `index.search.symbols` only when that provider is configured. The provider retains the engine's file/byte/result caps, secret-bearing filename skips, traversal and symlink-containment checks, secret-like snippet redaction, pagination, and concurrency-safe snapshots.
+
+
+## Phase 1 tranche: shared secret handles and permission broker
+
+Version 0.5.0 integrates the shared `plugins/_shared/heaven_security.py` security contracts into the control plane. Every capability is authorized through a fail-closed permission broker before transport is invoked. The manifest now carries the exact capability-to-permission map, and the verification gate rejects missing, stale, duplicate, or mismatched declarations.
+
+For `execution.run` and `execution.session.start`, callers may supply bounded `secret_handles` entries containing an opaque handle, an authorized purpose, and a short TTL. A configured `SecretHandleResolver` converts those references into host-owned `env_from_host` bindings only after authorization. Secret values are never returned by the resolver, included in envelopes, written to the audit log, or persisted by the control plane. Unknown, expired, wrong-purpose, or unavailable secret bindings fail closed before the Heaven Bridge transport is called.
