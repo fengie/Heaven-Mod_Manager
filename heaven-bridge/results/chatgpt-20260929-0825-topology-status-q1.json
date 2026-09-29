@@ -1,0 +1,19 @@
+{
+  "id": "chatgpt-20260929-0825-topology-status-q1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:25:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:24:49.061129+00:00",
+  "finished_at": "2026-09-29T08:24:49.061129+00:00",
+  "host": "heaven",
+  "action": "job_status",
+  "data": {
+    "job_id": "controller-20260929-0823-agentcontrol-topology-main-a1",
+    "state": "running",
+    "action": "codex",
+    "started_at": "2026-09-29T08:24:00.653100+00:00",
+    "cancel_requested": false
+  },
+  "job_hash": "79338e8492a788c2bb49a06fc10adfa29bea15ba03c9cf863f5c9ef7b01a1c16"
+}
