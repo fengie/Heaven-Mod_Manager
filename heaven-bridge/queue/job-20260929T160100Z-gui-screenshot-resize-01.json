@@ -1,0 +1,10 @@
+{
+  "id": "job-20260929T160100Z-gui-screenshot-resize-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:01:00Z",
+  "target_host": "heaven",
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\nAdd-Type -AssemblyName System.Drawing\n$src='C:\\Users\\Xxkan\\HeavenBridge\\screenshots\\job-20260929T155945Z-gui-screenshot-01.png'\n$dst='C:\\Users\\Xxkan\\HeavenBridge\\screenshots\\job-20260929T155945Z-gui-screenshot-01-small.jpg'\n$img=[System.Drawing.Image]::FromFile($src)\n$bmp=New-Object System.Drawing.Bitmap 960,540\n$g=[System.Drawing.Graphics]::FromImage($bmp)\n$g.DrawImage($img,0,0,960,540)\n$jpg=[System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object {$_.MimeType -eq 'image/jpeg'} | Select-Object -First 1\n$enc=New-Object System.Drawing.Imaging.EncoderParameters 1\n$enc.Param[0]=New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality),70L\n$bmp.Save($dst,$jpg,$enc)\n$g.Dispose(); $bmp.Dispose(); $img.Dispose()\nGet-Item $dst | Select-Object FullName,Length | ConvertTo-Json -Compress",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 60
+}
