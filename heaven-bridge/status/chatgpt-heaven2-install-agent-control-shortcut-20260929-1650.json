@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-heaven2-install-agent-control-shortcut-20260929-1650",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven2",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:50:13.118267+00:00"
+}
