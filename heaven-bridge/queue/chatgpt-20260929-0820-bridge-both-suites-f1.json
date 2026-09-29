@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-0820-bridge-both-suites-f1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'; Write-Output ('HEAD='+(git rev-parse HEAD)); git status --short --branch; python -m py_compile heaven-bridge\\worker.py heaven-bridge\\test_worker.py heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){exit 31}; python -m unittest -v heaven-bridge\\test_worker.py; if($LASTEXITCODE -ne 0){exit 32}; python -m unittest -v heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){exit 33}; Write-Output 'ALL_BRIDGE_TEST_SUITES_PASS'; exit 0"
+  },
+  "created_at": "2026-09-29T08:20:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Verify both committed Heaven Bridge test suites against the current v3 contract."
+}
