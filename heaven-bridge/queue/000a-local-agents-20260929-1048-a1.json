@@ -1,0 +1,10 @@
+{
+  "id": "000a-local-agents-20260929-1048-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:00Z",
+  "ttl_seconds": 21600,
+  "action": "powershell",
+  "priority": "highest",
+  "timeout_seconds": 60,
+  "payload": "$names='ollama','aider','python','git'; foreach($n in $names){$c=Get-Command $n -ErrorAction SilentlyContinue; if($c){[pscustomobject]@{Name=$n;Source=$c.Source;Version=([string]$c.Version)}}}; if(Get-Command ollama -ErrorAction SilentlyContinue){ollama list}; Get-ChildItem C:\\HeavenServices -Force -ErrorAction SilentlyContinue | Select-Object Name,FullName,Mode | ConvertTo-Json -Depth 3"
+}
