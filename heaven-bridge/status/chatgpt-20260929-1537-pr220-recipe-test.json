@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1537-pr220-recipe-test",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:36:43.600789+00:00"
+  "updated_at": "2026-09-29T15:37:08.752734+00:00",
+  "exit_code": 1
 }
