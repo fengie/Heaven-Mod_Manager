@@ -4116,21 +4116,51 @@ async function replacePerpetualStuckAgent(agentId, decision) {
   const state = refreshState();
   const source = state.agents.find(agent => agent.id === agentId);
   const task = state.tasks.find(item => item.id === source?.taskId) || null;
-  if (!source || !task || !coreIsActiveStatus(source.status)) return null;
+  if (!source || !task) return null;
   if (source.status === "capacity-blocked" || source.failureClass === "provider-capacity") return null;
 
+  const pendingRetry = source.perpetualReplacementPending === true;
+  if (!pendingRetry && !coreIsActiveStatus(source.status)) return null;
+
   const perpetual = normalizePerpetualSwarmState(state.perpetualSwarm);
-  const preserved = buildTakeoverForAgent(source.id, { persist: true, safetyControl: true });
-  await stopAgent(source.id);
+  let preserved = {
+    takeoverPath: source.takeoverPath || task.takeoverPath || null
+  };
+
+  if (!pendingRetry) {
+    preserved = buildTakeoverForAgent(source.id, { persist: true, safetyControl: true });
+    await stopAgent(source.id);
+
+    const pendingState = loadState();
+    const pendingSource = pendingState.agents.find(item => item.id === source.id);
+    const pendingTask = pendingState.tasks.find(item => item.id === source.taskId);
+    if (pendingSource) {
+      pendingSource.perpetualReplacementPending = true;
+      pendingSource.perpetualReplacementReason = decision?.reason || "progress-timeout";
+      pendingSource.perpetualReplacementRootAgentId ||= source.id;
+      pendingSource.perpetualReplacementPendingAt = isoNow();
+    }
+    if (pendingTask) {
+      pendingTask.nextAction = "Perpetual Machine preserved and stopped this stale lane; a one-for-one recovery replacement remains pending until dispatch succeeds.";
+    }
+    addEvent(pendingState, "perpetual.replacement-pending", `${source.id} is stopped with durable takeover state and awaits replacement dispatch`, {
+      agentId: source.id,
+      taskId: source.taskId,
+      reason: decision?.reason || "progress-timeout",
+      evidence: { takeoverPath: preserved.takeoverPath || null }
+    });
+    saveState(pendingState);
+  }
 
   const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
   const replacementTask = [
     `Replace stale/stuck agent ${source.id} without discarding its durable work.`,
-    `Reason: ${decision?.reason || "progress-timeout"}; recorded progress age: ${decision?.progressAgeMs ?? "unknown"} ms.`,
+    `Reason: ${decision?.reason || source.perpetualReplacementReason || "progress-timeout"}; recorded progress age: ${decision?.progressAgeMs ?? "unknown"} ms.`,
     `Original task: ${task.objective || source.task || "unknown"}`,
     `Original branch: ${source.branchName || task.branchName || "unknown"}.`,
     preserved.takeoverPath ? `Persisted takeover record: ${preserved.takeoverPath}.` : null,
     sourceWorktree ? `Preserved source worktree: ${sourceWorktree}. Inspect dirty/uncommitted work before editing elsewhere.` : "No preserved source worktree is available; recover from durable branch/commit/task evidence.",
+    pendingRetry ? "This is a retry of a previously preserved replacement dispatch; the source worker is already stopped, so do not attempt to stop or restart it." : null,
     "Inventory commits, changed files, artifacts, tests, PR/integration state, and newer canonical work before changing anything.",
     "Finish only the remaining scope. Do not restart completed portions from scratch.",
     "Own the recovery through targeted verification and a durable handoff; integrate/clean only when repository policy permits."
@@ -4182,8 +4212,9 @@ async function replacePerpetualStuckAgent(agentId, decision) {
   const createdTask = linked.tasks.find(item => item.id === replacement.taskId);
   const now = isoNow();
   if (original) {
+    original.perpetualReplacementPending = false;
     original.perpetualReplacementAgentId = replacement.id;
-    original.perpetualReplacementReason = decision?.reason || "progress-timeout";
+    original.perpetualReplacementReason = decision?.reason || source.perpetualReplacementReason || "progress-timeout";
     original.perpetualReplacementAt = now;
     original.perpetualReplacementRootAgentId ||= source.id;
   }
@@ -4202,7 +4233,7 @@ async function replacePerpetualStuckAgent(agentId, decision) {
     lastReplacementAt: now,
     lastActionAt: now,
     lastAction: "replace-stuck",
-    lastReason: decision?.reason || "progress-timeout",
+    lastReason: decision?.reason || source.perpetualReplacementReason || "progress-timeout",
     lastError: null,
     nextActionAt: null,
     updatedAt: now
@@ -4210,11 +4241,12 @@ async function replacePerpetualStuckAgent(agentId, decision) {
   addEvent(linked, "perpetual.replacement-dispatched", `${source.id} replaced by ${replacement.id}`, {
     agentId: replacement.id,
     taskId: replacement.taskId,
-    reason: decision?.reason || "progress-timeout",
+    reason: decision?.reason || source.perpetualReplacementReason || "progress-timeout",
     evidence: {
       sourceAgentId: source.id,
       takeoverPath: preserved.takeoverPath || null,
-      progressAgeMs: decision?.progressAgeMs ?? null
+      progressAgeMs: decision?.progressAgeMs ?? null,
+      retriedPendingDispatch: pendingRetry
     }
   });
   addNotification(linked, {
