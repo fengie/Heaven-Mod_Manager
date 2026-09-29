@@ -1,9 +1,10 @@
 {
   "id": "release-20260929-0835-provider-liveerr2",
-  "state": "running",
+  "state": "completed",
   "action": "job_output_read",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:32:31.647451+00:00"
+  "updated_at": "2026-09-29T08:32:45.740808+00:00",
+  "exit_code": 0
 }
