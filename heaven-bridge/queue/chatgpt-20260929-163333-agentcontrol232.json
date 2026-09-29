@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-163333-agentcontrol232",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference = 'Stop'; $repo = Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; if (-not (Test-Path (Join-Path $repo '.git'))) { throw \"Repository not found at $repo\" }; $sha = '2bd1d7c3b92128fb429c3902ac6fec9c6fac0b17'; $wt = Join-Path $env:TEMP ('agent-control-pr232-' + $sha.Substring(0,8)); git -C $repo fetch origin $sha; if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }; if (Test-Path $wt) { try { git -C $repo worktree remove --force $wt | Out-Null } catch {}; if (Test-Path $wt) { Remove-Item -LiteralPath $wt -Recurse -Force } }; git -C $repo worktree add --detach $wt $sha; if ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }; $pushed = $false; try {;   Push-Location (Join-Path $wt 'tools\\agent-control'); $pushed = $true;   Write-Output ('VERIFY_HEAD=' + (git rev-parse HEAD));   node --version;   npm run check;   if ($LASTEXITCODE -ne 0) { throw 'npm run check failed' };   npm test;   if ($LASTEXITCODE -ne 0) { throw 'npm test failed' };   Write-Output 'AGENT_CONTROL_PR232_VERIFY=PASS'; } finally {;   if ($pushed) { Pop-Location };   try { git -C $repo worktree remove --force $wt | Out-Null } catch {};   git -C $repo worktree prune | Out-Null; }",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T16:33:33.266488+00:00",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
