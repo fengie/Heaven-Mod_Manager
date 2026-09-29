@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0907-postupgrade-failure-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:07:05Z",
+  "status": "failed",
+  "exit_code": 17,
+  "started_at": "2026-09-29T09:08:43.244467+00:00",
+  "finished_at": "2026-09-29T09:08:43.662926+00:00",
+  "stdout": "",
+  "stderr": "Write-Error 'POSTUPGRADE_FAILURE_EXPECTED'; exit 17 : POSTUPGRADE_FAILURE_EXPECTED\r\n    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException\r\n    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0907-postupgrade-failure-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0907-postupgrade-failure-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 252,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0d8f9654e6419eaf5ada1084b5ad4da67ec64d0f66528b8101aefb25ad5c1e91"
+}
