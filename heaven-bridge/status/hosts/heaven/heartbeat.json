@@ -5,8 +5,14 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T15:30:16.850632+00:00",
-  "running": [],
+  "updated_at": "2026-09-29T15:35:19.305036+00:00",
+  "running": [
+    {
+      "id": "job-20260929T153500Z-repo-locate-01",
+      "action": "powershell",
+      "started_at": "2026-09-29T15:34:20.639544+00:00"
+    }
+  ],
   "capabilities": [
     "app_launch",
     "cancel",
