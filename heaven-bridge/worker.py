@@ -69,6 +69,11 @@ CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|ap
 UIA_MAX_NODES = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_NODES", "250")), 1000))
 UIA_MAX_DEPTH = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_DEPTH", "6")), 12))
 UIA_MAX_WAIT_MS = max(0, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_WAIT_MS", "10000")), 30000))
+SECRET_MAX_CHARS = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_CHARS", "10000")), 10000))
+SECRET_MAX_TTL_SECONDS = max(30, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_TTL", "120")), 600))
+SECRET_MAX_ENVELOPE_BYTES = max(1024, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_ENVELOPE_BYTES", "65536")), 262144))
+SECRET_CONSUMED_DIR = STATE / "secret-consumed"
+SECRET_HANDLE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{15,119}$")
 UIA_ACTIONS = {
     "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
     "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
@@ -84,6 +89,7 @@ DIRECT_ACTIONS = {
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
     "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    "secret_type",
     *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
@@ -1632,11 +1638,11 @@ def desktop_key(p):
     return {"key": str(p.get("key")), "modifiers": [str(x) for x in modifiers], "count": count}
 
 
-def desktop_type_text(p):
+def _desktop_send_unicode(value, include_counts=True):
     user32 = _require_windows_desktop()
-    value = str(p.get("text") if p.get("text") is not None else "")
-    if len(value) > 10000:
-        raise BridgeError("TEXT_TOO_LARGE", "gui_type is limited to 10000 characters per job")
+    text = str(value if value is not None else "")
+    if len(text) > SECRET_MAX_CHARS:
+        raise BridgeError("TEXT_TOO_LARGE", "desktop text input exceeds the configured maximum")
 
     ulong_ptr = wintypes.WPARAM
 
@@ -1662,18 +1668,171 @@ def desktop_type_text(p):
         _anonymous_ = ("u",)
         _fields_ = [("type", wintypes.DWORD), ("u", InputUnion)]
 
-    units = value.encode("utf-16-le")
+    units = bytearray(text.encode("utf-16-le"))
     sent_units = 0
-    for offset in range(0, len(units), 2):
-        scan = int.from_bytes(units[offset:offset + 2], "little")
-        down = Input(type=1, ki=KeyboardInput(0, scan, 0x0004, 0, 0))
-        up = Input(type=1, ki=KeyboardInput(0, scan, 0x0004 | 0x0002, 0, 0))
-        if user32.SendInput(1, ctypes.byref(down), ctypes.sizeof(Input)) != 1:
-            raise BridgeError("KEY_INPUT_FAILED", "SendInput key-down failed", {"win32_error": ctypes.get_last_error()})
-        if user32.SendInput(1, ctypes.byref(up), ctypes.sizeof(Input)) != 1:
-            raise BridgeError("KEY_INPUT_FAILED", "SendInput key-up failed", {"win32_error": ctypes.get_last_error()})
-        sent_units += 1
-    return {"characters": len(value), "utf16_units": sent_units}
+    try:
+        for offset in range(0, len(units), 2):
+            scan = int.from_bytes(units[offset:offset + 2], "little")
+            down = Input(type=1, ki=KeyboardInput(0, scan, 0x0004, 0, 0))
+            up = Input(type=1, ki=KeyboardInput(0, scan, 0x0004 | 0x0002, 0, 0))
+            if user32.SendInput(1, ctypes.byref(down), ctypes.sizeof(Input)) != 1:
+                raise BridgeError("KEY_INPUT_FAILED", "SendInput key-down failed", {"win32_error": ctypes.get_last_error()})
+            if user32.SendInput(1, ctypes.byref(up), ctypes.sizeof(Input)) != 1:
+                raise BridgeError("KEY_INPUT_FAILED", "SendInput key-up failed", {"win32_error": ctypes.get_last_error()})
+            sent_units += 1
+    finally:
+        for index in range(len(units)):
+            units[index] = 0
+
+    if include_counts:
+        return {"characters": len(text), "utf16_units": sent_units}
+    return {"typed": True}
+
+
+def desktop_type_text(p):
+    value = str(p.get("text") if p.get("text") is not None else "")
+    return _desktop_send_unicode(value, include_counts=True)
+
+
+def secret_inbox_root():
+    raw = str(os.environ.get("HEAVEN_BRIDGE_SECRET_INBOX") or "").strip()
+    if not raw:
+        return None
+    return Path(os.path.expandvars(raw)).expanduser()
+
+
+def secret_channel_status():
+    root = secret_inbox_root()
+    trusted = str(os.environ.get("HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED") or "").strip().lower() in ("1", "true", "yes")
+    available = bool(os.name == "nt" and trusted and root is not None and root.is_dir())
+    return {
+        "version": 1,
+        "available": available,
+        "transport": "out_of_band_inbox" if root is not None else "not_configured",
+        "relay_secret_values_allowed": False,
+        "single_use": True,
+        "max_ttl_seconds": SECRET_MAX_TTL_SECONDS,
+    }
+
+
+def _validate_secret_handle(handle):
+    value = str(handle or "").strip()
+    if not SECRET_HANDLE_RE.fullmatch(value):
+        raise BridgeError("SECRET_HANDLE_INVALID", "params.handle must be a 16-120 character opaque safe identifier")
+    return value
+
+
+def _secret_replay_marker(handle):
+    digest = hashlib.sha256(handle.encode("utf-8")).hexdigest()
+    return SECRET_CONSUMED_DIR / f"{digest}.json"
+
+
+def consume_secret_envelope(handle, current=None):
+    handle = _validate_secret_handle(handle)
+    root = secret_inbox_root()
+    trusted = str(os.environ.get("HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED") or "").strip().lower() in ("1", "true", "yes")
+    if root is None or not trusted or not root.is_dir():
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "credential-safe secret input channel is not configured")
+
+    marker = _secret_replay_marker(handle)
+    if marker.exists():
+        raise BridgeError("SECRET_REPLAYED", "secret handle was already consumed")
+
+    source = root / f"{handle}.json"
+    claimed_dir = root / ".claimed"
+    try:
+        claimed_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "secret inbox claim directory is unavailable") from exc
+    claimed = claimed_dir / f"{handle}.{os.getpid()}.{uuid.uuid4().hex}.json"
+
+    try:
+        os.replace(source, claimed)
+    except FileNotFoundError as exc:
+        if marker.exists():
+            raise BridgeError("SECRET_REPLAYED", "secret handle was already consumed") from exc
+        raise BridgeError("SECRET_HANDLE_NOT_FOUND", "secret handle is unavailable or already consumed") from exc
+    except OSError as exc:
+        raise BridgeError("SECRET_CLAIM_FAILED", "secret envelope could not be claimed atomically") from exc
+
+    try:
+        raw = claimed.read_bytes()
+        if len(raw) > SECRET_MAX_ENVELOPE_BYTES:
+            raise BridgeError("SECRET_ENVELOPE_TOO_LARGE", "secret envelope exceeds the configured size limit")
+        try:
+            doc = json.loads(raw.decode("utf-8-sig"))
+        except Exception as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope is not valid JSON") from exc
+        if not isinstance(doc, dict) or doc.get("schema") != "heaven-bridge-secret-v1":
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "unsupported secret envelope schema")
+        if str(doc.get("handle") or "") != handle:
+            raise BridgeError("SECRET_HANDLE_MISMATCH", "secret envelope handle does not match the requested handle")
+
+        destination = str(doc.get("destination") or "").strip()
+        local_host = str(os.environ.get("COMPUTERNAME") or "heaven").strip()
+        if not destination or destination.casefold() != local_host.casefold():
+            raise BridgeError("SECRET_DESTINATION_MISMATCH", "secret envelope is not bound to this host")
+        if str(doc.get("purpose") or "").strip() != "secret_type":
+            raise BridgeError("SECRET_PURPOSE_MISMATCH", "secret envelope purpose is not secret_type")
+
+        try:
+            created = parse_time(doc.get("created_at"))
+            expires = parse_time(doc.get("expires_at"))
+        except BridgeError as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope timestamps must be ISO-8601") from exc
+        current = current or utcnow()
+        ttl = (expires - created).total_seconds()
+        if ttl <= 0 or ttl > SECRET_MAX_TTL_SECONDS:
+            raise BridgeError("SECRET_TTL_INVALID", "secret envelope TTL is outside the allowed bound")
+        if (created - current).total_seconds() > FUTURE_SKEW_SECONDS:
+            raise BridgeError("SECRET_FROM_FUTURE", "secret envelope creation time is too far in the future")
+        if current >= expires:
+            raise BridgeError("SECRET_EXPIRED", "secret envelope expired before it was consumed")
+
+        value = doc.get("value")
+        if not isinstance(value, str):
+            raise BridgeError("SECRET_VALUE_INVALID", "secret envelope value must be text")
+        if len(value) > SECRET_MAX_CHARS:
+            raise BridgeError("SECRET_VALUE_TOO_LARGE", "secret value exceeds the configured input limit")
+
+        SECRET_CONSUMED_DIR.mkdir(parents=True, exist_ok=True)
+        marker_payload = {
+            "schema": "heaven-bridge-secret-consumed-v1",
+            "handle_sha256": hashlib.sha256(handle.encode("utf-8")).hexdigest(),
+            "destination": local_host,
+            "purpose": "secret_type",
+            "consumed_at": now(),
+        }
+        try:
+            fd = os.open(str(marker), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                os.write(fd, json.dumps(marker_payload, separators=(",", ":")).encode("utf-8"))
+            finally:
+                os.close(fd)
+        except FileExistsError as exc:
+            raise BridgeError("SECRET_REPLAYED", "secret handle was already consumed") from exc
+
+        return value
+    finally:
+        try:
+            claimed.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def desktop_type_secret(p):
+    target = p.get("target")
+    if not isinstance(target, dict):
+        raise BridgeError("SECRET_TARGET_REQUIRED", "secret_type requires params.target as a window selector object")
+    focus = desktop_focus_window(target)
+    if not focus.get("focused"):
+        raise BridgeError("SECRET_TARGET_FOCUS_FAILED", "secret target window could not be focused")
+    value = consume_secret_envelope(p.get("handle"))
+    try:
+        _desktop_send_unicode(value, include_counts=False)
+    finally:
+        value = None
+    return {"typed": True, "consumed": True, "target_hwnd": int(focus["hwnd"])}
 
 
 def _validate_uia_request(p, operation):
@@ -1961,10 +2120,7 @@ def run_job(job_id, job, cancel_event):
                     "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
                     "password_set_value_allowed": False, "set_value_requires_relay_opt_in": True,
                 },
-                "secret_input": {
-                    "version": 1, "available": False, "transport": "not_configured",
-                    "relay_secret_values_allowed": False,
-                },
+                "secret_input": secret_channel_status(),
             },
         }
         return make_result(job, action, data=data, started_at=started)
@@ -2259,6 +2415,9 @@ def run_job(job_id, job, cancel_event):
 
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
+
+    if action == "secret_type":
+        return make_result(job, action, data=desktop_type_secret(p), started_at=started)
 
     if action in UIA_ACTIONS:
         return make_result(job, action, data=desktop_uia(p, action), started_at=started)
