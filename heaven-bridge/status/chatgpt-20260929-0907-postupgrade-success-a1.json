@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0907-postupgrade-success-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:08:36.983034+00:00"
+  "updated_at": "2026-09-29T09:08:57.487708+00:00",
+  "exit_code": 0
 }
