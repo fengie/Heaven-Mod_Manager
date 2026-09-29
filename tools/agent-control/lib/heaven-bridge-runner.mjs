@@ -97,8 +97,9 @@ async function main() {
   const match = String(prepared.stdout || "").match(/REMOTE_WORKDIR=(.+)\s*$/m);
   if (!match) throw new Error("Heaven prepare result did not return REMOTE_WORKDIR.");
   const remoteWorktree = match[1].trim();
-  const remotePromptPath = path.win32.join(remoteWorktree, ".agent-control-prompt.txt");
-  const remotePatchPath = path.win32.join(remoteWorktree, ".agent-control.patch");
+  const remoteParent = path.win32.dirname(remoteWorktree);
+  const remotePromptPath = path.win32.join(remoteParent, `${remoteLeaf}.agent-control-prompt.txt`);
+  const remotePatchPath = path.win32.join(remoteParent, `${remoteLeaf}.agent-control.patch`);
 
   const basePrompt = fs.readFileSync(spec.promptPath, "utf8");
   const remotePrompt = [
@@ -146,7 +147,8 @@ async function main() {
 
   const patchCommand = [
     "$ErrorActionPreference = 'Stop'",
-    `git -C ${psQuote(remoteWorktree)} diff --binary ${psQuote(spec.baseSha)} -- . | Set-Content -LiteralPath ${psQuote(remotePatchPath)} -Encoding utf8`,
+    `git -C ${psQuote(remoteWorktree)} add -A`,
+    `git -C ${psQuote(remoteWorktree)} diff --cached --binary ${psQuote(spec.baseSha)} -- . | Set-Content -LiteralPath ${psQuote(remotePatchPath)} -Encoding utf8`,
     `$bytes = (Get-Item -LiteralPath ${psQuote(remotePatchPath)}).Length`,
     "Write-Output ('PATCH_BYTES=' + $bytes)"
   ].join("; ");
