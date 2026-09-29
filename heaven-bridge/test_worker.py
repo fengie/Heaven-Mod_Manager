@@ -754,10 +754,15 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("Global\\MHW.HeavenBridgeSentinel", sentinel)
         self.assertIn("HeavenBridgeWatchdog.vbs", sentinel)
         self.assertIn("Heaven Agent Control.lnk", sentinel)
+        self.assertIn("heaven-bridge-watchdog.ps1.bak", sentinel)
+        self.assertIn("heaven-bridge-sentinel.ps1.bak", sentinel)
+        self.assertIn("Restored missing sentinel runtime from known-good backup.", sentinel)
         self.assertIn("Ensure-SentinelTask", sentinel)
         self.assertIn("Start-ScheduledTask -TaskName $WatchdogTaskName", sentinel)
         self.assertNotIn("git -C", sentinel)
         self.assertIn("@('Heaven Local Bridge Sentinel', 'Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
+        self.assertIn("sentinel_is_system", manage)
+        self.assertIn("Get-TaskUserId 'Heaven Local Bridge Sentinel'", manage)
 
     def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
