@@ -1,0 +1,21 @@
+{
+  "id": "reconcile-complete-workflows-local-agent-20260929-1132",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:54:25.083982+00:00",
+  "finished_at": "2026-09-29T11:54:27.717373+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   ae714cd8..2360e2b6  heaven-bridge -> origin/heaven-bridge\nfatal: invalid reference: origin/integration/complete-mod-workflows-main-20260929\nPush-Location : Cannot find path 'C:\\Users\\Xxkan\\agent-worktrees\\integration-complete-mod-workflows-20260929-chatgpt' \r\nbecause it does not exist.\r\nAt line:8 char:1\r\n+ Push-Location $wt\r\n+ ~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\Xxkan\\...0260929-chatgpt:String) [Push-Location], ItemNotFound \r\n   Exception\r\n    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.PushLocationCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\reconcile-complete-workflows-local-agent-20260929-1132.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\reconcile-complete-workflows-local-agent-20260929-1132.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 623,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f7b7f536e065adf15129c03098c75a288112e290f77cac43bd58d2e146035017"
+}
