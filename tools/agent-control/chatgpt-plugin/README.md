@@ -20,3 +20,5 @@ External ChatGPT/GitHub/control-machine observations may also be registered thro
 
 
 Operator topology is strict: heaven2 owns Agent Control and every human-facing control surface; heaven is a delegated worker/resource target and must not become the accidental dashboard or loopback host.
+
+The controller also maintains a versioned adaptive Work-handoff signature registry in its gitignored runtime `data/` directory. Renamed ChatGPT handoff buttons can be learned after verified safe dismissal; ambiguous UI drift is recorded and surfaced rather than guessed. This lets plugin behavior adapt without self-editing tracked source.
