@@ -123,6 +123,24 @@ public sealed class WorkflowTests : IDisposable
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new CrashBisectorEngine().RunAsync(["a"], (_, _) => { cts.Cancel(); return Task.FromResult(false); }, cts.Token));
     }
     [Fact]
+    public async Task CatalogIgnoresManagerOwnedImportStagingRoot()
+    {
+        var db = await DatabaseAsync();
+        var modsRoot = Path.Combine(root, "catalog"); Directory.CreateDirectory(modsRoot);
+        var stagingRoot = Path.Combine(modsRoot, CatalogService.ImportStagingDirectoryName);
+        Directory.CreateDirectory(Path.Combine(stagingRoot, "fomod-test"));
+        Directory.CreateDirectory(Path.Combine(stagingRoot, "archive-test"));
+        var visible = Path.Combine(modsRoot, "Visible Mod"); Directory.CreateDirectory(visible);
+
+        await new CatalogService(db, null!, modsRoot).RefreshFoldersAsync(Token);
+
+        var mods = await db.GetModsAsync(Token);
+        var mod = Assert.Single(mods);
+        Assert.Equal(visible, mod.SourcePath);
+        Assert.DoesNotContain(mods, item => item.SourcePath.StartsWith(stagingRoot, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task FomodSelectsOnlyChosenPayloadAndConditionalFiles()
     {
         var package = Path.Combine(root, "package"); Directory.CreateDirectory(Path.Combine(package, "fomod"));
