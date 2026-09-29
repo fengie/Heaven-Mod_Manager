@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-160100-detached-audits",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:01:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:00:30.206288+00:00",
+  "finished_at": "2026-09-29T16:00:32.235149+00:00",
+  "stdout": "HEAD is now at 2fe9ff1b fix: accept valid learned-rules startup linkage\nHEAD is now at 2fe9ff1b fix: accept valid learned-rules startup linkage\nHEAD is now at 2fe9ff1b fix: accept valid learned-rules startup linkage\n\r\nC:/Users/Xxkan/HeavenWork/audit-generic-game-20260929                         2fe9ff1b (detached HEAD)\r\nC:/Users/Xxkan/HeavenWork/audit-startup-recovery-20260929                     2fe9ff1b (detached HEAD)\r\nC:/Users/Xxkan/HeavenWork/audit-watcher-external-20260929                     2fe9ff1b (detached HEAD)\r\n\r\n\r\n",
+  "stderr": "Preparing worktree (detached HEAD 2fe9ff1b)\nPreparing worktree (detached HEAD 2fe9ff1b)\nPreparing worktree (detached HEAD 2fe9ff1b)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160100-detached-audits.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160100-detached-audits.stderr.log",
+    "stdout_bytes": 534,
+    "stderr_bytes": 132,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ef505104bb45d29e0ebe0da332fa4329ca5300f1ed4fd4e91cfde6a9f1e4df92"
+}
