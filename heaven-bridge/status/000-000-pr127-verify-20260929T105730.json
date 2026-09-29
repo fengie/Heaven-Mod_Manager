@@ -1,9 +1,10 @@
 {
   "id": "000-000-pr127-verify-20260929T105730",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:12:44.699409+00:00"
+  "updated_at": "2026-09-29T11:13:43.840248+00:00",
+  "exit_code": 1
 }
