@@ -124,3 +124,35 @@ Conflict decisions:
 Final local Windows closure on exact product/source `b48c1ff865ab41841d8c7eb931fca19f371f960e`: Verify-Release **25/25**; FunctionVerifier **748/748**, **7,921** explicit call sites / **0** uncovered; Core **79/79**; Automation **31/31**; Integration **199/199**; self-test **11/11**; strict builds/analyzers PASS; Build-Release ReadyToRun/helper publish PASS; updater build **326**; ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`. Canonical main was pushed after the final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final continuity-only checkpoint changes no product source; hosted exact-main verification remains pending. No support-branch `.verification` cache was imported as canonical proof, and no published history was rewritten.
 
 The successor must inspect live `origin/main` and open work before acting, preserve exact verification provenance, inherit the permanent continuity constitution and active Learned Rules, and recursively propagate them to the agent after them. **Do not break the chain.**
+
+## 2026-09-29 post-updater support inventory
+
+Canonical remote `main` was re-established from live GitHub state before this inventory. The current updater/publication closure is already canonical and the repository's current-state instructions explicitly keep the disposable installed-client E2E as the only active updater completion boundary. This pass therefore reviewed divergent support work for patch-equivalence and current usefulness without merging unrelated production lanes into that E2E boundary.
+
+| Branch / lane | Current comparison / finding | Disposition |
+| --- | --- | --- |
+| `support/updater-artifact-accept-20260928` | Old support commit adds binary `application/octet-stream` Accept handling for GitHub release assets. Current `main` already contains that behavior in `GitHubUpdateSource.DownloadArtifactAsync`. | **Skip as already present on main.** |
+| `support/updater-c9-recovery-review-20260928` | Test-only fresh-process 1176/1177 recovery proof. Current `main` already contains the same `Ambiguous_native_replace_failure_recovers_then_retries_on_next_apply` regression. | **Skip as already present on main.** |
+| `support/updater-wpf-restart-args-20260928` | Older helper-side stale-health-argument stripping. Current `main` sanitizes earlier in `UpdateClientService` through `UpdateArgumentSanitizer.RemoveHealthArguments`, and the canonical C10 version also rejects malformed owned health flags. | **Skip as superseded by stricter canonical architecture; do not duplicate parsing in the helper.** |
+| `support/updater-c11-gap-closure-20260928`, `support/updater-publication-race-20260928`, `agent/updater-tag-verification-race-20260928`, `agent/updater-existing-release-rest-ref-main-reconcile-20260929` | Live compare shows no unique commits ahead of current main for the reconciled branches; the REST-ref retry fix is already canonical through PR #91. | **Skip as already canonical / ancestry-complete.** |
+| older C12/C13 updater publication branches, including `agent/auto-updater-publication-fix-20260928`, `agent/auto-updater-postupload-publication-20260928`, and `agent/updater-publication-verification-20260928` | Still appear divergent by ancestry, but their useful publication/retry behavior has been superseded by the verified PR #91 closure and immutable `updater-main-61` publication. Their branch-local handoff/version snapshots are stale. | **Skip wholesale; preserve current main and exact hosted evidence.** |
+| `support/updater-publication-input-scope-20260928` | Contains a unique policy/test idea that documentation-only paths should not trigger updater publication. Current main intentionally still classifies several docs/root files as release-relevant. | **Defer, not merge now.** This is verification/release-policy behavior and is unrelated to the current disposable installed-client E2E; reassess as a separately verified post-E2E boundary if still desired. |
+| `agent/game-profile-id-containment-v8.8.5-reconcile` / PR #90 | Unique production/tests remain useful, but the branch is behind current updater-fixed main. Its own continuity says the repaired candidate reached 24/25 because handoff metadata failed, then metadata was repaired; the exact new head still lacks the required 25/25 rerun and has no hosted workflow evidence. | **Leave draft/defer.** Reconcile onto current main and rerun exact-candidate verification before integration. |
+| `feature/agent-control-plane-v2-20260928` / PR #59 | Active independently owned production lane with its own remaining blockers. | **Leave separate.** |
+| frontend/UI lane / PR #55 | Active independently owned production lane. | **Leave separate.** |
+
+### Conflict and architecture decisions
+
+- Unmerged Git ancestry was not treated as evidence that code is missing. Current-file inspection was used to distinguish patch-equivalent/superseded updater work from genuinely unique support work.
+- The helper restart-argument support patch was deliberately not replayed because canonical C10 already removes updater health arguments before the request is written and has stricter malformed-input handling. Duplicating the same policy in the helper would create a second parsing authority.
+- PR #90 was not merged simply because its source fix is useful: exact verification is incomplete for its repaired head, it is behind current main, and current canonical instructions explicitly keep game-profile work out of the updater E2E lane.
+- The docs-only updater publication-scope idea is preserved as a follow-up finding, not silently lost, but changing release-input classification now would widen the active boundary and change what “green/publishable” means.
+
+### Verification and remaining work
+
+This pass verified integration disposition through live branch comparisons, direct commit/patch inspection, current-main source inspection, open-PR state, and exact continuity/verification records. No production source, tests, verification cache, release metadata, or app version were changed by this inventory. Because this pass used the GitHub repository connector rather than a local checkout, there is no local working tree whose `git status` can be claimed; no local cleanliness claim is made.
+
+The next task remains the repository-declared automatic-updater disposable installed-client E2E: prove old→new build 61 with exact restart/health identity and unchanged seeded `Mods`, `State`, and unknown-file hashes, then prove the separate fault-injected rollback path. Do not merge PR #90, Agent Control, frontend, or other unrelated support work into that E2E lane.
+
+The successor inherits the permanent continuity constitution and active Learned Rules, must preserve them, and must require its successor to recursively propagate them again. **Do not break the chain.**
+

@@ -1,3 +1,25 @@
+# 2026-09-29 updater publication closure — CURRENT CRITICAL PATH
+
+1. **CLOSED:** PR #91 merged as `5abe40304dfcb48f96e750bd7da3d0075315625b`. Exact-main Windows Release Gate **36541891969** passed **25/25** on Windows x64 / .NET SDK 10.0.401. Function status is **748/748 verified**.
+2. **CLOSED:** `Build-Release.ps1` produced updater build **61**. Release ZIP SHA-256: `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+3. **CLOSED:** updater publication policy passed and immutable release `updater-main-61` targets exact source `5abe40304dfcb48f96e750bd7da3d0075315625b` with exactly two assets: `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip` and `update-manifest.json` (manifest SHA-256 `4021E5303263A42255E80B40DA6C9C9349B055FB87BB970C2A71DA149DB4D2BE`).
+4. **CURRENT CRITICAL PATH:** run a disposable installed-client old→new E2E against build 61. Seed `Mods`, `State`, and an unknown file; prove byte hashes remain unchanged, the exact target build restarts, and health acknowledgement succeeds.
+5. **CURRENT CRITICAL PATH:** run a separate fault-injected rollback E2E. Prove previous owned executable/metadata/bytes are restored, new-only product files are removed, seeded user/unknown files remain unchanged, and no ambiguous recovery state is silently accepted.
+6. Do **not** reopen C12, retry-tag propagation, or release publication unless new contradictory evidence appears. Keep unrelated PRs out of this lane. After both E2E scenarios pass, persist exact evidence, refresh continuity, and mark the automatic updater end-to-end closed.
+7. Evidence/cache persistence for the hosted closure is `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de`; it changes verification/evidence files only.
+
+---
+
+﻿# Current highest-priority next steps — 2026-09-29
+
+1. **Updater implementation/publication is integrated and hosted-verified** at source `5abe40304dfcb48f96e750bd7da3d0075315625b`, Windows run **36541891969**, updater build **61**, tag `updater-main-61`.
+2. Run the final disposable packaged-client E2E: a real older installed package discovers/applies build 61, preserves seeded `Mods`, `State`, and unknown-file hashes, and restarts with the exact target identity/health acknowledgement.
+3. Run the paired injected startup/health-failure case and prove rollback restores the exact previous owned payload/executable identity while preserving the same seeded user-data hashes.
+4. Persist exact E2E evidence. Only after both cases pass may the updater be labeled end-to-end complete.
+5. Keep PR #90 separate; reconcile it onto current main and re-run its exact-candidate verification before making it ready again.
+
+---
+
 # v8.8.4 final support reconciliation — current next steps
 
 1. Canonical v8.8.4 was pushed after a final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source.

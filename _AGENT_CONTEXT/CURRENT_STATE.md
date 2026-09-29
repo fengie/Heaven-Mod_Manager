@@ -1,3 +1,27 @@
+# 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
+
+Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+
+Publication is no longer pending. Immutable release `updater-main-61` targets the exact source commit and contains exactly the release ZIP plus `update-manifest.json` (manifest SHA-256 `4021E5303263A42255E80B40DA6C9C9349B055FB87BB970C2A71DA149DB4D2BE`). Hosted verification/cache evidence was persisted at `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de` without production-source changes.
+
+The **only remaining automatic-updater completion boundary** is live behavior in a disposable installed-client environment: (1) old→new update to build 61 with exact restarted-build identity and health acknowledgement plus unchanged seeded `Mods`/`State`/unknown-file hashes; and (2) a separate injected-failure rollback proving previous owned bytes/metadata/executable restoration, removal of new-only product files, unchanged seeded data, and fail-closed recovery semantics.
+
+Do not merge unrelated support, Agent Control, game-profile, privacy, crash-bisector, or continuity-hardening work into this E2E lane. Re-query ownership before assigning any adjacent work.
+
+---
+
+﻿# Canonical updater closure update — 2026-09-29
+
+- Verified product source: `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91 merged after an exact 0-behind race check).
+- Hosted Windows Release Gate run **36541891969** completed **success** on that exact source: repository verifier PASS, release/package gate PASS, updater publication policy PASS, immutable publication PASS, and evidence persistence PASS.
+- Published updater package: build **61**, tag `updater-main-61`, artifact `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip`, SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+- Hosted evidence was persisted by commit `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de`.
+- The retry-path propagation defect is fixed: existing immutable releases now verify the authoritative GitHub tag REST ref instead of depending on local Git tag advertisement. Stale duplicate PR #81 is closed.
+- **Remaining end-to-end boundary:** run the disposable packaged old→new success path and a fault-injected startup/health failure rollback. Seed `Mods`, `State`, and an unknown user file; prove their hashes are unchanged; prove exact restarted build/process health identity. Do not call automatic updates end-to-end complete until this passes.
+- Separate PR #90 was returned to draft after canonical main advanced; it must reconcile onto the updater-fixed main and rerun exact-candidate verification before integration.
+
+---
+
 # v8.8.4 final support reconciliation — 2026-09-28
 
 Canonical base is `317ba6c86d54012a65a41772109a72566d29c0a9` (v8.8.3 archive-streaming cleanup plus hosted evidence). The v8.8.4 candidate preserves that entire baseline and adds only the final support harvest: save-snapshot retention with manager-owned delete containment and delete-then-retire ordering; HTTPS/public-only remote-preview egress with redirects disabled; three unique ownership/recovery audits; LR-012 through LR-014; and corresponding continuity/release identity.
