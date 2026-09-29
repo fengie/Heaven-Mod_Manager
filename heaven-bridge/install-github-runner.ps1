@@ -6,7 +6,7 @@ $RunnerDirectory = Join-Path $env:USERPROFILE 'actions-runner-heaven'
 $Labels = @('heaven','local-bridge','mhw-mods')
 $ForceReconfigure = $false
 
-if ($env:OS -ne 'Windows_NT') { throw 'This installer is intended for the Windows Heaven worker.' }
+if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw 'This installer is intended for the Windows Heaven worker.' }
 
 $gh = (Get-Command gh.exe -ErrorAction Stop).Source
 if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) { throw 'git.exe is required.' }
