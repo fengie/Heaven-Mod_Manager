@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0847-integration-git-truth-b2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; if (!(Test-Path $r)) { Write-Output 'REPO_MISSING'; exit 2 }; git -C $r fetch origin --prune; 'ROOT='+(git -C $r rev-parse --show-toplevel); 'BRANCH='+(git -C $r branch --show-current); 'HEAD='+(git -C $r rev-parse HEAD); 'LOCAL_MAIN='+(git -C $r rev-parse main); 'ORIGIN_MAIN='+(git -C $r rev-parse origin/main); 'DIVERGENCE='+(git -C $r rev-list --left-right --count main...origin/main); 'STATUS_BEGIN'; git -C $r status --porcelain=v1 -b; 'STATUS_END'; 'STASH_BEGIN'; git -C $r stash list; 'STASH_END'; 'WORKTREES_BEGIN'; git -C $r worktree list --porcelain; 'WORKTREES_END'; 'REMOTE_BEGIN'; git -C $r remote -v; 'REMOTE_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T08:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
