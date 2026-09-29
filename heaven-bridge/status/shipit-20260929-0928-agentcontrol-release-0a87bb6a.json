@@ -1,0 +1,9 @@
+{
+  "id": "shipit-20260929-0928-agentcontrol-release-0a87bb6a",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:29:35.529302+00:00"
+}
