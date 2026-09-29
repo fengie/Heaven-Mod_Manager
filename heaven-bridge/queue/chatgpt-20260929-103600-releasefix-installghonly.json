@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-103600-releasefix-installghonly",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:36:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; if(-not (Get-Command gh -ErrorAction SilentlyContinue)){ winget install --id GitHub.cli -e --silent --accept-package-agreements --accept-source-agreements; if($LASTEXITCODE -ne 0){throw 'winget GitHub CLI install failed'} }; $gh=(Get-Command gh -ErrorAction SilentlyContinue).Source; if([string]::IsNullOrWhiteSpace($gh)){ $candidate='C:\\Program Files\\GitHub CLI\\gh.exe'; if(Test-Path -LiteralPath $candidate){$gh=$candidate}else{throw 'gh installed but executable not found'} }; Write-Output ('GH_PATH=' + $gh); & $gh --version | Select-Object -First 1; & $gh auth status --hostname github.com; Write-Output ('GH_AUTH_STATUS_EXIT=' + $LASTEXITCODE)",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
