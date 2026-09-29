@@ -1,0 +1,21 @@
+{
+  "id": "----validate-main-priority-20260929-1101-a3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:01:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:00:29.346915+00:00",
+  "finished_at": "2026-09-29T11:00:32.982737+00:00",
+  "stdout": "HEAD is now at 0c2430d bridge: fix self-hosted runner bootstrap parameter block\nTESTING_MAIN=0c2430d0e5ff5548d15faa6897e2c5ea91f6b74c\r\nVALIDATED_MAIN=0c2430d0e5ff5548d15faa6897e2c5ea91f6b74c\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   38772a9..0c2430d  main       -> origin/main\nPreparing worktree (detached HEAD 0c2430d)\n----------------------------------------------------------------------\r\nRan 28 tests in 0.212s\r\n\r\nOK\r\ntest_binary_copy_delete_roundtrip (test_worker.HeavenBridgeWorkerTests.test_binary_copy_delete_roundtrip) ... ok\r\ntest_dangerous_root_delete_rejected (test_worker.HeavenBridgeWorkerTests.test_dangerous_root_delete_rejected) ... ok\r\ntest_expired_job_rejected (test_worker.HeavenBridgeWorkerTests.test_expired_job_rejected) ... ok\r\ntest_hash_ignores_auth_signature (test_worker.HeavenBridgeWorkerTests.test_hash_ignores_auth_signature) ... ok\r\ntest_health_capabilities (test_worker.HeavenBridgeWorkerTests.test_health_capabilities) ... ok\r\ntest_invalid_base64_has_structured_code (test_worker.HeavenBridgeWorkerTests.test_invalid_base64_has_structured_code) ... ok\r\ntest_payload_change_changes_replay_hash (test_worker.HeavenBridgeWorkerTests.test_payload_change_changes_replay_hash) ... ok\r\ntest_priority_queue_ordering_keeps_control_responsive (test_worker.HeavenBridgeWorkerTests.test_priority_queue_ordering_keeps_control_responsive) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 8 tests in 0.036s\r\n\r\nOK\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----validate-main-priority-20260929-1101-a3.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----validate-main-priority-20260929-1101-a3.stderr.log",
+    "stdout_bytes": 192,
+    "stderr_bytes": 1279,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "21c820d72d9d5ba55c9d45646c2d10bf78e36263925c964d6a7dd11ff6407461"
+}
