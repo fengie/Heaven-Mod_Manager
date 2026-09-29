@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
@@ -180,6 +180,13 @@ export function defaultControlState({ sessionId, hostname }) {
         retryBackoffMs: 15_000,
         maxBackoffMs: 300_000
       },
+      goToWorkRecovery: {
+        enabled: true,
+        browser: "brave",
+        staleAfterMs: 45_000,
+        cooldownMs: 60_000,
+        maxPerSweep: 2
+      },
       swarmTailRecovery: {
         enabled: true,
         maxWorkers: 4,
@@ -217,6 +224,7 @@ export function migrateControlState(parsed, context) {
       } : {}),
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) },
       noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) },
+      goToWorkRecovery: { ...base.settings.goToWorkRecovery, ...(parsed.settings?.goToWorkRecovery || {}) },
       swarmTailRecovery: { ...base.settings.swarmTailRecovery, ...(parsed.settings?.swarmTailRecovery || {}) }
     },
     autopilot: normalizeAutopilotState(parsed.autopilot),
