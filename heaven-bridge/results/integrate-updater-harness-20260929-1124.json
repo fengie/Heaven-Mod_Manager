@@ -1,0 +1,21 @@
+{
+  "id": "integrate-updater-harness-20260929-1124",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:24:00Z",
+  "status": "failed",
+  "exit_code": 21,
+  "started_at": "2026-09-29T11:52:34.775850+00:00",
+  "finished_at": "2026-09-29T11:52:38.608965+00:00",
+  "stdout": "Not currently on any branch.\nYou are currently cherry-picking commit b8f9424e.\n  (all conflicts fixed: run \"git cherry-pick --continue\")\n  (use \"git cherry-pick --skip\" to skip this patch)\n  (use \"git cherry-pick --abort\" to cancel the cherry-pick operation)\n\nnothing to commit, working tree clean\n{\"status\":\"conflict\",\"base\":\"30837bfb3e29667b7c5be806c9867635957fa161\",\"conflicts\":[]}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/agent/hcp-hardening-review-20260929-1137-a1\n * [new branch]        agent/hcp-converge-0.2.0-20260929 -> origin/agent/hcp-converge-0.2.0-20260929\n + c8b1e347...38603f1b agent/hcp-phase0-hardening-20260929-1138 -> origin/agent/hcp-phase0-hardening-20260929-1138  (forced update)\n   27d33652..a35439b5  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (detached HEAD 30837bfb)\nThe previous cherry-pick is now empty, possibly due to conflict resolution.\nIf you wish to commit it anyway, use:\n\n    git commit --allow-empty\n\nOtherwise, please use 'git cherry-pick --skip'\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-updater-harness-20260929-1124.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-updater-harness-20260929-1124.stderr.log",
+    "stdout_bytes": 386,
+    "stderr_bytes": 661,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9fbfb8f36cba4436e71af1ff71226f10c71030182ff212c42a2477bb80c4391d"
+}
