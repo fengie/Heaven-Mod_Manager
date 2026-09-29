@@ -275,7 +275,8 @@ public sealed class CatalogDownloadManager
         this.maxBytes = maxBytes;
         http = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
         http.Timeout = Timeout.InfiniteTimeSpan;
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("MHW-Mod-Manager/8.8.11");
+        var version = typeof(CatalogDownloadManager).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+        http.DefaultRequestHeaders.UserAgent.ParseAdd($"MHW-Mod-Manager/{version}");
     }
 
     public async Task<CatalogDownloadArtifact> DownloadAsync(
