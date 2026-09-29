@@ -63,20 +63,29 @@ test("swarm prompt evolution refreshes from live outcomes and prompt lineage", (
   current.tasks.push(
     {
       id: "task-done", role: "support", status: "done", objective: "Architecture audit finished",
+      workflowId: "usual-swarm", swarmWaveId: "wave-previous",
       updatedAt: "2026-09-29T18:00:00.000Z", blockers: []
     },
     {
       id: "task-failed", role: "support", status: "failed", objective: "Old retry strategy",
+      workflowId: "usual-swarm", swarmWaveId: "wave-previous",
       updatedAt: "2026-09-29T18:01:00.000Z", blockers: ["provider quota exhausted"]
     },
     {
       id: "task-live", role: "main", status: "running", objective: "Implement the current boundary",
+      workflowId: "usual-swarm", swarmWaveId: "wave-current",
       updatedAt: "2026-09-29T18:02:00.000Z", blockers: []
+    },
+    {
+      id: "task-unrelated", role: "research", status: "done", objective: "Unrelated catalog work",
+      workflowId: "research", swarmWaveId: "wave-other",
+      updatedAt: "2026-09-29T18:02:30.000Z", blockers: []
     }
   );
   current.promptHistory.unshift({
     templateId: "role.support",
     sha256: "a".repeat(64),
+    workflowId: "usual-swarm",
     swarmWaveId: "wave-previous",
     createdAt: "2026-09-29T18:03:00.000Z"
   });
@@ -94,12 +103,14 @@ test("swarm prompt evolution refreshes from live outcomes and prompt lineage", (
   assert.match(firstText, /Architecture audit finished/);
   assert.match(firstText, /provider quota exhausted/);
   assert.match(firstText, /Implement the current boundary/);
+  assert.doesNotMatch(firstText, /Unrelated catalog work/);
   assert.match(firstText, /role\.support:aaaaaaaaaaaa@wave-previous/);
   assert.match(firstText, /Adapt instead of replaying/i);
 
   current.promptHistory.unshift({
     templateId: "role.main",
     sha256: "b".repeat(64),
+    workflowId: "usual-swarm",
     swarmWaveId: "wave-current",
     createdAt: "2026-09-29T18:04:00.000Z"
   });
