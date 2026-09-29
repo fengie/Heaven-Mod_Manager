@@ -118,7 +118,7 @@
           </div>
           <div>
             <label for="machine">Worker</label>
-            <select id="machine"><option value="auto">Auto / local</option></select>
+            <select id="machine"><option value="auto">Auto / heaven</option></select>
           </div>
         </div>
 
@@ -223,6 +223,11 @@
           <div class="branch-list" id="branches"></div>
           <div class="tiny">Branch discovery complements the federated registry. Automatic ChatGPT project-session enumeration is unavailable, so ChatGPT sessions must register through the bridge/API using stable source identities.</div>
         </section>
+
+        <section class="card section">
+          <div class="section-title"><h2>Recent events</h2><span class="pill" id="eventSummary">0 recent</span></div>
+          <div class="branch-list" id="events"></div>
+        </section>
       </main>
     </div>
   </div>
@@ -270,7 +275,7 @@
     function renderWorkers(snapshot) {
       const workers = snapshot.workers || [];
       $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
-      $("machine").innerHTML = '<option value="auto">Auto / local</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
+      $("machine").innerHTML = '<option value="auto">Auto / heaven</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
       if (!workers.length) {
         $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
         return;
@@ -334,14 +339,14 @@
       const counts = federation.counts || {};
       const agents = federation.agents || [];
       const providers = federation.providers || [];
-      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
+      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.active || 0} active · ${counts.tool_wait || 0} waiting · ${counts.blocked || 0} blocked · ${counts.idle || 0} idle · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
 
       $("providers").innerHTML = providers.length ? providers.map(p => `
         <div class="worker">
           <div class="item-top">
             <div>
               <div class="item-name"><span class="dot ${p.status === "online" ? "running" : ""}"></span>${escapeHtml(p.label || p.id)} <span class="meta">· ${escapeHtml(p.status || "unknown")}</span></div>
-              <div class="meta">${escapeHtml(p.kind || "provider")} · discovery ${escapeHtml(p.discovery || "unavailable")} · registration ${escapeHtml(p.registration || "unavailable")} · heartbeat ${fmt(p.last_heartbeat_at)}</div>
+              <div class="meta">${escapeHtml(p.kind || "provider")} · discovery ${escapeHtml(p.discovery || "unavailable")} · registration ${escapeHtml(p.registration || "unavailable")} · heartbeat ${fmt(p.last_heartbeat_at)} · error ${escapeHtml(p.last_error || "none")}</div>
             </div>
             <span class="tag">${escapeHtml(p.id)}</span>
           </div>
@@ -358,6 +363,7 @@
             <span class="tag">${a.live ? "LIVE" : escapeHtml(a.freshness || "unknown")}</span>
           </div>
           <div class="task">${escapeHtml(a.task || a.last_action_summary || "No current task summary")}</div>
+          <div class="meta">Last action: ${escapeHtml(a.last_action_summary || "—")} · lease ${escapeHtml(a.source_metadata?.lease_id || "—")} · boundary ${escapeHtml(a.source_metadata?.boundary || "—")}</div>
           <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
         </article>
       `).join("") : '<div class="empty">No federated agent observations yet.</div>';
@@ -407,6 +413,16 @@
           <div class="meta">${escapeHtml(q.branchName)}</div>
         </div>
       `).join("");
+    }
+
+    function renderEvents(snapshot) {
+      const events = snapshot.recentEvents || [];
+      $("eventSummary").textContent = events.length + " recent";
+      $("events").innerHTML = events.length ? events.slice(0,30).map(e =>
+        '<div class="branch-item"><div class="item-top"><div><div class="item-name">' +
+        escapeHtml(e.type || "event") + '</div><div class="meta">' + fmt(e.at) + '</div></div></div>' +
+        '<div class="task">' + escapeHtml(e.message || e.reason || "") + '</div></div>'
+      ).join("") : '<div class="empty">No recent control-plane events.</div>';
     }
 
     function renderBranches(snapshot) {
@@ -459,6 +475,7 @@
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);
+      renderEvents(snapshot);
     }
 
     async function refresh(sync=false) {
