@@ -1,9 +1,10 @@
 {
   "id": "branchzero-cancel-obsolete-pr-runs-20260929-1237-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:38:40.882921+00:00"
+  "updated_at": "2026-09-29T12:38:52.253360+00:00",
+  "exit_code": 1
 }
