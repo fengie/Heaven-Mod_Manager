@@ -1,0 +1,14 @@
+{
+  "id": "start-runner-user-startup-20260929-1119",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $runnerDir=Join-Path $env:USERPROFILE 'actions-runner-heaven'; $runCmd=Join-Path $runnerDir 'run.cmd'; if(-not (Test-Path -LiteralPath $runCmd)){throw \"Missing runner entrypoint: $runCmd\"}; $cmdExe=Join-Path ([Environment]::SystemDirectory) 'cmd.exe'; $startup=[Environment]::GetFolderPath('Startup'); if([string]::IsNullOrWhiteSpace($startup)){throw 'Startup folder unavailable'}; $shortcutPath=Join-Path $startup 'GitHub Actions Runner - heaven.lnk'; $shell=New-Object -ComObject WScript.Shell; $shortcut=$shell.CreateShortcut($shortcutPath); $shortcut.TargetPath=$cmdExe; $shortcut.Arguments=('/d /c \"\"{0}\"\"' -f $runCmd); $shortcut.WorkingDirectory=$runnerDir; $shortcut.WindowStyle=7; $shortcut.Description='GitHub Actions self-hosted runner on heaven'; $shortcut.Save(); $existing=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like \"$runnerDir*\" }); if($existing.Count -eq 0){ Start-Process -WindowStyle Hidden -FilePath $cmdExe -ArgumentList ('/d /c \"\"{0}\"\"' -f $runCmd) -WorkingDirectory $runnerDir | Out-Null }; Start-Sleep -Seconds 6; $procs=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'Runner.Listener.exe' -or ($_.CommandLine -and $_.CommandLine -match 'Runner\\.Listener') } | Select-Object ProcessId,Name,ExecutablePath,CommandLine); Write-Output ('STARTUP_SHORTCUT='+$shortcutPath); Write-Output ('RUNNER_PROCESS_COUNT='+$procs.Count); $procs | Format-List | Out-String | Write-Output; if($procs.Count -lt 1){throw 'Runner.Listener did not stay running'}; Write-Output 'HEAVEN_ACTIONS_RUNNER_LIVE'"
+  },
+  "created_at": "2026-09-29T11:19:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
