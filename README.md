@@ -1,5 +1,9 @@
 # v8.8.6 Universal Mod Manager
 
+## v8.8.6 - unified main integration
+
+This release converges the current engineering-control, product-hardening, responsive UI, and automatic-updater verification work on canonical main. It includes Agent Control 0.5.0 with Heaven Local Bridge execution, persisted game-profile ID containment, the responsive shell/mod-library polish, and the installed-client updater E2E harness while preserving the verified updater publication pipeline.
+
 ## v8.8.5 — Agent Control federation and release recovery
 
 This release integrates Agent Control 0.5.0 as the repository's governed engineering control plane, including federated agent registration/heartbeats, live ownership-aware planning, autonomy enforcement, manager-routing awareness, and the heaven2-control / heaven-worker topology model. It also repairs the concurrent-integration duplicate import caught during release validation. The existing v8.8.4 product safety hardening remains intact.

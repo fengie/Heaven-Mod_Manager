@@ -4,7 +4,7 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.5",
+  "currentVersion": "8.8.6",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
   "nextMilestone": "complete disposable installed-client updater build 61 old-to-new and fault-injected rollback E2E, proving exact restarted build identity/health acknowledgement and unchanged seeded Mods, State, and unknown-file hashes; then mark automatic updater end-to-end complete",
