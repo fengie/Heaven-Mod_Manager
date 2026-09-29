@@ -64,14 +64,51 @@ public sealed class UpdateClientService : IDisposable
             return pending;
         }
 
-        var token = WindowsCredentialStore.ReadGitHubToken();
-        if (string.IsNullOrWhiteSpace(token))
-            throw new UnauthorizedAccessException(
-                $"GitHub updater credential is not configured in Windows Credential Manager target '{UpdateProtocol.CredentialTarget}'.");
+        UpdateCandidate? candidate = null;
+        string? downloadToken = null;
+        HttpRequestException? publicFeedFailure = null;
+        try
+        {
+            candidate = await source.FindLatestAsync(
+                current,
+                token: null,
+                ct,
+                UpdateProtocol.PublicReleaseRepository);
+            if (candidate is not null)
+                writeLog($"update public feed selected build={candidate.Manifest.BuildNumber}");
+        }
+        catch (HttpRequestException ex)
+        {
+            publicFeedFailure = ex;
+            writeLog(
+                $"public update feed unavailable ({ex.StatusCode?.ToString() ?? ex.GetType().Name}); trying private fallback if configured");
+        }
 
-        var candidate = await source.FindLatestAsync(current, token, ct);
+        if (candidate is null)
+        {
+            var token = WindowsCredentialStore.ReadGitHubToken();
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                candidate = await source.FindLatestAsync(
+                    current,
+                    token,
+                    ct,
+                    UpdateProtocol.Repository);
+                downloadToken = token;
+                if (candidate is not null)
+                    writeLog($"update private fallback selected build={candidate.Manifest.BuildNumber}");
+            }
+            else if (publicFeedFailure is not null)
+            {
+                throw new HttpRequestException(
+                    $"Public updater feed '{UpdateProtocol.PublicReleaseRepository}' is unavailable and no private fallback credential is configured.",
+                    publicFeedFailure,
+                    publicFeedFailure.StatusCode);
+            }
+        }
+
         if (candidate is null) return null;
-        return await stager.StageAsync(candidate, token, ct);
+        return await stager.StageAsync(candidate, downloadToken, ct);
     }
 
     public async Task<PreparedUpdateHandoff> PrepareHandoffAsync(
