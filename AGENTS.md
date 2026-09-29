@@ -3,6 +3,17 @@
 This repository is the canonical working state for MHW Manual Mod Manager.
 
 
+## Default execution semantics
+
+Unless the user explicitly says **read only**, **review only**, **summarize only**, **audit only**, or otherwise forbids mutation/execution, treat operational instructions as execution assignments.
+
+- Reading, planning, auditing, and explaining are prerequisites when useful; they are not substitutes for implementation.
+- Use the available tools and permissions to make concrete progress immediately.
+- If a preferred execution path is unavailable, try another supported path before declaring a blocker.
+- Do not hand work back merely because one tool, machine, or mode is unavailable when another authorized path can complete the task.
+- Preserve safety, ownership, verification, and repository policy while executing.
+- If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
+
 ## Mandatory `main` integration rule
 
 `GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
@@ -16,6 +27,8 @@ This repository is the canonical working state for MHW Manual Mod Manager.
 - If remote `main` moves during integration, reconcile and retry; never abandon finished work on a side branch solely because of the race.
 - Never knowingly break `main` just to merge quickly; validation remains mandatory.
 - `GLOBAL_GIT_DIRECTIVE.md` overrides older workflow guidance that parks ordinary completed work on long-lived branches for a separate integration agent.
+
+For Agent Manager / engineering-swarm work, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt` is the mandatory shared contract and `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` is the manager-specific convergence contract. Runtime-generated swarm prompts must remain aligned with them.
 
 Before modifying code or durable project state:
 

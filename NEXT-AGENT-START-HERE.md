@@ -4,9 +4,9 @@ Federation/Registry schema v2 and Agent Control 0.5.1 continuity are preserved i
 
 ---
 
-# Agent Manager / Agent Control Plane 0.5.0 — 2026-09-29
+# Agent Manager / Agent Control Plane 0.5.1 — 2026-09-29
 
-The active Agent Manager / Agent Control Plane architecture and release evidence are preserved in `_AGENT_CONTEXT/AGENT_CONTROL_PLANE_2026-09-29.md`. Read that file before changing `tools/agent-control/`. The final Agent Control integration must obey `GLOBAL_GIT_DIRECTIVE.md`: reconcile current `main`, rerun affected exact-head gates after any race, integrate, push, and verify remote `main`. Preserve heaven2 as control/credential authority, heaven as the authenticated heavy worker, fail-closed transport/ownership semantics, and honest bridge/manual registration where automatic provider discovery is unavailable.
+The active Agent Manager / Agent Control Plane architecture and release evidence are preserved in `_AGENT_CONTEXT/AGENT_CONTROL_PLANE_2026-09-29.md`. Read that file before changing `tools/agent-control/`. The final Agent Control integration must obey `GLOBAL_GIT_DIRECTIVE.md`: reconcile current `main`, rerun affected exact-head gates after any race, integrate, push, and verify remote `main`. Preserve heaven2 as control/credential authority, heaven as the authenticated heavy worker, fail-closed transport/ownership semantics, fresh-heartbeat-only managed capacity, exact-task duplicate ownership prevention, and honest bridge/manual registration where automatic provider discovery is unavailable.
 
 The successor must preserve the permanent continuity constitution and recursively pass it to the agent after them. **Do not break the chain.**
 

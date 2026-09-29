@@ -23,7 +23,7 @@ This is the execution layer that sits above the repository's existing agent doct
   - integration candidates
   - observed `agent/*`, `support/*`, `feature/*`, `ui/*`, and `integration/*` branches
 - Tracks PID, machine, role, task, priority, branch, base branch, lease, timestamps, JSONL output, and final Codex output.
-- Enforces a local active-worker capacity.
+- Enforces local worker capacity from fresh managed liveness only; stale, disconnected, done, and failed records do not consume live slots.
 - Lets you stop a managed worker.
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
@@ -43,9 +43,9 @@ Identity reconciliation uses stable provider/source identities plus explicit, na
 
 Federation schema v2 adds an AgentSource-style adapter boundary for normalize / ingest / reconcile / heartbeat / supported discovery, preserves runtime/session/conversation identity plus opaque source metadata, rejects unknown or unsupported providers at ingestion, rejects ambiguous multi-agent correlation, and ignores late observations that would regress a newer provider/source heartbeat. Persisted v1 registry data migrates non-destructively; legacy providers without an installed adapter remain inspectable as `unsupported` but cannot emit new observations.
 
-External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes, while local execution capacity is still calculated from controller-owned processes only.
+External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes. Exact task IDs are rejected when already owned by a live local or federated agent, while local execution capacity is calculated only from fresh controller-owned workers.
 
-Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration.
+Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration. Scheduler `auto` placement on `heaven2` prefers `heaven` for heavy work and fails closed when the authenticated Heaven Local Bridge is unavailable rather than silently falling back to `heaven2`.
 
 ## Start
 
@@ -188,4 +188,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
-See `CONTROL_PLANE.md` for the current v0.5.0 federation architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
+See `CONTROL_PLANE.md` for the current v0.5.1 federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
