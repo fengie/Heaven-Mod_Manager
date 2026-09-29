@@ -45,6 +45,16 @@ function Get-TaskState {
     }
 }
 
+function Get-TaskRunLevel {
+    param([string]$Name)
+    try {
+        $task = Get-ScheduledTask -TaskName $Name -ErrorAction Stop
+        return [string]$task.Principal.RunLevel
+    } catch {
+        return 'missing'
+    }
+}
+
 function Get-HeartbeatState {
     if (-not (Test-Path $Heartbeat)) {
         return [ordered]@{ exists = $false; updated_at = $null; worker_version = $null; protocol = $null; age_seconds = $null }
@@ -114,7 +124,9 @@ function Show-Status {
         heartbeat = $heartbeat
         scheduled_task = @{
             canonical = Get-TaskState 'Heaven Local Bridge'
+            canonical_run_level = Get-TaskRunLevel 'Heaven Local Bridge'
             legacy = Get-TaskState 'HeavenLocalBridge'
+            legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
         startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWorker.vbs')
     }
