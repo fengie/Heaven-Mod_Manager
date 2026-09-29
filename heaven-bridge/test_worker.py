@@ -144,6 +144,30 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel", "controller_checkpoint"):
             self.assertIn(action, result["data"]["actions"])
 
+    def test_codex_batch_wrapper_uses_call_arguments(self):
+        captured = {}
+
+        def fake_run_capture(job_id, argv, cwd, timeout, stdin=None, cancel_event=None, env=None):
+            captured["argv"] = argv
+            captured["stdin"] = stdin
+            return {"status": "done", "exit_code": 0}
+
+        codex_path = r"C:\\Program Files\\nodejs\\codex.cmd"
+        with patch.object(hb, "find_codex", return_value=codex_path), \
+             patch.object(hb, "run_capture", side_effect=fake_run_capture):
+            result = hb.run_job(
+                "codex-wrapper-test",
+                {"action": "codex", "payload": "echo test"},
+                threading.Event(),
+            )
+
+        self.assertEqual(
+            captured["argv"],
+            ["cmd.exe", "/d", "/s", "/c", "call", codex_path, "exec", "--skip-git-repo-check", "-"],
+        )
+        self.assertEqual(captured["stdin"], "echo test")
+        self.assertEqual(result["status"], "done")
+
     def test_controller_checkpoint_is_stale_safe_and_secret_safe(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
