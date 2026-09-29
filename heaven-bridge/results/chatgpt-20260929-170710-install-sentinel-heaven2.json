@@ -1,0 +1,31 @@
+{
+  "id": "chatgpt-20260929-170710-install-sentinel-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:07:10Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:07:48.372506+00:00",
+  "finished_at": "2026-09-29T17:07:48.386094+00:00",
+  "host": "heaven2",
+  "action": "proc_start",
+  "data": {
+    "session_id": "1eabfef154a140b8",
+    "pid": 46328,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\nStart-Sleep -Seconds 3\n$src = Join-Path $env:USERPROFILE 'HeavenBridgeSource'\nif (-not (Test-Path (Join-Path $src '.git'))) {\n  & git clone --branch main --single-branch https://github.com/fengie/mhw-mods.git $src\n  if ($LASTEXITCODE -ne 0) { throw \"clone failed: $LASTEXITCODE\" }\n}\n& git -C $src fetch origin main\nif ($LASTEXITCODE -ne 0) { throw \"fetch failed: $LASTEXITCODE\" }\n& git -C $src checkout -B main origin/main\nif ($LASTEXITCODE -ne 0) { throw \"checkout failed: $LASTEXITCODE\" }\n& git -C $src reset --hard origin/main\nif ($LASTEXITCODE -ne 0) { throw \"reset failed: $LASTEXITCODE\" }\n& git -C $src clean -fd -- heaven-bridge\nif ($LASTEXITCODE -ne 0) { throw \"clean failed: $LASTEXITCODE\" }\n$head = (& git -C $src rev-parse HEAD).Trim()\nWrite-Output \"INSTALL_SOURCE=$head\"\n& (Join-Path $src 'heaven-bridge\\bootstrap.ps1')\nif (-not $?) { throw 'bootstrap failed' }\nStart-Sleep -Seconds 5\n& (Join-Path $src 'heaven-bridge\\manage.ps1') STATUS",
+    "cwd": "C:\\Users\\fengc",
+    "started_at": "2026-09-29T17:07:48.384590+00:00",
+    "last_activity_at": "2026-09-29T17:07:48.384590+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 1800,
+    "max_runtime_seconds": 3600,
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\sessions\\1eabfef154a140b8.out.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\sessions\\1eabfef154a140b8.err.log",
+    "recovered": false,
+    "stdin_available": true,
+    "recovery_state": "local-live"
+  },
+  "job_hash": "ed6acf2bec088ef603a6f9a283ddb84ce03d9bcdbedd1cfc1c6394b8f5eff0c4"
+}
