@@ -67,3 +67,5 @@ jobs:
           echo "Deleted: $deleted" >> "$GITHUB_STEP_SUMMARY"
           echo "Kept: $kept" >> "$GITHUB_STEP_SUMMARY"
           echo "deleted=$deleted kept=$kept"
+
+# retriggered 2026-09-29 branch reconciliation
