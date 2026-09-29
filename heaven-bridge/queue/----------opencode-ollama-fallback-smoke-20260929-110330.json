@@ -1,0 +1,14 @@
+{
+  "id": "----------opencode-ollama-fallback-smoke-20260929-110330",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:03:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 240,
+    "command": "$ErrorActionPreference='Continue'; $oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; $cfg='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'; @'; {\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"provider\": {\n    \"ollama\": {\n      \"npm\": \"@ai-sdk/openai-compatible\",\n      \"name\": \"Ollama (local)\",\n      \"options\": {\n        \"baseURL\": \"http://127.0.0.1:11434/v1\"\n      },\n      \"models\": {\n        \"qwen2.5-coder:7b\": {\n          \"name\": \"Qwen 2.5 Coder 7B local\"\n        }\n      }\n    }\n  },\n  \"model\": \"ollama/qwen2.5-coder:7b\"\n}; '@ | Set-Content -LiteralPath $cfg -Encoding UTF8; $env:OPENCODE_CONFIG=$cfg; Write-Output '=== VERSION ==='; & $oc --version; Write-Output '=== MODELS ==='; & $oc models 2>&1 | Select-Object -First 80; Write-Output '=== SMOKE ==='; & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json 'Reply with exactly LOCAL_FALLBACK_OK and do not use tools.' 2>&1 | Select-Object -Last 80; Write-Output ('EXIT=' + $LASTEXITCODE)"
+  },
+  "priority": "highest"
+}
