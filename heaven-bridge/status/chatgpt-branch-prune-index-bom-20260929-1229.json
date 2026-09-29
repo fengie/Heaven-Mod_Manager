@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-branch-prune-index-bom-20260929-1229",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:28:59.672361+00:00"
+  "updated_at": "2026-09-29T12:29:37.973872+00:00",
+  "exit_code": 0
 }
