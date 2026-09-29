@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$lib = Join-Path $PSScriptRoot 'secret-envelope-io.ps1'
+$lib = Join-Path (Split-Path -Parent $PSScriptRoot) 'secret-envelope-io.ps1'
 . $lib
 
 $root = Join-Path ([IO.Path]::GetTempPath()) ('heaven-secret-io-test-' + [Guid]::NewGuid().ToString('N'))
