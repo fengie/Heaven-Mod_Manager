@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-1544-main-worktree-fabf715f",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:44:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:43:27.206907+00:00",
+  "finished_at": "2026-09-29T15:43:29.433736+00:00",
+  "stdout": "HEAD is now at fabf715f Fix repeated recipe family restore (#220)\nfabf715fe29505e03466ba69861bb2c92f6e0c3c\n## HEAD (no branch)\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nPreparing worktree (detached HEAD fabf715f)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1544-main-worktree-fabf715f.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1544-main-worktree-fabf715f.stderr.log",
+    "stdout_bytes": 127,
+    "stderr_bytes": 132,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "14ef21fa821e3d1a6579e6552634975233ac80d903540f8be24d667d6742a9ad"
+}
