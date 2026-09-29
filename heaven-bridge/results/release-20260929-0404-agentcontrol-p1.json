@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0404-agentcontrol-p1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:04:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:10:51.485821+00:00",
+  "finished_at": "2026-09-29T08:10:51.706232+00:00",
+  "stdout": "",
+  "stderr": "'\\\"C:\\Users\\Xxkan\\AppData\\Roaming\\npm\\codex.cmd\\\"' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0404-agentcontrol-p1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0404-agentcontrol-p1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 139,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "abfb931407f00550d5c1fff1e5b0df21ddfd26d69185ef4e530c138c8e12d10e"
+}
