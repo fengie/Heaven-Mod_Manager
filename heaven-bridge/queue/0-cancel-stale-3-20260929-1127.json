@@ -1,0 +1,11 @@
+{
+  "id": "0-cancel-stale-3-20260929-1127",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:27:00Z",
+  "ttl_seconds": 1800,
+  "action": "cancel",
+  "params": {
+    "job_id": "chatgpt-20260929-104740-smart-pack-main-salvage-a1"
+  },
+  "priority": "highest"
+}
