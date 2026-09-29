@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { renderAgentPrompt } from "../lib/prompt-templates.mjs";
+import { reconcileObservation } from "../lib/federated-registry.mjs";
 import {
   applyPreLaunchFailure,
   autonomyPermissionDecision,
@@ -377,4 +378,59 @@ test("workflow lease preflight rejects active and duplicate mutable boundaries b
     { role: "support", boundary: "one" },
     { role: "test", boundary: "two" }
   ]), { allowed: true, boundary: null, reason: null });
+});
+
+
+test("federated live ownership suppresses duplicate manager and main lanes", () => {
+  const current = state();
+  reconcileObservation(current.federation, {
+    provider: "chatgpt",
+    source_id: "manager-chat-session",
+    role: "manager",
+    task: "Coordinate Agent Manager",
+    state: "working",
+    heartbeat_at: new Date().toISOString()
+  });
+  reconcileObservation(current.federation, {
+    provider: "chatgpt",
+    source_id: "main-chat-session",
+    role: "main",
+    task: "Implement Agent Manager",
+    state: "tool_wait",
+    heartbeat_at: new Date().toISOString()
+  });
+
+  const plan = planWorkflow("usual-swarm", {
+    state: current,
+    mission: "Ship Agent Manager",
+    machine: "heaven"
+  });
+
+  assert.equal(plan.steps.filter(item => item.role === "manager").length, 0);
+  assert.equal(plan.steps.filter(item => item.role === "main").length, 0);
+});
+
+test("local deployment capacity is not consumed by remote federated agents", () => {
+  const current = state();
+  reconcileObservation(current.federation, {
+    provider: "chatgpt",
+    source_id: "remote-support",
+    role: "support",
+    state: "working",
+    heartbeat_at: new Date().toISOString()
+  });
+  current.agents.push({ id: "local-1", role: "support", status: "running" });
+
+  const capacity = deploymentBatchCapacity(current, 2, 4);
+  assert.equal(capacity.active, 1);
+  assert.equal(capacity.available, 3);
+  assert.equal(capacity.allowed, true);
+});
+
+test("machine topology models heaven as preferred heavy worker and heaven2 as credential authority", () => {
+  const current = state();
+  assert.equal(current.settings.machinePolicies.heaven.role, "heavy-worker");
+  assert.equal(current.settings.machinePolicies.heaven.preferredForHeavyWork, true);
+  assert.equal(current.settings.machinePolicies.heaven2.role, "control-authority");
+  assert.equal(current.settings.machinePolicies.heaven2.credentialAuthority, true);
 });
