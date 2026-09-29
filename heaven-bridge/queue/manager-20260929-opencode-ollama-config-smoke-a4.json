@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-opencode-ollama-config-smoke-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 240,
+    "command": "$ErrorActionPreference='Stop'\n$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'\n$d=Join-Path $env:TEMP 'opencode-ollama-config-smoke'\nif(Test-Path $d){Remove-Item -Recurse -Force $d}\nNew-Item -ItemType Directory -Path $d | Out-Null\n$config=@'\n{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"model\": \"ollama/qwen2.5-coder:7b\",\n  \"providers\": {\n    \"ollama\": {\n      \"settings\": {\n        \"baseURL\": \"http://127.0.0.1:11434/v1\"\n      }\n    }\n  }\n}\n'@\nSet-Content -Path (Join-Path $d 'opencode.json') -Value $config -Encoding UTF8\nPush-Location $d\ntry {\n  & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format default 'Return exactly LOCAL_AGENT_OK and do not edit files.' 2>&1\n  Write-Output ('EXIT='+$LASTEXITCODE)\n} finally { Pop-Location }\n"
+  },
+  "created_at": "2026-09-29T08:52:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
