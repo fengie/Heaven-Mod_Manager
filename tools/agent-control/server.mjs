@@ -586,7 +586,9 @@ function failReservedDeployment({ taskId, leaseId, error, reason, worktree = nul
 function assertWorkerPlacement(state, machine, { repositoryWriteAuthorized = false } = {}) {
   const requested = String(machine || "auto").trim().toLowerCase();
   const hostname = os.hostname().toLowerCase();
-  const target = ["", "auto", "local"].includes(requested) ? hostname : requested;
+  const target = ["", "auto"].includes(requested)
+    ? (hostname === "heaven2" ? "heaven" : hostname)
+    : (requested === "local" ? hostname : requested);
   if (target !== hostname) {
     throw new Error(`Worker "${target}" is configured but no authenticated remote worker provider is connected. Refusing to fake remote execution.`);
   }
