@@ -1,0 +1,14 @@
+{
+  "id": "----validate-main-priority-20260929-1101-a3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:01:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\HeavenBridgeRepo'; $wt='C:\\Users\\Xxkan\\hb-main-validate-1101'; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null }; git -C $repo fetch origin '+refs/heads/main:refs/remotes/origin/main'; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $repo worktree add --detach $wt refs/remotes/origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; try { Push-Location $wt; $sha=(git rev-parse HEAD).Trim(); Write-Output \"TESTING_MAIN=$sha\"; if(-not (Test-Path 'heaven-bridge/worker.py')){ Write-Error 'worker.py missing from exact-main worktree'; exit 2 }; python -m py_compile 'heaven-bridge/worker.py' 'heaven-bridge/test_worker.py' 'heaven-bridge/tests/test_worker.py'; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python 'heaven-bridge/test_worker.py' -q; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -m unittest discover -s 'heaven-bridge/tests' -v; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output \"VALIDATED_MAIN=$sha\"; } finally { Pop-Location -ErrorAction SilentlyContinue; git -C $repo worktree remove --force $wt 2>$null }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600
+  }
+}
