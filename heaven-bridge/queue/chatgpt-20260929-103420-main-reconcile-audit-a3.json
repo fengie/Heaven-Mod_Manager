@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-103420-main-reconcile-audit-a3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:34:20Z",
+  "ttl_seconds": 3600,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nSet-Location $repo\ngit fetch origin --prune | Out-Null\n$rows=@()\n$refs=@(git for-each-ref --format='%(refname:short)' refs/remotes/origin)\nforeach($ref in $refs){\n  if(($ref -eq 'origin/main') -or ($ref -eq 'origin/HEAD') -or (-not $ref.StartsWith('origin/'))){continue}\n  $branch=$ref.Substring(7)\n  $counts=((git rev-list --left-right --count \"origin/main...$ref\" | Out-String).Trim() -split '\\s+')\n  $ahead=[int]$counts[1]; $behind=[int]$counts[0]\n  git merge-base --is-ancestor $ref origin/main 2>$null\n  $ancestor=($LASTEXITCODE -eq 0)\n  git diff --quiet origin/main $ref 2>$null\n  $treeEqual=($LASTEXITCODE -eq 0)\n  $ch=@(git cherry origin/main $ref 2>$null)\n  $plus=@($ch|Where-Object{$_.StartsWith('+')}).Count\n  $minus=@($ch|Where-Object{$_.StartsWith('-')}).Count\n  $meta=(git show -s --format='%cI|%H|%s' $ref | Out-String).Trim() -split '\\|',3\n  $rows += [ordered]@{branch=$branch;ahead=$ahead;behind=$behind;ancestor=$ancestor;tree_equal=$treeEqual;cherry_plus=$plus;cherry_minus=$minus;date=$meta[0];sha=$meta[1];subject=$meta[2]}\n}\n[ordered]@{main=(git rev-parse origin/main);current=(git branch --show-current);dirty=((git status --porcelain=v1|Out-String).Trim().Length -gt 0);branches=$rows|Sort-Object date -Descending}|ConvertTo-Json -Depth 4",
+  "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+  "timeout_seconds": 300,
+  "priority": "highest"
+}
