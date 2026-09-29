@@ -1,0 +1,31 @@
+{
+  "id": "chatgpt-20260929-103812-persistent-dev-smoke-input",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:38:12.447Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:39:15.147500+00:00",
+  "finished_at": "2026-09-29T10:39:15.149017+00:00",
+  "host": "heaven",
+  "action": "proc_input",
+  "data": {
+    "session_id": "4c26cf188c344d81",
+    "pid": 21792,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T10:37:41.632331+00:00",
+    "last_activity_at": "2026-09-29T10:39:15.147500+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 1800,
+    "max_runtime_seconds": 14400,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\4c26cf188c344d81.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\4c26cf188c344d81.err.log",
+    "recovered": false,
+    "stdin_available": true,
+    "recovery_state": "local-live"
+  },
+  "job_hash": "3680416d51ecd1431ae573659cb161e7c60f4dc4b9305438cbb6c811d659ace3"
+}
