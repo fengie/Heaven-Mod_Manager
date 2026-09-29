@@ -79,19 +79,26 @@ public partial class ModRowViewModel:ObservableObject
             return ArchivedCount>0?$"{baseLabel} • {ArchivedCount} older revision(s) archived":baseLabel;
         }
     }
-    public string StateLabel=>HasStagedChanges
-        ? StagedEnabledMembers switch
+    public string StateLabel
+    {
+        get
         {
-            0=>"Will disable",
-            var n when n==MemberCount=>"Will enable",
-            _=>$"Will enable {StagedEnabledMembers}/{MemberCount} parts"
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasStagedChanges
+                ? StagedEnabledMembers switch
+                {
+                    0=>"Will disable",
+                    var n when n==MemberCount=>"Will enable",
+                    _=>$"Will enable {StagedEnabledMembers}/{MemberCount} parts"
+                }
+                : StagedEnabledMembers switch
+                {
+                    0=>"Disabled",
+                    var n when n==MemberCount=>"Enabled",
+                    _=>$"Partially enabled {StagedEnabledMembers}/{MemberCount}"
+                };
         }
-        : StagedEnabledMembers switch
-        {
-            0=>"Disabled",
-            var n when n==MemberCount=>"Enabled",
-            _=>$"Partially enabled {StagedEnabledMembers}/{MemberCount}"
-        };
+    }
 
     [ObservableProperty]private bool? stagedEnabled;
     [ObservableProperty]private EffectiveModState effectiveState=EffectiveModState.Disabled;
@@ -106,15 +113,22 @@ public partial class ModRowViewModel:ObservableObject
     public bool HasVisuals=>GalleryPaths.Count>0||!string.IsNullOrWhiteSpace(ThumbnailPath);
     public bool HasUpdate=>!string.IsNullOrWhiteSpace(UpdateBadge);
     public bool HasIssue=>!string.IsNullOrWhiteSpace(IssueBadge);
-    public string EffectLabel=>EffectiveState switch
+    public string EffectLabel
     {
-        EffectiveModState.FullyEffective=>"Working",
-        EffectiveModState.PartiallyOverridden=>$"Partly overridden • {ShadowedFiles} file(s)",
-        EffectiveModState.FullySuperseded=>"Not currently used",
-        EffectiveModState.NeedsChoice=>"Needs your choice",
-        EffectiveModState.NeedsRevalidation=>"Needs a check",
-        _=>"Disabled"
-    };
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return EffectiveState switch
+            {
+                EffectiveModState.FullyEffective=>"Working",
+                EffectiveModState.PartiallyOverridden=>$"Partly overridden • {ShadowedFiles} file(s)",
+                EffectiveModState.FullySuperseded=>"Not currently used",
+                EffectiveModState.NeedsChoice=>"Needs your choice",
+                EffectiveModState.NeedsRevalidation=>"Needs a check",
+                _=>"Disabled"
+            };
+        }
+    }
 
     public ModRowViewModel(LogicalModFamily family,Action changed)
     {
@@ -247,9 +261,23 @@ public sealed record ConflictRow(
     IReadOnlyList<ConflictOptionRow> Options)
 {
     public string Providers=>string.Join("  ↔  ",Options.Select(x=>x.DisplayName));
-    public string Scope=>FileCount<=1?AssetBundles.DisplayNameForPath(Path):$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
+    public string Scope
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return FileCount<=1?AssetBundles.DisplayNameForPath(Path):$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
+        }
+    }
     public string FileCountLabel=>FileCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    public string ConfidenceLabel=>$"{Confidence} confidence";
+    public string ConfidenceLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"{Confidence} confidence";
+        }
+    }
 }
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
@@ -257,7 +285,14 @@ public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int Prov
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)
 {
-    public string ConfidenceLabel=>Confirmed?"Confirmed by test":$"Evidence {Score}%";
+    public string ConfidenceLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Confirmed?"Confirmed by test":$"Evidence {Score}%";
+        }
+    }
     public string FailureLabel=>FailureCount==1?"1 report":$"{FailureCount} reports";
 }
 
