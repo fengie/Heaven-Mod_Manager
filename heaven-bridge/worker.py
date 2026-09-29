@@ -74,8 +74,8 @@ DIRECT_ACTIONS = {
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
     "proc_list_sessions", "proc_list", "screenshot", "display_list",
     "clipboard_read", "clipboard_write", "app_launch",
-    "window_list", "window_focus", "window_move", "window_close",
-    "gui_mouse_move", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    "window_list", "window_focus", "window_move", "window_state", "window_close",
+    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
     "powershell", "cmd", "python", "codex",
 }
 CONTROL_ACTIONS = {
@@ -1340,6 +1340,20 @@ def desktop_move_window(p):
     return {"hwnd": hwnd, "rect": {"x": x, "y": y, "width": width, "height": height}}
 
 
+def desktop_window_state(p):
+    user32 = _require_windows_desktop()
+    hwnd = _resolve_window(p)
+    state = str(p.get("state") or "restore").lower()
+    commands = {
+        "hide": 0, "normal": 1, "maximize": 3, "show": 5,
+        "minimize": 6, "restore": 9,
+    }
+    if state not in commands:
+        raise BridgeError("INVALID_WINDOW_STATE", "state must be hide, normal, maximize, show, minimize, or restore")
+    user32.ShowWindowAsync(hwnd, commands[state])
+    return {"hwnd": hwnd, "state": state}
+
+
 def desktop_close_window(p):
     user32 = _require_windows_desktop()
     hwnd = _resolve_window(p)
@@ -1375,6 +1389,28 @@ def desktop_mouse_move(p):
         raise BridgeError("CURSOR_MOVE_FAILED", "SetCursorPos failed", {"win32_error": ctypes.get_last_error()})
     cx, cy = _cursor_position(user32)
     return {"x": cx, "y": cy}
+
+
+def desktop_mouse_button(p):
+    user32 = _require_windows_desktop()
+    if p.get("x") is not None or p.get("y") is not None:
+        if p.get("x") is None or p.get("y") is None:
+            raise BridgeError("INVALID_POINTER", "x and y must be provided together")
+        desktop_mouse_move({"x": p.get("x"), "y": p.get("y"), "duration_ms": p.get("duration_ms", 0)})
+    button = str(p.get("button") or "left").lower()
+    state = str(p.get("state") or "").lower()
+    flags = {
+        "left": {"down": 0x0002, "up": 0x0004},
+        "right": {"down": 0x0008, "up": 0x0010},
+        "middle": {"down": 0x0020, "up": 0x0040},
+    }
+    if button not in flags:
+        raise BridgeError("INVALID_MOUSE_BUTTON", "button must be left, right, or middle")
+    if state not in ("down", "up"):
+        raise BridgeError("INVALID_MOUSE_STATE", "state must be down or up")
+    user32.mouse_event(flags[button][state], 0, 0, 0, 0)
+    x, y = _cursor_position(user32)
+    return {"button": button, "state": state, "x": x, "y": y}
 
 
 def desktop_mouse_click(p):
@@ -1918,11 +1954,21 @@ def run_job(job_id, job, cancel_event):
     if action == "window_move":
         return make_result(job, action, data=desktop_move_window(p), started_at=started)
 
+    if action == "window_state":
+        return make_result(job, action, data=desktop_window_state(p), started_at=started)
+
     if action == "window_close":
         return make_result(job, action, data=desktop_close_window(p), started_at=started)
 
+    if action == "gui_cursor_get":
+        x, y = _cursor_position()
+        return make_result(job, action, data={"x": x, "y": y}, started_at=started)
+
     if action == "gui_mouse_move":
         return make_result(job, action, data=desktop_mouse_move(p), started_at=started)
+
+    if action == "gui_mouse_button":
+        return make_result(job, action, data=desktop_mouse_button(p), started_at=started)
 
     if action == "gui_mouse_click":
         return make_result(job, action, data=desktop_mouse_click(p), started_at=started)
