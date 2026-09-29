@@ -306,8 +306,18 @@ public sealed class CatalogDownloadManager
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
 
-        var append = existing > 0 && response.StatusCode == System.Net.HttpStatusCode.PartialContent;
-        if (!append) existing = 0;
+        var append = false;
+        if (existing > 0 && response.StatusCode == System.Net.HttpStatusCode.PartialContent)
+        {
+            var resumedFrom = response.Content.Headers.ContentRange?.From;
+            if (resumedFrom != existing)
+                throw new InvalidDataException("Provider returned an invalid resume range; the partial download was not modified.");
+            append = true;
+        }
+        else if (existing > 0)
+        {
+            existing = 0;
+        }
         var expected = response.Content.Headers.ContentLength;
         if (expected is > 0 && expected.Value + existing > maxBytes)
             throw new InvalidDataException($"Download exceeds the configured {maxBytes / (1024 * 1024)} MiB safety limit.");
