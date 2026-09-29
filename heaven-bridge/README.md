@@ -148,6 +148,25 @@ Environment handling supports:
 
 Secret-like inline environment keys are rejected.
 
+## Durable controller checkpoints
+
+Permanent autonomous development cycles must not depend on a separate direct ChatGPT-to-GitHub write after the work is finished. Use the structured `controller_checkpoint` action so the `heaven` worker owns the final authoritative refresh, stale-cycle check, atomic state write, commit, rebase, and push.
+
+```json
+{
+  "action": "controller_checkpoint",
+  "params": {
+    "expected_previous_cycle_id": "2026-09-28T17:26-04:00-cycle-4",
+    "state": {
+      "schema": "permanent-dev-controller-v1",
+      "cycle_id": "2026-09-28T20:30-04:00-cycle-5"
+    }
+  }
+}
+```
+
+The action fails closed when the existing cycle no longer matches `expected_previous_cycle_id`, the new cycle ID does not advance, the controller file is missing/invalid, or the state contains secret-like field names. A cycle is not durably complete until the checkpoint result reports `persisted: true` and the state is read back from GitHub.
+
 ## Job control and progress
 
 - `job_status`: returns running/completed/unknown state.
