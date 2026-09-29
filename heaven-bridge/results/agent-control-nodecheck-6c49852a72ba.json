@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-nodecheck-6c49852a72ba",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:20:56.653Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:21:04.930441+00:00",
+  "finished_at": "2026-09-29T09:21:07.153106+00:00",
+  "stdout": "VERIFY_SHA=6c49852a72ba23d50cfca6ac77b1104c37728aa4\r\nNODE=v22.13.1\r\nCHECK server.mjs\r\nEXIT server.mjs=0\r\nCHECK agentctl.mjs\r\nEXIT agentctl.mjs=0\r\nCHECK lib/control-core.mjs\r\nEXIT lib/control-core.mjs=0\r\nCHECK lib/federated-registry.mjs\r\nEXIT lib/federated-registry.mjs=0\r\nCHECK lib/heaven-bridge-provider.mjs\r\nEXIT lib/heaven-bridge-provider.mjs=0\r\nCHECK lib/heaven-bridge-runner.mjs\r\nEXIT lib/heaven-bridge-runner.mjs=0\r\nCHECK lib/autopilot-core.mjs\r\nEXIT lib/autopilot-core.mjs=0\r\nCHECK lib/prompt-templates.mjs\r\nEXIT lib/prompt-templates.mjs=0\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            feature/agent-control-plane-v2-20260928 -> FETCH_HEAD\n   31db215..6c49852  feature/agent-control-plane-v2-20260928 -> origin/feature/agent-control-plane-v2-20260928\nPreparing worktree (detached HEAD 6c49852)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-nodecheck-6c49852a72ba.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-nodecheck-6c49852a72ba.stderr.log",
+    "stdout_bytes": 548,
+    "stderr_bytes": 269,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9ce3277155dfee15202c847e05bdf74ab01c00deb44819319e0ca1b5c150e915"
+}
