@@ -171,8 +171,8 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST` — default unset; set to `1` only for isolated tests or an explicit recovery override
 - `AGENT_CONTROL_REPO` — default `%USERPROFILE%\local-ai-workspaces\mhw-mods`
 - `AGENT_WORKTREE_ROOT` — default `%USERPROFILE%\agent-worktrees`
-- `AGENT_CONTROL_MAX_ACTIVE` — default `8`
-- `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
+- `AGENT_CONTROL_MAX_ACTIVE` — default `24` (hard-clamped to `48`)
+- `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `24` (hard-clamped to `48`)
 - `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
 - `AGENT_CONTROL_HEAVEN_RELAY_DIR` — dedicated local checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
