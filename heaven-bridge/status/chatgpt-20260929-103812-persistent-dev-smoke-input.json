@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-103812-persistent-dev-smoke-input",
+  "state": "running",
+  "action": "proc_input",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:39:08.694901+00:00"
+}
