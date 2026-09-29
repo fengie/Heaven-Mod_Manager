@@ -23,6 +23,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private CancellationTokenSource? searchCts;
     private readonly CancellationTokenSource backgroundCts=new();
     private readonly SemaphoreSlim metadataGate=new(1,1);
+    private readonly SemaphoreSlim deferredPageGate=new(1,1);
+    private bool profilesLoaded;
+    private bool activityLoaded;
+    private bool overlapsLoaded;
     private bool suppressChanged;
     private bool disposed;
 
@@ -144,10 +148,45 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             await ReloadMods(ct);
             UnmanagedFileCount=SupportsLiveAdoption?await s.Adoption.CountAsync(ct):0;
             await RefreshAnalysis(ct);
-            await RefreshProfiles(ct);
-            await RefreshActivity(ct);
         });
         _=AutoMetadataLoopAsync(backgroundCts.Token);
+    }
+
+    partial void OnSelectedTabChanged(int value)
+    {
+        if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
+    }
+
+    private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
+    {
+        try
+        {
+            await deferredPageGate.WaitAsync(ct);
+            try
+            {
+                switch(tab)
+                {
+                    case 4 when !profilesLoaded:
+                        await RefreshProfiles(ct);
+                        profilesLoaded=true;
+                        break;
+                    case 5 when !activityLoaded:
+                        await RefreshActivity(ct);
+                        activityLoaded=true;
+                        break;
+                    case 6 when !overlapsLoaded:
+                        await RefreshOverlaps(ct);
+                        overlapsLoaded=true;
+                        break;
+                }
+            }
+            finally{deferredPageGate.Release();}
+        }
+        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
+        catch(Exception ex)
+        {
+            MasterDebugLog.Write("DEFERRED-PAGE",$"Deferred tab load failed. tab={tab}",ex);
+        }
     }
 
     private async Task AutoMetadataLoopAsync(CancellationToken ct)
@@ -482,7 +521,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             OnPropertyChanged(nameof(SupersededViewLabel));
             OnPropertyChanged(nameof(HeaderSummary));
         });
-        await RefreshOverlaps(ct);
+        overlapsLoaded=false;
+        if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);
     }
 
     private async Task<ConflictRow[]> EnrichConflictPreviewsAsync(ConflictRow[] rows,CancellationToken ct)
@@ -1093,6 +1133,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         disposed=true;
         backgroundCts.Cancel();
         backgroundCts.Dispose();
+        deferredPageGate.Dispose();
         busyCts?.Cancel();
         busyCts?.Dispose();
         busyCts=null;
