@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0859-security-tunnel-inspect-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:59:10Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:58:21.398834+00:00",
+  "finished_at": "2026-09-29T08:58:22.617681+00:00",
+  "stdout": "{\r\n    \"tunnel\":  [\r\n                   {\r\n                       \"ProcessId\":  57704,\r\n                       \"ParentProcessId\":  80988,\r\n                       \"Name\":  \"node.exe\",\r\n                       \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n                       \"CommandLine\":  \"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" \\\"C:\\\\Program Files\\\\nodejs/node_modules/npm/bin/npx-cli.js\\\" --yes localtunnel --port 7443 --local-host 127.0.0.1\"\r\n                   },\r\n                   {\r\n                       \"ProcessId\":  93852,\r\n                       \"ParentProcessId\":  106432,\r\n                       \"Name\":  \"node.exe\",\r\n                       \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n                       \"CommandLine\":  \"\\\"node\\\"   \\\"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Local\\\\npm-cache\\\\_npx\\\\75ac80b86e83d4a2\\\\node_modules\\\\.bin\\\\\\\\..\\\\localtunnel\\\\bin\\\\lt.js\\\" --port 7443 --local-host 127.0.0.1\"\r\n                   }\r\n               ],\r\n    \"listeners\":  [\r\n                      {\r\n                          \"LocalAddress\":  \"::\",\r\n                          \"LocalPort\":  7443,\r\n                          \"OwningProcess\":  44916,\r\n                          \"State\":  2\r\n                      },\r\n                      {\r\n                          \"LocalAddress\":  \"127.0.0.1\",\r\n                          \"LocalPort\":  7331,\r\n                          \"OwningProcess\":  117120,\r\n                          \"State\":  2\r\n                      }\r\n                  ]\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0859-security-tunnel-inspect-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0859-security-tunnel-inspect-a2.stderr.log",
+    "stdout_bytes": 1514,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4bbccb16f06810e8197fb429a7034f365ec051c337a715aebc20376bf05a5272"
+}
