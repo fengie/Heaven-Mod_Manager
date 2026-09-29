@@ -1,9 +1,10 @@
 {
   "id": "manager-20260929-updater-e2e-harness-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:46:23.105138+00:00"
+  "updated_at": "2026-09-29T08:46:53.363401+00:00",
+  "exit_code": 1
 }
