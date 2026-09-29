@@ -1,9 +1,10 @@
 {
   "id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133",
-  "state": "running",
+  "state": "cancelled",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:33:23.185666+00:00"
+  "updated_at": "2026-09-29T11:41:24.806786+00:00",
+  "exit_code": 130
 }
