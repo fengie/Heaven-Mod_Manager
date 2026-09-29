@@ -1,0 +1,14 @@
+{
+  "id": "000-branch-safe-sweep-20260929T105500Z-chatgpt",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "command": "$ErrorActionPreference='Stop'\nif (Get-Variable PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue) { $PSNativeCommandUseErrorActionPreference = $false }\n$src='C:\\Users\\Xxkan\\HeavenBridgeRepo'\n$work='C:\\Users\\Xxkan\\branch-zero-reconcile'\n$origin=(& git -C $src remote get-url origin | Select-Object -First 1).Trim()\nif (-not $origin) { throw 'Could not resolve authenticated origin URL from HeavenBridgeRepo' }\nif (-not (Test-Path (Join-Path $work '.git'))) {\n  & git clone $origin $work 2>&1 | Out-Null\n  if ($LASTEXITCODE -ne 0) { throw \"git clone failed: $LASTEXITCODE\" }\n}\n& git -C $work fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune 2>&1 | Out-Null\nif ($LASTEXITCODE -ne 0) { throw \"git fetch failed: $LASTEXITCODE\" }\n$deleted=@(); $deleteFailed=@(); $unique=@()\n$branches=@(& git -C $work for-each-ref '--format=%(refname:strip=3)' refs/remotes/origin) |\n  ForEach-Object { $_.Trim() } |\n  Where-Object { $_ -and $_ -notin @('main','heaven-bridge','HEAD') -and $_ -notmatch '^origin($|/)' } |\n  Sort-Object -Unique\nforeach ($b in $branches) {\n  $safe=$false; $reason=''\n  & git -C $work merge-base --is-ancestor \"origin/$b\" origin/main *> $null\n  if ($LASTEXITCODE -eq 0) {\n    $safe=$true; $reason='ancestor-of-main'\n  } else {\n    $cherry=@(& git -C $work cherry origin/main \"origin/$b\" 2>$null)\n    if ($LASTEXITCODE -eq 0) {\n      $plus=@($cherry | Where-Object { $_ -match '^\\+' })\n      if ($plus.Count -eq 0) { $safe=$true; $reason='patch-equivalent-to-main' }\n    }\n  }\n  if ($safe) {\n    $out=@(& git -C $work push origin --delete -- $b 2>&1)\n    if ($LASTEXITCODE -eq 0) {\n      $deleted += [pscustomobject]@{branch=$b;reason=$reason}\n    } else {\n      $deleteFailed += [pscustomobject]@{branch=$b;reason=($out -join ' | ')}\n    }\n  } else {\n    $unique += $b\n  }\n}\n& git -C $work fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune 2>&1 | Out-Null\n$remaining=@(& git -C $work for-each-ref '--format=%(refname:strip=3)' refs/remotes/origin) |\n  ForEach-Object { $_.Trim() } |\n  Where-Object { $_ -and $_ -notin @('main','heaven-bridge','HEAD') -and $_ -notmatch '^origin($|/)' } |\n  Sort-Object -Unique\n[pscustomobject]@{\n  mainSha=(& git -C $work rev-parse origin/main).Trim()\n  deletedCount=$deleted.Count\n  deleted=$deleted\n  deleteFailed=$deleteFailed\n  remainingCount=$remaining.Count\n  remaining=$remaining\n} | ConvertTo-Json -Depth 6 -Compress",
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800
+  },
+  "priority": "highest"
+}
