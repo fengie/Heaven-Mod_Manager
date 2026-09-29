@@ -1,0 +1,13 @@
+{
+  "id": "0000000000-00-bridge-v050-final-20260929-1051",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$repo=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'; Set-Location $repo; git fetch origin main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $sha='2aad0e191b937d5dc6697a035082433dcc4ee6b0'; $d=Join-Path $env:USERPROFILE 'HeavenBridgeV050Final-1051'; git worktree add --detach $d $sha; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Set-Location $d; Write-Output ('PINNED_SHA='+$(git rev-parse HEAD)); powershell -NoProfile -ExecutionPolicy Bypass -File .\\heaven-bridge\\manage.ps1 TEST; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -c \"import json,pathlib; p=json.loads(pathlib.Path('heaven-bridge/plugin/plugin.json').read_text()); c=json.loads(pathlib.Path('heaven-bridge/plugin/.codex-plugin/plugin.json').read_text()); assert p['version']==c['version']=='0.5.0'; skills=['heaven-bridge','heaven-code-execution','heaven-desktop-control']; assert all(pathlib.Path('heaven-bridge/plugin/skills',s,'SKILL.md').is_file() for s in skills); a=pathlib.Path('AGENTS.md').read_text(); assert 'Heaven Local Bridge execution policy' in a; print('PLUGIN_SOURCE_OK',p['version'],','.join(skills))\"; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git diff --check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output 'FINAL_V050_MAIN_GATE_OK'",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T10:51:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
