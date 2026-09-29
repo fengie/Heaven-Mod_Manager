@@ -51,7 +51,8 @@ public sealed class DeploymentExecutor(
         using var __mhwTrace = MasterDebugLog.BeginMethod($"planId={plan.Id}; changes={plan.Changes.Count}; description={description}");
         if(plan.IsBlocked)return new(false,"Deployment is blocked by unresolved conflicts.",plan.Id,null,FailureCategory.UserActionRequired);
 
-        await RecoverIncompleteAsync(ct);
+        await using var deploymentLease=await AcquireDeploymentLeaseAsync(ct);
+        await RecoverIncompleteCoreAsync(ct);
         var beforeState=await ReadModStateAsync(ct);
         var afterState=targetModState is null
             ? beforeState
@@ -186,6 +187,13 @@ public sealed class DeploymentExecutor(
     public async Task RecoverIncompleteAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("startup-recovery");
+        await using var deploymentLease=await AcquireDeploymentLeaseAsync(ct);
+        await RecoverIncompleteCoreAsync(ct);
+    }
+
+    private async Task RecoverIncompleteCoreAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod("startup-recovery-core");
         var ids=new List<string>();
         await using(var c=await db.OpenAsync(ct))
         {
@@ -202,6 +210,31 @@ public sealed class DeploymentExecutor(
             {
                 try{await SetOperationStateAsync(id,OperationState.RecoveryRequired,CancellationToken.None,ex.ToString());}catch{}
                 throw new IOException($"Startup recovery stopped safely for transaction {id}: {ex.Message}",ex);
+            }
+        }
+    }
+
+    private async Task<FileStream> AcquireDeploymentLeaseAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var lockRoot=Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if(string.IsNullOrWhiteSpace(lockRoot))lockRoot=Path.GetTempPath();
+        var lockDirectory=Path.Combine(lockRoot,"MhwModManager","DeploymentLocks");
+        Directory.CreateDirectory(lockDirectory);
+        var canonicalRoot=Path.TrimEndingDirectorySeparator(Path.GetFullPath(gameRoot)).ToUpperInvariant();
+        var key=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(canonicalRoot)));
+        var lockPath=Path.Combine(lockDirectory,$"deployment-{key}.lock");
+
+        while(true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                return new FileStream(lockPath,FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None,1,FileOptions.Asynchronous);
+            }
+            catch(IOException)
+            {
+                await Task.Delay(50,ct);
             }
         }
     }
