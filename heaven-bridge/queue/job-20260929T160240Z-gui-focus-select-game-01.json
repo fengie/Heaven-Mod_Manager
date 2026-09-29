@@ -1,0 +1,11 @@
+{
+  "id": "job-20260929T160240Z-gui-focus-select-game-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:02:40Z",
+  "target_host": "heaven",
+  "action": "window_focus",
+  "params": {
+    "hwnd": 35917612
+  },
+  "priority": "high"
+}
