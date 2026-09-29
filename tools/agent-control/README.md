@@ -10,7 +10,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
-- Gives every deployed agent its own Git worktree and unique `agent/control-*` branch.
+- Gives every deployed agent its own Git worktree; it reuses a safe compatible unowned branch when available and creates a new `agent/control-*` branch only when no strong safe match exists.
 - Maintains a local process/task registry plus a normalized federated agent registry of:
   - managed local agents
   - ChatGPT bridge sessions
@@ -177,7 +177,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - It never checks out or force-updates `main`.
 - Each deployment creates a separate worktree, but it no longer blindly creates a new branch. Agent Control fetches/prunes and inventories existing branches first, reuses a strong deterministic compatible unowned branch when safe, and creates a new `agent/control-*` branch only when no safe match exists.
 - Branch decisions are recorded on tasks/agents as reused vs created with candidate/rejection evidence. Active leases/agents and branches checked out by another worktree are never auto-reused.
-- A managed task is not considered fully complete until its branch tip is proven reachable from `origin/main`, its controller-owned worktree/local branch cleanup is verified, and the recurring Branch Lifecycle Cleanup has removed any remaining proven-safe remote branch. Cleanup failure becomes `cleanup-required`; unique/unmerged work is preserved.
+- A managed task is not considered fully complete until its branch tip is proven reachable from `origin/main`, its controller-owned worktree/local branch cleanup is verified, and the recurring Branch Lifecycle Enforcer has removed any remaining proven-safe remote branch. Cleanup failure becomes `cleanup-required`; unique/unmerged work is preserved.
 - A named mutable-boundary lease prevents two managed agents from silently owning the same implementation surface.
 - Stopping a worker targets only the PID launched by this controller.
 - Operator stop intent dominates a zero exit code: a stopped worker remains `stopped` and cannot become an integration candidate.
