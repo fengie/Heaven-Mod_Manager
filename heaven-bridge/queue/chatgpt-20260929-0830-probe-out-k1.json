@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0830-probe-out-k1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:30:00Z",
+  "ttl_seconds": 3600,
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-0829-codex-workspacewrite-probe-j1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 20000
+  },
+  "priority": "highest"
+}
