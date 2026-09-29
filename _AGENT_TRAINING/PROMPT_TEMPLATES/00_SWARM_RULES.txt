@@ -228,3 +228,17 @@ Every role should finish with:
 - INTEGRATION DEPENDENCIES
 - REMAINING RISKS
 - NEXT EXACT ACTION
+
+# GENERIC TRAINER PROMOTION GATE
+Before reporting DONE after any meaningful bug, regression, failed integration, false completion, process/agent failure, user correction, release failure, or durable workflow improvement:
+- state root cause and violated invariant;
+- update project-local precedent when warranted;
+- check whether the lesson is reusable beyond this project;
+- if reusable and absent/weak in company doctrine, update `_AGENT_TRAINING/` and provenance now;
+- strengthen regression/analyzer/verifier/prompt/gate enforcement where practical;
+- if an existing rule already covered the failure, strengthen the failed prevention mechanism rather than adding duplicate prose.
+
+Do not defer reusable learning.
+
+# FINAL ORPHAN SWEEP
+Before the swarm is complete, the Manager must inventory stale/disconnected/failed workers, leases, branches, worktrees, commits, partial artifacts, and unfinished verification. Recover useful partial work and dispatch replacements until every unresolved boundary is complete, superseded, rejected, or externally blocked with evidence.
