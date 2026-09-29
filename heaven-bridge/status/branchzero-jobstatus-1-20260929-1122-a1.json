@@ -1,9 +1,10 @@
 {
   "id": "branchzero-jobstatus-1-20260929-1122-a1",
-  "state": "running",
+  "state": "completed",
   "action": "job_status",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:23:46.487558+00:00"
+  "updated_at": "2026-09-29T11:24:27.530997+00:00",
+  "exit_code": 0
 }
