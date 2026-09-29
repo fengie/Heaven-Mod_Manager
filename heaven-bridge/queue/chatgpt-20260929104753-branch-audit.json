@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929104753-branch-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:53.638Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$tmp=Join-Path $env:USERPROFILE 'mhw-branch-reconcile'\nif (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }\n$url=(git -C $relay remote get-url origin).Trim()\ngit clone --no-local $relay $tmp | Out-Null\ngit -C $tmp remote set-url origin $url\ngit -C $tmp fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune\n$rows=@()\n$branches=git -C $tmp for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object { $_ -ne 'origin/HEAD' }\nforeach($rb in $branches){\n  $b=$rb -replace '^origin/',''\n  if($b -eq 'main'){ continue }\n  $counts=(git -C $tmp rev-list --left-right --count \"origin/main...origin/$b\").Trim() -split '\\s+'\n  $rows += [pscustomobject]@{branch=$b;main_only=[int]$counts[0];branch_only=[int]$counts[1]}\n}\n[pscustomobject]@{repo=$tmp;count=$rows.Count;rows=$rows} | ConvertTo-Json -Depth 5 -Compress",
+    "timeout_seconds": 600
+  },
+  "priority": "highest"
+}
