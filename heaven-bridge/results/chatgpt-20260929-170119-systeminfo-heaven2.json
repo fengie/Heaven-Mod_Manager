@@ -1,0 +1,26 @@
+{
+  "id": "chatgpt-20260929-170119-systeminfo-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:01:20Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:05:28.918647+00:00",
+  "finished_at": "2026-09-29T17:05:28.918647+00:00",
+  "host": "heaven2",
+  "action": "system_info",
+  "data": {
+    "host": "heaven2",
+    "user": "fengc",
+    "home": "C:\\Users\\fengc",
+    "platform": "nt",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "cwd": "C:\\Windows\\system32",
+    "drives": [
+      "C:\\"
+    ],
+    "worker_version": 6,
+    "protocol": "chatgpt-heaven-bridge-v2",
+    "elevated": true
+  },
+  "job_hash": "b58338438b2da13f7d24777b7642825454bd3844453f86c66cde03397b3e4183"
+}
