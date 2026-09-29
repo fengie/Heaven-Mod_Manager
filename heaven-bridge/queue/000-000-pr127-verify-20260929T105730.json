@@ -1,0 +1,14 @@
+{
+  "id": "000-000-pr127-verify-20260929T105730",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:57:30+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $HOME 'HeavenBridgeRepo'\n$root=Join-Path $HOME 'HeavenBridgeValidation'\nNew-Item -ItemType Directory -Force -Path $root | Out-Null\n$tmp=Join-Path $root ('pr127-' + [guid]::NewGuid().ToString('N'))\n$url=(git -C $relay remote get-url origin).Trim()\ntry {\n  git clone --quiet --single-branch --branch agent/bridge-priority-scheduler-20260929 $url $tmp\n  if($LASTEXITCODE -ne 0){ throw 'clone failed' }\n  Push-Location $tmp\n  try {\n    $sha=(git rev-parse HEAD).Trim()\n    Write-Output ('HEAD='+$sha)\n    git diff --check origin/main...HEAD\n    if($LASTEXITCODE -ne 0){ throw 'git diff --check failed' }\n    python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'py_compile failed' }\n    python -m unittest -v heaven-bridge/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'primary tests failed' }\n    python -m unittest -v heaven-bridge/tests/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'compat tests failed' }\n    foreach($script in @('heaven-bridge/bootstrap.ps1','heaven-bridge/manage.ps1')){\n      [void][scriptblock]::Create((Get-Content -LiteralPath $script -Raw))\n      Write-Output ('PARSE_OK='+$script)\n    }\n    Write-Output 'PR127_VALIDATION_OK'\n  } finally { Pop-Location }\n} finally {\n  if(Test-Path $tmp){ Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }\n}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
