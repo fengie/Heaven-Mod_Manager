@@ -1,9 +1,10 @@
 {
   "id": "reconcile-complete-workflows-local-agent-20260929-1132",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:54:12.459439+00:00"
+  "updated_at": "2026-09-29T11:54:36.637963+00:00",
+  "exit_code": 1
 }
