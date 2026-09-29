@@ -2,7 +2,7 @@
 
 ## v8.8.11 — FOMOD staging cleanup
 
-Interactive FOMOD imports now always retire their manager-owned preparation directory when the chooser is canceled or fails during validation/rendering. Invalid or unsupported installer metadata can no longer leave hidden `.fomod-*.staging` directories behind in the managed mod library.
+Archive and FOMOD imports now keep all temporary extraction/preparation state under a dedicated manager-owned staging root that the catalog explicitly ignores. Interactive FOMOD preparation is also retired on every chooser exit, so successful imports, cancellation, and validation/rendering failures cannot turn temporary extraction folders into ghost mod rows or leave ordinary failed imports discoverable as packages.
 
 # v8.8.10 Universal Mod Manager
 
