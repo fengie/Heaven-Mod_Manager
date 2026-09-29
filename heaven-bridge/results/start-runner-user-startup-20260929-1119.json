@@ -1,0 +1,21 @@
+{
+  "id": "start-runner-user-startup-20260929-1119",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:19:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:50:51.722256+00:00",
+  "finished_at": "2026-09-29T11:51:00.019030+00:00",
+  "stdout": "STARTUP_SHORTCUT=C:\\Users\\Xxkan\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\GitHub Actions Runner - heaven.lnk\r\nRUNNER_PROCESS_COUNT=2\r\n\r\n\r\nProcessId      : 66084\r\nName           : powershell.exe\r\nExecutablePath : C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nCommandLine    : powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Stop'; \r\n                 $runnerDir=Join-Path $env:USERPROFILE 'actions-runner-heaven'; $runCmd=Join-Path $runnerDir \r\n                 'run.cmd'; if(-not (Test-Path -LiteralPath $runCmd)){throw \\\"Missing runner entrypoint: $runCmd\\\"}; \r\n                 $cmdExe=Join-Path ([Environment]::SystemDirectory) 'cmd.exe'; \r\n                 $startup=[Environment]::GetFolderPath('Startup'); if([string]::IsNullOrWhiteSpace($startup)){throw \r\n                 'Startup folder unavailable'}; $shortcutPath=Join-Path $startup 'GitHub Actions Runner - heaven.lnk'; \r\n                 $shell=New-Object -ComObject WScript.Shell; $shortcut=$shell.CreateShortcut($shortcutPath); \r\n                 $shortcut.TargetPath=$cmdExe; $shortcut.Arguments=('/d /c \\\"\\\"{0}\\\"\\\"' -f $runCmd); \r\n                 $shortcut.WorkingDirectory=$runnerDir; $shortcut.WindowStyle=7; $shortcut.Description='GitHub Actions \r\n                 self-hosted runner on heaven'; $shortcut.Save(); $existing=@(Get-CimInstance Win32_Process | \r\n                 Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like \\\"$runnerDir*\\\" }); \r\n                 if($existing.Count -eq 0){ Start-Process -WindowStyle Hidden -FilePath $cmdExe -ArgumentList ('/d /c \r\n                 \\\"\\\"{0}\\\"\\\"' -f $runCmd) -WorkingDirectory $runnerDir | Out-Null }; Start-Sleep -Seconds 6; \r\n                 $procs=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'Runner.Listener.exe' -or \r\n                 ($_.CommandLine -and $_.CommandLine -match 'Runner\\.Listener') } | Select-Object \r\n                 ProcessId,Name,ExecutablePath,CommandLine); Write-Output ('STARTUP_SHORTCUT='+$shortcutPath); \r\n                 Write-Output ('RUNNER_PROCESS_COUNT='+$procs.Count); $procs | Format-List | Out-String | \r\n                 Write-Output; if($procs.Count -lt 1){throw 'Runner.Listener did not stay running'}; Write-Output \r\n                 'HEAVEN_ACTIONS_RUNNER_LIVE'\"\r\n\r\nProcessId      : 96124\r\nName           : Runner.Listener.exe\r\nExecutablePath : C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Listener.exe\r\nCommandLine    : \"C:\\Users\\Xxkan\\actions-runner-heaven\\\\bin\\Runner.Listener.exe\"  run \r\n\r\n\r\n\r\n\r\nHEAVEN_ACTIONS_RUNNER_LIVE\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\start-runner-user-startup-20260929-1119.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\start-runner-user-startup-20260929-1119.stderr.log",
+    "stdout_bytes": 2611,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "dc0182667c377d8e1f41553b8089c26fe2683787f9d571c7f3ddfa843d266309"
+}
