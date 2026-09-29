@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0908-controller-a3",
-  "state": "running",
+  "state": "completed",
   "action": "controller_checkpoint",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:08:14.315231+00:00"
+  "updated_at": "2026-09-29T09:08:29.274024+00:00",
+  "exit_code": 0
 }
