@@ -1,0 +1,86 @@
+{
+  "id": "chatgpt-20260929-103700-desktop-controller-checkpoint",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:37:00Z",
+  "ttl_seconds": 3600,
+  "action": "controller_checkpoint",
+  "params": {
+    "expected_previous_cycle_id": "2026-09-29T05:08-04:00-release-stabilization-a3",
+    "state": {
+      "schema": "permanent-dev-controller-v1",
+      "cycle_id": "2026-09-29T06:37-04:00-local-desktop-control-v040",
+      "updated_at": "2026-09-29T10:37:00Z",
+      "selected_task": {
+        "priority": "P0",
+        "target": "Advance Heaven Local Bridge from command/screenshot control to structured local Windows desktop control",
+        "reason": "Remote Desktop Commander quota is exhausted and routine heaven desktop work must run through the local-first bridge without depending on that provider."
+      },
+      "actions": [
+        "Added structured display enumeration, window enumeration/focus/move/state/close, cursor/mouse movement/button/click/scroll, keyboard shortcuts, Unicode text input, app launch, guarded clipboard read/write, and multi-display screenshot scopes to Heaven Local Bridge worker v3.",
+        "Added explicit clipboard-read relay opt-in and hardened 64-bit Win32 clipboard handle declarations.",
+        "Deployed replacement worker twice through rollback-aware bootstrap; final active worker PID 92824 advertises the new desktop action set.",
+        "Ran non-destructive live GUI smokes on heaven: display_list, window_list, gui_cursor_get, and screenshot scope=all.",
+        "Reconciled operational bridge source/docs/tests/gate into canonical main while excluding runtime relay queue/results/status/controller data.",
+        "Published Heaven Local Bridge plugin v0.4.0 with a dedicated heaven-desktop-control skill while preserving concurrent connected-app and worker-fabric work."
+      ],
+      "affected_files_systems": [
+        "heaven-bridge/worker.py",
+        "heaven-bridge/test_worker.py",
+        "heaven-bridge/README.md",
+        "heaven-bridge/bootstrap.ps1",
+        "heaven-bridge/manage.ps1",
+        "heaven-bridge/tests/test_worker.py",
+        ".github/workflows/heaven-bridge-gate.yml",
+        "Heaven Local Bridge plugin v0.4.0"
+      ],
+      "tests_checks": [
+        "Exact repository source py_compile PASS on heaven.",
+        "Primary bridge suite PASS 25/25.",
+        "Compatibility bridge suite PASS 7/7.",
+        "manage.ps1 TEST PASS with HEAVEN_BRIDGE_TESTS_OK and PowerShell parsing.",
+        "Fresh replacement-worker health PASS with desktop_control, mouse_control, keyboard_control, window_control, display_enumeration, app_launch, clipboard_read/write all true.",
+        "display_list PASS on live heaven interactive desktop.",
+        "window_list PASS on live heaven interactive desktop.",
+        "gui_cursor_get PASS on live heaven interactive desktop.",
+        "screenshot scope=all PASS; local PNG produced.",
+        "Remote main verified to contain exact tested bridge source blob SHAs.",
+        "GitHub Actions push runs on heaven-bridge currently fail before steps with runner_id=0; live heaven operator gate is authoritative validation for this cycle."
+      ],
+      "blockers": [
+        "Credential values must still never be placed directly in GitHub-backed queue params, gui_type payloads, clipboard_write payloads, results, logs, or controller state.",
+        "A credential-safe named-secret/direct local authority channel from heaven2 remains the main gap before claiming secret-entry parity with an interactive desktop session.",
+        "Agent Control PR #59 remains a separate active lane and is not superseded by this bridge desktop-control cycle."
+      ],
+      "active_work": [
+        {
+          "owner": "existing PR #59 release-stabilization owner",
+          "boundary": "authenticated heaven2->heaven provider/placement + safe Codex launch contract",
+          "status": "active"
+        },
+        {
+          "owner": "this bridge cycle",
+          "boundary": "structured local Windows desktop control and ChatGPT plugin surface",
+          "status": "complete"
+        }
+      ],
+      "unfinished_work": [
+        "Add a credential-safe named-secret or end-to-end encrypted local authority path so secret values can be typed on heaven without ever entering the persisted GitHub relay.",
+        "Add richer screenshot retrieval/vision loops and optional element-level accessibility/UI Automation primitives for less coordinate-dependent GUI control.",
+        "Recheck GitHub-hosted Heaven Local Bridge Gate after runner infrastructure resumes executing steps.",
+        "Continue independent verification of Agent Control #59 only within its existing ownership lane."
+      ],
+      "likely_next_priorities": [
+        "Implement secret-safe GUI input by reference rather than plaintext relay.",
+        "Add Windows UI Automation/accessibility tree inspection and element invoke/set-value primitives.",
+        "Add deterministic desktop action transactions with observe-before/after screenshots and rollback-friendly checkpoints."
+      ],
+      "next_cycle_start": [
+        "Read this checkpoint first and refresh current heartbeat/health.",
+        "Treat heaven-bridge as the persistent operational relay branch and main as canonical source snapshot; do not merge relay runtime history into main.",
+        "Do not use Remote Desktop Commander unless the user explicitly authorizes it in the current request.",
+        "Prefer non-destructive structured desktop observation before coordinate-based mutations."
+      ]
+    }
+  },
+  "priority": "highest"
+}
