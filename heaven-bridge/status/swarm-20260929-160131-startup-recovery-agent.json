@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-160131-startup-recovery-agent",
-  "state": "running",
+  "state": "failed",
   "action": "codex",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:02:01.058068+00:00"
+  "updated_at": "2026-09-29T16:02:17.734678+00:00",
+  "exit_code": 1
 }
