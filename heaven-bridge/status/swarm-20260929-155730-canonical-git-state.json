@@ -1,0 +1,9 @@
+{
+  "id": "swarm-20260929-155730-canonical-git-state",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:56:17.995464+00:00"
+}
