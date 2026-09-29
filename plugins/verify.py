@@ -13,6 +13,7 @@ TARGETS = [
     "heaven-git-ops",
     "heaven-process-services",
     "heaven-file-ops",
+    "heaven-desktop",
 ]
 
 failed = []
