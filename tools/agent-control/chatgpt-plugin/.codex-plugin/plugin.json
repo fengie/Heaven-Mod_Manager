@@ -15,7 +15,7 @@
     ]
   },
   "name": "heaven-agent-control",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Operate the user's heaven2-hosted MHW programming-agent control plane from ChatGPT while delegating heavy execution to heaven.",
   "author": {
     "name": "fengie"
