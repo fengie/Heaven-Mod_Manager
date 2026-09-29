@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-pr126-current-main-validate-20260929-1100-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:00:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; $wt='C:\\Users\\Xxkan\\validate-pr126-current-main'; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null; if(Test-Path $wt){Remove-Item -Recurse -Force $wt} }; git -C $repo fetch origin main agent/updater-installed-e2e-20260929-manager --prune; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $repo worktree add --detach $wt origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; try { Push-Location $wt; git checkout -b validate-pr126-local; git merge --no-commit --no-ff origin/agent/updater-installed-e2e-20260929-manager; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git diff --check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; dotnet build tools/MhwModManager.UpdaterE2E/MhwModManager.UpdaterE2E.csproj -c Release; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; dotnet test tests/MhwModManager.Tests/MhwModManager.Tests.csproj -c Release --no-restore; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; [pscustomobject]@{ok=$true;base=(git rev-parse origin/main).Trim();head=(git rev-parse origin/agent/updater-installed-e2e-20260929-manager).Trim()}|ConvertTo-Json } finally { Pop-Location -ErrorAction SilentlyContinue; git -C $repo worktree remove --force $wt 2>$null }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800
+  },
+  "priority": "highest"
+}
