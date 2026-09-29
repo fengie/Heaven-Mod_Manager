@@ -1,0 +1,21 @@
+{
+  "id": "----------------------branchzero-delete-b3-20260929-1107",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:07:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:08:51.536992+00:00",
+  "finished_at": "2026-09-29T11:09:33.699624+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"agent/support-updater-c10-manager-review-20260928\",\r\n                    \"agent/support-updater-lr003-native-replacement-20260928\",\r\n                    \"agent/support-updater-lr003-restart-audit-20260928\",\r\n                    \"agent/support-updater-lr003-resume-20260928\",\r\n                    \"agent/support-updater-packaging-audit-20260928\",\r\n                    \"agent/support-updater-unowned-collision-20260928\",\r\n                    \"agent/support-updater-user-root-preservation-20260928\",\r\n                    \"feature/agent-command-center-20260928\",\r\n                    \"integration/support-harvest-20260928-1205\",\r\n                    \"integration/v8.8.6-release-convergence-r2-20260929\"\r\n                ],\r\n    \"missing\":  [\r\n                    \"agent/support-updater-wpf-integration-audit-20260928\",\r\n                    \"feature/agent-control-panel-20260928\",\r\n                    \"support/updater-publication-input-scope-20260928\"\r\n                ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]         (none)        -> origin/agent/replacefilew-failure-characterization-20260927\n - [deleted]         (none)        -> origin/agent/support-bundle-share-safety-20260928\n   3aba657..d38e6f7  heaven-bridge -> origin/heaven-bridge\n   c50fed8..ca65d31  agent/bridge-uia-native-20260929 -> origin/agent/bridge-uia-native-20260929\n   290d4e2..cb8a6bb  main          -> origin/main\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-c10-manager-review-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-lr003-native-replacement-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-lr003-restart-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-lr003-resume-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-packaging-audit-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-unowned-collision-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         agent/support-updater-user-root-preservation-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         feature/agent-command-center-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         integration/support-harvest-20260928-1205\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]         integration/v8.8.6-release-convergence-r2-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------branchzero-delete-b3-20260929-1107.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------branchzero-delete-b3-20260929-1107.stderr.log",
+    "stdout_bytes": 1014,
+    "stderr_bytes": 1544,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "34d1ab82a03c2d4e81adef8060933b41755e7b135d89b76409dcab00e182c07b"
+}
