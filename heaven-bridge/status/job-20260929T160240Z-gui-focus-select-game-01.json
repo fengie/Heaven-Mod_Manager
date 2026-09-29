@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T160240Z-gui-focus-select-game-01",
-  "state": "running",
+  "state": "completed",
   "action": "window_focus",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:02:20.807207+00:00"
+  "updated_at": "2026-09-29T16:02:40.722910+00:00",
+  "exit_code": 0
 }
