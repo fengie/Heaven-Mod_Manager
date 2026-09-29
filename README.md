@@ -1,4 +1,8 @@
-# v8.8.7 Universal Mod Manager
+# v8.8.8 Universal Mod Manager
+
+## v8.8.8 — atomic launch-observation persistence
+
+Each observed game launch now writes its immutable launch-history evidence and enabled-mod trust deltas in one SQLite transaction. The coordinator captures one pre-launch mod/build snapshot, exact launch-ID replay is idempotent, conflicting replay fails closed, and once an external startup outcome is known the authoritative persistence step is not canceled by a later user cancellation. Focused SQLite fault tests cover first/later trust-write rollback, replay, snapshot identity, and exact failed-launch diagnosis linkage.
 
 ## v8.8.7 — cross-session updater ownership
 
