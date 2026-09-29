@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-102732-window-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:27:32Z",
+  "ttl_seconds": 3600,
+  "action": "window_list",
+  "params": {
+    "limit": 25,
+    "visible_only": true
+  },
+  "priority": "highest"
+}
