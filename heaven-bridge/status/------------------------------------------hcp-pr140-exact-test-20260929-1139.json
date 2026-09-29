@@ -1,9 +1,10 @@
 {
   "id": "------------------------------------------hcp-pr140-exact-test-20260929-1139",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:39:50.543303+00:00"
+  "updated_at": "2026-09-29T11:40:12.316759+00:00",
+  "exit_code": 1
 }
