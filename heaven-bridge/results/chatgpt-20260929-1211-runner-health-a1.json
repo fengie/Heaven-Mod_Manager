@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1211-runner-health-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:11:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:09:27.576426+00:00",
+  "finished_at": "2026-09-29T12:09:29.812969+00:00",
+  "stdout": "--- runner processes ---\r\n[\r\n    {\r\n        \"ProcessId\":  15352,\r\n        \"Name\":  \"cmd.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\WINDOWS\\\\system32\\\\cmd.exe\\\" /d /c \\\"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\run.cmd\\\"\\\" \"\r\n    },\r\n    {\r\n        \"ProcessId\":  52236,\r\n        \"Name\":  \"Runner.Listener.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\\\\\bin\\\\Runner.Listener.exe\\\"  run \"\r\n    },\r\n    {\r\n        \"ProcessId\":  80992,\r\n        \"Name\":  \"Runner.Worker.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Worker.exe\\\" spawnclient 2360 2176\"\r\n    },\r\n    {\r\n        \"ProcessId\":  106860,\r\n        \"Name\":  \"powershell.exe\",\r\n        \"CommandLine\":  \"powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \\\"$ErrorActionPreference=\\u0027Continue\\u0027; Write-Output \\u0027--- runner processes ---\\u0027; Get-CimInstance Win32_Process | Where-Object { $_.Name -match \\u0027Runner\\\\.(Listener|Worker)|run\\\\.cmd|runsvc\\u0027 -or $_.CommandLine -match \\u0027actions-runner|Runner\\\\.Listener\\u0027 } | Select-Object ProcessId,Name,CommandLine | ConvertTo-Json -Depth 3; Write-Output \\u0027--- services/tasks ---\\u0027; Get-Service | Where-Object { $_.Name -match \\u0027actions|runner\\u0027 -or $_.DisplayName -match \\u0027Actions Runner\\u0027 } | Select-Object Name,DisplayName,Status,StartType | ConvertTo-Json -Depth 3; Get-ScheduledTask | Where-Object { $_.TaskName -match \\u0027runner|heaven\\u0027 } | Select-Object TaskName,State,TaskPath | ConvertTo-Json -Depth 3; Write-Output \\u0027--- runner dirs ---\\u0027; Get-ChildItem -Path $HOME -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \\u0027runner|actions\\u0027 } | Select-Object FullName,LastWriteTime | ConvertTo-Json -Depth 3\\\"\"\r\n    },\r\n    {\r\n        \"ProcessId\":  101784,\r\n        \"Name\":  \"node.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\externals\\\\node24\\\\bin\\\\node.exe\\\" \\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\_work\\\\_actions\\\\actions\\\\checkout\\\\v4\\\\dist/index.js\\\"\"\r\n    }\r\n]\r\n--- services/tasks ---\r\n--- runner dirs ---\r\n[\r\n    {\r\n        \"FullName\":  \"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\",\r\n        \"LastWriteTime\":  \"\\/Date(1790680624147)\\/\"\r\n    },\r\n    {\r\n        \"FullName\":  \"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven-v2\",\r\n        \"LastWriteTime\":  \"\\/Date(1790681729946)\\/\"\r\n    }\r\n]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1211-runner-health-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1211-runner-health-a1.stderr.log",
+    "stdout_bytes": 2391,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e35030bef35969f3682a252fe73d8a782532c029527d2d50e8335ef356525ed0"
+}
