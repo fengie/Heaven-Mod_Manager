@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-opencode-ollama-smoke-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:49:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:44:46.939692+00:00",
+  "finished_at": "2026-09-29T08:44:48.560731+00:00",
+  "stdout": "EXIT=1\r\n",
+  "stderr": "opencode.exe : \u001b[91m\u001b[1mError: \u001b[0mModel unavailable: ollama/qwen2.5-coder:7b\r\nAt line:1 char:177\r\n+ ... | Out-Null; & $oc run --standalone --auto --model 'ollama/qwen2.5-cod ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (\u001b[91m\u001b[1mError:...wen2.5-coder:7b:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-ollama-smoke-a4.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-ollama-smoke-a4.stderr.log",
+    "stdout_bytes": 8,
+    "stderr_bytes": 418,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8edcb6c9fd632af8c087464c614008d278c41b1e9038d07b30959c14d1f49bc1"
+}
