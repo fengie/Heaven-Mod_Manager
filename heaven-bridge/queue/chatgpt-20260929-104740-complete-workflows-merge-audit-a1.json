@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-104740-complete-workflows-merge-audit-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:40Z",
+  "ttl_seconds": 7200,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n$wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-complete-workflows-audit-a1'\n$branch='audit/complete-workflows-current-main-20260929'\nSet-Location $repo\ngit fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\nif(Test-Path $wt){ git worktree remove --force $wt | Out-Null }\ngit show-ref --verify --quiet \"refs/heads/$branch\"\nif($LASTEXITCODE -eq 0){ git branch -D $branch | Out-Null }\ngit worktree add -b $branch $wt origin/main\nif($LASTEXITCODE -ne 0){ throw 'worktree add failed' }\nSet-Location $wt\n$base=(git rev-parse HEAD | Out-String).Trim()\ngit merge --no-commit --no-ff origin/codex/complete-mod-workflows\n$mergeExit=$LASTEXITCODE\n$conf=@(git diff --name-only --diff-filter=U)\n$changed=@(git diff --name-only HEAD)\nif($mergeExit -ne 0){\n  $summary=[ordered]@{base_main=$base;merge_exit=$mergeExit;conflicts=$conf;changed_count=$changed.Count;changed=$changed}\n  git merge --abort | Out-Null\n  $summary|ConvertTo-Json -Depth 4\n  exit 0\n}\n& dotnet test 'tests\\MhwModManager.Tests\\MhwModManager.Tests.csproj' -c Release\n$core=$LASTEXITCODE\n& dotnet test 'tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj' -c Release\n$auto=$LASTEXITCODE\n[ordered]@{base_main=$base;merge_exit=0;conflicts=@();changed_count=$changed.Count;changed=$changed;core_test_exit=$core;automation_test_exit=$auto}|ConvertTo-Json -Depth 4\ngit merge --abort | Out-Null\nexit 0",
+  "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+  "timeout_seconds": 1800,
+  "priority": "highest"
+}
