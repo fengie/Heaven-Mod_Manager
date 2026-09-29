@@ -1,3 +1,15 @@
+# 2026-09-29 v8.8.6 reconciliation — CURRENT CRITICAL PATH
+
+1. Re-fetch canonical `main` before every integration; this checkpoint audited `ce74d6abafb02bf4b5af1b59237751dcac84c298`.
+2. Run/inspect exact-current-main Windows release verification and persist evidence for the exact SHA checked. Hosted run `36541891969` remains scoped only to `5abe40304dfcb48f96e750bd7da3d0075315625b`.
+3. Execute the integrated updater installed-client E2E for packaged 60→61 success and injected rollback, proving exact restart/health identity and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+4. PR #95 is closed/superseded. Liveness, reliability, security, and updater cross-session ownership are already on main; still-open PR #98 should be retired/reconciled rather than blindly replayed unless a fresh semantic diff proves unique required work.
+5. For Agent Control, settle federation registry semantics (#101) before dependent dashboard/operator lanes (#100/#105), rechecking overlap after each integration.
+6. Each product owner remains responsible for current-main sync, conflict resolution, verification, integration, push, and remote-main confirmation.
+7. Preserve exact-SHA continuity evidence and recursively pass the continuity constitution to successors.
+
+---
+
 # 2026-09-29 updater publication closure — CURRENT CRITICAL PATH
 
 1. **CLOSED:** PR #91 merged as `5abe40304dfcb48f96e750bd7da3d0075315625b`. Exact-main Windows Release Gate **36541891969** passed **25/25** on Windows x64 / .NET SDK 10.0.401. Function status is **748/748 verified**.
