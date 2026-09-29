@@ -204,3 +204,16 @@ A missing bridge heartbeat, missing result, unavailable plugin surface, queued s
 - If the user is actively interacting from the target machine, treat host presence as established and diagnose the bridge, watchdog, runner, relay, or plugin surface separately.
 - Use precise wording such as `heaven2 control path unavailable`, `bridge worker not publishing`, or `self-hosted runner unallocated` until host-level reachability is independently proven.
 - Recovery work must continue against the failed control component; do not convert a control-channel failure into a host-availability conclusion.
+
+
+## Stream/response failure reconciliation rule
+
+A failed ChatGPT/agent response stream is **not** proof that the assigned work failed and is never, by itself, permission to restart the whole assignment.
+
+- Treat a lost response/transport stream as **execution state unknown** and reconcile durable evidence first.
+- Surface the lifecycle as: `STREAM LOST · CHECKING WORK` → exactly one of `WORK DETECTED · INCOMPLETE`, `WORK VERIFIED · COMPLETE`, or `NO DURABLE WORK DETECTED · RETRY`.
+- Durable work includes, when applicable, commits/SHA divergence, changed files, dirty worktrees, artifacts, PR/branch evidence, test/verification records, or other externally persisted execution outputs.
+- If durable work exists but completion is not proven, preserve it and resume/reconcile that exact work. **Do not restart from scratch and do not dispatch a competing full-task duplicate.**
+- Mark work complete only from durable completion evidence (for example explicit completion verification, or integrated/merged-to-main evidence plus passing verification/acceptance evidence). A cheerful final message alone is not completion proof.
+- Automatic replacement is allowed only when no durable work is detected, and it must remain bounded/backed off as Agent Control's retry policy requires.
+- Managers/reviewers must apply this rule after UI/WebSocket/network/stream failures and use repository/CI/worker evidence as the source of truth.
