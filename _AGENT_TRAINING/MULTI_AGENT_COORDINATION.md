@@ -74,3 +74,6 @@ Before a swarm/session/milestone is complete:
 7. rerun the completion gate after the recovery wave.
 
 Agent disappearance is not task completion.
+
+## Concurrent durable ledgers
+Sequential IDs in append-only learned-rule, incident, migration, or integration ledgers are shared mutable state. Multiple agents must not independently choose “next ID” from stale snapshots. Use one allocation owner/reservation mechanism or collision-resistant IDs, then validate uniqueness during integration. If a collision escapes, preserve both entries and provenance while deterministically renumbering/reconciling the later one.
