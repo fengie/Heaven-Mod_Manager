@@ -17,14 +17,9 @@ permissions:
 
 jobs:
   node-verification:
-    name: Node verification (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
+    name: Node verification on Heaven
+    runs-on: [self-hosted, Windows, X64, heaven]
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: tools/agent-control
