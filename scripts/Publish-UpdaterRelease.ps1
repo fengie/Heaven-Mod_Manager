@@ -79,9 +79,13 @@ try {
     if($existing.Count -ne 1){throw "Multiple releases unexpectedly use tag $tag."}
     if([bool]$existing[0].isDraft){throw "Updater release $tag exists only as a draft; refusing to overwrite or publish it automatically."}
     if(-not [bool]$existing[0].isImmutable){throw "Updater release $tag exists but is not immutable; refusing to trust it as an update feed."}
-    & git show-ref --verify --quiet "refs/tags/$tag"
-    if($LASTEXITCODE -ne 0){throw "Published updater release $tag has no fetched Git tag."}
-    $tagSha=(& git rev-list -n 1 "refs/tags/$tag").Trim()
+    # An immutable release can be visible through GitHub's APIs before its tag is
+    # advertised by Git transport. Retry verification must therefore use the same
+    # authoritative REST ref as the immediate post-publication path.
+    $existingRefOutput=@(& gh api "repos/$Repository/git/ref/tags/$tag")
+    if($LASTEXITCODE -ne 0){throw "Existing updater tag $tag could not be inspected for verification."}
+    $existingRefJson=$existingRefOutput -join [Environment]::NewLine
+    $tagSha=Get-UpdaterTagCommitFromRefJson -Json $existingRefJson -ExpectedTag $tag
     if($tagSha -ne $ExpectedSourceSha){throw "Existing updater release $tag points to $tagSha instead of $ExpectedSourceSha."}
 
     $existingApi=& gh api "repos/$Repository/releases/tags/$tag"
@@ -192,9 +196,13 @@ try {
     throw "Updater release $tag was not immutable and is not accepted as a safe publication."
   }
 
-  & git fetch origin "refs/tags/$tag:refs/tags/$tag"
-  if($LASTEXITCODE -ne 0){throw "Published updater tag $tag could not be fetched for verification."}
-  $publishedSha=(& git rev-list -n 1 "refs/tags/$tag").Trim()
+  # GitHub's release API may expose the just-created tag before Git transport does.
+  # Verify the published tag through the authoritative REST ref instead of treating
+  # immediate fetch propagation lag as a failed release.
+  $publishedRefOutput=@(& gh api "repos/$Repository/git/ref/tags/$tag")
+  if($LASTEXITCODE -ne 0){throw "Published updater tag $tag could not be inspected for verification."}
+  $publishedRefJson=$publishedRefOutput -join [Environment]::NewLine
+  $publishedSha=Get-UpdaterTagCommitFromRefJson -Json $publishedRefJson -ExpectedTag $tag
   if($publishedSha -ne $ExpectedSourceSha){throw "Published updater tag $tag points to $publishedSha instead of $ExpectedSourceSha."}
 
   $publishedApi=& gh api "repos/$Repository/releases/tags/$tag"

@@ -1,3 +1,32 @@
+# v8.8.4 — Support recovery hardening
+
+- Reconcile `save_snapshots` retention with the SQLite index while limiting recursive deletion to verified direct children of the manager-owned snapshot root.
+- Remove malformed, outside-root, missing, and reparse payload rows without following those paths; for valid over-limit snapshots, delete the payload first and retire its row only after deletion succeeds.
+- Harden untrusted remote-preview egress to HTTPS-only public destinations, disable automatic redirects/proxy routing for preview fetches, and isolate Nexus API traffic behind a no-redirect client.
+- Preserve runtime evidence and reusable doctrine for legacy-migration CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session ownership without importing stale support routing or verification caches.
+
+# v8.8.3 ? Archive streaming failure-cleanup hardening
+
+- Attempt owned current-output cleanup for every exceptional archive payload-copy exit after file creation, including ordinary streamed I/O failures.
+- Preserve the primary cancellation, budget, or I/O exception when best-effort cleanup itself fails; log the cleanup failure as secondary diagnostics.
+- Re-check Smart Inbox cancellation before treating I/O, access, or archive-data exceptions as recoverable item failures, preventing canceled runs from continuing to later items.
+- Add deterministic fault-injection regressions for ordinary I/O cleanup, cleanup-failure exception dominance, and Smart Inbox cancellation dominance.
+- Keep whole-import staging/publication residue under LR-008 as a separate future boundary.
+
+# v8.8.2 — Integrated support safety hardening
+
+- Require crash-bisector empty-control and full-suspect preflight before deterministic narrowing can report an isolated culprit.
+- Compensate ordinary duplicate-cleanup database-delete failures by reconciling durable row state and restoring the archived source only when safe; abrupt process-death recovery remains separate.
+- Sanitize recent structured JSONL logs at support-bundle export, recursively redacting secret-like fields/assignments and absolute Windows paths while leaving local logs unchanged.
+- Add generated support-bundle privacy canaries, profile-save rollback fault injection, and stronger adversarial handoff-continuity fixtures.
+- Preserve new audits for persisted game-profile ID path containment and launch-observation persistence atomicity as regression-first follow-up boundaries.
+
+# v8.8.1 — Updater publication verification hardening
+
+- Verify newly published updater tags through GitHub's REST git-ref API instead of depending on immediate Git transport propagation.
+- Fail closed unless the published ref name is exact, its target is a direct commit, its SHA is a valid 40-hex identifier, and it matches the expected source commit.
+- Add regression coverage for empty, malformed, wrong-tag, non-commit, and malformed-SHA ref responses while preserving the existing pre-publication local checks.
+
 # v8.8.0 — Function verification cache and call-error hardening
 
 ## Repair audit — 2026-09-27

@@ -1,3 +1,74 @@
+# v8.8.4 final support reconciliation — local release closure
+
+Exact verified product/source commit: `b48c1ff865ab41841d8c7eb931fca19f371f960e`, based on canonical `317ba6c86d54012a65a41772109a72566d29c0a9`. Local Windows / .NET SDK 10.0.401 verification is **CLOSED/PASS** for this exact source; hosted exact-main verification remains pending.
+
+- Verify-Release: **25/25 PASS**.
+- FunctionVerifier: **748/748** promoted; **7,921** explicit call sites; **0** uncovered / trace gaps / parse errors.
+- Strict/relaxed builds and analyzers: PASS, **0 warnings / 0 errors**.
+- Core **79/79**, Automation **31/31**, Integration/fault-injection **199/199**, self-test **11/11**.
+- Build-Release: PASS; ReadyToRun self-contained app publish PASS without fallback; updater-helper publish PASS.
+- Updater build **326**.
+- Artifact `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip` SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`; product manifest SHA-256 `8CA52722E0770B0E0125BA6DC7C836EE2E9947E74F462707B6A874FD4539AF8B`.
+- Evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.4-local-windows-closure.md`.
+
+Hosted Windows Release Gate for the final canonical-main commit is **NOT YET VERIFIED** and must not be inferred from this local closure.
+
+---
+
+# Reconciled canonical-main hosted evidence
+
+Inherited v8.8.2 hosted Windows closure: source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, run `36455992975`, 25/25, release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. Keep this distinct from v8.8.3 local release evidence at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
+# v8.8.3 archive failure-cleanup ? exact local Windows release verification
+
+Exact repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6` on `agent/archive-streaming-cleanup-lr011-20260928`. Host: heaven2 / Windows; .NET SDK 10.0.401.
+
+- `Verify-Release.ps1`: **25/25 PASS**.
+- FunctionVerifier: **738/738** promoted; **7,850** explicit call sites; **0 uncovered**, **0 trace gaps**, **0 parse errors**.
+- Core: **79/79**; Automation: **29/29**; Integration/fault injection: **181/181**; self-test: **11/11**.
+- Relaxed/strict project and whole-solution builds/analyzers: PASS, **0 warnings / 0 errors**.
+- Agent-handoff preflight and all eight negative fixtures: PASS/fail-closed as designed.
+- `Build-Release.ps1`: PASS; app win-x64 ReadyToRun PASS; updater-helper self-contained publish PASS.
+- Updater build: **320**; artifact `MHW-Manual-Mod-Manager-v8.8.3-win-x64.zip`; SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+- Exact-main hosted Windows verification: **pending** until integration.
+
+The subsequent evidence/cache-persistence commit changes no production source and is not independently relabeled as full-gated. Detailed closure: `_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md`.
+
+---
+
+# v8.8.3 archive failure-cleanup candidate ? focused Windows evidence
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`.
+
+- `git diff --check`: PASS after removing an edit-side BOM/EOF artifact.
+- Strict whole-solution `dotnet build MhwModManager.sln -c Release --no-restore -warnaserror`: PASS, **0 warnings / 0 errors**.
+- xUnit v3 executable runner, Integration: **181/181 passed**.
+- xUnit v3 executable runner, Automation: **29/29 passed**.
+- Two direct `dotnet test` attempts before the executable-runner invocation returned **Zero tests ran / exit 5** in this local MTP/xUnit-v3 setup; they are recorded as tooling-invocation failures, not test-pass evidence.
+- Full repository verifier, release build/package, and hosted exact-main gate: **pending** at this checkpoint.
+
+No verification cache or prior hosted evidence is promoted by this focused checkpoint.
+
+---
+
+# v8.8.2 support integration — exact local Windows verification
+
+Exact product/docs integration source verified: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.
+
+- `scripts/Verify-Release.ps1`: 25/25 PASS.
+- FunctionVerifier: 736/736 promoted; 7,842 explicit call sites / 0 uncovered; 0 trace gaps; 0 parse errors.
+- Core: 79/79; Automation: 28/28; Integration/fault injection: 178/178; self-test: 11/11.
+- Strict project and whole-solution builds/analyzers: PASS, 0 warnings / 0 errors.
+- `scripts/Build-Release.ps1`: PASS; ReadyToRun app and updater-helper publish PASS.
+- Updater build 315; artifact `MHW-Manual-Mod-Manager-v8.8.2-win-x64.zip`; SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
+- Handoff preflight accepted the v8.8.2 manifest and all eight adversarial negative fixtures failed closed.
+
+This is local exact-source evidence. Hosted exact-main verification remains pending until canonical integration/push. Branch-local support-agent caches were not reused as canonical proof.
+
+---
+
 # Updater C12 first-publication repair — current verification
 
 Exact starting source: `a83dc6e047ccf98e896f10c25772df99b95426d1`. Hosted Windows Release Gate run **36428542918** passed repository verification, Build-Release/package verification, and publication-policy tests, then failed at release-list parsing before creating any release. The failure occurred at `Publish-UpdaterRelease.ps1:73`: strict mode rejected a row without `tagName` when the repository had no releases.

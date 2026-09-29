@@ -1,3 +1,67 @@
+# 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
+
+Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+
+Publication is no longer pending. Immutable release `updater-main-61` targets the exact source commit and contains exactly the release ZIP plus `update-manifest.json` (manifest SHA-256 `4021E5303263A42255E80B40DA6C9C9349B055FB87BB970C2A71DA149DB4D2BE`). Hosted verification/cache evidence was persisted at `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de` without production-source changes.
+
+The **only remaining automatic-updater completion boundary** is live behavior in a disposable installed-client environment: (1) old→new update to build 61 with exact restarted-build identity and health acknowledgement plus unchanged seeded `Mods`/`State`/unknown-file hashes; and (2) a separate injected-failure rollback proving previous owned bytes/metadata/executable restoration, removal of new-only product files, unchanged seeded data, and fail-closed recovery semantics.
+
+Do not merge unrelated support, Agent Control, game-profile, privacy, crash-bisector, or continuity-hardening work into this E2E lane. Re-query ownership before assigning any adjacent work.
+
+---
+
+﻿# Canonical updater closure update — 2026-09-29
+
+- Verified product source: `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91 merged after an exact 0-behind race check).
+- Hosted Windows Release Gate run **36541891969** completed **success** on that exact source: repository verifier PASS, release/package gate PASS, updater publication policy PASS, immutable publication PASS, and evidence persistence PASS.
+- Published updater package: build **61**, tag `updater-main-61`, artifact `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip`, SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+- Hosted evidence was persisted by commit `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de`.
+- The retry-path propagation defect is fixed: existing immutable releases now verify the authoritative GitHub tag REST ref instead of depending on local Git tag advertisement. Stale duplicate PR #81 is closed.
+- **Remaining end-to-end boundary:** run the disposable packaged old→new success path and a fault-injected startup/health failure rollback. Seed `Mods`, `State`, and an unknown user file; prove their hashes are unchanged; prove exact restarted build/process health identity. Do not call automatic updates end-to-end complete until this passes.
+- Separate PR #90 was returned to draft after canonical main advanced; it must reconcile onto the updater-fixed main and rerun exact-candidate verification before integration.
+
+---
+
+# v8.8.4 final support reconciliation — 2026-09-28
+
+Canonical base is `317ba6c86d54012a65a41772109a72566d29c0a9` (v8.8.3 archive-streaming cleanup plus hosted evidence). The v8.8.4 candidate preserves that entire baseline and adds only the final support harvest: save-snapshot retention with manager-owned delete containment and delete-then-retire ordering; HTTPS/public-only remote-preview egress with redirects disabled; three unique ownership/recovery audits; LR-012 through LR-014; and corresponding continuity/release identity.
+
+Exact local v8.8.4 closure at `b48c1ff865ab41841d8c7eb931fca19f371f960e` is now PASS: Verify-Release **25/25**, functions **748/748** with **7,921** explicit call sites / **0** uncovered, Core **79/79**, Automation **31/31**, Integration **199/199**, self-test **11/11**, strict builds/analyzers PASS, Build-Release ReadyToRun/helper publish PASS, updater build **326**, ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`. Canonical main was pushed after a final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`; this final continuity-only checkpoint changes no product source. Hosted exact-main verification remains pending.
+
+---
+
+# Concurrent canonical-main evidence reconciled
+
+The branch now also contains canonical v8.8.2 hosted closure from main: exact source `fdf67b2c85b37b3a31c5156a6ed483323778350b`, GitHub Actions run `36455992975`, 25/25, hosted release SHA-256 `CDC393C5C7DA4ABADB31E5541019C6363BE46B8936B1678B582FBF56E2039841`. This is historical/inherited evidence and does not replace the separate exact local v8.8.3 verification at `26485dad2c931544728d108de9da66446dedf0a6`.
+
+---
+
+# v8.8.3 archive failure-cleanup ? locally release-verified
+
+Exact release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. Verify-Release **25/25**; functions **738/738**; call sites **7,850 / 0 uncovered**; Core **79/79**; Automation **29/29**; Integration **181/181**; self-test **11/11**; strict builds/analyzers PASS. Build-Release passed win-x64 ReadyToRun plus updater-helper publish, updater build **320**, ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+
+The LR-011 repair is implemented without broadening into LR-008 publication staging. Exact-main hosted verification remains pending after integration. The later evidence/cache commit is metadata-only relative to this verified source.
+
+---
+
+# v8.8.3 archive failure-cleanup candidate ? 2026-09-28
+
+Implementation checkpoint `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928` closes the narrow LR-011 source defect: `ArchiveInspector` best-effort-cleans its owned current output for every exceptional payload-copy exit and never lets cleanup failure replace the primary exception; `SmartInboxService` re-checks cancellation before recoverable I/O handling. Deterministic regressions cover ordinary I/O cleanup, cleanup-failure preservation of cancellation/budget failures, and prevention of later Smart Inbox processing after cancellation.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**, Integration **181/181**, Automation **29/29**. Full release verification/build and hosted exact-main closure remain pending. LR-008 whole-import staging/publication is deliberately not changed. No new company-trainer rule is needed because LR-011 already captures the reusable cleanup-dominance invariant.
+
+---
+
+# v8.8.2 current integration state — 2026-09-28
+
+Canonical pre-harvest main was `9dd91767880ae6c9dcb2a31d64410c1f0bd52827`; during verification it advanced to metadata-only `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`, which is being reconciled without overwriting concurrent work. Shipped product source did not change in that concurrent delta.
+
+Exact locally release-verified v8.8.2 source: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`. `Verify-Release.ps1` passed 25/25 with functions 736/736 and 7,842/0 uncovered call sites; Core 79/79; Automation 28/28; Integration 178/178; self-test 11/11; strict analyzers green. `Build-Release.ps1` passed with updater build 315 and ZIP SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
+
+Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` for exact branch dispositions and residuals. Exact-main hosted verification is pending until canonical push and workflow completion.
+
+---
+
 ## Current updater publication repair — 2026-09-28
 
 Canonical start SHA: `a83dc6e047ccf98e896f10c25772df99b95426d1`; origin was exactly `https://github.com/fengie/mhw-mods.git`, fetch succeeded, and the canonical main worktree was clean. C11b is integrated on main. Hosted gate run 36428542918 passed verification/build/package/policy and failed at first-release discovery because the empty release list lacked a `tagName` property under PowerShell strict mode; GitHub releases API currently returns no releases.

@@ -1,3 +1,15 @@
+﻿# Canonical updater closure update — 2026-09-29
+
+- Verified product source: `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91 merged after an exact 0-behind race check).
+- Hosted Windows Release Gate run **36541891969** completed **success** on that exact source: repository verifier PASS, release/package gate PASS, updater publication policy PASS, immutable publication PASS, and evidence persistence PASS.
+- Published updater package: build **61**, tag `updater-main-61`, artifact `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip`, SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+- Hosted evidence was persisted by commit `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de`.
+- The retry-path propagation defect is fixed: existing immutable releases now verify the authoritative GitHub tag REST ref instead of depending on local Git tag advertisement. Stale duplicate PR #81 is closed.
+- **Remaining end-to-end boundary:** run the disposable packaged old→new success path and a fault-injected startup/health failure rollback. Seed `Mods`, `State`, and an unknown user file; prove their hashes are unchanged; prove exact restarted build/process health identity. Do not call automatic updates end-to-end complete until this passes.
+- Separate PR #90 was returned to draft after canonical main advanced; it must reconcile onto the updater-fixed main and rerun exact-candidate verification before integration.
+
+---
+
 # Updater: exact continuation checklist
 
 ## Current canonical updater state — 2026-09-28

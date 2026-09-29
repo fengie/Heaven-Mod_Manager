@@ -42,6 +42,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
             {
+                ct.ThrowIfCancellationRequested();
                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
                 results.Add(new(entry, null, false, AutomationCategory.Unknown, ex.Message));

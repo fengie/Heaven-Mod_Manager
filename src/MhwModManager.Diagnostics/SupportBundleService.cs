@@ -2,6 +2,8 @@ using MhwModManager.Core;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using MhwModManager.Storage;
 
 namespace MhwModManager.Diagnostics;
@@ -9,6 +11,13 @@ namespace MhwModManager.Diagnostics;
 public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,DiagnosticTelemetry telemetry)
 {
     private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+    private static readonly Regex SecretAssignmentPattern = new(
+        @"(?i)(?<prefix>\b(?:authorization)\b\s*[:=]\s*bearer\s+|\b(?:token|access[_-]?token|api[_-]?key|apikey|password|secret|credential|cookie)\b\s*[:=]\s*)(?<value>[^\s,;""'&}\]]+)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex WindowsAbsolutePathPattern = new(
+        @"(?<![A-Za-z0-9_])(?:[A-Za-z]:\\|\\\\)[^""'\r\n<>|,;]+",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     public async Task<string> CreateAsync(string outputDirectory,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -48,11 +57,12 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
                 "SELECT id,state,description,started_at,error FROM operations WHERE state NOT IN ('Committed','RolledBack','Failed') ORDER BY started_at",ct,1000);
             await ExportRedactedSettingsAsync(Path.Combine(temp,"settings-redacted.json"),ct);
             await ExportCountsAsync(Path.Combine(temp,"state-counts.json"),ct);
+            await WritePrivacyNoticeAsync(Path.Combine(temp,"CONTENTS-AND-PRIVACY.txt"),ct);
 
             var logDir=Path.Combine(stateRoot,"Next","Logs");
             if(Directory.Exists(logDir))
                 foreach(var f in Directory.EnumerateFiles(logDir,"*.jsonl").OrderByDescending(x=>x).Take(5))
-                    File.Copy(f,Path.Combine(temp,Path.GetFileName(f)),true);
+                    await CopySanitizedStructuredLogAsync(f,Path.Combine(temp,Path.GetFileName(f)),ct);
 
             var stamp=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss",CultureInfo.InvariantCulture);
             var zip=Path.Combine(outputDirectory,$"MHWMM-Support-{stamp}.zip");
@@ -85,6 +95,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         }
         await File.WriteAllTextAsync(path,JsonSerializer.Serialize(rows,IndentedJson),ct);
     }
+
     private async Task ExportRedactedSettingsAsync(string path,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -93,8 +104,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         while(await r.ReadAsync(ct))
         {
             var key=r.GetString(0);
-            var secret=key.Contains("token",StringComparison.OrdinalIgnoreCase)||key.Contains("secret",StringComparison.OrdinalIgnoreCase)||key.Contains("password",StringComparison.OrdinalIgnoreCase)||key.Contains("api_key",StringComparison.OrdinalIgnoreCase)||key.Contains("apikey",StringComparison.OrdinalIgnoreCase);
-            settings[key]=secret?"<redacted>":(r.IsDBNull(1)?null:r.GetString(1));
+            settings[key]=IsSensitiveName(key)?"<redacted>":(r.IsDBNull(1)?null:SanitizeText(r.GetString(1)));
         }
         await File.WriteAllTextAsync(path,JsonSerializer.Serialize(settings,IndentedJson),ct);
     }
@@ -113,4 +123,105 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
         await File.WriteAllTextAsync(path,JsonSerializer.Serialize(counts,IndentedJson),ct);
     }
 
+    private static async Task WritePrivacyNoticeAsync(string path,CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await File.WriteAllLinesAsync(path,
+        [
+            "This support bundle is intended for troubleshooting and may be shared with support.",
+            "Recent structured logs are sanitized during export: secret-like fields/assignments and absolute Windows paths are redacted.",
+            "The full-fidelity local logs remain unchanged on this computer.",
+            "Other bundle entries can still describe installed mods, profiles, conflict rules, deployment paths, hashes, and operation state.",
+            "Review the archive before sharing it with another person or service."
+        ],ct);
+    }
+
+    private async Task CopySanitizedStructuredLogAsync(string source,string destination,CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        using var input=new StreamReader(source);
+        using var output=new StreamWriter(destination,false);
+        while(await input.ReadLineAsync(ct) is { } line)
+        {
+            ct.ThrowIfCancellationRequested();
+            await output.WriteLineAsync(SanitizeStructuredLogLine(line).AsMemory(),ct);
+        }
+    }
+
+    private string SanitizeStructuredLogLine(string line)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try
+        {
+            var parsed=JsonNode.Parse(line);
+            var sanitized=SanitizeJsonNode(parsed);
+            return sanitized?.ToJsonString()??"null";
+        }
+        catch(JsonException)
+        {
+            return SanitizeText(line);
+        }
+    }
+
+    private JsonNode? SanitizeJsonNode(JsonNode? node)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(node is null)return null;
+        if(node is JsonObject obj)
+        {
+            var sanitized=new JsonObject();
+            foreach(var pair in obj)
+                sanitized[pair.Key]=IsSensitiveName(pair.Key)?JsonValue.Create("<redacted>"):SanitizeJsonNode(pair.Value);
+            return sanitized;
+        }
+        if(node is JsonArray array)
+        {
+            var sanitized=new JsonArray();
+            foreach(var item in array)sanitized.Add(SanitizeJsonNode(item));
+            return sanitized;
+        }
+        if(node is JsonValue value&&value.TryGetValue<string>(out var text))
+            return JsonValue.Create(SanitizeText(text));
+        return node.DeepClone();
+    }
+
+    private string SanitizeText(string text)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var sanitized=text;
+        foreach(var item in SensitiveRoots())
+            sanitized=sanitized.Replace(item.Value,item.Replacement,StringComparison.OrdinalIgnoreCase);
+        sanitized=SecretAssignmentPattern.Replace(sanitized,m=>m.Groups["prefix"].Value+"<redacted>");
+        return WindowsAbsolutePathPattern.Replace(sanitized,"<absolute-path>");
+    }
+
+    private (string Value,string Replacement)[] SensitiveRoots()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var roots=new List<(string Value,string Replacement)>
+        {
+            (stateRoot,"<state-root>"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"<user-profile>"),
+            (Path.GetTempPath(),"<temp-root>"),
+            (AppContext.BaseDirectory,"<app-root>")
+        };
+        return roots
+            .Where(x=>!string.IsNullOrWhiteSpace(x.Value))
+            .OrderByDescending(x=>x.Value.Length)
+            .ToArray();
+    }
+
+    private static bool IsSensitiveName(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return name.Contains("token",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("secret",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("password",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("api_key",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("apikey",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("authorization",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("credential",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("cookie",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("bearer",StringComparison.OrdinalIgnoreCase);
+    }
 }

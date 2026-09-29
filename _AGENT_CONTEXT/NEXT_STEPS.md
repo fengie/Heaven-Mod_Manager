@@ -1,3 +1,65 @@
+# 2026-09-29 updater publication closure — CURRENT CRITICAL PATH
+
+1. **CLOSED:** PR #91 merged as `5abe40304dfcb48f96e750bd7da3d0075315625b`. Exact-main Windows Release Gate **36541891969** passed **25/25** on Windows x64 / .NET SDK 10.0.401. Function status is **748/748 verified**.
+2. **CLOSED:** `Build-Release.ps1` produced updater build **61**. Release ZIP SHA-256: `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+3. **CLOSED:** updater publication policy passed and immutable release `updater-main-61` targets exact source `5abe40304dfcb48f96e750bd7da3d0075315625b` with exactly two assets: `MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip` and `update-manifest.json` (manifest SHA-256 `4021E5303263A42255E80B40DA6C9C9349B055FB87BB970C2A71DA149DB4D2BE`).
+4. **CURRENT CRITICAL PATH:** run a disposable installed-client old→new E2E against build 61. Seed `Mods`, `State`, and an unknown file; prove byte hashes remain unchanged, the exact target build restarts, and health acknowledgement succeeds.
+5. **CURRENT CRITICAL PATH:** run a separate fault-injected rollback E2E. Prove previous owned executable/metadata/bytes are restored, new-only product files are removed, seeded user/unknown files remain unchanged, and no ambiguous recovery state is silently accepted.
+6. Do **not** reopen C12, retry-tag propagation, or release publication unless new contradictory evidence appears. Keep unrelated PRs out of this lane. After both E2E scenarios pass, persist exact evidence, refresh continuity, and mark the automatic updater end-to-end closed.
+7. Evidence/cache persistence for the hosted closure is `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de`; it changes verification/evidence files only.
+
+---
+
+﻿# Current highest-priority next steps — 2026-09-29
+
+1. **Updater implementation/publication is integrated and hosted-verified** at source `5abe40304dfcb48f96e750bd7da3d0075315625b`, Windows run **36541891969**, updater build **61**, tag `updater-main-61`.
+2. Run the final disposable packaged-client E2E: a real older installed package discovers/applies build 61, preserves seeded `Mods`, `State`, and unknown-file hashes, and restarts with the exact target identity/health acknowledgement.
+3. Run the paired injected startup/health-failure case and prove rollback restores the exact previous owned payload/executable identity while preserving the same seeded user-data hashes.
+4. Persist exact E2E evidence. Only after both cases pass may the updater be labeled end-to-end complete.
+5. Keep PR #90 separate; reconcile it onto current main and re-run its exact-candidate verification before making it ready again.
+
+---
+
+# v8.8.4 final support reconciliation — current next steps
+
+1. Canonical v8.8.4 was pushed after a final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source.
+2. Inspect the exact-main hosted Windows Release Gate. Local closure applies to product/source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; do not call hosted closure until CI passes canonical main.
+3. If hosted evidence passes, persist it without changing product source and re-verify the resulting remote HEAD.
+4. Keep follow-ups independent: remove legacy CAS hardlink aliasing; establish writer orphanhood/exclusive ownership before recovery takeover; span updater ownership across supported Windows sessions; leave broader preview redirect/image-content policy and active Updater/Agent-Control/frontend/game-profile lanes separate.
+5. Preserve and recursively propagate the continuity constitution and active Learned Rules.
+
+---
+
+# v8.8.3 current next steps ? local release gate closed
+
+1. Integrate exact locally release-verified checkpoint `26485dad2c931544728d108de9da66446dedf0a6` through the repository workflow without replaying stale branch-local continuity snapshots over newer main.
+2. Inspect/run the exact-main hosted Windows Release Gate and persist its evidence before calling v8.8.3 fully closed.
+3. Keep LR-008 whole-import staging/publication separate from this completed LR-011 repair.
+4. Re-query live PR ownership. If no new owner exists after this lane closes, the highest-safety queued implementation candidate remains persisted game-profile ID path containment; launch-observation atomicity is another P1 boundary but should stay independent.
+5. Preserve the permanent continuity constitution and active Learned Rules and require recursive propagation.
+
+---
+
+# v8.8.3 current next steps ? archive failure-cleanup candidate
+
+1. Run `scripts/Verify-Release.ps1` on exact candidate `5688fe91c03b56b651a3e9d94d7111b974693ab9` plus current continuity inputs with the Windows marker restored for Remote Desktop Commander.
+2. Run `scripts/Build-Release.ps1`; record exact artifact/build identity and SHA-256.
+3. Commit/push verification and continuity evidence, integrate through the repository workflow, then inspect the exact-main hosted Windows gate before calling v8.8.3 closed.
+4. Keep LR-008 whole-import staging/publication separate. After this lane closes, re-query live ownership; absent a new owner, the strongest queued P1 candidate is persisted game-profile ID path containment.
+5. Preserve the permanent continuity constitution and active Learned Rules and require the successor to propagate them recursively.
+
+---
+
+# v8.8.2 next steps — current
+
+1. Finish reconciling the metadata-only concurrent `main` advance, run the handoff/verification checks on the reconciled tree, commit intended continuity/evidence, and push canonical `main` without force.
+2. Verify remote `main` resolves to the pushed commit and inspect its exact-main hosted Windows Release Gate; do not relabel local evidence as hosted evidence.
+3. Re-query live PRs before assigning work. Do not duplicate Agent Control v2 or frontend lanes.
+4. Remaining audited support boundaries include persisted game-profile ID path-containment repair, launch-observation persistence atomicity, duplicate-cleanup crash-durable reconciliation, broader LR-006 diagnostic export hardening, and remaining crash-bisector evidence/provenance work.
+5. Preserve the permanent continuity constitution and active Learned Rules and require the successor to propagate them recursively.
+
+---
+
 ## Current updater next steps — 2026-09-28
 
 1. **DONE locally:** C12 first-publication discovery repair at exact code commit `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2`; policy test, verifier **25/25**, FunctionVerifier **727/727**, Core **79/79**, Automation **24/24**, Integration **173/173**, self-test **11/11**, strict builds, ReadyToRun app/helper publish, package verification, and `Build-Release.ps1` all pass.
@@ -7,6 +69,10 @@
 5. Only then mark the automatic updater end-to-end complete.
 
 The preceding exact-main run **36428542918** passed all verifier/build/package/policy stages and failed only before first release creation because empty release-list output was not normalized. No release/tag was created by that failed run. Local C12 build **230** ZIP SHA-256: `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`. Preserve the permanent recursive continuity constitution and active Learned Rules.
+
+## Support checkpoint — continuity validator adversarial hardening
+
+An isolated support branch now implements the previously documented continuity-validator adversarial-fixture checkpoint. It strips HTML comments from semantic checks, rejects explicit successor-propagation/Core-Rule contradictions, scopes read-order validation to the active numbered section, and expands the negative suite from four to eight cases. Focused Windows handoff validation is green after final reconciliation to canonical `main` `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`; full exact-source verifier/release-gate closure is not yet claimed. Read `_AGENT_CONTEXT/CONTINUITY_VALIDATOR_ADVERSARIAL_HARDENING_2026-09-28.md`. This support checkpoint does not replace or reorder the active updater production milestone.
 
 # Active updater continuation — 2026-09-28
 

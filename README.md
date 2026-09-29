@@ -1,4 +1,28 @@
-# v8.8.0 Universal Mod Manager
+# v8.8.4 Universal Mod Manager
+
+## v8.8.4 — support recovery hardening
+
+This release rebases the final support harvest onto canonical v8.8.3 archive-cleanup main. Save-snapshot retention now limits recursive deletion to verified direct children of the manager-owned `SnapshotRoot`; malformed/outside/missing/reparse rows are de-indexed without following their paths, and over-limit rows are retired only after their owned payload directory is successfully deleted. Failed cleanup therefore remains indexed for retry.
+
+Remote previews derived from imported metadata are HTTPS-only and use a fail-closed egress boundary: automatic redirects are disabled, preview transport bypasses proxies, every DNS answer must be public, and the socket connects to the validated address. Nexus API traffic uses a separate no-redirect client so its custom API-key header cannot follow a redirect to another origin. Exact local release closure for `b48c1ff865ab41841d8c7eb931fca19f371f960e` passed Verify-Release **25/25**, Core **79/79**, Automation **31/31**, Integration **199/199**, self-test **11/11**, and Build-Release/ReadyToRun/helper publish; updater build **326**; ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`.
+
+
+## v8.8.3 ? archive streaming failure-cleanup hardening
+
+Archive extraction now treats the currently-created output file as owned cleanup state for every payload-copy failure, not only cancellation and output-budget exceptions. Cleanup remains best-effort: if deletion itself fails, the original cancellation, safety failure, or I/O exception stays authoritative and the secondary cleanup error is logged instead of replacing it.
+
+Smart Inbox now re-checks requested cancellation before classifying filesystem errors as recoverable per-item failures, so a cleanup/write error cannot downgrade a canceled run into ?skip and continue.? Whole-import catalog-invisible staging and process-death residue remain a separate LR-008 follow-up; v8.8.3 deliberately does not broaden this low-level repair into publication redesign.
+
+## v8.8.2 — integrated safety and diagnostics hardening
+
+This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.
+
+It also adds the profile-save rollback regression, adversarial continuity-validator fixtures, and durable audits for persisted game-profile path containment and launch-observation atomicity. Duplicate cleanup crash-durable reconciliation, broader diagnostic export sanitization, remaining crash-bisector evidence risks, game-profile ID repair, and launch-observation transaction repair remain explicit follow-ups.
+
+## v8.8.1 — updater publication verification hardening
+
+The automatic-updater release gate now verifies a newly published updater tag through GitHub's authoritative REST git-ref API instead of requiring immediate Git transport propagation. The check fails closed unless the exact expected tag exists, points directly to a commit, and resolves to the exact source SHA being published. This prevents a successfully published immutable release from being reported as failed solely because the Git tag has not propagated to fetch transport yet.
+
 
 ## Repair revision — 2026-09-27
 

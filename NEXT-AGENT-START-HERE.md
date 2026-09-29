@@ -1,3 +1,45 @@
+# v8.8.4 final support reconciliation — current handoff
+
+Canonical `origin/main` advanced during integration to `317ba6c86d54012a65a41772109a72566d29c0a9`, which already contains the v8.8.3 archive-streaming cleanup release. The v8.8.4 candidate was rebuilt from that exact head by squash-merging only reviewed support-harvest results, so the newer archive code, tests, verification state, and evidence are preserved.
+
+v8.8.4 recovers two production/test slices: hardened save-snapshot retention and remote-preview network egress. The snapshot branch was not accepted verbatim: database `root_path` values cannot expand recursive-delete authority outside direct children of `SnapshotRoot`, and over-limit metadata is retired only after owned payload deletion succeeds. Remote preview transport is HTTPS-only, no-auto-redirect, proxy-bypassed, and rejects any non-public DNS result before connecting.
+
+Unique research lanes for legacy CAS hardlink aliasing, live-writer recovery takeover, and updater cross-session lock scope are preserved as audits plus LR-012/LR-013/LR-014; stale routing/cache snapshots were skipped. Active Updater, Agent Control v2, frontend/UI, and game-profile implementation lanes remain separate. Exact local v8.8.4 release verification is closed at product/source `b48c1ff865ab41841d8c7eb931fca19f371f960e`; canonical main was pushed after the final race check and remote `origin/main` was verified at integration/evidence checkpoint `05d01c982249e5d8d654ad125925af3ac2a85a91`. This final handoff-only checkpoint changes no product source. Hosted exact-main verification remains pending.
+
+---
+
+# v8.8.3 archive streaming failure-cleanup ? local Windows release closure
+
+Exact locally release-verified repository checkpoint: `26485dad2c931544728d108de9da66446dedf0a6`. `Verify-Release.ps1` passed **25/25**, FunctionVerifier **738/738** with **7,850 / 0 uncovered** call sites, Core **79/79**, Automation **29/29**, Integration **181/181**, self-test **11/11**, and strict builds/analyzers. `Build-Release.ps1` passed win-x64 ReadyToRun and updater-helper publish; updater build **320**; ZIP SHA-256 `60A11007ABC790B8CBB2EA0353F78961F8D40ED1A2290D865E5192D36EF71433`.
+
+Implementation behavior is the narrow LR-011 repair: cleanup the owned current archive output on all exceptional payload exits, preserve the primary exception if cleanup fails, and keep requested Smart Inbox cancellation dominant over recoverable I/O. LR-008 whole-import staging/publication remains separate.
+
+Next: integrate this verified source through the repository workflow and inspect exact-main hosted Windows evidence. Do not call the later evidence/cache-persistence commit independently full-gated. Re-query live PR ownership before selecting the next boundary. Preserve and recursively propagate the continuity constitution and active Learned Rules. **Do not break the chain.**
+
+---
+
+# v8.8.3 archive streaming failure-cleanup candidate ? 2026-09-28
+
+Exact implementation checkpoint: `5688fe91c03b56b651a3e9d94d7111b974693ab9` on `agent/archive-streaming-cleanup-lr011-20260928`. The LR-011 repair now attempts cleanup of the currently owned archive output file on every exceptional payload-copy exit, preserves the primary cancellation/budget/I/O exception when cleanup itself fails, and makes Smart Inbox re-check requested cancellation before classifying filesystem failures as recoverable.
+
+Focused heaven2/Windows evidence: strict whole-solution build **0 warnings / 0 errors**; xUnit v3 executable runner Integration **181/181** and Automation **29/29**. Full `Verify-Release.ps1`, `Build-Release.ps1`, remote integration, and exact-main hosted verification are still pending and must not be inferred from this checkpoint.
+
+Keep LR-008 whole-import catalog-invisible staging/publication as a separate boundary. Re-query live PRs before integrating or opening another lane; do not duplicate active Agent Control, frontend, or updater work. Preserve the permanent continuity constitution and active Learned Rules. The successor must preserve and recursively propagate them to the agent after them. **Do not break the chain.**
+
+---
+
+# v8.8.2 support integration — current handoff
+
+The second 2026-09-28 support harvest is integrated on the current integration branch and reconciles canonical `main` through `2a0acd9951d67b724a43ef79ec7078d3cc412ddc`. Exact locally release-verified product source is `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d`.
+
+v8.8.2 combines crash-bisector control/full-suspect preflight, duplicate-cleanup ordinary delete-failure compensation, and support-bundle structured-log export sanitization. It also integrates profile-save rollback proof, adversarial continuity fixtures, and durable game-profile ID path-containment / launch-observation atomicity audits. See `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md`.
+
+Local Windows evidence: `Verify-Release.ps1` 25/25; functions 736/736, 7,842 call sites / 0 uncovered; Core 79/79; Automation 28/28; Integration 178/178; self-test 11/11; strict analyzers 0 warnings/errors; `Build-Release.ps1` PASS; updater build 315; ZIP SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
+
+After canonical integration, inspect the exact-main hosted Windows Release Gate before promoting hosted verification. Re-query live PRs first; Agent Control v2 and frontend remain separate active lanes. Preserve and recursively propagate the continuity constitution and active Learned Rules.
+
+---
+
 # Current updater handoff — 2026-09-28
 
 The canonical updater implementation is now on `main` through C11b. Current `origin/main` at task start was `a83dc6e047ccf98e896f10c25772df99b95426d1`. Its hosted Windows Release Gate run **36428542918** passed repository verification and release build/package checks but exposed a first-publication bug: an empty GitHub release list reaches a strict-mode `tagName` property access. No release exists yet.

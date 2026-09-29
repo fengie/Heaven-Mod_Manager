@@ -56,6 +56,22 @@ foreach($invalidJson in @('{}','null','not-json','[null]','[{"isDraft":false,"is
   Assert-Equal $true $rejected "invalid release-list rejection: $invalidJson"
 }
 
+$tagRefJson='{"ref":"refs/tags/updater-main-42","object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}'
+Assert-Equal $current (Get-UpdaterTagCommitFromRefJson -Json $tagRefJson -ExpectedTag 'updater-main-42') 'published tag REST commit identity'
+
+foreach($invalidTagRef in @(
+  '',
+  'null',
+  'not-json',
+  '{"ref":"refs/tags/updater-main-41","object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}',
+  '{"ref":"refs/tags/updater-main-42"}',
+  '{"ref":"refs/tags/updater-main-42","object":{"type":"tag","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}',
+  '{"ref":"refs/tags/updater-main-42","object":{"type":"commit","sha":"abc"}}'
+)){
+  $rejected=$false
+  try{[void](Get-UpdaterTagCommitFromRefJson -Json $invalidTagRef -ExpectedTag 'updater-main-42')}catch{$rejected=$true}
+  Assert-Equal $true $rejected "invalid published tag REST ref rejection: $invalidTagRef"
+}
 
 function Invoke-PublicationSequenceFixture {
   param(
@@ -173,5 +189,15 @@ catch {
 }
 Assert-Equal 1 $script:UpdaterRefreshCleanupCount 'ambiguous final main refresh cleanup'
 Assert-Equal $true ($multiRefreshError -like 'Final updater publication main refresh returned *') 'ambiguous final main refresh rejection'
+
+# Regression for the retry-path propagation race: both the immediate
+# post-publication verification and an already-immutable release retry must use
+# the authoritative Git REST ref. The one remaining local current-build tag
+# check is deliberately the pre-publication orphan-tag refusal.
+$publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
+$restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
+Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
+$localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
+Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green

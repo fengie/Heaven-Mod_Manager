@@ -12,6 +12,19 @@ public sealed class CrashBisectorEngine
         if (suspects.Count == 0) return new(false, [], 0, "No changed mods are available to bisect.");
         var remaining = suspects.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToList();
         var probes = 0;
+
+        ct.ThrowIfCancellationRequested();
+        var control = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        probes++;
+        if (await reproducesCrash(control, ct))
+            return new(false, remaining, probes, "The current control state reproduces the failure, so the diagnosis baseline is invalid and no culprit can be isolated.");
+
+        ct.ThrowIfCancellationRequested();
+        var full = remaining.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        probes++;
+        if (!await reproducesCrash(full, ct))
+            return new(false, remaining, probes, "The failure does not reproduce with the full current suspect set, so no culprit can be isolated.");
+
         while (remaining.Count > 1)
         {
             ct.ThrowIfCancellationRequested();
@@ -24,6 +37,6 @@ public sealed class CrashBisectorEngine
             if (right.Count > 0 && await reproducesCrash(right, ct)) { remaining = right.ToList(); continue; }
             return new(false, remaining, probes, "The failure does not reproduce with either half independently; this suggests an interaction between mods rather than one isolated culprit.");
         }
-        return new(true, remaining, probes, "Isolated the smallest reproducible suspect set.");
+        return new(true, remaining, probes, "Isolated the smallest reproducible suspect set after validating the control and full-suspect probes.");
     }
 }
