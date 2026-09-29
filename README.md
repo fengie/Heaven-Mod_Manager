@@ -1,4 +1,10 @@
-# v8.8.15 Universal Mod Manager
+# v8.8.16 Universal Mod Manager
+
+## v8.8.16 — reliable first-launch mod discovery
+
+The manager now preserves its canonical data root across automatic-update restarts instead of relying on the updater process environment to happen to retain it. The first launch after updating therefore reads the same populated `Mods` and `State` directories as a normal shortcut launch, so reopening the application should no longer be required just to make installed mods appear.
+
+Release-layout launches also recover the manager home from the project root when no explicit manager-home variable is present, and the resolved path is exported for subsequent child processes. Regression coverage pins both the release-layout fallback and updater handoff behavior.
 
 ## v8.8.15 — true visual overhaul
 
