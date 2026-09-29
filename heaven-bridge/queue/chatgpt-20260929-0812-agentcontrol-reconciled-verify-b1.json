@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0812-agentcontrol-reconciled-verify-b1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:12:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $head=(git rev-parse HEAD).Trim(); Write-Output ('HEAD=' + $head); if($head -ne 'b9685d2f2e32af99596dc90d46278a129106d8e2'){ throw ('Unexpected reconciliation HEAD: '+$head) }; $dirty=(git status --porcelain); if($dirty){ Write-Output $dirty; throw 'Reconciled worktree is dirty before verification' }; Set-Location 'tools\\agent-control'; node --version; npm --version; npm run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; npm test; exit $LASTEXITCODE"
+  },
+  "priority": "highest"
+}
