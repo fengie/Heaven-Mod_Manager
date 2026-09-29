@@ -1,4 +1,19 @@
-# v8.8.11 Universal Mod Manager
+# v8.8.14 Universal Mod Manager
+
+## v8.8.14 — startup performance and diagnostic I/O reduction
+
+Startup now keeps secondary Profiles, History, and Shared Files views off the first-use critical path and loads them when opened. Routine per-method debug trace start/pass records are opt-in while exception observation and error records remain active, and startup diagnostic JSON snapshots are batched instead of being rewritten for every stage marker. A same-run Heaven benchmark compares current main with the candidate using three cold-state and three warm-state iterations over an 80-mod / 2,000-file fixture before integration.
+
+## v8.8.13 — repeatable recipe family restore
+
+Restoring family relationships from the same portable recipe is now idempotent. After the first explicit restore creates the manager-owned local family, repeating that same restore recognizes the complete role-consistent imported family and returns a no-op instead of incorrectly reporting a conflicting local family. Mixed, manual, partial, or role-mismatched local families still fail closed for review.
+
+
+## v8.8.12 — import publication isolation
+
+Manual archives, Smart Inbox packages, and FOMOD installers now build in a manager-owned workspace outside the catalog-visible `Mods` directory. Failed, canceled, or interrupted staging can no longer become a normal mod merely because a partial folder exists; a package becomes discoverable only after validation/normalization completes and one final same-volume directory move publishes it.
+
+The same boundary now covers FOMOD preparation and selected-file installation. Best-effort cleanup remains subordinate to the original failure, and regression tests force partial archive failures before catalog refresh to prove incomplete work stays invisible.
 
 ## v8.8.11 — first-time user UX overhaul
 
