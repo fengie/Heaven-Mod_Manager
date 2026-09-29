@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0902-issue118-applytest",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:02:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input",
+    "timeout_seconds": 900,
+    "command": "python _patch_issue118.py && del _patch_issue118.py && python -m py_compile heaven-bridge\\worker.py && python heaven-bridge\\test_worker.py && python -m unittest discover -s heaven-bridge\\tests -p \"test*.py\" && git diff --check && git status --short"
+  }
+}
