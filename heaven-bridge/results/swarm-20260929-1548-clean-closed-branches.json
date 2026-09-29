@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-1548-clean-closed-branches",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:48:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:48:07.052759+00:00",
+  "finished_at": "2026-09-29T15:48:13.349955+00:00",
+  "stdout": "ABSENT agent/heaven-bridge-recover-20260929\r\nABSENT agent/fomod-staging-cleanup-20260929\r\nABSENT fix-mod-retirement-lifecycle-20260929\r\nABSENT release-8.8.11-verification-fix\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)                -> origin/agent/bughunt-inbox-source-move-rollback-20260929\n * [new branch]        fix/smartpack-ca1861-20260929 -> origin/fix/smartpack-ca1861-20260929\n * [new branch]        fix/support-bundle-version-identity-20260929 -> origin/fix/support-bundle-version-identity-20260929\n   a1a4a336..bb6bac58  heaven-bridge         -> origin/heaven-bridge\n   1d40d42b..b533bbfd  perf-startup-20260929 -> origin/perf-startup-20260929\n   6d5098d3..442eb354  release-8.8.12-verification-fix -> origin/release-8.8.12-verification-fix\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1548-clean-closed-branches.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1548-clean-closed-branches.stderr.log",
+    "stdout_bytes": 176,
+    "stderr_bytes": 604,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "61e8be5b4561e8f8e3b07118bd739b06cd4e68285687ac10efa84168396d394e"
+}
