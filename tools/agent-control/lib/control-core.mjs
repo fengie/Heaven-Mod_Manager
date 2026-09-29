@@ -143,7 +143,7 @@ export const DEFAULT_MACHINE_POLICIES = Object.freeze({
 });
 
 export const WORKFLOW_PRESETS = Object.freeze([
-  { id: "usual-swarm", label: "Usual Swarm", description: "Fill only missing useful roles toward 1 Manager + 1 Primary Programmer + 8 distinct support lanes." },
+  { id: "usual-swarm", label: "Usual Swarm", description: "Fill only missing useful roles toward 1 Manager + 1 Primary Programmer + 4 distinct support lanes." },
   { id: "support-current", label: "Support Current Programmer", description: "Create distinct support lanes around the active programmer without duplicating owned work." },
   { id: "integration", label: "Integrate Finished Work", description: "Inspect completed candidates and prepare evidence-backed selective integration." },
   { id: "review", label: "Review Current Work", description: "Independently review the newest implementation candidate." },
@@ -767,7 +767,7 @@ export function planWorkflow(workflowId, {
     } else {
       if (!roleIsOccupied(state, "manager", now)) steps.push(step({ role: "manager", task: `Coordinate this mission: ${objective}`, boundary: "swarm-coordination", priority: 90, machine, mode: "coordination" }));
       if (!roleIsOccupied(state, "main", now)) steps.push(step({ role: "main", task: objective, boundary: `implementation:${slug(objective)}`, priority: 85, machine }));
-      for (const lane of supportLanesFor(objective)) {
+      for (const lane of supportLanesFor(objective).slice(0, 4)) {
         if (!lanes.has(lane.id)) steps.push(step({ role: "support", task: `${lane.title}. ${lane.focus} Primary mission: ${objective}`, lane: lane.id, boundary: `support:${lane.id}:${slug(objective)}`, priority: 65, machine, mode: "support" }));
       }
     }
