@@ -1,3 +1,9 @@
+# v8.8.7 — Cross-session updater ownership
+
+- Move the installation-scoped updater semaphore from the Windows `Local\\` namespace to `Global\\`, preventing separate interactive sessions from concurrently mutating the same writable installation.
+- Preserve fail-closed ownership establishment and the existing updater journal/rollback state machine; a crashed owner releases kernel ownership rather than leaving a permanent updater lock.
+- Add Windows regressions for separate-process contention, crashed-owner recovery, independent installations, and named-object type collisions, and exercise them through the installed-client integration gate.
+
 # v8.8.6 - Profile containment and responsive UI integration
 
 - Reject noncanonical persisted/upserted game-profile IDs before registry trust and enforce lexical containment of generic-game workspace/state roots.

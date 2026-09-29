@@ -95,9 +95,9 @@ jobs:
           $build = Get-ChildItem -Path BuildLogs -Filter 'build-release-report-*.txt' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           if (-not $verify -or -not $build) { throw 'Expected verification/build reports were not produced.' }
 
-          $evidencePath = '_AGENT_CONTEXT/EVIDENCE/v8.8.6-hosted-windows-closure.log'
+          $evidencePath = '_AGENT_CONTEXT/EVIDENCE/v8.8.7-hosted-windows-closure.log'
           @(
-            'MHW Manual Mod Manager v8.8.6 hosted Windows closure'
+            'MHW Manual Mod Manager v8.8.7 hosted Windows closure'
             ('source_sha=' + $env:GITHUB_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
             ('runner_os=' + $env:RUNNER_OS)

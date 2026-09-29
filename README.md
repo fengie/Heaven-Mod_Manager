@@ -1,4 +1,8 @@
-# v8.8.6 Universal Mod Manager
+# v8.8.7 Universal Mod Manager
+
+## v8.8.7 — cross-session updater ownership
+
+Updater apply ownership is now keyed to the normalized installation path in the Windows global kernel-object namespace, so separate interactive sessions targeting the same writable installation cannot independently enter the update transaction. Lock-establishment/type-collision failures remain fail-closed before updater mutation, while a crashed owner releases the kernel object so the existing journal/recovery path can resume safely. Focused Windows regressions cover separate-process contention, crashed-owner recovery, unrelated installations, and namespace/type-collision failure.
 
 ## v8.8.6 - unified main integration
 

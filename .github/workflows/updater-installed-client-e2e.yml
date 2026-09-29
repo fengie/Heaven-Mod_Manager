@@ -163,9 +163,9 @@ jobs:
           $rollbackLogHash = if (Test-Path -LiteralPath $rollbackLogPath) { (Get-FileHash -LiteralPath $rollbackLogPath -Algorithm SHA256).Hash } else { 'missing' }
           $runtimeOwnershipLogHash = if (Test-Path -LiteralPath $runtimeOwnershipLogPath) { (Get-FileHash -LiteralPath $runtimeOwnershipLogPath -Algorithm SHA256).Hash } else { 'missing' }
 
-          $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.6.log'
+          $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.7.log'
           @(
-            'MHW Manual Mod Manager v8.8.6 installed-client updater E2E closure'
+            'MHW Manual Mod Manager v8.8.7 installed-client updater E2E closure'
             ('source_sha=' + $env:GITHUB_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
             ('runner_os=' + $env:RUNNER_OS)
