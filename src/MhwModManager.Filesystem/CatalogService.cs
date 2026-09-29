@@ -8,12 +8,16 @@ namespace MhwModManager.Filesystem;
 
 public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot)
 {
+    public const string ImportStagingDirectoryName = ".umm-import-staging";
+
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
         var current=(await db.GetModsAsync(ct)).ToDictionary(x=>x.SourcePath,StringComparer.OrdinalIgnoreCase);
-        var directories = await Task.Run(() => Directory.EnumerateDirectories(modsRoot).Order(StringComparer.OrdinalIgnoreCase).ToArray(), ct);
+        var directories = await Task.Run(() => Directory.EnumerateDirectories(modsRoot)
+            .Where(dir => !Path.GetFileName(dir).Equals(ImportStagingDirectoryName, StringComparison.OrdinalIgnoreCase))
+            .Order(StringComparer.OrdinalIgnoreCase).ToArray(), ct);
         var priority=100000;
         foreach(var dir in directories)
         {
