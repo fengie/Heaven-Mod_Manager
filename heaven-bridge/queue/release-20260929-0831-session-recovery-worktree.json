@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0831-session-recovery-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-bridge-session-recovery-wt'; if(Test-Path $wt){ throw \"Worktree path already exists; refusing to overwrite: $wt\" }; $head=(git rev-parse HEAD).Trim(); git worktree add --detach $wt $head; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output ('BASE_HEAD='+$head); git -C $wt status --short; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T08:31:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
