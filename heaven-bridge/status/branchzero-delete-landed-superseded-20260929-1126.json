@@ -1,9 +1,10 @@
 {
   "id": "branchzero-delete-landed-superseded-20260929-1126",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:27:28.786199+00:00"
+  "updated_at": "2026-09-29T11:28:10.753469+00:00",
+  "exit_code": 1
 }
