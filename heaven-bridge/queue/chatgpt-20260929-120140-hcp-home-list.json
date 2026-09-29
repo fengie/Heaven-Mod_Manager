@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-120140-hcp-home-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_list",
+  "params": {
+    "path": "C:\\Users\\Xxkan"
+  },
+  "created_at": "2026-09-29T12:01:40Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
