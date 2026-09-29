@@ -92,6 +92,7 @@ public static class AutoModRecipeParser
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var options = new JsonSerializerOptions
         {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = false,
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
         };
