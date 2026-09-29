@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.1 does
+## What v0.5.0 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -23,7 +23,7 @@ This is the execution layer that sits above the repository's existing agent doct
   - integration candidates
   - observed `agent/*`, `support/*`, `feature/*`, `ui/*`, and `integration/*` branches
 - Tracks PID, machine, role, task, priority, branch, base branch, lease, timestamps, JSONL output, and final Codex output.
-- Enforces local worker capacity from fresh managed liveness only; stale, disconnected, done, and failed records do not consume live slots.
+- Enforces a local active-worker capacity.
 - Lets you stop a managed worker.
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
@@ -32,6 +32,8 @@ This is the execution layer that sits above the repository's existing agent doct
 - Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
 - Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
+- Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
+- Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
 
 ## Federated registry and heartbeat semantics
 
@@ -41,9 +43,9 @@ Normalized states are `working`, `tool_wait`, `blocked`, `idle`, `done`, `failed
 
 Identity reconciliation uses stable provider/source identities plus explicit correlation keys. Similar chat titles are display metadata only and never cause sessions to be merged. The same logical worker can be correlated across ChatGPT and GitHub when a shared strong correlation key is supplied.
 
-External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes. Exact task IDs are rejected when already owned by a live local or federated agent, while local execution capacity is calculated only from fresh controller-owned workers.
+External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes, while local execution capacity is still calculated from controller-owned processes only.
 
-Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration. Scheduler `auto` placement on `heaven2` prefers `heaven` for heavy work and fails closed when the authenticated Heaven Local Bridge is unavailable rather than silently falling back to `heaven2`.
+Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration.
 
 ## Start
 
@@ -74,6 +76,8 @@ node .\agentctl.mjs snapshot
 node .\agentctl.mjs workers
 node .\agentctl.mjs federation
 node .\agentctl.mjs providers
+node .\agentctl.mjs events
+node .\agentctl.mjs control
 node .\agentctl.mjs federation-heartbeat --file C:\\Temp\\agent-heartbeat.json
 node .\agentctl.mjs leases
 node .\agentctl.mjs queue
@@ -84,6 +88,12 @@ node .\agentctl.mjs routing-set --file C:\Temp\routing.json
 node .\agentctl.mjs routing-clear
 node .\agentctl.mjs autonomy
 node .\agentctl.mjs autonomy-set coordinate
+node .\agentctl.mjs pause
+node .\agentctl.mjs resume
+node .\agentctl.mjs read-only on
+node .\agentctl.mjs drain
+node .\agentctl.mjs emergency-stop
+node .\agentctl.mjs stop-swarm
 node .\agentctl.mjs autopilot
 node .\agentctl.mjs autopilot-start --task "Build the current big direction" --max-repairs 3
 node .\agentctl.mjs autopilot-pause
