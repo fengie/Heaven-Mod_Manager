@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-1700-cancel-superseded-runs-a1",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven2",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:59:52.044085+00:00"
+}
