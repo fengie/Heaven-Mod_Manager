@@ -1,0 +1,21 @@
+{
+  "id": "000-branch-safe-sweep-20260929T105500Z-chatgpt",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:17:17.551546+00:00",
+  "finished_at": "2026-09-29T11:17:21.199284+00:00",
+  "stdout": "",
+  "stderr": "git.exe : Cloning into 'C:\\Users\\Xxkan\\branch-zero-reconcile'...\r\nAt line:8 char:3\r\n+   & git clone $origin $work 2>&1 | Out-Null\r\n+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (Cloning into 'C...o-reconcile'...:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-safe-sweep-20260929T105500Z-chatgpt.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-branch-safe-sweep-20260929T105500Z-chatgpt.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 328,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3f6dde772b640b96782e7aa8d6fd8cd0de6f39f02efa785a0eda7f3fc6b0ec41"
+}
