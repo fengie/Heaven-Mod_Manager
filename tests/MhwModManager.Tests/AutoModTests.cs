@@ -58,6 +58,16 @@ public sealed class AutoModTests
     """;
 
     [Fact]
+    public void Public_recipe_fixture_parses_with_production_options()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "synthetic-table.recipe.json");
+        var recipe = AutoModRecipeParser.Parse(File.ReadAllText(path));
+
+        Assert.Equal(AutoModConstants.RecipeSchemaV1, recipe.Schema);
+        Assert.Empty(AutoModRecipeValidator.Validate(recipe).Issues);
+    }
+
+    [Fact]
     public void Recipe_contract_parses_and_validates()
     {
         var recipe = AutoModRecipeParser.Parse(RecipeJson);
@@ -86,7 +96,7 @@ public sealed class AutoModTests
         Assert.Equal(2, plan.Operations.Count);
         Assert.Equal("42", plan.Operations[0].Target);
         Assert.True(plan.Operations[1].Value.HasValue);
-        Assert.Equal(180, plan.Operations[1].Value.Value.GetInt32());
+        Assert.Equal(180, plan.Operations[1].Value.GetValueOrDefault().GetInt32());
         Assert.Equal(@"nativePC\synthetic\table.json", plan.Outputs[0].Path);
     }
 
