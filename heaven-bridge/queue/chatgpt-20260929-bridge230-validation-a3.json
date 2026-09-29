@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-bridge230-validation-a3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "created_at": "2026-09-29T16:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "action": "powershell",
+  "cwd": "~",
+  "timeout_seconds": 1800,
+  "payload": "$ErrorActionPreference='Stop'\n$repo = Join-Path $env:USERPROFILE 'mhw-pr230-validation'\nif (Test-Path $repo) { Remove-Item -Recurse -Force $repo }\ngit clone --quiet https://github.com/fengie/mhw-mods.git $repo\nif ($LASTEXITCODE -ne 0) { throw \"clone failed $LASTEXITCODE\" }\ngit -C $repo checkout --quiet fix/heaven2-bridge-self-heal-20260929\nif ($LASTEXITCODE -ne 0) { throw \"checkout failed $LASTEXITCODE\" }\nPush-Location $repo\ntry {\n  & .\\heaven-bridge\\manage.ps1 TEST\n  if ($LASTEXITCODE -ne 0) { throw \"bridge manage TEST failed $LASTEXITCODE\" }\n  python plugins\\heaven-control-plane\\verify.py\n  if ($LASTEXITCODE -ne 0) { throw \"control-plane verify failed $LASTEXITCODE\" }\n  git diff --check\n  if ($LASTEXITCODE -ne 0) { throw \"git diff --check failed $LASTEXITCODE\" }\n  $head=(git rev-parse HEAD).Trim()\n  Write-Output \"PR230_COMBINED_VALIDATION_OK head=$head\"\n} finally { Pop-Location }"
+}
