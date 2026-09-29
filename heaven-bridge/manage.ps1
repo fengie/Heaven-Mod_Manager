@@ -16,7 +16,9 @@ $SecretEnvelopeIoTests = Join-Path $BridgeDir 'tests\Test-SecretEnvelopeIo.ps1'
 $SecretEnvelopeHelper = Join-Path $BridgeDir 'New-HeavenSecretEnvelope.ps1'
 $SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
-$Heartbeat = Join-Path $BridgeDir 'status\heartbeat.json'
+$HostId = if ($env:HEAVEN_BRIDGE_HOST) { $env:HEAVEN_BRIDGE_HOST.Trim().ToLowerInvariant() } elseif ($env:COMPUTERNAME) { $env:COMPUTERNAME.Trim().ToLowerInvariant() } else { 'heaven' }
+$ScopedHeartbeat = Join-Path $BridgeDir ("status\hosts\{0}\heartbeat.json" -f $HostId)
+$LegacyHeartbeat = Join-Path $BridgeDir 'status\heartbeat.json'
 
 function Get-CanonicalWorkers {
     @(
@@ -59,16 +61,21 @@ function Get-TaskRunLevel {
 }
 
 function Get-HeartbeatState {
-    if (-not (Test-Path $Heartbeat)) {
-        return [ordered]@{ exists = $false; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null }
+    $heartbeatPath = $ScopedHeartbeat
+    if (-not (Test-Path $heartbeatPath) -and $HostId -eq 'heaven' -and (Test-Path $LegacyHeartbeat)) {
+        $heartbeatPath = $LegacyHeartbeat
+    }
+    if (-not (Test-Path $heartbeatPath)) {
+        return [ordered]@{ exists = $false; host = $HostId; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null }
     }
 
     try {
-        $row = Get-Content -Raw -Path $Heartbeat | ConvertFrom-Json
+        $row = Get-Content -Raw -Path $heartbeatPath | ConvertFrom-Json
         $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
         $age = [Math]::Max(0, [int]([DateTimeOffset]::UtcNow - $updated).TotalSeconds)
         return [ordered]@{
             exists = $true
+            host = [string]$row.host
             updated_at = [string]$row.updated_at
             worker_version = $row.worker_version
             protocol = [string]$row.protocol
@@ -76,7 +83,7 @@ function Get-HeartbeatState {
             age_seconds = $age
         }
     } catch {
-        return [ordered]@{ exists = $true; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null; parse_error = $_.Exception.Message }
+        return [ordered]@{ exists = $true; host = $HostId; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null; parse_error = $_.Exception.Message }
     }
 }
 
@@ -112,6 +119,7 @@ function Show-Status {
         $sourceHash -eq $runtimeHash -and
         $canonicalRunLevel -eq 'Highest' -and
         $heartbeat.exists -and
+        $heartbeat.host -eq $HostId -and
         $heartbeat.protocol -eq 'chatgpt-heaven-bridge-v2' -and
         $heartbeat.elevated -eq $true -and
         $heartbeat.age_seconds -ne $null -and
@@ -120,6 +128,7 @@ function Show-Status {
 
     $report = [ordered]@{
         healthy = [bool]$healthy
+        host = $HostId
         repo = $RepoRoot
         branch = $branch
         tracked_or_untracked_changes = $gitStatus
