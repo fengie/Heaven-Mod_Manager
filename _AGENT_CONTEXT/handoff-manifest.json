@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.17",
+  "currentVersion": "8.8.20",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.16 larger mod library workspace",
+  "immediateParentRevision": "v8.8.19 Auto Modder foundation",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.17 repairs first-launch mod discovery after updater relaunch by preserving and recovering canonical manager-home identity. Treat all verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.20 adds accessibility-aware, transform/opacity-only UI transitions for top-level navigation, blocking operations, and shared interaction feedback, preserving the v8.8.19 Auto Modder foundation. The first exact gate also exposed and repaired a stale structural Mods-page test; LR-024 and the generic trainer capture that prevention rule. Treat verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
