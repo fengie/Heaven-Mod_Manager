@@ -47,7 +47,7 @@ jobs:
             '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj'
           )
           foreach ($project in $projects) {
-            & dotnet test $project -c Release --no-build --no-restore -m:1 -nr:false
+            & dotnet test $project -c Release --no-build --no-restore
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
       - name: Diff check
