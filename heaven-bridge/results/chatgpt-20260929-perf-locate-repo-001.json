@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-perf-locate-repo-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:16:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:19:15.920303+00:00",
+  "finished_at": "2026-09-29T16:19:19.182960+00:00",
+  "stdout": "C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods\r\nC:\\Users\\Xxkan\\actions-runner-heaven-v2\\_work\\mhw-mods\\mhw-mods\r\nC:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-perf-locate-repo-001.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-perf-locate-repo-001.stderr.log",
+    "stdout_bytes": 172,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "48a895adb47ef1e0b4c45e86596c1bbdc389619626aa4143d7dd3daa36ce84f5"
+}
