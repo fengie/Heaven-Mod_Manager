@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-main-smoke-3a8d3879404f-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:29:20Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:30:03.883879+00:00",
+  "finished_at": "2026-09-29T09:30:10.137198+00:00",
+  "stdout": "HEAD is now at 3a8d387 Integrate Agent Control v0.5.0 and Heaven Local Bridge execution\nSMOKE_SERVER=PASS\r\nSMOKE_CLI=PASS\r\nSMOKE_DASHBOARD=PASS\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   38ff18b..736517d  main          -> origin/main\n   5ec4cbf..d2d876d  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (detached HEAD 3a8d387)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-main-smoke-3a8d3879404f-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-main-smoke-3a8d3879404f-a1.stderr.log",
+    "stdout_bytes": 145,
+    "stderr_bytes": 192,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2a1efa836ada58fc0145ebd04d145da0ec2acc38b729a4719a26ebd068abd264"
+}
