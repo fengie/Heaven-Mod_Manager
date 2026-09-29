@@ -4,3 +4,6 @@ Re-establish canonical truth and compare the candidate to the correct base. Do n
 Check scope, invariants, callers/contracts, failure paths, cancellation/concurrency, destructive behavior, compatibility, tests, verification evidence, documentation sync, and unrelated changes.
 Classify findings by evidence and impact. Do not rubber-stamp because tests are green, and do not demand unrelated refactoring.
 Conclude with blocking issues, non-blocking issues, verification gaps, and whether the stated acceptance criteria are demonstrated. Record any reusable engineering lesson.
+
+## Generic learning gate
+Before reporting completion, run the reusable-lesson promotion gate. Any meaningful escaped defect, false completion, process/agent failure, release failure, user correction, or durable workflow discovery must be checked against project precedent and the generic trainer. Promote missing reusable doctrine and strengthen regression/mechanical enforcement in the same engineering cycle; recurrence under an existing rule means the prevention control needs strengthening.

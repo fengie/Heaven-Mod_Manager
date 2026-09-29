@@ -55,3 +55,14 @@ A task is not complete until:
 - intended commits are pushed according to repository policy;
 - the next agent can resume safely;
 - reusable lessons have been considered for promotion into company doctrine.
+
+## Defect-class closure
+When a bug, warning, failed integration, false completion claim, or process escape is found:
+- identify why existing prevention did not catch it earlier;
+- inspect sibling instances of the same defect pattern;
+- add regression coverage that would have failed before the fix;
+- strengthen analyzers/verifiers/gates when mechanically enforceable;
+- update project precedent and promote reusable learning into the generic trainer;
+- treat recurrence after an earlier rule as a prevention-control failure requiring stronger enforcement.
+
+Do not mark complete with only a local symptom patch while the failure class remains open.

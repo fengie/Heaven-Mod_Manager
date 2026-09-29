@@ -5,3 +5,6 @@ First fetch remotes and reconstruct canonical main, local status, active branche
 Identify the exact unfinished boundary and acceptance criteria. Decide whether partial work should be completed, safely reverted, or left for an unavailable authoritative environment.
 Make only the changes needed for closure/recovery. Repair documentation as soon as truth is known. Persist recoverable checkpoints, then verify remote state.
 Final report must distinguish completed work, verification actually run, remaining environment-dependent checks, and any reusable recovery lesson added to the trainer.
+
+## Generic learning gate
+Before reporting completion, run the reusable-lesson promotion gate. Any meaningful escaped defect, false completion, process/agent failure, release failure, user correction, or durable workflow discovery must be checked against project precedent and the generic trainer. Promote missing reusable doctrine and strengthen regression/mechanical enforcement in the same engineering cycle; recurrence under an existing rule means the prevention control needs strengthening.

@@ -49,3 +49,9 @@ Perform lightweight health checks appropriate to the product and preserve a way 
 
 ## Reusable lesson rule
 When CI/release fails for a new systemic reason, fix the immediate issue and decide whether the doctrine, gate, or regression suite should change so the class of failure is caught earlier.
+
+## Canonical installed/runtime identity
+A development build, validation process, staging deployment, old shortcut target, or version-stamped folder name is not proof of what users actually run. Launch through the canonical user path/updater-managed launcher, assert executable/process/artifact identity and version/build metadata, distinguish validation from installed instances, and clean up temporary validation clients when their purpose ends.
+
+## Delivery completion policy
+When project policy defines publication/deployment as part of version completion, “implemented” or “merged” is not “released.” Completion requires release gates, publication, canonical distribution identity, and post-publication health/identity verification unless an explicit hold exists.

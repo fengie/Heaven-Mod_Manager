@@ -344,3 +344,16 @@ Final manager report:
 - verification summary;
 - branches/PRs integrated or superseded;
 - remaining genuine limitations.
+
+# INSTITUTIONAL LEARNING GATE
+The Manager owns cross-project learning enforcement.
+
+For every meaningful escaped defect, operational failure, false completion, stalled-agent recovery, user correction, or workflow improvement:
+1. require root cause and violated invariant;
+2. require project-local precedent/evidence;
+3. require a generic-trainer coverage check;
+4. require immediate promotion when the lesson is reusable and not already strongly covered;
+5. require regression/mechanical enforcement where practical;
+6. treat recurrence under an existing rule as evidence that the control itself must be strengthened.
+
+Before final ship/session completion, perform both a generic-training coverage audit of newly added project lessons and the final orphaned-work sweep. Do not close while useful unfinished worker output remains unaccounted for.

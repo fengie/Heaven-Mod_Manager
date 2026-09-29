@@ -52,6 +52,7 @@ Documentation is part of the engineering pipeline. Update meaningful truth at th
 - SAFETY_AND_DESTRUCTIVE_OPERATIONS.md — fail-closed rules for destructive/stateful work.
 - CI_RELEASE_ENGINEERING.md — build, CI, artifact, update, and rollback doctrine.
 - KNOWLEDGE_MAINTENANCE.md — how this living body of knowledge evolves.
+- PROJECT_LESSON_CATALOG.md — portable rules promoted from real project incidents and workflow discoveries.
 - PROMPTING_GUIDE.md — how to write high-quality programming-agent prompts.
 - PROVENANCE.md — lightweight mapping from generic doctrine to the MHW evidence that motivated it.
 - PROMPT_TEMPLATES/ — reusable role prompts.
@@ -63,3 +64,8 @@ This is not an architecture document, bug tracker, project handoff, current bran
 The long-term rule is simple:
 
 > Every project should make the next project better.
+
+## Mandatory continuous-learning contract
+Whenever work exposes a bug, regression, false completion, process/agent failure, release failure, coordination failure, user correction, or durable workflow improvement, generic promotion is a required completion gate.
+
+A qualifying lesson is closed only when project evidence is durable, root cause/invariant are stated, generic trainer coverage was checked, missing/weak doctrine was updated, and enforcement was strengthened where practical. Repeated escape of an already-documented class means the prevention mechanism itself failed and must be strengthened.

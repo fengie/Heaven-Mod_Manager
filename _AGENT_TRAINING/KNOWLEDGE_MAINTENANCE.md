@@ -55,3 +55,17 @@ Update only what changed.
 
 ## Commit discipline
 When practical, commit doctrine changes caused by a code change with that code and regression test. Large independent trainer improvements may be separate focused commits. Push meaningful knowledge checkpoints so institutional learning is not trapped locally.
+
+## Mandatory continuous promotion loop
+Do not wait until project end. On every meaningful incident or durable improvement:
+1. record project-local evidence and root cause;
+2. name the violated invariant/missing control;
+3. check generic trainer coverage;
+4. update absent/weak generic doctrine immediately;
+5. update provenance when the evidence materially motivates the rule;
+6. strengthen mechanical enforcement where practical;
+7. only then close the learning portion of the incident.
+
+Every escaped bug, regression, false completion, or repeated operational failure is evidence that prevention was missing or insufficient. The repair should normally include root-cause correction, regression/deterministic reproduction, sibling defect-class scan, project precedent, generic promotion review, and stronger automated enforcement when practical.
+
+At milestones and major handoffs, audit the project learned-rule ledger against the generic trainer. Every active reusable rule must be represented in generic doctrine, explicitly project-specific with a reason, or pending promotion with an owner.
