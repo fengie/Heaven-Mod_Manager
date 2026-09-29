@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104024-persistent-dev-http-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:24.778Z",
+  "ttl_seconds": 1200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$r=Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/ -TimeoutSec 10; Write-Output ('HTTP_STATUS=' + [int]$r.StatusCode); Write-Output ('CONTENT_BYTES=' + $r.RawContentLength)",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "priority": "highest"
+}
