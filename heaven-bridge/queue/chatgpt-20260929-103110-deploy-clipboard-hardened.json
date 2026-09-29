@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-103110-deploy-clipboard-hardened",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:31:10Z",
+  "ttl_seconds": 3600,
+  "action": "proc_start",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "command": "& '.\\heaven-bridge\\bootstrap.ps1'",
+    "idle_timeout_seconds": 900,
+    "max_runtime_seconds": 1800
+  },
+  "priority": "highest"
+}
