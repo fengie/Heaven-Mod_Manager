@@ -1,0 +1,9 @@
+{
+  "id": "manager-20260929-1044-bridge-v05-health",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:44:00Z",
+  "ttl_seconds": 21600,
+  "action": "health",
+  "params": {},
+  "priority": "highest"
+}
