@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-101200-fabric-limits-final",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 90,
+    "command": "$ErrorActionPreference='Stop'\n$baseRaw = (& wsl.exe -d Ubuntu -- docker inspect heaven-worker-01 | Out-String)\n$burstRaw = (& wsl.exe -d Ubuntu -- docker inspect heaven-worker-05 | Out-String)\n$base = ($baseRaw | ConvertFrom-Json)[0]\n$burst = ($burstRaw | ConvertFrom-Json)[0]\n[pscustomobject]@{\n  base=[pscustomobject]@{\n    name=$base.Name\n    state=$base.State.Status\n    health=$base.State.Health.Status\n    nano_cpus=$base.HostConfig.NanoCpus\n    memory_bytes=$base.HostConfig.Memory\n    pids=$base.HostConfig.PidsLimit\n    ports=$base.NetworkSettings.Ports\n  }\n  burst=[pscustomobject]@{\n    name=$burst.Name\n    state=$burst.State.Status\n    nano_cpus=$burst.HostConfig.NanoCpus\n    memory_bytes=$burst.HostConfig.Memory\n    pids=$burst.HostConfig.PidsLimit\n  }\n  base_running=((& wsl.exe -d Ubuntu -- docker ps --filter label=heaven.tier=base --format '{{.Names}}' | Measure-Object -Line).Lines)\n  burst_running=((& wsl.exe -d Ubuntu -- docker ps --filter label=heaven.tier=burst --format '{{.Names}}' | Measure-Object -Line).Lines)\n} | ConvertTo-Json -Depth 6 -Compress\nexit 0"
+  },
+  "created_at": "2026-09-29T10:12:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
