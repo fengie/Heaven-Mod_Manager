@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
@@ -154,6 +155,141 @@ public sealed class WorkflowTests : IDisposable
         Assert.Throws<InvalidDataException>(() => new FomodInstallerService(package).Plan(new HashSet<string>(), GameProfile.MonsterHunterWorld(root)));
     }
     [Fact]
+    public async Task SmartInboxFailedArchiveIsNeverCatalogedWhenLaterItemSucceeds()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "inbox-isolation-mods");
+        var inbox = Path.Combine(root, "inbox-isolation-inbox");
+        var state = Path.Combine(root, "inbox-isolation-state");
+        Directory.CreateDirectory(mods);
+        Directory.CreateDirectory(inbox);
+
+        var failedArchive = Path.Combine(inbox, "A-first.zip");
+        await WriteZipAsync(failedArchive, new Dictionary<string, string> { ["nativePC/first.bin"] = "FIRST" });
+        var later = Path.Combine(inbox, "B-later");
+        Directory.CreateDirectory(Path.Combine(later, "nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(later, "nativePC", "later.tex"), "LATER", Token);
+
+        var failOnce = true;
+        var inspector = new ArchiveInspector((point, _) =>
+        {
+            if (point == ArchiveExtractionFaultPoint.BeforePayloadWrite && failOnce)
+            {
+                failOnce = false;
+                throw new IOException("injected partial archive failure");
+            }
+        });
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var categories = new AutoCategoryService(db);
+        var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), state);
+        var service = new SmartInboxService(db, inspector, catalog, nexus, categories, inbox, mods);
+
+        var result = await service.ProcessAsync(Token);
+
+        Assert.Equal(1, result.Imported);
+        Assert.Equal(1, result.Skipped);
+        Assert.False(Directory.Exists(Path.Combine(mods, "A-first")));
+        Assert.True(Directory.Exists(Path.Combine(mods, "B-later")));
+        var rows = await db.GetModsAsync(Token);
+        Assert.Equal(Path.GetFullPath(Path.Combine(mods, "B-later")), Path.GetFullPath(Assert.Single(rows).SourcePath));
+    }
+
+    [Fact]
+    public async Task ArchiveImportFailureCannotBecomeCatalogVisible()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "manual-import-isolation-mods");
+        var state = Path.Combine(root, "manual-import-isolation-state");
+        Directory.CreateDirectory(mods);
+        var archivePath = Path.Combine(root, "Manual Failure.zip");
+        await WriteZipAsync(archivePath, new Dictionary<string, string> { ["nativePC/fail.bin"] = "FAIL" });
+
+        var inspector = new ArchiveInspector((point, _) =>
+        {
+            if (point == ArchiveExtractionFaultPoint.BeforePayloadWrite)
+                throw new IOException("injected manual import failure");
+        });
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var service = new ArchiveImportService(inspector, catalog, mods);
+
+        await Assert.ThrowsAsync<IOException>(() => service.ImportAsync(archivePath, Token));
+        await catalog.RefreshFoldersAsync(Token);
+
+        Assert.Empty(Directory.EnumerateDirectories(mods));
+        Assert.Empty(await db.GetModsAsync(Token));
+    }
+
+    [Fact]
+    public async Task FomodPreparationStaysOutsideCatalogVisibleModsRoot()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "fomod-isolation-mods");
+        var state = Path.Combine(root, "fomod-isolation-state");
+        Directory.CreateDirectory(mods);
+        var archivePath = Path.Combine(root, "Fomod Choice.zip");
+        await WriteZipAsync(archivePath, new Dictionary<string, string>
+        {
+            ["a.tex"] = "A",
+            ["fomod/ModuleConfig.xml"] = "<config><moduleName>Choice</moduleName><requiredInstallFiles><file source=\"a.tex\" destination=\"a.tex\"/></requiredInstallFiles></config>"
+        });
+
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var service = new ArchiveImportService(new ArchiveInspector(), catalog, mods);
+
+        var preparation = await service.PrepareFomodAsync(archivePath, Token);
+        try
+        {
+            var modsPrefix = Path.GetFullPath(mods).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            Assert.False(Path.GetFullPath(preparation.StagingPath).StartsWith(modsPrefix, StringComparison.OrdinalIgnoreCase));
+            await catalog.RefreshFoldersAsync(Token);
+            Assert.Empty(await db.GetModsAsync(Token));
+        }
+        finally
+        {
+            await service.CancelFomodAsync(preparation);
+        }
+        Assert.False(Directory.Exists(preparation.StagingPath));
+    }
+
+    [Fact]
+    public async Task FomodCancelRefusesToDeleteOutsideImportWorkspace()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "fomod-cancel-containment-mods");
+        Directory.CreateDirectory(mods);
+        var outside = Path.Combine(root, "must-survive-fomod-cancel");
+        Directory.CreateDirectory(outside);
+        var sentinel = Path.Combine(outside, "sentinel.txt");
+        await File.WriteAllTextAsync(sentinel, "KEEP", Token);
+
+        var package = Path.Combine(root, "fomod-cancel-package");
+        Directory.CreateDirectory(Path.Combine(package, "fomod"));
+        await File.WriteAllTextAsync(Path.Combine(package, "payload.bin"), "payload", Token);
+        await File.WriteAllTextAsync(
+            Path.Combine(package, "fomod", "ModuleConfig.xml"),
+            "<config><moduleName>Test</moduleName><requiredInstallFiles><file source=\"payload.bin\" destination=\"payload.bin\"/></requiredInstallFiles></config>",
+            Token);
+
+        var importer = new ArchiveImportService(
+            new ArchiveInspector(),
+            new CatalogService(db, null!, mods),
+            mods);
+        var forged = new FomodImportPreparation(
+            outside,
+            Path.Combine(mods, "destination"),
+            "forged",
+            new FomodInstallerService(package));
+
+        await importer.CancelFomodAsync(forged);
+
+        Assert.True(Directory.Exists(outside));
+        Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+    }
+
+    [Fact]
     public async Task MigrationCommitAndUndoRestoreMetadataAndFilesTogether()
     {
         var db = await DatabaseAsync(); await SeedAsync(db, "old", true); await SeedAsync(db, "new");
@@ -260,6 +396,18 @@ public sealed class WorkflowTests : IDisposable
         Assert.False(GameAdapters.Resolve(unknown).SupportsMhwConflictSemantics);
         Assert.True(GameAdapters.Resolve(GameProfile.MonsterHunterWorld(root)).SupportsMhwConflictSemantics);
         Assert.Throws<InvalidOperationException>(() => GameAdapters.Register(new MonsterHunterWorldAdapter()));
+    }
+
+    private static async Task WriteZipAsync(string path, IReadOnlyDictionary<string, string> entries)
+    {
+        using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
+        foreach (var (name, contents) in entries)
+        {
+            var entry = archive.CreateEntry(name, CompressionLevel.NoCompression);
+            await using var stream = entry.Open();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(contents);
+        }
     }
 
 }

@@ -1,4 +1,10 @@
-# v8.8.11 Universal Mod Manager
+# v8.8.12 Universal Mod Manager
+
+## v8.8.12 — import publication isolation
+
+Manual archives, Smart Inbox packages, and FOMOD installers now build in a manager-owned workspace outside the catalog-visible `Mods` directory. Failed, canceled, or interrupted staging can no longer become a normal mod merely because a partial folder exists; a package becomes discoverable only after validation/normalization completes and one final same-volume directory move publishes it.
+
+The same boundary now covers FOMOD preparation and selected-file installation. Best-effort cleanup remains subordinate to the original failure, and regression tests force partial archive failures before catalog refresh to prove incomplete work stays invisible.
 
 ## v8.8.11 — first-time user UX overhaul
 
