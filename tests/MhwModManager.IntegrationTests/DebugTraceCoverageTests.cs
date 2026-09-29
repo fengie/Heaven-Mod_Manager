@@ -137,6 +137,20 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("firstChanceExceptions=", text, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void RoutineMethodTraceDetailIsOptInWhileErrorObservationRemainsActive()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Core", "MasterDebugLog.cs"));
+        Assert.Contains("MHW_METHOD_TRACE_DETAIL", text, StringComparison.Ordinal);
+        Assert.Contains("MethodTraceDetailEnabled", text, StringComparison.Ordinal);
+        Assert.Contains("if (verbose || errors != 0)", text, StringComparison.Ordinal);
+        Assert.Contains("if (verbose)", text, StringComparison.Ordinal);
+        Assert.Contains("ERROR-CHECK", text, StringComparison.Ordinal);
+        Assert.Contains("MarkExceptionObserved(ex)", text, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
