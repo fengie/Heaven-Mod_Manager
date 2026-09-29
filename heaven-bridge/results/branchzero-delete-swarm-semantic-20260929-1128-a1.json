@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-swarm-semantic-20260929-1128-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:28:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:29:36.288116+00:00",
+  "finished_at": "2026-09-29T11:29:39.519102+00:00",
+  "stdout": "{\"branch\":\"agent/swarm-contract-v3-20260929-0540\",\"state\":\"already-absent\"}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   febcf269..655f8048  main          -> origin/main\n   32804a1e..4d6002d9  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-swarm-semantic-20260929-1128-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-swarm-semantic-20260929-1128-a1.stderr.log",
+    "stdout_bytes": 77,
+    "stderr_bytes": 153,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "db2feb8b45008cc788c04a5531ebb6fd3e820470c9954a22aa59640683dbc286"
+}
