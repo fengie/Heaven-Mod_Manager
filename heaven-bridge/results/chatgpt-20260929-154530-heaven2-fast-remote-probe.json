@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-154530-heaven2-fast-remote-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:45:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:46:35.162872+00:00",
+  "finished_at": "2026-09-29T15:46:40.255601+00:00",
+  "stdout": "{\"ssh\":false,\"winrm_http\":false,\"winrm_https\":false,\"rpc\":true}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154530-heaven2-fast-remote-probe.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154530-heaven2-fast-remote-probe.stderr.log",
+    "stdout_bytes": 65,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2c5bf396f0a9d7479ea82d021e4fd529fd3b246bdfa2c647aaf0b42706f35579"
+}
