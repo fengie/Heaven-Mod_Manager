@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104446-cleanup-session-recovery-branch",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:44:46.012Z",
+  "ttl_seconds": 1200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git -C C:\\Users\\Xxkan\\HeavenBridgeMainVerify fetch origin --prune; git -C C:\\Users\\Xxkan\\HeavenBridgeMainVerify push origin --delete agent/heaven-bridge-session-recovery-20260929",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeMainVerify",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
