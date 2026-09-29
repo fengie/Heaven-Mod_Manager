@@ -40,7 +40,16 @@ jobs:
         run: dotnet build .\MhwModManager.sln -c Release --no-restore -m:1 -nr:false
       - name: Test
         shell: powershell
-        run: dotnet test .\MhwModManager.sln -c Release --no-build --no-restore -m:1 -nr:false
+        run: |
+          $projects = @(
+            '.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj',
+            '.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj',
+            '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj'
+          )
+          foreach ($project in $projects) {
+            & dotnet test $project -c Release --no-build --no-restore -m:1 -nr:false
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
       - name: Diff check
         shell: powershell
         run: git diff --check
