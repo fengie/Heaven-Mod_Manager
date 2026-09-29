@@ -346,3 +346,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related policy:** `AGENTS.md` Operator validation / installed-client identity invariant.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## 2026-09-29 — Every escaped bug must harden the system
+
+- Treat every discovered bug, regression, broken integration, false completion claim, or process escape as evidence that a prevention layer was missing or insufficient.
+- Do not stop at the direct fix. Record root cause and violated invariant, add/update the canonical bug precedent, strengthen the relevant guideline/process, add regression coverage when feasible, verify on the real risk surface, and propagate the lesson to future agents.
+- Existing passing tests do not prove prevention was adequate when a bug escaped; add the missing test class or deterministic verifier.
+- Managers and reviewers must reject bug fixes that lack applicable precedent, prevention, regression, and verification evidence.
+- Repeated defects from an existing precedent mean the prior control itself failed and must be strengthened.
