@@ -1,0 +1,9 @@
+{
+  "id": "final-workflows-selective-merge-20260929-1140",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:54:12.462475+00:00"
+}
