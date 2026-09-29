@@ -1,0 +1,21 @@
+{
+  "id": "----selfhosted-runner-inspect-20260929-105650",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:56:50Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:59:30.081518+00:00",
+  "finished_at": "2026-09-29T11:00:32.233601+00:00",
+  "stdout": "=== runner processes ===\r\n\r\n\r\nProcessId      : 81844\r\nName           : powershell.exe\r\nExecutablePath : C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nCommandLine    : powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Continue'; \r\n                 Write-Output '=== runner processes ==='; Get-CimInstance Win32_Process | Where-Object { $_.Name \r\n                 -match 'Runner\\.(Listener|Worker)' -or $_.CommandLine -match \r\n                 'actions-runner|Runner.Listener|Runner.Worker' } | Select-Object \r\n                 ProcessId,Name,ExecutablePath,CommandLine | Format-List; Write-Output '=== likely runner dirs ==='; \r\n                 $roots=@('C:\\HeavenServices','C:\\Users\\Xxkan','C:\\actions-runner','C:\\github-runner'); foreach($root \r\n                 in $roots){ if(Test-Path $root){ Get-ChildItem -LiteralPath $root -Directory -Force -ErrorAction \r\n                 SilentlyContinue | Where-Object { $_.Name -match 'runner|actions|github' } | Select-Object \r\n                 FullName,Name,LastWriteTimeUtc } }; Write-Output '=== exact runner files under bounded roots ==='; \r\n                 foreach($root in @('C:\\HeavenServices','C:\\Users\\Xxkan')){ if(Test-Path $root){ Get-ChildItem \r\n                 -LiteralPath $root -Recurse -File -Filter 'Runner.Listener.exe' -ErrorAction SilentlyContinue | \r\n                 Select-Object -First 20 FullName,Length,LastWriteTimeUtc } }; Write-Output '=== services ==='; \r\n                 Get-CimInstance Win32_Service | Where-Object { $_.Name -match 'actions|runner|github' -or \r\n                 $_.DisplayName -match 'actions|runner|github' -or $_.PathName -match 'Runner.Listener|actions-runner' \r\n                 } | Select-Object Name,DisplayName,State,StartMode,PathName | Format-List; Write-Output '=== \r\n                 scheduled tasks ==='; Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName \r\n                 -match 'actions|runner|github' -or $_.TaskPath -match 'actions|runner|github' } | Select-Object \r\n                 TaskName,TaskPath,State | Format-Table -AutoSize\"\r\n\r\n\r\n\r\n=== likely runner dirs ===\r\n=== exact runner files under bounded roots ===\r\n=== services ===\r\n=== scheduled tasks ===\r\n\r\nTaskName              TaskPath           State\r\n--------              --------           -----\r\nOffice Actions Server \\Microsoft\\Office\\ Ready\r\n\r\n\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----selfhosted-runner-inspect-20260929-105650.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----selfhosted-runner-inspect-20260929-105650.stderr.log",
+    "stdout_bytes": 2399,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b42074dd97dfc8ba74dcc87c348a8fe05ff698787a440558879d9e5c693ac3fc"
+}
