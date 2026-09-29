@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-113700-force-cancel-stale-actions-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:37:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; gh auth status; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; gh api --method POST repos/fengie/mhw-mods/actions/runs/36559140396/force-cancel; $code=$LASTEXITCODE; Write-Output ('FORCE_CANCEL_EXIT='+$code); exit $code"
+  },
+  "priority": "highest"
+}
