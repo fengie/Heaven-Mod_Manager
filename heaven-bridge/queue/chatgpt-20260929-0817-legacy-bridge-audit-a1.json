@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-0817-legacy-bridge-audit-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; Write-Output '=== BRIDGE_PROCESSES ==='; Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -like '*HeavenBridge*' -or $_.CommandLine -like '*heaven-desktop-worker.py*') } | Select-Object ProcessId,ParentProcessId,Name,CreationDate,CommandLine | ConvertTo-Json -Depth 4; Write-Output '=== STARTUP ==='; $startup=[Environment]::GetFolderPath('Startup'); Get-ChildItem -Force $startup | Where-Object { $_.Name -match 'Heaven|Bridge' } | Select-Object FullName,Name,Length,LastWriteTime | ConvertTo-Json -Depth 3; Write-Output '=== SCHEDULED_TASKS ==='; Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match 'Heaven|Bridge' } | Select-Object TaskName,TaskPath,State | ConvertTo-Json -Depth 3"
+  },
+  "created_at": "2026-09-29T08:17:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Audit obsolete v1 agent-bridge worker/startup artifacts before safe consolidation; read-only."
+}
