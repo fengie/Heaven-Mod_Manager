@@ -1,0 +1,9 @@
+{
+  "id": "000-manager-20260929-1047-status-uia",
+  "state": "running",
+  "action": "job_status",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:49:35.273168+00:00"
+}
