@@ -265,6 +265,31 @@ export function isProviderCapacityErrorMessage(value) {
   ].some(pattern => pattern.test(text));
 }
 
+export function providerCapacityActiveTerminationDecision(agent) {
+  const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
+  const message = String(agent?.lastMessage || agent?.error || "").trim();
+  const active = ACTIVE_STATUSES.has(status);
+  const capacityBlocked = isProviderCapacityErrorMessage(message);
+
+  if (!active || !capacityBlocked) {
+    return {
+      terminate: false,
+      status: null,
+      failureClass: null,
+      completionEvidence: null,
+      reason: !active ? "agent-not-active" : "no-provider-capacity-message"
+    };
+  }
+
+  return {
+    terminate: true,
+    status: "capacity-blocked",
+    failureClass: "provider-capacity",
+    completionEvidence: "provider-capacity",
+    reason: "provider-capacity-message-detected"
+  };
+}
+
 
 function providerCapacityEventAt(agent) {
   for (const value of [agent?.finishedAt, agent?.updatedAt, agent?.heartbeatAt, agent?.startedAt]) {
@@ -333,8 +358,8 @@ export function classifyAuthoritativeExit(agent, exitCode) {
   if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
     return "stopped";
   }
-  if (exitCode === 0) return "done";
   if (isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error)) return "capacity-blocked";
+  if (exitCode === 0) return "done";
   return "failed";
 }
 
