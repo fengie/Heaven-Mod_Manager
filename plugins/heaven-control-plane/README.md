@@ -55,10 +55,12 @@ The first production slice is implemented as a small Python standard-library pac
 - bounded filesystem read/write/exact-patch adapters over `fs_read`, `fs_write`, and `fs_edit`;
 - Git status/diff/exact remote-`main` verification using `git ls-remote` against `refs/heads/main` and a structured working directory instead of path interpolation;
 - payload-free bounded audit metadata and text-artifact pagination;
+- enforced capability permissions with a trusted-local wildcard default and restricted permission sets for disposable workers;
+- secret-canary refusal before text artifacts enter the in-memory artifact registry;
 - inline secret-environment rejection with host-side `env_from_host` handles;
 - traversal-segment rejection before filesystem/repository requests reach the bridge;
 - explicit overwrite confirmation for existing-file rewrites, unique-only v1 text patching, and bridge-error propagation into structured control-plane failures;
-- unit tests for success, malformed/oversized input, timeout mapping, cancellation mapping, path traversal, output truncation, pagination, and concurrent audit writes.
+- unit tests for success, malformed/oversized input, invalid request IDs, permission denial, timeout mapping, cancellation mapping, path traversal, output truncation, artifact secret refusal, pagination, bridge action compatibility, and concurrent audit writes.
 
 Run the exact plugin gate from repository root:
 
