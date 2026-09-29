@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0903-agent-control-quick-health-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:03:00Z",
+  "status": "failed",
+  "exit_code": 41,
+  "started_at": "2026-09-29T09:00:20.577219+00:00",
+  "finished_at": "2026-09-29T09:00:21.002621+00:00",
+  "stdout": "{\r\n    \"ok\":  false,\r\n    \"elapsed_ms\":  58,\r\n    \"error\":  \"The remote server returned an error: (404) Not Found.\"\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0903-agent-control-quick-health-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0903-agent-control-quick-health-a1.stderr.log",
+    "stdout_bytes": 120,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8e65619bbd81773ba13572e65297ef1e34624f53ace87d88e654f5c6fd89fd17"
+}
