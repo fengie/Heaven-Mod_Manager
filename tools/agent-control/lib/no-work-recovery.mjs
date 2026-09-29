@@ -33,6 +33,7 @@ export function looksLikeExecutionOpener(value, { maxChars = 1800 } = {}) {
 }
 
 export function hasSubstantiveWorkEvidence(agent) {
+  if (agent?.worktreeDirty === true || agent?.source_metadata?.worktree_dirty === true) return true;
   const currentSha = String(agent?.currentSha || agent?.current_sha || "").trim();
   const baseSha = String(agent?.baseSha || agent?.base_sha || "").trim();
   if (currentSha && baseSha && currentSha !== baseSha) return true;
