@@ -718,6 +718,10 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("source mirror is not a clean main checkout", bootstrap)
         self.assertIn("Push-Location $SourceRepoRoot", bootstrap)
         self.assertIn("HEAVEN_BRIDGE_SOURCE revision=", bootstrap)
+        self.assertIn("$SourceBootstrap = Join-Path $SourceRepoRoot 'heaven-bridge\\bootstrap.ps1'", bootstrap)
+        self.assertIn("HEAVEN_BRIDGE_BOOTSTRAP_HANDOFF", bootstrap)
+        self.assertIn("& $SourceBootstrap", bootstrap)
+        self.assertIn("if ($currentBootstrap -ne $canonicalBootstrap)", bootstrap)
         self.assertNotIn("$SourceWorker = Join-Path $RepoRoot", bootstrap)
         self.assertNotIn("$SourceWatchdog = Join-Path $RepoRoot", bootstrap)
 
