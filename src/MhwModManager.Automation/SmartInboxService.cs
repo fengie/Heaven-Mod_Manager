@@ -49,7 +49,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     continue;
                 }
                 var category = categories.Classify(SafeRecursiveTraversal.Snapshot(staging, ct).Files.Select(x => Path.GetRelativePath(staging, x)));
-                ImportPublicationWorkspace.Publish(staging, destination);
+                ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
                 staging = null;
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");
@@ -65,7 +65,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             }
             finally
             {
-                ImportPublicationWorkspace.Cleanup(staging);
+                ImportPublicationWorkspace.Cleanup(modsRoot, staging);
             }
         }
         if (results.Any(x => x.Imported))
