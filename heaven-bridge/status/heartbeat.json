@@ -4,12 +4,27 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T08:21:05.337922+00:00",
+  "updated_at": "2026-09-29T08:26:11.035573+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-0822-bridge-regression-fixed-f1",
+      "id": "chatgpt-20260929-0827-codex-contract-inspect-i1",
       "action": "proc_run",
-      "started_at": "2026-09-29T08:20:58.949638+00:00"
+      "started_at": "2026-09-29T08:25:43.515601+00:00"
+    },
+    {
+      "id": "release-20260929-0824-bootstrap-regression",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:25:43.528433+00:00"
+    },
+    {
+      "id": "release-20260929-0824-lifecycle-fail-smoke",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:25:56.441461+00:00"
+    },
+    {
+      "id": "release-20260929-0824-lifecycle-stop-session",
+      "action": "proc_start",
+      "started_at": "2026-09-29T08:26:09.535381+00:00"
     }
   ],
   "capabilities": [
