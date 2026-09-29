@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1251-release-stale-actions-worker-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:50:20Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30,
+    "command": "$ErrorActionPreference='Stop'\n$listenerPid=52236\n$workerPid=84736\n$worker=Get-CimInstance Win32_Process -Filter \"ProcessId=$workerPid\" -ErrorAction SilentlyContinue\nif(-not $worker){ [pscustomobject]@{released=$false;reason='worker_already_gone';listenerPid=$listenerPid;workerPid=$workerPid}|ConvertTo-Json -Compress; exit 0 }\nif($worker.Name -ne 'Runner.Worker.exe' -or [int]$worker.ParentProcessId -ne $listenerPid){ throw \"Refusing to terminate unexpected process identity: $($worker.Name) parent=$($worker.ParentProcessId)\" }\n$listener=Get-CimInstance Win32_Process -Filter \"ProcessId=$listenerPid\" -ErrorAction SilentlyContinue\nif(-not $listener -or $listener.Name -ne 'Runner.Listener.exe'){ throw 'Expected Runner.Listener.exe is not alive; refusing worker-only termination.' }\nStop-Process -Id $workerPid -Force\nStart-Sleep -Seconds 3\n$still=Get-Process -Id $workerPid -ErrorAction SilentlyContinue\nif($still){ throw 'Runner.Worker.exe remained alive after termination.' }\n[pscustomobject]@{released=$true;listenerPid=$listenerPid;workerPid=$workerPid;listenerStillAlive=[bool](Get-Process -Id $listenerPid -ErrorAction SilentlyContinue)}|ConvertTo-Json -Compress"
+  }
+}
