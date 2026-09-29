@@ -1,4 +1,6 @@
 using MhwModManager.Core;
+
+#pragma warning disable CA1861 // Test fixtures intentionally use compact inline collections for readability.
 using Xunit;
 
 namespace MhwModManager.Tests;
@@ -65,7 +67,9 @@ public sealed class SmartPackPlannerTests
             ],
             [new(SmartPackPriorityKind.Tag,"Elegant")]);
 
-        Assert.Equal(2, plan.Selected.Count);\n        Assert.Equal("priority", plan.Selected[0].CandidateId);\n        Assert.Equal("fallback-high", plan.Selected[1].CandidateId);
+        Assert.Equal(2, plan.Selected.Count);
+        Assert.Equal("priority", plan.Selected[0].CandidateId);
+        Assert.Equal("fallback-high", plan.Selected[1].CandidateId);
         Assert.Equal("fallback-popularity", plan.Selected[1].ReasonCode);
         Assert.Equal("no-free-compatible-target", plan.Decisions.Single(x => x.CandidateId == "fallback-low").ReasonCode);
     }
