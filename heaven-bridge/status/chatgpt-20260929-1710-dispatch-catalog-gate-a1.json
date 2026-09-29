@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1710-dispatch-catalog-gate-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T17:08:06.322387+00:00"
+  "updated_at": "2026-09-29T17:08:15.524014+00:00",
+  "exit_code": 1
 }
