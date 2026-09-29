@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-100300-read-services-registry",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 60,
+    "command": "Get-Content 'C:\\HeavenServices\\services.json' -Raw; Write-Output \"`n---COMPOSE-MAIN---\"; Get-Content 'C:\\HeavenServices\\compose\\docker-compose.yml' -Raw"
+  },
+  "created_at": "2026-09-29T10:03:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
