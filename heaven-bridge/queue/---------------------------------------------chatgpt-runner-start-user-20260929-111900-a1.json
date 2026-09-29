@@ -1,0 +1,14 @@
+{
+  "id": "---------------------------------------------chatgpt-runner-start-user-20260929-111900-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:19:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "command": "$ErrorActionPreference='Stop'\n$dir=Join-Path $env:USERPROFILE 'actions-runner-heaven'\n$runCmd=Join-Path $dir 'run.cmd'\nif(-not (Test-Path -LiteralPath $runCmd)){ throw ('Runner entrypoint missing: ' + $runCmd) }\n$cmdExe=Join-Path ([Environment]::SystemDirectory) 'cmd.exe'\nif(-not (Test-Path -LiteralPath $cmdExe)){ throw ('cmd.exe missing: ' + $cmdExe) }\n$startup=[Environment]::GetFolderPath('Startup')\nif([string]::IsNullOrWhiteSpace($startup)){ throw 'Startup folder unavailable' }\n$launcher=Join-Path $startup 'HeavenGitHubActionsRunner.cmd'\n$nl=[Environment]::NewLine\n$launcherText='@echo off'+$nl+'cd /d \"'+$dir+'\"'+$nl+'start \"\" /min \"'+$cmdExe+'\" /d /c \"\"'+$runCmd+'\"\"'+$nl\nSet-Content -LiteralPath $launcher -Value $launcherText -Encoding Ascii\n$existing=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like ($dir + '*') })\nif($existing.Count -eq 0){ $arg='/d /c \"\"'+$runCmd+'\"\"'; Start-Process -FilePath $cmdExe -ArgumentList $arg -WorkingDirectory $dir -WindowStyle Hidden | Out-Null; Start-Sleep -Seconds 6 }\n$listeners=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -like ($dir + '*') } | Select-Object ProcessId,Name,ExecutablePath,CommandLine)\n[pscustomobject]@{runner_dir=$dir;startup_launcher=$launcher;listener_count=$listeners.Count;listeners=$listeners} | ConvertTo-Json -Depth 6 -Compress",
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
