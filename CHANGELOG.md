@@ -1,3 +1,10 @@
+# v8.8.9 — Updater manifest compatibility and installed-client closure
+
+- Accept legacy UTF-8 BOM updater manifests already frozen in immutable releases while emitting all newly published update manifests as BOM-free UTF-8.
+- Route Windows release publication and installed-client updater acceptance through the verified Heaven self-hosted Windows runner when hosted allocation is unavailable.
+- Sequence the real build-60 installed-client update/rollback gate after a successful Windows Release Gate and resolve the exact newly published immutable target instead of hard-coding obsolete build 61.
+- Preserve sentinel user/unknown data and require deterministic rollback evidence before updater closure is accepted.
+
 # v8.8.8 — Atomic launch-observation persistence
 
 - Persist each observed launch-history row and all enabled-mod trust deltas in one SQLite transaction so partial trust/history evidence cannot escape a failed write.

@@ -2,25 +2,13 @@ name: Updater Installed Client E2E
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows:
+      - 'Windows Release Gate'
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - '.github/workflows/updater-installed-client-e2e.yml'
-      - 'tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj'
-      - 'tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs'
-      - 'tests/MhwModManager.IntegrationTests/UpdateInstallerTests.cs'
-      - 'src/MhwModManager.Updater/**'
-      - 'src/MhwModManager.Updater.Helper/**'
-      - 'src/MhwModManager.App/App.xaml.cs'
-  pull_request:
-    paths:
-      - '.github/workflows/updater-installed-client-e2e.yml'
-      - 'tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs'
-      - 'tests/MhwModManager.IntegrationTests/UpdateInstallerTests.cs'
-      - 'src/MhwModManager.Updater/**'
-      - 'src/MhwModManager.Updater.Helper/**'
-      - 'src/MhwModManager.App/App.xaml.cs'
 
 permissions:
   contents: write
@@ -28,17 +16,21 @@ permissions:
 jobs:
   installed-client-e2e:
     name: Real packaged updater update and rollback
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     # GitHub-hosted Windows currently fails before runner allocation; use the repaired Heaven runner.
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     env:
       MHW_RUN_UPDATER_INSTALLED_E2E: '1'
       MHW_MOD_MANAGER_GITHUB_TOKEN: ${{ github.token }}
+      MHW_E2E_SOURCE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
       MHW_E2E_EVIDENCE_PATH: ${{ github.workspace }}\BuildLogs\updater-installed-e2e\evidence.json
 
     steps:
       - name: Check out candidate
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Verify pinned .NET SDK
         shell: powershell
@@ -54,7 +46,7 @@ jobs:
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
           New-Item -ItemType Directory -Force -Path $evidence | Out-Null
           @(
-            "candidate_sha=$env:GITHUB_SHA"
+            "candidate_sha=$env:MHW_E2E_SOURCE_SHA"
             "runner_os=$env:RUNNER_OS"
             "runner_arch=$env:RUNNER_ARCH"
             "dotnet_sdk=$(& dotnet --version)"
@@ -78,6 +70,42 @@ jobs:
         run: |
           dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Resolve exact published updater target
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+            throw 'GitHub CLI (gh) is required to resolve the published updater target.'
+          }
+
+          $releaseJson = @(& gh api "repos/$env:GITHUB_REPOSITORY/releases?per_page=100")
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to list updater releases for installed-client E2E.'
+          }
+          $releases = ($releaseJson -join [Environment]::NewLine) | ConvertFrom-Json
+          $target = $null
+          foreach ($release in $releases) {
+            $tag = [string]$release.tag_name
+            if ($tag -notmatch '^updater-main-(\d+)$') { continue }
+            $build = [long]$Matches[1]
+            if ($build -le 61) { continue }
+            if ([bool]$release.draft -or [bool]$release.prerelease -or -not [bool]$release.immutable) { continue }
+            $source = [string]$release.target_commitish
+            if ($source -notmatch '^[0-9a-fA-F]{40}$') { continue }
+            if ($source -ne $env:MHW_E2E_SOURCE_SHA) { continue }
+            $target = [pscustomobject]@{ Build = $build; Source = $source.ToLowerInvariant(); Tag = $tag }
+            break
+          }
+          if (-not $target) {
+            throw "No immutable updater release newer than build 61 was published for exact source $env:MHW_E2E_SOURCE_SHA."
+          }
+
+          $utf8NoBom = [Text.UTF8Encoding]::new($false)
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "MHW_E2E_TARGET_BUILD=$($target.Build)`r`n", $utf8NoBom)
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "MHW_E2E_TARGET_SOURCE=$($target.Source)`r`n", $utf8NoBom)
+          Write-Host "Resolved installed-client target $($target.Tag) / $($target.Source)."
 
       - name: Run installed-client updater E2E
         shell: powershell
@@ -159,7 +187,7 @@ jobs:
             ${{ github.workspace }}\BuildLogs\updater-installed-e2e\**
 
       - name: Persist successful installed-client E2E evidence
-        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: success() && github.event_name == 'workflow_run'
         shell: powershell
         run: |
           if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
@@ -171,8 +199,8 @@ jobs:
             throw 'Failed to fetch origin/main before persisting updater E2E evidence.'
           }
           $remoteMain = (git rev-parse origin/main).Trim()
-          if ($remoteMain -ne $env:GITHUB_SHA) {
-            Write-Host "::notice::Skipping updater E2E evidence persistence for $env:GITHUB_SHA because main advanced to $remoteMain. The exact evidence remains in the workflow artifact."
+          if ($remoteMain -ne $env:MHW_E2E_SOURCE_SHA) {
+            Write-Host "::notice::Skipping updater E2E evidence persistence for $env:MHW_E2E_SOURCE_SHA because main advanced to $remoteMain. The exact evidence remains in the workflow artifact."
             exit 0
           }
 
@@ -185,10 +213,11 @@ jobs:
           $testLogHash = if (Test-Path -LiteralPath $testLogPath) { (Get-FileHash -LiteralPath $testLogPath -Algorithm SHA256).Hash } else { 'missing' }
           $rollbackLogHash = if (Test-Path -LiteralPath $rollbackLogPath) { (Get-FileHash -LiteralPath $rollbackLogPath -Algorithm SHA256).Hash } else { 'missing' }
 
-          $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.7.log'
+          $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
+          $closurePath = "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v$version.log"
           @(
-            'MHW Manual Mod Manager v8.8.7 installed-client updater E2E closure'
-            ('source_sha=' + $env:GITHUB_SHA)
+            ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
+            ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
             ('runner_os=' + $env:RUNNER_OS)
             ('runner_arch=' + $env:RUNNER_ARCH)
@@ -216,9 +245,9 @@ jobs:
               throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
             }
             $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $env:GITHUB_SHA) {
+            if ($remoteMain -ne $env:MHW_E2E_SOURCE_SHA) {
               Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced to $remoteMain during the push race."
               exit 0
             }
-            throw "Failed to persist updater E2E evidence while origin/main still points at exact source $env:GITHUB_SHA."
+            throw "Failed to persist updater E2E evidence while origin/main still points at exact source $env:MHW_E2E_SOURCE_SHA."
           }
