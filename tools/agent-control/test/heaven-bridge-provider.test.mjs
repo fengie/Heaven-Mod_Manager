@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 
 import {
   HEAVEN_BRIDGE_HOST,
+  HEAVEN2_BRIDGE_HOST,
   HEAVEN_BRIDGE_PROTOCOL,
   assessRelayLock,
   bridgeResultSucceeded,
@@ -28,6 +29,37 @@ test("bridge jobs normalize ids and preserve bounded execution metadata", () => 
   assert.equal(job.action, "proc_run");
   assert.equal(job.ttl_seconds, 60);
   assert.equal(job.params.command, "echo ok");
+});
+
+test("bridge jobs can explicitly target heaven2 while preserving heaven legacy default", () => {
+  const legacy = buildBridgeJob({
+    id: "legacy-default",
+    action: "health",
+    createdAt: "2026-09-29T09:00:00.000Z"
+  });
+  assert.equal(legacy.target_host, HEAVEN_BRIDGE_HOST);
+
+  const control = buildBridgeJob({
+    id: "control-host",
+    action: "window_list",
+    targetHost: HEAVEN2_BRIDGE_HOST,
+    createdAt: "2026-09-29T09:00:00.000Z"
+  });
+  assert.equal(control.target_host, "heaven2");
+
+  const result = {
+    id: control.id,
+    source: HEAVEN_BRIDGE_PROTOCOL,
+    host: HEAVEN2_BRIDGE_HOST,
+    action: control.action,
+    status: "completed",
+    exit_code: 0
+  };
+  assert.equal(validateBridgeResult(result, {
+    id: control.id,
+    action: control.action,
+    requireHost: HEAVEN2_BRIDGE_HOST
+  }), result);
 });
 
 test("bridge results require exact job, action, protocol, host and terminal state", () => {
