@@ -62,7 +62,7 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Treat `heaven` as a delegated resource/worker by default. Do not move control panels or routine user interaction there merely because builds/tests/agents execute there. Interactive control of `heaven` requires an explicit worker-desktop request or a genuinely worker-specific GUI validation.
 - New Heaven Bridge jobs must set top-level `target_host` explicitly: `heaven2` for control/interactive work, `heaven` for delegated heavy execution. Missing `target_host` is legacy compatibility behavior only and defaults to `heaven`.
 - Never put credentials, tokens, passwords, cookies, private keys, or recovery codes into bridge queue/result/status payloads.
-- The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below.
+- The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below. Bridge bootstrap/runtime deployment must source worker/watchdog code from a clean canonical-`main` source mirror, never from relay-branch drift; the relay checkout is only queue/status/results transport plus compatibility history.
 - For build/test/code execution details, the canonical plugin source is `heaven-bridge/plugin/`, including the `heaven-code-execution` skill.
 
 ### Capacity and runner circuit breakers
@@ -194,3 +194,13 @@ Every agent must preserve this rule system and require its successor to preserve
 If context, execution time, tool access, or usage allowance becomes dangerously low, stop expanding scope and enter the preservation mode defined in the continuity protocol.
 
 **Do not break the chain.**
+
+
+## Control-path diagnosis rule
+
+A missing bridge heartbeat, missing result, unavailable plugin surface, queued self-hosted job, `runner_id=0`, or failed remote-control action proves only that the **control path is unavailable or unhealthy**. It does **not** prove that the target computer is powered off, disconnected, or otherwise offline.
+
+- Never report `heaven2` or `heaven` itself as offline solely from bridge/runner evidence.
+- If the user is actively interacting from the target machine, treat host presence as established and diagnose the bridge, watchdog, runner, relay, or plugin surface separately.
+- Use precise wording such as `heaven2 control path unavailable`, `bridge worker not publishing`, or `self-hosted runner unallocated` until host-level reachability is independently proven.
+- Recovery work must continue against the failed control component; do not convert a control-channel failure into a host-availability conclusion.
