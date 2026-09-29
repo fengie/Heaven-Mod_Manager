@@ -743,6 +743,55 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
     }
 
+    [RelayCommand]
+    private async Task AutoPopulate()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        AutoPopulateResult? result=null;
+        await RunBusy(
+            "mods.auto-populate",
+            "Auto Populating Mods",
+            "Building the largest safe setup, enabling dependencies and required texture providers, and rejecting anything that would conflict…",
+            true,
+            async ct=>
+            {
+                var service=new AutoPopulateService(s.PlannerSnapshots,s.Planner,s.Dependencies,s.Paths.GameRoot,s.Paths.Game);
+                result=await service.BuildAsync(ct);
+                var stage=result.State.ToDictionary(
+                    x=>x.Key,
+                    x=>(x.Value.Enabled,x.Value.Priority),
+                    StringComparer.OrdinalIgnoreCase);
+
+                await Application.Current.Dispatcher.InvokeAsync(()=>
+                {
+                    suppressChanged=true;
+                    try{foreach(var row in Mods)row.ApplyProfileState(stage);}
+                    finally{suppressChanged=false;Changed();}
+                });
+
+                await RefreshAnalysis(ct);
+                StatusText=result.Summary+" Applying the safe setup now…";
+                await s.Timeline.RecordAsync(
+                    "mods.auto-populate",
+                    AutomationSeverity.Info,
+                    result.Summary,
+                    new{result.EnabledMods,result.SkippedConflicts,result.SkippedRequirements},
+                    ct);
+            });
+
+        if(result is null)return;
+        if(BlockerCount>0)
+        {
+            StatusText="Auto Populate stopped because the final setup still needs a conflict choice. Nothing was applied.";
+            SelectedTab=3;
+            return;
+        }
+
+        if(StagedCount>0)await Apply();
+        if(StagedCount==0&&BlockerCount==0)
+            StatusText=result.Summary+" The setup is applied and ready to launch.";
+    }
+
     [RelayCommand]private void EnableSelected()=>StageVisible(true);
     [RelayCommand]private void DisableSelected()=>StageVisible(false);
 
