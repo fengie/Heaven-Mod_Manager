@@ -59,7 +59,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // High-confidence base/option/patch relationships become transient overlay rules. They are
         // recomputed from indexed source files every plan, so stale auto rules are never persisted.
         // Explicit user rules always win and suppress inference for that pair.
-        var autoRules = game is null || game.IsMonsterHunterWorld
+        var autoRules = GameAdapters.Resolve(game).SupportsMhwConflictSemantics
             ? AutoCompatibility.GenerateOverlayRules(enabled, pairStats, snapshot.Rules)
             : Array.Empty<ConflictRule>();
         var effectiveRules = snapshot.Rules.Concat(autoRules).ToArray();
