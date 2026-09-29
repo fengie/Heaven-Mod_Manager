@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-1146-issue84-dispatch-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; gh workflow run updater-installed-client-e2e.yml --repo fengie/mhw-mods --ref main; Start-Sleep -Seconds 5; gh run list --repo fengie/mhw-mods --workflow updater-installed-client-e2e.yml --event workflow_dispatch --limit 5 --json databaseId,status,conclusion,headSha,event,createdAt,url",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T11:46:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
