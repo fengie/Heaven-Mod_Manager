@@ -15,6 +15,13 @@ spec.loader.exec_module(hb)
 
 
 class HeavenBridgeWorkerTests(unittest.TestCase):
+    def test_health_and_system_info_report_elevation_boolean(self):
+        health = hb.run_job("health-elevation", {"action": "health", "params": {}}, threading.Event())
+        info = hb.run_job("system-elevation", {"action": "system_info", "params": {}}, threading.Event())
+        self.assertIsInstance(health["data"]["elevated"], bool)
+        self.assertIsInstance(info["data"]["elevated"], bool)
+        self.assertEqual(health["data"]["elevated"], hb.is_process_elevated())
+
     def test_canonical_hash_ignores_signature_only(self):
         base = {
             "id": "x1",
