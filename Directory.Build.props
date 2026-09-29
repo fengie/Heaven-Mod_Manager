@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.14</Version>
-    <InformationalVersion>8.8.14-inbox-rollback-fail-closed</InformationalVersion>
+    <Version>8.8.15</Version>
+    <InformationalVersion>8.8.15-visual-overhaul-diagnostic-identity</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

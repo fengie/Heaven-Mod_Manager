@@ -55,6 +55,16 @@ public sealed class SupportBundlePrivacyTests : IDisposable
         Assert.Contains("NEXUS_KEY_CANARY_789",await File.ReadAllTextAsync(logPath,TestToken));
 
         using var archive=ZipFile.OpenRead(zip);
+        var environmentEntry=Assert.Single(archive.Entries,x=>x.Name=="environment.txt");
+        using(var environmentReader=new StreamReader(environmentEntry.Open()))
+        {
+            var environmentText=await environmentReader.ReadToEndAsync(TestToken);
+            var version=typeof(SupportBundleService).Assembly.GetName().Version;
+            Assert.NotNull(version);
+            Assert.Contains($"MHW Manual Mod Manager v{version.Major}.{version.Minor}.{version.Build} support bundle",environmentText);
+            Assert.DoesNotContain("MHW Manual Mod Manager v8.3.0 support bundle",environmentText);
+        }
+
         var logEntry=Assert.Single(archive.Entries,x=>x.Name=="manager-privacy-canary.jsonl");
         using var logReader=new StreamReader(logEntry.Open());
         var exportedLine=await logReader.ReadLineAsync(TestToken);
@@ -80,5 +90,47 @@ public sealed class SupportBundlePrivacyTests : IDisposable
         var noticeText=await noticeReader.ReadToEndAsync(TestToken);
         Assert.Contains("sanitized during export",noticeText,StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Review the archive before sharing",noticeText,StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Runtime_diagnostics_use_current_assembly_version_identity()
+    {
+        var state=Path.Combine(root,"versioned-logging");
+        var logger=AppLogging.Create(state);
+        try
+        {
+            logger.Information("version identity canary");
+        }
+        finally
+        {
+            if(logger is IDisposable disposable)disposable.Dispose();
+        }
+
+        var logFile=Assert.Single(Directory.EnumerateFiles(Path.Combine(state,"Next","Logs"),"manager-*.jsonl"));
+        var line=File.ReadLines(logFile).Last(x=>x.Contains("version identity canary",StringComparison.Ordinal));
+        using var document=JsonDocument.Parse(line);
+        var version=typeof(AppLogging).Assembly.GetName().Version;
+        Assert.NotNull(version);
+        Assert.Equal($"UniversalModManager-v{version.Major}.{version.Minor}.{version.Build}",
+            document.RootElement.GetProperty("Properties").GetProperty("app").GetString());
+
+        var repoRoot=FindRepositoryRoot();
+        var appSource=File.ReadAllText(Path.Combine(repoRoot,"src","MhwModManager.App","App.xaml.cs"));
+        var loggingSource=File.ReadAllText(Path.Combine(repoRoot,"src","MhwModManager.Diagnostics","AppLogging.cs"));
+        Assert.DoesNotContain("v8.8.6",appSource,StringComparison.Ordinal);
+        Assert.DoesNotContain("UniversalModManager-v8.8.6",loggingSource,StringComparison.Ordinal);
+        Assert.Contains("Assembly.GetName().Version",appSource,StringComparison.Ordinal);
+        Assert.Contains("Assembly.GetName().Version",loggingSource,StringComparison.Ordinal);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current=new DirectoryInfo(AppContext.BaseDirectory);
+        while(current is not null)
+        {
+            if(File.Exists(Path.Combine(current.FullName,"MhwModManager.sln")))return current.FullName;
+            current=current.Parent;
+        }
+        throw new DirectoryNotFoundException("Repository root not found.");
     }
 }
