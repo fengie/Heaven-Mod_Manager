@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0901-postinstall-health",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:01:32.300536+00:00"
+  "updated_at": "2026-09-29T09:01:57.085601+00:00",
+  "exit_code": 0
 }
