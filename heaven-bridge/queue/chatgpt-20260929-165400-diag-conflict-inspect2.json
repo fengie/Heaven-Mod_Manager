@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165400-diag-conflict-inspect2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $src='C:\\Users\\fengc\\HeavenBridgeSource'; $wt='C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929'; if (Test-Path $wt) { Remove-Item -LiteralPath $wt -Recurse -Force }; git -C $src worktree prune; git -C $src fetch origin de103e8310a477409de48c20f2a23866a7050e6b; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git -C $src worktree add -B work/finish-diagnostics-20260929 $wt de103e8310a477409de48c20f2a23866a7050e6b; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git -C $wt fetch origin main; git -C $wt merge --no-commit --no-ff FETCH_HEAD; $code=$LASTEXITCODE; Write-Output ('MERGE_EXIT='+$code); git -C $wt status --short; if ($code -ne 0) { Write-Output 'CONFLICTS:'; git -C $wt diff --name-only --diff-filter=U }; exit 0",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:54:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
