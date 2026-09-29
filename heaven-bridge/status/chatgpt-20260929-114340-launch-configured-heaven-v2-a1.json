@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-114340-launch-configured-heaven-v2-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:55:11.838219+00:00"
+  "updated_at": "2026-09-29T11:55:53.688773+00:00",
+  "exit_code": 1
 }
