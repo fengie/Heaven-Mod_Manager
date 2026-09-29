@@ -358,8 +358,8 @@ export function classifyAuthoritativeExit(agent, exitCode) {
   if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
     return "stopped";
   }
-  if (exitCode === 0) return "done";
   if (isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error)) return "capacity-blocked";
+  if (exitCode === 0) return "done";
   return "failed";
 }
 
