@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-120610-hcp-index-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n$wt='C:\\Users\\Xxkan\\HeavenWorktrees\\hcp-indexing-5568db9'\nif (Test-Path $wt) { throw \"verification worktree already exists: $wt\" }\ngit -C $repo fetch --quiet origin agent/hcp-indexing-20260929-0746\nif ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }\ngit -C $repo worktree add --detach $wt 5568db911a00726cf874d642a63753571471c807\nif ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }\ntry {\n  python \"$wt\\plugins\\heaven-control-plane\\verify.py\"\n  if ($LASTEXITCODE -ne 0) { throw 'control-plane verify failed' }\n  git -C $wt diff --check\n  if ($LASTEXITCODE -ne 0) { throw 'git diff --check failed' }\n  $head=(git -C $wt rev-parse HEAD).Trim()\n  $status=(git -C $wt status --short)\n  [pscustomobject]@{head=$head;clean=([string]::IsNullOrWhiteSpace(($status -join '')))} | ConvertTo-Json -Compress\n} finally {\n  git -C $repo worktree remove --force $wt\n}",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T12:06:10Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
