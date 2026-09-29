@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-164500-health-heaven2",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:45:38.248324+00:00"
+  "updated_at": "2026-09-29T16:46:06.726623+00:00",
+  "exit_code": 0
 }
