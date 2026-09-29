@@ -1,3 +1,7 @@
+# v8.8.10 exact-main release validation
+
+The v8.8.10 source retains the updater BOM-compatibility and release-gate repairs from v8.8.9. The authoritative closure remains an exact-current-main Windows Release Gate followed by the installed-client build-60 update success path and deterministic rollback/sentinel-preservation E2E. Continuity metadata must match `VERSION.txt` before publication.
+
 # v8.8.0 function verification validation
 
 The v8.8 verifier adds two gates before cache promotion: a Roslyn function-fingerprint scan and runtime-trace coverage for every changed/new production function. The previous `verified=true` cache is immutable on any failing run. Only a complete PASS may promote current fingerprints.
