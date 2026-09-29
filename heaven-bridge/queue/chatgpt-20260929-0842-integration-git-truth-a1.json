@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0842-integration-git-truth-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; if (!(Test-Path $repo)) { Write-Output 'REPO_MISSING'; Get-ChildItem 'C:\\Users\\Xxkan' -Directory -Filter '*mhw*' | Select-Object -ExpandProperty FullName; exit 2 }; Write-Output '===ROOT==='; git -C $repo rev-parse --show-toplevel; Write-Output '===FETCH==='; git -C $repo fetch --all --prune; Write-Output '===STATUS==='; git -C $repo status --short --branch; Write-Output '===BRANCH==='; git -C $repo branch --show-current; Write-Output '===REMOTES==='; git -C $repo remote -v; Write-Output '===SHAS==='; Write-Output ('HEAD=' + (git -C $repo rev-parse HEAD)); Write-Output ('LOCAL_MAIN=' + (git -C $repo rev-parse main)); Write-Output ('ORIGIN_MAIN=' + (git -C $repo rev-parse origin/main)); Write-Output '===DIVERGENCE main...origin/main==='; git -C $repo rev-list --left-right --count main...origin/main; Write-Output '===STASH==='; git -C $repo stash list; Write-Output '===WORKTREES==='; git -C $repo worktree list --porcelain; Write-Output '===BRANCHES==='; git -C $repo branch -vv --all; Write-Output '===RECENT LOCAL/REMOTE SUPPORT REFS==='; git -C $repo for-each-ref --sort=-committerdate --format='%(committerdate:iso-strict)|%(refname:short)|%(objectname:short)|%(subject)' refs/heads refs/remotes/origin | Select-Object -First 120",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T08:42:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
