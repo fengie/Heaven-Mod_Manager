@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1040-manage-test-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 900,
+    "command": ".\\heaven-bridge\\manage.ps1 TEST; exit $LASTEXITCODE"
+  },
+  "priority": "highest"
+}
