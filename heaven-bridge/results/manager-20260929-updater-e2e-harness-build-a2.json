@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-updater-e2e-harness-build-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:02:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:02:28.048724+00:00",
+  "finished_at": "2026-09-29T09:02:34.284958+00:00",
+  "stdout": "  Determining projects to restore...\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\tools\\MhwModManager.FunctionVerifier\\MhwModManager.FunctionVerifier.csproj (in 77 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Core\\MhwModManager.Core.csproj (in 77 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Storage\\MhwModManager.Storage.csproj (in 131 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Updater\\MhwModManager.Updater.csproj (in 131 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj (in 131 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Updater.Helper\\MhwModManager.Updater.Helper.csproj (in 131 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj (in 131 ms).\r\n  Restored C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj (in 133 ms).\r\n  MhwModManager.Core -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Core\\bin\\Release\\net10.0\\MhwModManager.Core.dll\r\n  MhwModManager.FunctionVerifier -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\tools\\MhwModManager.FunctionVerifier\\bin\\Release\\net10.0\\MhwModManager.FunctionVerifier.dll\r\n  MhwModManager.Storage -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Storage\\bin\\Release\\net10.0\\MhwModManager.Storage.dll\r\n  MhwModManager.Filesystem -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Filesystem\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Filesystem.dll\r\n  MhwModManager.Diagnostics -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Diagnostics\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Diagnostics.dll\r\n  MhwModManager.Updater -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Updater\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Updater.dll\r\n  MhwModManager.Updater.Helper -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\src\\MhwModManager.Updater.Helper\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager Updater.dll\r\n  MhwModManager.IntegrationTests -> C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\tests\\MhwModManager.IntegrationTests\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.IntegrationTests.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:03.18\r\n89403283cac9a55f69bdde7677aff7e304d60122\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2'...\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-updater-e2e-harness-build-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-updater-e2e-harness-build-a2.stderr.log",
+    "stdout_bytes": 2919,
+    "stderr_bytes": 85,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2978673ff6783cd48179480c59cdcba8fe2b4e78b7af30f222acaaa8372d9030"
+}
