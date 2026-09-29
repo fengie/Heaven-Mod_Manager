@@ -46,6 +46,13 @@ An integration agent must:
 A partial branch is evidence, not automatically valid work.
 Recover by inspecting commits, working-tree state, tests, and intended acceptance criteria. Complete or revert the smallest boundary; do not assume the agent's final chat summary exists.
 
+### Continuous recovery invariant
+- Detect failed, interrupted, or orphaned lanes independently of unrelated healthy workers.
+- Do not require swarm-wide quiescence before scheduling a replacement for an unfinished lineage.
+- Maintain a bounded recovery pool and count already-running recovery workers against that budget.
+- Permit only one active recovery owner per failed lineage; preserve branch/worktree/task evidence and resume only the unfinished boundary.
+- Test the mixed state explicitly: at least one healthy worker still running while another lane dies and is recovered.
+
 ## Unavailable environments
 Record machine/platform-dependent verification separately from code completion. Do not block unrelated research, but do not mark the boundary closed until required environment evidence exists.
 
