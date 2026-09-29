@@ -360,7 +360,7 @@
         <article class="agent">
           <div class="agent-top">
             <div>
-              <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}</span></div>
+              <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}${a.recoveryStatus ? ` · ${escapeHtml(a.recoveryStatus)}` : ""}</span></div>
               <div class="meta">${escapeHtml(a.id)} · ${escapeHtml(a.machine || "—")} · PID ${escapeHtml(a.pid || "—")} · ${fmt(a.startedAt)}</div>
             </div>
             <span class="tag">P${escapeHtml(a.priority)} · ${escapeHtml(a.boundary)}</span>
@@ -368,6 +368,7 @@
           <div class="task">${escapeHtml(a.task)}</div>
           <div class="meta"><span class="tag">${escapeHtml(a.baseBranch)} → ${escapeHtml(a.branchName)}</span></div>
           ${a.lastMessage ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last output:</strong> ${escapeHtml(a.lastMessage.slice(0,420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
+          ${a.recoveryStatus ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(a.recoveryStatus)}${a.replacementAgentId ? ` → ${escapeHtml(a.replacementAgentId)}` : ""}${a.recoveryNextAt ? ` · next ${fmt(a.recoveryNextAt)}` : ""}</div>` : ""}
           <div class="actions">
             <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
             ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
@@ -401,7 +402,7 @@
         <article class="agent">
           <div class="agent-top">
             <div>
-              <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}</span></div>
+              <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}${a.recovery_status ? ` · ${escapeHtml(a.recovery_status)}` : ""}</span></div>
               <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml((a.providers || [a.provider]).join(", "))} · ${escapeHtml(a.machine || "—")} · heartbeat ${fmt(a.heartbeat_at)}</div>
             </div>
             <span class="tag">${a.live ? "LIVE" : escapeHtml(a.freshness || "unknown")}</span>
@@ -409,6 +410,7 @@
           <div class="task">${escapeHtml(a.task || a.last_action_summary || "No current task summary")}</div>
           <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
           <div class="meta">Last action: ${escapeHtml(a.last_action_summary || "—")} · lease ${escapeHtml(a.source_metadata?.lease_id || "—")} · boundary ${escapeHtml(a.source_metadata?.boundary || "—")}</div>
+          ${a.recovery_status ? `<div class="meta"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(a.recovery_status)}${a.replacement_agent_id ? ` → ${escapeHtml(a.replacement_agent_id)}` : ""}${a.recovery_next_at ? ` · next ${fmt(a.recovery_next_at)}` : ""}</div>` : ""}
         </article>
       `).join("") : '<div class="empty">No federated agent observations yet.</div>';
     }

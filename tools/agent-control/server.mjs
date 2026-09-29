@@ -44,6 +44,11 @@ import {
   inspectHeavenBridge
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
+import {
+  looksLikeExecutionOpener,
+  noWorkTerminationDecision,
+  recoveryBackoffMs
+} from "./lib/no-work-recovery.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -73,7 +78,10 @@ const stopOperations = new Map();
 let degradedReason = null;
 let deployMutex = Promise.resolve();
 let autopilotTickRunning = false;
+let noWorkRecoveryTickRunning = false;
+const noWorkRecoveryOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
+const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
 
 const rolePresets = roleCatalog();
 
@@ -646,6 +654,24 @@ function updateTaskForAgent(state, agent) {
   if (isTerminalStatus(agent.status)) task.finishedAt ||= isoNow();
 }
 
+function markNoWorkRecoveryPending(state, agent, decision, leaseReason = "no-work-terminal") {
+  agent.failureClass = "no-work";
+  agent.recoveryStatus = "retry-pending";
+  agent.recoveryReason = decision.reason;
+  agent.recoveryDetectedAt ||= isoNow();
+  agent.recoveryNextAt = null;
+  agent.completionEvidence = "no-work-terminal";
+  releaseLeaseForAgent(state, agent, leaseReason);
+  updateTaskForAgent(state, agent);
+  const task = state.tasks.find(item => item.id === agent.taskId);
+  if (task) {
+    task.status = "retry-pending";
+    task.finishedAt = null;
+    task.blockers = (task.blockers || []).filter(item => item !== "agent-no-work");
+    task.nextAction = "Agent Control detected termination without substantive work and will dispatch one bounded replacement automatically.";
+  }
+}
+
 function refreshState() {
   const state = loadState();
   let changed = false;
@@ -694,19 +720,36 @@ function refreshState() {
         agent.interruptedAt = isoNow();
         agent.updatedAt = isoNow();
         agent.completionEvidence = null;
-        updateTaskForAgent(state, agent);
-        addEvent(state, "agent.interrupted", `${agent.id} disappeared before an authoritative exit event`, {
-          agentId: agent.id,
-          taskId: agent.taskId,
-          reason: "owned-process-missing-without-exit-event"
-        });
-        addNotification(state, {
-          severity: "warning",
-          title: "Worker interrupted",
-          message: `${agent.roleLabel || agent.id} stopped without authoritative completion evidence. Its lease is preserved.`,
-          action: { type: "generate-takeover", agentId: agent.id },
-          dedupeKey: `interrupted:${agent.id}`
-        });
+        const noWorkDecision = noWorkTerminationDecision(agent);
+        if (noWorkDecision.noWork) {
+          markNoWorkRecoveryPending(state, agent, noWorkDecision, "owned-process-missing-no-work");
+          addEvent(state, "agent.no-work", `${agent.id} disappeared after producing no substantive work`, {
+            agentId: agent.id,
+            taskId: agent.taskId,
+            reason: noWorkDecision.reason
+          });
+          addNotification(state, {
+            severity: "warning",
+            title: "Worker stalled before doing work",
+            message: `${agent.roleLabel || agent.id} terminated without substantive work. A bounded automatic retry is queued.`,
+            action: { type: "inspect-agent", agentId: agent.id },
+            dedupeKey: `no-work:${agent.id}`
+          });
+        } else {
+          updateTaskForAgent(state, agent);
+          addEvent(state, "agent.interrupted", `${agent.id} disappeared before an authoritative exit event`, {
+            agentId: agent.id,
+            taskId: agent.taskId,
+            reason: "owned-process-missing-without-exit-event"
+          });
+          addNotification(state, {
+            severity: "warning",
+            title: "Worker interrupted",
+            message: `${agent.roleLabel || agent.id} stopped without authoritative completion evidence. Its lease is preserved.`,
+            action: { type: "generate-takeover", agentId: agent.id },
+            dedupeKey: `interrupted:${agent.id}`
+          });
+        }
         changed = true;
       }
       continue;
@@ -979,7 +1022,8 @@ async function deployOne({
   repositoryWriteAuthorized = false,
   acceptanceCriteria = [],
   verification = [],
-  additionalConstraints = []
+  additionalConstraints = [],
+  recoveryContext = null
 }) {
   if (!rolePresets[role]) throw new Error(`Unknown role: ${role}`);
   if (!task || !task.trim()) throw new Error("Task is required.");
@@ -1081,7 +1125,10 @@ async function deployOne({
     promptTemplateId: null,
     promptTemplateVersion: null,
     promptHash: null,
-    workerCapabilityHash: taskCapability.hash
+    workerCapabilityHash: taskCapability.hash,
+    repositoryWriteAuthorized: Boolean(repositoryWriteAuthorized),
+    retryOfTaskId: recoveryContext?.retryOfTaskId || null,
+    recoveryRootAgentId: recoveryContext?.rootAgentId || null
   };
   currentState.tasks.unshift(taskRecord);
   addEvent(currentState, "task.created", `${taskId} assigned to ${id}`, { agentId: id, taskId });
@@ -1291,6 +1338,11 @@ async function deployOne({
     promptHash: prompt.sha256,
     lastMessage: "",
     model: model?.trim() || null,
+    repositoryWriteAuthorized: Boolean(repositoryWriteAuthorized),
+    retryOfAgentId: recoveryContext?.retryOfAgentId || null,
+    retryOfFederatedAgentId: recoveryContext?.retryOfFederatedAgentId || null,
+    recoveryRootAgentId: recoveryContext?.rootAgentId || null,
+    recoveryAttempt: Math.max(0, Math.floor(Number(recoveryContext?.attempt) || 0)),
     startedAt,
     updatedAt: startedAt,
     finishedAt: null,
@@ -1328,18 +1380,25 @@ async function deployOne({
       item.exitCode = code;
       item.signal = signal || null;
       item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
-      item.status = classifyAuthoritativeExit(item, code);
+      item.currentSha = currentSha || item.currentSha || null;
+      const authoritativeStatus = classifyAuthoritativeExit(item, code);
+      item.status = authoritativeStatus;
       item.finishedAt = isoNow();
       item.updatedAt = isoNow();
       item.heartbeatAt = item.finishedAt;
-      item.completionEvidence = item.status === "stopped"
-        ? "verified-operator-stop"
-        : item.status === "capacity-blocked"
-          ? "provider-capacity"
-          : "authoritative-exit";
-      item.currentSha = currentSha || item.currentSha || null;
-      releaseLeaseForAgent(current, item, `authoritative-process-exit:${code ?? "unknown"}`);
-      updateTaskForAgent(current, item);
+      const noWorkDecision = noWorkTerminationDecision(item);
+      if (noWorkDecision.noWork) {
+        item.status = "failed";
+        markNoWorkRecoveryPending(current, item, noWorkDecision, `no-work-process-exit:${code ?? "unknown"}`);
+      } else {
+        item.completionEvidence = item.status === "stopped"
+          ? "verified-operator-stop"
+          : item.status === "capacity-blocked"
+            ? "provider-capacity"
+            : "authoritative-exit";
+        releaseLeaseForAgent(current, item, `authoritative-process-exit:${code ?? "unknown"}`);
+        updateTaskForAgent(current, item);
+      }
       addEvent(current, "agent.exited", `${id} exited with ${code ?? "unknown"}`, {
         agentId: id,
         taskId,
@@ -1352,7 +1411,15 @@ async function deployOne({
           remoteJobId: item.remoteJobId || null
         }
       });
-      if (item.status === "stopped") {
+      if (noWorkDecision.noWork) {
+        addNotification(current, {
+          severity: "warning",
+          title: "Worker stalled before doing work",
+          message: `${item.roleLabel || id} terminated after only startup/output preamble. Agent Control queued a bounded automatic replacement.`,
+          action: { type: "inspect-agent", agentId: id },
+          dedupeKey: `no-work:${id}`
+        });
+      } else if (item.status === "stopped") {
         addNotification(current, {
           severity: "info",
           title: "Agent stopped",
@@ -1386,6 +1453,7 @@ async function deployOne({
         });
       }
       saveState(current);
+      if (noWorkDecision.noWork) setImmediate(() => void recoverNoWorkAgent(id));
     }
     children.delete(id);
   });
@@ -1412,6 +1480,366 @@ async function deployOne({
   });
 
   return agent;
+}
+
+function noWorkRecoveryConfig(state) {
+  const raw = state?.settings?.noWorkRecovery || {};
+  return {
+    enabled: raw.enabled !== false,
+    maxRetries: Math.max(0, Math.floor(Number(raw.maxRetries) || 2)),
+    maxDispatchFailures: Math.max(1, Math.floor(Number(raw.maxDispatchFailures) || 5)),
+    retryBackoffMs: Math.max(1_000, Number(raw.retryBackoffMs) || 15_000),
+    maxBackoffMs: Math.max(1_000, Number(raw.maxBackoffMs) || 300_000)
+  };
+}
+
+function liveRecoveryReplacement(state, source) {
+  const root = source.recoveryRootAgentId || source.id;
+  return state.agents.find(candidate =>
+    candidate.id !== source.id &&
+    coreIsActiveStatus(candidate.status) &&
+    (
+      candidate.retryOfAgentId === source.id ||
+      candidate.recoveryRootAgentId === root
+    )
+  ) || null;
+}
+
+function liveBoundaryConflict(state, source) {
+  const boundary = String(source.boundary || "").trim().toLowerCase();
+  if (!boundary) return null;
+  return state.leases.find(lease =>
+    lease.status === "active" &&
+    String(lease.boundary || "").trim().toLowerCase() === boundary &&
+    lease.ownerAgentId !== source.id
+  ) || null;
+}
+
+async function recoverNoWorkAgent(agentId) {
+  if (noWorkRecoveryOperations.has(agentId)) return null;
+  noWorkRecoveryOperations.add(agentId);
+  try {
+    const state = refreshState();
+    const source = state.agents.find(item => item.id === agentId);
+    if (!source || source.failureClass !== "no-work") return null;
+    if (!["retry-pending", "retry-waiting"].includes(source.recoveryStatus)) return null;
+
+    const config = noWorkRecoveryConfig(state);
+    if (!config.enabled) {
+      source.recoveryStatus = "retry-disabled";
+      const task = state.tasks.find(item => item.id === source.taskId);
+      if (task) {
+        task.status = "failed";
+        task.finishedAt ||= isoNow();
+        task.nextAction = "Automatic no-work recovery is disabled.";
+      }
+      saveState(state);
+      return null;
+    }
+
+    const nextAt = Date.parse(source.recoveryNextAt || "");
+    if (Number.isFinite(nextAt) && nextAt > Date.now()) return null;
+
+    const attempt = Math.max(0, Math.floor(Number(source.recoveryAttempt) || 0));
+    if (attempt >= config.maxRetries) {
+      source.recoveryStatus = "retry-exhausted";
+      const task = state.tasks.find(item => item.id === source.taskId);
+      if (task) {
+        task.status = "failed";
+        task.finishedAt ||= isoNow();
+        task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-retry-exhausted"]));
+        task.nextAction = "Automatic no-work retry limit reached; inspect the provider/session failure before another dispatch.";
+      }
+      addNotification(state, {
+        severity: "error",
+        title: "No-work retry limit reached",
+        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts.`,
+        action: { type: "inspect-agent", agentId: source.id },
+        dedupeKey: `no-work-exhausted:${source.id}`
+      });
+      saveState(state);
+      return null;
+    }
+
+    const existing = liveRecoveryReplacement(state, source);
+    if (existing) {
+      source.recoveryStatus = "retry-dispatched";
+      source.replacementAgentId = existing.id;
+      source.replacementTaskId = existing.taskId || null;
+      source.recoveryNextAt = null;
+      saveState(state);
+      return existing;
+    }
+
+    const conflict = liveBoundaryConflict(state, source);
+    if (conflict) {
+      source.recoveryStatus = "retry-waiting";
+      source.recoveryNextAt = new Date(Date.now() + config.retryBackoffMs).toISOString();
+      source.recoveryWaitReason = `boundary-owned-by:${conflict.ownerAgentId}`;
+      saveState(state);
+      return null;
+    }
+
+    const task = state.tasks.find(item => item.id === source.taskId) || null;
+    const replacement = await deployOne({
+      role: rolePresets[source.role] ? source.role : "support",
+      task: source.task || task?.objective || "Resume the interrupted execution assignment and complete it with verified evidence.",
+      baseBranch: source.requestedBaseBranch || source.baseBranch || "main",
+      model: source.model || "",
+      boundary: source.boundary || task?.boundary || `retry:${source.id}`,
+      priority: source.priority ?? task?.priority ?? 60,
+      machine: source.machine || task?.machine || "auto",
+      dependencies: task?.dependencies || source.dependencies || [],
+      targetAgentId: source.targetAgentId || task?.targetAgentId || null,
+      lane: source.lane || task?.lane || null,
+      repositoryWriteAuthorized: Boolean(source.repositoryWriteAuthorized ?? task?.repositoryWriteAuthorized),
+      acceptanceCriteria: task?.acceptanceCriteria || [],
+      verification: task?.verification || [],
+      additionalConstraints: [
+        `Automatic no-work recovery retry ${attempt + 1}/${config.maxRetries} for ${source.id}.`,
+        "Do not stop after announcing an execution plan. Perform the assigned work, verify it, and return concrete evidence."
+      ],
+      recoveryContext: {
+        attempt: attempt + 1,
+        retryOfAgentId: source.id,
+        retryOfTaskId: source.taskId || null,
+        rootAgentId: source.recoveryRootAgentId || source.id
+      }
+    });
+
+    const linked = loadState();
+    const original = linked.agents.find(item => item.id === source.id);
+    const created = linked.agents.find(item => item.id === replacement.id);
+    const originalTask = linked.tasks.find(item => item.id === source.taskId);
+    const createdTask = linked.tasks.find(item => item.id === replacement.taskId);
+    const rootId = source.recoveryRootAgentId || source.id;
+
+    if (original) {
+      original.recoveryStatus = "retry-dispatched";
+      original.replacementAgentId = replacement.id;
+      original.replacementTaskId = replacement.taskId;
+      original.recoveryNextAt = null;
+    }
+    if (created) {
+      created.retryOfAgentId = source.id;
+      created.recoveryRootAgentId = rootId;
+      created.recoveryAttempt = attempt + 1;
+    }
+    if (originalTask) {
+      originalTask.status = "superseded";
+      originalTask.finishedAt ||= isoNow();
+      originalTask.nextAction = `Automatic replacement ${replacement.id} is running.`;
+    }
+    if (createdTask) {
+      createdTask.retryOfTaskId = source.taskId || null;
+      createdTask.recoveryRootAgentId = rootId;
+    }
+    addEvent(linked, "agent.no-work-requeued", `${source.id} was automatically replaced by ${replacement.id}`, {
+      agentId: source.id,
+      taskId: source.taskId,
+      reason: source.recoveryReason || "no-work",
+      evidence: { replacementAgentId: replacement.id, replacementTaskId: replacement.taskId, attempt: attempt + 1 }
+    });
+    saveState(linked);
+    return created || replacement;
+  } catch (error) {
+    const failed = loadState();
+    const source = failed.agents.find(item => item.id === agentId);
+    if (source && source.failureClass === "no-work") {
+      const config = noWorkRecoveryConfig(failed);
+      const dispatchFailures = Math.max(0, Math.floor(Number(source.recoveryDispatchFailures) || 0)) + 1;
+      source.recoveryDispatchFailures = dispatchFailures;
+      source.recoveryLastError = error?.message || String(error);
+      if (dispatchFailures >= config.maxDispatchFailures) {
+        source.recoveryStatus = "retry-blocked";
+        source.recoveryNextAt = null;
+        const task = failed.tasks.find(item => item.id === source.taskId);
+        if (task) {
+          task.status = "blocked";
+          task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-retry-dispatch-failed"]));
+          task.nextAction = "Automatic retry dispatch repeatedly failed; inspect Agent Control/provider health.";
+        }
+        addNotification(failed, {
+          severity: "error",
+          title: "Automatic retry is blocked",
+          message: source.recoveryLastError,
+          action: { type: "inspect-agent", agentId: source.id },
+          dedupeKey: `no-work-retry-blocked:${source.id}`
+        });
+      } else {
+        const waitMs = recoveryBackoffMs(dispatchFailures, {
+          baseMs: config.retryBackoffMs,
+          maxMs: config.maxBackoffMs
+        });
+        source.recoveryStatus = "retry-waiting";
+        source.recoveryNextAt = new Date(Date.now() + waitMs).toISOString();
+      }
+      addEvent(failed, "agent.no-work-retry-failed", `Automatic replacement dispatch failed for ${source.id}`, {
+        agentId: source.id,
+        taskId: source.taskId,
+        reason: source.recoveryLastError,
+        evidence: { dispatchFailures }
+      });
+      saveState(failed);
+    }
+    return null;
+  } finally {
+    noWorkRecoveryOperations.delete(agentId);
+  }
+}
+
+async function recoverFederatedNoWorkAgent(agentId) {
+  const operationId = `federated:${agentId}`;
+  if (noWorkRecoveryOperations.has(operationId)) return null;
+  noWorkRecoveryOperations.add(operationId);
+  try {
+    const state = refreshState();
+    const source = state.federation?.agents?.find(item => item.agent_id === agentId);
+    if (!source || !["retry-pending", "retry-waiting"].includes(source.recovery_status)) return null;
+
+    const config = noWorkRecoveryConfig(state);
+    if (!config.enabled) {
+      source.recovery_status = "retry-disabled";
+      saveState(state);
+      return null;
+    }
+    const nextAt = Date.parse(source.recovery_next_at || "");
+    if (Number.isFinite(nextAt) && nextAt > Date.now()) return null;
+
+    const attempt = Math.max(0, Math.floor(Number(source.recovery_attempt) || 0));
+    if (attempt >= config.maxRetries) {
+      source.recovery_status = "retry-exhausted";
+      addNotification(state, {
+        severity: "error",
+        title: "Federated no-work retry limit reached",
+        message: `${source.role || source.agent_id} exhausted ${config.maxRetries} automatic replacement attempts.`,
+        action: { type: "inspect-federation", agentId: source.agent_id },
+        dedupeKey: `federated-no-work-exhausted:${source.agent_id}`
+      });
+      saveState(state);
+      return null;
+    }
+
+    const existing = state.agents.find(candidate =>
+      coreIsActiveStatus(candidate.status) &&
+      candidate.retryOfFederatedAgentId === source.agent_id
+    );
+    if (existing) {
+      source.recovery_status = "retry-dispatched";
+      source.replacement_agent_id = existing.id;
+      source.replacement_task_id = existing.taskId || null;
+      source.recovery_next_at = null;
+      saveState(state);
+      return existing;
+    }
+
+    const metadata = source.source_metadata && typeof source.source_metadata === "object"
+      ? source.source_metadata
+      : {};
+    if (!source.task) {
+      source.recovery_status = "retry-blocked";
+      source.recovery_last_error = "Federated session did not provide a task body for safe retry.";
+      saveState(state);
+      return null;
+    }
+
+    const replacement = await deployOne({
+      role: rolePresets[source.role] ? source.role : "support",
+      task: source.task,
+      baseBranch: metadata.base_branch || source.branch || "main",
+      model: metadata.model || "",
+      boundary: metadata.boundary || `federated-retry:${source.task_id || source.agent_id}`,
+      priority: metadata.priority ?? 60,
+      machine: metadata.machine || source.machine || "auto",
+      dependencies: Array.isArray(metadata.dependencies) ? metadata.dependencies : [],
+      targetAgentId: metadata.target_agent_id || null,
+      lane: metadata.lane || null,
+      repositoryWriteAuthorized: Boolean(metadata.repository_write_authorized),
+      acceptanceCriteria: Array.isArray(metadata.acceptance_criteria) ? metadata.acceptance_criteria : [],
+      verification: Array.isArray(metadata.verification) ? metadata.verification : [],
+      additionalConstraints: [
+        `Automatic recovery for federated session ${source.agent_id}; retry ${attempt + 1}/${config.maxRetries}.`,
+        "Do not stop after announcing an execution plan. Perform the assigned work, verify it, and return concrete evidence."
+      ],
+      recoveryContext: {
+        attempt: attempt + 1,
+        retryOfFederatedAgentId: source.agent_id,
+        retryOfTaskId: source.task_id || null,
+        rootAgentId: source.agent_id
+      }
+    });
+
+    const linked = loadState();
+    const federated = linked.federation?.agents?.find(item => item.agent_id === source.agent_id);
+    const created = linked.agents.find(item => item.id === replacement.id);
+    if (federated) {
+      federated.recovery_status = "retry-dispatched";
+      federated.replacement_agent_id = replacement.id;
+      federated.replacement_task_id = replacement.taskId;
+      federated.recovery_next_at = null;
+    }
+    if (created) {
+      created.retryOfFederatedAgentId = source.agent_id;
+      created.recoveryRootAgentId = source.agent_id;
+      created.recoveryAttempt = attempt + 1;
+    }
+    addEvent(linked, "federation.no-work-requeued", `${source.agent_id} was automatically replaced by ${replacement.id}`, {
+      agentId: replacement.id,
+      taskId: replacement.taskId,
+      reason: source.recovery_reason || "federated-no-work",
+      evidence: { federatedAgentId: source.agent_id, attempt: attempt + 1 }
+    });
+    saveState(linked);
+    return created || replacement;
+  } catch (error) {
+    const failed = loadState();
+    const source = failed.federation?.agents?.find(item => item.agent_id === agentId);
+    if (source) {
+      const config = noWorkRecoveryConfig(failed);
+      const dispatchFailures = Math.max(0, Math.floor(Number(source.recovery_dispatch_failures) || 0)) + 1;
+      source.recovery_dispatch_failures = dispatchFailures;
+      source.recovery_last_error = error?.message || String(error);
+      if (dispatchFailures >= config.maxDispatchFailures) {
+        source.recovery_status = "retry-blocked";
+        source.recovery_next_at = null;
+      } else {
+        source.recovery_status = "retry-waiting";
+        source.recovery_next_at = new Date(Date.now() + recoveryBackoffMs(dispatchFailures, {
+          baseMs: config.retryBackoffMs,
+          maxMs: config.maxBackoffMs
+        })).toISOString();
+      }
+      saveState(failed);
+    }
+    return null;
+  } finally {
+    noWorkRecoveryOperations.delete(operationId);
+  }
+}
+
+async function reconcileNoWorkRecoveries() {
+  if (noWorkRecoveryTickRunning) return;
+  noWorkRecoveryTickRunning = true;
+  try {
+    const state = refreshState();
+    const now = Date.now();
+    const managed = state.agents.filter(agent => {
+      if (agent.failureClass !== "no-work") return false;
+      if (!["retry-pending", "retry-waiting"].includes(agent.recoveryStatus)) return false;
+      const nextAt = Date.parse(agent.recoveryNextAt || "");
+      return !Number.isFinite(nextAt) || nextAt <= now;
+    }).slice(0, 2);
+    for (const agent of managed) await recoverNoWorkAgent(agent.id);
+
+    const federated = (state.federation?.agents || []).filter(agent => {
+      if (!["retry-pending", "retry-waiting"].includes(agent.recovery_status)) return false;
+      const nextAt = Date.parse(agent.recovery_next_at || "");
+      return !Number.isFinite(nextAt) || nextAt <= now;
+    }).slice(0, 2);
+    for (const agent of federated) await recoverFederatedNoWorkAgent(agent.agent_id);
+  } finally {
+    noWorkRecoveryTickRunning = false;
+  }
 }
 
 async function killProcessTree(pid) {
@@ -1804,10 +2232,41 @@ function ingestFederatedObservations(body = {}) {
     provider: item?.provider || body.provider
   }, { now: Date.now() }));
 
+  const federatedRecoveryIds = [];
+  for (const agent of accepted) {
+    const metadata = agent.source_metadata && typeof agent.source_metadata === "object"
+      ? agent.source_metadata
+      : {};
+    const message = agent.last_action_summary || metadata.final_message || "";
+    const expectsRepositoryWork = metadata.execution_assignment === true || looksLikeExecutionOpener(message);
+    const status = agent.state === "disconnected" ? "interrupted" : agent.state;
+    const decision = noWorkTerminationDecision({
+      status,
+      lastMessage: message,
+      baseSha: metadata.base_sha,
+      currentSha: metadata.current_sha,
+      changedFiles: metadata.changed_files,
+      source_metadata: metadata
+    }, { expectsRepositoryWork });
+    if (!decision.noWork) continue;
+    const stored = state.federation.agents.find(item => item.agent_id === agent.agent_id);
+    if (!stored) continue;
+    if (String(stored.recovery_status || "").startsWith("retry-")) continue;
+    stored.recovery_status = stored.task ? "retry-pending" : "retry-blocked";
+    stored.recovery_reason = decision.reason;
+    stored.recovery_detected_at ||= isoNow();
+    stored.recovery_next_at = null;
+    if (!stored.task) stored.recovery_last_error = "Federated execution session terminated without a task body for safe retry.";
+    if (stored.recovery_status === "retry-pending") federatedRecoveryIds.push(stored.agent_id);
+  }
+
   addEvent(state, "federation.observed", `Accepted ${accepted.length} federated agent observation${accepted.length === 1 ? "" : "s"}`, {
     agentIds: [...new Set(accepted.map(item => item.agent_id))]
   });
   saveState(state);
+  for (const agentId of federatedRecoveryIds) {
+    setImmediate(() => void recoverFederatedNoWorkAgent(agentId));
+  }
   return {
     accepted: accepted.length,
     agents: accepted,
@@ -3088,6 +3547,12 @@ const autopilotTimer = setInterval(() => {
   void autopilotStep();
 }, AUTOPILOT_TICK_MS);
 autopilotTimer.unref?.();
+
+const noWorkRecoveryTimer = setInterval(() => {
+  void reconcileNoWorkRecoveries();
+}, NO_WORK_RECOVERY_TICK_MS);
+noWorkRecoveryTimer.unref?.();
+void reconcileNoWorkRecoveries();
 
 const branchCleanupTimer = setInterval(() => {
   void reconcileIntegratedBranchCleanup();
