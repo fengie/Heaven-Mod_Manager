@@ -559,3 +559,15 @@ If a future agent notices the chain is broken or incomplete, repairing the conti
 The repository should remember what conversations forget.
 
 **Do not break the chain.**
+
+## 31. Release-ready means release immediately
+
+For every user-facing version, successful completion of the required release gates creates an immediate publication obligation.
+
+- Once the version is integrated into canonical `main` and its required release evidence is green, publish the release in the same execution cycle.
+- Do not defer an eligible release for a separate approval prompt, reminder, batching window, later shift, or successor unless the user explicitly orders a hold or delay for that release.
+- “Implemented,” “verified,” or “release-ready” is not “done.” A release-owning task reaches `DONE`/`SHIPPED` only after immutable private publication, required public mirroring, and post-publication verification succeed.
+- If publication fails, use authorized repair/retry paths immediately and preserve the exact blocker/evidence. A green but unpublished version remains active unfinished work.
+- Every handoff and manager must surface any release-ready-but-unpublished version as highest-priority closure work until it is published or explicitly held by the user.
+
+This is a Core Rule. Only explicit user authorization may weaken or remove it.
