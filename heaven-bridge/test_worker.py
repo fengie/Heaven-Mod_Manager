@@ -144,8 +144,9 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
             "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
-            "window_list", "window_focus", "window_move", "window_close", "gui_mouse_move",
-            "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+            "window_list", "window_focus", "window_move", "window_state", "window_close",
+            "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
+            "gui_mouse_scroll", "gui_key", "gui_type",
         ):
             self.assertIn(action, result["data"]["actions"])
         self.assertTrue(result["data"]["capabilities"]["session_restart_recovery"])
