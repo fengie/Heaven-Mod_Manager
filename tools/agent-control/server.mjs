@@ -730,7 +730,10 @@ function refreshState() {
           worktreeDirty: agent.worktreeClean === false
         }, {
           expectsRepositoryWork: true,
-          streamLost: true
+          streamLost: true,
+          durableEvidenceChecked: agent.worktreeClean === true
+            && Boolean(agent.baseSha)
+            && Boolean(agent.currentSha)
         });
 
         if (reconciliation.recoveryStatus === "no-durable-work-detected-retry") {
@@ -2344,9 +2347,16 @@ function ingestFederatedObservations(body = {}) {
     const status = rawState === "disconnected" ? "interrupted" : rawState;
     const stored = state.federation.agents.find(item => item.agent_id === agent.agent_id);
     if (!stored || !expectsRepositoryWork || !["done", "failed", "finished", "interrupted", "orphaned", "disconnected"].includes(rawState)) continue;
+    if (["retry-dispatched", "retry-blocked", "retry-exhausted"].includes(String(stored.recovery_status || ""))) continue;
 
     stored.recovery_status = "stream-lost-checking-work";
     stored.recovery_detected_at ||= isoNow();
+    const durableEvidenceChecked = metadata.durable_evidence_checked === true
+      || (
+        Boolean(metadata.base_sha)
+        && Boolean(metadata.current_sha)
+        && Array.isArray(metadata.changed_files)
+      );
     const decision = terminationReconciliationDecision({
       status,
       lastMessage: message,
@@ -2358,7 +2368,8 @@ function ingestFederatedObservations(body = {}) {
       source_metadata: metadata
     }, {
       expectsRepositoryWork,
-      streamLost
+      streamLost,
+      durableEvidenceChecked
     });
 
     stored.recovery_reason = decision.reason;
