@@ -4968,7 +4968,29 @@ if (!LOOPBACK_HOSTS.has(String(HOST).trim().toLowerCase())) {
   throw new Error(`Refusing unauthenticated non-loopback bind host "${HOST}". Configure an authenticated remote-access boundary before exposing Agent Control beyond localhost.`);
 }
 
+function writeControllerProcessIdentity() {
+  fs.writeFileSync(CONTROLLER_PID_FILE, JSON.stringify({
+    pid: process.pid,
+    sessionId: SESSION_ID,
+    startedAt: isoNow(),
+    serverPath: fileURLToPath(import.meta.url),
+    host: os.hostname(),
+    port: PORT
+  }, null, 2), "utf8");
+}
+
+function clearControllerProcessIdentity() {
+  try {
+    if (!fs.existsSync(CONTROLLER_PID_FILE)) return;
+    const current = JSON.parse(fs.readFileSync(CONTROLLER_PID_FILE, "utf8"));
+    if (Number(current?.pid) === process.pid) fs.rmSync(CONTROLLER_PID_FILE, { force: true });
+  } catch {}
+}
+
+process.once("exit", clearControllerProcessIdentity);
+
 server.listen(PORT, HOST, () => {
+  writeControllerProcessIdentity();
   console.log(`Heaven Agent Control Plane listening on http://${HOST}:${PORT}`);
   console.log(`Repo: ${REPO}`);
   console.log(`Worktrees: ${WORKTREE_ROOT}`);
