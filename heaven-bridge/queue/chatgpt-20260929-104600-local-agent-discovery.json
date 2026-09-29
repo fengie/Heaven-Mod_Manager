@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104600-local-agent-discovery",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:46:00+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; Write-Output '===commands==='; foreach($c in 'ollama','aider','docker','python','git'){ $x=Get-Command $c -ErrorAction SilentlyContinue; if($x){Write-Output ($c+'='+$x.Source)} else {Write-Output ($c+'=MISSING')} }; Write-Output '===ollama==='; if(Get-Command ollama -ErrorAction SilentlyContinue){ ollama list }; Write-Output '===docker==='; if(Get-Command docker -ErrorAction SilentlyContinue){ docker ps --format '{{.Names}}|{{.Status}}|{{.Image}}' }; Write-Output '===python-packages==='; python -c \"import importlib.util; print('aider_chat='+str(bool(importlib.util.find_spec('aider')))); print('pywinauto='+str(bool(importlib.util.find_spec('pywinauto')))); print('uiautomation='+str(bool(importlib.util.find_spec('uiautomation')))); print('comtypes='+str(bool(importlib.util.find_spec('comtypes'))))\"",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "priority": "highest"
+}
