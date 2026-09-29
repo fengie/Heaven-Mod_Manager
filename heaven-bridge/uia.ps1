@@ -175,6 +175,13 @@ function Resolve-One(
     if ($found.items.Count -eq 0) {
         Emit-Error 'UIA_NOT_FOUND' 'No UI Automation element matched the selector'
     }
+    if ($found.truncated -and -not [bool]$request.first_match) {
+        Emit-Error 'UIA_SEARCH_TRUNCATED' 'UI Automation search hit max_nodes before uniqueness could be proven; narrow the selector or explicitly set first_match=true' @{
+            matches_seen = $found.items.Count
+            visited = $found.visited
+            max_nodes = $maxNodes
+        }
+    }
     if ($found.items.Count -gt 1 -and -not [bool]$request.first_match) {
         $preview = @($found.items | Select-Object -First 8 | ForEach-Object { Describe-Element $_ })
         Emit-Error 'UIA_AMBIGUOUS' 'Multiple UI Automation elements matched; narrow the selector or explicitly set first_match=true' @{
