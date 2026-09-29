@@ -1,9 +1,10 @@
 {
   "id": "verify-updater-closure-b38b-20260929-1240-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:46:33.653362+00:00"
+  "updated_at": "2026-09-29T12:47:23.230529+00:00",
+  "exit_code": 0
 }
