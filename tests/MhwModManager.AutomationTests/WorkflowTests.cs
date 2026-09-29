@@ -141,6 +141,28 @@ public sealed class WorkflowTests : IDisposable
     }
 
     [Fact]
+    public async Task FomodCancelRefusesToDeleteOutsideManagerStagingRoot()
+    {
+        var db = await DatabaseAsync();
+        var modsRoot = Path.Combine(root, "safe-cancel-mods"); Directory.CreateDirectory(modsRoot);
+        var outside = Path.Combine(root, "must-survive"); Directory.CreateDirectory(outside);
+        var sentinel = Path.Combine(outside, "sentinel.txt"); await File.WriteAllTextAsync(sentinel, "keep", Token);
+        var package = Path.Combine(root, "safe-cancel-package"); Directory.CreateDirectory(Path.Combine(package, "fomod"));
+        await File.WriteAllTextAsync(Path.Combine(package, "payload.bin"), "payload", Token);
+        await File.WriteAllTextAsync(Path.Combine(package, "fomod", "ModuleConfig.xml"),
+            "<config><moduleName>Test</moduleName><requiredInstallFiles><file source=\"payload.bin\" destination=\"payload.bin\"/></requiredInstallFiles></config>", Token);
+        var installer = new FomodInstallerService(package);
+        var catalog = new CatalogService(db, null!, modsRoot);
+        var importer = new ArchiveImportService(new ArchiveInspector(), catalog, modsRoot);
+        var forged = new FomodImportPreparation(outside, Path.Combine(modsRoot, "dest"), "forged", installer);
+
+        await importer.CancelFomodAsync(forged);
+
+        Assert.True(Directory.Exists(outside));
+        Assert.Equal("keep", await File.ReadAllTextAsync(sentinel, Token));
+    }
+
+    [Fact]
     public async Task FomodSelectsOnlyChosenPayloadAndConditionalFiles()
     {
         var package = Path.Combine(root, "package"); Directory.CreateDirectory(Path.Combine(package, "fomod"));
