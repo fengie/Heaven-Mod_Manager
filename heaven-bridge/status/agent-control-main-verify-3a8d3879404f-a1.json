@@ -1,0 +1,9 @@
+{
+  "id": "agent-control-main-verify-3a8d3879404f-a1",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:28:57.354645+00:00"
+}
