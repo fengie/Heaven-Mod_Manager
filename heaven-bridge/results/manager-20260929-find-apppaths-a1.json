@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-find-apppaths-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:52:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:51:33.229209+00:00",
+  "finished_at": "2026-09-29T08:51:35.058609+00:00",
+  "stdout": "src/MhwModManager.App/App.xaml.cs:72:            var paths=startup.Run(\"bootstrap.paths.discover\",AppPaths.Discover);\r\nsrc/MhwModManager.App/App.xaml.cs:260:    AppPaths Paths,\r\nsrc/MhwModManager.App/App.xaml.cs:307:public sealed record AppPaths(\r\nsrc/MhwModManager.App/App.xaml.cs:323:    public static AppPaths Discover()\r\nsrc/MhwModManager.App/App.xaml.cs:209:        var managerHome=Environment.GetEnvironmentVariable(\"MOD_MANAGER_HOME\");\r\nsrc/MhwModManager.App/App.xaml.cs:210:        if(string.IsNullOrWhiteSpace(managerHome))managerHome=Environment.GetEnvironmentVariable(\"MHW_MANAGER_HOME\");\r\nsrc/MhwModManager.App/App.xaml.cs:326:        var tool=Environment.GetEnvironmentVariable(\"MOD_MANAGER_HOME\");\r\nsrc/MhwModManager.App/App.xaml.cs:327:        if(string.IsNullOrWhiteSpace(tool))tool=Environment.GetEnvironmentVariable(\"MHW_MANAGER_HOME\");\r\nsrc/MhwModManager.Core/MasterDebugLog.cs:230:        if (string.IsNullOrWhiteSpace(configured)) configured = Environment.GetEnvironmentVariable(\"MHW_MANAGER_HOME\");\r\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-apppaths-inspect'...\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-find-apppaths-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-find-apppaths-a1.stderr.log",
+    "stdout_bytes": 1022,
+    "stderr_bytes": 73,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "fe9f3c26afa06f5d92b5fe07a3fc6b714fbec23d9b84fed7e4dae1eec707baf8"
+}
