@@ -179,6 +179,11 @@ export function defaultControlState({ sessionId, hostname }) {
         maxDispatchFailures: 5,
         retryBackoffMs: 15_000,
         maxBackoffMs: 300_000
+      },
+      swarmTailRecovery: {
+        enabled: true,
+        maxWorkers: 4,
+        maxAttemptsPerRoot: 2
       }
     },
     autopilot: defaultAutopilotState(),
@@ -211,7 +216,8 @@ export function migrateControlState(parsed, context) {
         allowAutomaticWorkHandoff: false
       } : {}),
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) },
-      noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) }
+      noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) },
+      swarmTailRecovery: { ...base.settings.swarmTailRecovery, ...(parsed.settings?.swarmTailRecovery || {}) }
     },
     autopilot: normalizeAutopilotState(parsed.autopilot),
     federation: migrateFederationState(parsed.federation),
