@@ -6,4 +6,4 @@ The plugin routes computer work to the local worker on `heaven` through the priv
 
 Worker implementation lives in `heaven-bridge/worker.py`. The transport branch remains `heaven-bridge`; completed repository changes still belong on canonical `main` under `GLOBAL_GIT_DIRECTIVE.md`.
 
-Version 0.5.0 adds an explicit code/build/test execution skill so agents do not treat the bridge as desktop-only.
+Version 0.6.1 documents worker v4 semantic UI Automation, effective elevation reporting, priority-aware scheduling, and the bounded `wait_for` primitive for file/process/session/window synchronization.
