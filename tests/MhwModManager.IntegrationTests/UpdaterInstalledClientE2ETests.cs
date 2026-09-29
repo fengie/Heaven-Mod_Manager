@@ -80,56 +80,55 @@ public sealed class UpdaterInstalledClientE2ETests
             SeedSentinels(successInstall);
             var successSentinelsBefore = await SnapshotSentinelsAsync(successInstall, TestToken);
 
-            using var client = new UpdateClientService(
-                log: message =>
-                {
-                    log.Add(message);
-                    Console.WriteLine("[updater-e2e] " + message);
-                });
+            var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
+            if (Directory.Exists(updaterRoot))
+                Directory.Delete(updaterRoot, true);
+            UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
 
-            var oldIdentity = await UpdateBuildIdentity.LoadRequiredAsync(successInstall, TestToken);
-            var staged = await client.CheckAndStageAsync(oldIdentity, TestToken);
-            Assert.NotNull(staged);
-            Assert.Equal(TargetBuild, staged!.Manifest.BuildNumber);
-            Assert.Equal(TargetSource, staged.Manifest.SourceSha, ignoreCase: true);
-
-            var stagedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(staged.StagingRoot, TestToken);
-            Assert.Equal(TargetBuild, stagedIdentity.BuildNumber);
-            Assert.Equal(TargetSource, stagedIdentity.SourceSha, ignoreCase: true);
-            var targetManifest = await UpdatePackageVerifier.VerifyAsync(
-                staged.StagingRoot, staged.Manifest.ProductManifestSha256, TestToken);
-
-            using var simulatedOldProcess = StartShortLivedProcess();
-            var handoff = await client.PrepareHandoffAsync(
-                staged,
+            var oldMarker = await ReleaseInstallMarker.LoadAsync(successInstall, TestToken);
+            var oldExecutable = Path.Combine(
                 successInstall,
-                [],
-                simulatedOldProcess.Id,
+                oldMarker.ExecutableRelativePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.True(File.Exists(oldExecutable), $"Old packaged executable is missing: {oldExecutable}");
+
+            var oldStart = new ProcessStartInfo(oldExecutable)
+            {
+                UseShellExecute = false,
+                WorkingDirectory = successInstall
+            };
+            oldStart.Environment["MOD_MANAGER_HOME"] = managerHome;
+            oldStart.Environment["MHW_MOD_MANAGER_GITHUB_TOKEN"] = token!;
+            using var oldClient = Process.Start(oldStart)
+                                  ?? throw new InvalidOperationException(
+                                      "Could not launch the real build-60 installed client.");
+
+            var confirmed = await WaitForConfirmedTransactionAsync(
+                updaterRoot,
+                TargetBuild,
+                TargetSource,
+                TimeSpan.FromMinutes(5),
                 TestToken);
 
-            using var helper = client.LaunchHelper(handoff);
-            using (var helperTimeout = CancellationTokenSource.CreateLinkedTokenSource(TestToken))
+            using (var oldExitTimeout = CancellationTokenSource.CreateLinkedTokenSource(TestToken))
             {
-                helperTimeout.CancelAfter(TimeSpan.FromMinutes(3));
-                await helper.WaitForExitAsync(helperTimeout.Token);
+                oldExitTimeout.CancelAfter(TimeSpan.FromSeconds(30));
+                await oldClient.WaitForExitAsync(oldExitTimeout.Token);
             }
-
-            Assert.Equal(0, helper.ExitCode);
+            Assert.Equal(0, oldClient.ExitCode);
 
             var installedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(successInstall, TestToken);
             Assert.Equal(TargetBuild, installedIdentity.BuildNumber);
             Assert.Equal(TargetSource, installedIdentity.SourceSha, ignoreCase: true);
 
-            var health = JsonSerializer.Deserialize<UpdateStartupHealth>(
-                await File.ReadAllTextAsync(handoff.Request.HealthFile, TestToken),
-                UpdateProtocol.Json);
-            Assert.NotNull(health);
-            Assert.Equal(TargetBuild, health!.BuildNumber);
-            Assert.Equal(TargetSource, health.SourceSha, ignoreCase: true);
-            Assert.Equal(handoff.Request.HealthToken, health.Token);
-
-            var successJournal = await ReadJournalAsync(handoff.Request.JournalPath, TestToken);
-            Assert.Equal(UpdateJournalPhase.Confirmed, successJournal.Phase);
+            var targetManifest = await UpdatePackageVerifier.VerifyAsync(
+                confirmed.Request.StagingRoot,
+                confirmed.Request.Manifest.ProductManifestSha256,
+                TestToken);
+            var stagedIdentity = await UpdateBuildIdentity.LoadRequiredAsync(
+                confirmed.Request.StagingRoot,
+                TestToken);
+            Assert.Equal(TargetBuild, stagedIdentity.BuildNumber);
+            Assert.Equal(TargetSource, stagedIdentity.SourceSha, ignoreCase: true);
 
             var successSentinelsAfter = await SnapshotSentinelsAsync(successInstall, TestToken);
             AssertSnapshotsEqual(successSentinelsBefore, successSentinelsAfter);
@@ -138,18 +137,19 @@ public sealed class UpdaterInstalledClientE2ETests
             {
                 status = "PASS",
                 installRoot = successInstall,
-                staged.Manifest.BuildNumber,
-                staged.Manifest.SourceSha,
-                helperExitCode = helper.ExitCode,
-                health.ProcessId,
-                health.AttemptId,
-                health.BuildNumber,
-                health.SourceSha,
-                journalPhase = successJournal.Phase.ToString(),
+                requestPath = confirmed.RequestPath,
+                confirmed.Request.Manifest.BuildNumber,
+                confirmed.Request.Manifest.SourceSha,
+                oldClientExitCode = oldClient.ExitCode,
+                confirmed.Health.ProcessId,
+                confirmed.Health.AttemptId,
+                confirmed.Health.BuildNumber,
+                confirmed.Health.SourceSha,
+                journalPhase = confirmed.Journal.Phase.ToString(),
                 sentinelSha256 = successSentinelsAfter
             };
 
-            StopTrackedProcessBestEffort(health.ProcessId);
+            StopTrackedProcessBestEffort(confirmed.Health.ProcessId);
 
             ExtractPackage(oldRelease.ArchivePath, rollbackInstall);
             var rollbackOldManifest = await VerifyPublishedInstallAsync(
@@ -165,9 +165,9 @@ public sealed class UpdaterInstalledClientE2ETests
                 updaterRoot, "e2e-rollback-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(rollbackRoot);
             var rollbackRequest = new UpdateApplyRequest(
-                staged.Manifest,
+                confirmed.Request.Manifest,
                 rollbackInstall,
-                staged.StagingRoot,
+                confirmed.Request.StagingRoot,
                 Path.Combine(rollbackRoot, "backup"),
                 Path.Combine(rollbackRoot, "journal.json"),
                 Path.Combine(rollbackRoot, "pending.json"),
@@ -258,16 +258,100 @@ public sealed class UpdaterInstalledClientE2ETests
         }
     }
 
-    private static Process StartShortLivedProcess()
+    private static async Task<ConfirmedTransaction> WaitForConfirmedTransactionAsync(
+        string updaterRoot,
+        long targetBuild,
+        string targetSource,
+        TimeSpan timeout,
+        CancellationToken ct)
     {
-        return Process.Start(new ProcessStartInfo(
-                   "powershell.exe",
-                   "-NoProfile -NonInteractive -Command Start-Sleep -Milliseconds 1200")
-               {
-                   UseShellExecute = false,
-                   CreateNoWindow = true
-               })
-               ?? throw new InvalidOperationException("Could not start simulated previous-client process.");
+        var deadline = DateTimeOffset.UtcNow + timeout;
+        var transactionsRoot = Path.Combine(updaterRoot, "transactions");
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (Directory.Exists(transactionsRoot))
+            {
+                foreach (var requestPath in Directory.EnumerateFiles(
+                             transactionsRoot,
+                             "apply-request.json",
+                             SearchOption.AllDirectories))
+                {
+                    UpdateApplyRequest request;
+                    try
+                    {
+                        request = await UpdateRequestStore.ReadAsync(requestPath, ct);
+                    }
+                    catch (Exception ex) when (ex is IOException or JsonException)
+                    {
+                        continue;
+                    }
+
+                    if (request.Manifest.BuildNumber != targetBuild
+                        || !string.Equals(
+                            request.Manifest.SourceSha,
+                            targetSource,
+                            StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (!File.Exists(request.JournalPath))
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(250), ct);
+                        continue;
+                    }
+
+                    UpdateJournal journal;
+                    try
+                    {
+                        journal = await ReadJournalAsync(request.JournalPath, ct);
+                    }
+                    catch (Exception ex) when (ex is IOException or JsonException)
+                    {
+                        continue;
+                    }
+
+                    if (journal.Phase == UpdateJournalPhase.RolledBack)
+                        throw new InvalidOperationException(
+                            "Real installed-client update rolled back instead of reaching startup health.");
+                    if (journal.Phase == UpdateJournalPhase.Failed)
+                        throw new InvalidOperationException(
+                            "Real installed-client update entered Failed state.");
+
+                    if (journal.Phase != UpdateJournalPhase.Confirmed
+                        || !File.Exists(request.HealthFile))
+                        continue;
+
+                    UpdateStartupHealth? health;
+                    try
+                    {
+                        health = JsonSerializer.Deserialize<UpdateStartupHealth>(
+                            await File.ReadAllTextAsync(request.HealthFile, ct),
+                            UpdateProtocol.Json);
+                    }
+                    catch (Exception ex) when (ex is IOException or JsonException)
+                    {
+                        continue;
+                    }
+
+                    if (health is null) continue;
+                    Assert.Equal(request.HealthToken, health.Token);
+                    Assert.Equal(targetBuild, health.BuildNumber);
+                    Assert.Equal(targetSource, health.SourceSha, ignoreCase: true);
+                    Assert.True(health.ProcessId > 0);
+                    Assert.False(string.IsNullOrWhiteSpace(health.AttemptId));
+                    return new ConfirmedTransaction(
+                        requestPath,
+                        request,
+                        journal,
+                        health);
+                }
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500), ct);
+        }
+
+        throw new TimeoutException(
+            $"Timed out waiting for real installed-client update to confirm build {targetBuild}.");
     }
 
     private static void PrepareFakeGame(string managerHome, string fakeGameRoot)
@@ -580,4 +664,9 @@ public sealed class UpdaterInstalledClientE2ETests
 
     private sealed record DownloadedRelease(UpdateManifest Manifest, string ArchivePath);
     private sealed record ReleaseAsset(string Name, string ApiUrl, long Size, string? Digest);
+    private sealed record ConfirmedTransaction(
+        string RequestPath,
+        UpdateApplyRequest Request,
+        UpdateJournal Journal,
+        UpdateStartupHealth Health);
 }
