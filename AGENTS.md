@@ -21,6 +21,23 @@ Agent Control must enforce this mechanically for spawned workers: required train
 Every successor and sub-agent inherits this same gate. **No untrained agent gets to answer first and “catch up” afterward.**
 
 
+
+## Mandatory task-review and plugin activation gate
+
+Repository training is necessary but not sufficient. **After training and before any task-facing plan, answer, dispatch, tool choice, or task-specific action**, every agent must perform a task/plugin preflight.
+
+1. Re-read the complete current task and extract its required actions, targets, machines, artifacts, constraints, explicitly named tools/plugins, and acceptance/verification obligations. Do not route from a stale summary when the live task text is available.
+2. Discover the **actual plugin/tool surface available in the current session/runtime**. Enumerate or search installed plugins, connectors, skills, repository toolbox capabilities, and task-specific integrations before concluding that a capability is unavailable. A remembered limitation, a previous chat's tool list, or one failed lookup is not proof of absence.
+3. Map the task to every materially relevant purpose-built capability. For each selected plugin/capability, load/read its current skill, manifest, README, or operating instructions **before using it**. When the platform supports explicit activation/selection of an already-authorized plugin, activate/select it before generic fallbacks. Never bypass a required user authorization/consent boundary.
+4. If the user explicitly names a plugin/capability for the task, treat that as a routing requirement unless it is proven unavailable, unsafe, or incapable of the required operation. Do not silently substitute a broad shell/browser/desktop/API path.
+5. Record a concise `PLUGIN-PREFLIGHT` evidence block in agent state/handoff containing: task summary; capabilities considered; plugin(s)/skill(s) loaded or activated; selected execution route; unavailable/inapplicable capabilities and evidence; and any fallback reason. Do not claim `plugin unavailable` without positive discovery evidence from the current runtime.
+6. If the correct reusable capability is missing or incomplete, use the safest authorized fallback only after the discovery step, and follow the mandatory plugin-gap capture rule. A missing connector on one chat/tool surface is a routing/discovery problem first, not permission to ignore the toolbox.
+7. Reviewers and integration agents must treat a missing or false plugin preflight as a process defect. They should stop task-specific execution/merge when the omission could have changed routing, safety, machine selection, or verification.
+
+For this repository, **plugin activation** means proving that the agent discovered the relevant capability, loaded/read its current operating instructions, confirmed that it covers the requested operation and permission boundary, and selected it as the execution path when applicable. It never means bypassing OAuth, account permissions, user consent, repository protection, or platform safety controls.
+
+Managers must enforce this mechanically in every dispatched task: preserve the user's actual task text or an exact scoped assignment, include this gate before the implementation prompt, require `PLUGIN-PREFLIGHT` evidence from the worker, and reject/redispatch workers that skipped discovery or claimed a plugin was unavailable without current-runtime evidence.
+
 ## Default execution semantics
 
 Unless the user explicitly says **read only**, **review only**, **summarize only**, **audit only**, or otherwise forbids mutation/execution, treat operational instructions as execution assignments.
