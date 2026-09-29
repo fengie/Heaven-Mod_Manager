@@ -1,4 +1,10 @@
-# v8.8.15 Universal Mod Manager
+# v8.8.16 Universal Mod Manager
+
+## v8.8.16 — faster startup and leaner diagnostics
+
+Startup now keeps hidden secondary pages off the critical path: Profiles, Activity/History, and Shared Files load when first opened instead of blocking the initial usable window. Routine method-scope tracing is quiet by default while error evidence remains available, and startup diagnostic JSON persistence is batched to reduce avoidable disk churn.
+
+A repeatable Heaven startup-performance gate now compares current `main` with the exact candidate using 3 cold-state and 3 warm-state runs on an 80-mod / 2,000-file fixture, while recording process readiness, CPU/memory, stage timings, output size, and source provenance.
 
 ## v8.8.15 — true visual overhaul
 

@@ -1,3 +1,11 @@
+# v8.8.16 — Faster startup and leaner diagnostics
+
+- Defer Profiles, Activity/History, and Shared Files page loading until those tabs are first opened instead of doing that work on the initial startup critical path.
+- Silence routine method-scope trace writes by default while retaining explicit/error diagnostics, substantially reducing startup log I/O.
+- Batch startup diagnostic JSON persistence instead of rewriting the report on every stage update.
+- Add a repeatable Heaven startup benchmark and gate with 3 cold-state + 3 warm-state runs, an 80-mod / 2,000-file fixture, stage timings, CPU/memory measurements, build-output size, and exact-SHA provenance.
+- Add regressions that keep hidden secondary pages lazy and preserve diagnostic/error tracing behavior.
+
 # v8.8.15 — True visual overhaul
 
 - Replace the two-row command strip with a single calmer app bar that keeps game context and primary actions visible without dominating the window.

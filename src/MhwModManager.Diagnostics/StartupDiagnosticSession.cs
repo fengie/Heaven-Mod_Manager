@@ -25,6 +25,8 @@ public sealed class StartupDiagnosticSession
     private readonly object gate = new();
     private readonly List<StartupDiagnosticEntry> entries = [];
     private readonly DateTimeOffset startedAt = DateTimeOffset.Now;
+    private static readonly long RunningReportIntervalTicks=Math.Max(1,Stopwatch.Frequency/4);
+    private long lastReportPersistTimestamp;
     private bool completed;
 
     private StartupDiagnosticSession(string logDirectory, string stamp)
@@ -35,7 +37,7 @@ public sealed class StartupDiagnosticSession
         TextLogPath = Path.Combine(logDirectory, $"startup-{stamp}.log");
         JsonReportPath = Path.Combine(logDirectory, $"startup-{stamp}.json");
         AppendLine($"Universal Mod Manager startup diagnostics\nStarted: {startedAt.ToString("O", CultureInfo.InvariantCulture)}\nPID: {Environment.ProcessId}\nOS: {Environment.OSVersion}\n.NET: {Environment.Version}\nBase directory: {AppContext.BaseDirectory}\n");
-        PersistReport("RUNNING", null);
+        PersistReport("RUNNING", null, force:true);
     }
 
     public string TextLogPath { get; }
@@ -162,7 +164,7 @@ public sealed class StartupDiagnosticSession
             completed = true;
             var finished = DateTimeOffset.Now;
             AppendLine($"\nStartup {(success ? "PASSED" : "FAILED")} at {finished.ToString("O", CultureInfo.InvariantCulture)} ({(finished - startedAt).TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture)} ms).{(string.IsNullOrWhiteSpace(summary) ? string.Empty : " " + summary)}");
-            PersistReport(success ? "PASS" : "FAIL", summary);
+            PersistReport(success ? "PASS" : "FAIL", summary, force:true);
         }
     }
 
@@ -171,8 +173,10 @@ public sealed class StartupDiagnosticSession
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         lock (gate)
         {
+            // The text log is append-only and records the active stage immediately.
+            // Avoid rewriting the growing JSON report for every START marker; the
+            // next completed entry refreshes it, and failures/final completion force it.
             AppendLine($"{Timestamp()} START {name}{FormatDetail(detail)}");
-            PersistReport("RUNNING", null);
         }
     }
 
@@ -194,13 +198,19 @@ public sealed class StartupDiagnosticSession
             {
                 AppendLine(Indent(entry.ExceptionDetails));
             }
-            PersistReport(completed ? "COMPLETE" : "RUNNING", null);
+            PersistReport(completed ? "COMPLETE" : "RUNNING", null, force:completed||entry.Status==StartupDiagnosticStatus.Failed);
         }
     }
 
-    private void PersistReport(string overall, string? summary)
+    private void PersistReport(string overall, string? summary, bool force=false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var nowTicks=Stopwatch.GetTimestamp();
+        if(!force
+           && string.Equals(overall,"RUNNING",StringComparison.Ordinal)
+           && lastReportPersistTimestamp!=0
+           && nowTicks-lastReportPersistTimestamp<RunningReportIntervalTicks)
+            return;
         try
         {
             var report = new
@@ -220,6 +230,7 @@ public sealed class StartupDiagnosticSession
             var temp = JsonReportPath + ".tmp";
             File.WriteAllText(temp, JsonSerializer.Serialize(report, JsonOptions), Encoding.UTF8);
             File.Move(temp, JsonReportPath, true);
+            lastReportPersistTimestamp=nowTicks;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
