@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'scripts/Publish-UpdaterRelease.ps1'
+      - 'scripts/Publish-PublicUpdaterRelease.ps1'
       - 'scripts/UpdaterReleasePublication.ps1'
       - 'scripts/UpdaterReleasePolicy.ps1'
       - 'scripts/Test-UpdaterReleasePolicy.ps1'
@@ -49,6 +50,22 @@ jobs:
           $head=(git rev-parse HEAD).Trim()
           if ($head -ne '${{ github.event.pull_request.head.sha }}') {
             throw "Checked-out source $head does not match PR head ${{ github.event.pull_request.head.sha }}."
+          }
+
+      - name: Parse updater publishers
+        shell: powershell
+        run: |
+          foreach ($path in @('.\scripts\Publish-UpdaterRelease.ps1', '.\scripts\Publish-PublicUpdaterRelease.ps1')) {
+            $tokens=$null
+            $errors=$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)
+            if($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Host "::error::$($_.Message)" }
+              throw "$path contains PowerShell parse errors."
+            }
+            if(Select-String -LiteralPath $path -Pattern 'Get-Command gh|& gh ' -Quiet) {
+              throw "$path must not depend on GitHub CLI on Heaven."
+            }
           }
 
       - name: Run updater publication policy and fault tests
