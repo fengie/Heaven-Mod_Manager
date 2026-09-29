@@ -1,9 +1,10 @@
 {
   "id": "--------------------------------------------------------------------------------uia131-gate-20260929-1115",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:15:52.711764+00:00"
+  "updated_at": "2026-09-29T11:16:14.600443+00:00",
+  "exit_code": 1
 }
