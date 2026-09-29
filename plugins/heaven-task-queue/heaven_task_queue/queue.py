@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import time
 import uuid
@@ -10,6 +11,7 @@ from typing import Any, Iterable, Iterator, Mapping
 
 
 VALID_STATES = {"queued", "running", "blocked", "completed", "failed", "cancelled"}
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
 
 class TaskQueue:
@@ -76,6 +78,13 @@ class TaskQueue:
             )
 
     @staticmethod
+    def _identifier(value: Any, field: str) -> str:
+        identifier = str(value or "").strip()
+        if not _IDENTIFIER_RE.fullmatch(identifier):
+            raise ValueError(f"{field} must match {_IDENTIFIER_RE.pattern}")
+        return identifier
+
+    @staticmethod
     def _json(value: Any, *, max_bytes: int = 256_000) -> str:
         raw = json.dumps(value, separators=(",", ":"), ensure_ascii=False)
         if len(raw.encode("utf-8")) > max_bytes:
@@ -117,10 +126,12 @@ class TaskQueue:
             raise ValueError("priority must be between -1000 and 1000")
         if not isinstance(max_attempts, int) or not 1 <= max_attempts <= 100:
             raise ValueError("max_attempts must be between 1 and 100")
-        dep_ids = list(dict.fromkeys(str(x).strip() for x in dependencies if str(x).strip()))
+        dep_ids = list(
+            dict.fromkeys(self._identifier(x, "dependency") for x in dependencies if str(x).strip())
+        )
         if len(dep_ids) > 128:
             raise ValueError("too many dependencies")
-        tid = task_id or uuid.uuid4().hex
+        tid = self._identifier(task_id or uuid.uuid4().hex, "task_id")
         now = time.time()
         payload_json = self._json(dict(payload or {}))
         with self._connection() as conn:
@@ -150,9 +161,7 @@ class TaskQueue:
         return self._row(row)
 
     def register_worker(self, worker_id: str, metadata: Mapping[str, Any] | None = None) -> None:
-        worker_id = str(worker_id).strip()
-        if not worker_id or len(worker_id) > 128:
-            raise ValueError("worker_id is invalid")
+        worker_id = self._identifier(worker_id, "worker_id")
         metadata_json = self._json(dict(metadata or {}), max_bytes=32_000)
         now = time.time()
         with self._connection() as conn:
@@ -281,16 +290,28 @@ class TaskQueue:
         return self.get_task(task_id)
 
     def cancel_task(self, task_id: str, reason: str = "cancelled") -> dict[str, Any]:
+        task_id = self._identifier(task_id, "task_id")
         now = time.time()
         with self._connection() as conn:
-            changed = conn.execute(
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                "SELECT lease_owner FROM tasks WHERE id=? AND state NOT IN ('completed','failed','cancelled')",
+                (task_id,),
+            ).fetchone()
+            if row is None:
+                conn.rollback()
+                raise ValueError("task cannot be cancelled")
+            conn.execute(
                 """UPDATE tasks SET state='cancelled', error=?, lease_owner=NULL,
-                   lease_expires_at=NULL, updated_at=? WHERE id=? AND state NOT IN ('completed','failed','cancelled')""",
+                   lease_expires_at=NULL, updated_at=? WHERE id=?""",
                 (str(reason)[:4096], now, task_id),
-            ).rowcount
-            conn.execute("DELETE FROM resource_locks WHERE owner LIKE ?", (f"%:{task_id}",))
-        if not changed:
-            raise ValueError("task cannot be cancelled")
+            )
+            if row["lease_owner"]:
+                conn.execute(
+                    "DELETE FROM resource_locks WHERE owner=?",
+                    (f"{row['lease_owner']}:{task_id}",),
+                )
+            conn.commit()
         return self.get_task(task_id)
 
     def acquire_resource(self, name: str, owner: str, *, lease_seconds: int = 300) -> bool:
