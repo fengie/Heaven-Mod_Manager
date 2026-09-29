@@ -1,9 +1,10 @@
 {
   "id": "--------------------------------------------------------------------------------------------------------------g1113",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:12:55.527228+00:00"
+  "updated_at": "2026-09-29T11:13:57.338538+00:00",
+  "exit_code": 1
 }
