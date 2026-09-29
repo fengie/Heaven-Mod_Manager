@@ -16,11 +16,13 @@ on:
       - 'src/MhwModManager.Storage/DeploymentMetadata.cs'
       - 'src/MhwModManager.Storage/ProfileRepository.cs'
       - 'src/MhwModManager.Storage/ManagerDatabaseWorkflowExtensions.cs'
+      - 'src/MhwModManager.Storage/LegacyV7Migrator.cs'
       - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
       - 'src/MhwModManager.App/**'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs'
       - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
       - 'tests/MhwModManager.Tests/**'
       - '_AGENT_CONTEXT/handoff-manifest.json'
@@ -82,6 +84,12 @@ jobs:
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~UxHardeningTests|FullyQualifiedName~XamlBindingSafetyTests"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run legacy migration regression
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~LegacyMigrationTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused workflow regressions
