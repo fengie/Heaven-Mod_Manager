@@ -1,0 +1,9 @@
+{
+  "id": "000-branch-zero-targeted-20260929-105600",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:17:49.240299+00:00"
+}
