@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0825-topology-status-q1",
-  "state": "running",
+  "state": "completed",
   "action": "job_status",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:24:41.903625+00:00"
+  "updated_at": "2026-09-29T08:24:52.376859+00:00",
+  "exit_code": 0
 }
