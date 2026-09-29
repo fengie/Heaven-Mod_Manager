@@ -1,0 +1,2966 @@
+{
+  "id": "swarm-20260929-1535-canonical-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:35:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:33:20.685547+00:00",
+  "finished_at": "2026-09-29T15:33:20.820690+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "offset": 0,
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\TestResults"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\_AGENT_CONTEXT"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\_AGENT_TRAINING"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\benchmarks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\data"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\scripts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\src"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\tests"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\tools"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.gitignore",
+        "size": 88,
+        "modified": "2026-09-28T13:41:04.401926+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\AGENTS.md",
+        "size": 4802,
+        "modified": "2026-09-29T09:21:37.544079+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Build Source Handoff.bat",
+        "size": 147,
+        "modified": "2026-09-28T13:41:04.406982+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Build.bat",
+        "size": 817,
+        "modified": "2026-09-28T13:41:04.407493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\CHANGELOG.md",
+        "size": 47762,
+        "modified": "2026-09-29T09:41:54.878618+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Directory.Build.props",
+        "size": 720,
+        "modified": "2026-09-29T09:41:54.879125+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Directory.Packages.props",
+        "size": 692,
+        "modified": "2026-09-28T13:41:04.407493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\GLOBAL_GIT_DIRECTIVE.md",
+        "size": 10209,
+        "modified": "2026-09-29T09:21:37.545143+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\MHW-DEBUG-ALL.log",
+        "size": 68653,
+        "modified": "2026-09-29T09:46:02.528749+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\MhwModManager.sln",
+        "size": 8354,
+        "modified": "2026-09-28T13:41:04.409011+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\NEXT-AGENT-START-HERE.md",
+        "size": 24630,
+        "modified": "2026-09-29T09:28:41.685052+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\OPEN MASTER DEBUG LOG.bat",
+        "size": 308,
+        "modified": "2026-09-28T13:41:04.409011+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Open Startup Logs.bat",
+        "size": 322,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\README.md",
+        "size": 32586,
+        "modified": "2026-09-29T09:41:54.986605+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\REPAIR-NOTES.md",
+        "size": 1996,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-FAMILY-INFERENCE.md",
+        "size": 1479,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-MULTIGAME.md",
+        "size": 2265,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-UX-ROBUSTNESS.md",
+        "size": 3124,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-VISUALS-AND-UPDATES.md",
+        "size": 1267,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RUN BUILT APP.bat",
+        "size": 1303,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Test Everything.bat",
+        "size": 915,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\VALIDATION.md",
+        "size": 15846,
+        "modified": "2026-09-28T13:41:04.413071+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\VERSION.txt",
+        "size": 7,
+        "modified": "2026-09-29T09:41:54.880639+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Verify.bat",
+        "size": 807,
+        "modified": "2026-09-28T13:41:04.413071+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\global.json",
+        "size": 181,
+        "modified": "2026-09-28T13:41:04.457124+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\info"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\logs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\objects"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\refs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\worktrees"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\AUTO_MERGE",
+        "size": 41,
+        "modified": "2026-09-29T09:43:35.654318+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\COMMIT_EDITMSG",
+        "size": 113,
+        "modified": "2026-09-29T09:38:12.187630+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\FETCH_HEAD",
+        "size": 1737,
+        "modified": "2026-09-29T15:27:51.188645+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\HEAD",
+        "size": 21,
+        "modified": "2026-09-29T09:36:43.695601+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\ORIG_HEAD",
+        "size": 41,
+        "modified": "2026-09-29T09:41:54.723840+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\config",
+        "size": 1787,
+        "modified": "2026-09-29T11:38:42.675224+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\description",
+        "size": 73,
+        "modified": "2026-09-28T13:41:03.221506+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\index",
+        "size": 44168,
+        "modified": "2026-09-29T09:43:52.930653+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\packed-refs",
+        "size": 112,
+        "modified": "2026-09-29T15:27:10.324530+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\applypatch-msg.sample",
+        "size": 478,
+        "modified": "2026-09-28T13:41:03.223041+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\commit-msg.sample",
+        "size": 896,
+        "modified": "2026-09-28T13:41:03.223041+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\fsmonitor-watchman.sample",
+        "size": 4726,
+        "modified": "2026-09-28T13:41:03.224546+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\post-update.sample",
+        "size": 189,
+        "modified": "2026-09-28T13:41:03.224546+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-applypatch.sample",
+        "size": 424,
+        "modified": "2026-09-28T13:41:03.224546+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-commit.sample",
+        "size": 1649,
+        "modified": "2026-09-28T13:41:03.226055+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-merge-commit.sample",
+        "size": 416,
+        "modified": "2026-09-28T13:41:03.227060+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-push.sample",
+        "size": 1374,
+        "modified": "2026-09-28T13:41:03.227568+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-rebase.sample",
+        "size": 4898,
+        "modified": "2026-09-28T13:41:03.227568+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\pre-receive.sample",
+        "size": 544,
+        "modified": "2026-09-28T13:41:03.228573+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\prepare-commit-msg.sample",
+        "size": 1492,
+        "modified": "2026-09-28T13:41:03.229079+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\push-to-checkout.sample",
+        "size": 2783,
+        "modified": "2026-09-28T13:41:03.229079+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\sendemail-validate.sample",
+        "size": 2308,
+        "modified": "2026-09-28T13:41:03.230084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\hooks\\update.sample",
+        "size": 3650,
+        "modified": "2026-09-28T13:41:03.230084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\info\\exclude",
+        "size": 240,
+        "modified": "2026-09-28T13:41:03.230084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\logs\\HEAD",
+        "size": 13934,
+        "modified": "2026-09-29T09:43:35.665967+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github\\workflows"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github\\workflows\\agent-control-pr-gate.yml",
+        "size": 1003,
+        "modified": "2026-09-29T09:21:37.542568+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github\\workflows\\updater-installed-client-e2e.yml",
+        "size": 4840,
+        "modified": "2026-09-29T09:41:54.780655+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github\\workflows\\updater-publication-pr-gate.yml",
+        "size": 2585,
+        "modified": "2026-09-29T08:49:03.067350+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github\\workflows\\windows-release-gate.yml",
+        "size": 6090,
+        "modified": "2026-09-29T09:41:54.985092+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\README.md",
+        "size": 2774,
+        "modified": "2026-09-28T13:41:04.403439+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\function-status.json",
+        "size": 286768,
+        "modified": "2026-09-29T09:46:02.378741+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\stage-status.json",
+        "size": 8950,
+        "modified": "2026-09-29T09:44:42.587300+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\trusted-v8.7.0-files.json",
+        "size": 9443,
+        "modified": "2026-09-28T13:41:04.404962+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\trusted-v8.7.0-src.zip",
+        "size": 177136,
+        "modified": "2026-09-28T13:41:04.406471+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts\\MHW-Manual-Mod-Manager-v8.8.6-win-x64.zip",
+        "size": 129584085,
+        "modified": "2026-09-29T09:45:54.272965+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts\\update-manifest.json",
+        "size": 613,
+        "modified": "2026-09-29T09:45:54.490309+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\benchmarks\\MhwModManager.Benchmarks"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\benchmarks\\MhwModManager.Benchmarks\\MhwModManager.Benchmarks.csproj",
+        "size": 298,
+        "modified": "2026-09-28T13:41:04.451991+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\benchmarks\\MhwModManager.Benchmarks\\Program.cs",
+        "size": 1994,
+        "modified": "2026-09-28T13:41:04.451991+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\agent-handoff-preflight-20260929-054204.log",
+        "size": 1992,
+        "modified": "2026-09-29T09:42:06.115976+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\agent-handoff-preflight-20260929-054344.log",
+        "size": 1992,
+        "modified": "2026-09-29T09:43:45.760591+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-20260929-054204.binlog",
+        "size": 1033049,
+        "modified": "2026-09-29T09:42:30.797478+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-20260929-054344.binlog",
+        "size": 1031882,
+        "modified": "2026-09-29T09:44:14.601185+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-compile-20260929-054444.log",
+        "size": 4960,
+        "modified": "2026-09-29T09:44:49.276864+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-compile-win-x64-20260929-054444.log",
+        "size": 4612,
+        "modified": "2026-09-29T09:45:13.339921+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-confirm-20260929-054444.log",
+        "size": 462,
+        "modified": "2026-09-29T09:46:02.378741+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-scan-20260929-054444.log",
+        "size": 320,
+        "modified": "2026-09-29T09:44:47.839871+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-verification-20260929-054444.json",
+        "size": 477785,
+        "modified": "2026-09-29T09:44:47.830806+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-verification-confirm-20260929-054444.json",
+        "size": 477788,
+        "modified": "2026-09-29T09:46:02.368603+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-publish-r2r-20260929-054444.log",
+        "size": 2676,
+        "modified": "2026-09-29T09:45:31.797590+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-publish-updater-helper-20260929-054444.log",
+        "size": 3108,
+        "modified": "2026-09-29T09:45:33.953829+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-release-20260929-054444.log",
+        "size": 14805,
+        "modified": "2026-09-29T09:46:02.425131+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-release-report-20260929-054444.txt",
+        "size": 700,
+        "modified": "2026-09-29T09:46:02.417653+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-restore-20260929-054444.log",
+        "size": 166,
+        "modified": "2026-09-29T09:44:45.689799+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-restore-win-x64-r2r-20260929-054444.log",
+        "size": 1978,
+        "modified": "2026-09-29T09:45:14.981043+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-selftest-20260929-054444.log",
+        "size": 954,
+        "modified": "2026-09-29T09:45:09.508466+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-automation-20260929-054444.log",
+        "size": 948,
+        "modified": "2026-09-29T09:44:59.282650+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-core-20260929-054444.log",
+        "size": 788,
+        "modified": "2026-09-29T09:44:53.838596+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-integration-20260929-054444.log",
+        "size": 960,
+        "modified": "2026-09-29T09:45:07.882049+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-final-20260929-054204-Strict_whole_solution.log",
+        "size": 5168,
+        "modified": "2026-09-29T09:42:30.793448+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-final-20260929-054344-Strict_whole_solution.log",
+        "size": 5168,
+        "modified": "2026-09-29T09:44:14.598038+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-relaxed-20260929-054204-Relaxed_whole_solution.log",
+        "size": 5180,
+        "modified": "2026-09-29T09:42:15.994973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-relaxed-20260929-054344-Relaxed_whole_solution.log",
+        "size": 5180,
+        "modified": "2026-09-29T09:43:54.967161+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-App.log",
+        "size": 676,
+        "modified": "2026-09-29T09:42:29.163136+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Automation.log",
+        "size": 736,
+        "modified": "2026-09-29T09:42:21.863220+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-AutomationTests.log",
+        "size": 780,
+        "modified": "2026-09-29T09:42:23.808721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Benchmarks.log",
+        "size": 710,
+        "modified": "2026-09-29T09:42:26.117757+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Core.log",
+        "size": 648,
+        "modified": "2026-09-29T09:42:16.845136+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Diagnostics.log",
+        "size": 744,
+        "modified": "2026-09-29T09:42:20.781257+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Filesystem.log",
+        "size": 736,
+        "modified": "2026-09-29T09:42:18.792607+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-FunctionVerifier.log",
+        "size": 748,
+        "modified": "2026-09-29T09:42:27.955698+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-IntegrationTests.log",
+        "size": 788,
+        "modified": "2026-09-29T09:42:25.244736+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Mhw.log",
+        "size": 680,
+        "modified": "2026-09-29T09:42:19.794647+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-SelfTest.log",
+        "size": 724,
+        "modified": "2026-09-29T09:42:27.207088+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Storage.log",
+        "size": 672,
+        "modified": "2026-09-29T09:42:17.804469+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-UnitTests.log",
+        "size": 668,
+        "modified": "2026-09-29T09:42:22.794125+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-App.log",
+        "size": 676,
+        "modified": "2026-09-29T09:44:12.945122+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Automation.log",
+        "size": 736,
+        "modified": "2026-09-29T09:44:00.961030+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-AutomationTests.log",
+        "size": 780,
+        "modified": "2026-09-29T09:44:03.070083+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Benchmarks.log",
+        "size": 710,
+        "modified": "2026-09-29T09:44:05.612550+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Core.log",
+        "size": 648,
+        "modified": "2026-09-29T09:43:55.866510+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Diagnostics.log",
+        "size": 744,
+        "modified": "2026-09-29T09:43:59.787456+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Filesystem.log",
+        "size": 736,
+        "modified": "2026-09-29T09:43:57.742581+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-FunctionVerifier.log",
+        "size": 748,
+        "modified": "2026-09-29T09:44:08.462062+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-IntegrationTests.log",
+        "size": 788,
+        "modified": "2026-09-29T09:44:04.661022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Mhw.log",
+        "size": 680,
+        "modified": "2026-09-29T09:43:58.724713+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-SelfTest.log",
+        "size": 724,
+        "modified": "2026-09-29T09:44:07.390089+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Storage.log",
+        "size": 672,
+        "modified": "2026-09-29T09:43:56.759320+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-UnitTests.log",
+        "size": 668,
+        "modified": "2026-09-29T09:44:01.910299+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-confirm-20260929-054344-Promote_verified_function_fingerprints.log",
+        "size": 464,
+        "modified": "2026-09-29T09:44:43.723178+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-scan-20260929-054204-Function_fingerprint_scan.log",
+        "size": 690,
+        "modified": "2026-09-29T09:42:09.902025+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-scan-20260929-054344-Function_fingerprint_scan.log",
+        "size": 322,
+        "modified": "2026-09-29T09:43:49.043489+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-verification-20260929-054204.json",
+        "size": 477709,
+        "modified": "2026-09-29T09:42:09.889388+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-verification-20260929-054344.json",
+        "size": 477726,
+        "modified": "2026-09-29T09:43:49.034852+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\function-verification-confirm-20260929-054344.json",
+        "size": 477729,
+        "modified": "2026-09-29T09:44:43.711451+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\harness-report-preflight-20260929-054204.log",
+        "size": 897,
+        "modified": "2026-09-29T09:42:04.883634+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\harness-report-preflight-20260929-054344.log",
+        "size": 897,
+        "modified": "2026-09-29T09:43:44.736906+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\powershell-syntax-20260929-054204.log",
+        "size": 55,
+        "modified": "2026-09-29T09:42:04.850429+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\powershell-syntax-20260929-054344.log",
+        "size": 55,
+        "modified": "2026-09-29T09:43:44.709781+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-App-20260929-054204.binlog",
+        "size": 529296,
+        "modified": "2026-09-29T09:42:29.163136+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-App-20260929-054344.binlog",
+        "size": 528998,
+        "modified": "2026-09-29T09:44:12.947143+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Automation-20260929-054204.binlog",
+        "size": 465343,
+        "modified": "2026-09-29T09:42:21.863220+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Automation-20260929-054344.binlog",
+        "size": 465058,
+        "modified": "2026-09-29T09:44:00.959833+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-AutomationTests-20260929-054204.binlog",
+        "size": 516262,
+        "modified": "2026-09-29T09:42:23.810237+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-AutomationTests-20260929-054344.binlog",
+        "size": 516386,
+        "modified": "2026-09-29T09:44:03.071614+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Benchmarks-20260929-054204.binlog",
+        "size": 411891,
+        "modified": "2026-09-29T09:42:26.117245+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Benchmarks-20260929-054344.binlog",
+        "size": 412174,
+        "modified": "2026-09-29T09:44:05.613573+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Core-20260929-054204.binlog",
+        "size": 364517,
+        "modified": "2026-09-29T09:42:16.842118+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Core-20260929-054344.binlog",
+        "size": 364660,
+        "modified": "2026-09-29T09:43:55.863394+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Diagnostics-20260929-054204.binlog",
+        "size": 437923,
+        "modified": "2026-09-29T09:42:20.782781+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Diagnostics-20260929-054344.binlog",
+        "size": 437866,
+        "modified": "2026-09-29T09:43:59.786943+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Filesystem-20260929-054204.binlog",
+        "size": 415464,
+        "modified": "2026-09-29T09:42:18.792607+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Filesystem-20260929-054344.binlog",
+        "size": 415565,
+        "modified": "2026-09-29T09:43:57.742581+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-FunctionVerifier-20260929-054204.binlog",
+        "size": 358918,
+        "modified": "2026-09-29T09:42:27.955698+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-FunctionVerifier-20260929-054344.binlog",
+        "size": 359078,
+        "modified": "2026-09-29T09:44:08.461005+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-IntegrationTests-20260929-054204.binlog",
+        "size": 609322,
+        "modified": "2026-09-29T09:42:25.247765+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-IntegrationTests-20260929-054344.binlog",
+        "size": 606242,
+        "modified": "2026-09-29T09:44:04.662542+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Mhw-20260929-054204.binlog",
+        "size": 413712,
+        "modified": "2026-09-29T09:42:19.793138+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Mhw-20260929-054344.binlog",
+        "size": 413567,
+        "modified": "2026-09-29T09:43:58.724713+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-SelfTest-20260929-054204.binlog",
+        "size": 484288,
+        "modified": "2026-09-29T09:42:27.204542+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-SelfTest-20260929-054344.binlog",
+        "size": 484126,
+        "modified": "2026-09-29T09:44:07.388573+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Storage-20260929-054204.binlog",
+        "size": 389582,
+        "modified": "2026-09-29T09:42:17.800273+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-Storage-20260929-054344.binlog",
+        "size": 389695,
+        "modified": "2026-09-29T09:43:56.757809+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-UnitTests-20260929-054204.binlog",
+        "size": 419330,
+        "modified": "2026-09-29T09:42:22.794125+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\project-UnitTests-20260929-054344.binlog",
+        "size": 419144,
+        "modified": "2026-09-29T09:44:01.910299+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\relaxed-all-20260929-054204.binlog",
+        "size": 1171111,
+        "modified": "2026-09-29T09:42:16.001027+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\relaxed-all-20260929-054344.binlog",
+        "size": 1160699,
+        "modified": "2026-09-29T09:43:54.974776+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\restore-20260929-054204-Solution_restore.log",
+        "size": 2338,
+        "modified": "2026-09-29T09:42:07.225252+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\restore-20260929-054344-Solution_restore.log",
+        "size": 166,
+        "modified": "2026-09-29T09:43:46.646108+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054204-Full_automation_self-test.log",
+        "size": 954,
+        "modified": "2026-09-29T09:42:52.737228+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054251.json",
+        "size": 1790,
+        "modified": "2026-09-29T09:42:52.734201+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054251.md",
+        "size": 635,
+        "modified": "2026-09-29T09:42:52.735713+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054344-Full_automation_self-test.log",
+        "size": 954,
+        "modified": "2026-09-29T09:44:42.503976+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054440.json",
+        "size": 1788,
+        "modified": "2026-09-29T09:44:42.500935+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054440.md",
+        "size": 636,
+        "modified": "2026-09-29T09:44:42.500935+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054508.json",
+        "size": 1787,
+        "modified": "2026-09-29T09:45:09.504304+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\selftest-20260929-054508.md",
+        "size": 635,
+        "modified": "2026-09-29T09:45:09.506420+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054204-Automation_unit_tests.log",
+        "size": 948,
+        "modified": "2026-09-29T09:42:40.512046+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054204-Core_unit_tests.log",
+        "size": 788,
+        "modified": "2026-09-29T09:42:35.688303+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054204-Integration___fault_injection.log",
+        "size": 960,
+        "modified": "2026-09-29T09:42:49.872473+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054344-Automation_unit_tests.log",
+        "size": 948,
+        "modified": "2026-09-29T09:44:26.135309+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054344-Core_unit_tests.log",
+        "size": 788,
+        "modified": "2026-09-29T09:44:20.136871+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\test-20260929-054344-Integration___fault_injection.log",
+        "size": 960,
+        "modified": "2026-09-29T09:44:39.346849+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verification-report-20260929-054204.json",
+        "size": 11976,
+        "modified": "2026-09-29T09:42:52.880867+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verification-report-20260929-054204.md",
+        "size": 5068,
+        "modified": "2026-09-29T09:42:52.877296+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verification-report-20260929-054344.json",
+        "size": 11971,
+        "modified": "2026-09-29T09:44:43.788447+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verification-report-20260929-054344.md",
+        "size": 4580,
+        "modified": "2026-09-29T09:44:43.786933+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verify-20260929-054204.log",
+        "size": 20034,
+        "modified": "2026-09-29T09:42:52.890513+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\verify-20260929-054344.log",
+        "size": 18950,
+        "modified": "2026-09-29T09:44:43.797151+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\data\\Armor Database.csv",
+        "size": 18510,
+        "modified": "2026-09-28T13:41:04.451991+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\ARCHITECTURE.md",
+        "size": 6267,
+        "modified": "2026-09-28T13:41:04.453507+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\AUTO-COMPOSITION.md",
+        "size": 8294,
+        "modified": "2026-09-28T13:41:04.453507+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\AUTOMATION-AND-TESTING.md",
+        "size": 3127,
+        "modified": "2026-09-28T13:41:04.454594+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\BRANDING.md",
+        "size": 967,
+        "modified": "2026-09-28T13:41:04.454594+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\BUG-AUDIT.md",
+        "size": 8731,
+        "modified": "2026-09-28T13:41:04.454594+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\DIAGNOSTICS.md",
+        "size": 2848,
+        "modified": "2026-09-29T08:49:03.102298+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\FAILURE-MODES.md",
+        "size": 2439,
+        "modified": "2026-09-28T13:41:04.454594+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\FUNCTION-VERIFICATION.md",
+        "size": 10225,
+        "modified": "2026-09-28T13:41:04.456106+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\MIGRATION.md",
+        "size": 4555,
+        "modified": "2026-09-28T13:41:04.457124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs\\SCHEMA.md",
+        "size": 542,
+        "modified": "2026-09-28T13:41:04.457124+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Armor Database.csv",
+        "size": 18510,
+        "modified": "2026-09-28T13:41:04.458640+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\CHANGELOG-v4.txt",
+        "size": 1277,
+        "modified": "2026-09-28T13:41:04.458640+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\CHANGELOG-v5.txt",
+        "size": 1006,
+        "modified": "2026-09-28T13:41:04.458640+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\CHANGELOG-v6.txt",
+        "size": 1037,
+        "modified": "2026-09-28T13:41:04.458640+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\CHANGELOG-v7.txt",
+        "size": 1926,
+        "modified": "2026-09-28T13:41:04.460161+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Debug Console.bat",
+        "size": 113,
+        "modified": "2026-09-28T13:41:04.460161+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Engine.ps1",
+        "size": 15082,
+        "modified": "2026-09-28T13:41:04.460161+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Launch Mod Manager.bat",
+        "size": 144,
+        "modified": "2026-09-28T13:41:04.461700+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\MHW Mod Manager.ps1",
+        "size": 63831,
+        "modified": "2026-09-28T13:41:04.461700+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Manage Mods.bat",
+        "size": 144,
+        "modified": "2026-09-28T13:41:04.461700+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\ModManager.ps1",
+        "size": 10121,
+        "modified": "2026-09-28T13:41:04.463214+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\README.txt",
+        "size": 8025,
+        "modified": "2026-09-28T13:41:04.467338+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Test-Manager.ps1",
+        "size": 15288,
+        "modified": "2026-09-28T13:41:04.467338+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\VALIDATION.txt",
+        "size": 1201,
+        "modified": "2026-09-28T13:41:04.467338+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\VERSION.txt",
+        "size": 5,
+        "modified": "2026-09-28T13:41:04.468851+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Deployment.ps1",
+        "size": 10737,
+        "modified": "2026-09-28T13:41:04.463214+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Diagnostics.ps1",
+        "size": 7571,
+        "modified": "2026-09-28T13:41:04.464725+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Import.ps1",
+        "size": 10717,
+        "modified": "2026-09-28T13:41:04.464725+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Planner.ps1",
+        "size": 26242,
+        "modified": "2026-09-28T13:41:04.464725+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Profiles.ps1",
+        "size": 6733,
+        "modified": "2026-09-28T13:41:04.466313+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7\\Modules\\Reports.ps1",
+        "size": 14054,
+        "modified": "2026-09-28T13:41:04.466829+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Accessibility.dll",
+        "size": 20776,
+        "modified": "2026-08-22T15:53:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\CHANGELOG.md",
+        "size": 47762,
+        "modified": "2026-09-29T09:41:54.878618+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\CommunityToolkit.Mvvm.dll",
+        "size": 372736,
+        "modified": "2026-09-29T09:45:17.527042+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\D3DCompiler_47_cor3.dll",
+        "size": 4741488,
+        "modified": "2026-01-27T06:18:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\DirectWriteForwarder.dll",
+        "size": 509736,
+        "modified": "2026-08-22T17:06:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\KEEP MODS AND STATE.txt",
+        "size": 256,
+        "modified": "2026-09-29T09:45:34.128502+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.deps.json",
+        "size": 47216,
+        "modified": "2026-09-29T09:45:17.095308+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.dll",
+        "size": 860160,
+        "modified": "2026-09-29T09:45:21.042529+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.exe",
+        "size": 176128,
+        "modified": "2026-09-29T09:45:13.001790+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.pdb",
+        "size": 123488,
+        "modified": "2026-09-29T09:45:12.986436+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.runtimeconfig.json",
+        "size": 596,
+        "modified": "2026-09-29T09:45:17.127194+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Automation.dll",
+        "size": 675840,
+        "modified": "2026-09-29T09:45:19.697075+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Automation.pdb",
+        "size": 50600,
+        "modified": "2026-09-29T09:43:51.327669+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Core.dll",
+        "size": 585728,
+        "modified": "2026-09-29T09:45:19.891482+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Core.pdb",
+        "size": 76468,
+        "modified": "2026-09-29T09:43:50.002536+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Diagnostics.dll",
+        "size": 237568,
+        "modified": "2026-09-29T09:45:20.054994+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Diagnostics.pdb",
+        "size": 24384,
+        "modified": "2026-09-29T09:43:50.974822+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Filesystem.dll",
+        "size": 724992,
+        "modified": "2026-09-29T09:45:20.267786+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Filesystem.pdb",
+        "size": 73676,
+        "modified": "2026-09-29T09:43:50.715241+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Mhw.dll",
+        "size": 49152,
+        "modified": "2026-09-29T09:45:20.393428+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Mhw.pdb",
+        "size": 14452,
+        "modified": "2026-09-29T09:43:50.538739+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Storage.dll",
+        "size": 483328,
+        "modified": "2026-09-29T09:45:20.570650+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Storage.pdb",
+        "size": 34452,
+        "modified": "2026-09-29T09:43:50.353229+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Updater.dll",
+        "size": 450560,
+        "modified": "2026-09-29T09:45:20.754932+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Updater.pdb",
+        "size": 39872,
+        "modified": "2026-09-29T09:43:51.003825+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.CSharp.dll",
+        "size": 980776,
+        "modified": "2026-08-22T15:26:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Data.Sqlite.dll",
+        "size": 450560,
+        "modified": "2026-09-29T09:45:17.715712+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.DiaSymReader.Native.amd64.dll",
+        "size": 2377016,
+        "modified": "2026-08-05T14:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.VisualBasic.Core.dll",
+        "size": 1193768,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.VisualBasic.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Registry.AccessControl.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Registry.dll",
+        "size": 116520,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.SystemEvents.dll",
+        "size": 116520,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Windows.SDK.NET.dll",
+        "size": 55316480,
+        "modified": "2026-09-29T09:45:30.989818+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\OPEN MASTER DEBUG LOG.bat",
+        "size": 308,
+        "modified": "2026-09-28T13:41:04.409011+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Open Startup Logs.bat",
+        "size": 322,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PenImc_cor3.dll",
+        "size": 158032,
+        "modified": "2026-08-22T16:05:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationCore.dll",
+        "size": 8324904,
+        "modified": "2026-08-22T17:06:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemCore.dll",
+        "size": 38736,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemData.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemDrawing.dll",
+        "size": 34640,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemXml.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemXmlLinq.dll",
+        "size": 30504,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Aero.dll",
+        "size": 440104,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Aero2.dll",
+        "size": 444200,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.AeroLite.dll",
+        "size": 239400,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Classic.dll",
+        "size": 272168,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Fluent.dll",
+        "size": 980776,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Luna.dll",
+        "size": 669480,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Royale.dll",
+        "size": 333608,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.dll",
+        "size": 15816488,
+        "modified": "2026-08-22T17:06:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationNative_cor3.dll",
+        "size": 1235240,
+        "modified": "2026-07-06T04:59:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationUI.dll",
+        "size": 1259304,
+        "modified": "2026-08-22T17:06:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\README.md",
+        "size": 32586,
+        "modified": "2026-09-29T09:41:54.986605+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\ReachFramework.dll",
+        "size": 1570600,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.batteries_v2.dll",
+        "size": 20480,
+        "modified": "2026-09-29T09:45:18.971967+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.core.dll",
+        "size": 110592,
+        "modified": "2026-09-29T09:45:19.115611+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.provider.e_sqlite3.dll",
+        "size": 90112,
+        "modified": "2026-09-29T09:45:19.295098+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Serilog.Sinks.File.dll",
+        "size": 86016,
+        "modified": "2026-09-29T09:45:18.053556+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Serilog.dll",
+        "size": 421888,
+        "modified": "2026-09-29T09:45:17.904595+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SharpCompress.dll",
+        "size": 5664768,
+        "modified": "2026-09-29T09:45:18.846308+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.AppContext.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Buffers.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.CodeDom.dll",
+        "size": 476968,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Concurrent.dll",
+        "size": 231248,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Immutable.dll",
+        "size": 976680,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.NonGeneric.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Specialized.dll",
+        "size": 104272,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.dll",
+        "size": 296744,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.Annotations.dll",
+        "size": 198480,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.DataAnnotations.dll",
+        "size": 16720,
+        "modified": "2026-08-22T15:13:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.EventBasedAsync.dll",
+        "size": 46888,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.Primitives.dll",
+        "size": 79656,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.TypeConverter.dll",
+        "size": 767784,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.dll",
+        "size": 30544,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Configuration.ConfigurationManager.dll",
+        "size": 1046352,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Configuration.dll",
+        "size": 19240,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Console.dll",
+        "size": 169808,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Core.dll",
+        "size": 23336,
+        "modified": "2026-08-22T15:13:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.Common.dll",
+        "size": 2770728,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.DataSetExtensions.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:14:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.dll",
+        "size": 25424,
+        "modified": "2026-08-22T15:14:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Contracts.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Debug.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.DiagnosticSource.dll",
+        "size": 501544,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.EventLog.Messages.dll",
+        "size": 800552,
+        "modified": "2026-08-22T15:17:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.EventLog.dll",
+        "size": 366376,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.FileVersionInfo.dll",
+        "size": 46928,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.PerformanceCounter.dll",
+        "size": 300840,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Process.dll",
+        "size": 329552,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.StackTrace.dll",
+        "size": 46888,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.TextWriterTraceListener.dll",
+        "size": 67368,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Tools.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.TraceSource.dll",
+        "size": 141096,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Tracing.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.DirectoryServices.dll",
+        "size": 1021736,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.Common.dll",
+        "size": 923432,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.Primitives.dll",
+        "size": 132944,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.dll",
+        "size": 20304,
+        "modified": "2026-08-22T15:13:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Dynamic.Runtime.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Asn1.dll",
+        "size": 239440,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Nrbf.dll",
+        "size": 137000,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Tar.dll",
+        "size": 272168,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.Calendars.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.Extensions.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.Brotli.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.FileSystem.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.Native.dll",
+        "size": 937256,
+        "modified": "2026-08-22T15:08:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.ZipFile.dll",
+        "size": 100176,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.dll",
+        "size": 419624,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.AccessControl.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.DriveInfo.dll",
+        "size": 55120,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.Primitives.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.Watcher.dll",
+        "size": 87848,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Hashing.dll",
+        "size": 90112,
+        "modified": "2026-09-29T09:45:19.465846+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.IsolatedStorage.dll",
+        "size": 87848,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.MemoryMappedFiles.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Packaging.dll",
+        "size": 321360,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipelines.dll",
+        "size": 190248,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipes.AccessControl.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:10:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipes.dll",
+        "size": 165712,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.UnmanagedMemoryStream.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.AsyncEnumerable.dll",
+        "size": 1292072,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Expressions.dll",
+        "size": 3639080,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Parallel.dll",
+        "size": 775976,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Queryable.dll",
+        "size": 182056,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.dll",
+        "size": 698192,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Memory.dll",
+        "size": 161576,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Http.Json.dll",
+        "size": 128848,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Http.dll",
+        "size": 1746768,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.HttpListener.dll",
+        "size": 534312,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Mail.dll",
+        "size": 481064,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.NameResolution.dll",
+        "size": 124712,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.NetworkInformation.dll",
+        "size": 157520,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Ping.dll",
+        "size": 91984,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Primitives.dll",
+        "size": 210728,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Quic.dll",
+        "size": 358224,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Requests.dll",
+        "size": 374568,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Security.dll",
+        "size": 665424,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.ServerSentEvents.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.ServicePoint.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Sockets.dll",
+        "size": 530216,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebClient.dll",
+        "size": 165672,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebHeaderCollection.dll",
+        "size": 63312,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebProxy.dll",
+        "size": 42832,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebSockets.Client.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebSockets.dll",
+        "size": 243496,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Numerics.Vectors.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Numerics.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ObjectModel.dll",
+        "size": 79656,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Printing.dll",
+        "size": 968488,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.CoreLib.dll",
+        "size": 16033576,
+        "modified": "2026-08-22T14:54:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.DataContractSerialization.dll",
+        "size": 2062120,
+        "modified": "2026-08-22T15:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Uri.dll",
+        "size": 255824,
+        "modified": "2026-08-22T15:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Windows.Core.dll",
+        "size": 1906472,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Windows.GdiPlus.dll",
+        "size": 427816,
+        "modified": "2026-08-22T17:05:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Xml.Linq.dll",
+        "size": 390952,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Xml.dll",
+        "size": 7788328,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.DispatchProxy.dll",
+        "size": 75600,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.ILGeneration.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.Lightweight.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.dll",
+        "size": 309032,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Extensions.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Metadata.dll",
+        "size": 1156904,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.TypeExtensions.dll",
+        "size": 42792,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Extensions.dll",
+        "size": 194344,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Reader.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.ResourceManager.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Writer.dll",
+        "size": 50984,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.CompilerServices.Unsafe.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.CompilerServices.VisualC.dll",
+        "size": 30504,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Extensions.dll",
+        "size": 17704,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Handles.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.JavaScript.dll",
+        "size": 50984,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.RuntimeInformation.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.dll",
+        "size": 112464,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Intrinsics.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:09:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Loader.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Numerics.dll",
+        "size": 354128,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Formatters.dll",
+        "size": 124712,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Json.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Primitives.dll",
+        "size": 38696,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Xml.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.dll",
+        "size": 44840,
+        "modified": "2026-08-22T15:09:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.AccessControl.dll",
+        "size": 227112,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Claims.dll",
+        "size": 100176,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Algorithms.dll",
+        "size": 17232,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Cng.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Csp.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Encoding.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.OpenSsl.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Pkcs.dll",
+        "size": 767784,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.ProtectedData.dll",
+        "size": 59216,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.X509Certificates.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Xml.dll",
+        "size": 452392,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.dll",
+        "size": 2549544,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Permissions.dll",
+        "size": 190248,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Principal.Windows.dll",
+        "size": 178000,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Principal.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.SecureString.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.dll",
+        "size": 18256,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ServiceModel.Web.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ServiceProcess.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.CodePages.dll",
+        "size": 862032,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.Extensions.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encodings.Web.dll",
+        "size": 124752,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Json.dll",
+        "size": 1890128,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.RegularExpressions.dll",
+        "size": 1034064,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.AccessControl.dll",
+        "size": 75560,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Channels.dll",
+        "size": 157480,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Overlapped.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:09:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Dataflow.dll",
+        "size": 472872,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Extensions.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Parallel.dll",
+        "size": 132904,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Thread.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.ThreadPool.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Timer.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.dll",
+        "size": 83792,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Transactions.Local.dll",
+        "size": 640808,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Transactions.dll",
+        "size": 16720,
+        "modified": "2026-08-22T15:13:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ValueTuple.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Web.HttpUtility.dll",
+        "size": 63272,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Web.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Controls.Ribbon.dll",
+        "size": 1439528,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Extensions.dll",
+        "size": 120616,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Input.Manipulations.dll",
+        "size": 141136,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Presentation.dll",
+        "size": 30544,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Primitives.dll",
+        "size": 386856,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xaml.dll",
+        "size": 1390376,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.Linq.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.ReaderWriter.dll",
+        "size": 21840,
+        "modified": "2026-08-22T15:12:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.Serialization.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XDocument.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XPath.XDocument.dll",
+        "size": 30504,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XPath.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XmlDocument.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XmlSerializer.dll",
+        "size": 17744,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.dll",
+        "size": 23376,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.dll",
+        "size": 50472,
+        "modified": "2026-08-22T15:14:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationClient.dll",
+        "size": 407336,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationClientSideProviders.dll",
+        "size": 857936,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationProvider.dll",
+        "size": 63272,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationTypes.dll",
+        "size": 296744,
+        "modified": "2026-08-22T17:06:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\VALIDATION.md",
+        "size": 15846,
+        "modified": "2026-09-28T13:41:04.413071+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\VERSION.txt",
+        "size": 7,
+        "modified": "2026-09-29T09:41:54.880639+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\WinRT.Runtime.dll",
+        "size": 1396736,
+        "modified": "2026-09-29T09:45:31.443166+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\WindowsBase.dll",
+        "size": 2176808,
+        "modified": "2026-08-22T17:06:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\build-identity.json",
+        "size": 236,
+        "modified": "2026-09-29T09:45:34.133159+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clretwrc.dll",
+        "size": 317736,
+        "modified": "2026-08-22T14:49:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrgc.dll",
+        "size": 674088,
+        "modified": "2026-08-22T14:48:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrgcexp.dll",
+        "size": 711464,
+        "modified": "2026-08-22T14:49:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrjit.dll",
+        "size": 2092328,
+        "modified": "2026-08-22T14:50:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\coreclr.dll",
+        "size": 4614992,
+        "modified": "2026-08-22T14:50:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\createdump.exe",
+        "size": 71552,
+        "modified": "2026-08-22T14:49:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\e_sqlite3.dll",
+        "size": 1978880,
+        "modified": "2026-07-07T02:11:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release\\MHW-Manual-Mod-Manager-v8.8.6\\hostfxr.dll",
+        "size": 379688,
+        "modified": "2026-08-22T15:08:00+00:00"
+      }
+    ],
+    "next_offset": 500,
+    "has_more": true
+  },
+  "job_hash": "fb73f9a5e4faa028a687f3babc04d51c84934f2c1818e93ecf462566e1ede8fc"
+}
