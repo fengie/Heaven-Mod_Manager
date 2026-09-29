@@ -7,15 +7,15 @@
   "currentVersion": "8.8.5",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "Verify the current-main-reconciled v8.8.5 game-profile ID containment candidate with scripts/Verify-Release.ps1, then obtain focused path-containment review and hosted Windows evidence before integration.",
+  "nextMilestone": "Keep the locally verified v8.8.5 game-profile ID containment candidate separate while the build-61 installed-client updater E2E remains active; after that boundary closes, obtain focused path-containment review and integrate without dropping canonical updater evidence.",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.3 archive streaming cleanup hardening",
-  "status": "v8.8.5-current-main-reconciled-verification-pending",
+  "status": "v8.8.5-current-main-reconciled-local-verified-hold-updater-e2e",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "e25b68da3685585fafa8809eedb452a04ea99c82",
-  "verificationScopeNote": "Canonical v8.8.4 updater/publication evidence from current main is preserved: source 5abe40304dfcb48f96e750bd7da3d0075315625b passed hosted Windows Release Gate 36541891969 (25/25), functions 748/748, updater build 61, immutable updater-main-61. PR #90 game-profile containment previously passed local Verify-Release 25/25 on its older base, but that evidence is stale after current-main reconciliation. Exact reconciled-candidate verification is pending and must be recorded before promotion.",
+  "candidateSourceCommit": "023156ea4223a4697be19b9f48f10ebd80813184",
+  "verificationScopeNote": "Current-main reconciliation product merge 023156ea4223a4697be19b9f48f10ebd80813184 preserves canonical updater/publication evidence from main 1583300aea9ac3ae20750d1ad0af6592f6993acc and passed local Windows Verify-Release 25/25 on heaven with .NET SDK 10.0.401: functions 749/749 promoted, 7,942 explicit call sites, 0 uncovered, Core 88/88, Automation 31/31, Integration/fault 205/205, self-test 11/11, strict builds 0 warnings/errors. This lane remains separate/HOLD while the build-61 installed-client updater E2E is active; no hosted-main evidence or integration is claimed.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 PR #90 current-main exact local closure: product merge 023156ea4223a4697be19b9f48f10ebd80813184 passed Verify-Release 25/25 on heaven/Windows/.NET 10.0.401 with functions 749/749, Core 88/88, Automation 31/31, Integration/fault 205/205, self-test 11/11, strict builds 0 warnings/errors; candidate remains HOLD/separate until updater build-61 installed-client E2E closes.",
     "2026-09-29 v8.8.5 current-main reconciliation: preserve canonical updater-main-61 publication/evidence and post-updater support dispositions while carrying forward only PR #90 game-profile ID containment production/tests.",
     "2026-09-28 v8.8.5 game-profile ID containment: reject noncanonical persisted/upserted profile IDs, enforce generic-game workspace/state lexical containment before directory creation, and add hostile traversal/separator/casing regressions.",
     "2026-09-29 updater hosted/publication closure: PR #91 merged at 5abe40304dfcb48f96e750bd7da3d0075315625b; Windows Release Gate 36541891969 passed 25/25; functions 748/748 promoted; Build-Release produced updater build 61 ZIP SHA-256 C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420; immutable updater-main-61 published against exact source with exactly ZIP + update-manifest.json; evidence persistence 4f0e2402d3a61e9ba3db005f026b02ccb4aba7de; only disposable old-to-new and injected-rollback installed-client E2E remain.",
