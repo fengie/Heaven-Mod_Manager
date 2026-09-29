@@ -98,6 +98,7 @@ public sealed class GameProfileEditorWindow : Window
 
     private void Save()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             var modRoot=original.IsMonsterHunterWorld?original.ModRootRelativePath:GameProfile.NormalizeRelative(modRootBox.Text,true);
