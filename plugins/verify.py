@@ -12,6 +12,7 @@ TARGETS = [
     "heaven-local-ai",
     "heaven-git-ops",
     "heaven-process-services",
+    "heaven-file-ops",
 ]
 
 failed = []
