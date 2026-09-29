@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-120730-runnerrepair-diag",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:07:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$runner = Join-Path $env:USERPROFILE 'actions-runner-heaven'\n$startup=Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenGitHubActionsRunner.vbs'\n$diagFiles=@(Get-ChildItem -LiteralPath (Join-Path $runner '_diag') -Filter 'Runner_*.log' -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 3)\n$diag=@()\nforeach($f in $diagFiles){\n  $tail=(Get-Content -LiteralPath $f.FullName -Tail 140 -ErrorAction SilentlyContinue) -join \"\n\"\n  $interesting=($tail -split \"\n\" | Where-Object { $_ -match '(?i)(error|warn|fail|session|broker|message|job|offline|connect|retry|429|403|404|acquir|request)' } | Select-Object -Last 50) -join \"\n\"\n  $diag += [ordered]@{name=$f.Name; modified=$f.LastWriteTimeUtc.ToString('o'); interesting=$interesting}\n}\n[ordered]@{\n  startup_fallback_exists = Test-Path $startup\n  diagnostics = $diag\n} | ConvertTo-Json -Depth 7",
+    "timeout_seconds": 60,
+    "cwd": "C:\\Users\\Xxkan"
+  },
+  "priority": "highest"
+}
