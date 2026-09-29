@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0819-bridge-regression-e2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:19:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRuntimeRepo",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Continue'; Write-Output ('BRANCH=' + (git branch --show-current).Trim()); Write-Output ('HEAD=' + (git rev-parse HEAD).Trim()); git status --short; python -m py_compile heaven-bridge\\worker.py; $compile=$LASTEXITCODE; Write-Output ('PY_COMPILE_EXIT=' + $compile); python -m unittest -v heaven-bridge\\test_worker.py; $test1=$LASTEXITCODE; Write-Output ('TEST_WORKER_EXIT=' + $test1); if(Test-Path 'heaven-bridge\\tests\\test_worker.py'){python -m unittest -v heaven-bridge\\tests\\test_worker.py; $test2=$LASTEXITCODE}else{$test2=0}; Write-Output ('TESTS_DIR_EXIT=' + $test2); if($compile -ne 0){exit 31}; if($test1 -ne 0){exit 32}; if($test2 -ne 0){exit 33}; exit 0"
+  },
+  "priority": "highest"
+}
