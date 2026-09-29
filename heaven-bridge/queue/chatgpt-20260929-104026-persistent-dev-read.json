@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-104026-persistent-dev-read",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:26.974Z",
+  "ttl_seconds": 1200,
+  "action": "proc_read",
+  "params": {
+    "session_id": "4c26cf188c344d81",
+    "max_chars": 20000
+  },
+  "priority": "highest"
+}
