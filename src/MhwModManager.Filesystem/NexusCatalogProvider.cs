@@ -16,7 +16,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
 {
     private const string BaseAddress = "https://api.nexusmods.com/v1/";
     private const string ApplicationName = "MHW-Mod-Manager";
-    private const string ApplicationVersion = "8.8.11";
+    private static readonly string ApplicationVersion = typeof(NexusCatalogProvider).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
     private readonly CatalogCredentialStore credentials;
     private readonly HttpClient http;
     private CatalogProviderHealth health = new(
@@ -31,7 +31,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
         this.credentials = credentials;
         http = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
         http.Timeout = TimeSpan.FromSeconds(20);
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("MHW-Mod-Manager/8.8.11");
+        http.DefaultRequestHeaders.UserAgent.ParseAdd($"MHW-Mod-Manager/{ApplicationVersion}");
         http.DefaultRequestHeaders.TryAddWithoutValidation("Application-Name", ApplicationName);
         http.DefaultRequestHeaders.TryAddWithoutValidation("Application-Version", ApplicationVersion);
         http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
