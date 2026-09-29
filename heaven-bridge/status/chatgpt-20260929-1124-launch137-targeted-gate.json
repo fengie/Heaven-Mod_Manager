@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1124-launch137-targeted-gate",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:46:28.221810+00:00"
+  "updated_at": "2026-09-29T11:46:52.615917+00:00",
+  "exit_code": 1
 }
