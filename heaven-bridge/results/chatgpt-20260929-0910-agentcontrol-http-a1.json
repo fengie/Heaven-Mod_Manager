@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0910-agentcontrol-http-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:10:00Z",
+  "status": "failed",
+  "exit_code": 2,
+  "started_at": "2026-09-29T09:09:51.429221+00:00",
+  "finished_at": "2026-09-29T09:10:11.889126+00:00",
+  "stdout": "{\r\n    \"direct\":  {\r\n                   \"url\":  \"http://127.0.0.1:7331/api/status\",\r\n                   \"ok\":  false,\r\n                   \"elapsed_ms\":  10068,\r\n                   \"error\":  \"The operation has timed out.\"\r\n               },\r\n    \"proxy\":  {\r\n                  \"url\":  \"http://127.0.0.1:7443/api/status\",\r\n                  \"ok\":  false,\r\n                  \"elapsed_ms\":  10013,\r\n                  \"error\":  \"The operation has timed out.\"\r\n              }\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0910-agentcontrol-http-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0910-agentcontrol-http-a1.stderr.log",
+    "stdout_bytes": 475,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "10f649141ade36a8188cefa54a259f0a697ad224f3feafceef9f1d156bdc81ea"
+}
