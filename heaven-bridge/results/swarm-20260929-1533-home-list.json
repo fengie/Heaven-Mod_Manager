@@ -1,0 +1,996 @@
+{
+  "id": "swarm-20260929-1533-home-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:33:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:31:40.828113+00:00",
+  "finished_at": "2026-09-29T15:31:40.883404+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan",
+    "offset": 0,
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.aider"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.bun"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander-logs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.config"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.desktop-commander-device"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ipython"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.jupyter"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.local"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.matplotlib"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ms-ad"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.nuget"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ollama"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.redhat"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.skiko"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.sovereign"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.thumbnails"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode-shared"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.xdman"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\AI"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\AppData"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Apple"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Application Data"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Contacts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Cookies"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Desktop"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Documents"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Downloads"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Favorites"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeDevV3-1538"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeMainVerify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo.recovery-20260929-0808"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRuntimeRepo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeV3Stage-1548"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeValidation"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenWork"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenWorktrees"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Links"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Local Settings"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Music"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\My Documents"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\NetHood"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\OneDrive"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Pictures"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\PrintHood"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Recent"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Saved Games"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Searches"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\SendTo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Start Menu"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Templates"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Videos"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-control-panel"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\ansel"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branch-zero-reconcile"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr127"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr128-gate"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr128-gate2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\eclipse"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\eclipse-workspace"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-tools"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-worker-test"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-workspaces"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-agent-control-release-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-federation-registry-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-final-reconcile-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-final-v886-b"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-integration-release-20260929-0543"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-main-converge-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-main-finalize-20260929-0540"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-auto-updater-agent"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-c11-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-pr90-integration"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-publication-fix"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-review-0731-a91"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-support-20260928"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-patcheq-clean"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-pr59-finalverify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-pr90-integration"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-release-885"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-safe-branch-delete"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-safe-branch-delete2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-support-harvest-verify-a66296b"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-swarm-contract-v3-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-trace-fix-885"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-lr003-restart-audit"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-publication-race-review"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support-lr003"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-verification-reliability-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-worktrees"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa01f25-alexandra-chamas-feng-cheng-li"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa02f25-alexandra-chamas-feng-cheng-li_2_"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa03s25-alexandra-chamas-feng-cheng-li_3_"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\sovereign-debug"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\-1.14-windows.xml",
+        "size": 6579,
+        "modified": "2024-04-10T20:24:07.934416+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.bash_history",
+        "size": 342,
+        "modified": "2025-02-11T00:25:42.082690+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.gitconfig",
+        "size": 206,
+        "modified": "2025-02-11T00:25:20.121787+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.lesshst",
+        "size": 20,
+        "modified": "2025-05-15T18:46:47.250648+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.node_repl_history",
+        "size": 41,
+        "modified": "2025-05-08T03:07:17.257241+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfo",
+        "size": 2073,
+        "modified": "2025-03-18T19:43:11.332636+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfo.tmp",
+        "size": 2382,
+        "modified": "2025-02-11T03:24:40.395888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfz.tmp",
+        "size": 2376,
+        "modified": "2025-02-11T03:45:39.931277+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdm-global-lock",
+        "size": 0,
+        "modified": "2023-08-18T22:45:23.712554+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\AMDRM_Install.log",
+        "size": 3729,
+        "modified": "2023-08-14T20:28:58.411913+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\AMD_RyzenMaster.log",
+        "size": 3486144,
+        "modified": "2023-08-14T20:28:58.457913+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT",
+        "size": 30146560,
+        "modified": "2026-07-12T20:32:20.067764+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TM.blf",
+        "size": 73728,
+        "modified": "2026-07-05T19:16:54.330010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TM.blf.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.030409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000001.regtrans-ms",
+        "size": 561152,
+        "modified": "2026-07-05T19:16:54.350868+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000001.regtrans-ms.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.028895+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000002.regtrans-ms",
+        "size": 561152,
+        "modified": "2026-07-05T19:16:54.359614+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000002.regtrans-ms.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.030409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\_viminfo",
+        "size": 714,
+        "modified": "2024-10-01T19:19:50.296847+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-control-v2-payload.b64",
+        "size": 35480,
+        "modified": "2026-09-28T12:35:23.267652+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-control-v2-payload.zip",
+        "size": 26610,
+        "modified": "2026-09-28T12:36:14.119481+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\battery-report.html",
+        "size": 78944,
+        "modified": "2025-10-14T22:22:23.863933+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\dotnet-install.ps1",
+        "size": 76676,
+        "modified": "2026-09-28T11:44:15.405990+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.dat.LOG1",
+        "size": 7554048,
+        "modified": "2025-05-26T05:24:49.886243+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.dat.LOG2",
+        "size": 2621440,
+        "modified": "2025-05-26T05:24:49.886758+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.ini",
+        "size": 20,
+        "modified": "2025-05-26T05:45:11.720336+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\patch_restart_args.py",
+        "size": 2405,
+        "modified": "2026-09-28T11:48:13.057536+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\patch_restart_args_tests.py",
+        "size": 2334,
+        "modified": "2026-09-28T11:48:35.787289+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\public class Main {.java",
+        "size": 121,
+        "modified": "2024-10-01T18:00:42.638818+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-7beb.patch",
+        "size": 11812,
+        "modified": "2026-09-28T12:43:23.825909+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-lr003-concurrent.patch",
+        "size": 5464,
+        "modified": "2026-09-28T11:42:20.608453+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-lr003-review-context.txt",
+        "size": 54319,
+        "modified": "2026-09-28T11:37:29.057312+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\analytics.json",
+        "size": 117,
+        "modified": "2026-09-28T17:58:54.733450+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\installs.json",
+        "size": 95,
+        "modified": "2026-09-28T17:58:55.270430+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\claude_tool_call.log",
+        "size": 2320502,
+        "modified": "2026-09-29T09:50:46.481441+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\config.json",
+        "size": 1759,
+        "modified": "2026-09-29T10:54:05.156074+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\feature-flags.json",
+        "size": 516,
+        "modified": "2026-09-29T15:11:42.225380+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\tool-history.jsonl",
+        "size": 1375481,
+        "modified": "2026-09-29T10:36:47.049162+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander-logs\\fuzzy-search.log",
+        "size": 22089,
+        "modified": "2026-09-29T09:28:21.629298+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json",
+        "size": 8575,
+        "modified": "2026-09-29T14:15:11.707940+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json.bak",
+        "size": 8575,
+        "modified": "2026-09-29T14:15:11.717828+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-provisioning-b7e2f259929ab66a.guard",
+        "size": 0,
+        "modified": "2026-09-27T09:31:31.763474+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox_migration",
+        "size": 3,
+        "modified": "2026-09-27T09:33:10.627891+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\auth.json",
+        "size": 3938,
+        "modified": "2026-09-27T09:31:41.943566+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\cap_sid",
+        "size": 2120,
+        "modified": "2026-09-29T08:34:11.941625+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\chrome-native-hosts-v2.json",
+        "size": 2059,
+        "modified": "2026-09-27T09:37:52.083570+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\config.toml",
+        "size": 3685,
+        "modified": "2026-09-29T09:47:44.129143+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite",
+        "size": 32768,
+        "modified": "2026-09-29T08:24:59.769291+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T15:31:24.278794+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-wal",
+        "size": 296672,
+        "modified": "2026-09-29T15:31:24.611520+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\installation_id",
+        "size": 36,
+        "modified": "2026-09-27T09:31:30.715606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite",
+        "size": 1298432,
+        "modified": "2026-09-29T15:31:24.319732+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T15:31:24.262608+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-wal",
+        "size": 8272,
+        "modified": "2026-09-29T15:31:24.317679+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite",
+        "size": 45056,
+        "modified": "2026-09-29T08:33:35.134517+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T15:31:24.292037+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-wal",
+        "size": 123632,
+        "modified": "2026-09-29T15:31:24.292037+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\models_cache.json",
+        "size": 353314,
+        "modified": "2026-09-29T15:31:24.825305+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite",
+        "size": 4096,
+        "modified": "2026-09-27T09:31:30.702907+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-27T09:31:52.180647+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-wal",
+        "size": 560352,
+        "modified": "2026-09-29T15:31:27.984275+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\session_index.jsonl",
+        "size": 244,
+        "modified": "2026-09-28T19:12:27.730483+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite",
+        "size": 757760,
+        "modified": "2026-09-29T15:21:41.532630+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T15:26:39.767909+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-wal",
+        "size": 1050632,
+        "modified": "2026-09-29T15:31:27.984275+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite",
+        "size": 5689344,
+        "modified": "2026-09-29T12:37:50.609693+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T15:31:24.625339+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-wal",
+        "size": 4132392,
+        "modified": "2026-09-29T15:31:27.971957+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox_migration",
+        "size": 3,
+        "modified": "2026-09-28T15:52:03.493016+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\cap_sid",
+        "size": 3483,
+        "modified": "2026-09-29T13:07:30.634365+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\config.toml",
+        "size": 426,
+        "modified": "2026-09-28T16:02:09.851648+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\goals_1.sqlite",
+        "size": 32768,
+        "modified": "2026-09-29T13:43:44.869548+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\installation_id",
+        "size": 36,
+        "modified": "2026-09-28T15:52:03.387916+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\logs_2.sqlite",
+        "size": 49152,
+        "modified": "2026-09-29T11:51:42.239843+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\memories_1.sqlite",
+        "size": 45056,
+        "modified": "2026-09-29T12:11:38.765481+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\queue_1.sqlite",
+        "size": 40960,
+        "modified": "2026-09-29T13:43:44.873638+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite",
+        "size": 614400,
+        "modified": "2026-09-29T13:29:06.986729+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T10:47:14.282973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite-wal",
+        "size": 4177712,
+        "modified": "2026-09-29T13:43:44.750213+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread_history_1.sqlite",
+        "size": 7499776,
+        "modified": "2026-09-29T13:43:44.851002+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.desktop-commander-device\\device.json",
+        "size": 1523,
+        "modified": "2026-09-29T15:27:05.109486+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingManifestSentinel10.0.400",
+        "size": 0,
+        "modified": "2026-09-28T11:37:25.938723+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingManifestSentinel7.0.400",
+        "size": 0,
+        "modified": "2026-09-28T11:36:59.047076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingUpdates7.0.400",
+        "size": 2,
+        "modified": "2026-09-28T11:36:59.047076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.aspNetCertificateSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.580086+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.dotnetFirstUseSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.471767+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.toolpath.sentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.470249+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401_IsDockerContainer.dotnetUserLevelCache",
+        "size": 5,
+        "modified": "2026-09-28T11:37:25.145883+00:00"
+      }
+    ],
+    "next_offset": 200,
+    "has_more": true
+  },
+  "job_hash": "e5f48e888d0c26bae165c5ef522eb31765cafd2b0f31a14e7eefb9d8a49ef4cb"
+}
