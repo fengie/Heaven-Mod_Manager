@@ -32,6 +32,8 @@ This is the execution layer that sits above the repository's existing agent doct
 - Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
 - Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
+- Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
+- Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
 
 ## Federated registry and heartbeat semantics
 
@@ -76,6 +78,8 @@ node .\agentctl.mjs snapshot
 node .\agentctl.mjs workers
 node .\agentctl.mjs federation
 node .\agentctl.mjs providers
+node .\agentctl.mjs events
+node .\agentctl.mjs control
 node .\agentctl.mjs federation-heartbeat --file C:\\Temp\\agent-heartbeat.json
 node .\agentctl.mjs leases
 node .\agentctl.mjs queue
@@ -86,6 +90,12 @@ node .\agentctl.mjs routing-set --file C:\Temp\routing.json
 node .\agentctl.mjs routing-clear
 node .\agentctl.mjs autonomy
 node .\agentctl.mjs autonomy-set coordinate
+node .\agentctl.mjs pause
+node .\agentctl.mjs resume
+node .\agentctl.mjs read-only on
+node .\agentctl.mjs drain
+node .\agentctl.mjs emergency-stop
+node .\agentctl.mjs stop-swarm
 node .\agentctl.mjs autopilot
 node .\agentctl.mjs autopilot-start --task "Build the current big direction" --max-repairs 3
 node .\agentctl.mjs autopilot-pause
