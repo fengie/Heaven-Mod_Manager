@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0847-retire-legacy-bridge",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:47:00Z",
+  "status": "failed",
+  "exit_code": 4294967295,
+  "started_at": "2026-09-29T08:47:23.642075+00:00",
+  "finished_at": "2026-09-29T08:47:25.458155+00:00",
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0847-retire-legacy-bridge.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0847-retire-legacy-bridge.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2c3d06bf2195aba7d68e0bdbae26ad2e231756ff4f440cde9aeb8f9bcda81312"
+}
