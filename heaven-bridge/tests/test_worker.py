@@ -34,6 +34,19 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read"):
             self.assertIn(action, result["data"]["actions"])
 
+    def test_priority_queue_ordering_keeps_control_responsive(self):
+        base = Path.home() / "HeavenBridge" / "test-sandbox"
+        base.mkdir(parents=True, exist_ok=True)
+        td = Path(tempfile.mkdtemp(dir=base))
+        try:
+            regular = td / "regular.json"
+            regular.write_text('{"action":"proc_run","priority":"highest","created_at":"2026-09-29T10:00:00Z"}', encoding="utf-8")
+            control = td / "control.json"
+            control.write_text('{"action":"job_status","priority":"lowest","created_at":"2026-09-29T10:05:00Z"}', encoding="utf-8")
+            self.assertEqual(sorted([regular, control], key=worker.queue_order_key)[0].name, "control.json")
+        finally:
+            shutil.rmtree(td, ignore_errors=True)
+
     def test_expired_job_rejected(self):
         job = self.make_job("health", job_id="expired-job")
         job["created_at"] = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
