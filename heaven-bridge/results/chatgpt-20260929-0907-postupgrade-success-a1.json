@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0907-postupgrade-success-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:07:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:08:46.234778+00:00",
+  "finished_at": "2026-09-29T09:08:46.652922+00:00",
+  "stdout": "POSTUPGRADE_SUCCESS_OK\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0907-postupgrade-success-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0907-postupgrade-success-a1.stderr.log",
+    "stdout_bytes": 24,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "6d1b4229a839319de3c3090039f7f4451c4b6abd7f3d65bb9da1ab8d232f53d4"
+}
