@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-landed-superseded-20260929-1126",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:26:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:27:50.857980+00:00",
+  "finished_at": "2026-09-29T11:27:53.086498+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\n   355217a7..cdf7e3fd  heaven-bridge -> origin/heaven-bridge\nRemove-Item : A positional parameter cannot be found that accepts argument 'e52328aea7a2cfa26a63a35e07003c736c9c571a'.\r\nAt line:15 char:1\r\n+ Del 'agent/bridge-uia-native-20260929' 'e52328aea7a2cfa26a63a35e07003 ...\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidArgument: (:) [Remove-Item], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : PositionalParameterNotFound,Microsoft.PowerShell.Commands.RemoveItemCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-landed-superseded-20260929-1126.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-landed-superseded-20260929-1126.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 722,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "6a2f8bd146bb9ae950b8bcab630149c873ece2dcd5d703f9dd353767798f9ab8"
+}
