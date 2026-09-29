@@ -390,3 +390,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant incident:** 2026-09-29 concurrent LR-021 collision found during generic trainer promotion.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## LR-024 — strict JSON contracts must exercise the public wire format
+
+- **Rule ID:** LR-024
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** public JSON schemas, strict deserializers, portable manifests/recipes, DTO naming policy
+- **Rule:** A strict JSON parser is not release-ready until the exact documented/public fixture is parsed with the exact production serializer options. When unmapped members are rejected or matching is case-sensitive, explicitly pin the wire naming policy (or per-member names) instead of relying on CLR property casing.
+- **Trigger / evidence:** Auto Mod Recipe v1 enabled case-sensitive unmapped-member rejection but omitted the camelCase DTO naming policy. The documented `schema` property was therefore rejected as unmapped by the production parser, causing seven new Auto Modder unit tests to fail in Windows Release Gate run 36610493533 before publication.
+- **Rationale:** Schema correctness and DTO correctness are separate layers. A valid public schema can still be unusable if runtime serializer naming/options disagree with the wire contract.
+- **Enforcement:** Contract tests must parse at least one checked-in public fixture using production options; strict-parser changes must verify required fields, unknown-field rejection, naming/casing, enum naming, and a representative serialize/parse or parse/normalize path before integration. A release gate failure of this class requires a learned-rule update, not only a one-line serializer fix.
+- **Regression:** `AutoModTests.Recipe_contract_parses_and_validates` and the checked-in `docs/examples/auto-mod/synthetic-table.recipe.json` are the initial Auto Mod Recipe v1 contract fixtures.
+- **Relevant run:** Windows Release Gate 36610493533 on `6370513fda021e8f272d9c2c3e983db10b41465f`.
+- **Supersedes:** none
+- **Superseded by:** none
+
