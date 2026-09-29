@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-161000-generic-tests",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:09:37.056153+00:00"
+  "updated_at": "2026-09-29T16:09:49.015789+00:00",
+  "exit_code": 1
 }
