@@ -1,0 +1,12 @@
+{
+  "id": "ctrl-cancel-bad-heaven-v2-install-20260929-113205",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:05Z",
+  "ttl_seconds": 3600,
+  "action": "cancel",
+  "params": {
+    "job_id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200",
+    "reason": "replace expression would not safely change runner name; superseded before execution"
+  },
+  "priority": "highest"
+}
