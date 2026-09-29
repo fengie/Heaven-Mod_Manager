@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import tempfile
 import threading
@@ -228,7 +229,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
-            "gui_mouse_scroll", "gui_key", "gui_type",
+            "gui_mouse_scroll", "gui_key", "gui_type", "secret_type",
             "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
             "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
         ):
@@ -345,6 +346,156 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(result["data"], expected)
         move.assert_called_once_with({"x": 321, "y": 654})
+
+    def test_secret_envelope_ttl_destination_and_replay_guards(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            consumed = root / "consumed"
+            inbox.mkdir()
+            current = datetime(2026, 9, 29, 12, 0, tzinfo=timezone.utc)
+            base_env = {
+                "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                "HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED": "1",
+                "COMPUTERNAME": "heaven",
+            }
+
+            def write(handle, *, destination="heaven", created=None, expires=None, value="canary-secret"):
+                created = created or (current - timedelta(seconds=5))
+                expires = expires or (current + timedelta(seconds=30))
+                (inbox / f"{handle}.json").write_text(
+                    json.dumps({
+                        "schema": "heaven-bridge-secret-v1",
+                        "handle": handle,
+                        "destination": destination,
+                        "purpose": "secret_type",
+                        "created_at": created.isoformat(),
+                        "expires_at": expires.isoformat(),
+                        "value": value,
+                    }),
+                    encoding="utf-8",
+                )
+
+            with patch.dict(os.environ, base_env, clear=False), patch.object(hb, "SECRET_CONSUMED_DIR", consumed):
+                handle = "secret-handle-0001"
+                write(handle)
+                self.assertEqual(hb.consume_secret_envelope(handle, current=current), "canary-secret")
+                self.assertFalse((inbox / f"{handle}.json").exists())
+                with self.assertRaises(hb.BridgeError) as replay:
+                    hb.consume_secret_envelope(handle, current=current)
+                self.assertEqual(replay.exception.code, "SECRET_REPLAYED")
+
+                wrong = "secret-handle-0002"
+                write(wrong, destination="heaven2")
+                with self.assertRaises(hb.BridgeError) as mismatch:
+                    hb.consume_secret_envelope(wrong, current=current)
+                self.assertEqual(mismatch.exception.code, "SECRET_DESTINATION_MISMATCH")
+
+                expired = "secret-handle-0003"
+                write(
+                    expired,
+                    created=current - timedelta(seconds=60),
+                    expires=current - timedelta(seconds=1),
+                )
+                with self.assertRaises(hb.BridgeError) as stale:
+                    hb.consume_secret_envelope(expired, current=current)
+                self.assertEqual(stale.exception.code, "SECRET_EXPIRED")
+
+    def test_secret_type_keeps_canary_out_of_persisted_relay_artifacts(self):
+        canary = "MHW-SECRET-CANARY-9f13a5"
+        handle = "secret-handle-0004"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            inbox.mkdir()
+            consumed = root / "consumed"
+            cache = root / "result-cache"
+            audit_log = root / "audit.jsonl"
+            processed_log = root / "processed.jsonl"
+            locks = root / "locks"
+            relay = root / "relay"
+            relay.mkdir()
+
+            current = datetime.now(timezone.utc)
+            (inbox / f"{handle}.json").write_text(
+                json.dumps({
+                    "schema": "heaven-bridge-secret-v1",
+                    "handle": handle,
+                    "destination": "heaven",
+                    "purpose": "secret_type",
+                    "created_at": (current - timedelta(seconds=1)).isoformat(),
+                    "expires_at": (current + timedelta(seconds=30)).isoformat(),
+                    "value": canary,
+                }),
+                encoding="utf-8",
+            )
+            job = {
+                "id": "secret-persist-test",
+                "source": hb.PROTOCOL,
+                "action": "secret_type",
+                "params": {"handle": handle, "target": {"hwnd": 4242}},
+                "created_at": current.isoformat(),
+            }
+            self.assertNotIn(canary, json.dumps(job, sort_keys=True))
+
+            def publish_result(job_id, _job, body):
+                (relay / f"{job_id}.result.json").write_text(json.dumps(body), encoding="utf-8")
+
+            def publish_status(job_id, state, action=None, **extra):
+                (relay / f"{job_id}.{state}.status.json").write_text(
+                    json.dumps({"id": job_id, "state": state, "action": action, **extra}),
+                    encoding="utf-8",
+                )
+
+            typed = []
+
+            def send_secret(value, include_counts=True):
+                self.assertFalse(include_counts)
+                typed.append(value)
+                return {"typed": True}
+
+            with patch.dict(
+                os.environ,
+                {
+                    "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                    "HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED": "1",
+                    "COMPUTERNAME": "heaven",
+                },
+                clear=False,
+            ), patch.object(hb, "SECRET_CONSUMED_DIR", consumed),                  patch.object(hb, "CACHE_DIR", cache),                  patch.object(hb, "AUDIT_LOG", audit_log),                  patch.object(hb, "PROCESSED_LOG", processed_log),                  patch.object(hb, "LOCKS_DIR", locks),                  patch.object(hb, "publish_result", side_effect=publish_result),                  patch.object(hb, "publish_status", side_effect=publish_status),                  patch.object(hb, "desktop_focus_window", return_value={"hwnd": 4242, "focused": True}),                  patch.object(hb, "_desktop_send_unicode", side_effect=send_secret):
+                body = hb.execute_job(
+                    job["id"],
+                    job,
+                    hb.job_hash(job),
+                    threading.Event(),
+                )
+
+            self.assertEqual(typed, [canary])
+            self.assertEqual(body["status"], "completed")
+            self.assertEqual(body["data"], {"typed": True, "consumed": True, "target_hwnd": 4242})
+            self.assertNotIn("characters", json.dumps(body))
+            self.assertNotIn("utf16_units", json.dumps(body))
+
+            (root / "queue.json").write_text(json.dumps(job), encoding="utf-8")
+            persisted = []
+            for artifact in root.rglob("*"):
+                if artifact.is_file():
+                    persisted.append(artifact.read_bytes())
+            self.assertTrue(persisted)
+            self.assertTrue(all(canary.encode("utf-8") not in blob for blob in persisted))
+
+    def test_secret_channel_fails_closed_when_not_trusted(self):
+        with tempfile.TemporaryDirectory() as td:
+            with patch.dict(
+                os.environ,
+                {"HEAVEN_BRIDGE_SECRET_INBOX": td, "HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED": "0"},
+                clear=False,
+            ):
+                status = hb.secret_channel_status()
+                self.assertFalse(status["available"])
+                with self.assertRaises(hb.BridgeError) as ctx:
+                    hb.consume_secret_envelope("secret-handle-0005")
+                self.assertEqual(ctx.exception.code, "SECRET_CHANNEL_UNAVAILABLE")
 
     def test_uia_request_validation_and_structured_route(self):
         with self.assertRaises(hb.BridgeError) as missing:
