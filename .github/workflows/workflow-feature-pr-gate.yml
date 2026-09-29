@@ -23,6 +23,7 @@ on:
       - 'src/MhwModManager.App/**'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
       - 'tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/DeploymentTests.cs'
       - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
       - 'tests/MhwModManager.Tests/**'
       - '_AGENT_CONTEXT/handoff-manifest.json'
@@ -91,6 +92,12 @@ jobs:
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~LegacyMigrationTests"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run deployment concurrency regressions
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~DeploymentTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused workflow regressions

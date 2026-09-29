@@ -159,6 +159,60 @@ public sealed class DeploymentTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_recovery_cannot_let_older_executor_commit_stale_manifest()
+    {
+        var (game, db, hashing, blobs) = await CreateAsync("concurrent-recovery");
+        var live = Path.Combine(game, "nativePC", "race.tex");
+        var hashA = await BlobAsync(blobs, "race-a", "A");
+        var hashB = await BlobAsync(blobs, "race-b", "B");
+        const string path = @"nativePC\race.tex";
+
+        using var aWroteLiveBytes = new ManualResetEventSlim(false);
+        using var releaseA = new ManualResetEventSlim(false);
+        var executorA = new DeploymentExecutor(db, blobs, hashing, game, (stage, sequence) =>
+        {
+            if (stage != "after-file-write" || sequence != 1) return;
+            aWroteLiveBytes.Set();
+            if (!releaseA.Wait(TimeSpan.FromSeconds(20)))
+                throw new TimeoutException("Timed out waiting to resume the first deployment.");
+        });
+        var planA = new DeploymentPlan("race-a", DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, path, null, hashA, null, "a", null, null)], [], []);
+        var planB = new DeploymentPlan("race-b", DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, path, null, hashB, null, "b", null, null)], [], []);
+
+        var taskA = executorA.ApplyAsync(planA, "first concurrent deployment", ct: TestToken);
+        Assert.True(aWroteLiveBytes.Wait(TimeSpan.FromSeconds(20)), "First deployment never reached the post-write fault seam.");
+
+        OperationResult resultB;
+        try
+        {
+            var executorB = new DeploymentExecutor(db, blobs, hashing, game);
+            var taskB = executorB.ApplyAsync(planB, "second concurrent deployment", ct: TestToken);
+            await Task.Delay(150, TestToken);
+            Assert.False(taskB.IsCompleted, "A second executor must wait for the active deployment lease.");
+            releaseA.Set();
+            resultB = await taskB;
+        }
+        finally
+        {
+            releaseA.Set();
+        }
+
+        var resultA = await taskA;
+        Assert.True(resultA.Success);
+        Assert.True(resultB.Success);
+
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(TestToken);
+        var manifest = snapshot.CurrentManifest[path];
+        var liveHash = (await hashing.HashFileAsync(live, true, TestToken)).Sha256;
+        Assert.True(
+            StringComparer.OrdinalIgnoreCase.Equals(liveHash, manifest.ExpectedLiveSha256),
+            $"Live bytes {liveHash} disagree with committed manifest {manifest.ExpectedLiveSha256} from provider {manifest.ProviderModId}.");
+        Assert.Equal("b", manifest.ProviderModId);
+    }
+
+    [Fact]
     public void Archive_path_normalization_rejects_traversal() =>
         Assert.Throws<ArgumentException>(() => PathRules.Normalize(@"nativePC\..\evil.dll"));
 }
