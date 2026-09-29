@@ -480,3 +480,28 @@ test("remote Heaven execution keeps an owned local runner and authoritative canc
   assert.match(source, /cancelHeavenBridgeJob\(agent\.remoteJobId/);
   assert.match(source, /bridgeResultSucceeded\(cancellation\)/);
 });
+
+
+test("engineering autopilot explicitly authorizes scoped heaven repository work", () => {
+  const source = fs.readFileSync(path.join(HERE, "..", "server.mjs"), "utf8");
+  const implementation = source.slice(
+    source.indexOf("async function dispatchAutopilotImplementation"),
+    source.indexOf("async function dispatchAutopilotVerification")
+  );
+  const verification = source.slice(
+    source.indexOf("async function dispatchAutopilotVerification"),
+    source.indexOf("async function dispatchAutopilotReview")
+  );
+  const review = source.slice(
+    source.indexOf("async function dispatchAutopilotReview"),
+    source.indexOf("async function dispatchAutopilotRepair")
+  );
+  const repair = source.slice(
+    source.indexOf("async function dispatchAutopilotRepair"),
+    source.indexOf("async function autopilotStep")
+  );
+
+  for (const section of [implementation, verification, review, repair]) {
+    assert.match(section, /repositoryWriteAuthorized:\s*true/);
+  }
+});
