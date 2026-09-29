@@ -1,0 +1,271 @@
+{
+  "id": "chatgpt-20260929-100500-find-mhw-git-configs-3f6a",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:05:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:00:53.102495+00:00",
+  "finished_at": "2026-09-29T10:01:22.627206+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\npm-cache\\_npx\\4b4c857f6efdfb61\\node_modules\\@wonderwhy-er\\desktop-commander\\dist\\mhw-mods\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-6583fb9-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-final-085781aa-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-final-0a87bb6-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-final-6c49852a-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-final-8062eef-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-final-c6893a4-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-pr59-review-6c49852a-v1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix2\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix3\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-apppaths-inspect\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-bridge-session-recovery-gate-a1\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-build61-a3\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-build61-manager\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-build-a2\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-local-build\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-e2e-harness-manager\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-verify-9dd9176\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\shipit-20260929-0915-agentcontrol-verify-2382b8e4\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\shipit-20260929-0922-agentcontrol-finaltest-6c49852a\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\shipit-20260929-0928-agentcontrol-release-0a87bb6a\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1534-pr90-verify\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1537-pr90-focused-v1\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1540-pr90-reverify\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1543-pr90-fastgate-v1\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1548-pr90-final-verify\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\jobs\\controller-20260928-1551-pr90-postmeta-fastgate\\repo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge\\relay\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeDevV3-1538\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo.recovery-20260929-0808\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRuntimeRepo\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-auto-updater-agent\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-review-0731-a91\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-support-20260928\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-support-harvest-verify-a66296b\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support-lr003\\.git\\config",
+        "line": 9,
+        "text": "\turl = https://github.com/fengie/mhw-mods.git"
+      }
+    ],
+    "scanned_files": 73,
+    "truncated": false
+  },
+  "job_hash": "d8f5ad11dbcedfb0fdc38f873807e00ea4680490e5e30fd064504356a82a5527"
+}
