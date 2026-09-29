@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-enable-auto-delete-merged-branches-20260929-1019-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T14:19:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:27:22.355024+00:00",
+  "finished_at": "2026-09-29T15:27:22.786158+00:00",
+  "stdout": "",
+  "stderr": "Get-Command : The term 'gh.exe' is not recognized as the name of a cmdlet, function, script file, or operable program. \r\nCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:3 char:6\r\n+ $gh=(Get-Command gh.exe -ErrorAction Stop).Source\r\n+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (gh.exe:String) [Get-Command], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException,Microsoft.PowerShell.Commands.GetCommandCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-enable-auto-delete-merged-branches-20260929-1019-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-enable-auto-delete-merged-branches-20260929-1019-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 554,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "26246a3b3e1c2219837ac626c52826ab0034207ff34baf1b24ea02b6d4841b74"
+}
