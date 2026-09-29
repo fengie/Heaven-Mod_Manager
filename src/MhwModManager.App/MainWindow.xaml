@@ -44,8 +44,8 @@
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                        <Button Content="JUST PLAY" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Automatic save backup + health gate + launch observation + last-known-good tracking."/>
-                        <Button Content="Apply" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" ToolTip="Apply staged mod changes transactionally. Ctrl+Enter."/>
+                        <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Back up your saves, check the setup, and launch the game with your enabled mods."/>
+                        <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" ToolTip="Apply staged mod changes transactionally. Ctrl+Enter."/>
                     </StackPanel>
                 </Grid>
 
@@ -55,16 +55,16 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="ACTIVE GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                        <TextBlock Text="GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
                         <ComboBox Width="180" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" AutomationProperties.Name="Active game" ToolTip="Each game has an isolated mod library, database, rollback history, and conflict state."/>
-                        <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
+                        <Button Content="Use This Game" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Button Content="Import" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Import a mod archive into this game's managed library."/>
-                        <Button Content="Scan" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
-                        <Button Content="+ Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
-                        <Button Content="Configure" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
-                        <Button Content="Vanilla" Command="{Binding LaunchSafeModeCommand}" Style="{StaticResource QuietButton}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
+                        <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" ToolTip="Choose a downloaded mod archive and add it to this game's library."/>
+                        <Button Content="Find Installed Games" Command="{Binding ScanInstalledGamesCommand}" Style="{StaticResource QuietButton}" ToolTip="Discover installed Steam, Epic, and GOG games."/>
+                        <Button Content="Add Game" Command="{Binding AddGameCommand}" Style="{StaticResource QuietButton}" ToolTip="Add any Windows game by choosing its executable."/>
+                        <Button Content="Game Settings" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}"/>
+                        <Button Content="Launch Without Mods" Command="{Binding LaunchSafeModeCommand}" Style="{StaticResource QuietButton}" ToolTip="Temporarily deploy no manager-controlled mods, launch, then restore."/>
                     </StackPanel>
                 </Grid>
             </Grid>
@@ -86,7 +86,7 @@
 
                         <StackPanel>
                             <TextBlock Text="Dashboard" Style="{StaticResource PageTitle}"/>
-                            <TextBlock Text="Your active setup, deployment state, and anything that actually needs attention." Style="{StaticResource PageSubtitle}"/>
+                            <TextBlock Text="See whether your setup is ready to play and what needs your attention." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
 
                         <UniformGrid Grid.Row="1" Columns="2" Margin="-5,19,-5,13">
@@ -95,9 +95,9 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Good}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="ENABLED" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Text="ACTIVE MODS" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding EnabledCount}" FontSize="32" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                        <TextBlock Text="mods currently active" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
+                                        <TextBlock Text="mods enabled for this setup" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -106,7 +106,7 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="#6FA6E8" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="EFFECTIVE" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Text="WORKING IN GAME" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding FullyEffectiveCount}" FontSize="32" FontWeight="SemiBold" Margin="0,6,0,0"/>
                                         <TextBlock Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" composed • "/><Run Text="{Binding RevalidationCount,Mode=OneWay}"/><Run Text=" revalidate"/></TextBlock>
                                     </StackPanel>
@@ -117,9 +117,9 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Warn}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="ATTENTION" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Text="NEEDS ATTENTION" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding BlockerCount}" FontSize="32" FontWeight="SemiBold" Foreground="{StaticResource Warn}" Margin="0,6,0,0"/>
-                                        <TextBlock Text="blocking decisions" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
+                                        <TextBlock Text="problems that need a choice" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -128,9 +128,9 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border Background="{StaticResource Accent}" CornerRadius="3"/>
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="STAGED" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Text="READY TO APPLY" Style="{StaticResource Eyebrow}"/>
                                         <TextBlock Text="{Binding StagedCount}" FontSize="32" FontWeight="SemiBold" Foreground="{StaticResource AccentBright}" Margin="0,6,0,0"/>
-                                        <TextBlock Text="changes not yet applied" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
+                                        <TextBlock Text="mod changes waiting to be installed" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -147,7 +147,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <StackPanel>
                                             <TextBlock Text="System status" Style="{StaticResource SectionTitle}"/>
-                                            <TextBlock Text="Deployment and game location" Style="{StaticResource PageSubtitle}"/>
+                                            <TextBlock Text="Is everything ready to play?" Style="{StaticResource PageSubtitle}"/>
                                         </StackPanel>
                                         <Border Grid.Column="1" Padding="9,4" CornerRadius="12" Background="#13241C" BorderBrush="#28553E" BorderThickness="1" VerticalAlignment="Top">
                                             <TextBlock Text="MANAGER" Foreground="{StaticResource Good}" FontSize="10" FontWeight="Bold"/>
@@ -165,19 +165,19 @@
 
                             <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource Card}">
                                 <StackPanel>
-                                    <TextBlock Text="Quick actions" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Text="Common operations" Style="{StaticResource PageSubtitle}"/>
-                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="JUST PLAY" ToolTip="Back up saves, run the health gate, launch, observe, and track last-known-good state." Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Process Smart Inbox" Command="{Binding ProcessInboxCommand}" ToolTip="Drop archives/folders into Inbox and let the manager classify/import them automatically."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Restore last known good" Command="{Binding RestoreLastGoodCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Diagnose startup crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Safe duplicate cleanup" Command="{Binding SmartCleanupCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export collection recipe" Command="{Binding ExportRecipeCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Loadouts, rules &amp; diagnostics" Command="{Binding OpenWorkflowsCommand}"/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview staged changes" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Inspect overlaps" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
-                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for program updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified program release feed. Network or authentication failures never block normal manager use."/>
-                                    <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply staged changes" Command="{Binding ApplyCommand}"/>
+                                    <TextBlock Text="Start here" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Text="The most useful actions for this game." Style="{StaticResource PageSubtitle}"/>
+                                    <Button Margin="0,17,0,7" HorizontalContentAlignment="Left" Content="Launch Game" ToolTip="Back up saves, run the health gate, launch, observe, and track last-known-good state." Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mods from Inbox" Command="{Binding ProcessInboxCommand}" ToolTip="Drop archives/folders into Inbox and let the manager classify/import them automatically."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Restore Last Working Setup" Command="{Binding RestoreLastGoodCommand}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Find Mod Causing Startup Crash" Command="{Binding AutoDiagnoseCrashCommand}" ToolTip="Automatically bisects newly enabled mods. MHW may launch multiple times."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Clean Up Duplicate Mods" Command="{Binding SmartCleanupCommand}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export Mod List" Command="{Binding ExportRecipeCommand}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Advanced Tools &amp; Diagnostics" Command="{Binding OpenWorkflowsCommand}"/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" ToolTip="Build the exact plan without writing live game files."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Review Shared Files" Command="{Binding ShowOverlapsCommand}" ToolTip="See multi-provider assets without treating resolved overwrites as errors."/>
+                                    <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Check for App Updates" Command="{Binding CheckForProgramUpdatesCommand}" ToolTip="Checks the verified program release feed. Network or authentication failures never block normal manager use."/>
+                                    <Button Margin="0" HorizontalContentAlignment="Left" Content="Apply Mod Changes" Command="{Binding ApplyCommand}"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -189,9 +189,9 @@
                                     <TextBlock Text="i" Foreground="{StaticResource AccentBright}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                    <TextBlock Text="Conflict automation" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Text="How conflicts are handled" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Margin="0,7,0,0" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="19"
-                                               Text="Main → optional → patch stacks are composed automatically. Shared body/skin textures embedded in armor/outfit packs use one exact-path resource provider while every outfit stays enabled. Dedicated independent texture replacers still require lineage or an explicit choice. Explicit human rules always win; unrelated structural/game-data replacements still fail closed."/>
+                                               Text="The manager resolves safe, obvious mod relationships automatically and asks you only when two unrelated mods really need a winner. Your saved choices are remembered, and technical file details stay available when you want them."/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -218,7 +218,7 @@
                         </StackPanel>
                         <WrapPanel Grid.Row="1" Margin="0,10,0,0" HorizontalAlignment="Left">
                             <Button Content="Sync metadata" Command="{Binding SyncMetadataCommand}" Style="{StaticResource QuietButton}" ToolTip="Refresh Nexus/local lineage, cached thumbnails, update availability, and superseded revisions."/>
-                            <Button Content="Adopt manual files" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
+                            <Button Content="Bring In Manual Mods" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
                         </WrapPanel>
                     </Grid>
 
@@ -251,11 +251,11 @@
                                     </WrapPanel>
                                 </StackPanel>
                                 <StackPanel Grid.Row="1" Margin="0,10,0,0">
-                                    <TextBlock Text="BULK ACTIONS · SHOWN MODS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
+                                    <TextBlock Text="BULK ACTIONS · VISIBLE MODS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
                                     <WrapPanel>
-                                        <Button Content="Enable shown" Command="{Binding EnableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as enabled."/>
-                                        <Button Content="Disable shown" Command="{Binding DisableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as disabled."/>
-                                        <Button Content="Re-index" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" ToolTip="Re-index every mod currently visible in this search and smart view."/>
+                                        <Button Content="Enable Visible Mods" Command="{Binding EnableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as enabled."/>
+                                        <Button Content="Disable Visible Mods" Command="{Binding DisableSelectedCommand}" ToolTip="Stage every mod currently visible in this search and smart view as disabled."/>
+                                        <Button Content="Refresh Mod Info" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" ToolTip="Re-index every mod currently visible in this search and smart view."/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Grid>
@@ -269,7 +269,7 @@
                                 <DataTemplate>
                                     <Border Margin="72,2,18,10" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
                                         <StackPanel>
-                                            <TextBlock Text="Visual gallery" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Mod preview" FontWeight="SemiBold"/>
                                             <TextBlock Margin="0,3,0,8" Foreground="{StaticResource Muted}" FontSize="11" Text="Cached Nexus artwork and screenshots found inside the source packages. Select a mod to load its gallery."/>
                                             <ItemsControl ItemsSource="{Binding GalleryPaths}" Margin="0,0,0,14">
                                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -281,8 +281,8 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <TextBlock Text="Internal configuration" FontWeight="SemiBold"/>
-                                            <TextBlock Margin="0,3,0,10" Foreground="{StaticResource Muted}" FontSize="11" Text="The family toggle controls everything. Change individual optional/component layers here only when you want a custom combination; update/fix precedence remains automatic."/>
+                                            <TextBlock Text="Advanced mod options" FontWeight="SemiBold"/>
+                                            <TextBlock Margin="0,3,0,10" Foreground="{StaticResource Muted}" FontSize="11" Text="The main toggle controls the whole mod. Open these options only when you want to turn individual add-ons or components on or off."/>
                                             <ItemsControl ItemsSource="{Binding Parts}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -301,7 +301,7 @@
                                 </DataTemplate>
                             </DataGrid.RowDetailsTemplate>
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="ACTIVE" Width="72">
+                                <DataGridTemplateColumn Header="ENABLED" Width="72">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsThreeState="False" HorizontalAlignment="Center" ToolTip="Toggle the whole logical mod family. A partial state means an older profile had only some components enabled."/>
@@ -346,7 +346,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="STATE" Width="132">
+                                <DataGridTemplateColumn Header="STATUS" Width="132">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border HorizontalAlignment="Left">
@@ -379,7 +379,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="EFFECT" Width="155">
+                                <DataGridTemplateColumn Header="IN GAME" Width="155">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel ToolTip="{Binding EffectiveReason}">
@@ -390,8 +390,8 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="PRIORITY" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
-                                <DataGridTemplateColumn Header="SOURCE" Width="1.2*" SortMemberPath="SourceSummary">
+                                <DataGridTextColumn Header="LOAD ORDER" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
+                                <DataGridTemplateColumn Header="INSTALLED FROM" Width="1.2*" SortMemberPath="SourceSummary">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding SourceName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}" VerticalAlignment="Center"/>
@@ -412,10 +412,10 @@
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540" Margin="16,8">
                                 <TextBlock Text="Your mod library is empty" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Import a mod archive or adopt existing manual files to create your first managed entry."/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Install a downloaded mod archive, or bring existing manual mod files into the manager."/>
                                 <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="Import archive" Command="{Binding ImportArchiveCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Import a mod archive into this game's managed library."/>
-                                    <Button Content="Adopt manual files" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from the configured mod folder into a tracked source package without modifying the live tree."/>
+                                    <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Choose a downloaded mod archive and add it to this game's library."/>
+                                    <Button Content="Bring In Manual Mods" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from the configured mod folder into a tracked source package without modifying the live tree."/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -431,7 +431,7 @@
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520" Margin="16,8">
                                 <TextBlock Text="No mods match this view" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="The library is intact. Clear the search and smart-view filter to show every mod again."/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Text="Your mods are still here. Clear the search and filters to show everything again."/>
                                 <Button Margin="0,16,0,0" HorizontalAlignment="Center" Content="Clear filters" Command="{Binding ClearModFiltersCommand}" Style="{StaticResource PrimaryButton}"/>
                             </StackPanel>
                         </Border>
@@ -444,9 +444,9 @@
                                 <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Margin="0,3,0,0" Text="{Binding PlanPreviewText}" TextWrapping="Wrap"/>
                             </StackPanel>
                             <WrapPanel Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Right">
-                                <Button Content="Preview changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
-                                <Button Content="Discard staged" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Return every logical mod to its currently applied state. No files are changed."/>
-                                <Button Content="Apply staged changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Commit the staged plan transactionally. Ctrl+Enter."/>
+                                <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="Dry run: build the exact deployment plan without writing live game files."/>
+                                <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Return every logical mod to its currently applied state. No files are changed."/>
+                                <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Commit the staged plan transactionally. Ctrl+Enter."/>
                             </WrapPanel>
                         </Grid>
                     </Border>
@@ -504,7 +504,7 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="ARMOR" Binding="{Binding Armor}" Width="1.8*"/>
                             <DataGridTextColumn Header="MODEL" Binding="{Binding ModelId}" Width="110"/>
-                            <DataGridTextColumn Header="PROVIDERS" Binding="{Binding Available}" Width="90"/>
+                            <DataGridTextColumn Header="MODS" Binding="{Binding Available}" Width="90"/>
                             <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="2*"/>
                             <DataGridTextColumn Header="WINNING PIECES" Binding="{Binding WinningPieces}" Width="1.4*"/>
                             <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="120"/>
@@ -570,12 +570,12 @@
                     <Grid Grid.Row="2" Margin="0,0,0,14">
                     <DataGrid ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Unresolved conflicts">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="TYPE" Binding="{Binding Kind}" Width="145"/>
-                            <DataGridTextColumn Header="PROVIDERS" Binding="{Binding Providers}" Width="2*"/>
+                            <DataGridTextColumn Header="ISSUE" Binding="{Binding Kind}" Width="145"/>
+                            <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="2*"/>
                             <DataGridTextColumn Header="FILES" Binding="{Binding FileCountLabel}" Width="70"/>
-                            <DataGridTextColumn Header="SCOPE" Binding="{Binding Scope}" Width="2.2*"/>
-                            <DataGridTextColumn Header="WHY" Binding="{Binding Explanation}" Width="3*"/>
-                            <DataGridTextColumn Header="CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
+                            <DataGridTextColumn Header="AFFECTED CONTENT" Binding="{Binding Scope}" Width="2.2*"/>
+                            <DataGridTextColumn Header="WHAT'S HAPPENING" Binding="{Binding Explanation}" Width="3*"/>
+                            <DataGridTextColumn Header="AUTOMATION CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border>
@@ -598,8 +598,8 @@
                             </Style>
                         </Border.Style>
                         <StackPanel>
-                            <TextBlock Text="Choose one effective mod" FontWeight="SemiBold"/>
-                            <TextBlock Text="Choose only if these are true alternatives. If the detector missed a main + optional/component relationship, use 'Make main + chain others' to teach it permanently; source folders are never merged or moved." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
+                            <TextBlock Text="Choose which mod should win" FontWeight="SemiBold"/>
+                            <TextBlock Text="Use a single winner when these mods are alternatives. If one is the main mod and the others are add-ons, tell the manager that relationship instead so they can work together." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding SelectedConflict.Evidence}" Foreground="{StaticResource Muted}" FontSize="10" Margin="0,0,0,10" TextWrapping="Wrap"/>
                             <ItemsControl ItemsSource="{Binding SelectedConflict.Options}">
                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -612,8 +612,8 @@
                                                 </Border>
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="205"/>
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
-                                                <Button Content="Choose only" Margin="0,0,0,6" Command="{Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" Style="{StaticResource PrimaryButton}"/>
-                                                <Button Content="Make main + chain others" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Persist this as the family main and attach the other conflicting packages as optional/component children."/>
+                                                <Button Content="Use This Mod" Margin="0,0,0,6" Command="{Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" Style="{StaticResource PrimaryButton}"/>
+                                                <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Persist this as the family main and attach the other conflicting packages as optional/component children."/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
@@ -666,28 +666,28 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Activity">
+            <TabItem Header="History">
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Activity &amp; diagnostics" Style="{StaticResource PageTitle}"/>
-                            <TextBlock Text="Recent transactions, recovery operations, and support tooling." Style="{StaticResource PageSubtitle}"/>
+                            <TextBlock Text="History &amp; support" Style="{StaticResource PageTitle}"/>
+                            <TextBlock Text="See what the manager changed and create diagnostics only when you need support." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Refresh" Command="{Binding RefreshActivityCommand}" Style="{StaticResource QuietButton}"/>
-                            <Button Content="Capture diagnostics" Command="{Binding CaptureDiagnosticsCommand}"/>
-                            <Button Content="Export support bundle" Command="{Binding ExportSupportCommand}"/>
+                            <Button Content="Collect Diagnostics" Command="{Binding CaptureDiagnosticsCommand}"/>
+                            <Button Content="Create Support Bundle" Command="{Binding ExportSupportCommand}"/>
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,20,0,10">
                         <DataGrid ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
-                                <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="120"/>
-                                <DataGridTextColumn Header="OPERATION" Binding="{Binding Description}" Width="2.5*"/>
-                                <DataGridTextColumn Header="TRANSACTION ID" Binding="{Binding Id}" Width="250"/>
+                                <DataGridTextColumn Header="STATUS" Binding="{Binding State}" Width="120"/>
+                                <DataGridTextColumn Header="ACTION" Binding="{Binding Description}" Width="2.5*"/>
+                                <DataGridTextColumn Header="TECHNICAL ID" Binding="{Binding Id}" Width="250"/>
                             </DataGrid.Columns>
                         </DataGrid>
                         <Border>
@@ -707,7 +707,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Overlaps">
+            <TabItem Header="Shared Files">
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -719,7 +719,7 @@
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Asset overlaps" Style="{StaticResource PageTitle}"/>
+                                <TextBlock Text="Shared files" Style="{StaticResource PageTitle}"/>
                                 <Border Margin="12,5,0,0" Padding="8,3" CornerRadius="11" Background="#151A20" BorderBrush="#303844" BorderThickness="1" VerticalAlignment="Top">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="Bold" Text="{Binding OverlapCount,Mode=OneWay}"/>
@@ -727,27 +727,27 @@
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
-                            <TextBlock Text="See every shared asset, then inspect the exact resolver decision behind a selected path. Normal composition stays quiet; unresolved choices still fail closed." Style="{StaticResource PageSubtitle}"/>
+                            <TextBlock Text="See when more than one mod changes the same game file. The manager handles safe cases automatically and explains the result when you want details." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Explain selected" Command="{Binding ExplainSelectedOverlapCommand}" ToolTip="Show winner, rule source, confidence, evidence, family/provenance and applied-state details for the selected overlap."/>
+                            <Button Content="Why This Mod Wins" Command="{Binding ExplainSelectedOverlapCommand}" ToolTip="Show winner, rule source, confidence, evidence, family/provenance and applied-state details for the selected overlap."/>
                             <Button Content="Refresh analysis" Command="{Binding RefreshAnalysisNowCommand}" ToolTip="F5"/>
                         </StackPanel>
                     </Grid>
 
                     <Border Grid.Row="1" Margin="0,18,0,12" Style="{StaticResource Card}" Padding="12">
                         <TextBlock Foreground="{StaticResource Muted}" TextWrapping="Wrap"
-                                   Text="Shared textures, base resources, patches, and family components often overlap intentionally. Select a row and use Explain selected to see why one provider wins—or why the manager refuses to guess."/>
+                                   Text="Sharing a file is not always a problem. Select a row to see which mod is being used and why; unresolved choices appear in Needs Attention instead of being guessed."/>
                     </Border>
 
                     <Grid Grid.Row="2">
                         <DataGrid ItemsSource="{Binding OverlapRows}" SelectedItem="{Binding SelectedOverlap,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Asset overlaps">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ASSET" Binding="{Binding DisplayName}" Width="2*"/>
-                                <DataGridTextColumn Header="PROVIDERS" Binding="{Binding ProviderCount}" Width="90"/>
-                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="140"/>
+                                <DataGridTextColumn Header="GAME FILE" Binding="{Binding DisplayName}" Width="2*"/>
+                                <DataGridTextColumn Header="MODS" Binding="{Binding ProviderCount}" Width="90"/>
+                                <DataGridTextColumn Header="RESULT" Binding="{Binding Resolution}" Width="140"/>
                                 <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="3*"/>
-                                <DataGridTextColumn Header="DETAIL" Binding="{Binding Detail}" Width="3*"/>
+                                <DataGridTextColumn Header="DETAILS" Binding="{Binding Detail}" Width="3*"/>
                             </DataGrid.Columns>
                         </DataGrid>
                         <Border>
@@ -758,8 +758,8 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="No shared assets detected" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="There is nothing to explain here for the current staged setup."/>
+                                <TextBlock Text="No shared files detected" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="The enabled mods in this setup are not competing for the same files."/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -776,7 +776,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="Explain Why" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Text="Why this file uses this mod" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" Text="{Binding ExplainWhyStatus}" TextWrapping="Wrap"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Padding="8,3" CornerRadius="11" BorderBrush="#303844" BorderThickness="1" VerticalAlignment="Top">
@@ -794,11 +794,11 @@
                                     <ColumnDefinition Width="1.2*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="EXACT PATH"/>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="FILE PATH"/>
                                     <TextBlock Margin="0,3,12,0" Text="{Binding SelectedExplanation.Path}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SelectedExplanation.Path}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="REASON CODE"/>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="TECHNICAL REASON"/>
                                     <TextBlock Margin="0,3,12,0" Text="{Binding SelectedExplanation.ReasonCode}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
@@ -806,13 +806,13 @@
                                     <TextBlock Margin="0,3,12,0" Text="{Binding SelectedExplanation.Confidence}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="RESOLVER SCORE"/>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="AUTOMATION SCORE"/>
                                     <TextBlock Margin="0,3,0,0" Text="{Binding SelectedExplanation.ResolverScore}"/>
                                 </StackPanel>
                             </Grid>
 
                             <StackPanel Grid.Row="3" Margin="0,10,0,0">
-                                <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="ENGINE EXPLANATION"/>
+                                <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="EXPLANATION"/>
                                 <TextBlock Margin="0,3,0,0" TextWrapping="Wrap" Text="{Binding SelectedExplanation.Explanation}"/>
                                 <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="EVIDENCE"/>
                                 <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Text="{Binding SelectedExplanation.Evidence}"/>
@@ -820,14 +820,14 @@
 
                             <DataGrid Grid.Row="4" Margin="0,12,0,0" MaxHeight="150" ItemsSource="{Binding SelectedExplanation.Providers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="PROVIDER" Binding="{Binding DisplayName}" Width="2*"/>
-                                    <DataGridCheckBoxColumn Header="PLANNED" Binding="{Binding PlannedWinner}" Width="82"/>
-                                    <DataGridCheckBoxColumn Header="APPLIED" Binding="{Binding AppliedProvider}" Width="82"/>
-                                    <DataGridTextColumn Header="PRIORITY" Binding="{Binding Priority}" Width="72"/>
+                                    <DataGridTextColumn Header="MOD" Binding="{Binding DisplayName}" Width="2*"/>
+                                    <DataGridCheckBoxColumn Header="WILL USE" Binding="{Binding PlannedWinner}" Width="82"/>
+                                    <DataGridCheckBoxColumn Header="IN USE" Binding="{Binding AppliedProvider}" Width="82"/>
+                                    <DataGridTextColumn Header="LOAD ORDER" Binding="{Binding Priority}" Width="72"/>
                                     <DataGridTextColumn Header="FAMILY" Binding="{Binding FamilyId}" Width="1.4*"/>
                                     <DataGridTextColumn Header="ROLE" Binding="{Binding FamilyRole}" Width="100"/>
                                     <DataGridTextColumn Header="NEXUS MOD" Binding="{Binding NexusModId}" Width="100"/>
-                                    <DataGridTextColumn Header="PROVENANCE" Binding="{Binding ProvenanceSource}" Width="120"/>
+                                    <DataGridTextColumn Header="SOURCE" Binding="{Binding ProvenanceSource}" Width="120"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
