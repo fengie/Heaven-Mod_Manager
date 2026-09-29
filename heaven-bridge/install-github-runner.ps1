@@ -7,7 +7,8 @@ $Labels = @('heaven','local-bridge','mhw-mods')
 $ForceReconfigure = $false
 $ApiVersion = '2022-11-28'
 
-if ($env:OS -ne 'Windows_NT') { throw 'This installer is intended for the Windows Heaven worker.' }
+$isWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+if (-not $isWindows) { throw 'This installer is intended for the Windows Heaven worker.' }
 
 function Test-IsElevated {
     $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -28,8 +29,8 @@ function Ensure-Elevated {
     exit $child.ExitCode
 }
 
-Ensure-Elevated
-
+# Runner registration and bridge CI do not require administrator privileges.
+# Avoid UAC prompts so bootstrap remains unattended under the Heaven worker.
 $git = (Get-Command git.exe -ErrorAction Stop).Source
 
 function Get-GitHubAccessToken {
@@ -187,11 +188,11 @@ function Ensure-RunnerScheduledTask {
         -RestartCount 999 `
         -RestartInterval (New-TimeSpan -Minutes 1) `
         -ExecutionTimeLimit ([TimeSpan]::Zero)
-    $principal = New-ScheduledTaskPrincipal -UserId $identityName -LogonType Interactive -RunLevel Highest
+    $principal = New-ScheduledTaskPrincipal -UserId $identityName -LogonType Interactive -RunLevel Limited
 
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
     $registered = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
-    if ([string]$registered.Principal.RunLevel -ne 'Highest') {
+    if ([string]$registered.Principal.RunLevel -ne 'Limited') {
         throw "Runner task registered with unexpected RunLevel '$($registered.Principal.RunLevel)'."
     }
     Start-ScheduledTask -TaskName $taskName
