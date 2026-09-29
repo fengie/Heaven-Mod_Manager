@@ -1,9 +1,10 @@
 {
   "id": "branchzero-audit-remaining-20260929-1112",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:23:22.326605+00:00"
+  "updated_at": "2026-09-29T11:23:50.715442+00:00",
+  "exit_code": 0
 }
