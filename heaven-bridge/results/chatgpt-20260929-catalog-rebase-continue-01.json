@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-catalog-rebase-continue-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:46:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:44:33.595188+00:00",
+  "finished_at": "2026-09-29T15:44:35.224101+00:00",
+  "stdout": "[detached HEAD b88bd856] Catalog: expose browse entry point in main UI\n 1 file changed, 1 insertion(+)\nAuto-merging src/MhwModManager.App/MainWindow.xaml\nCONFLICT (content): Merge conflict in src/MhwModManager.App/MainWindow.xaml\n---EXIT:1---\r\n## HEAD (no branch)\nUU src/MhwModManager.App/MainWindow.xaml\n---UNMERGED---\r\nsrc/MhwModManager.App/MainWindow.xaml\n",
+  "stderr": "Rebasing (14/29)\rRebasing (15/29)\rRebasing (16/29)\rRebasing (17/29)\rRebasing (18/29)\rRebasing (19/29)\rRebasing (20/29)\rRebasing (21/29)\rRebasing (22/29)\rRebasing (23/29)\rRebasing (24/29)\rRebasing (25/29)\rRebasing (26/29)\rRebasing (27/29)\rRebasing (28/29)\rRebasing (29/29)\rerror: could not apply 1ffe7cb8... Catalog: label entry point for first-time users\nhint: Resolve all conflicts manually, mark them as resolved with\nhint: \"git add/rm <conflicted_files>\", then run \"git rebase --continue\".\nhint: You can instead skip this commit: run \"git rebase --skip\".\nhint: To abort and get back to the state before \"git rebase\", run \"git rebase --abort\".\nhint: Disable this message with \"git config advice.mergeConflict false\"\nCould not apply 1ffe7cb8... Catalog: label entry point for first-time users\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-catalog-rebase-continue-01.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-catalog-rebase-continue-01.stderr.log",
+    "stdout_bytes": 359,
+    "stderr_bytes": 794,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c748e22e032f25d648d22aae37fb98dece1ed877273f0ed84da28dadaf4598be"
+}
