@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0829-codex-workspacewrite-probe-j1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:29:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Continue'; $d=Join-Path $env:TEMP 'heaven-codex-workspacewrite-probe'; if(Test-Path $d){Remove-Item -Recurse -Force $d}; New-Item -ItemType Directory -Path $d | Out-Null; $prompt='Create a file named proof.txt in the current working directory containing exactly WORKSPACE_WRITE_OK followed by a newline. Do not modify anything else. Then finish.'; $prompt | codex -a never -s workspace-write exec --skip-git-repo-check -C $d -; $ec=$LASTEXITCODE; Write-Output ('CODEX_EXIT='+$ec); $p=Join-Path $d 'proof.txt'; if(Test-Path $p){Write-Output ('PROOF='+((Get-Content $p -Raw).Trim()))}else{Write-Output 'PROOF=MISSING'}; if($ec -ne 0){exit 51}; if(-not (Test-Path $p)){exit 52}; if(((Get-Content $p -Raw).Trim()) -ne 'WORKSPACE_WRITE_OK'){exit 53}; Remove-Item -Recurse -Force $d; exit 0"
+  },
+  "priority": "highest"
+}
