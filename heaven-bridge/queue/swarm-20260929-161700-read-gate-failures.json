@@ -1,0 +1,18 @@
+{
+  "id": "swarm-20260929-161700-read-gate-failures",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs",
+    "pattern": "FAIL:|Verification finished|Agent handoff|preflight",
+    "regex": true,
+    "case_sensitive": false,
+    "mode": "content",
+    "glob": "*.log",
+    "max_results": 120
+  },
+  "created_at": "2026-09-29T16:17:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
