@@ -14,6 +14,23 @@ Unless the user explicitly says read-only, review-only, summarize-only, audit-on
 Before answering the task, planning task work, dispatching sub-agents, or taking task-specific action, complete repository training. Read the required repository/continuity/trainer files, establish exact current repository truth, inspect relevant source/tests/history/ownership, and only then process the task prompt. If training cannot be completed, report TRAINING-BLOCKED with exact evidence. No agent may answer first and train afterward; every successor and sub-agent inherits this gate.
 
 
+
+## Mandatory defect-prevention closure
+Bugs are prevention failures. Before working in a subsystem, read materially relevant entries in `_AGENT_CONTEXT/BUG_PRECEDENTS.md`.
+
+When any bug, regression, false completion claim, broken integration, or process escape is discovered, do not stop at the direct fix. Completion requires:
+1. reproduce/characterize the failure when feasible;
+2. identify root cause and violated invariant;
+3. log/update the canonical precedent in `_AGENT_CONTEXT/BUG_PRECEDENTS.md`;
+4. strengthen the applicable agent/process/product guideline;
+5. add or strengthen regression coverage or the strongest durable deterministic verifier;
+6. test the real risk surface, including integration/UI/runtime/update/restart/concurrency paths when relevant;
+7. inspect sibling/adjacent instances of the same defect class;
+8. record exact verification evidence;
+9. propagate the lesson to future workers.
+
+Managers/reviewers must reject work that fixes an escaped defect but omits applicable precedent, prevention, regression, or verification evidence. If the same defect class recurs, treat that as failure of the prior prevention control and strengthen the control itself.
+
 ## Mandatory task review + plugin activation preflight
 Training alone does not authorize task execution. Before planning, answering, dispatching, or taking task-specific action:
 
@@ -31,7 +48,7 @@ Before meaningful changes:
 1. Fetch/refresh remote state when possible.
 2. Identify exact current `origin/main` SHA.
 3. Inspect branch, worktree status, recent history, relevant PRs/branches, and continuity files.
-4. Read repository instructions (`AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/LEARNED_RULES.md`) when present.
+4. Read repository instructions (`AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, `_AGENT_CONTEXT/LEARNED_RULES.md`) when present.
 5. Treat repository state as authoritative over stale chat text, old SHAs, or this prompt.
 6. Re-check canonical state before every merge/rebase/cherry-pick and immediately before pushing `main`.
 
