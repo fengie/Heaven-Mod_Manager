@@ -1,0 +1,9 @@
+{
+  "id": "branchzero-read-r2-output-20260929-1138",
+  "state": "running",
+  "action": "job_output_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:41:34.064024+00:00"
+}
