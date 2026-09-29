@@ -4406,6 +4406,28 @@ async function autopilotStep() {
     let state = refreshState();
     if (!state.autopilot?.enabled || state.autopilot?.paused) return state.autopilot || null;
 
+    if (state.autopilot.perpetual) {
+      const holdReason = perpetualSafetyHoldReason(state);
+      if (holdReason) {
+        return {
+          autopilot: state.autopilot,
+          decision: { kind: "wait", reason: holdReason, perpetual: true }
+        };
+      }
+
+      const recovery = await reconcilePerpetualReplacement(state);
+      if (recovery) return { autopilot: refreshState().autopilot, decision: recovery };
+      state = refreshState();
+
+      const retry = perpetualRetryWaiting(state.autopilot);
+      if (retry.waiting) {
+        return {
+          autopilot: state.autopilot,
+          decision: { kind: "wait", reason: state.autopilot.lastRecoveryReason || "perpetual-cooldown", retryAt: retry.retryAt }
+        };
+      }
+    }
+
     const truth = await reconcileAutopilotTruth();
     state = refreshState();
     const capacityAvailable = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length < MAX_ACTIVE_AGENTS;
@@ -4417,9 +4439,28 @@ async function autopilotStep() {
     });
 
     if (decision.kind === "idle" || decision.kind === "wait") return { autopilot: state.autopilot, decision };
-    if (decision.kind === "gate") return { autopilot: gateAutopilot(decision.reason), decision };
+    if (decision.kind === "gate") {
+      if (state.autopilot?.perpetual) {
+        const recoverablePatch = perpetualRecoverableGatePatch(state, decision.reason);
+        const orphanHold = /reconciliation-required-orphaned$/.test(String(decision.reason || ""));
+        if (recoverablePatch !== null || orphanHold) {
+          const autopilot = schedulePerpetualRetry(decision.reason, {
+            patch: recoverablePatch || {},
+            notify: !["worker-capacity-unavailable", "routing-ownership-stale"].includes(decision.reason)
+          });
+          return {
+            autopilot,
+            decision: { ...decision, kind: "wait", perpetualRetry: true, retryAt: autopilot.nextRetryAt }
+          };
+        }
+      }
+      return { autopilot: gateAutopilot(decision.reason), decision };
+    }
     if (decision.kind === "transition") {
-      return { autopilot: persistAutopilotPhase(decision.phase, decision.reason, decision.patch || {}), decision };
+      const patch = state.autopilot?.perpetual
+        ? { ...(decision.patch || {}), nextRetryAt: null, lastError: null }
+        : (decision.patch || {});
+      return { autopilot: persistAutopilotPhase(decision.phase, decision.reason, patch), decision };
     }
     if (decision.kind === "integration-gate") {
       const candidate = autopilotCandidate(state);
@@ -4438,7 +4479,13 @@ async function autopilotStep() {
     else if (decision.kind === "dispatch-integration") agent = await dispatchAutopilotIntegration(state);
     else if (decision.kind === "dispatch-hygiene") agent = await dispatchAutopilotHygiene(state);
     else if (decision.kind === "dispatch-expansion") agent = await dispatchAutopilotExpansion(state);
-    else return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
+    else {
+      if (state.autopilot?.perpetual) {
+        const autopilot = schedulePerpetualRetry(`unknown-decision:${decision.kind}`, { notify: true });
+        return { autopilot, decision: { ...decision, kind: "wait", perpetualRetry: true } };
+      }
+      return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
+    }
 
     const patch = {};
     if (decision.kind === "dispatch-implementation") patch.implementationAgentId = agent.id;
@@ -4448,9 +4495,22 @@ async function autopilotStep() {
     if (decision.kind === "dispatch-integration") patch.integrationAgentId = agent.id;
     if (decision.kind === "dispatch-hygiene") patch.hygieneAgentId = agent.id;
     if (decision.kind === "dispatch-expansion") patch.expansionAgentId = agent.id;
+    if (state.autopilot?.perpetual) {
+      patch.nextRetryAt = null;
+      patch.lastError = null;
+    }
     return { autopilot: patchAutopilot(patch), decision, agentId: agent.id };
   } catch (error) {
     try {
+      const state = loadState();
+      if (state.autopilot?.enabled && state.autopilot?.perpetual) {
+        const autopilot = schedulePerpetualRetry("autopilot-runtime-error", { error, notify: true });
+        return {
+          autopilot,
+          decision: { kind: "wait", reason: "autopilot-runtime-error", perpetualRetry: true, retryAt: autopilot.nextRetryAt },
+          error: error.message || String(error)
+        };
+      }
       return { autopilot: gateAutopilot("autopilot-runtime-error", error), error: error.message || String(error) };
     } catch {
       return { error: error.message || String(error) };
