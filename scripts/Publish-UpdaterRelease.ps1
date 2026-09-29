@@ -309,7 +309,7 @@ try {
   }
   if(-not [bool]$releaseView.immutable){
     Write-Host "::error::GitHub published $tag without immutable-release protection; attempting to withdraw the invalid updater feed."
-    try{Remove-GitHubUpdaterDraftRelease -ReleaseId ([long]$releaseView.id) -Tag $tag}catch{Write-Host "::error::Failed to withdraw non-immutable updater release $tag: $($_.Exception.Message)"}
+    try{Remove-GitHubUpdaterDraftRelease -ReleaseId ([long]$releaseView.id) -Tag $tag}catch{Write-Host "::error::Failed to withdraw non-immutable updater release ${tag}: $($_.Exception.Message)"}
     throw "Updater release $tag was not immutable and is not accepted as a safe publication."
   }
 
