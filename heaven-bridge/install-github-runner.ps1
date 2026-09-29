@@ -1,12 +1,10 @@
-param(
-    [string]$Repository = 'fengie/mhw-mods',
-    [string]$RunnerName = 'heaven',
-    [string]$RunnerDirectory = (Join-Path $env:USERPROFILE 'actions-runner-heaven'),
-    [string[]]$Labels = @('heaven','local-bridge','mhw-mods'),
-    [switch]$ForceReconfigure
-)
-
 $ErrorActionPreference = 'Stop'
+
+$Repository = 'fengie/mhw-mods'
+$RunnerName = 'heaven'
+$RunnerDirectory = Join-Path $env:USERPROFILE 'actions-runner-heaven'
+$Labels = @('heaven','local-bridge','mhw-mods')
+$ForceReconfigure = $false
 
 if ($env:OS -ne 'Windows_NT') { throw 'This installer is intended for the Windows Heaven worker.' }
 
