@@ -1,9 +1,10 @@
 {
   "id": "ctrl-cancel-bad-heaven-v2-install-20260929-113205",
-  "state": "running",
+  "state": "completed",
   "action": "cancel",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:48:33.782115+00:00"
+  "updated_at": "2026-09-29T11:48:42.784974+00:00",
+  "exit_code": 0
 }
