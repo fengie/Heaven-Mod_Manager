@@ -19,10 +19,10 @@ public sealed class AutoPopulateServiceTests : IDisposable
         var gameRoot = Path.Combine(root, "game");
         Directory.CreateDirectory(gameRoot);
 
-        var baseMod = await AddModAsync(db, "base", "Required Base", 800);
+        await AddModAsync(db, "base", "Required Base", 800);
         var addon = await AddModAsync(db, "addon", "Armor Addon", 1000);
-        var texture = await AddModAsync(db, "texture", "Correct Body Texture", 900);
-        var conflict = await AddModAsync(db, "conflict", "Conflicting Armor", 100);
+        await AddModAsync(db, "texture", "Correct Body Texture", 900);
+        await AddModAsync(db, "conflict", "Conflicting Armor", 100);
 
         await File.WriteAllTextAsync(
             Path.Combine(addon.SourcePath, "mod-manager.requirements.json"),
