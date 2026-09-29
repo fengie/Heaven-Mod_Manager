@@ -1,0 +1,18 @@
+{
+  "id": "chatgpt-20260929-catalog-find-agentworktrees-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:37:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:37:01.310620+00:00",
+  "finished_at": "2026-09-29T15:37:11.828582+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\agent-worktrees",
+    "results": [],
+    "scanned_files": 30986,
+    "truncated": false
+  },
+  "job_hash": "4ac747b6236be22f75ffc59d9bfbfbab9be5d843a353ed6c5a3a3769d2893f0b"
+}
