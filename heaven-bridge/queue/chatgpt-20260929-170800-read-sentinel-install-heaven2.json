@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-170800-read-sentinel-install-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:08:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_read",
+  "params": {
+    "session_id": "1eabfef154a140b8",
+    "max_chars": 30000
+  },
+  "priority": "highest"
+}
