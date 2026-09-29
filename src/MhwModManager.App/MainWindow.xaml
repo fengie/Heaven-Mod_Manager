@@ -353,7 +353,7 @@
                                                 <Border.Style>
                                                     <Style TargetType="Border" BasedOn="{StaticResource StatusBadge}">
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding StateLabel}" Value="ON">
+                                                            <DataTrigger Binding="{Binding StateLabel}" Value="Enabled">
                                                                 <Setter Property="Background" Value="#13241C"/>
                                                                 <Setter Property="BorderBrush" Value="#28553E"/>
                                                             </DataTrigger>
@@ -369,7 +369,7 @@
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Foreground" Value="{StaticResource Muted}"/>
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding StateLabel}" Value="ON"><Setter Property="Foreground" Value="{StaticResource Good}"/></DataTrigger>
+                                                                <DataTrigger Binding="{Binding StateLabel}" Value="Enabled"><Setter Property="Foreground" Value="{StaticResource Good}"/></DataTrigger>
                                                                 <DataTrigger Binding="{Binding HasStagedChanges}" Value="True"><Setter Property="Foreground" Value="{StaticResource AccentBright}"/></DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
