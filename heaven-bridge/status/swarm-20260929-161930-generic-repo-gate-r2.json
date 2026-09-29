@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-161930-generic-repo-gate-r2",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:16:46.182133+00:00"
+  "updated_at": "2026-09-29T16:17:43.900602+00:00",
+  "exit_code": 0
 }
