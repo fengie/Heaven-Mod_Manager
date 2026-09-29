@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-101000-fabric-assertions",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:10:00Z",
+  "status": "failed",
+  "exit_code": 127,
+  "started_at": "2026-09-29T10:09:43.439238+00:00",
+  "finished_at": "2026-09-29T10:09:47.468658+00:00",
+  "stdout": "ISOLATION_OK\r\nSHARED_OK\r\nBASE_LIMITS=\r\nBURST_LIMITS=\r\nNO_PUBLISHED_PORTS\r\nMOUNTS=bind:/artifacts:true;bind:/shared:true;volume:/workspace:true;\r\n",
+  "stderr": "/bin/bash: line 1: {{.HostConfig.Memory}}: command not found\n/bin/bash: line 1: {{.HostConfig.PidsLimit}}: command not found\n/bin/bash: line 1: {{.HostConfig.Memory}}: command not found\n/bin/bash: line 1: {{.State.Status}}: command not found\n/bin/bash: line 1: {{.HostConfig.PidsLimit}}: command not found\n/bin/bash: line 1: {{.PIDs}}: command not found\n/bin/bash: line 1: {{.MemUsage}}: command not found\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-101000-fabric-assertions.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-101000-fabric-assertions.stderr.log",
+    "stdout_bytes": 145,
+    "stderr_bytes": 406,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3540bbbc97022c4307fe499e74e637cac192fa8e0a172677963f8973ca4097b9"
+}
