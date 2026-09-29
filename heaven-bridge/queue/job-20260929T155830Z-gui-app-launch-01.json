@@ -1,0 +1,14 @@
+{
+  "id": "job-20260929T155830Z-gui-app-launch-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:58:30Z",
+  "target_host": "heaven",
+  "action": "app_launch",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\work\\gui-main-d080d746\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.exe",
+    "args": [],
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridge\\work\\gui-main-d080d746\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0",
+    "detached": true
+  },
+  "priority": "high"
+}
