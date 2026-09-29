@@ -1,0 +1,21 @@
+{
+  "id": "verify-smb-hardening-551e-20260929-1258-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:58:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:58:03.811784+00:00",
+  "finished_at": "2026-09-29T12:58:06.249421+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * [new branch]        fix/heaven-secret-transport-hardening-20260929 -> origin/fix/heaven-secret-transport-hardening-20260929\n   551e2549..64c01c7b  fix/issue-118-smb-hardening-20260929 -> origin/fix/issue-118-smb-hardening-20260929\n   721d80f8..6305479d  fix/mod-workflows-current-main-20260929 -> origin/fix/mod-workflows-current-main-20260929\n * [new branch]        fix/updater-e2e-no-gh-20260929 -> origin/fix/updater-e2e-no-gh-20260929\n   d73fdd91..de99256e  heaven-bridge -> origin/heaven-bridge\nhead moved expected=551e2549d23ddec5471e82d6c510d8f52fc15cd3 actual=64c01c7b7c5786bf4501793a5cb13dd51b383d26\r\nAt line:7 char:27\r\n+ ...  -ne $expected){throw \"head moved expected=$expected actual=$actual\"}\r\n+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (head moved expe...cb13dd51b383d26:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : head moved expected=551e2549d23ddec5471e82d6c510d8f52fc15cd3 actual=64c01c7b7c5786bf4501 \r\n   793a5cb13dd51b383d26\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\verify-smb-hardening-551e-20260929-1258-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\verify-smb-hardening-551e-20260929-1258-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1087,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b514d1241bc0bb5627c0742548abf2255053277a9ddae91739aa9f022d433fe0"
+}
