@@ -23,6 +23,17 @@ public sealed record LaunchHealthReport(bool Ready, IReadOnlyList<AutomationFind
     public int Warnings => Findings.Count(x => x.Severity == AutomationSeverity.Warning);
 }
 public sealed record LaunchObservation(bool Started, bool StartupSurvived, int? ExitCode, TimeSpan ObservedFor, string Message);
+public sealed record LaunchObservationRecord(
+    string Id,
+    DateTimeOffset StartedAt,
+    DateTimeOffset EndedAt,
+    LaunchMode Mode,
+    string? GameBuildSha256,
+    bool Success,
+    int? ExitCode,
+    bool StartupSurvived,
+    IReadOnlyDictionary<string, ModState> State,
+    string Details);
 public sealed record CrashBisectResult(bool Isolated, IReadOnlyList<string> Suspects, int Probes, string Message);
 public sealed record ModIssueSuspect(string ModId, string DisplayName, ModIssueKind Kind, int Score, string Reason, DateTimeOffset FirstSeen, DateTimeOffset LastSeen, int FailureCount, bool Confirmed, string? LastLaunchId);
 public sealed record IssueDiagnosisResult(ModIssueKind Kind, string LaunchId, string? BaselineLaunchId, IReadOnlyList<ModIssueSuspect> Suspects, string Message);
