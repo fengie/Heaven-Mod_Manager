@@ -58,8 +58,251 @@ function Assert-UpdaterReleaseAssets {
   }
 }
 
-if(-not (Get-Command gh -ErrorAction SilentlyContinue)){throw 'GitHub CLI (gh) is required for updater publication.'}
 if([string]::IsNullOrWhiteSpace($env:GH_TOKEN)){throw 'GH_TOKEN is required for updater publication.'}
+
+$script:GitHubApiHeaders=@{
+  Authorization=('Bearer '+$env:GH_TOKEN)
+  Accept='application/vnd.github+json'
+  'X-GitHub-Api-Version'='2022-11-28'
+  'User-Agent'='mhw-mod-manager-updater-publisher'
+}
+
+function Invoke-GitHubJson {
+  param(
+    [Parameter(Mandatory=$true)][ValidateSet('GET','POST','PATCH','DELETE')][string]$Method,
+    [Parameter(Mandatory=$true)][string]$Path,
+    [object]$Body=$null,
+    [switch]$AllowNotFound
+  )
+  $uri=if($Path -match '^https://'){$Path}else{'https://api.github.com/'+$Path.TrimStart('/')}
+  $params=@{
+    Uri=$uri
+    Method=$Method
+    Headers=$script:GitHubApiHeaders
+    ErrorAction='Stop'
+  }
+  if($null -ne $Body){
+    $params.ContentType='application/json'
+    $params.Body=$Body | ConvertTo-Json -Depth 20 -Compress
+  }
+  try {
+    return Invoke-RestMethod @params
+  } catch {
+    $status=$null
+    if($_.Exception.Response){
+      try{$status=[int]$_.Exception.Response.StatusCode}catch{}
+    }
+    if($AllowNotFound -and $status -eq 404){return $null}
+    throw
+  }
+}
+
+function Get-GitHubReleases {
+  $all=New-Object System.Collections.Generic.List[object]
+  for($page=1;$page -le 20;$page++){
+    $batch=@(Invoke-GitHubJson -Method GET -Path ("repos/$Repository/releases?per_page=100&page="+$page))
+    foreach($item in $batch){$all.Add($item)}
+    if($batch.Count -lt 100){break}
+  }
+  return @($all)
+}
+
+function Upload-GitHubReleaseAsset {
+  param(
+    [Parameter(Mandatory=$true)][string]$UploadUrl,
+    [Parameter(Mandatory=$true)][string]$Path
+  )
+  $baseUrl=$UploadUrl -replace '\{\?name,label\}
+try {
+  & git fetch origin main --tags
+  if($LASTEXITCODE -ne 0){throw 'Failed to fetch current main/tags before updater publication.'}
+  $remoteMain=(& git rev-parse origin/main).Trim()
+  $remoteMainChangedPaths=@()
+  if(-not [string]::Equals($remoteMain,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
+    & git merge-base --is-ancestor $ExpectedSourceSha $remoteMain
+    if($LASTEXITCODE -ne 0){
+      Write-Host "::notice::Skipping updater publication: stale-main-non-descendant."
+      exit 0
+    }
+    $remoteMainChangedPaths=@(& git diff --name-only "$ExpectedSourceSha..$remoteMain" --)
+    if($LASTEXITCODE -ne 0){throw 'Failed to classify current main drift for updater publication.'}
+  }
+  $tag="updater-main-$ExpectedBuildNumber"
+
+  $apiReleases=@(Get-GitHubReleases)
+  $releases=@($apiReleases | ForEach-Object {
+    [pscustomobject]@{
+      tagName=[string]$_.tag_name
+      isDraft=[bool]$_.draft
+      isImmutable=[bool]$_.immutable
+    }
+  })
+  $existing=@($releases | Where-Object {[string]$_.tagName -eq $tag})
+
+  if($existing.Count -gt 0){
+    if($existing.Count -ne 1){throw "Multiple releases unexpectedly use tag $tag."}
+    if([bool]$existing[0].isDraft){throw "Updater release $tag exists only as a draft; refusing to overwrite or publish it automatically."}
+    if(-not [bool]$existing[0].isImmutable){throw "Updater release $tag exists but is not immutable; refusing to trust it as an update feed."}
+    # An immutable release can be visible through GitHub's APIs before its tag is
+    # advertised by Git transport. Retry verification must therefore use the same
+    # authoritative REST ref as the immediate post-publication path.
+    $existingRef=Invoke-GitHubJson -Method GET -Path "repos/$Repository/git/ref/tags/$tag"
+    $existingRefJson=$existingRef | ConvertTo-Json -Depth 20 -Compress
+    $tagSha=Get-UpdaterTagCommitFromRefJson -Json $existingRefJson -ExpectedTag $tag
+    if($tagSha -ne $ExpectedSourceSha){throw "Existing updater release $tag points to $tagSha instead of $ExpectedSourceSha."}
+
+    $release=Invoke-GitHubJson -Method GET -Path "repos/$Repository/releases/tags/$tag"
+    if([bool]$release.draft){throw "Existing updater release $tag unexpectedly became a draft."}
+    Assert-UpdaterReleaseAssets -Release $release -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+    Write-Host "PASS: updater release $tag already exists with exact immutable assets for source $ExpectedSourceSha." -ForegroundColor Green
+    exit 0
+  }
+
+  & git show-ref --verify --quiet "refs/tags/$tag"
+  if($LASTEXITCODE -eq 0){throw "Tag $tag exists without a published release; refusing to reuse or overwrite it."}
+
+  $published=New-Object System.Collections.Generic.List[object]
+  foreach($item in $releases){
+    if([bool]$item.isDraft){continue}
+    $build=Get-UpdaterBuildFromTag ([string]$item.tagName)
+    if($build -gt 0){$published.Add([pscustomobject]@{Build=$build;Tag=[string]$item.tagName})}
+  }
+  $previous=@($published | Sort-Object Build -Descending | Select-Object -First 1)
+  $previousBuild=0L
+  $previousSha=''
+  $changed=@()
+
+  if($previous.Count -gt 0){
+    $previousBuild=[long]$previous[0].Build
+    $previousTag=[string]$previous[0].Tag
+    & git show-ref --verify --quiet "refs/tags/$previousTag"
+    if($LASTEXITCODE -ne 0){throw "Latest updater release tag $previousTag was not fetched."}
+    $previousSha=(& git rev-list -n 1 "refs/tags/$previousTag").Trim()
+    & git merge-base --is-ancestor $previousSha $ExpectedSourceSha
+    if($LASTEXITCODE -ne 0){throw "Latest updater release source $previousSha is not an ancestor of $ExpectedSourceSha."}
+    $changed=@(& git diff --name-only "$previousSha..$ExpectedSourceSha" --)
+    if($LASTEXITCODE -ne 0){throw 'Failed to determine updater release-input changes.'}
+  }
+
+  $decision=Get-UpdaterPublicationDecision -CurrentBuild $ExpectedBuildNumber -CurrentSourceSha $ExpectedSourceSha -RemoteMainSha $remoteMain -PreviousBuild $previousBuild -PreviousSourceSha $previousSha -ChangedPaths $changed -RemoteMainChangedPaths $remoteMainChangedPaths
+  if(-not $decision.Publish){
+    Write-Host "::notice::Skipping updater publication: $($decision.Reason)."
+    exit 0
+  }
+
+  $notes=@(
+    "Verified automatic-updater build $ExpectedBuildNumber.",
+    "Source: $ExpectedSourceSha",
+    "Artifact SHA-256: $($manifest.sha256)"
+  ) -join [Environment]::NewLine
+
+  # Keep the release non-client-visible while assets are uploaded and verified.
+  # Re-check main only after the potentially long upload window, immediately before publish.
+  $draftReleaseId=0L
+  $draftUploadUrl=''
+  $publication=Invoke-UpdaterDraftPublication -ExpectedSourceSha $ExpectedSourceSha `
+    -CreateDraft {
+      $draft=Invoke-GitHubJson -Method POST -Path "repos/$Repository/releases" -Body @{
+        tag_name=$tag
+        target_commitish=$ExpectedSourceSha
+        name="MHW Manual Mod Manager updater build $ExpectedBuildNumber"
+        body=$notes
+        draft=$true
+        prerelease=$false
+        make_latest='false'
+      }
+      $draftReleaseId=[long]$draft.id
+      $draftUploadUrl=[string]$draft.upload_url
+      if($draftReleaseId -le 0 -or [string]::IsNullOrWhiteSpace($draftUploadUrl)){
+        throw "Failed to create updater draft release $tag with a usable release id/upload URL."
+      }
+    } `
+    -UploadAssets {
+      # New draft only: never overwrite an existing named asset.
+      $null=Upload-GitHubReleaseAsset -UploadUrl $draftUploadUrl -Path $artifact
+      $null=Upload-GitHubReleaseAsset -UploadUrl $draftUploadUrl -Path $manifestFile
+    } `
+    -VerifyDraft {
+      $draftRelease=Invoke-GitHubJson -Method GET -Path "repos/$Repository/releases/$draftReleaseId"
+      if(-not [bool]$draftRelease.draft -or [string]$draftRelease.tag_name -ne $tag){
+        throw "Updater draft release $tag changed state or identity before publication."
+      }
+      Assert-UpdaterReleaseAssets -Release $draftRelease -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+    } `
+    -RefreshMain {
+      & git fetch origin main
+      if($LASTEXITCODE -ne 0){throw 'Failed to refresh origin/main after updater asset upload.'}
+      return (& git rev-parse origin/main).Trim()
+    } `
+    -DeleteDraft {
+      Remove-GitHubReleaseAndTag -ReleaseId $draftReleaseId -Tag $tag
+    } `
+    -PublishDraft {
+      $publishedDraft=Invoke-GitHubJson -Method PATCH -Path "repos/$Repository/releases/$draftReleaseId" -Body @{
+        draft=$false
+        make_latest='false'
+      }
+      if([bool]$publishedDraft.draft){throw "Failed to publish updater draft release $tag."}
+    } `
+    -EvaluateRefreshedMain {
+      param([string]$refreshedMain)
+      & git merge-base --is-ancestor $ExpectedSourceSha $refreshedMain
+      if($LASTEXITCODE -ne 0){
+        return [pscustomobject]@{Publish=$false;Reason='stale-main-non-descendant'}
+      }
+      $driftPaths=@(& git diff --name-only "$ExpectedSourceSha..$refreshedMain" --)
+      if($LASTEXITCODE -ne 0){throw 'Failed to classify post-upload main drift for updater publication.'}
+      return Get-UpdaterMainDriftDecision -CurrentSourceSha $ExpectedSourceSha -RemoteMainSha $refreshedMain -ChangedPaths $driftPaths
+    }
+
+  if(-not $publication.Published){
+    Write-Host "::notice::Skipping updater publication: $($publication.Reason) (remote main $($publication.RemoteMainSha))."
+    exit 0
+  }
+
+  $releaseView=$null
+  for($attempt=1;$attempt -le 15;$attempt++){
+    $releaseView=Invoke-GitHubJson -Method GET -Path "repos/$Repository/releases/$draftReleaseId"
+    if([bool]$releaseView.immutable){break}
+    Start-Sleep -Seconds 1
+  }
+  if([string]$releaseView.tag_name -ne $tag -or [bool]$releaseView.draft){
+    throw "Published updater release $tag has unexpected identity/draft state."
+  }
+  if(-not [bool]$releaseView.immutable){
+    Write-Host "::error::GitHub published $tag without immutable-release protection; attempting to withdraw the invalid updater feed."
+    try{Remove-GitHubReleaseAndTag -ReleaseId $draftReleaseId -Tag $tag}catch{Write-Host "::error::Failed to withdraw non-immutable updater release $tag: $($_.Exception.Message)"}
+    throw "Updater release $tag was not immutable and is not accepted as a safe publication."
+  }
+
+  # Verify the published tag through the authoritative REST ref instead of treating
+  # immediate Git transport propagation lag as a failed release.
+  $publishedRef=Invoke-GitHubJson -Method GET -Path "repos/$Repository/git/ref/tags/$tag"
+  $publishedRefJson=$publishedRef | ConvertTo-Json -Depth 20 -Compress
+  $publishedSha=Get-UpdaterTagCommitFromRefJson -Json $publishedRefJson -ExpectedTag $tag
+  if($publishedSha -ne $ExpectedSourceSha){throw "Published updater tag $tag points to $publishedSha instead of $ExpectedSourceSha."}
+
+  $publishedRelease=Invoke-GitHubJson -Method GET -Path "repos/$Repository/releases/tags/$tag"
+  if([bool]$publishedRelease.draft){throw "Updater release $tag remained a draft after publication."}
+  Assert-UpdaterReleaseAssets -Release $publishedRelease -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+  Write-Host "PASS: published immutable updater release $tag for exact source $ExpectedSourceSha." -ForegroundColor Green
+}
+finally {
+  Pop-Location
+}
+,''
+  $name=[IO.Path]::GetFileName($Path)
+  $uri=$baseUrl+'?name='+[Uri]::EscapeDataString($name)
+  $response=Invoke-WebRequest -UseBasicParsing -Uri $uri -Method POST -Headers $script:GitHubApiHeaders -ContentType 'application/octet-stream' -InFile $Path -ErrorAction Stop
+  if([int]$response.StatusCode -ne 201){throw "GitHub asset upload for '$name' returned HTTP $($response.StatusCode)."}
+  return $response.Content | ConvertFrom-Json
+}
+
+function Remove-GitHubReleaseAndTag {
+  param([long]$ReleaseId,[string]$Tag)
+  if($ReleaseId -gt 0){$null=Invoke-GitHubJson -Method DELETE -Path "repos/$Repository/releases/$ReleaseId" -AllowNotFound}
+  $null=Invoke-GitHubJson -Method DELETE -Path "repos/$Repository/git/refs/tags/$Tag" -AllowNotFound
+}
 
 Push-Location $Root
 try {
