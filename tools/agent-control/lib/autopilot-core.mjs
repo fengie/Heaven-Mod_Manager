@@ -7,6 +7,10 @@ export const AUTOPILOT_PHASES = Object.freeze([
   "repair",
   "reverify",
   "integration-ready",
+  "integrate",
+  "hygiene",
+  "expand",
+  "cycle-checkpoint",
   "continuity",
   "safety-gate"
 ]);
@@ -24,6 +28,11 @@ export function defaultAutopilotState() {
     repairLoops: 0,
     maxRepairLoops: 3,
     maxIterations: 40,
+    perpetual: false,
+    cycleNumber: 0,
+    maxCycles: 0,
+    phaseRetries: 0,
+    maxPhaseRetries: 2,
     runId: null,
     baseBranch: "main",
     implementationAgentId: null,
@@ -31,6 +40,9 @@ export function defaultAutopilotState() {
     verificationAgentId: null,
     reviewAgentId: null,
     repairAgentId: null,
+    integrationAgentId: null,
+    hygieneAgentId: null,
+    expansionAgentId: null,
     startedAt: null,
     updatedAt: null,
     lastTransitionAt: null,
@@ -57,6 +69,15 @@ export function normalizeAutopilotState(value = {}) {
     maxIterations: Number.isFinite(Number(value?.maxIterations))
       ? Math.max(1, Math.min(500, Number(value.maxIterations)))
       : base.maxIterations,
+    perpetual: Boolean(value?.perpetual),
+    cycleNumber: Math.max(0, Number(value?.cycleNumber || 0) || 0),
+    maxCycles: Number.isFinite(Number(value?.maxCycles))
+      ? Math.max(0, Math.min(100000, Number(value.maxCycles)))
+      : base.maxCycles,
+    phaseRetries: Math.max(0, Number(value?.phaseRetries || 0) || 0),
+    maxPhaseRetries: Number.isFinite(Number(value?.maxPhaseRetries))
+      ? Math.max(0, Math.min(20, Number(value.maxPhaseRetries)))
+      : base.maxPhaseRetries,
     enabled: Boolean(value?.enabled),
     paused: Boolean(value?.paused)
   };
@@ -114,6 +135,21 @@ function repairDecision(autopilot, reason) {
   return { kind: "transition", phase: "repair", reason };
 }
 
+function phaseRetryDecision(autopilot, phase, idField, reason) {
+  if (autopilot.phaseRetries >= autopilot.maxPhaseRetries) {
+    return { kind: "gate", reason: `phase-retry-budget-exhausted:${phase}:${reason}` };
+  }
+  return {
+    kind: "transition",
+    phase,
+    reason,
+    patch: {
+      [idField]: null,
+      phaseRetries: autopilot.phaseRetries + 1
+    }
+  };
+}
+
 function terminalFailureReason(agent, prefix) {
   if (!agent) return `${prefix}-missing`;
   return `${prefix}-${String(agent.status || "unknown")}`;
@@ -125,7 +161,8 @@ function requiresManualReconciliation(agent) {
 
 export function decideAutopilotAction(controlState, {
   routingCurrent = false,
-  capacityAvailable = true
+  capacityAvailable = true,
+  integrationVerified = false
 } = {}) {
   const autopilot = normalizeAutopilotState(controlState?.autopilot);
   if (!autopilot.enabled) return { kind: "idle", reason: "disabled" };
@@ -138,7 +175,12 @@ export function decideAutopilotAction(controlState, {
   if (String(controlState?.settings?.autonomyLevel || "") !== "engineering-autopilot") {
     return { kind: "gate", reason: "engineering-autopilot-permission-required" };
   }
-  if (autopilot.iteration >= autopilot.maxIterations) return { kind: "gate", reason: "iteration-budget-exhausted" };
+  if (!autopilot.perpetual && autopilot.iteration >= autopilot.maxIterations) {
+    return { kind: "gate", reason: "iteration-budget-exhausted" };
+  }
+  if (autopilot.perpetual && autopilot.maxCycles > 0 && autopilot.cycleNumber >= autopilot.maxCycles) {
+    return { kind: "gate", reason: "cycle-budget-exhausted" };
+  }
 
   if (autopilot.phase === "waiting-for-direction") return { kind: "idle", reason: "waiting-for-direction" };
   if (autopilot.phase === "safety-gate") return { kind: "idle", reason: autopilot.stopReason || "safety-gate" };
@@ -239,7 +281,78 @@ export function decideAutopilotAction(controlState, {
   }
 
   if (autopilot.phase === "integration-ready") {
-    return { kind: "transition", phase: "continuity", reason: "integration-candidate-ready" };
+    return autopilot.perpetual
+      ? { kind: "transition", phase: "integrate", reason: "review-approved-for-perpetual-integration", patch: { phaseRetries: 0 } }
+      : { kind: "transition", phase: "continuity", reason: "integration-candidate-ready" };
+  }
+
+  if (autopilot.phase === "integrate") {
+    const integration = agentById(controlState, autopilot.integrationAgentId);
+    if (!integration) return capacityAvailable
+      ? { kind: "dispatch-integration" }
+      : { kind: "gate", reason: "worker-capacity-unavailable" };
+    if (isActive(integration)) return { kind: "wait", reason: "integration-active" };
+    if (requiresManualReconciliation(integration)) {
+      return { kind: "gate", reason: terminalFailureReason(integration, "integration-reconciliation-required") };
+    }
+    if (!isAuthoritativeDone(integration)) {
+      return phaseRetryDecision(autopilot, "integrate", "integrationAgentId", terminalFailureReason(integration, "integration"));
+    }
+    if (!integrationVerified) {
+      return phaseRetryDecision(autopilot, "integrate", "integrationAgentId", "candidate-not-on-canonical-main");
+    }
+    return { kind: "transition", phase: "hygiene", reason: "canonical-main-integration-proven", patch: { phaseRetries: 0 } };
+  }
+
+  if (autopilot.phase === "hygiene") {
+    const hygiene = agentById(controlState, autopilot.hygieneAgentId);
+    if (!hygiene) return capacityAvailable
+      ? { kind: "dispatch-hygiene" }
+      : { kind: "gate", reason: "worker-capacity-unavailable" };
+    if (isActive(hygiene)) return { kind: "wait", reason: "hygiene-active" };
+    if (requiresManualReconciliation(hygiene)) {
+      return { kind: "gate", reason: terminalFailureReason(hygiene, "hygiene-reconciliation-required") };
+    }
+    if (!isAuthoritativeDone(hygiene)) {
+      return phaseRetryDecision(autopilot, "hygiene", "hygieneAgentId", terminalFailureReason(hygiene, "hygiene"));
+    }
+    return { kind: "transition", phase: "expand", reason: "repository-hygiene-complete", patch: { phaseRetries: 0 } };
+  }
+
+  if (autopilot.phase === "expand") {
+    const expansion = agentById(controlState, autopilot.expansionAgentId);
+    if (!expansion) return capacityAvailable
+      ? { kind: "dispatch-expansion" }
+      : { kind: "gate", reason: "worker-capacity-unavailable" };
+    if (isActive(expansion)) return { kind: "wait", reason: "expansion-active" };
+    if (requiresManualReconciliation(expansion)) {
+      return { kind: "gate", reason: terminalFailureReason(expansion, "expansion-reconciliation-required") };
+    }
+    if (!isAuthoritativeDone(expansion)) {
+      return phaseRetryDecision(autopilot, "expand", "expansionAgentId", terminalFailureReason(expansion, "expansion"));
+    }
+    return { kind: "transition", phase: "cycle-checkpoint", reason: "next-cycle-plan-ready", patch: { phaseRetries: 0 } };
+  }
+
+  if (autopilot.phase === "cycle-checkpoint") {
+    return {
+      kind: "transition",
+      phase: "sync-plan",
+      reason: "perpetual-cycle-complete",
+      patch: {
+        cycleNumber: autopilot.cycleNumber + 1,
+        repairLoops: 0,
+        phaseRetries: 0,
+        implementationAgentId: null,
+        candidateAgentId: null,
+        verificationAgentId: null,
+        reviewAgentId: null,
+        repairAgentId: null,
+        integrationAgentId: null,
+        hygieneAgentId: null,
+        expansionAgentId: null
+      }
+    };
   }
 
   if (autopilot.phase === "continuity") {
