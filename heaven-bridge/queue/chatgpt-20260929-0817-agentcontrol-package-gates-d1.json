@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0817-agentcontrol-package-gates-d1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:17:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt\\tools\\agent-control",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Continue'; Write-Output 'RUN npm-check'; cmd.exe /d /s /c \"npm run check\"; $check=$LASTEXITCODE; Write-Output ('NPM_CHECK_EXIT=' + $check); Write-Output 'RUN npm-test'; cmd.exe /d /s /c \"npm test\"; $test=$LASTEXITCODE; Write-Output ('NPM_TEST_EXIT=' + $test); if($check -ne 0){exit 21}; if($test -ne 0){exit 22}; exit 0"
+  },
+  "priority": "highest"
+}
