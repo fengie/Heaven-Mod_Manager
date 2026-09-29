@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+import re
 import threading
 from collections import deque
 from dataclasses import dataclass
 from typing import Any
 
 from .protocol import ControlPlaneError, bounded_int, require_string, utc_now
+
+
+_SECRET_ARTIFACT_PATTERNS = (
+    re.compile(r"(?i)(?:^|[^A-Za-z0-9])(?:[A-Za-z0-9]+[_-])*(?:password|passwd|token|secret|api[_-]?key|private[_-]?key|authorization|cookie)(?:[_-][A-Za-z0-9]+)*\s*[:=]\s*['\"]?[^\s,'\"]{8,}"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{10,}\b"),
+)
+
+
+def _contains_secret_like_text(text: str) -> bool:
+    return any(pattern.search(text) is not None for pattern in _SECRET_ARTIFACT_PATTERNS)
 
 
 class AuditLog:
@@ -63,6 +75,11 @@ class ArtifactStore:
         text = require_string(text, "text", allow_empty=True, max_length=self.max_artifact_bytes)
         if len(text.encode("utf-8")) > self.max_artifact_bytes:
             raise ControlPlaneError("INPUT_TOO_LARGE", "artifact exceeds byte budget")
+        if _contains_secret_like_text(text):
+            raise ControlPlaneError(
+                "SECRET_ARTIFACT_BLOCKED",
+                "artifact contains secret-like material and was not stored",
+            )
         item = _Artifact(name=name or artifact_id, text=text, media_type=media_type)
         with self._lock:
             if artifact_id not in self._items:

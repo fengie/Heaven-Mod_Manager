@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 from .adapters.heaven_bridge import BRIDGE_PROTOCOL, HeavenBridgeAdapter
 from .observability import ArtifactStore, AuditLog
@@ -28,11 +28,19 @@ class HeavenControlPlane:
         registry: CapabilityRegistry | None = None,
         audit_log: AuditLog | None = None,
         artifacts: ArtifactStore | None = None,
+        granted_permissions: Iterable[str] | None = None,
     ):
+        if isinstance(granted_permissions, str):
+            raise ValueError("granted_permissions must be an iterable of permission names, not a string")
         self.adapter = adapter
         self.registry = registry or build_registry()
         self.audit_log = audit_log or AuditLog()
         self.artifacts = artifacts or ArtifactStore()
+        self.granted_permissions = (
+            frozenset(str(value).strip() for value in granted_permissions if str(value).strip())
+            if granted_permissions is not None
+            else frozenset({"*"})
+        )
 
     def invoke(
         self,
@@ -40,17 +48,32 @@ class HeavenControlPlane:
         payload: Mapping[str, Any] | None = None,
         *,
         req_id: str | None = None,
+        permissions: Iterable[str] | None = None,
     ) -> dict[str, Any]:
         started_at = utc_now()
         started_clock = time.monotonic()
-        rid = request_id(req_id)
+        rid = "invalid-request"
         input_bytes = 0
         error_code: str | None = None
         truncated = False
         capability = None
+        effective_permissions = self.granted_permissions
 
         try:
+            rid = request_id(req_id)
             capability = self.registry.get(capability_name)
+            if permissions is not None:
+                if isinstance(permissions, str):
+                    raise ControlPlaneError("INVALID_PERMISSIONS", "permissions must be an iterable of names")
+                effective_permissions = frozenset(
+                    str(value).strip() for value in permissions if str(value).strip()
+                )
+            if "*" not in effective_permissions and capability.permission not in effective_permissions:
+                raise ControlPlaneError(
+                    "PERMISSION_DENIED",
+                    "capability permission was not granted",
+                    {"required_permission": capability.permission},
+                )
             data = require_mapping({} if payload is None else payload)
             input_bytes = validate_request_size(data)
 
@@ -121,6 +144,7 @@ class HeavenControlPlane:
                 capability=capability_name,
                 capability_version=capability.version if capability else None,
                 permission=capability.permission if capability else None,
+                granted_permission_count=len(effective_permissions),
                 status="error" if error_code else "ok",
                 error_code=error_code,
                 input_bytes=input_bytes,
