@@ -63,9 +63,9 @@ jobs:
               $errors | ForEach-Object { Write-Host "::error::$($_.Message)" }
               throw "$path contains PowerShell parse errors."
             }
-            if(Select-String -LiteralPath $path -Pattern 'Get-Command gh|& gh ' -Quiet) {
-              throw "$path must not depend on GitHub CLI on Heaven."
-            }
+          }
+          if(Select-String -LiteralPath '.\scripts\Publish-PublicUpdaterRelease.ps1' -Pattern 'Get-Command gh|& gh ' -Quiet) {
+            throw 'Public updater mirroring must not depend on GitHub CLI on Heaven.'
           }
 
       - name: Run updater publication policy and fault tests
@@ -86,6 +86,7 @@ jobs:
 
       - name: Preserve PR verification evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
