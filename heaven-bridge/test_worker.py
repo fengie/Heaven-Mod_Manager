@@ -198,6 +198,58 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             self.assertEqual(ordered[:2], ["y-cancel.json", "z-health.json"])
             self.assertEqual(ordered[2:], ["b-high.json", "a-normal.json"])
 
+    def test_queue_order_ages_low_priority_work(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            old_low = root / "old-low.json"
+            old_low.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run",
+                    "priority": "low",
+                    "created_at": (current - timedelta(minutes=20)).isoformat(),
+                }),
+                encoding="utf-8",
+            )
+            fresh_high = root / "fresh-high.json"
+            fresh_high.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run",
+                    "priority": "highest",
+                    "created_at": (current - timedelta(seconds=1)).isoformat(),
+                }),
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [fresh_high, old_low],
+                key=lambda path: hb.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "old-low.json")
+
+    def test_queue_order_accepts_numeric_priority(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            urgent = root / "urgent.json"
+            urgent.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run", "priority": 95, "created_at": current.isoformat()
+                }),
+                encoding="utf-8",
+            )
+            background = root / "background.json"
+            background.write_text(
+                __import__("json").dumps({
+                    "action": "proc_run", "priority": 10, "created_at": current.isoformat()
+                }),
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [background, urgent],
+                key=lambda path: hb.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "urgent.json")
+
     def test_clipboard_read_requires_explicit_relay_opt_in(self):
         with self.assertRaises(hb.BridgeError) as ctx:
             hb.run_job(
