@@ -26,3 +26,7 @@ When new projects provide equivalent or stronger evidence, extend or refine this
 
 ## 2026-09-29 portable-coverage extension
 The generic trainer now explicitly covers active project lessons LR-010 through LR-021 plus recurring swarm/release incidents: pre-mutation authorization, cleanup outcome dominance, immutable byte ownership, recovery orphanhood, lock scope, purpose-built tool routing, runtime capability discovery, independent control recovery, control-path vs host status, cross-failure-domain recovery, installed-client identity, sibling defect-class closure, final orphan recovery sweeps, and publication/runtime verification. The normalized portable rule bodies live in `PROJECT_LESSON_CATALOG.md`.
+
+## 2026-09-29 follow-up promotions
+- Dense desktop data surfaces should retain first claim on constrained window space; auxiliary controls should avoid vertical wrapping that starves the primary workspace. Project evidence: LR-022.
+- Concurrent append-only sequential identifiers require collision-safe allocation and an integration uniqueness check. Project evidence: LR-023, created after two concurrent rules collided on LR-021.
