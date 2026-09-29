@@ -1,0 +1,17 @@
+{
+  "id": "chatgpt-20260929-100720-cancel-obsolete-audit-224e",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:07:20Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:07:29.070657+00:00",
+  "finished_at": "2026-09-29T10:07:29.070657+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "chatgpt-20260929-095900-branch-audit-ps-31f8",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "25cbfb76449d6a918653b07f0ec32336b4202382878f77a4800b94f89e2b5989"
+}
