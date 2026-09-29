@@ -103,6 +103,56 @@ public sealed class AutoModTests
         Assert.Contains(result.Issues, issue => issue.Code == "output.path");
     }
 
+
+    [Fact]
+    public void Missing_operation_fails_during_parse()
+    {
+        var invalid = RecipeJson.Replace(
+            "\"op\": \"select_record\",",
+            "\"not_op\": \"select_record\",",
+            StringComparison.Ordinal);
+
+        Assert.Throws<JsonException>(() => AutoModRecipeParser.Parse(invalid));
+    }
+
+    [Fact]
+    public void Mixed_interpolation_is_rejected()
+    {
+        var recipe = AutoModRecipeParser.Parse(RecipeJson);
+        var steps = recipe.Steps.ToArray();
+        steps[0] = steps[0] with { Target = "prefix-${record.id}" };
+        recipe = recipe with { Steps = steps };
+
+        var result = AutoModRecipeValidator.Validate(recipe);
+
+        Assert.Contains(result.Issues, issue => issue.Code == "step.target");
+    }
+
+    [Fact]
+    public void Planner_applies_declared_defaults_before_expression_resolution()
+    {
+        var recipe = AutoModRecipeParser.Parse(RecipeJson);
+        var inputs = recipe.Inputs.ToArray();
+        var defenseIndex = Array.FindIndex(inputs, input => input.Key == "defense");
+        inputs[defenseIndex] = inputs[defenseIndex] with
+        {
+            Required = false,
+            DefaultValue = ParseValue("250")
+        };
+        recipe = recipe with { Inputs = inputs };
+
+        var registry = CreateRegistry(AutoModOperationKind.SelectRecord, AutoModOperationKind.SetField);
+        var supplied = new Dictionary<string, JsonElement>(StringComparer.Ordinal)
+        {
+            ["record"] = ParseValue("""{"id":42,"name":"Synthetic"}""")
+        };
+
+        var plan = AutoModPatchPlanner.Build(recipe, supplied, registry);
+
+        Assert.True(plan.Operations[1].Value.HasValue);
+        Assert.Equal(250, plan.Operations[1].Value.Value.GetInt32());
+    }
+
     [Fact]
     public void Adapter_capabilities_are_enforced()
     {
