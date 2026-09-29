@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-1546-sandbox-home",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:46:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:45:45.230634+00:00",
+  "finished_at": "2026-09-29T15:45:45.233690+00:00",
+  "host": "heaven",
+  "action": "fs_mkdir",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\swarm-sandbox-fabf715f\\Manager"
+  },
+  "job_hash": "89ed49000db1ce447319994cab5b98d3329d2f9284f49faa7f65ae14fdd78e2b"
+}
