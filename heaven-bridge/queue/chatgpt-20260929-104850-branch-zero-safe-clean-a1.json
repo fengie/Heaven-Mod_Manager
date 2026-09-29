@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-104850-branch-zero-safe-clean-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:50Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nSet-Location $repo\ngit fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'git fetch failed' }\n\n$active=@()\n$wtLines=@(git worktree list --porcelain)\nforeach($line in $wtLines){\n  if($line -like 'branch refs/heads/*'){ $active += $line.Substring(18) }\n}\n\n$protected=@('main','heaven-bridge')\n$deleted=@()\n$skipped=@()\n$errors=@()\n\n$refs=@(git for-each-ref --format='%(refname:short)' refs/remotes/origin |\n  Where-Object { $_ -ne 'origin/HEAD' -and $_ -like 'origin/*' } |\n  ForEach-Object { $_.Substring(7) } |\n  Sort-Object -Unique)\n\nforeach($b in $refs){\n  if($b -in $protected){ continue }\n  if($b -in $active){\n    $skipped += [ordered]@{branch=$b;reason='active-worktree'}\n    continue\n  }\n\n  $safe=$false\n  $proof=$null\n\n  git merge-base --is-ancestor \"origin/$b\" origin/main 2>$null\n  if($LASTEXITCODE -eq 0){\n    $safe=$true\n    $proof='ancestor-of-main'\n  } else {\n    $cherry=@(git cherry origin/main \"origin/$b\" 2>$null)\n    if($LASTEXITCODE -eq 0){\n      $unique=@($cherry | Where-Object { $_ -match '^\\+' })\n      if($unique.Count -eq 0){\n        $safe=$true\n        $proof='no-unique-patches-vs-main'\n      }\n    }\n  }\n\n  if($safe){\n    git push origin --delete $b\n    if($LASTEXITCODE -eq 0){\n      $deleted += [ordered]@{branch=$b;proof=$proof}\n    } else {\n      $errors += [ordered]@{branch=$b;reason='remote-delete-failed'}\n    }\n  } else {\n    $skipped += [ordered]@{branch=$b;reason='unique-work-remains'}\n  }\n}\n\ngit fetch origin --prune | Out-Null\n$remaining=@(git for-each-ref --format='%(refname:short)' refs/remotes/origin |\n  Where-Object { $_ -ne 'origin/HEAD' -and $_ -like 'origin/*' } |\n  ForEach-Object { $_.Substring(7) } |\n  Sort-Object -Unique)\n\n[ordered]@{\n  main=(git rev-parse origin/main | Out-String).Trim()\n  deleted_count=$deleted.Count\n  deleted=$deleted\n  skipped_count=$skipped.Count\n  skipped=$skipped\n  errors=$errors\n  remaining_count=$remaining.Count\n  remaining=$remaining\n  active_worktrees=$active\n} | ConvertTo-Json -Depth 6"
+  },
+  "priority": "highest"
+}
