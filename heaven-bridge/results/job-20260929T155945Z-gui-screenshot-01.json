@@ -1,0 +1,19 @@
+{
+  "id": "job-20260929T155945Z-gui-screenshot-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:59:45Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:59:36.148301+00:00",
+  "finished_at": "2026-09-29T15:59:36.969270+00:00",
+  "host": "heaven",
+  "action": "screenshot",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\screenshots\\job-20260929T155945Z-gui-screenshot-01.png",
+    "bytes": 1287897,
+    "display": "0,0,1920x1080",
+    "scope": "primary",
+    "monitor_index": null
+  },
+  "job_hash": "6cded72edb1f48691e919a965fd5e93f44589b65c09f912495eb56f55539f284"
+}
