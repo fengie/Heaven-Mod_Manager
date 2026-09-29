@@ -793,7 +793,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var visualTotal=result.LocalVisuals+result.DeclaredVisuals+result.PublicVisuals+result.VisualsRefreshed;
             StatusText=result.ApiEnabled
                 ?$"Metadata refreshed: {result.ApiRecords} Nexus record(s), {visualTotal} visual(s) discovered/refreshed ({result.LocalVisuals} local, {result.DeclaredVisuals} Vortex/sidecar, {result.PublicVisuals} public Nexus, {result.VisualsRefreshed} API), {result.UpdatesAvailable} update(s) available."
-                :$"Visual sync: {visualTotal} visual(s) discovered/refreshed ({result.LocalVisuals} local, {result.DeclaredVisuals} Vortex/sidecar, {result.PublicVisuals} public Nexus). API key is optional for basic artwork; add one only for richer Nexus metadata and update checks.";
+                :$"Visual sync: {visualTotal} visual(s) discovered/refreshed ({result.LocalVisuals} local, {result.DeclaredVisuals} Vortex/sidecar, {result.PublicVisuals} public Nexus). Local and Vortex/sidecar artwork remain available without Nexus credentials; add Nexus credentials for Nexus-hosted artwork, metadata, and update checks.";
         }
         finally{metadataGate.Release();}
     });
