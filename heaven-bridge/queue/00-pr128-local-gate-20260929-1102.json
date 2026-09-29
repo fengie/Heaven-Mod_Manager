@@ -1,0 +1,11 @@
+{
+  "id": "00-pr128-local-gate-20260929-1102",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:30:00Z",
+  "ttl_seconds": 7200,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n$wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-pr128-validate'\nSet-Location $repo\n& git fetch origin main integration/bridge-priority-aging-main-20260929\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\nif(Test-Path $wt){ & git worktree remove --force $wt 2>$null; if(Test-Path $wt){Remove-Item -LiteralPath $wt -Recurse -Force} }\n& git worktree add --detach $wt origin/integration/bridge-priority-aging-main-20260929\nif($LASTEXITCODE -ne 0){ throw 'worktree add failed' }\nPush-Location $wt\ntry {\n  & python -m py_compile heaven-bridge/worker.py\n  if($LASTEXITCODE -ne 0){ throw 'py_compile failed' }\n  & python heaven-bridge/test_worker.py\n  if($LASTEXITCODE -ne 0){ throw 'test_worker.py failed' }\n  & python heaven-bridge/tests/test_worker.py\n  if($LASTEXITCODE -ne 0){ throw 'tests/test_worker.py failed' }\n  & git diff --check origin/main...HEAD\n  if($LASTEXITCODE -ne 0){ throw 'diff check failed' }\n  Write-Output ('VALIDATED_SHA='+(& git rev-parse HEAD).Trim())\n} finally {\n  Pop-Location\n  Set-Location $repo\n  & git worktree remove --force $wt | Out-Null\n}",
+  "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+  "timeout_seconds": 1200,
+  "priority": "highest"
+}
