@@ -228,3 +228,14 @@ A failed ChatGPT/agent response stream is **not** proof that the assigned work f
 - Mark work complete only from durable completion evidence (for example explicit completion verification, or integrated/merged-to-main evidence plus passing verification/acceptance evidence). A cheerful final message alone is not completion proof.
 - Automatic replacement is allowed only when no durable work is detected, and it must remain bounded/backed off as Agent Control's retry policy requires.
 - Managers/reviewers must apply this rule after UI/WebSocket/network/stream failures and use repository/CI/worker evidence as the source of truth.
+
+
+## Operator validation / installed-client identity invariant
+
+Development and validation launches on the operator machine must never be left looking like the user's installed MHW Mod Manager.
+
+- Any agent, test, UI-validation task, or automation that launches `MHW Mod Manager.exe` from a repository checkout, build output, validation checkout, staging directory, or other non-installed path on `heaven2` must track that process and close it when validation is complete, unless the user explicitly asked to keep that exact validation instance open.
+- Never use a still-running development/validation window as evidence that the updater-managed desktop installation has reached the same version. Treat process executable path, packaged `build-identity.json`, and installed executable version as the identity proof.
+- After a user-facing updater release is publicly mirrored, operator-facing verification on `heaven2` must include launching the actual desktop shortcut (or other canonical user launcher) and verifying that the resulting process resolves to the updater-managed install and expected published build.
+- The updater mutates a packaged install in place, so a version string embedded in the parent folder name may be stale. Do not infer the running version from the folder name or shortcut label.
+- If a temporary validation instance and the installed client are both present, close the temporary instance before presenting or validating the installed client so the user cannot mistake one for the other.
