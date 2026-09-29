@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T155005Z-main-broad-regression-02",
-  "state": "running",
+  "state": "failed",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:50:10.956557+00:00"
+  "updated_at": "2026-09-29T15:50:21.087570+00:00",
+  "exit_code": 1
 }
