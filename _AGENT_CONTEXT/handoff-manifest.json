@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.10",
+  "currentVersion": "8.8.13",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.9 updater manifest compatibility and installed-client closure",
+  "immediateParentRevision": "v8.8.12 import publication isolation",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.10 after workflow-feature closure. GitHub-hosted runner allocation is non-critical: current repository workflows route through the verified Heaven self-hosted runner. Treat Codex capacity/quota as a routing signal and use direct Heaven Bridge proc_run/build/test/filesystem/process/computer-control during cooldown. The immediate closure boundary is an exact-current-main Windows Release Gate followed by the installed-client build-60 update to the newly published immutable BOM-free release and deterministic rollback/sentinel proof. Preserve the permanent continuity constitution and active Learned Rules, and recursively propagate them.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.13, including v8.8.12 import publication isolation and duplicate-cleanup retirement hardening plus repeatable recipe family restore. Treat exact-main Windows Release Gate evidence as SHA-scoped; preserve continuity and LR-001 verification instrumentation, use the verified Heaven self-hosted path, and recursively propagate the permanent continuity rules.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
