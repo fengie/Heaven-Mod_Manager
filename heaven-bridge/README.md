@@ -161,6 +161,21 @@ Persistent sessions:
 
 Sessions have configurable idle and maximum-runtime cleanup. Windows process termination uses tree termination so child processes do not remain orphaned.
 
+### Session recovery across worker restarts
+
+`proc_start` persists non-secret ownership metadata under `%USERPROFILE%\HeavenBridge\sessions`. The persisted record intentionally omits the command text and environment. A replacement worker reconciles those records on startup and proves ownership using the PID plus the process creation identity; it never treats a stale PID alone as permission to control or terminate a process.
+
+For an identity-proven recovered session:
+
+- `proc_list_sessions` and `proc_read` remain available, including the existing stdout/stderr logs.
+- `proc_kill` re-verifies process identity immediately before termination and verifies that the original process is gone afterward.
+- `proc_input` fails closed with `SESSION_INPUT_UNAVAILABLE` because stdin cannot be safely reattached after the worker process has restarted.
+- snapshots report `recovered: true`, `stdin_available: false`, and do not reconstruct/persist the original command.
+
+If process identity is missing, cannot be queried, or no longer matches, the worker reports the session as non-running/unproven and refuses to kill by PID alone. Dead/recovered session evidence is retained for a bounded period (24 hours by default, configurable with `HEAVEN_BRIDGE_SESSION_RETENTION`) before its session metadata/log artifacts are pruned.
+
+This behavior is exercised by the bridge regression suite and should be included in restart-style release validation via the normal `RECOVER` path.
+
 Environment handling supports:
 
 - non-sensitive inline `env`
