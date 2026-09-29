@@ -6,7 +6,7 @@
   "description": "Federated engineering control plane for the MHW coding-agent swarm.",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/liveness-scheduler.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs",
+    "check": "node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/branch-lifecycle.mjs && node --check lib/federated-registry.mjs && node --check lib/liveness-scheduler.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs",
     "test": "node --test test/*.test.mjs",
     "status": "node agentctl.mjs status",
     "snapshot": "node agentctl.mjs snapshot"
