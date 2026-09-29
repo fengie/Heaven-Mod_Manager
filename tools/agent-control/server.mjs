@@ -739,7 +739,17 @@ function refreshState() {
       changed = true;
 
       if (ownsLiveProcess) {
-        void killProcessTree(agent.pid).catch(error => {
+        void (async () => {
+          if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
+            const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "provider-capacity" });
+            if (!bridgeResultSucceeded(cancellation)) {
+              throw new Error(`Heaven Bridge quota cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
+            }
+          }
+          if (isPidAlive(agent.pid)) await killProcessTree(agent.pid);
+          const exited = await waitForPidExit(agent.pid);
+          if (!exited) throw new Error(`PID ${agent.pid} remained alive after provider-capacity termination.`);
+        })().catch(error => {
           const failed = loadState();
           const current = failed.agents.find(item => item.id === agent.id);
           if (current) {
