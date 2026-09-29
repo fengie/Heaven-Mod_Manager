@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0806-agentcontrol-reconciled-verify-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; Write-Output ('HEAD=' + (git rev-parse HEAD)); if ((git rev-parse HEAD).Trim() -ne 'b9685d2f2e32af99596dc90d46278a129106d8e2') { throw 'Unexpected reconciliation HEAD' }; git status --short; Set-Location 'tools\\agent-control'; npm run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; npm test; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T08:06:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
