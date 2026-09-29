@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170700-cancel-superseded-ci",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; gh run cancel 36600894003 -R fengie/mhw-mods; $a=$LASTEXITCODE; gh run cancel 36601107945 -R fengie/mhw-mods; $b=$LASTEXITCODE; Write-Output \"CANCEL_225=$a\"; Write-Output \"CANCEL_253=$b\"; if($a-ne 0 -or $b-ne 0){exit 1}",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T17:07:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
