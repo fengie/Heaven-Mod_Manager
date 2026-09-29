@@ -1,0 +1,12 @@
+{
+  "id": "job-20260929T155900Z-gui-window-list-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:59:00Z",
+  "target_host": "heaven",
+  "action": "window_list",
+  "params": {
+    "limit": 100,
+    "visible_only": true
+  },
+  "priority": "high"
+}
