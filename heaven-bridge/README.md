@@ -250,7 +250,23 @@ Desktop selectors fail closed on ambiguous window matches unless `first_match:tr
 
 The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, or controller state.
 
-For full credential-safe desktop parity, secrets should be referenced by a local named-secret handle owned by the credential authority and resolved only on the destination machine; the secret value itself must never enter GitHub. Until that channel is implemented, credential entry remains outside the bridge's safe structured surface.
+Credential-safe GUI entry uses `secret_type`. GitHub carries only an opaque one-time `handle` and the destination window's `target_hwnd`; the secret value stays in a short-lived envelope outside the repository and relay.
+
+Recommended topology:
+
+1. On `heaven2` (the credential authority), configure `HEAVEN_BRIDGE_SECRET_INBOX` to a dedicated share that is reachable by `heaven`. Require SMB encryption and restrict the share/NTFS ACL to the authority account and the Heaven worker account.
+2. Configure the Heaven worker with the same inbox path locally. The worker reports `features.secret_input.available=true` only when that directory is reachable and is outside both the repository and HeavenBridge state directories.
+3. Use `window_list` / `window_focus` to obtain and focus the intended HWND.
+4. On `heaven2`, run:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\heaven-bridge\secret-authority.ps1 -TargetHwnd <HWND>
+   ```
+   The helper prompts with `Read-Host -AsSecureString`, writes a TTL-bounded `heaven-bridge-secret-v1` envelope, and prints only non-secret metadata including the generated handle.
+5. Submit `secret_type` with `params.handle` and `params.target_hwnd`. The worker requires that exact HWND to still be foreground before consuming anything.
+
+The worker atomically renames the envelope to claim it, records a local non-secret replay marker, validates destination=`heaven`, purpose, handle, HWND, creation/expiry bounds, and size, deletes the claimed envelope, then injects the value directly with Win32 `SendInput`. It never uses the clipboard or UIA ValuePattern for secret material. Success returns only `{"typed":true,"consumed":true}`; failures never echo secret bytes, lengths, hashes, prefixes, or envelope contents. A consumed handle cannot be reused. Target mismatch fails before consumption, and channel/TTL/destination/format failures fail closed.
+
+The default maximum envelope TTL is 120 seconds (hard-capped at 300) and the default secret size cap is 4096 characters. Replay markers are retained locally for at least an hour (24 hours by default). Orphaned claim files are removed on worker startup. If the channel is unavailable, create a new envelope only after the inbox is healthy; never fall back to relay-carried secret text.
 
 ## Agent code, build, and test workflow
 
@@ -299,7 +315,7 @@ Use the operator gate from the repository root:
 .\heaven-bridge\manage.ps1 TEST
 ```
 
-That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
+That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, credential-safe one-time secret consumption/replay/expiry/destination/target binding, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
 
 ## Security boundary
 
