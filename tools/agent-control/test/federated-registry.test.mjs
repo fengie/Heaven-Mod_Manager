@@ -202,3 +202,113 @@ test("mixed runtime swarm includes managed local and external agents in one coun
   assert.equal(snapshot.counts.live, 3);
   assert.deepEqual(new Set(snapshot.agents.map(item => item.provider)), new Set(["local-control", "chatgpt", "github"]));
 });
+
+
+test("migration normalizes malformed nested collections and freshness thresholds", () => {
+  const migrated = migrateFederationState({
+    version: 0,
+    stale_after_ms: 60_000,
+    disconnected_after_ms: 30_000,
+    providers: [{
+      id: "custom-provider",
+      discovery: "bridge",
+      registration: "bridge",
+      metadata: "not-an-object"
+    }],
+    agents: [{
+      agent_id: "persisted-agent",
+      providers: ["github", "github", ""],
+      correlation_keys: ["work-item:legacy", "work-item:legacy", ""],
+      observations: "not-an-array"
+    }]
+  });
+
+  assert.equal(migrated.stale_after_ms, 60_000);
+  assert.equal(migrated.disconnected_after_ms, 60_000);
+  assert.deepEqual(
+    migrated.providers.find(item => item.id === "custom-provider").metadata,
+    {}
+  );
+  assert.deepEqual(migrated.agents[0].providers, ["github"]);
+  assert.deepEqual(migrated.agents[0].correlation_keys, ["work-item:legacy"]);
+  assert.deepEqual(migrated.agents[0].observations, []);
+});
+
+test("malformed observation rejection is failure-atomic", () => {
+  const federation = defaultFederationState();
+  const before = structuredClone(federation);
+
+  assert.throws(() => reconcileObservation(federation, {
+    provider: "chatgpt",
+    source_id: "conversation-invalid-state",
+    state: "definitely-not-normalized",
+    heartbeat_at: "2026-09-29T08:00:00.000Z"
+  }), /Unsupported normalized agent state/);
+
+  assert.deepEqual(federation, before);
+});
+
+test("conflicting explicit agent identity fails closed without mutating correlated state", () => {
+  const federation = defaultFederationState();
+  const original = reconcileObservation(federation, {
+    provider: "chatgpt",
+    source_id: "conversation-owned",
+    state: "working",
+    correlation_keys: ["work-item:owned"],
+    heartbeat_at: "2026-09-29T08:00:00.000Z"
+  });
+  const before = structuredClone(federation);
+
+  assert.throws(() => reconcileObservation(federation, {
+    provider: "chatgpt",
+    source_id: "conversation-owned",
+    agent_id: "agent-conflicting-manual-id",
+    state: "working",
+    correlation_keys: ["work-item:owned"],
+    heartbeat_at: "2026-09-29T08:00:01.000Z"
+  }), /conflicts with reconciled agent/);
+
+  assert.equal(federation.agents[0].agent_id, original.agent_id);
+  assert.deepEqual(federation, before);
+});
+
+test("duplicate provider reconnect storm remains bounded to logical agents", () => {
+  const federation = defaultFederationState();
+  federation.stale_after_ms = 60_000;
+  federation.disconnected_after_ms = 180_000;
+  const base = Date.parse("2026-09-29T08:00:00.000Z");
+  const logicalAgents = 200;
+
+  for (let cycle = 0; cycle < 5; cycle += 1) {
+    for (let index = 0; index < logicalAgents; index += 1) {
+      const heartbeat = new Date(base + cycle * 1_000 + index).toISOString();
+      const key = `work-item:storm-${index}`;
+
+      reconcileObservation(federation, {
+        provider: "chatgpt",
+        source_id: `conversation-${index}`,
+        state: cycle % 2 === 0 ? "working" : "tool_wait",
+        correlation_keys: [key],
+        heartbeat_at: heartbeat
+      }, { now: base + cycle * 1_000 + index });
+
+      reconcileObservation(federation, {
+        provider: "github",
+        source_id: `workflow-run-${index}`,
+        state: "working",
+        correlation_keys: [key],
+        heartbeat_at: heartbeat
+      }, { now: base + cycle * 1_000 + index });
+    }
+  }
+
+  const snapshot = federationSnapshot(federation, { now: base + 6_000 });
+  assert.equal(federation.agents.length, logicalAgents);
+  assert.equal(snapshot.counts.live, logicalAgents);
+  assert.equal(snapshot.counts.disconnected, 0);
+  assert.equal(snapshot.counts.stale, 0);
+  for (const agent of snapshot.agents) {
+    assert.equal(agent.observations.length, 2);
+    assert.deepEqual(new Set(agent.providers), new Set(["chatgpt", "github"]));
+  }
+});
