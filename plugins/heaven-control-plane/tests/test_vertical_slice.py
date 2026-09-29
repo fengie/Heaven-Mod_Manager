@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import sys
 import threading
@@ -11,7 +12,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from heaven_control_plane.adapters.heaven_bridge import CallableBridgeTransport, HeavenBridgeAdapter
-from heaven_control_plane.protocol import PLUGIN_VERSION, SCHEMA_VERSION
+from heaven_control_plane.protocol import PLUGIN_VERSION, SCHEMA_VERSION, ControlPlaneError
 from heaven_control_plane.service import HeavenControlPlane
 
 
@@ -74,6 +75,25 @@ class VerticalSliceTests(unittest.TestCase):
         result = self.control.invoke("control.discovery", [])
         self.assertFalse(result["ok"])
         self.assertEqual(result["error"]["code"], "INVALID_INPUT")
+
+    def test_invalid_request_id_is_a_structured_error(self):
+        result = self.control.invoke("control.discovery", {}, req_id="x" * 129)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["request_id"], "invalid-request")
+        self.assertEqual(result["error"]["code"], "INVALID_REQUEST_ID")
+
+    def test_capability_permissions_are_enforced_before_transport(self):
+        restricted = HeavenControlPlane(
+            HeavenBridgeAdapter(self.transport),
+            granted_permissions={"control.read"},
+        )
+        allowed = restricted.invoke("control.discovery")
+        self.assertTrue(allowed["ok"])
+        denied = restricted.invoke("execution.run", {"command": "Write-Output nope"})
+        self.assertFalse(denied["ok"])
+        self.assertEqual(denied["error"]["code"], "PERMISSION_DENIED")
+        self.assertEqual(denied["error"]["details"]["required_permission"], "execution.run")
+        self.assertEqual(self.transport.calls, [])
 
     def test_oversized_request_is_rejected_before_transport(self):
         result = self.control.invoke("execution.run", {"command": "x" * 1_100_000})
@@ -224,6 +244,20 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertGreaterEqual(page["data"]["total"], 1)
         self.assertIn("duration_ms", page["data"]["items"][-1])
 
+    def test_artifact_secret_canary_is_refused(self):
+        canaries = (
+            "API_TOKEN=abcdefgh12345678",
+            "refresh_token: abcdefgh12345678",
+            "password=correct-horse-battery-staple",
+            "Authorization: Bearer abcdefgh12345678",
+            "ghp_abcdefghijklmnopqrstuvwxyz",
+        )
+        for index, canary in enumerate(canaries):
+            with self.subTest(canary=canary):
+                with self.assertRaises(ControlPlaneError) as raised:
+                    self.control.artifacts.put(f"secret-{index}", canary)
+                self.assertEqual(raised.exception.code, "SECRET_ARTIFACT_BLOCKED")
+
     def test_artifact_pagination(self):
         self.control.artifacts.put("a1", "abcdefghij", name="demo")
         page = self.control.invoke(
@@ -245,6 +279,135 @@ class VerticalSliceTests(unittest.TestCase):
             thread.join()
         page = self.control.audit_log.page(offset=0, length=100)
         self.assertGreaterEqual(page["total"], 20)
+    def test_bridge_adapter_actions_exist_in_canonical_worker(self):
+        worker = PLUGIN_ROOT.parents[1] / "heaven-bridge" / "worker.py"
+        tree = ast.parse(worker.read_text(encoding="utf-8"))
+        actions = set()
+        for node in tree.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if not any(isinstance(target, ast.Name) and target.id == "DIRECT_ACTIONS" for target in node.targets):
+                continue
+            if isinstance(node.value, ast.Set):
+                actions.update(
+                    item.value
+                    for item in node.value.elts
+                    if isinstance(item, ast.Constant) and isinstance(item.value, str)
+                )
+        required = {"health", "cancel", "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill", "proc_list_sessions", "fs_read", "fs_write", "fs_edit", "fs_info", "fs_search"}
+        self.assertTrue(required.issubset(actions), required - actions)
+
+
+    def test_phase1_discovery_includes_sessions_and_filesystem_search(self):
+        result = self.control.invoke("control.discovery")
+        names = {item["name"] for item in result["data"]["capabilities"]}
+        self.assertTrue({
+            "execution.session.start",
+            "execution.session.read",
+            "execution.session.input",
+            "execution.session.stop",
+            "execution.session.list",
+            "filesystem.search",
+        }.issubset(names))
+
+    def test_session_start_maps_to_proc_start_with_bounds_and_host_handles(self):
+        result = self.control.invoke(
+            "execution.session.start",
+            {
+                "shell": "powershell",
+                "command": "Write-Output ready",
+                "cwd": r"C:\repo",
+                "idle_timeout_seconds": 120,
+                "max_runtime_seconds": 900,
+                "env_from_host": ["GITHUB_TOKEN"],
+            },
+        )
+        self.assertTrue(result["ok"])
+        action, params, timeout = self.transport.calls[-1]
+        self.assertEqual(action, "proc_start")
+        self.assertEqual(timeout, 30)
+        self.assertEqual(params["idle_timeout_seconds"], 120)
+        self.assertEqual(params["max_runtime_seconds"], 900)
+        self.assertEqual(params["env_from_host"], ["GITHUB_TOKEN"])
+
+    def test_session_lifecycle_maps_to_existing_bridge_primitives(self):
+        read = self.control.invoke("execution.session.read", {"session_id": "abc123", "max_chars": 5000})
+        self.assertTrue(read["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_read", {"session_id": "abc123", "max_chars": 5000}, 15))
+
+        send = self.control.invoke(
+            "execution.session.input",
+            {"session_id": "abc123", "input": "status", "newline": False},
+        )
+        self.assertTrue(send["ok"])
+        self.assertEqual(
+            self.transport.calls[-1],
+            ("proc_input", {"session_id": "abc123", "input": "status", "newline": False}, 15),
+        )
+
+        stop = self.control.invoke("execution.session.stop", {"session_id": "abc123", "force": True})
+        self.assertTrue(stop["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_kill", {"session_id": "abc123", "force": True}, 30))
+
+        listed = self.control.invoke("execution.session.list", {})
+        self.assertTrue(listed["ok"])
+        self.assertEqual(self.transport.calls[-1], ("proc_list_sessions", {}, 15))
+
+    def test_session_validation_fails_closed_before_transport(self):
+        before = len(self.transport.calls)
+        bad_bool = self.control.invoke(
+            "execution.session.input",
+            {"session_id": "abc123", "input": "x", "newline": "yes"},
+        )
+        self.assertFalse(bad_bool["ok"])
+        self.assertEqual(bad_bool["error"]["code"], "INVALID_INPUT")
+
+        bad_path = self.control.invoke(
+            "execution.session.start",
+            {"shell": "powershell", "cwd": r"C:\repo\..\secret"},
+        )
+        self.assertFalse(bad_path["ok"])
+        self.assertEqual(bad_path["error"]["code"], "PATH_TRAVERSAL")
+        self.assertEqual(len(self.transport.calls), before)
+
+    def test_filesystem_search_maps_to_allowlisted_bridge_search(self):
+        result = self.control.invoke(
+            "filesystem.search",
+            {
+                "path": r"C:\repo",
+                "pattern": "CapabilitySpec",
+                "mode": "contents",
+                "regex": False,
+                "case_sensitive": True,
+                "max_results": 25,
+                "glob": "*.py",
+            },
+        )
+        self.assertTrue(result["ok"])
+        action, params, timeout = self.transport.calls[-1]
+        self.assertEqual(action, "fs_search")
+        self.assertEqual(timeout, 120)
+        self.assertEqual(params["mode"], "content")
+        self.assertEqual(params["pattern"], "CapabilitySpec")
+        self.assertEqual(params["max_results"], 25)
+        self.assertEqual(params["glob"], "*.py")
+
+    def test_filesystem_search_rejects_invalid_mode_and_traversal(self):
+        before = len(self.transport.calls)
+        invalid = self.control.invoke(
+            "filesystem.search",
+            {"path": r"C:\repo", "pattern": "x", "mode": "everything"},
+        )
+        self.assertFalse(invalid["ok"])
+        self.assertEqual(invalid["error"]["code"], "INVALID_SEARCH_MODE")
+
+        traversal = self.control.invoke(
+            "filesystem.search",
+            {"path": r"C:\repo\..\secret", "pattern": "x"},
+        )
+        self.assertFalse(traversal["ok"])
+        self.assertEqual(traversal["error"]["code"], "PATH_TRAVERSAL")
+        self.assertEqual(len(self.transport.calls), before)
 
 
 class CallableTransportTests(unittest.TestCase):
