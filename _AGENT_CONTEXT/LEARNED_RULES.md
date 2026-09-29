@@ -362,9 +362,9 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Trigger / evidence:** PR #261 repaired one cancellation-unaware deployment wait, but run 36606848564 later surfaced another xUnit1051 in the same integration-test boundary.
 - **Enforcement:** Integration tests treat xUnit1051 as an explicit error; bounded waits that offer a cancellation-token overload must pass the project test token. Reviewers reject a narrow analyzer repair that does not state which sibling cases were checked.
 
-## LR-021 — primary data surfaces outrank wrapping auxiliary controls
+## LR-022 — primary data surfaces outrank wrapping auxiliary controls
 
-- **Rule ID:** LR-021
+- **Rule ID:** LR-022
 - **Status:** Active
 - **Date:** 2026-09-29
 - **Scope:** resizable desktop UI, dense library/table pages, WPF layout
@@ -373,5 +373,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rationale:** “Responsive” wrapping is not automatically good responsiveness on dense desktop tools; it can make the core workspace progressively smaller exactly when the window is already constrained.
 - **Enforcement:** Add structural/layout regressions for compact margins and overflow behavior on dense pages, and verify the actual windowed operator path when a suitable Windows UI surface is available.
 - **Related policy:** `AGENTS.md` bug-prevention protocol and operator-facing verification rule.
+- **Integration numbering note:** Renumbered from a concurrently assigned LR-021 during canonical reconciliation because LR-021 was already occupied by analyzer defect-class closure.
+- **Supersedes:** none
+- **Superseded by:** none
+
+## LR-023 — concurrent append-only ledgers need collision-safe identity allocation
+
+- **Rule ID:** LR-023
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** multi-agent learned-rule ledgers, incident IDs, sequential durable identifiers, integration reconciliation
+- **Rule:** Multiple writers must not independently assume the same “next” sequential identifier from stale state. Allocate durable IDs under a single owner/transaction/reservation mechanism or use collision-resistant identifiers; integration must validate uniqueness and reconcile collisions before treating the ledger as canonical.
+- **Trigger / evidence:** Two concurrent project changes independently created distinct active rules labeled LR-021: analyzer sibling-defect closure and dense primary-surface UI layout. The collision was discovered only during the generic-trainer promotion verification.
+- **Rationale:** Append-only history is not enough when identity allocation is racy. Duplicate IDs make references ambiguous and can cause later agents to update or cite the wrong rule.
+- **Enforcement:** Before assigning a sequential ID, refetch canonical state and compute/claim the next ID through the project’s designated owner mechanism. Manager/integration gates must scan for duplicate IDs. If a collision escapes, preserve both rule bodies/provenance, renumber the later/unintegrated entry, and record the reconciliation.
+- **Relevant incident:** 2026-09-29 concurrent LR-021 collision found during generic trainer promotion.
 - **Supersedes:** none
 - **Superseded by:** none
