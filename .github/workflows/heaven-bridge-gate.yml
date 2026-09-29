@@ -8,6 +8,8 @@ on:
       - 'heaven-bridge/worker.py'
       - 'heaven-bridge/bootstrap.ps1'
       - 'heaven-bridge/manage.ps1'
+      - 'heaven-bridge/install-github-runner.ps1'
+      - 'heaven-bridge/uia.ps1'
       - 'heaven-bridge/uia.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
@@ -27,6 +29,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: heaven-local-bridge-gate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify-windows:
