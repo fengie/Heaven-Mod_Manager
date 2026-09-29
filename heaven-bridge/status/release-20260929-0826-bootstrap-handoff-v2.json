@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0826-bootstrap-handoff-v2",
+  "state": "running",
+  "action": "proc_start",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:26:38.691422+00:00"
+}
