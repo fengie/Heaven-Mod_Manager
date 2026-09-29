@@ -21,6 +21,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         {
             ct.ThrowIfCancellationRequested();
             string? staging = null;
+            string? publishedDestination = null;
             try
             {
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
@@ -51,17 +52,30 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 var category = categories.Classify(SafeRecursiveTraversal.Snapshot(staging, ct).Files.Select(x => Path.GetRelativePath(staging, x)));
                 ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
                 staging = null;
+                publishedDestination = destination;
+                MoveToProcessed(entry);
+                publishedDestination = null;
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");
                 UnifiedDebugLog.Write("INBOX", $"IMPORTED Source={entry}; Destination={destination}; Category={category}");
-                MoveToProcessed(entry);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
             {
+                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
                 ct.ThrowIfCancellationRequested();
                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
                 results.Add(new(entry, null, false, AutomationCategory.Unknown, ex.Message));
+            }
+            catch (OperationCanceledException)
+            {
+                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                throw;
+            }
+            catch
+            {
+                ImportPublicationWorkspace.RollbackPublished(modsRoot, publishedDestination);
+                throw;
             }
             finally
             {

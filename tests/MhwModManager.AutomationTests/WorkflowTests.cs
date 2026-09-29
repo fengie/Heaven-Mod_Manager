@@ -155,6 +155,37 @@ public sealed class WorkflowTests : IDisposable
         Assert.Throws<InvalidDataException>(() => new FomodInstallerService(package).Plan(new HashSet<string>(), GameProfile.MonsterHunterWorld(root)));
     }
     [Fact]
+    public async Task SmartInboxSourceArchiveFailureRollsBackPublishedMod()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "inbox-source-archive-failure-mods");
+        var inbox = Path.Combine(root, "inbox-source-archive-failure-inbox");
+        var state = Path.Combine(root, "inbox-source-archive-failure-state");
+        Directory.CreateDirectory(mods);
+        Directory.CreateDirectory(inbox);
+
+        var source = Path.Combine(inbox, "Pack");
+        Directory.CreateDirectory(Path.Combine(source, "nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(source, "nativePC", "item.tex"), "ITEM", Token);
+        await File.WriteAllTextAsync(Path.Combine(inbox, "Processed"), "blocks Processed directory creation", Token);
+
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var categories = new AutoCategoryService(db);
+        var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), state);
+        var service = new SmartInboxService(db, new ArchiveInspector(), catalog, nexus, categories, inbox, mods);
+
+        var result = await service.ProcessAsync(Token);
+
+        Assert.Equal(0, result.Imported);
+        Assert.Equal(1, result.Skipped);
+        Assert.True(Directory.Exists(source));
+        Assert.False(Directory.Exists(Path.Combine(mods, "Pack")));
+        await catalog.RefreshFoldersAsync(Token);
+        Assert.Empty(await db.GetModsAsync(Token));
+    }
+
+    [Fact]
     public async Task SmartInboxFailedArchiveIsNeverCatalogedWhenLaterItemSucceeds()
     {
         var db = await DatabaseAsync();
