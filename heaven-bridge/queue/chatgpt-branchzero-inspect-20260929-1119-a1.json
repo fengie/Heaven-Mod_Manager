@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-branchzero-inspect-20260929-1119-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:19:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop'\nSet-Location 'C:\\Users\\Xxkan\\mhw-mods-work-canonical'\ngit fetch origin --prune | Out-Null\n$branches=@(\n'agent/bridge-uia-hardening-20260929',\n'agent/bridge-uia-native-20260929',\n'agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm',\n'agent/launch-observation-atomicity-20260928',\n'agent/swarm-contract-v3-20260929-0540',\n'agent-bridge',\n'codex/complete-mod-workflows',\n'fix/codex-quota-dispatch-circuit-20260929'\n)\n$out=@()\nforeach($b in $branches){\n  git show-ref --verify --quiet \"refs/remotes/origin/$b\"\n  if($LASTEXITCODE -ne 0){ $out += [ordered]@{branch=$b;missing=$true}; continue }\n  $commits=@()\n  foreach($line in @(git log --format='%H%x09%s' \"origin/main..origin/$b\")){\n    $parts=$line -split \"`t\",2\n    if($parts.Count -ge 2){ $commits += [ordered]@{sha=$parts[0];subject=$parts[1]} }\n  }\n  $cherry=@(git cherry origin/main \"origin/$b\")\n  $plus=@($cherry | Where-Object {$_ -like '+ *'})\n  $minus=@($cherry | Where-Object {$_ -like '- *'})\n  $names=@(git diff --name-status \"origin/main...origin/$b\")\n  $stat=(git diff --stat \"origin/main...origin/$b\" | Out-String).Trim()\n  $out += [ordered]@{\n    branch=$b\n    tip=(git rev-parse \"origin/$b\" | Out-String).Trim()\n    merge_base=(git merge-base origin/main \"origin/$b\" | Out-String).Trim()\n    ahead_count=$commits.Count\n    patch_unique_count=$plus.Count\n    patch_equivalent_count=$minus.Count\n    commits=$commits\n    cherry=$cherry\n    names=$names\n    stat=$stat\n  }\n}\n[ordered]@{main=(git rev-parse origin/main | Out-String).Trim();branches=$out} | ConvertTo-Json -Depth 7"
+  },
+  "priority": "highest"
+}
