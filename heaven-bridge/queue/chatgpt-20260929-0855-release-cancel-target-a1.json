@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0855-release-cancel-target-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output 'CANCEL_TARGET_STARTED'; Start-Sleep -Seconds 30; Write-Output 'CANCEL_TARGET_SHOULD_NOT_FINISH'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T08:55:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
