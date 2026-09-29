@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170930-runner-health-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:09:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$services = @(Get-Service | Where-Object { $_.Name -like 'actions.runner*' } | ForEach-Object { [pscustomobject]@{Name=$_.Name;Status=[string]$_.Status;StartType=[string]$_.StartType} }); $procs=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Runner\\.(Listener|Worker)' } | ForEach-Object { [pscustomobject]@{Pid=$_.ProcessId;Name=$_.Name;CommandLine=$_.CommandLine} }); [pscustomobject]@{services=$services;processes=$procs} | ConvertTo-Json -Depth 5 -Compress",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 60
+  },
+  "priority": "highest"
+}
