@@ -5,7 +5,7 @@ import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./
 
 export const STATE_VERSION = 5;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
-export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned"]);
+export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
 export const AUTONOMY_PROFILES = Object.freeze({
   observe: {
@@ -175,11 +175,27 @@ export function isIntegrationEligible(agent) {
   return agent?.status === "done" && agent?.exitCode === 0 && agent?.completionEvidence === "authoritative-exit";
 }
 
+export function isProviderCapacityErrorMessage(value) {
+  const text = String(value || "").toLowerCase();
+  if (!text) return false;
+  return [
+    /usage\s+(?:limit|quota)/,
+    /quota\s+(?:exceeded|exhausted|reached)/,
+    /(?:rate|request)\s+limit\s+(?:exceeded|reached)/,
+    /too\s+many\s+requests/,
+    /insufficient[_\s-]*quota/,
+    /(?:weekly|daily|monthly|plan)\s+limit\s+(?:reached|exceeded|hit)/,
+    /(?:you(?:'ve| have)?\s+)?(?:hit|reached)\s+(?:your\s+)?(?:current\s+)?(?:usage\s+)?limit/
+  ].some(pattern => pattern.test(text));
+}
+
 export function classifyAuthoritativeExit(agent, exitCode) {
   if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
     return "stopped";
   }
-  return exitCode === 0 ? "done" : "failed";
+  if (exitCode === 0) return "done";
+  if (isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error)) return "capacity-blocked";
+  return "failed";
 }
 
 export function applyPreLaunchFailure(state, {
