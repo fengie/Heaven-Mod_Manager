@@ -90,7 +90,7 @@ jobs:
 
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
-        continue-on-error: true # Evidence quota must not invalidate a verified release/test result.
+        continue-on-error: true # Diagnostic artifact quota must not invalidate verified release correctness.
         uses: actions/upload-artifact@v7
         with:
           name: windows-release-evidence-${{ github.sha }}
