@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-154930-create-uncovered-lanes",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; Set-Location 'C:\\Users\\Xxkan\\HeavenBridge'; git fetch origin main --prune; $base=(git rev-parse origin/main).Trim(); $lanes=@(\n@{b='bug/watcher-external-changes-20260929';p='C:\\Users\\Xxkan\\HeavenBridge\\work\\bug-watcher-external-changes'},\n@{b='bug/startup-recovery-20260929';p='C:\\Users\\Xxkan\\HeavenBridge\\work\\bug-startup-recovery'},\n@{b='bug/generic-game-paths-20260929';p='C:\\Users\\Xxkan\\HeavenBridge\\work\\bug-generic-game-paths'}\n); foreach($l in $lanes){ if(Test-Path $l.p){ throw \"worktree path already exists: $($l.p)\" }; if(git show-ref --verify --quiet (\"refs/heads/\"+$l.b)){ throw \"local branch exists: $($l.b)\" }; if(git ls-remote --exit-code --heads origin $l.b 2>$null){ throw \"remote branch exists: $($l.b)\" }; git worktree add -b $l.b $l.p origin/main | Out-Host }; Write-Output \"BASE=$base\"; git worktree list",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridge",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T15:49:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
