@@ -8,6 +8,7 @@ on:
       - 'src/MhwModManager.Automation/RulesEditorService.cs'
       - 'src/MhwModManager.Automation/UpdateMigrationService.cs'
       - 'src/MhwModManager.Automation/CollectionRecipeService.cs'
+      - 'src/MhwModManager.Automation/DuplicateCleanupService.cs'
       - 'src/MhwModManager.Automation/ArchiveImportService.cs'
       - 'src/MhwModManager.Automation/SmartInboxService.cs'
       - 'src/MhwModManager.Core/GameAdapters.cs'
@@ -15,6 +16,7 @@ on:
       - 'src/MhwModManager.Storage/DeploymentMetadata.cs'
       - 'src/MhwModManager.Storage/ProfileRepository.cs'
       - 'src/MhwModManager.Storage/ManagerDatabaseWorkflowExtensions.cs'
+      - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
       - 'src/MhwModManager.App/WorkflowWindow.xaml'
@@ -24,6 +26,7 @@ on:
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs'
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
+      - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 
@@ -81,7 +84,7 @@ jobs:
       - name: Run focused workflow regressions
         shell: powershell
         run: |
-          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~WorkflowTests"
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~WorkflowTests|FullyQualifiedName~AutomationServiceTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Check patch whitespace

@@ -165,6 +165,108 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task DuplicateArchiveRetiresLiveSemanticReferencesButPreservesHistory()
+    {
+        var db=await CreateDbAsync("dupes-retirement-references.db");
+        var a=Path.Combine(root,"Retire A");
+        var b=Path.Combine(root,"Retire B");
+        var archive=Path.Combine(root,"archive-retirement-references");
+        Directory.CreateDirectory(a);
+        Directory.CreateDirectory(b);
+        await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            """
+            INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at)
+            VALUES('stale-rule','Overlay','ModPair','a','b','a',NULL,'retirement regression',1,$t);
+            INSERT INTO resource_providers(namespace,mod_id) VALUES('retirement:test','a');
+            INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at)
+            VALUES('nativePC\manifest-only.tex','b','manifest-hash','manifest-hash','stale-rule',$t);
+            INSERT INTO settings(key,value) VALUES('preview:a','preview');
+            INSERT INTO settings(key,value) VALUES('visuals:a','[]');
+            INSERT INTO settings(key,value) VALUES('update:a','2026-09-29T00:00:00Z');
+            INSERT INTO settings(key,value) VALUES('visual-public-last:a','2026-09-29T00:00:00Z');
+            INSERT INTO resolver_audit(time,path,winner_mod_id,score,reason_code,explanation,evidence)
+            VALUES($t,'nativePC\same.tex','a',100,'historical','historical retirement evidence','{}');
+            """,
+            new Dictionary<string,object?>{{"$t",DateTimeOffset.UtcNow.ToString("O",System.Globalization.CultureInfo.InvariantCulture)}},
+            TestContext.Current.CancellationToken);
+
+        var moved=await new DuplicateCleanupService(db,archive).ArchiveSafeAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(1,moved);
+        Assert.DoesNotContain(await db.GetModsAsync(TestContext.Current.CancellationToken),m=>m.Id=="a");
+        Assert.Null(await db.GetSettingAsync("preview:a",TestContext.Current.CancellationToken));
+        Assert.Null(await db.GetSettingAsync("visuals:a",TestContext.Current.CancellationToken));
+        Assert.Null(await db.GetSettingAsync("update:a",TestContext.Current.CancellationToken));
+        Assert.Null(await db.GetSettingAsync("visual-public-last:a",TestContext.Current.CancellationToken));
+
+        await using(var c=await db.OpenAsync(TestContext.Current.CancellationToken))
+        {
+            foreach(var sql in new[]
+            {
+                "SELECT COUNT(*) FROM conflict_rules WHERE left_mod_id='a' OR right_mod_id='a' OR winner_mod_id='a'",
+                "SELECT COUNT(*) FROM resource_providers WHERE mod_id='a'"
+            })
+            {
+                await using var cmd=c.CreateCommand();
+                cmd.CommandText=sql;
+                Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+            }
+
+            await using var manifest=c.CreateCommand();
+            manifest.CommandText="SELECT provider_mod_id,rule_id FROM deployment_manifest WHERE path='nativePC\\manifest-only.tex'";
+            await using(var reader=await manifest.ExecuteReaderAsync(TestContext.Current.CancellationToken))
+            {
+                Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
+                Assert.Equal("b",reader.GetString(0));
+                Assert.True(reader.IsDBNull(1));
+            }
+
+            await using var history=c.CreateCommand();
+            history.CommandText="SELECT COUNT(*) FROM resolver_audit WHERE winner_mod_id='a'";
+            Assert.Equal(1L,(long)(await history.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+        }
+
+        var reused=Path.Combine(root,"Retire A Reused");
+        Directory.CreateDirectory(reused);
+        await db.UpsertModAsync(new("a","A2","A2",reused,false,3),TestContext.Current.CancellationToken);
+        var snapshot=await db.LoadPlannerSnapshotAsync(TestContext.Current.CancellationToken);
+        Assert.DoesNotContain(snapshot.Rules,r=>r.LeftModId=="a"||r.RightModId=="a"||r.WinnerModId=="a");
+    }
+
+    [Fact]
+    public async Task DuplicateArchiveRefusesToRetireCurrentDeploymentProvider()
+    {
+        var db=await CreateDbAsync("dupes-retirement-manifest.db");
+        var a=Path.Combine(root,"Manifest A");
+        var b=Path.Combine(root,"Manifest B");
+        var archive=Path.Combine(root,"archive-retirement-manifest");
+        Directory.CreateDirectory(a);
+        Directory.CreateDirectory(b);
+        await File.WriteAllTextAsync(Path.Combine(a,"marker.txt"),"A",TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            "INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at) VALUES($p,$m,$b,$e,NULL,$t)",
+            new Dictionary<string,object?>{{"$p",@"nativePC\same.tex"},{"$m","a"},{"$b","hash"},{"$e","hash"},{"$t",DateTimeOffset.UtcNow.ToString("O",System.Globalization.CultureInfo.InvariantCulture)}},
+            TestContext.Current.CancellationToken);
+
+        var service=new DuplicateCleanupService(db,archive);
+        var error=await Assert.ThrowsAsync<InvalidOperationException>(()=>service.ArchiveSafeAsync(TestContext.Current.CancellationToken));
+
+        Assert.Contains("deployment manifest",error.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(await db.GetModsAsync(TestContext.Current.CancellationToken),m=>m.Id=="a");
+        Assert.True(Directory.Exists(a));
+        Assert.Equal("A",await File.ReadAllTextAsync(Path.Combine(a,"marker.txt"),TestContext.Current.CancellationToken));
+        Assert.Empty(Directory.EnumerateDirectories(archive));
+    }
+
+    [Fact]
     public async Task EffectiveInspectorShowsWinnerAndShadowedProvider()
     {
         var db=await CreateDbAsync("inspect.db");await SeedModAsync(db,"a","A");await SeedModAsync(db,"b","B");
