@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0916-issue84-osfix2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:16:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T13:16:25.514713+00:00",
+  "finished_at": "2026-09-29T13:16:30.780212+00:00",
+  "stdout": "HEAD is now at e4a24251 bridge: fall back to per-user startup for self-hosted runner\ne4a242515946aa210bb473d6667709af8058d302\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nPreparing worktree (new branch 'fix/release-gate-windows-detection-20260929b')\nUpdating files:  90% (376/417)\rUpdating files:  91% (380/417)\rUpdating files:  92% (384/417)\rUpdating files:  93% (388/417)\rUpdating files:  94% (392/417)\rUpdating files:  95% (397/417)\rUpdating files:  96% (401/417)\rUpdating files:  97% (405/417)\rUpdating files:  98% (409/417)\rUpdating files:  99% (413/417)\rUpdating files: 100% (417/417)\rUpdating files: 100% (417/417), done.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0916-issue84-osfix2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0916-issue84-osfix2.stderr.log",
+    "stdout_bytes": 126,
+    "stderr_bytes": 546,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "5a22a0e61b2985e907c90da9c6ffbf4a944bae54429db21cf8e0ee4fb7798e82"
+}
