@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 
 import {
   hasSubstantiveWorkEvidence,
+  hasVerifiedCompletionEvidence,
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
   recoveryBackoffMs,
-  recoveryMachineTarget
+  recoveryMachineTarget,
+  terminationReconciliationDecision
 } from "../lib/no-work-recovery.mjs";
 
 test("recognizes execution-assignment opener without treating ordinary final output as an opener", () => {
@@ -95,4 +97,51 @@ test("empty interrupted worker is retryable and backoff is bounded", () => {
   assert.equal(result.reason, "terminated-without-output");
   assert.equal(recoveryBackoffMs(1, { baseMs: 1000, maxMs: 4000 }), 1000);
   assert.equal(recoveryBackoffMs(4, { baseMs: 1000, maxMs: 4000 }), 4000);
+});
+
+
+test("stream loss with durable work is preserved as incomplete", () => {
+  const result = terminationReconciliationDecision({
+    state: "disconnected",
+    last_action_summary: "Connection dropped while I was integrating the changes.",
+    source_metadata: { pr_number: 219, changed_files: ["tools/agent-control/server.mjs"] }
+  }, { streamLost: true });
+  assert.equal(result.recoveryStatus, "work-detected-incomplete");
+  assert.equal(result.retry, false);
+  assert.equal(result.action, "reconcile-existing-work");
+});
+
+test("verified durable integration is complete even when the response stream is lost", () => {
+  const agent = {
+    state: "disconnected",
+    source_metadata: {
+      pr_number: 219,
+      pr_merged: true,
+      verification_passed: true
+    }
+  };
+  assert.equal(hasVerifiedCompletionEvidence(agent), true);
+  const result = terminationReconciliationDecision(agent, { streamLost: true });
+  assert.equal(result.recoveryStatus, "work-verified-complete");
+  assert.equal(result.retry, false);
+  assert.equal(result.action, "complete");
+});
+
+test("stream loss with no durable work is retryable even if partial prose was emitted", () => {
+  const result = terminationReconciliationDecision({
+    state: "interrupted",
+    last_action_summary: "I inspected the task and was about to start the implementation.",
+    source_metadata: { stream_lost: true }
+  }, { streamLost: true });
+  assert.equal(result.recoveryStatus, "no-durable-work-detected-retry");
+  assert.equal(result.retry, true);
+});
+
+test("ordinary completed prose without durable proof is not blindly retried", () => {
+  const result = terminationReconciliationDecision({
+    state: "done",
+    last_action_summary: "Reviewed the requested area; no repository changes were necessary."
+  });
+  assert.equal(result.recoveryStatus, "work-unverified");
+  assert.equal(result.retry, false);
 });
