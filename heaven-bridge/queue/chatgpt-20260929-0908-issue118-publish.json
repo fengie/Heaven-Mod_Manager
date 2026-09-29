@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0908-issue118-publish",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:08:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\mhw-worktrees\\issue118-secret-input",
+    "timeout_seconds": 900,
+    "command": "python _patch_docs118.py && del _patch_docs118.py && (if exist heaven-bridge\\__pycache__ rmdir /s /q heaven-bridge\\__pycache__) && python -m py_compile heaven-bridge\\worker.py && python heaven-bridge\\test_worker.py && python heaven-bridge\\tests\\test_worker.py && git diff --check && git add heaven-bridge && git commit -m \"bridge: add credential-safe one-time secret input\" && git push -u origin fix/credential-safe-secret-input-20260929 && git rev-parse HEAD"
+  }
+}
