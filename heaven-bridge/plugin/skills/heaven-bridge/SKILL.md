@@ -79,7 +79,7 @@ Permanent development cycles must never finish with a separate direct ChatGPT ->
 
 ## Job status, concurrency, cancellation
 
-Use `job_status` for current state and `cancel` when a long-running job should be stopped. Do not launch duplicate jobs merely because a result is delayed; unique IDs plus idempotency/result-cache recovery are the normal rule. Worker v3 supports bounded concurrency; Git publication is serialized separately.
+Use `job_status` for current state and `cancel` when a long-running job should be stopped. Do not launch duplicate jobs merely because a result is delayed; unique IDs plus idempotency/result-cache recovery are the normal rule. Worker v3 supports bounded concurrency; Git publication is serialized separately.\n\nPriority scheduling keeps control-plane actions responsive even when ordinary worker slots are saturated. Ordinary jobs accept named priorities or numeric 0-100 values and age upward over time, preventing lower-priority work from starving indefinitely.
 
 ## Screenshot and desktop control
 
