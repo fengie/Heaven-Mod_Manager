@@ -3,7 +3,7 @@ name: heaven-bridge
 description: Primary computer-control and development path for the user's `heaven` worker. Use for local filesystem, code build/test/debug execution, persistent dev processes, binary transfer, search, terminal, process/session, screenshot/desktop control, automation, durable controller state, local-agent work, worker-fabric offloading, and token-efficient local preprocessing. Use this bridge instead of Remote Desktop Commander; do not fall back to Remote Desktop Commander unless the user explicitly authorizes it in the current request.
 ---
 
-# Heaven Local Bridge v3
+# Heaven Local Bridge v4
 
 Use this as the default computer-control path for `heaven`.
 
@@ -22,7 +22,7 @@ Use this as the default computer-control path for `heaven`.
 - Results: `heaven-bridge/results/<job-id>.json`.
 - Status: `heaven-bridge/status/<job-id>.json` and `heaven-bridge/status/heartbeat.json`.
 - Protocol remains `chatgpt-heaven-bridge-v2` for compatibility.
-- Healthy implementation reports `data.worker_version: 3`.
+- Healthy implementation reports `data.worker_version: 4`.
 - `heaven` is the worker/execution machine. `heaven2` is the main/control machine and credential authority.
 - Keep secrets on `heaven2` unless runtime access is explicitly required. Never place secrets in queue/results/logs/commits.
 - Do not expose an unauthenticated raw shell to the public internet.
@@ -50,13 +50,14 @@ The private-repo ACL is the compatibility auth mode when no local HMAC key is co
 
 ## Health and capability negotiation
 
-Start a new workflow with `health` when worker state matters. Healthy v3 must report `status: completed`, `host: heaven`, `data.worker_version: 3`, `data.protocol: chatgpt-heaven-bridge-v2`, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
+Start a new workflow with `health` when worker state matters. Healthy v4 must report `status: completed`, `host: heaven`, `data.worker_version: 4`, `data.protocol: chatgpt-heaven-bridge-v2`, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
 
 Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
 - synchronous/persistent processes: `proc_run`, `proc_start`, `proc_input`, `proc_read`, `proc_kill`, `proc_list_sessions`, `proc_list`, `job_output_read`
 - job control: `job_status`, `cancel`
 - desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`
+- semantic UIA: `uia_tree`, `uia_find`, `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`; mutation searches fail closed on ambiguity/truncation, password values are never exposed, and `uia_set_value` requires explicit non-secret relay opt-in
 - clipboard: `clipboard_read`, `clipboard_write` (relay reads require explicit opt-in)
 - controller/agents: `controller_checkpoint`, `codex`
 

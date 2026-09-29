@@ -165,6 +165,8 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["features"]["uia"]["backend"], "windows-uia-powershell")
         self.assertFalse(result["data"]["features"]["uia"]["password_values_exposed"])
         self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
+        self.assertTrue(result["data"]["features"]["uia"]["set_value_requires_relay_opt_in"])
+        self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
 
     def test_queue_order_prefers_control_then_priority_then_fifo(self):
         current = datetime(2026, 9, 29, 10, 4, tzinfo=timezone.utc)
@@ -297,6 +299,30 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("UIA_PASSWORD_VALUE_BLOCKED", script)
         self.assertNotIn("Current.Value", script)
         self.assertNotIn("Cached.Value", script)
+
+    def test_uia_set_value_requires_explicit_nonsecret_relay_opt_in(self):
+        with self.assertRaises(hb.BridgeError) as blocked:
+            hb._validate_uia_request(
+                {"selector": {"automation_id": "UserName"}, "value": "ordinary text"},
+                "uia_set_value",
+            )
+        self.assertEqual(blocked.exception.code, "UIA_RELAY_TEXT_OPT_IN_REQUIRED")
+
+        request = hb._validate_uia_request(
+            {
+                "selector": {"automation_id": "UserName"},
+                "value": "ordinary text",
+                "allow_relay_text": True,
+            },
+            "uia_set_value",
+        )
+        self.assertTrue(request["allow_relay_text"])
+        self.assertEqual(request["value"], "ordinary text")
+
+    def test_uia_mutations_fail_closed_when_search_is_truncated(self):
+        script = MODULE_PATH.with_name("uia.ps1").read_text(encoding="utf-8")
+        self.assertIn("UIA_SEARCH_TRUNCATED", script)
+        self.assertIn("$found.truncated -and -not [bool]$request.first_match", script)
 
     def test_codex_batch_wrapper_uses_call_arguments(self):
         captured = {}
