@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-updater-package-layout-a5",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'\nAdd-Type -AssemblyName System.IO.Compression.FileSystem\n$root=Join-Path $env:TEMP 'mhw-updater-e2e-artifacts-60-61'\nforeach($b in 60,61){\n  $zip=Join-Path $root \"$b\\MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip\"\n  $za=[System.IO.Compression.ZipFile]::OpenRead($zip)\n  try{\n    Write-Output (\"===BUILD=\"+$b+\"===\")\n    $za.Entries | Select-Object -First 80 FullName,Length | ConvertTo-Json -Depth 3\n    foreach($n in @('build-identity.json','release-install.json','product-files.json')){\n      $e=$za.Entries | Where-Object {$_.FullName -eq $n} | Select-Object -First 1\n      if($e){\n        $sr=New-Object IO.StreamReader($e.Open())\n        try{Write-Output (\"---\"+$n+\"---\"); Write-Output $sr.ReadToEnd()} finally{$sr.Dispose()}\n      } else {Write-Output (\"MISSING=\"+$n)}\n    }\n  } finally {$za.Dispose()}\n}"
+  },
+  "created_at": "2026-09-29T08:55:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
