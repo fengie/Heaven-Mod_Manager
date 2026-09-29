@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T142400Z-branch-lifecycle-v2",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:28:06.125260+00:00"
+}
