@@ -1,0 +1,586 @@
+{
+  "id": "swarm-20260929-155850-canonical-files",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:58:50Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:57:32.526152+00:00",
+  "finished_at": "2026-09-29T15:57:32.552722+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "offset": 0,
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.github"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\TestResults"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\_AGENT_CONTEXT"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\_AGENT_TRAINING"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\benchmarks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\data"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\docs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\legacy-v7"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\release"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\scripts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\src"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\tests"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\tools"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.gitignore",
+        "size": 88,
+        "modified": "2026-09-28T13:41:04.401926+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\AGENTS.md",
+        "size": 4802,
+        "modified": "2026-09-29T09:21:37.544079+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Build Source Handoff.bat",
+        "size": 147,
+        "modified": "2026-09-28T13:41:04.406982+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Build.bat",
+        "size": 817,
+        "modified": "2026-09-28T13:41:04.407493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\CHANGELOG.md",
+        "size": 47762,
+        "modified": "2026-09-29T09:41:54.878618+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Directory.Build.props",
+        "size": 720,
+        "modified": "2026-09-29T09:41:54.879125+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Directory.Packages.props",
+        "size": 692,
+        "modified": "2026-09-28T13:41:04.407493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\GLOBAL_GIT_DIRECTIVE.md",
+        "size": 10209,
+        "modified": "2026-09-29T09:21:37.545143+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\MHW-DEBUG-ALL.log",
+        "size": 68653,
+        "modified": "2026-09-29T09:46:02.528749+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\MhwModManager.sln",
+        "size": 8354,
+        "modified": "2026-09-28T13:41:04.409011+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\NEXT-AGENT-START-HERE.md",
+        "size": 24630,
+        "modified": "2026-09-29T09:28:41.685052+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\OPEN MASTER DEBUG LOG.bat",
+        "size": 308,
+        "modified": "2026-09-28T13:41:04.409011+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Open Startup Logs.bat",
+        "size": 322,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\README.md",
+        "size": 32586,
+        "modified": "2026-09-29T09:41:54.986605+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\REPAIR-NOTES.md",
+        "size": 1996,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-FAMILY-INFERENCE.md",
+        "size": 1479,
+        "modified": "2026-09-28T13:41:04.410022+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-MULTIGAME.md",
+        "size": 2265,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-UX-ROBUSTNESS.md",
+        "size": 3124,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RESEARCH-VISUALS-AND-UPDATES.md",
+        "size": 1267,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\RUN BUILT APP.bat",
+        "size": 1303,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Test Everything.bat",
+        "size": 915,
+        "modified": "2026-09-28T13:41:04.411540+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\VALIDATION.md",
+        "size": 15846,
+        "modified": "2026-09-28T13:41:04.413071+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\VERSION.txt",
+        "size": 7,
+        "modified": "2026-09-29T09:41:54.880639+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\Verify.bat",
+        "size": 807,
+        "modified": "2026-09-28T13:41:04.413071+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\global.json",
+        "size": 181,
+        "modified": "2026-09-28T13:41:04.457124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\AUTO_MERGE",
+        "size": 41,
+        "modified": "2026-09-29T09:43:35.654318+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\COMMIT_EDITMSG",
+        "size": 113,
+        "modified": "2026-09-29T09:38:12.187630+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\FETCH_HEAD",
+        "size": 1335,
+        "modified": "2026-09-29T15:57:30.446564+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\HEAD",
+        "size": 21,
+        "modified": "2026-09-29T09:36:43.695601+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\ORIG_HEAD",
+        "size": 41,
+        "modified": "2026-09-29T09:41:54.723840+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\config",
+        "size": 1977,
+        "modified": "2026-09-29T15:46:49.790606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\description",
+        "size": 73,
+        "modified": "2026-09-28T13:41:03.221506+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\index",
+        "size": 44168,
+        "modified": "2026-09-29T09:43:52.930653+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git\\packed-refs",
+        "size": 112,
+        "modified": "2026-09-29T15:27:10.324530+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\README.md",
+        "size": 2774,
+        "modified": "2026-09-28T13:41:04.403439+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\function-status.json",
+        "size": 286768,
+        "modified": "2026-09-29T09:46:02.378741+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\stage-status.json",
+        "size": 8950,
+        "modified": "2026-09-29T09:44:42.587300+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\trusted-v8.7.0-files.json",
+        "size": 9443,
+        "modified": "2026-09-28T13:41:04.404962+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.verification\\trusted-v8.7.0-src.zip",
+        "size": 177136,
+        "modified": "2026-09-28T13:41:04.406471+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts\\MHW-Manual-Mod-Manager-v8.8.6-win-x64.zip",
+        "size": 129584085,
+        "modified": "2026-09-29T09:45:54.272965+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\artifacts\\update-manifest.json",
+        "size": 613,
+        "modified": "2026-09-29T09:45:54.490309+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\agent-handoff-preflight-20260929-054204.log",
+        "size": 1992,
+        "modified": "2026-09-29T09:42:06.115976+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\agent-handoff-preflight-20260929-054344.log",
+        "size": 1992,
+        "modified": "2026-09-29T09:43:45.760591+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-20260929-054204.binlog",
+        "size": 1033049,
+        "modified": "2026-09-29T09:42:30.797478+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-20260929-054344.binlog",
+        "size": 1031882,
+        "modified": "2026-09-29T09:44:14.601185+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-compile-20260929-054444.log",
+        "size": 4960,
+        "modified": "2026-09-29T09:44:49.276864+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-compile-win-x64-20260929-054444.log",
+        "size": 4612,
+        "modified": "2026-09-29T09:45:13.339921+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-confirm-20260929-054444.log",
+        "size": 462,
+        "modified": "2026-09-29T09:46:02.378741+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-scan-20260929-054444.log",
+        "size": 320,
+        "modified": "2026-09-29T09:44:47.839871+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-verification-20260929-054444.json",
+        "size": 477785,
+        "modified": "2026-09-29T09:44:47.830806+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-function-verification-confirm-20260929-054444.json",
+        "size": 477788,
+        "modified": "2026-09-29T09:46:02.368603+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-publish-r2r-20260929-054444.log",
+        "size": 2676,
+        "modified": "2026-09-29T09:45:31.797590+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-publish-updater-helper-20260929-054444.log",
+        "size": 3108,
+        "modified": "2026-09-29T09:45:33.953829+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-release-20260929-054444.log",
+        "size": 14805,
+        "modified": "2026-09-29T09:46:02.425131+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-release-report-20260929-054444.txt",
+        "size": 700,
+        "modified": "2026-09-29T09:46:02.417653+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-restore-20260929-054444.log",
+        "size": 166,
+        "modified": "2026-09-29T09:44:45.689799+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-restore-win-x64-r2r-20260929-054444.log",
+        "size": 1978,
+        "modified": "2026-09-29T09:45:14.981043+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-selftest-20260929-054444.log",
+        "size": 954,
+        "modified": "2026-09-29T09:45:09.508466+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-automation-20260929-054444.log",
+        "size": 948,
+        "modified": "2026-09-29T09:44:59.282650+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-core-20260929-054444.log",
+        "size": 788,
+        "modified": "2026-09-29T09:44:53.838596+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\build-test-integration-20260929-054444.log",
+        "size": 960,
+        "modified": "2026-09-29T09:45:07.882049+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-final-20260929-054204-Strict_whole_solution.log",
+        "size": 5168,
+        "modified": "2026-09-29T09:42:30.793448+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-final-20260929-054344-Strict_whole_solution.log",
+        "size": 5168,
+        "modified": "2026-09-29T09:44:14.598038+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-relaxed-20260929-054204-Relaxed_whole_solution.log",
+        "size": 5180,
+        "modified": "2026-09-29T09:42:15.994973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-relaxed-20260929-054344-Relaxed_whole_solution.log",
+        "size": 5180,
+        "modified": "2026-09-29T09:43:54.967161+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-App.log",
+        "size": 676,
+        "modified": "2026-09-29T09:42:29.163136+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Automation.log",
+        "size": 736,
+        "modified": "2026-09-29T09:42:21.863220+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-AutomationTests.log",
+        "size": 780,
+        "modified": "2026-09-29T09:42:23.808721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Benchmarks.log",
+        "size": 710,
+        "modified": "2026-09-29T09:42:26.117757+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Core.log",
+        "size": 648,
+        "modified": "2026-09-29T09:42:16.845136+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Diagnostics.log",
+        "size": 744,
+        "modified": "2026-09-29T09:42:20.781257+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Filesystem.log",
+        "size": 736,
+        "modified": "2026-09-29T09:42:18.792607+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-FunctionVerifier.log",
+        "size": 748,
+        "modified": "2026-09-29T09:42:27.955698+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-IntegrationTests.log",
+        "size": 788,
+        "modified": "2026-09-29T09:42:25.244736+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Mhw.log",
+        "size": 680,
+        "modified": "2026-09-29T09:42:19.794647+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-SelfTest.log",
+        "size": 724,
+        "modified": "2026-09-29T09:42:27.207088+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-Storage.log",
+        "size": 672,
+        "modified": "2026-09-29T09:42:17.804469+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054204-UnitTests.log",
+        "size": 668,
+        "modified": "2026-09-29T09:42:22.794125+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-App.log",
+        "size": 676,
+        "modified": "2026-09-29T09:44:12.945122+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Automation.log",
+        "size": 736,
+        "modified": "2026-09-29T09:44:00.961030+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-AutomationTests.log",
+        "size": 780,
+        "modified": "2026-09-29T09:44:03.070083+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Benchmarks.log",
+        "size": 710,
+        "modified": "2026-09-29T09:44:05.612550+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\BuildLogs\\compile-strict-20260929-054344-Core.log",
+        "size": 648,
+        "modified": "2026-09-29T09:43:55.866510+00:00"
+      }
+    ],
+    "next_offset": 100,
+    "has_more": true
+  },
+  "job_hash": "e0ab0c912dfcc35807fbd1f8443d671bfdf198069340ab82da6f032a9b46c17c"
+}
