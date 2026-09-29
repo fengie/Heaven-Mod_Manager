@@ -147,6 +147,23 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Worker syntax validation failed.'
 }
 
+# Validate the exact repository source before any running worker is stopped.
+# This is intentionally stronger than syntax-only validation: bootstrap must not
+# trade a working control path for an untested replacement.
+$TestWorker = Join-Path $RepoRoot 'heaven-bridge\test_worker.py'
+if (Test-Path $TestWorker) {
+    Push-Location $RepoRoot
+    try {
+        & $python -m unittest -q 'heaven-bridge\test_worker.py'
+        if ($LASTEXITCODE -ne 0) {
+            throw "Worker regression suite failed with exit code $LASTEXITCODE."
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Publish the validated runtime only after the full regression suite passes.
 if (Test-Path $RuntimeWorker) {
     Copy-Item $RuntimeWorker $BackupWorker -Force
 }
@@ -165,22 +182,6 @@ Set sh = CreateObject("WScript.Shell")
 sh.Run """$escapedPowerShell"" -NoProfile -ExecutionPolicy Bypass -File ""$escapedWatchdog"" -StartupFallback", 0, False
 "@
 Set-Content -Path $StartupWatchdogVbs -Value $watchdogVbs -Encoding ASCII
-
-# Validate the exact repository source before any running worker is stopped.
-# This is intentionally stronger than syntax-only validation: bootstrap must not
-# trade a working control path for an untested replacement.
-$TestWorker = Join-Path $RepoRoot 'heaven-bridge\test_worker.py'
-if (Test-Path $TestWorker) {
-    Push-Location $RepoRoot
-    try {
-        & $python -m unittest -q 'heaven-bridge\test_worker.py'
-        if ($LASTEXITCODE -ne 0) {
-            throw "Worker regression suite failed with exit code $LASTEXITCODE."
-        }
-    } finally {
-        Pop-Location
-    }
-}
 
 # Prefer Task Scheduler because it supports restart-on-failure. The canonical task
 # runs in the currently logged-in user's interactive session at RunLevel Highest.
