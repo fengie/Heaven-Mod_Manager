@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-161000-generic-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:10:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:09:41.482650+00:00",
+  "finished_at": "2026-09-29T16:09:44.911389+00:00",
+  "stdout": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\src\\MhwModManager.Filesystem\\GameProfileRegistry.cs(116,40): error CA1859: Change return type of method 'LoadForMutation' from 'System.Collections.Generic.IReadOnlyList<MhwModManager.Core.GameProfile>' to 'MhwModManager.Core.GameProfile[]' for improved performance (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859) [C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj]\r\n",
+  "stderr": "Build failed with exit code: 1.\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-161000-generic-tests.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-161000-generic-tests.stderr.log",
+    "stdout_bytes": 522,
+    "stderr_bytes": 33,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c27998cb0cdf9611d76db938117dbaabd3de55b3d5435e49303c26815b3360f7"
+}
