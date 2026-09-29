@@ -1,7 +1,7 @@
 {
   "schema": "heaven-plugin/manifest/v1",
   "name": "heaven-task-queue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "entrypoint": "heaven_task_queue.queue:TaskQueue",
   "capabilities": [
     "task.create",
@@ -15,13 +15,20 @@
     "worker.heartbeat",
     "resource.acquire",
     "resource.release",
-    "task.list"
+    "task.list",
+    "task.handle_agent_failure",
+    "task.capacity_block",
+    "capacity.status",
+    "capacity.list",
+    "capacity.clear"
   ],
   "storage": "sqlite",
   "security": {
     "payload_limit_bytes": 256000,
     "resource_lock_leases": true,
     "task_leases": true,
-    "plaintext_secret_storage_supported": false
+    "plaintext_secret_storage_supported": false,
+    "hard_usage_limit_terminal": true,
+    "capacity_scope_suppression": true
   }
 }

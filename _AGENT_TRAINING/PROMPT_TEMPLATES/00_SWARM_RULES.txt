@@ -242,3 +242,6 @@ Do not defer reusable learning.
 
 # FINAL ORPHAN SWEEP
 Before the swarm is complete, the Manager must inventory stale/disconnected/failed workers, leases, branches, worktrees, commits, partial artifacts, and unfinished verification. Recover useful partial work and dispatch replacements until every unresolved boundary is complete, superseded, rejected, or externally blocked with evidence.
+
+# DURABLE LEDGER IDENTITY RULE
+When multiple agents can append learned rules, incidents, migrations, or other sequentially identified durable records, do not allocate IDs from stale snapshots. Use the designated allocation owner/reservation mechanism or collision-resistant IDs. The Manager/Integration owner must scan for duplicate IDs before completion and reconcile collisions without discarding either entry’s provenance.

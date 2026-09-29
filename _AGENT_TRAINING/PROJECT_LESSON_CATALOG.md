@@ -39,6 +39,8 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 22. **Swarm completion requires an orphaned-work sweep.** Inventory failed/stale/disconnected workers, leases, branches, worktrees, partial artifacts, and unfinished verification; dispatch recovery owners before declaring completion.
 23. **Implemented and delivered are different states.** If project policy requires immediate release/deploy after gates, completion includes publication and post-publication identity/health verification.
 24. **Exact identity beats labels.** Folder names, shortcut names, UI titles, branch names, cached status, and chat summaries are hints; verify canonical revision/build/path/hash/process/ref identity.
+25. **Primary data surfaces get first claim on constrained space.** On dense desktop/table/library pages, keep the core data workspace star/fill-sized and prevent auxiliary filters/actions/help from consuming extra vertical rows at supported window sizes; prefer horizontal overflow, trimming, tooltips, or compact controls and verify the real constrained/windowed path.
+26. **Sequential durable IDs need collision-safe allocation.** Concurrent writers must not infer the same next integer from stale state; serialize/reserve allocation or use collision-resistant IDs, and make integration validate uniqueness before canonicalization.
 
 ## Future-project rule
 
