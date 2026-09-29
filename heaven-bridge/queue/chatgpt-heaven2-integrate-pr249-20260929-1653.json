@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-heaven2-integrate-pr249-20260929-1653",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $work=Join-Path $env:USERPROFILE 'HeavenWork\\integrate-pr249'; if(Test-Path $work){Remove-Item -Recurse -Force $work}; git clone --branch main --single-branch https://github.com/fengie/mhw-mods.git $work; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Set-Location $work; git fetch origin fix/bridge-bootstrap-self-contained-20260929; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git merge --no-commit --no-ff FETCH_HEAD; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python -m py_compile heaven-bridge\\worker.py heaven-bridge\\test_worker.py heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python heaven-bridge\\test_worker.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python heaven-bridge\\tests\\test_worker.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; .\\heaven-bridge\\tests\\Test-GitState.ps1; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; .\\heaven-bridge\\tests\\Test-SecretEnvelopeIo.ps1; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python plugins\\heaven-control-plane\\verify.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $tokens=$null;$errors=$null; [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'heaven-bridge\\bootstrap.ps1'),[ref]$tokens,[ref]$errors); if($errors.Count -gt 0){$errors|Out-String|Write-Error;exit 9}; git diff --check HEAD; exit $LASTEXITCODE",
+    "timeout_seconds": 1800
+  },
+  "created_at": "2026-09-29T16:53:25Z",
+  "ttl_seconds": 21600,
+  "priority": "normal"
+}
