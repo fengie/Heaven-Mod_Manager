@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using MhwModManager.Updater;
 using Xunit;
@@ -32,6 +34,69 @@ public sealed class UpdateRuntimeTests : IDisposable
             Record.Exception(() => { using var second = UpdateMutexLease.Acquire(install, TimeSpan.Zero); }));
 
         Assert.IsType<IOException>(error);
+    }
+
+    [Fact]
+    public async Task Global_update_lease_blocks_a_separate_process()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var install = Path.Combine(Path.GetTempPath(), "mhwmm-global-" + Guid.NewGuid().ToString("N"));
+        using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
+        try
+        {
+            Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken).AsTask().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
+
+            var error = Record.Exception(
+                () => { using var second = UpdateMutexLease.Acquire(install, TimeSpan.Zero); });
+
+            Assert.IsType<IOException>(error);
+        }
+        finally
+        {
+            if (!owner.HasExited)
+            {
+                owner.Kill(entireProcessTree: true);
+                await owner.WaitForExitAsync(TestToken);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Crashed_global_owner_does_not_permanently_block_updates()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var install = Path.Combine(Path.GetTempPath(), "mhwmm-crash-" + Guid.NewGuid().ToString("N"));
+        using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
+        Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken).AsTask().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
+
+        owner.Kill(entireProcessTree: true);
+        await owner.WaitForExitAsync(TestToken);
+
+        using var lease = UpdateMutexLease.Acquire(install, TimeSpan.Zero);
+        Assert.NotNull(lease);
+    }
+
+    [Fact]
+    public void Different_installations_do_not_block_each_other()
+    {
+        using var first = UpdateMutexLease.Acquire(
+            Path.Combine(Path.GetTempPath(), "mhwmm-a-" + Guid.NewGuid().ToString("N")), TimeSpan.Zero);
+        using var second = UpdateMutexLease.Acquire(
+            Path.Combine(Path.GetTempPath(), "mhwmm-b-" + Guid.NewGuid().ToString("N")), TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void Named_object_type_collision_fails_closed()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var install = Path.Combine(Path.GetTempPath(), "mhwmm-collision-" + Guid.NewGuid().ToString("N"));
+        using var collision = new EventWaitHandle(
+            false, EventResetMode.ManualReset, GetGlobalSemaphoreName(install));
+
+        var error = Record.Exception(
+            () => { using var lease = UpdateMutexLease.Acquire(install, TimeSpan.Zero); });
+
+        Assert.NotNull(error);
     }
 
     [Fact]
@@ -198,4 +263,35 @@ public sealed class UpdateRuntimeTests : IDisposable
         Assert.Equal(request.CurrentProcessId, loaded.CurrentProcessId);
         Assert.Equal(request.RestartArguments, loaded.RestartArguments);
     }
+    private static string GetGlobalSemaphoreName(string installRoot)
+    {
+        var normalized = Path.GetFullPath(installRoot)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var hash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(normalized.ToUpperInvariant())));
+        return $"Global\\MHWMM.Update.{hash[..24]}";
+    }
+
+    private static Process StartExternalSemaphoreOwner(string name)
+    {
+        var escapedName = name.Replace("'", "''", StringComparison.Ordinal);
+        var script =
+            "$s=[System.Threading.Semaphore]::new(1,1,'" + escapedName + "');" +
+            "if(-not $s.WaitOne(0)){ exit 3 };" +
+            "[Console]::Out.WriteLine('READY');[Console]::Out.Flush();" +
+            "Start-Sleep -Seconds 30";
+        var start = new ProcessStartInfo("powershell.exe")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        start.ArgumentList.Add("-NoProfile");
+        start.ArgumentList.Add("-Command");
+        start.ArgumentList.Add(script);
+        return Process.Start(start)
+            ?? throw new InvalidOperationException("Could not start semaphore owner fixture.");
+    }
+
 }
