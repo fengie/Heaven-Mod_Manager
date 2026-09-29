@@ -4,32 +4,32 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T10:47:41.196251+00:00",
+  "updated_at": "2026-09-29T10:53:01.226590+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-1044-v040-nextwave-swarm-a1",
+      "id": "000-branch-cleanup-snapshot-20260929104857",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:46:22.960746+00:00"
+      "started_at": "2026-09-29T10:51:21.203044+00:00"
     },
     {
-      "id": "chatgpt-20260929-104430-releasefix-policybranch2",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:46:37.923484+00:00"
+      "id": "000-aaa-branch-cleanup-20260929T105200Z",
+      "action": "powershell",
+      "started_at": "2026-09-29T10:51:46.162224+00:00"
     },
     {
-      "id": "002-bridge-uia-20260929-1044-a1",
+      "id": "000-00-safe-delete-20260929105200",
+      "action": "proc_run",
+      "started_at": "2026-09-29T10:52:09.207802+00:00"
+    },
+    {
+      "id": "000-chatgpt-swarm-probe-20260929-1051",
+      "action": "proc_run",
+      "started_at": "2026-09-29T10:52:22.706928+00:00"
+    },
+    {
+      "id": "000-01-integrate-branches-20260929105239",
       "action": "codex",
-      "started_at": "2026-09-29T10:46:49.857209+00:00"
-    },
-    {
-      "id": "003-bridge-hardening-20260929-1044-a1",
-      "action": "codex",
-      "started_at": "2026-09-29T10:47:05.812789+00:00"
-    },
-    {
-      "id": "000-releasefix-policybranch-20260929-104705",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:47:39.694117+00:00"
+      "started_at": "2026-09-29T10:52:59.724633+00:00"
     }
   ],
   "capabilities": [
