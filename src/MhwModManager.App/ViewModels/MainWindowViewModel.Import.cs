@@ -15,7 +15,7 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var dlg=new OpenFileDialog{Filter="Mod archives|*.zip;*.7z;*.rar|All files|*.*",Multiselect=false};
         if(dlg.ShowDialog()!=true)return;
-        await RunBusy("archive.import","Inspecting archive","Checking paths and extracting to a quarantined staging folder…",true,async ct=>
+        await RunBusy("archive.import","Checking Mod","Making sure the downloaded package is safe to import and finding its install options…",true,async ct=>
         {
             ArchiveImportResult imported;
             var inspection=await s.Archive.InspectAsync(dlg.FileName,ct);
@@ -31,7 +31,7 @@ public sealed partial class MainWindowViewModel
                 if(chooser.ShowDialog()!=true)
                 {
                     await s.Importer.CancelFomodAsync(preparation);
-                    StatusText="FOMOD import canceled; the source archive was left untouched.";
+                    StatusText="Mod installation canceled. The downloaded file was left unchanged.";
                     return;
                 }
                 imported=await s.Importer.CommitFomodAsync(preparation,chooser.SelectedOptions,s.Paths.Game,ct);

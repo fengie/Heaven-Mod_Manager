@@ -31,24 +31,24 @@ public sealed class GameProfileEditorWindow : Window
         var row=0;
         var heading=new StackPanel();
         heading.Children.Add(new TextBlock{Text="Game settings",FontSize=24,FontWeight=FontWeights.SemiBold});
-        var subtitle=new TextBlock{Text="Change the user-facing profile details and integration paths. Detected installation fields stay read-only.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)};
+        var subtitle=new TextBlock{Text="Change the name and mod locations for this game. Settings found automatically are shown but cannot be changed here.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)};
         subtitle.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
         heading.Children.Add(subtitle);
         Grid.SetRow(heading,row++);root.Children.Add(heading);
-        nameBox=AddField(root,ref row,"Display name",profile.DisplayName,false);
-        _=AddField(root,ref row,"Game root",profile.GameRoot,true);
-        _=AddField(root,ref row,"Executable",profile.ExecutableRelativePath,true);
-        modRootBox=AddField(root,ref row,"Mod target (relative to game root)",profile.ModRootRelativePath,profile.IsMonsterHunterWorld);
-        nexusBox=AddField(root,ref row,"Nexus game domain (optional)",profile.NexusGameDomain??string.Empty,false);
+        nameBox=AddField(root,ref row,"Game name",profile.DisplayName,false);
+        _=AddField(root,ref row,"Game folder",profile.GameRoot,true);
+        _=AddField(root,ref row,"Game executable (detected)",profile.ExecutableRelativePath,true);
+        modRootBox=AddField(root,ref row,"Mod folder (inside the game folder)",profile.ModRootRelativePath,profile.IsMonsterHunterWorld);
+        nexusBox=AddField(root,ref row,"Nexus game name (optional)",profile.NexusGameDomain??string.Empty,false);
 
         var savePanel=new Grid{Margin=new Thickness(0,8,0,0)};savePanel.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});savePanel.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
         saveBox=new TextBox{Text=profile.SavePath??string.Empty,Padding=new Thickness(8,6,8,6)};savePanel.Children.Add(saveBox);
-        var browse=new Button{Content="Browse save…",Margin=new Thickness(8,0,0,0),Padding=new Thickness(12,6,12,6)};Grid.SetColumn(browse,1);savePanel.Children.Add(browse);browse.Click+=(_,_)=>BrowseSave();
-        AddLabeled(root,ref row,"Save file (optional)",savePanel);
+        var browse=new Button{Content="Choose Save File…",Margin=new Thickness(8,0,0,0),Padding=new Thickness(12,6,12,6)};Grid.SetColumn(browse,1);savePanel.Children.Add(browse);browse.Click+=(_,_)=>BrowseSave();
+        AddLabeled(root,ref row,"Save file for backups (optional)",savePanel);
 
         var hint=new TextBlock{Text=profile.IsMonsterHunterWorld
-            ?"Monster Hunter: World uses the enhanced adapter. Its nativePC deployment target is locked for safety."
-            :"Generic profiles deploy package files into the configured target. Leave the target blank only when mods belong directly in the game root.",TextWrapping=TextWrapping.Wrap};
+            ?"Monster Hunter: World uses its standard nativePC mod folder. This location is locked to protect your game setup."
+            :"Choose the folder inside the game directory where this game expects mods. Leave it blank only when mods belong directly in the main game folder.",TextWrapping=TextWrapping.Wrap};
         hint.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
         var hintCard=new Border{Margin=new Thickness(0,14,0,0),Padding=new Thickness(12),CornerRadius=new CornerRadius(8),BorderThickness=new Thickness(1)};
         hintCard.SetResourceReference(Border.BackgroundProperty,"Panel2");
@@ -59,7 +59,7 @@ public sealed class GameProfileEditorWindow : Window
         var footer=new Grid{Margin=new Thickness(0,22,0,0)};
         footer.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
         footer.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
-        var keyHint=new TextBlock{Text="Enter saves  •  Esc cancels",VerticalAlignment=VerticalAlignment.Center,FontSize=11};
+        var keyHint=new TextBlock{Text="Enter saves changes  •  Esc cancels",VerticalAlignment=VerticalAlignment.Center,FontSize=11};
         keyHint.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
         footer.Children.Add(keyHint);
         var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right};
@@ -113,7 +113,7 @@ public sealed class GameProfileEditorWindow : Window
         }
         catch(Exception ex) when(ex is ArgumentException or NotSupportedException or PathTooLongException)
         {
-            MessageBox.Show(this,ex.Message,"Invalid game profile",MessageBoxButton.OK,MessageBoxImage.Warning);
+            MessageBox.Show(this,ex.Message,"Check Game Settings",MessageBoxButton.OK,MessageBoxImage.Warning);
         }
     }
 }

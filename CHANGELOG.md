@@ -1,3 +1,15 @@
+# v8.8.11 — First-time user UX overhaul
+
+- Replace ambiguous/developer-centric primary labels with explicit actions such as **Install Mod**, **Apply Mod Changes**, **Launch Game**, and **Launch Without Mods**.
+- Reduce dashboard cognitive load by keeping the everyday actions visible and moving recovery, cleanup, updates, shared-file inspection, batch inbox processing, and diagnostics under **More tools**.
+- Rename core mod states and filters in ordinary language, keep the active filter visible, and clarify empty/filter states so users know how to recover hidden content.
+- Rework conflict copy around the actual choice—pick the mod that should win or identify a main mod plus add-ons—and move raw evidence behind **Technical details**.
+- Rename the overlap explorer to **Shared Files** and the advanced effective-provider view to **File Decisions** while preserving exact technical evidence for expert use.
+- Humanize game settings, optional/FOMOD installer choices, profiles, history/support, crash clues, recovery operations, and live progress/status messages.
+- Increase shared default font/control/table sizing modestly for readability and larger click targets on common laptop displays.
+- Add/update UX regression tests so the primary shell cannot silently regress to legacy labels such as `JUST PLAY`, `SMART VIEWS`, or `Overlaps`.
+- Add `docs/UX-FIRST-TIME-OVERHAUL.md` as the durable audit and acceptance checklist.
+
 # v8.8.10 — Workflow feature closure
 
 - Add a consolidated Loadouts, rules & diagnostics workspace for effective-file inspection, portable recipe import/export, inherited profile comparison, relationship graphs, rule editing, update migration, stability history, and adapter diagnostics.

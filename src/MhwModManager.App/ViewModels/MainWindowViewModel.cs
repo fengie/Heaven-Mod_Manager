@@ -42,7 +42,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     [ObservableProperty]private string searchText="";
     [ObservableProperty]private string modViewMode="All";
-    [ObservableProperty]private string planPreviewText="No deployment preview yet.";
+    [ObservableProperty]private string planPreviewText="No change preview yet.";
     [ObservableProperty]private string statusText="Ready.";
     [ObservableProperty]private string footerText="Ready";
     [ObservableProperty]private string busyTitle="Working…";
@@ -60,18 +60,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private GameProfile? selectedGame;
     [ObservableProperty]private AssetOverlapRow? selectedOverlap;
     [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;
-    [ObservableProperty]private string explainWhyStatus="Select an overlap, then choose Explain selected to inspect the exact resolver decision.";
+    [ObservableProperty]private string explainWhyStatus="Select a shared file, then choose Why This Mod Wins to see the reason.";
 
-    public string UnmanagedAdoptionLabel=>!SupportsLiveAdoption?"Manual live-file adoption is disabled when the whole game root is managed":UnmanagedFileCount==0?"No unmanaged live files":$"{UnmanagedFileCount} unmanaged live file(s) can be adopted";
+    public string UnmanagedAdoptionLabel=>!SupportsLiveAdoption?"Manual mod import is unavailable when the whole game folder is managed":UnmanagedFileCount==0?"No manual mod files found":$"{UnmanagedFileCount} manual mod file(s) can be brought into the manager";
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
     public bool HasSemanticCoverage=>s.Paths.Game.SupportsSemanticCoverage;
     public string WindowTitle=>$"Universal Mod Manager — {s.Paths.Game.DisplayName}";
-    public string GameSupportText=>s.Paths.Game.SupportTier==GameSupportTier.AdapterEnhanced?"Enhanced game adapter":"Generic folder adapter";
+    public string GameSupportText=>s.Paths.Game.SupportTier==GameSupportTier.AdapterEnhanced?"Enhanced game support":"Standard folder-based support";
     public string CoverageTabLabel=>HasSemanticCoverage?"Outfits":"Coverage";
     public string CoverageTitle=>HasSemanticCoverage?"Outfit coverage":"Game coverage";
-    public string CoverageSubtitle=>HasSemanticCoverage?"Which armor models are supplied, by whom, and what actually wins.":"This generic game profile does not define semantic asset slots yet. Use Mods and Overlaps for exact file-level coverage.";
+    public string CoverageSubtitle=>HasSemanticCoverage?"See which mods provide each armor model and which one the game will use.":"Detailed game-specific coverage is not available for this game yet. Use Mods and Shared Files to inspect file-level results.";
 
-    public string HeaderSummary=>$"{EnabledCount} enabled • {FullyEffectiveCount} fully effective • {ComposedCount} composed • {BlockerCount} choice(s) • {IssueCount} suspect(s) • {RevalidationCount} revalidate";
+    public string HeaderSummary=>$"{EnabledCount} enabled • {FullyEffectiveCount+ComposedCount} working in game • {BlockerCount} need attention • {UpdateCount} update(s)";
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public int InstalledCount=>Mods.Count;
     public string InstalledCountLabel
@@ -79,7 +79,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace=MasterDebugLog.BeginMethod();
-            return $"{InstalledCount} logical {(InstalledCount==1?"mod":"mods")}";
+            return $"{InstalledCount} {(InstalledCount==1?"mod":"mods")}";
         }
     }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
@@ -96,14 +96,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public int StagedEnableCount=>Mods.Count(x=>x.WillEnable);
     public int StagedDisableCount=>Mods.Count(x=>x.WillDisable);
     public int OverlapCount=>OverlapRows.Count;
-    public string StagedSummary=>StagedCount==0?"No staged changes":$"{StagedCount} staged • {StagedEnableCount} enable/change-on • {StagedDisableCount} disable/change-off";
+    public string StagedSummary=>StagedCount==0?"No pending changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off";
     public string AllViewLabel=>$"All ({Mods.Count})";
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
-    public string StagedViewLabel=>$"Staged ({StagedCount})";
+    public string StagedViewLabel=>$"Pending ({StagedCount})";
     public string UpdatesViewLabel=>$"Updates ({UpdateCount})";
-    public string IssuesViewLabel=>$"Issues ({IssueCount})";
-    public string RevalidateViewLabel=>$"Revalidate ({RevalidationCount})";
-    public string SupersededViewLabel=>$"Superseded ({SupersededCount})";
+    public string IssuesViewLabel=>$"Problems ({IssueCount})";
+    public string RevalidateViewLabel=>$"Needs check ({RevalidationCount})";
+    public string SupersededViewLabel=>$"Not used ({SupersededCount})";
 
     public MainWindowViewModel(AppServices services)
     {
@@ -287,7 +287,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(HeaderSummary));
         if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))ModsView.Refresh();
         OnPropertyChanged(nameof(VisibleModCount));
-        FooterText=StagedCount==0?"No staged changes":$"{StagedCount} staged change(s) — live game files untouched until Apply";
+        FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
     }
 
     private async Task ReloadMods(CancellationToken ct)
@@ -448,12 +448,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             {
                 var total=totalPaths[row.Id].Count;var wins=winningPaths[row.Id].Count;var shadows=shadowedPaths[row.Id].Count;
                 EffectiveModState state;string reason;
-                if(!row.Enabled){state=EffectiveModState.Disabled;reason="Logical mod is staged off.";}
-                else if(row.NeedsRevalidation){state=EffectiveModState.NeedsRevalidation;reason="The game executable changed and this logical mod contains plugin/executable/game-data content that should be revalidated.";}
-                else if(blockedLogical.Contains(row.Id)){state=EffectiveModState.NeedsChoice;reason="This logical mod directly replaces an atomic asset also replaced by another independent logical mod.";}
-                else if(total>0&&wins==0){state=EffectiveModState.FullySuperseded;reason="Every supplied path is intentionally shadowed by a higher-precedence layer.";}
-                else if(shadows>0){state=EffectiveModState.PartiallyOverridden;reason=$"{shadows} path(s) are intentionally overridden by optional/update/shared-resource layers while the rest remain effective.";}
-                else{state=EffectiveModState.FullyEffective;reason="All staged files are effective after automatic composition.";}
+                if(!row.Enabled){state=EffectiveModState.Disabled;reason="This mod is turned off in the pending setup.";}
+                else if(row.NeedsRevalidation){state=EffectiveModState.NeedsRevalidation;reason="The game was updated or changed, so this mod should be checked again before use.";}
+                else if(blockedLogical.Contains(row.Id)){state=EffectiveModState.NeedsChoice;reason="Another unrelated mod changes the same game content. Choose which one should win.";}
+                else if(total>0&&wins==0){state=EffectiveModState.FullySuperseded;reason="Another enabled mod currently provides every game file from this mod.";}
+                else if(shadows>0){state=EffectiveModState.PartiallyOverridden;reason=$"{shadows} file(s) are replaced by another enabled add-on or update; the rest are still used.";}
+                else{state=EffectiveModState.FullyEffective;reason="All files from this mod will be used in the current setup.";}
                 summaries.Add(new(row.Id,state,wins,shadows,total,reason));
             }
             return (plan,rows,summaries);
@@ -539,16 +539,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void DiscardStaged()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(StagedCount==0){StatusText="There are no staged changes to discard.";return;}
+        if(StagedCount==0){StatusText="There are no pending changes to discard.";return;}
         suppressChanged=true;
         try{foreach(var row in Mods)row.DiscardStaged();}
         finally{suppressChanged=false;Changed();}
-        PlanPreviewText="No deployment preview yet.";
-        StatusText="Discarded all staged changes. Applied files/state were not touched.";
+        PlanPreviewText="No change preview yet.";
+        StatusText="Discarded all pending changes. Your installed game files were not changed.";
     }
 
     [RelayCommand]
-    private async Task PreviewApply()=>await RunBusy("deployment.preview","Previewing changes","Building the exact deployment plan without writing live game files…",true,async ct=>
+    private async Task PreviewApply()=>await RunBusy("deployment.preview","Previewing Mod Changes","Checking exactly what will change without editing game files…",true,async ct=>
     {
         var stage=CaptureStage();
         var current=await s.Database.GetModsAsync(ct);
@@ -575,10 +575,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task RefreshAnalysisNow()=>await RunBusy("analysis.refresh","Refreshing analysis","Rebuilding effective providers, overlaps, and blocking choices…",true,RefreshAnalysis);
+    private async Task RefreshAnalysisNow()=>await RunBusy("analysis.refresh","Refreshing Mod Status","Checking which mods and files will be used and whether anything needs your attention…",true,RefreshAnalysis);
 
     [RelayCommand]
-    private async Task Apply()=>await RunBusy("deployment.apply","Applying safely","Capturing newly enabled mods, validating the live tree, then committing one transaction…",false,async ct=>
+    private async Task Apply()=>await RunBusy("deployment.apply","Applying Mod Changes","Checking the setup, creating recovery information, and safely updating the game files…",false,async ct=>
     {
         var blockers=s.ProcessGuard.GetKnownBlockers();
         if(blockers.Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
@@ -627,7 +627,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ReindexSelected()=>await RunBusy("catalog.reindex","Re-indexing mods","Hashing current source files without touching live game files…",true,async ct=>
+    private async Task ReindexSelected()=>await RunBusy("catalog.reindex","Refreshing Mod Info","Re-reading the installed mod packages without changing game files…",true,async ct=>
     {
         var target=ModsView.Cast<ModRowViewModel>()
             .SelectMany(x=>x.StagedMemberDescriptors())
@@ -638,7 +638,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task SyncMetadata()=>await RunBusy("metadata.sync","Learning mod lineage","Reading local sidecars and Nexus metadata, then rebuilding supersession/family hints…",true,async ct=>
+    private async Task SyncMetadata()=>await RunBusy("metadata.sync","Checking Mod Information","Reading available mod metadata and update information, then refreshing known relationships…",true,async ct=>
     {
         await metadataGate.WaitAsync(ct);
         try
@@ -654,9 +654,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task AdoptManualFiles()=>await RunBusy("catalog.adopt","Adopting manual live files","Copying unmanaged loose files into a tracked source package without deleting or changing the live game tree…",true,async ct=>
+    private async Task AdoptManualFiles()=>await RunBusy("catalog.adopt","Bringing In Manual Mods","Copying existing manual mod files into the library without deleting or changing the files currently used by the game…",true,async ct=>
     {
-        if(!SupportsLiveAdoption){StatusText="Manual live-file adoption is not enabled for this generic game adapter.";return;}
+        if(!SupportsLiveAdoption){StatusText="This game setup does not support importing already-installed manual mod files.";return;}
         var result=await s.Adoption.AdoptAsync(ct);
         if(!result.Created){StatusText=result.Message;return;}
         await s.Catalog.RefreshFoldersAsync(ct);
@@ -664,7 +664,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try{await s.Nexus.RefreshAsync(ct);}
         finally{metadataGate.Release();}
         await ReloadMods(ct);UnmanagedFileCount=SupportsLiveAdoption?await s.Adoption.CountAsync(ct):0;await RefreshAnalysis(ct);
-        StatusText=result.Message+" The adopted logical mod is OFF until you enable and Apply safely.";
+        StatusText=result.Message+" The imported mod stays disabled until you enable it and apply your changes.";
     });
 
     [RelayCommand]private void CancelBusy()=>busyCts?.Cancel();
@@ -694,7 +694,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ExportSupport()=>await RunBusy("diagnostics.bundle","Exporting support bundle","Collecting small diagnostic metadata, transaction state, timings, and recent logs…",true,async ct=>
+    private async Task ExportSupport()=>await RunBusy("diagnostics.bundle","Creating Support Bundle","Collecting recent logs and small diagnostic details that can help troubleshoot a problem…",true,async ct=>
     {
         var path=await s.Support.CreateAsync(Path.Combine(s.Paths.ToolRoot,"Support Bundles"),ct);
         StatusText=$"Support bundle: {path}";
@@ -705,7 +705,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(SelectedProfile is null){StatusText="Select a profile first.";return;}
-        await RunBusy("profile.stage","Staging profile","Applying profile choices to the draft only…",true,async ct=>
+        await RunBusy("profile.stage","Preparing Profile","Loading this profile as pending changes without editing game files…",true,async ct=>
         {
             var state=await s.Profiles.LoadAsync(SelectedProfile.Id,ct);
             await Application.Current.Dispatcher.InvokeAsync(()=>
@@ -717,7 +717,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 }
                 finally{suppressChanged=false;Changed();}
             });
-            StatusText=$"Profile '{SelectedProfile.Name}' staged. live game files are unchanged until Apply safely.";
+            StatusText=$"Profile '{SelectedProfile.Name}' is ready to use. Game files stay unchanged until you apply the changes.";
         });
     }
 
@@ -726,7 +726,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(string.IsNullOrWhiteSpace(NewProfileName)){StatusText="Enter a profile name first.";return;}
-        await RunBusy("profile.save","Saving profile","Saving enabled state and priority…",true,async ct=>
+        await RunBusy("profile.save","Saving Profile","Saving the current enabled mods and load order…",true,async ct=>
         {
             await s.Profiles.SaveCurrentAsync(NewProfileName.Trim(),ct);
             await RefreshProfiles(ct);
@@ -791,7 +791,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(string.IsNullOrWhiteSpace(modId))return;
-        await RunBusy("diagnosis.issue-clear","Clearing issue mark","Removing this suspect mark without changing the mod or deployment…",true,async ct=>
+        await RunBusy("diagnosis.issue-clear","Clearing Problem Mark","Removing this warning without changing the mod or installed game files…",true,async ct=>
         {
             await s.Issues.ClearAsync(modId,ct);
             await RefreshIssueSuspects(ct);
@@ -800,7 +800,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task Undo()=>await RunBusy("deployment.undo","Undo","Restoring the previous committed filesystem and mod-state snapshot…",false,async ct=>
+    private async Task Undo()=>await RunBusy("deployment.undo","Undo Last Change","Restoring the mod setup from before the last applied change…",false,async ct=>
     {
         var result=await s.Executor.UndoLastAsync(ct);
         if(!result.Success)throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
@@ -814,9 +814,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(StagedCount>0)
         {
             await Apply();
-            if(StagedCount>0||BlockerCount>0){StatusText="Launch stopped because staged changes could not be applied safely.";return;}
+            if(StagedCount>0||BlockerCount>0){StatusText="Launch stopped because the pending mod changes could not be applied safely.";return;}
         }
-        await RunBusy("game.just-play","Just Play","Backing up your save, adopting safe manual files, checking dependencies/conflicts, then launching automatically…",true,async ct=>
+        await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
             var observation=await s.Automation.LaunchAndObserveAsync(LaunchMode.Modded,TimeSpan.FromSeconds(15),ct);
             StatusText=observation.Message;
@@ -827,19 +827,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ProcessInbox()=>await RunBusy("automation.inbox","Smart inbox","Importing safe archives/folders, normalizing wrappers, learning lineage, categorizing, and archiving safe duplicates…",true,async ct=>
+    private async Task ProcessInbox()=>await RunBusy("automation.inbox","Installing Mods from Inbox","Checking each package, importing safe mods, and handling obvious duplicates automatically…",true,async ct=>
     {
         var result=await s.Inbox.ProcessAsync(ct);
         var archived=await s.Duplicates.ArchiveSafeAsync(ct);
         await ReloadMods(ct);await RefreshAnalysis(ct);
-        StatusText=$"Smart Inbox: {result.Imported} imported, {result.Skipped} skipped, {archived} safe duplicate/superseded package(s) archived. Drop ZIP/RAR/7z/folders into '{s.Paths.InboxRoot}'.";
+        StatusText=$"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, {archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
     });
 
     [RelayCommand]
     private async Task RestoreLastGood()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunBusy("automation.restore-lkg","Restore last known good","Restoring the last startup-validated mod state and deploying it transactionally…",false,async ct=>
+        await RunBusy("automation.restore-lkg","Restoring Last Working Setup","Restoring the most recent setup that successfully started the game…",false,async ct=>
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
@@ -855,7 +855,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ExportRecipe()=>await RunBusy("automation.recipe","Exporting collection recipe","Writing Nexus IDs, logical state, priorities, and provenance without copying mod payloads…",true,async ct=>
+    private async Task ExportRecipe()=>await RunBusy("automation.recipe","Exporting Mod List","Saving the mod list, enabled state, load order, and source references without copying the mod files themselves…",true,async ct=>
     {
         var dir=Path.Combine(s.Paths.ToolRoot,"Collection Recipes");Directory.CreateDirectory(dir);
         var path=Path.Combine(dir,GameProfile.NormalizeId(s.Paths.Game.DisplayName)+"-collection-"+DateTime.Now.ToString("yyyyMMdd-HHmmss",CultureInfo.InvariantCulture)+".json");
@@ -863,11 +863,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task SmartCleanup()=>await RunBusy("automation.cleanup","Cleaning safe duplicates","Archiving only disabled exact duplicates and superseded source packages; nothing is deleted…",true,async ct=>
+    private async Task SmartCleanup()=>await RunBusy("automation.cleanup","Cleaning Up Duplicate Mods","Moving only safe disabled duplicates and older replaced packages into the archive. Nothing is permanently deleted…",true,async ct=>
     {
         var analysis=await s.Duplicates.AnalyzeAsync(ct);var moved=await s.Duplicates.ArchiveSafeAsync(ct);
         await s.Catalog.RefreshFoldersAsync(ct);await ReloadMods(ct);
-        StatusText=$"Safe cleanup archived {moved} folder(s). "+(analysis.ReclaimableBytes/1024d/1024d/1024d).ToString("F2",CultureInfo.CurrentCulture)+" GB was identified as duplicate/superseded data before cleanup.";
+        StatusText=$"Cleanup archived {moved} folder(s). "+(analysis.ReclaimableBytes/1024d/1024d/1024d).ToString("F2",CultureInfo.CurrentCulture)+" GB of duplicate or older replaced data was identified before cleanup.";
     });
 
     [RelayCommand]
@@ -972,7 +972,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         await RefreshAnalysis(CancellationToken.None);
         var chosen=conflict.Options.First(o=>StringComparer.OrdinalIgnoreCase.Equals(o.Token,winnerToken));
-        StatusText=$"Staged '{chosen.DisplayName}' as the winner for this atomic replacement. Every competing logical mod in that choice is staged OFF; live game files are unchanged until Apply safely.";
+        StatusText=$"'{chosen.DisplayName}' will be used for this conflict. The alternatives will be turned off when you apply the pending changes.";
         await s.Timeline.RecordAsync("choice.conflict",AutomationSeverity.Info,$"User chose {chosen.DisplayName} for {conflict.Scope}.",new{conflict.BundleKey,chosen.Token,chosen.DisplayName},CancellationToken.None);
     }
 
@@ -1003,7 +1003,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             .FirstOrDefault()??mainIds.First();
         var staged=CaptureStage();
 
-        await RunBusy("family.manual-chain","Chaining mod family",$"Making '{mainOption.DisplayName}' the main mod and attaching {childIds.Length} source package(s) as optional parts…",true,async ct=>
+        await RunBusy("family.manual-chain","Saving Mod Relationship",$"Treating '{mainOption.DisplayName}' as the main mod and attaching {childIds.Length} package(s) as add-ons…",true,async ct=>
         {
             var familyId=await s.Database.ChainManualFamilyAsync(mainMemberId,mainIds,childGroups,mainOption.DisplayName,ct);
             await ReloadMods(ct);
@@ -1018,7 +1018,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             finally{suppressChanged=false;Changed();}
 
             await RefreshAnalysis(ct);
-            StatusText=$"Chained {childIds.Length} package(s) under '{mainOption.DisplayName}'. This manual family is remembered and its optional parts no longer appear as unrelated conflicts with their own main mod.";
+            StatusText=$"Saved '{mainOption.DisplayName}' as the main mod with {childIds.Length} add-on package(s). The manager will remember this relationship for future conflict checks.";
             await s.Timeline.RecordAsync("family.manual-chain",AutomationSeverity.Info,$"User chained conflicting packages under {mainOption.DisplayName}.",new{conflict.BundleKey,familyId,mainMemberId,mainIds,childGroups},ct);
         });
     }

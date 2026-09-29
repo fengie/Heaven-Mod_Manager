@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.10</Version>
-    <InformationalVersion>8.8.10-workflow-closure</InformationalVersion>
+    <Version>8.8.11</Version>
+    <InformationalVersion>8.8.11-first-time-ux</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

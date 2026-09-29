@@ -1,4 +1,12 @@
-# v8.8.10 Universal Mod Manager
+# v8.8.11 Universal Mod Manager
+
+## v8.8.11 — first-time user UX overhaul
+
+The normal interface now prioritizes the path most users actually need: **Install Mod → Apply Mod Changes → Launch Game**. Dashboard maintenance and diagnostics are progressively disclosed under **More tools**, core mod states use ordinary language, active filters are always named, and conflict resolution explains the human choice before exposing technical evidence.
+
+The same language pass now covers game settings, optional installers, profiles, history/support, crash clues, and the advanced workspace. Shared-file analysis is presented as **Shared Files / File Decisions**, raw evidence is moved behind technical details where practical, optional-installer rules such as “choose one” are translated from internal enum names, and common controls have larger default targets for easier scanning and keyboard/mouse use.
+
+No deployment, rollback, conflict, update, or diagnostics capability is removed. Exact paths, rule sources, hashes, relationship data, and other expert details remain available in advanced/diagnostic surfaces. See `docs/UX-FIRST-TIME-OVERHAUL.md` for the audit and acceptance checklist.
 
 ## v8.8.10 — workflow feature closure
 

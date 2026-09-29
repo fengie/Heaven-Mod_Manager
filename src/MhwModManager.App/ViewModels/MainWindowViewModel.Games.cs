@@ -21,7 +21,7 @@ public sealed partial class MainWindowViewModel
                 GamesPage.Refresh();
                 SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
             });
-            StatusText=added.Count==0?"No new supported Windows game installations were found. You can always use + Game to pick any executable.":$"Added {added.Count} game profile(s). Select one and press Switch.";
+            StatusText=added.Count==0?"No new games were found automatically. You can still choose Add Game and select the game executable yourself.":$"Added {added.Count} game(s). Select one and choose Use This Game.";
         });
     }
 
@@ -29,7 +29,7 @@ public sealed partial class MainWindowViewModel
     private void AddGame()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(StagedCount>0&&MessageBox.Show("You have staged changes that are not applied. Add/switch games anyway?","Staged changes",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
+        if(StagedCount>0&&MessageBox.Show("You have pending mod changes that have not been applied. Add or switch games anyway?","Pending Mod Changes",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
         var dialog=new OpenFileDialog{Title="Select a game executable",Filter="Windows games (*.exe)|*.exe",CheckFileExists=true,Multiselect=false};
         if(dialog.ShowDialog()!=true)return;
         var profile=s.GameRegistry.AddGenericFromExecutable(dialog.FileName);
@@ -41,7 +41,7 @@ public sealed partial class MainWindowViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(SelectedGame is null||SelectedGame.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase))return;
-        if(StagedCount>0&&MessageBox.Show("Switching games discards this screen's staged state. Continue?","Switch game",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
+        if(StagedCount>0&&MessageBox.Show("Switching games will discard the pending changes on this screen. Continue?","Switch Game",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
         s.GameRegistry.SetActive(SelectedGame.Id);
         RestartIntoGame(SelectedGame);
     }

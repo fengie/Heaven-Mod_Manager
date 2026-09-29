@@ -9,12 +9,17 @@ public sealed class UxHardeningTests
     {
         var root=FindRepositoryRoot();
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
-        Assert.Contains("Preview changes",xaml);
-        Assert.Contains("Discard staged",xaml);
+        Assert.Contains("Preview Mod Changes",xaml);
+        Assert.Contains("Discard Pending Changes",xaml);
         Assert.Contains("SetModViewCommand",xaml);
-        Assert.Contains("Header=\"Overlaps\"",xaml);
+        Assert.Contains("Header=\"Shared Files\"",xaml);
         Assert.Contains("RefreshAnalysisNowCommand",xaml);
         Assert.Contains("Modifiers=\"Control\" Command=\"{Binding ApplyCommand}\"",xaml);
+        Assert.Contains("Content=\"Launch Game\"",xaml);
+        Assert.Contains("Content=\"Install Mod\"",xaml);
+        Assert.Contains("Header=\"More tools\"",xaml);
+        Assert.DoesNotContain("JUST PLAY",xaml);
+        Assert.DoesNotContain("Text=\"SMART VIEWS\"",xaml);
     }
 
     [Fact]
