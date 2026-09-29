@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-live-acceptance-20260929-0917",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:16:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:18:10.655182+00:00",
+  "finished_at": "2026-09-29T09:18:11.072944+00:00",
+  "stdout": "HOST=\r\nUSER=Xxkan\r\ngit version 2.47.1.windows.2\nv22.13.1\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-live-acceptance-20260929-0917.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-live-acceptance-20260929-0917.stderr.log",
+    "stdout_bytes": 58,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e5e31cbf4bed9df43cdcb82f11456b7052516ec8bb4931b0f73b67583ad61bb6"
+}
