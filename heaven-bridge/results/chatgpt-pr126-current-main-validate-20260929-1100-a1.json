@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-pr126-current-main-validate-20260929-1100-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:00:00Z",
+  "status": "failed",
+  "exit_code": 128,
+  "started_at": "2026-09-29T11:49:51.060185+00:00",
+  "finished_at": "2026-09-29T11:49:52.891037+00:00",
+  "stdout": "",
+  "stderr": "fatal: couldn't find remote ref agent/updater-installed-e2e-20260929-manager\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-pr126-current-main-validate-20260929-1100-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-pr126-current-main-validate-20260929-1100-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 77,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4254df1034ebd52269e2cab7647a147aa61ddee517f0b402c99bdf2956548804"
+}
