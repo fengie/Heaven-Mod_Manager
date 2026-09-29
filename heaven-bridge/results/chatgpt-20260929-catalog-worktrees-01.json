@@ -1,0 +1,19 @@
+{
+  "id": "chatgpt-20260929-catalog-worktrees-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:36:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:36:11.594832+00:00",
+  "finished_at": "2026-09-29T15:36:11.597996+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\HeavenWorktrees",
+    "offset": 0,
+    "items": [],
+    "next_offset": 0,
+    "has_more": false
+  },
+  "job_hash": "d87f9c262e581674def0190947d7ded19c907b2d0edc9a7db2aebff7b4f1af1f"
+}
