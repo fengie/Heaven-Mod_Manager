@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T101600Z-branch-cleanup-hygiene",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:13:54.274997+00:00"
+}
