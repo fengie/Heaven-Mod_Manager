@@ -1,0 +1,35 @@
+name: Bootstrap Heaven v2 Runner
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/heaven-runner-v2-bootstrap.yml'
+      - 'heaven-bridge/install-github-runner.ps1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heaven-runner-v2-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: Start parallel Heaven v2 runner
+    runs-on: [self-hosted, Windows, X64, heaven]
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+
+      - name: Install parallel v2 runner without replacing active runner
+        shell: pwsh
+        run: |
+          $runnerDir = Join-Path $env:USERPROFILE 'actions-runner-heaven-v2'
+          & .\heaven-bridge\install-github-runner.ps1 `
+            -RunnerName 'heaven-v2' `
+            -RunnerDirectory $runnerDir `
+            -Labels @('heaven-v2','local-bridge','mhw-mods')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

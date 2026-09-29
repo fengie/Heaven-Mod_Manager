@@ -1,10 +1,12 @@
-$ErrorActionPreference = 'Stop'
+param(
+    [string]$Repository = 'fengie/mhw-mods',
+    [string]$RunnerName = 'heaven',
+    [string]$RunnerDirectory = (Join-Path $env:USERPROFILE 'actions-runner-heaven'),
+    [string[]]$Labels = @('heaven-v2','local-bridge','mhw-mods'),
+    [switch]$ForceReconfigure
+)
 
-$Repository = 'fengie/mhw-mods'
-$RunnerName = 'heaven'
-$RunnerDirectory = Join-Path $env:USERPROFILE 'actions-runner-heaven'
-$Labels = @('heaven-v2','local-bridge','mhw-mods')
-$ForceReconfigure = $false
+$ErrorActionPreference = 'Stop'
 $ApiVersion = '2022-11-28'
 
 $isWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
@@ -225,7 +227,9 @@ function Ensure-RunnerLaunch {
         Write-Warning "Scheduled task unavailable; using per-user Startup fallback. $($_.Exception.Message)"
 
         $startup = [Environment]::GetFolderPath('Startup')
-        $startupVbs = Join-Path $startup 'HeavenGitHubActionsRunner.vbs'
+        $safeRunnerName = ($RunnerName -replace '[^A-Za-z0-9._-]', '-')
+        $startupFile = if ($RunnerName -eq 'heaven') { 'HeavenGitHubActionsRunner.vbs' } else { "HeavenGitHubActionsRunner-$safeRunnerName.vbs" }
+        $startupVbs = Join-Path $startup $startupFile
         $escapedCmd = $cmdExe.Replace('"', '""')
         $escapedRun = $runCmd.Replace('"', '""')
         $escapedCwd = $RunnerDirectory.Replace('"', '""')
