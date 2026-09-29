@@ -18,6 +18,11 @@ public sealed class UpdaterInstalledClientE2ETests
     private const long TargetBuild = 61;
     private const string TargetSource = "5abe40304dfcb48f96e750bd7da3d0075315625b";
 
+    private static readonly JsonSerializerOptions EvidenceJson = new(UpdateProtocol.Json)
+    {
+        WriteIndented = true
+    };
+
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
 
     [Fact]
@@ -138,13 +143,13 @@ public sealed class UpdaterInstalledClientE2ETests
                 status = "PASS",
                 installRoot = successInstall,
                 requestPath = confirmed.RequestPath,
-                confirmed.Request.Manifest.BuildNumber,
-                confirmed.Request.Manifest.SourceSha,
+                targetBuild = confirmed.Request.Manifest.BuildNumber,
+                targetSource = confirmed.Request.Manifest.SourceSha,
                 oldClientExitCode = oldClient.ExitCode,
-                confirmed.Health.ProcessId,
-                confirmed.Health.AttemptId,
-                confirmed.Health.BuildNumber,
-                confirmed.Health.SourceSha,
+                healthProcessId = confirmed.Health.ProcessId,
+                healthAttemptId = confirmed.Health.AttemptId,
+                healthBuild = confirmed.Health.BuildNumber,
+                healthSource = confirmed.Health.SourceSha,
                 journalPhase = confirmed.Journal.Phase.ToString(),
                 sentinelSha256 = successSentinelsAfter
             };
@@ -425,8 +430,8 @@ public sealed class UpdaterInstalledClientE2ETests
     }
 
     private static void AssertSnapshotsEqual(
-        IReadOnlyDictionary<string, string> expected,
-        IReadOnlyDictionary<string, string> actual)
+        Dictionary<string, string> expected,
+        Dictionary<string, string> actual)
     {
         Assert.Equal(expected.Count, actual.Count);
         foreach (var pair in expected)
@@ -495,8 +500,9 @@ public sealed class UpdaterInstalledClientE2ETests
             .ToArray();
 
         var manifestAsset = Assert.Single(
-            assets.Where(x => string.Equals(
-                x.Name, "update-manifest.json", StringComparison.OrdinalIgnoreCase)));
+            assets,
+            x => string.Equals(
+                x.Name, "update-manifest.json", StringComparison.OrdinalIgnoreCase));
         var manifestBytes = await DownloadAssetBytesAsync(
             http, token, manifestAsset.ApiUrl, 64 * 1024, ct);
         var manifest = JsonSerializer.Deserialize<UpdateManifest>(
@@ -507,8 +513,9 @@ public sealed class UpdaterInstalledClientE2ETests
         Assert.Equal(expectedSource, manifest.SourceSha, ignoreCase: true);
 
         var packageAsset = Assert.Single(
-            assets.Where(x => string.Equals(
-                x.Name, manifest.ArtifactName, StringComparison.OrdinalIgnoreCase)));
+            assets,
+            x => string.Equals(
+                x.Name, manifest.ArtifactName, StringComparison.OrdinalIgnoreCase));
         Assert.Equal(manifest.ArtifactSize, packageAsset.Size);
         if (!string.IsNullOrWhiteSpace(packageAsset.Digest))
             Assert.Equal(
@@ -605,10 +612,7 @@ public sealed class UpdaterInstalledClientE2ETests
         Directory.CreateDirectory(parent);
         await File.WriteAllTextAsync(
             path,
-            JsonSerializer.Serialize(evidence, new JsonSerializerOptions(UpdateProtocol.Json)
-            {
-                WriteIndented = true
-            }),
+            JsonSerializer.Serialize(evidence, EvidenceJson),
             ct);
     }
 
