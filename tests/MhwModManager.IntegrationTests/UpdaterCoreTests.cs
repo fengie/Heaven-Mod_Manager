@@ -424,8 +424,10 @@ public sealed class UpdaterCoreTests : IDisposable
     public async Task Handoff_copies_verified_owned_helper_closure_and_writes_sanitized_request()
     {
         var install = Path.Combine(root, "handoff-install");
+        var managerHome = Path.Combine(root, "manager-home");
         var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-" + Guid.NewGuid().ToString("N"), "stage");
         Directory.CreateDirectory(Path.Combine(install, "UpdaterHelper"));
+        Directory.CreateDirectory(managerHome);
         Directory.CreateDirectory(stage);
         await File.WriteAllTextAsync(
             Path.Combine(install, "app.exe"), "OLD", TestToken);
@@ -534,7 +536,8 @@ public sealed class UpdaterCoreTests : IDisposable
                 UpdateHealthProtocol.AttemptArgument, "old-attempt"
             ],
             4321,
-            TestToken);
+            TestToken,
+            managerHomeRoot:managerHome);
 
         Assert.True(File.Exists(prepared.HelperExecutablePath));
         Assert.Equal(
@@ -552,6 +555,7 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(4321, request.CurrentProcessId);
         Assert.Equal(["--normal", "value"], request.RestartArguments);
         Assert.Equal(stage, request.StagingRoot);
+        Assert.Equal(Path.GetFullPath(managerHome), request.ManagerHomeRoot);
         Assert.Equal(11, request.Manifest.BuildNumber);
     }
 
