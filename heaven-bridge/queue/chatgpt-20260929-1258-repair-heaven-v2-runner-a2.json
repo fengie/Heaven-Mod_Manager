@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1258-repair-heaven-v2-runner-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:58:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'\n& .\\heaven-bridge\\install-github-runner.ps1 -Repository 'fengie/mhw-mods' -RunnerName 'heaven-v2' -RunnerDirectory 'C:\\Users\\Xxkan\\actions-runner-heaven-v2'\nif($LASTEXITCODE -ne 0){ throw \"heaven-v2 runner repair failed with exit code $LASTEXITCODE\" }"
+  }
+}
