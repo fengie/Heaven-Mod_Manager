@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-1218-pr148-build-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repoPath=Join-Path $HOME 'HeavenBridgeRepo'; git -C $repoPath fetch origin fix/updater-e2e-heaven-runner-20260929 --quiet; $sha=(git -C $repoPath rev-parse origin/fix/updater-e2e-heaven-runner-20260929).Trim(); $wt=Join-Path $HOME ('mhw-pr148-build-'+$sha.Substring(0,10)); if(Test-Path $wt){git -C $repoPath worktree remove --force $wt 2>$null; Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue}; git -C $repoPath worktree add --detach $wt $sha | Out-Null; Push-Location $wt; try {;   $v=(& dotnet --version).Trim(); Write-Output ('SOURCE_SHA='+$sha); Write-Output ('DOTNET='+$v);   dotnet restore .\\tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false;   if($LASTEXITCODE -ne 0){exit $LASTEXITCODE};   dotnet build .\\tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false;   if($LASTEXITCODE -ne 0){exit $LASTEXITCODE};   Write-Output 'BUILD=PASS'; } finally { Pop-Location }",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T12:18:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
