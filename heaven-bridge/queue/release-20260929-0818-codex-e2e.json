@@ -1,0 +1,12 @@
+{
+  "id": "release-20260929-0818-codex-e2e",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "codex",
+  "payload": "Do not modify any files and do not run any commands. Reply with exactly: CODEX_BRIDGE_OK",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 300,
+  "created_at": "2026-09-29T08:18:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Release-style end-to-end proof that the Heaven Local Bridge can dispatch Codex successfully on heaven."
+}
