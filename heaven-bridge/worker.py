@@ -127,6 +127,15 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
+def is_process_elevated():
+    if os.name != "nt":
+        return False
+    try:
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
+
+
 def parse_time(value):
     if not value:
         raise BridgeError("INVALID_CREATED_AT", "created_at is required")
@@ -1808,6 +1817,7 @@ def run_job(job_id, job, cancel_event):
         data = {
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": sorted(DIRECT_ACTIONS),
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
+            "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
             "capabilities": {
                 "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": True,
@@ -1846,6 +1856,7 @@ def run_job(job_id, job, cancel_event):
             "home": str(Path.home()), "platform": os.name, "python": os.sys.version, "cwd": os.getcwd(),
             "drives": [f"{c}:\\" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if Path(f"{c}:\\").exists()],
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL,
+            "elevated": is_process_elevated(),
         }
         return make_result(job, action, data=data, started_at=started)
 
@@ -2311,7 +2322,7 @@ def heartbeat(force=False):
         running = [{"id": jid, "action": info["action"], "started_at": info["started_at"]} for jid, info in RUNNING.items()]
     body = {
         "host": os.environ.get("COMPUTERNAME", "heaven"), "pid": os.getpid(), "worker_version": WORKER_VERSION,
-        "protocol": PROTOCOL, "auth_mode": auth_mode(), "updated_at": now(), "running": running,
+        "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
         "capabilities": sorted(DIRECT_ACTIONS),
     }
     try:
