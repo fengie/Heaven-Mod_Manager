@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-verify-31db2157be72",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:18:46.057Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T09:18:59.242193+00:00",
+  "finished_at": "2026-09-29T09:19:01.266764+00:00",
+  "stdout": "VERIFY_SHA=31db2157be72001bf2c2b88e941513d1b079ee9c\r\nNODE=v22.13.1\r\n\n> heaven-agent-control@0.5.0 check\n> node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs\n\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            feature/agent-control-plane-v2-20260928 -> FETCH_HEAD\nPreparing worktree (detached HEAD 31db215)\nnpm run check failed with 1\r\nAt line:1 char:919\r\n+ ... DE -ne 0) { throw ('npm run check failed with ' + $LASTEXITCODE) };   ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (npm run check failed with 1:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : npm run check failed with 1\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-verify-31db2157be72.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-verify-31db2157be72.stderr.log",
+    "stdout_bytes": 412,
+    "stderr_bytes": 529,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9a83a3812f7433a7394733b0d9b006e217e1d419e65586a291c28bc58bb34529"
+}
