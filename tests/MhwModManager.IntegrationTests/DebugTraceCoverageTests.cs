@@ -151,6 +151,20 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("MarkExceptionObserved(ex)", text, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void StartupDiagnosticsBatchJsonWritesButForceFailuresAndCompletion()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Diagnostics", "StartupDiagnosticSession.cs"));
+        Assert.Contains("RunningReportIntervalTicks", text, StringComparison.Ordinal);
+        Assert.Contains("force:completed||entry.Status==StartupDiagnosticStatus.Failed", text, StringComparison.Ordinal);
+        Assert.Contains("PersistReport(success ? \"PASS\" : \"FAIL\", summary, force:true);", text, StringComparison.Ordinal);
+
+        var writeStart = text[text.IndexOf("private void WriteStart", StringComparison.Ordinal)..text.IndexOf("private void AddFailure", StringComparison.Ordinal)];
+        Assert.DoesNotContain("PersistReport(", writeStart, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
