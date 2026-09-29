@@ -1,4 +1,4 @@
-name: PR238 hosted exact-head verify
+name: PR238 fallback exact-head verify
 
 on:
   push:
@@ -9,21 +9,16 @@ permissions:
   contents: read
 
 concurrency:
-  group: pr238-hosted-exact-head-verify
+  group: pr238-fallback-exact-head-verify
   cancel-in-progress: true
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 15
     steps:
       - name: Check out exact branch head
         uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
 
       - name: Run Agent Control checks
         working-directory: tools/agent-control
