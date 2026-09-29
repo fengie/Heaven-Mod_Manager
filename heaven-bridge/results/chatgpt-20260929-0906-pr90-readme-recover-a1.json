@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0906-pr90-readme-recover-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:06:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T09:07:46.057357+00:00",
+  "finished_at": "2026-09-29T09:07:46.681625+00:00",
+  "stdout": "HEAD_BEFORE=2f478059601970b4618dfc463b22ed40572efce3\r\nGIT_DIR=C:/Users/Xxkan/mhw-mods-work-canonical/.git/worktrees/mhw-mods-pr90-integration\r\nINDEX_LOCK=C:/Users/Xxkan/mhw-mods-work-canonical/.git/worktrees/mhw-mods-pr90-integration/index.lock EXISTS=False\r\nSTATUS_BEFORE_BEGIN\r\n## integration/pr90-reconcile-20260929...origin/agent/game-profile-id-containment-v8.8.5-reconcile\nSTATUS_BEFORE_END\r\nREADME_FIRST=# v8.8.4 Universal Mod Manager\r\n",
+  "stderr": "README v8.8.4 marker missing\r\nREADME patch failed\r\nAt line:38 char:28\r\n+   if($LASTEXITCODE -ne 0){ throw 'README patch failed' }\r\n+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (README patch failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : README patch failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0906-pr90-readme-recover-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0906-pr90-readme-recover-a1.stderr.log",
+    "stdout_bytes": 443,
+    "stderr_bytes": 342,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "85c4112a320a08210d0227e637738072ca8564e704ae11a5a8a88abcb926c814"
+}
