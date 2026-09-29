@@ -200,6 +200,23 @@ All acquired archives continue through the existing safe download validation -> 
 - implement Nexus v3 transport boundary;
 - verify focused tests before any broad UI restore.
 
+### Phase 0 implementation status — 2026-09-29
+
+Completed on the current-main lineage:
+- provider-neutral domain and acquisition contracts;
+- fail-closed provider compliance model and Nexus v3 compliance record;
+- deterministic Nexus v3 response fixtures;
+- HTTPS-only Nexus v3 transport boundary for trending, mod details, mod files, and mod-file versions;
+- API-key (`apikey`) and Bearer authentication without secret-bearing diagnostics;
+- bounded response reads, cancellation propagation, conditional cache validators, 304 handling, schema-envelope drift detection, and explicit 429/Retry-After surfacing without automatic retry storms.
+
+Still required before Nexus is considered a supported catalog provider:
+- normalize Nexus v3 payloads into `CatalogMod` / `CatalogModFile`;
+- hydrate the global mod id needed by file endpoints;
+- implement provider health/rate state and acquisition policy;
+- add timeout/auth/offline/malformed-inner-schema fixtures around the provider adapter;
+- route acquired archives through the existing safe import boundary.
+
 ### Phase 1 — useful federated catalog
 - Nexus v3;
 - GameBanana;
