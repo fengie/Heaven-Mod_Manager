@@ -292,35 +292,33 @@ public sealed class AutoPopulateService(
             selected.UnionWith(closureResult.ModIds);
         }
 
-        var finalDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
-        var failedIds = finalDependencyStatus
-            .Where(x => !x.Ready)
-            .Select(x => x.ModId)
-            .ToHashSet(PathRules.Comparer);
-
-        if (failedIds.Count > 0)
+        // This should normally be prevented by ResolveClosure. Keep the final invariant strict if
+        // a live-file requirement changes during the calculation. Removing one failed dependency can
+        // invalidate another dependent, so converge to a fixed point instead of doing a single pass.
+        while (true)
         {
-            // This should normally be prevented by ResolveClosure. Keep the final invariant strict if
-            // a live-file requirement changes during the calculation.
-            foreach (var id in failedIds)
+            var finalDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
+            var failed = finalDependencyStatus.Where(x => !x.Ready).ToArray();
+            if (failed.Length == 0)
+                break;
+
+            var removedAny = false;
+            foreach (var status in failed)
             {
-                if (!modsById.TryGetValue(id, out var mod))
+                if (!selected.Remove(status.ModId))
                     continue;
-                selected.Remove(id);
+                removedAny = true;
                 requirementSkips++;
-                var status = finalDependencyStatus.First(x => PathRules.Comparer.Equals(x.ModId, id));
-                skipped[id] = new(id, mod.DisplayName, false, "Skipped after final dependency validation: " + string.Join("; ", status.Missing));
+                if (modsById.TryGetValue(status.ModId, out var mod))
+                    skipped[status.ModId] = new(
+                        status.ModId,
+                        mod.DisplayName,
+                        false,
+                        "Skipped after final dependency validation: " + string.Join("; ", status.Missing));
             }
 
-            // Dependency removal can invalidate dependents. Rebuild conservatively from the survivors
-            // and only keep packages that still validate as a group.
-            var survivorStatus = await dependencies.ScanStageAsync(selected, ct);
-            foreach (var status in survivorStatus.Where(x => !x.Ready))
-            {
-                selected.Remove(status.ModId);
-                if (modsById.TryGetValue(status.ModId, out var mod))
-                    skipped[status.ModId] = new(status.ModId, mod.DisplayName, false, "Skipped after dependency closure changed: " + string.Join("; ", status.Missing));
-            }
+            if (!removedAny)
+                throw new InvalidOperationException("Auto Populate dependency validation could not converge.");
         }
 
         var finalPlan = BuildPlan(snapshot, selected);
