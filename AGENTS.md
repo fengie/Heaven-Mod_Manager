@@ -47,6 +47,36 @@ The canonical repository home for new plugins is `plugins/`.
 - Never maintain two independent copies of the same plugin capability. Reuse, extract, adapt, or migrate existing bridge primitives.
 - The current implementation swarm directive is `plugins/IMPLEMENTATION_SWARM_PROMPT.md`.
 
+
+## Mandatory plugin-first toolbox routing
+
+Treat the repository/plugin toolbox as the first routing layer for any task that can be handled by an existing reusable capability.
+
+Before reaching for a generic shell command, ad-hoc script, manual browser/UI sequence, direct API workaround, or another broad fallback:
+
+1. inspect the currently available/installed plugin and capability surface relevant to the task;
+2. check `plugins/README.md` and `plugins/PLUGIN_GAP_BACKLOG.md` for canonical ownership, existing implementations, planned gaps, and known precedence;
+3. choose the narrowest purpose-built plugin/capability that safely completes the task;
+4. prefer a higher-level structured plugin/workflow over raw primitives when both are available and the higher-level path preserves required safety/evidence;
+5. only use a broader fallback when the correct plugin is unavailable, unhealthy, missing the required operation, or materially less safe/reliable for the specific task.
+
+For `heaven`, this means preferring the most specific implemented toolbox capability (for example a workflow/control-plane/desktop capability) and then Heaven Local Bridge structured actions before raw shell or manual GUI automation. Remote Desktop Commander remains forbidden unless the user explicitly authorizes it for the current request.
+
+### Mandatory plugin-gap capture
+
+Whenever work reveals a reusable capability that would make the same class of task safer, faster, more reliable, less manual, or more token-efficient, treat that as a plugin/toolbox gap.
+
+Before the current engineering task is considered complete:
+
+- search existing plugin packages, active branches/PRs, and `plugins/PLUGIN_GAP_BACKLOG.md` to avoid duplicates;
+- if the capability is already implemented, route future work to that plugin and improve its discovery/docs if necessary;
+- if it is missing or materially incomplete, immediately add or update a durable plan in `plugins/PLUGIN_GAP_BACKLOG.md` for a future agent;
+- record the triggering use case, proposed owning plugin (or justification for a new plugin), capability/API shape, security boundary, dependencies, acceptance tests, priority, and status;
+- do not block the user's immediate task solely because the ideal plugin does not yet exist when a safe authorized fallback can complete the work;
+- do not leave plugin ideas only in chat, agent memory, or a transient handoff.
+
+Managers and future agents must treat the backlog as actionable engineering work: claim compatible items when capacity exists, keep ownership/status current, and integrate completed capabilities into verified remote `main`.
+
 ## Mandatory `main` integration rule
 
 `GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
