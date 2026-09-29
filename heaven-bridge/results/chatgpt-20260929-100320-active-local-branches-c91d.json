@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-100320-active-local-branches-c91d",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:03:20Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:04:35.448739+00:00",
+  "finished_at": "2026-09-29T10:04:52.087529+00:00",
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100320-active-local-branches-c91d.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100320-active-local-branches-c91d.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "8b29f199ca7f895736c84566f1439ad40540f1029737f62600d2f6add180c3a9"
+}
