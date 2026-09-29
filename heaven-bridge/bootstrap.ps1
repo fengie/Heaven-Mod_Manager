@@ -139,6 +139,14 @@ if (-not (Test-Path (Join-Path $SourceRepoRoot '.git'))) {
     }
     $sourceRefreshSucceeded = $true
 } else {
+    $sourceCurrentBranch = Get-HeavenBridgeGitCurrentBranch -Repository $SourceRepoRoot
+    $sourceTrackedDirty = @(& git -C $SourceRepoRoot status --porcelain --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect canonical source mirror.' }
+    $sourceFallbackEligible = (
+        $sourceCurrentBranch -eq $SourceBranch -and
+        $sourceTrackedDirty.Count -eq 0
+    )
+
     try {
         Invoke-SourceGitChecked @('fetch', 'origin', $SourceBranch)
         Invoke-SourceGitChecked @('checkout', '-B', $SourceBranch, "origin/$SourceBranch")
@@ -148,7 +156,10 @@ if (-not (Test-Path (Join-Path $SourceRepoRoot '.git'))) {
         Invoke-SourceGitChecked @('clean', '-fd', '--', 'heaven-bridge')
         $sourceRefreshSucceeded = $true
     } catch {
-        Write-Warning ("Canonical main source refresh failed; using last-known-good source mirror if valid. {0}" -f $_.Exception.Message)
+        if (-not $sourceFallbackEligible) {
+            throw ("Canonical main source refresh failed and the local source mirror is not a clean main checkout. {0}" -f $_.Exception.Message)
+        }
+        Write-Warning ("Canonical main source refresh failed; using clean last-known-good main source mirror. {0}" -f $_.Exception.Message)
     }
 }
 
