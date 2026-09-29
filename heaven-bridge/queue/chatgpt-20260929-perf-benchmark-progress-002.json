@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-perf-benchmark-progress-002",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-perf-benchmark-001",
+    "stream": "stdout",
+    "offset": 4737,
+    "length": 200000
+  },
+  "created_at": "2026-09-29T16:23:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
