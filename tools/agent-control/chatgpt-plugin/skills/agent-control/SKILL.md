@@ -5,9 +5,9 @@ description: Operate the user's Heaven-hosted MHW agent control plane. Use when 
 
 # Heaven Agent Control
 
-Use the authorized **Remote Desktop Commander** connection to operate the local controller on the device named `heaven`.
+Use the user's authorized **Heaven Local Bridge** to operate the local controller on the device named `heaven`. Do not silently substitute Remote Desktop Commander when Heaven Local Bridge can perform the action.
 
-Do not use `heaven2` unless the user explicitly asks for it.
+`heaven` is the default heavy execution worker. `heaven2` is the main/control machine and credential authority; use it only when the task genuinely requires its credentials, canonical Windows/MHW state, or explicit local execution.
 
 ## Locate the CLI
 
@@ -16,7 +16,7 @@ Prefer these paths in order:
 1. `%USERPROFILE%\agent-control-panel\tools\agent-control\agentctl.mjs`
 2. `%USERPROFILE%\local-ai-workspaces\mhw-mods\tools\agent-control\agentctl.mjs`
 
-Use Remote Desktop Commander to test which path exists. Do not guess a third path without inspecting the machine.
+Use Heaven Local Bridge to test which path exists. Do not guess a third path without inspecting the machine.
 
 ## Ensure the controller is running
 
@@ -43,15 +43,15 @@ Use:
 node <agentctl-path> snapshot
 ```
 
-The snapshot is the authoritative runtime view for managed workers. It includes agents, tasks, workers, leases, integration candidates, observed swarm branches, telemetry, and recent controller events.
+The snapshot combines managed local workers with the normalized federated registry. It includes tasks, workers, leases, integration candidates, providers, federated agents, heartbeat freshness, observed swarm branches, telemetry, and recent controller events.
 
-Be explicit that unrelated ChatGPT web conversations cannot be enumerated unless they were launched through the control plane or left observable Git state.
+Automatic enumeration of arbitrary ChatGPT project conversations is unavailable. When a stable ChatGPT session identity is available through the bridge, register/heartbeat it rather than inventing telemetry.
 
 ## Deploy an agent
 
 Prefer a temporary task file instead of shell-embedding the user's prompt.
 
-1. Use Remote Desktop Commander `write_file` to create a UTF-8 text file under `%TEMP%`, containing exactly the task the user wants assigned.
+1. Use Heaven Local Bridge to create a UTF-8 task file under `%TEMP%`, containing exactly the task the user wants assigned.
 2. Run:
 
 ```powershell
@@ -132,3 +132,18 @@ This fetches/prunes origin and refreshes the branch/integration view.
 - Do not claim an external observed branch is a live process.
 - Do not claim verification or merge readiness beyond the repository's exact evidence.
 - Do not automatically merge candidates unless the user separately authorizes that action and the repository's integration/verification rules are satisfied.
+
+## Federated session registration
+
+Use `node <agentctl-path> federation` and `providers` to inspect normalized provider state.
+
+When the bridge has a real stable external identity, create a small JSON observation and run:
+
+```powershell
+node <agentctl-path> federation-register --file <observation.json>
+node <agentctl-path> federation-heartbeat --file <heartbeat.json>
+```
+
+Required observation fields are `provider`, `source_id`, and normalized `state`. Prefer real stable provider IDs; never use a chat title as identity. Use explicit `correlation_keys` only when two provider observations are known to represent the same logical worker.
+
+A fresh registration/heartbeat is observability evidence, not remote execution authority.
