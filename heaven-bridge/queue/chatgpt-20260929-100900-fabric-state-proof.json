@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-100900-fabric-state-proof",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop'\n$s=@'\nset -eu\ncd /mnt/c/HeavenServices/worker-fabric\necho BASE_STATE\ndocker compose ps --format json\necho BASE_HEALTH\nfor w in worker01 worker02 worker03 worker04; do\n  c=\"heaven-worker-$(echo \"$w\" | sed 's/worker//')\"\n  docker compose exec -T \"$w\" sh -lc 'test \"$(hostname)\" != \"\" && node --version >/dev/null && python3 --version >/dev/null && git --version >/dev/null'\n  echo \"$w OK\"\ndone\necho ISOLATION\ndocker compose exec -T worker01 sh -lc 'printf worker01 > /workspace/isolation-proof'\nif docker compose exec -T worker02 sh -lc 'test -e /workspace/isolation-proof'; then\n  echo ISOLATION_FAILED\n  exit 20\nelse\n  echo ISOLATION_OK\nfi\necho SHARED\ndocker compose exec -T worker03 sh -lc 'printf SHARED_OK > /shared/shared-proof'\ndocker compose exec -T worker04 sh -lc 'test \"$(cat /shared/shared-proof)\" = \"SHARED_OK\"'\necho SHARED_OK\necho LIMITS\ndocker inspect heaven-worker-01 --format 'base cpus={{.HostConfig.NanoCpus}} memory={{.HostConfig.Memory}} pids={{.HostConfig.PidsLimit}}'\ndocker inspect heaven-worker-05 --format 'burst cpus={{.HostConfig.NanoCpus}} memory={{.HostConfig.Memory}} pids={{.HostConfig.PidsLimit}} status={{.State.Status}}'\necho MOUNTS\ndocker inspect heaven-worker-01 --format '{{range .Mounts}}{{.Type}} {{.Destination}} {{.RW}};{{end}}'\necho PORTS\nports=\"$(docker port heaven-worker-01 || true)\"\nif [ -z \"$ports\" ]; then echo NO_PUBLISHED_PORTS; else echo \"$ports\"; exit 21; fi\necho RESOURCES\ndocker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.PIDs}}' heaven-worker-01 heaven-worker-02 heaven-worker-03 heaven-worker-04\necho MEMORY\nfree -h\n'@\n$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($s))\n& wsl.exe -d Ubuntu -- bash -lc \"echo $b64 | base64 -d | bash\"\nexit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T10:09:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
