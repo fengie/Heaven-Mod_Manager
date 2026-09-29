@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0900-issue132-status-diffs-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows",
+    "timeout_seconds": 240,
+    "command": "$ErrorActionPreference='Stop'; Write-Output '---STATUS---'; git status --short; Write-Output '---FAILED DIFFS---'; $parent='91f2b9e9815caab2e4670084022a5c2ab3e45f55'; $commit='02fa1dd5c3e98d319067043598bfdfd32617e65f'; $files=@('src/MhwModManager.App/App.xaml.cs','src/MhwModManager.App/MainWindow.xaml','src/MhwModManager.App/ViewModels/MainWindowViewModel.cs','src/MhwModManager.Automation/CollectionRecipeService.cs','src/MhwModManager.Automation/CrashBisectorEngine.cs','src/MhwModManager.Automation/ModTrustService.cs','src/MhwModManager.Automation/SmartInboxService.cs','src/MhwModManager.Core/ConflictEngine.cs','src/MhwModManager.Core/ConflictRuleIndex.cs','src/MhwModManager.Core/DeploymentPlanner.cs','src/MhwModManager.Filesystem/DeploymentExecutor.cs','src/MhwModManager.Storage/ProfileRepository.cs','src/MhwModManager.Storage/Schema.cs','tests/MhwModManager.AutomationTests/AutomationLogicTests.cs','tools/MhwModManager.SelfTest/Program.cs'); foreach($f in $files){ Write-Output ('===== '+$f+' ====='); git diff --unified=6 $parent $commit -- $f }"
+  },
+  "created_at": "2026-09-29T13:00:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
