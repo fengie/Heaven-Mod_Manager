@@ -1,0 +1,35 @@
+name: Enable automatic merged-branch deletion once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/enable-auto-delete-merged-branches-once.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enable-auto-delete-merged-branches-once
+  cancel-in-progress: false
+
+jobs:
+  enable:
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 5
+    steps:
+      - name: Enable and verify repository setting
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          gh auth status
+          if ($LASTEXITCODE -ne 0) { throw 'gh auth unavailable on Heaven runner' }
+
+          gh api --method PATCH "repos/$env:GITHUB_REPOSITORY" -F delete_branch_on_merge=true | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'failed to enable delete_branch_on_merge' }
+
+          $state = gh api "repos/$env:GITHUB_REPOSITORY" --jq '.delete_branch_on_merge'
+          if ($LASTEXITCODE -ne 0) { throw 'failed to verify delete_branch_on_merge' }
+          if ($state.Trim() -ne 'true') { throw "delete_branch_on_merge is still $state" }
+
+          Write-Output 'DELETE_BRANCH_ON_MERGE_ENABLED'
