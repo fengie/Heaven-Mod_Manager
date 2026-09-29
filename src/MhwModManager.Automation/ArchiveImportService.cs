@@ -27,14 +27,20 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
 
         var name = Path.GetFileNameWithoutExtension(archivePath);
         var destination = UniqueDirectory(Path.Combine(modsRoot, name));
-        var staging = destination + ".importing";
-        if (Directory.Exists(staging)) Directory.Delete(staging, true);
-
-        await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
-        await Task.Run(() => NormalizeSingleWrapper(staging), ct);
-        Directory.Move(staging, destination);
-        await catalog.RefreshFoldersAsync(ct);
-        return new(destination, Path.GetFileName(destination));
+        var staging = NewStagingPath("archive");
+        try
+        {
+            await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
+            await Task.Run(() => NormalizeSingleWrapper(staging), ct);
+            Directory.Move(staging, destination);
+            await catalog.RefreshFoldersAsync(ct);
+            return new(destination, Path.GetFileName(destination));
+        }
+        catch
+        {
+            TryDeleteOwnedStaging(staging);
+            throw;
+        }
     }
 
     public async Task<FomodImportPreparation> PrepareFomodAsync(string archivePath, CancellationToken ct = default)
@@ -46,7 +52,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
 
         var displayName = Path.GetFileNameWithoutExtension(archivePath);
         var destination = UniqueDirectory(Path.Combine(modsRoot, displayName));
-        var staging = Path.Combine(modsRoot, $".fomod-{Guid.NewGuid():N}.staging");
+        var staging = NewStagingPath("fomod");
         try
         {
             await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
@@ -57,7 +63,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         }
         catch
         {
-            try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { }
+            TryDeleteOwnedStaging(staging);
             throw;
         }
     }
@@ -77,7 +83,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         }
         finally
         {
-            try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+            TryDeleteOwnedStaging(preparation.StagingPath);
         }
     }
 
@@ -85,8 +91,22 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
     public Task CancelFomodAsync(FomodImportPreparation preparation)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"staging={preparation.StagingPath}");
-        try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+        TryDeleteOwnedStaging(preparation.StagingPath);
         return Task.CompletedTask;
+    }
+
+    private string NewStagingPath(string kind)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var stagingRoot = Path.Combine(modsRoot, CatalogService.ImportStagingDirectoryName);
+        Directory.CreateDirectory(stagingRoot);
+        return Path.Combine(stagingRoot, $"{kind}-{Guid.NewGuid():N}");
+    }
+
+    private static void TryDeleteOwnedStaging(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try { if (Directory.Exists(path)) Directory.Delete(path, true); } catch { }
     }
 
     private static string UniqueDirectory(string path)
