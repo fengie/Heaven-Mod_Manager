@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929104753-branch-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:53.638Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:49:29.338919+00:00",
+  "finished_at": "2026-09-29T11:49:29.338919+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "JOB_EXPIRED",
+    "message": "job exceeded its TTL",
+    "details": {
+      "age_seconds": 3695,
+      "ttl_seconds": 3600
+    }
+  },
+  "stderr": "job exceeded its TTL",
+  "stdout": ""
+}
