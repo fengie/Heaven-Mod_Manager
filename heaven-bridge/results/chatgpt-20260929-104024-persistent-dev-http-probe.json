@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104024-persistent-dev-http-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:24.778Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:40:58.114947+00:00",
+  "finished_at": "2026-09-29T10:40:58.545004+00:00",
+  "stdout": "HTTP_STATUS=200\r\nCONTENT_BYTES=8808\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104024-persistent-dev-http-probe.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104024-persistent-dev-http-probe.stderr.log",
+    "stdout_bytes": 37,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b75676c52fb185b313450fbff0106f495df9e6dd2f2c208d497071852f109e79"
+}
