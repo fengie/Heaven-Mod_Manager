@@ -1,0 +1,20 @@
+{
+  "id": "release-20260929-0829-agentcontrol-p0-inspect",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:29:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:23:51.033098+00:00",
+  "finished_at": "2026-09-29T08:23:51.033098+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "JOB_FROM_FUTURE",
+    "message": "job created_at is too far in the future",
+    "details": {
+      "skew_seconds": 308
+    }
+  },
+  "stderr": "job created_at is too far in the future",
+  "stdout": ""
+}
