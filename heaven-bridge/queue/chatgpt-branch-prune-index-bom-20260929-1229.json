@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-branch-prune-index-bom-20260929-1229",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:29:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Continue'\n$relay=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$url=(git -C $relay remote get-url origin).Trim()\n$targets=@(\n @{branch='agent/hcp-index-wiring-20260929';sha='b2ca4d8e75b7c1de48b7b403ac35c7a0bed5a023'},\n @{branch='integration/hcp-index-wiring-20260929';sha='b4b5a2e58d37b4f6638af4516c08f381192e1d46'},\n @{branch='integration/hcp-index-wiring-v040-20260929';sha='58ddc0059c74c07da8c53d4a2fa88fdb60520371'},\n @{branch='fix/updater-bom-e2e-20260929';sha='ed2f7a218009abb9015d7c389e3cef3c169080f1'}\n)\n$deleted=@();$skipped=@();$failed=@()\nforeach($t in $targets){\n $line=(git ls-remote $url (\"refs/heads/\"+$t.branch) 2>$null)\n if(-not $line){$skipped += [pscustomobject]@{branch=$t.branch;reason='already-absent'};continue}\n $sha=($line -split '\\s+')[0]\n if($sha -ne $t.sha){$skipped += [pscustomobject]@{branch=$t.branch;reason='tip-changed';expected=$t.sha;actual=$sha};continue}\n git -C $relay push origin (\":refs/heads/\"+$t.branch) *> $null\n if($LASTEXITCODE -eq 0){$deleted += $t.branch}else{$failed += $t.branch}\n}\ngit -C $relay fetch --prune origin *> $null\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;skipped=$skipped;failed=$failed}|ConvertTo-Json -Depth 5 -Compress"
+  }
+}
