@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.3 does
+## What v0.5.5 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -36,6 +36,7 @@ This is the execution layer that sits above the repository's existing agent doct
 - Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
 - Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
 - Classifies Codex usage/quota exhaustion as `capacity-blocked`, preserves the unfinished task/branch as blocked work, and opens a dispatch circuit until the provider reset window expires (or a later successful worker proves recovery). Direct Heaven Bridge `proc_run` build/test/filesystem/process/computer-control work remains available during the cooldown.
+- Reconciles response/transport stream loss against durable execution evidence before retrying: `STREAM LOST · CHECKING WORK` resolves to `WORK DETECTED · INCOMPLETE`, `WORK VERIFIED · COMPLETE`, or `NO DURABLE WORK DETECTED · RETRY`. Commits, changed files, artifacts, PRs, and verification evidence prevent destructive full-task retries; only evidence-free interrupted work enters the bounded replacement loop.
 
 ## Federated registry and heartbeat semantics
 
