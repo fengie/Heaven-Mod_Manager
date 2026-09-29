@@ -53,7 +53,7 @@ export function hasSubstantiveWorkEvidence(agent) {
   for (const key of ["commit_sha", "current_commit_sha", "pr_number", "pull_request_number", "artifact_path"]) {
     if (metadata[key]) return true;
   }
-  for (const key of ["tool_call_count", "tool_calls_count", "progress_events", "write_count", "test_run_count"]) {
+  for (const key of ["write_count", "test_run_count", "verification_count", "commit_count", "artifact_count"]) {
     if (positiveNumber(metadata[key])) return true;
   }
 
@@ -93,6 +93,13 @@ export function noWorkTerminationDecision(agent, {
     openingOnly,
     emptyOutput
   };
+}
+
+export function recoveryMachineTarget(value, machinePolicies = {}) {
+  const candidate = String(value || "").trim().toLowerCase();
+  if (!candidate || candidate === "auto") return "auto";
+  const known = Object.keys(machinePolicies || {}).some(name => String(name).trim().toLowerCase() === candidate);
+  return known ? candidate : "auto";
 }
 
 export function recoveryBackoffMs(dispatchFailures, {
