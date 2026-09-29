@@ -57,7 +57,7 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
             Directory.Move(mod.SourcePath, dest);
             try
             {
-                await db.ExecuteAsync("DELETE FROM mods WHERE id=$m",new Dictionary<string,object?>{{"$m",id}},ct);
+                await db.RetireModAsync(id,ct);
             }
             catch(Exception deleteError)
             {
