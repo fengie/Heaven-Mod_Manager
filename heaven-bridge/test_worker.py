@@ -282,7 +282,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":false}\n',
             stderr="",
         )
-        unc = r"\\\\heaven2\\secrets"
+        unc = r"\\heaven2\secrets"
         with patch.object(hb.Path, "is_dir", return_value=True), \
                 patch.object(hb.subprocess, "run", return_value=encrypted):
             self.assertTrue(hb.verify_secret_inbox_transport(unc))
@@ -294,7 +294,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         with patch.dict(
             os.environ,
             {
-                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\\\heaven2\\secrets",
+                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\heaven2\secrets",
                 "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
             },
             clear=False,
