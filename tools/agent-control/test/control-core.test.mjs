@@ -57,7 +57,7 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 7);
+  assert.equal(migrated.version, 8);
   assert.equal(migrated.autopilot.phase, "waiting-for-direction");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
@@ -66,6 +66,8 @@ test("v2 state migrates without dropping durable records", () => {
   assert.equal(migrated.settings.defaultAgentExecutionMode, "direct");
   assert.equal(migrated.settings.requireExplicitCodexOptIn, false);
   assert.equal(migrated.settings.allowAutomaticWorkHandoff, false);
+  assert.equal(migrated.settings.goToWorkRecovery.enabled, true);
+  assert.equal(migrated.settings.goToWorkRecovery.browser, "brave");
   assert.equal(migrated.settings.swarmTailRecovery.enabled, true);
   assert.equal(migrated.settings.swarmTailRecovery.maxWorkers, 4);
   assert.equal(migrated.settings.swarmTailRecovery.maxAttemptsPerRoot, 2);
