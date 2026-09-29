@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T155900Z-gui-window-list-01",
+  "state": "running",
+  "action": "window_list",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:58:39.795828+00:00"
+}
