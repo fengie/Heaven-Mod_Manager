@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-120430-canonical-git",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "fs_info",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git"
+  },
+  "created_at": "2026-09-29T12:04:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
