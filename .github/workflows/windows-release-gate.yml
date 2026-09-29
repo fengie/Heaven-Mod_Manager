@@ -97,89 +97,8 @@ jobs:
             'X-GitHub-Api-Version' = '2022-11-28'
             'User-Agent' = 'MHW-Mod-Manager-Release-Gate'
           }
-          $latest = Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers -Uri 'https://api.github.com/repos/cli/cli/releases/latest' -TimeoutSec 60
-          $asset = @($latest.assets | Where-Object { [string]$_.name -match '^gh_[0-9.]+_windows_amd64\.zip
-      - name: Preserve verification, build, and promoted-cache evidence
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows-release-evidence-${{ github.sha }}
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 30
-          path: |
-            BuildLogs/**
-            artifacts/**
-            release/**
-            .verification/function-status.json
-            .verification/stage-status.json
-            MHW-DEBUG-ALL.log
-
-      - name: Persist promoted verification state
-        if: success() && github.ref == 'refs/heads/main'
-        shell: powershell
-        run: |
-          # Verification evidence is exact-input data. Never replay a stale run's promoted
-          # cache/evidence commit on top of a newer main revision.
-          git fetch origin main
-          if ($LASTEXITCODE -ne 0) {
-            throw 'Failed to fetch origin/main before persisting verification state.'
-          }
-          $remoteMain = (git rev-parse origin/main).Trim()
-          if ($remoteMain -ne $env:GITHUB_SHA) {
-            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in the uploaded artifact."
-            exit 0
-          }
-
-          $verify = Get-ChildItem -Path BuildLogs -Filter 'verification-report-*.md' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
-          $build = Get-ChildItem -Path BuildLogs -Filter 'build-release-report-*.txt' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
-          if (-not $verify -or -not $build) { throw 'Expected verification/build reports were not produced.' }
-
-          $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
-          $evidencePath = "_AGENT_CONTEXT/EVIDENCE/v$version-heaven-windows-closure.log"
-          @(
-            ("MHW Manual Mod Manager v$version Heaven Windows closure")
-            ('source_sha=' + $env:GITHUB_SHA)
-            ('run_id=' + $env:GITHUB_RUN_ID)
-            ('runner_os=' + $env:RUNNER_OS)
-            ('runner_arch=' + $env:RUNNER_ARCH)
-            ('dotnet_sdk=' + (& dotnet --version))
-            ''
-            '=== VERIFICATION REPORT ==='
-            (Get-Content -LiteralPath $verify.FullName -Raw)
-            ''
-            '=== RELEASE BUILD REPORT ==='
-            (Get-Content -LiteralPath $build.FullName -Raw)
-          ) | Set-Content -LiteralPath $evidencePath -Encoding UTF8
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath
-          git diff --cached --quiet
-          if ($LASTEXITCODE -ne 0) {
-            git commit -m 'Persist hosted Windows verification evidence [skip ci]'
-            if ($LASTEXITCODE -ne 0) { throw 'Failed to create the verification evidence commit.' }
-
-            git push origin HEAD:main
-            if ($LASTEXITCODE -ne 0) {
-              # A concurrent main update between the preflight fetch and this push is benign:
-              # this run's exact evidence was already uploaded and must not be rebased forward.
-              git fetch origin main
-              if ($LASTEXITCODE -ne 0) {
-                throw 'Verification evidence was produced, but the failed push could not be diagnosed because origin/main could not be fetched.'
-              }
-              $remoteMain = (git rev-parse origin/main).Trim()
-              if ($remoteMain -ne $env:GITHUB_SHA) {
-                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the uploaded artifact."
-                exit 0
-              }
-              throw "Failed to persist verification state while origin/main still points at exact source $env:GITHUB_SHA."
-            }
-          } else {
-            Write-Host 'Promoted verification state already matches the repository.'
-          }
- } | Select-Object -First 1)
+          $latest = Invoke-RestMethod -Method Get -Headers $headers -Uri 'https://api.github.com/repos/cli/cli/releases/latest' -TimeoutSec 60
+          $asset = @($latest.assets | Where-Object { [string]$_.name -match '^gh_[0-9.]+_windows_amd64\.zip$' } | Select-Object -First 1)
           if ($asset.Count -ne 1) {
             throw 'Could not resolve the portable Windows GitHub CLI asset.'
           }
@@ -235,7 +154,7 @@ jobs:
           }
           $remoteMain = (git rev-parse origin/main).Trim()
           if ($remoteMain -ne $env:GITHUB_SHA) {
-            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in the uploaded artifact."
+            Write-Host "::notice::Skipping verification-state persistence for $env:GITHUB_SHA because main advanced to $remoteMain while this exact gate was running. Exact evidence remains in this workflow's logs and is uploaded when artifact quota permits."
             exit 0
           }
 
@@ -278,7 +197,7 @@ jobs:
               }
               $remoteMain = (git rev-parse origin/main).Trim()
               if ($remoteMain -ne $env:GITHUB_SHA) {
-                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the uploaded artifact."
+                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in this workflow's logs and is uploaded when artifact quota permits."
                 exit 0
               }
               throw "Failed to persist verification state while origin/main still points at exact source $env:GITHUB_SHA."
