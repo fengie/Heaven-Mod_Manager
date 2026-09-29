@@ -54,7 +54,7 @@ Mutation actions fail closed on ambiguous matches and on truncated searches unle
 
 ## Safety and privacy invariants
 
-The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state. For credential entry, use `New-HeavenSecretEnvelope.ps1` on `heaven2` and relay only the returned opaque handle plus exact HWND to `gui_type_secret`. The out-of-band SMB inbox must be encrypted and access-restricted.
+The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state. For credential entry, use `New-HeavenSecretEnvelope.ps1` on `heaven2` and relay only the returned opaque handle plus exact HWND to `gui_type_secret`. The out-of-band SMB inbox must be encrypted and access-restricted. The worker itself requires a UNC inbox and verifies the live Heaven-side SMB connection reports `Encrypted=True`; never treat an environment flag as proof of encryption.
 
 `clipboard_read` is privacy-sensitive because its returned text traverses the private relay. Do not use it speculatively. Require an explicit clipboard-read intent and set `allow_relay:true` only for that operation.
 

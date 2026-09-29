@@ -12,6 +12,9 @@ $Bootstrap = Join-Path $BridgeDir 'bootstrap.ps1'
 $WorkerSource = Join-Path $BridgeDir 'worker.py'
 $PrimaryTests = Join-Path $BridgeDir 'test_worker.py'
 $CompatibilityTests = Join-Path $BridgeDir 'tests\test_worker.py'
+$SecretEnvelopeIoTests = Join-Path $BridgeDir 'tests\Test-SecretEnvelopeIo.ps1'
+$SecretEnvelopeHelper = Join-Path $BridgeDir 'New-HeavenSecretEnvelope.ps1'
+$SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
 $Heartbeat = Join-Path $BridgeDir 'status\heartbeat.json'
 
@@ -151,7 +154,10 @@ function Invoke-Tests {
     & $python -m unittest -v $CompatibilityTests
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    foreach ($path in @($Bootstrap, $PSCommandPath)) {
+    & $SecretEnvelopeIoTests
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    foreach ($path in @($Bootstrap, $PSCommandPath, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile(
