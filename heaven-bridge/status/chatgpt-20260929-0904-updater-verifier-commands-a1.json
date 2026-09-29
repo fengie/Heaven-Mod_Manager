@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0904-updater-verifier-commands-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T13:03:37.995423+00:00"
+  "updated_at": "2026-09-29T13:03:49.035126+00:00",
+  "exit_code": 0
 }
