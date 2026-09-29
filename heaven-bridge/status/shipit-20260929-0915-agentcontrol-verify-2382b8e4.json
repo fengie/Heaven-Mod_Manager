@@ -1,0 +1,9 @@
+{
+  "id": "shipit-20260929-0915-agentcontrol-verify-2382b8e4",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:19:01.275838+00:00"
+}
