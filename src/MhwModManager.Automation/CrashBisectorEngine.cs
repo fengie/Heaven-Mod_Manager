@@ -25,18 +25,30 @@ public sealed class CrashBisectorEngine
         if (!await reproducesCrash(full, ct))
             return new(false, remaining, probes, "The failure does not reproduce with the full current suspect set, so no culprit can be isolated.");
 
-        while (remaining.Count > 1)
+        // Reduce to a 1-minimal reproducing set. Removing one suspect at a time is
+        // deliberate: failures can require an interaction whose members land in opposite
+        // halves, which a plain binary split cannot discover.
+        var changed = true;
+        while (changed && remaining.Count > 1)
         {
-            ct.ThrowIfCancellationRequested();
-            var take = Math.Max(1, remaining.Count / 2);
-            var left = remaining.Take(take).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            probes++;
-            if (await reproducesCrash(left, ct)) { remaining = left.ToList(); continue; }
-            var right = remaining.Skip(take).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            probes++;
-            if (right.Count > 0 && await reproducesCrash(right, ct)) { remaining = right.ToList(); continue; }
-            return new(false, remaining, probes, "The failure does not reproduce with either half independently; this suggests an interaction between mods rather than one isolated culprit.");
+            changed = false;
+            for (var i = 0; i < remaining.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var candidate = remaining
+                    .Where((_, index) => index != i)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                if (candidate.Count == 0) continue;
+
+                probes++;
+                if (!await reproducesCrash(candidate, ct)) continue;
+
+                remaining = candidate.Order(StringComparer.OrdinalIgnoreCase).ToList();
+                changed = true;
+                break;
+            }
         }
-        return new(true, remaining, probes, "Isolated the smallest reproducible suspect set after validating the control and full-suspect probes.");
+
+        return new(true, remaining, probes, "Isolated a 1-minimal reproducible suspect set after validating the control and full-suspect probes.");
     }
 }
