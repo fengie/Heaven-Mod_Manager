@@ -1,4 +1,3 @@
-# cleanup trigger: 2026-09-29T10:18-04:00
 name: One-shot superseded branch cleanup
 
 on:
@@ -113,7 +112,16 @@ jobs:
               }
 
               const branchSha = ref.data.object.sha;
-              const detail = await github.rest.repos.getBranch({ owner, repo, branch });
+              let detail;
+              try {
+                detail = await github.rest.repos.getBranch({ owner, repo, branch });
+              } catch (e) {
+                if (e.status === 404) {
+                  preserved.push({ branch, sha: branchSha, reason: "deleted-during-audit" });
+                  continue;
+                }
+                throw e;
+              }
               if (detail.data.protected) {
                 preserved.push({ branch, sha: branchSha, reason: "protected" });
                 continue;
@@ -138,11 +146,8 @@ jobs:
               const mainRef = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
               const mainSha = mainRef.data.object.sha;
 
-              // One-shot operator cleanup: any unprotected branch with no open PR
-              // is considered closed work and may be removed. The workflow will be
-              // restored to its conservative audit mode immediately after this run.
-              let safe = true;
-              let reason = "no-open-pr";
+              let safe = false;
+              let reason = "";
 
               // Exact commit ancestry is the strongest proof: the branch tip itself
               // is already reachable from the current canonical main.
