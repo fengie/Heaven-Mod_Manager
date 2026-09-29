@@ -109,6 +109,14 @@ Do not blindly merge unrelated or unverified branches just to empty the queue. I
 
 If direct `main` delivery is genuinely impossible, do not silently stop at a side branch. Record the exact failed operation, error/evidence, paths attempted, current branch/head, and exact external action required.
 
+## Mandatory immediate release-on-ready enforcement
+- **Release-ready means release now.** When a user-facing version is integrated into canonical `main` and every required release gate is green, the Manager must ensure publication starts immediately in the same execution cycle.
+- Do not leave an eligible version waiting for a separate user prompt, reminder, batching window, scheduled release window, or successor unless the user explicitly orders a hold/delay for that specific release.
+- Treat any green-but-unpublished version as highest-priority unfinished release work. Assign/retain an Integration & Release owner until the immutable private updater release, required public mirror, and post-publication verification all succeed.
+- Never mark a release-owning task `DONE`, `SHIPPED`, `release-ready`, or `release-complete` before private/public tags, expected assets, server SHA-256 digests, and exact source provenance have been verified.
+- If publication or mirroring fails, immediately route an authorized repair/retry and report `PARTIAL/BLOCKED` only for a genuine external blocker. Do not silently defer a verified release.
+- Propagate this obligation in release assignments, handoffs, and successor work so future agents do not require another user reminder.
+
 ## Evidence standard
 Never claim work occurred unless you observed it:
 - no “tests pass” without executed tests;
