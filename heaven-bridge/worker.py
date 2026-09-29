@@ -16,7 +16,7 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 3
+WORKER_VERSION = 4
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
@@ -66,6 +66,13 @@ LAST_HEARTBEAT = 0.0
 
 SENSITIVE_ENV_RE = re.compile(r"(PASS|PASSWORD|TOKEN|SECRET|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH)", re.I)
 CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
+UIA_MAX_NODES = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_NODES", "250")), 1000))
+UIA_MAX_DEPTH = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_DEPTH", "6")), 12))
+UIA_MAX_WAIT_MS = max(0, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_WAIT_MS", "10000")), 30000))
+UIA_ACTIONS = {
+    "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
+    "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
+}
 
 DIRECT_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "job_output_read", "controller_checkpoint",
@@ -77,6 +84,7 @@ DIRECT_ACTIONS = {
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
     "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
 CONTROL_ACTIONS = {
@@ -1545,6 +1553,101 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def _validate_uia_request(p, operation):
+    if not isinstance(p, dict):
+        raise BridgeError("INVALID_UIA_REQUEST", "UI Automation params must be an object")
+    selector = p.get("selector")
+    if selector is not None and not isinstance(selector, dict):
+        raise BridgeError("INVALID_UIA_SELECTOR", "selector must be an object")
+    allowed_selector = {
+        "automation_id", "name", "name_contains", "control_type",
+        "class_name", "process_id", "enabled", "offscreen",
+    }
+    if isinstance(selector, dict):
+        unknown = sorted(set(selector) - allowed_selector)
+        if unknown:
+            raise BridgeError("INVALID_UIA_SELECTOR", "selector contains unsupported fields", {"fields": unknown})
+        for key in ("automation_id", "name", "name_contains", "control_type", "class_name"):
+            if key in selector and len(str(selector[key])) > 512:
+                raise BridgeError("INVALID_UIA_SELECTOR", f"selector.{key} is too long")
+    if operation not in ("uia_tree", "uia_find") and not selector:
+        raise BridgeError("UIA_SELECTOR_REQUIRED", "semantic UI actions require params.selector")
+    scope = str(p.get("scope") or "descendants").lower()
+    if scope not in ("children", "descendants"):
+        raise BridgeError("INVALID_UIA_SCOPE", "scope must be children or descendants")
+    if operation == "uia_set_value":
+        if p.get("value") is None:
+            raise BridgeError("UIA_VALUE_REQUIRED", "uia_set_value requires params.value")
+        if len(str(p.get("value"))) > 10000:
+            raise BridgeError("TEXT_TOO_LARGE", "uia_set_value is limited to 10000 characters")
+    return {
+        **p,
+        "operation": operation,
+        "scope": scope,
+        "max_nodes": max(10, min(int(p.get("max_nodes") or UIA_MAX_NODES), UIA_MAX_NODES)),
+        "max_depth": max(1, min(int(p.get("max_depth") or UIA_MAX_DEPTH), UIA_MAX_DEPTH)),
+        "wait_ms": max(0, min(int(p.get("wait_ms") or 0), UIA_MAX_WAIT_MS)),
+    }
+
+
+def _run_uia_once(request):
+    script = ROOT / "heaven-bridge" / "uia.ps1"
+    if not script.is_file():
+        raise BridgeError("UIA_BACKEND_UNAVAILABLE", "UI Automation backend script is missing")
+    env = os.environ.copy()
+    raw = json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    env["HEAVEN_UIA_REQUEST"] = base64.b64encode(raw).decode("ascii")
+    timeout_seconds = max(5, min(30, 6 + int(request.get("wait_ms") or 0) // 1000))
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_seconds,
+            env=env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise BridgeError("UIA_TIMEOUT", "Windows UI Automation backend exceeded its bounded timeout") from exc
+    if proc.returncode != 0:
+        raise BridgeError("UIA_BACKEND_FAILED", "Windows UI Automation backend failed", {"exit_code": proc.returncode})
+    lines = [line.strip() for line in (proc.stdout or "").splitlines() if line.strip()]
+    if not lines:
+        raise BridgeError("UIA_BACKEND_INVALID", "Windows UI Automation backend returned no structured result")
+    try:
+        result = json.loads(lines[-1])
+    except json.JSONDecodeError as exc:
+        raise BridgeError("UIA_BACKEND_INVALID", "Windows UI Automation backend returned invalid JSON") from exc
+    if not result.get("ok"):
+        raise BridgeError(
+            str(result.get("code") or "UIA_FAILED"),
+            str(result.get("message") or "UI Automation operation failed"),
+            result.get("details"),
+        )
+    return result.get("data")
+
+
+def desktop_uia(p, operation):
+    _require_windows_desktop()
+    request = _validate_uia_request(p, operation)
+    wait_ms = int(request.get("wait_ms") or 0)
+    deadline = time.monotonic() + wait_ms / 1000.0
+    while True:
+        try:
+            data = _run_uia_once(request)
+            if operation == "uia_find" and wait_ms and not (data or {}).get("count") and time.monotonic() < deadline:
+                time.sleep(0.15)
+                continue
+            return data
+        except BridgeError as exc:
+            if wait_ms and exc.code == "UIA_NOT_FOUND" and time.monotonic() < deadline:
+                time.sleep(0.15)
+                continue
+            raise
+
+
 def _open_clipboard(user32, attempts=20):
     for _ in range(attempts):
         if user32.OpenClipboard(None):
@@ -1716,7 +1819,23 @@ def run_job(job_id, job, cancel_event):
                 "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
+                "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
+                "uia_password_set_value_blocked": True,
                 "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
+            },
+            "capability_schema": 2,
+            "features": {
+                "desktop": {"version": 2, "coordinate_fallback": True},
+                "uia": {
+                    "version": 1, "available": os.name == "nt", "backend": "windows-uia-powershell",
+                    "actions": sorted(UIA_ACTIONS), "max_nodes": UIA_MAX_NODES, "max_depth": UIA_MAX_DEPTH,
+                    "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
+                    "password_set_value_allowed": False,
+                },
+                "secret_input": {
+                    "version": 1, "available": False, "transport": "not_configured",
+                    "relay_secret_values_allowed": False,
+                },
             },
         }
         return make_result(job, action, data=data, started_at=started)
@@ -2008,6 +2127,9 @@ def run_job(job_id, job, cancel_event):
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
 
+    if action in UIA_ACTIONS:
+        return make_result(job, action, data=desktop_uia(p, action), started_at=started)
+
     if action == "proc_list":
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
@@ -2261,15 +2383,6 @@ def queue_order_key(path, current=None):
     promotions = int(age_seconds // QUEUE_PRIORITY_AGING_SECONDS)
     effective = max(0, base - promotions)
     return (1, effective, created_rank, path.name)
-
-def queue_sort_key(path):
-    try:
-        job = json.loads(path.read_text(encoding="utf-8-sig"))
-        action = str(job.get("action") or job.get("kind") or "codex").lower()
-        control_rank = 0 if action in CONTROL_ACTIONS else 1
-        return (control_rank, queue_priority_rank(job.get("priority")), str(job.get("created_at") or ""), path.name)
-    except Exception:
-        return (2, 99.0, "", path.name)
 
 
 def process_queue(executor):

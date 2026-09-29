@@ -139,7 +139,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 3)
+        self.assertEqual(result["data"]["worker_version"], 4)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
@@ -147,11 +147,17 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
             "gui_mouse_scroll", "gui_key", "gui_type",
+            "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
+            "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
         ):
             self.assertIn(action, result["data"]["actions"])
         self.assertTrue(result["data"]["capabilities"]["session_restart_recovery"])
         self.assertEqual(result["data"]["capabilities"]["desktop_control"], os.name == "nt")
         self.assertTrue(result["data"]["capabilities"]["clipboard_relay_requires_opt_in"])
+        self.assertEqual(result["data"]["capability_schema"], 2)
+        self.assertEqual(result["data"]["features"]["uia"]["backend"], "windows-uia-powershell")
+        self.assertFalse(result["data"]["features"]["uia"]["password_values_exposed"])
+        self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
 
     def test_queue_order_prefers_control_then_priority_then_fifo(self):
         with tempfile.TemporaryDirectory() as td:
@@ -270,6 +276,35 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(result["data"], expected)
         move.assert_called_once_with({"x": 321, "y": 654})
+
+    def test_uia_request_validation_and_structured_route(self):
+        with self.assertRaises(hb.BridgeError) as missing:
+            hb._validate_uia_request({}, "uia_invoke")
+        self.assertEqual(missing.exception.code, "UIA_SELECTOR_REQUIRED")
+        with self.assertRaises(hb.BridgeError) as unknown:
+            hb._validate_uia_request({"selector": {"regex": "unsafe"}}, "uia_find")
+        self.assertEqual(unknown.exception.code, "INVALID_UIA_SELECTOR")
+        request = hb._validate_uia_request(
+            {"selector": {"automation_id": "SaveButton", "control_type": "Button"}, "wait_ms": 999999},
+            "uia_invoke",
+        )
+        self.assertEqual(request["wait_ms"], hb.UIA_MAX_WAIT_MS)
+        expected = {"invoked": True, "element": {"automation_id": "SaveButton"}}
+        with patch.object(hb, "desktop_uia", return_value=expected) as semantic:
+            result = hb.run_job(
+                "uia-route-test",
+                {"action": "uia_invoke", "params": {"selector": {"automation_id": "SaveButton"}}},
+                threading.Event(),
+            )
+        self.assertEqual(result["data"], expected)
+        semantic.assert_called_once()
+
+    def test_uia_backend_never_reads_password_values(self):
+        script = MODULE_PATH.with_name("uia.ps1").read_text(encoding="utf-8")
+        self.assertIn("IsPassword", script)
+        self.assertIn("UIA_PASSWORD_VALUE_BLOCKED", script)
+        self.assertNotIn("Current.Value", script)
+        self.assertNotIn("Cached.Value", script)
 
     def test_codex_batch_wrapper_uses_call_arguments(self):
         captured = {}

@@ -9,6 +9,7 @@ on:
       - 'heaven-bridge/worker.py'
       - 'heaven-bridge/bootstrap.ps1'
       - 'heaven-bridge/manage.ps1'
+      - 'heaven-bridge/uia.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
@@ -55,7 +56,7 @@ jobs:
       - name: Parse operator PowerShell
         shell: pwsh
         run: |
-          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1')) {
+          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/uia.ps1')) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(

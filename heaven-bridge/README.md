@@ -305,3 +305,11 @@ That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and 
 This design intentionally does **not** expose an unauthenticated raw shell to the public internet.
 
 An optional LAN-direct transport may be added later only if it is mutually authenticated, encrypted, replay-protected, bound to a trusted interface, and retains the GitHub relay as a safe fallback. ChatGPT cloud connectivity to a LAN endpoint should not be assumed.
+
+
+### Semantic Windows UI Automation
+
+Worker v4 adds bounded semantic control through Windows UI Automation. Use `uia_tree` / `uia_find` to inspect controls by stable accessibility properties, then `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, or `uia_collapse`. Selectors can use `automation_id`, `name`, `name_contains`, `control_type`, `class_name`, `process_id`, `enabled`, and `offscreen`, with optional window scoping by `hwnd`, `pid`, or title.
+
+Semantic actions fail closed when multiple controls match unless `first_match=true` is explicit. Tree depth, node count, text lengths, and waits are bounded. Element descriptors never include ValuePattern text. Password controls are marked with `is_password=true`, and `uia_set_value` refuses them because relay-carried secret values are not credential-safe. Coordinate mouse/keyboard actions remain available as a fallback.
+
