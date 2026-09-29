@@ -1,0 +1,22 @@
+{
+  "id": "------releasefix-tail-finalgate-20260929-105535",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:35Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:56:14.418516+00:00",
+  "finished_at": "2026-09-29T10:56:14.420037+00:00",
+  "host": "heaven",
+  "action": "job_output_read",
+  "data": {
+    "job_id": "-----releasefix-finalgate-51af62-20260929-105425",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 179,
+    "total_bytes": 179,
+    "next_offset": 179,
+    "eof": true,
+    "content": "REMOTE_MAIN_AT_START=049e644105fc3343afe8451dc540ee7a45f23ebc\r\nHEAD is now at 51af44b Test release policy workflow relevance\nSTART_DRIFT_DECISION=stale-main-release-input-change\r\n"
+  },
+  "job_hash": "7ced385a32f265875f91cf453327d5f8be21e137264e0a54f50dcefc2484973e"
+}
