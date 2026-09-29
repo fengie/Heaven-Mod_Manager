@@ -1,0 +1,14 @@
+{
+  "id": "agent-control-review-0a87bb6a021f",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference = 'Stop'; $repo = Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; $dest = Join-Path $env:TEMP 'agent-control-review-0a87bb6a021f'; if (Test-Path -LiteralPath $dest) { try { git -C $repo worktree remove --force $dest | Out-Null } catch {}; if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Recurse -Force } }; git -C $repo fetch origin main 'feature/agent-control-plane-v2-20260928' | Out-Null; git -C $repo worktree add --detach $dest '0a87bb6a021fabd76f1de452dcb721ee35d58e40' | Out-Null; try {; $prompt = 'You are the independent release-blocking reviewer for Agent Control v0.5.0.\nReview exact candidate 0a87bb6a021fabd76f1de452dcb721ee35d58e40 against canonical main aba60bf19c09da2d0558031bb2bbbf06362e3621.\nThis is review-only: do not edit files, commit, push, or mutate repository state.\n\nInspect the full diff and relevant surrounding code under tools/agent-control plus the Agent Control PR gate.\nFocus especially on:\n- authenticated heaven2 -> heaven remote execution and fail-closed behavior;\n- process ownership, remote cancellation, lease release, and stop safety;\n- normalized federated identity, heartbeat freshness, stale/disconnected/live counting, and duplicate reconciliation;\n- ChatGPT/GitHub/manual bridge registration honesty (no invented telemetry);\n- routing duplicate-work prevention and autonomy server-side authorization;\n- local Codex invocation safety;\n- structured verification/review evidence flow;\n- state migration/persistence and restart semantics;\n- UI/CLI consistency, docs/version consistency, and accidental regressions relative to main.\n\nTreat hosted tests as evidence, not proof. Identify concrete correctness, security, data-loss, integration, or release-blocking defects.\n\nOutput ONLY this compact structure:\nVERDICT: APPROVED\nBLOCKERS:\n- none\nNONBLOCKING:\n- <items or none>\nEVIDENCE:\n- <specific files/functions/tests reviewed>\n\nIf any release-blocking issue exists, use VERDICT: BLOCKED and list exact blockers with file/function and failure mode.'; $prompt | codex -a never -s read-only exec --skip-git-repo-check -C $dest -; if ($LASTEXITCODE -ne 0) { throw ('independent review failed with ' + $LASTEXITCODE) }; } finally { Set-Location $env:TEMP; git -C $repo worktree remove --force $dest | Out-Null }"
+  },
+  "created_at": "2026-09-29T09:26:30.472Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
