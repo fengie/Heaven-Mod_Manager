@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0912-agentcontrol-process-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:12:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 20,
+    "command": "$listeners=@(Get-NetTCPConnection -State Listen -LocalPort 7331,7443 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess); $pids=@($listeners|ForEach-Object{$_.OwningProcess}|Sort-Object -Unique); $procs=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $pids -contains $_.ProcessId } | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine); [ordered]@{listeners=$listeners;processes=$procs}|ConvertTo-Json -Depth 5"
+  },
+  "priority": "highest"
+}
