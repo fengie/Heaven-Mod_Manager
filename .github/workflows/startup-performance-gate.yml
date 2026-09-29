@@ -1,0 +1,185 @@
+name: Startup Performance Gate
+
+on:
+  push:
+    branches:
+      - 'perf-startup-*'
+    paths:
+      - 'src/**'
+      - 'tests/MhwModManager.IntegrationTests/**'
+      - 'scripts/Measure-StartupPerformance.ps1'
+      - '.github/workflows/startup-performance-gate.yml'
+      - 'plugins/PLUGIN_GAP_BACKLOG.md'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'VERSION.txt'
+      - 'README.md'
+      - 'CHANGELOG.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: startup-performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Compare current main vs candidate on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 45
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          path: candidate
+
+      - name: Check out current main baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          path: baseline
+
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') { throw "Startup performance gate requires .NET SDK 10.0.401; found $version." }
+
+      - name: Restore and build baseline
+        shell: powershell
+        run: |
+          dotnet restore .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Restore and build candidate
+        shell: powershell
+        run: |
+          dotnet restore .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Measure current main baseline
+        shell: powershell
+        run: |
+          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+
+      - name: Measure candidate
+        shell: powershell
+        run: |
+          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+
+      - name: Build before-after report
+        shell: powershell
+        run: |
+          $baseline = Get-Content .\baseline\BuildLogs\startup-performance-baseline.json -Raw | ConvertFrom-Json
+          $candidate = Get-Content .\candidate\BuildLogs\startup-performance-candidate.json -Raw | ConvertFrom-Json
+
+          function Improvement([double]$before, [double]$after) {
+              if ($before -eq 0) { return 'N/A' }
+              return ('{0:F1}%' -f ((($before - $after) / $before) * 100))
+          }
+
+          $metrics = @(
+              'process_to_ready_ms',
+              'session_to_main_window_show_ms',
+              'session_to_ready_ms',
+              'cpu_ms',
+              'peak_working_set_mb',
+              'idle_working_set_mb',
+              'catalog_refresh_ms',
+              'armor_import_ms',
+              'nexus_refresh_ms',
+              'game_build_ms',
+              'recovery_ms',
+              'automation_ms',
+              'main_window_initialize_ms',
+              'master_log_mb'
+          )
+          $lines = New-Object System.Collections.Generic.List[string]
+          $lines.Add('## Startup performance comparison')
+          $lines.Add('')
+          $lines.Add("Baseline: $($baseline.source_sha)")
+          $lines.Add("Candidate: $($candidate.source_sha)")
+          $lines.Add("Fixture: $($candidate.mod_count) mods / $($candidate.total_mod_files) files; 3 cold-state + 3 warm-state runs each on the same Heaven runner.")
+          $lines.Add('')
+          $lines.Add('| Metric | Main cold | Candidate cold | Cold improvement | Main warm | Candidate warm | Warm improvement |')
+          $lines.Add('|---|---:|---:|---:|---:|---:|---:|')
+          foreach ($metric in $metrics) {
+              $bc = [double]$baseline.cold.$metric
+              $cc = [double]$candidate.cold.$metric
+              $bw = [double]$baseline.warm.$metric
+              $cw = [double]$candidate.warm.$metric
+              $lines.Add("| $metric | $bc | $cc | $(Improvement $bc $cc) | $bw | $cw | $(Improvement $bw $cw) |")
+          }
+          $lines.Add('')
+          $lines.Add("Build-output size: main $($baseline.package_size_mb) MB; candidate $($candidate.package_size_mb) MB.")
+          $lines.Add('')
+          $lines.Add('_Cold-state resets manager state/database but does not claim a flushed Windows filesystem cache. Positive percentages mean lower/faster._')
+          $report = $lines -join [Environment]::NewLine
+          Set-Content -LiteralPath .\startup-performance-comparison.md -Value $report -Encoding UTF8
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
+
+      - name: Verify startup optimization guards
+        shell: powershell
+        run: |
+          dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release -p:NuGetAudit=false --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python .\candidate\plugins\verify.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run exact release verification on candidate
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\Verify-Release.ps1"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C .\\candidate diff --check origin/main...HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Comment comparison on the open performance PR
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const branch = context.ref.replace('refs/heads/', '');
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`,
+              state: 'open'
+            });
+            if (!prs.length) {
+              core.notice(`No open PR found for branch ${branch}; skipping comment.`);
+              return;
+            }
+            const comparison = fs.readFileSync('startup-performance-comparison.md', 'utf8');
+            const body = comparison + `\n\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prs[0].number,
+              body
+            });
+
+      - name: Preserve startup benchmark evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-performance-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            baseline/BuildLogs/startup-performance-baseline.json
+            candidate/BuildLogs/startup-performance-candidate.json
+            startup-performance-comparison.md
