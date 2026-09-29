@@ -151,3 +151,19 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Acceptance tests:** failed multi-step mutation triggers only registered rollback steps in reverse order; idempotent rollback; scheduler cannot create duplicate ownership for same job; disabled jobs never execute; receipts include exact pre/post state identifiers.
 - **Owner / branch / PR:** unclaimed.
 - **Completion evidence:** pending.
+
+
+## PG-008 — bridge self-healing host persistence
+
+- **Status:** CLAIMED
+- **Priority:** Critical
+- **Triggering use case:** The `heaven2` bridge worker went offline, which made the purpose-built desktop/control plugin unavailable precisely when it was needed to repair the machine.
+- **Why reusable:** Every persistent local control plane needs recovery that does not depend on the failed control-plane process itself.
+- **Existing capability audit:** Heaven Local Bridge already had a worker scheduled task, finite restart-on-failure, Startup fallback, remote relay heartbeat, and hardened `RECOVER`; it lacked an independent watchdog, Git-independent liveness/progress signals, indefinite task execution, and a startup handoff that could not race the elevated worker.
+- **Proposed owner/plugin boundary:** Extend the existing `heaven-bridge/` runtime and `heaven-local-bridge` plugin metadata. Do not create a second bridge/control-plane implementation.
+- **Capability/API contract:** bootstrap installs/refreshed canonical worker + watchdog persistence; worker publishes local process heartbeat and queue-loop progress; watchdog starts/restarts the exact worker without Git/relay dependency; `STATUS` proves worker/watchdog/runtime/task/local/remote health; `STOP` disables watchdog before intentional worker shutdown.
+- **Security / permission boundary:** Preserve the existing interactive-user/RunLevel Highest boundary; do not expose new network listeners, credentials, or relay secrets. Startup fallback prefers the elevated scheduled watchdog and uses direct non-elevated launch only when Task Scheduler cannot provide the persistent owner.
+- **Dependencies / reuse:** Existing worker singleton, Task Scheduler bootstrap, Startup folder, relay heartbeat, `manage.ps1`, and plugin health semantics.
+- **Acceptance tests:** PowerShell parse; worker unit/compatibility suites; exact-head Heaven Local Bridge gate; task settings prove no 72-hour execution limit and maximum restart count; watchdog source contains no Git dependency; live worker-kill recovery; live watchdog-kill/restart recovery; `STATUS` green on both `heaven2` and `heaven`.
+- **Owner / branch / PR:** owner = current reliability lane; branch = `fix/heaven2-bridge-self-heal-20260929`; PR #230.
+- **Completion evidence:** pending exact-head gate, canonical-main integration, transport sync, and live two-host recovery verification.

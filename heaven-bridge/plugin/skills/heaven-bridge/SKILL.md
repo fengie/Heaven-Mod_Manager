@@ -51,6 +51,12 @@ The `id` must match the queue filename. New plugin-generated jobs must set `targ
 
 The private-repo ACL is the compatibility auth mode when no local HMAC key is configured. If `HEAVEN_BRIDGE_HMAC_KEY` is configured on the worker, jobs must follow the worker's HMAC-SHA256 signing format; do not invent or transmit the secret through GitHub.
 
+## Self-healing host requirement
+
+A host is not bridge-ready merely because one worker process is running. The persistent control path requires the canonical worker plus the independent `Heaven Local Bridge Watchdog`, current runtime copies, an up-to-date Git-independent local heartbeat, elevated task registration, and the remote host heartbeat. Bootstrap must refresh both task definitions so they run indefinitely and retain the maximum Task Scheduler restart budget.
+
+When a bridge host is offline, prefer its independent watchdog/startup recovery path. Do not require the dead worker to execute its own repair. For `heaven2`, treat loss of this persistence as a P1 control-plane defect because desktop/control operations have no equivalent authorized fallback.
+
 ## Health and capability negotiation
 
 Start a new workflow with `health` when worker state matters. Healthy v6 must report `status: completed` and a `host` matching the requested `target_host`, `data.worker_version: 6`, `data.protocol: chatgpt-heaven-bridge-v2`, `data.elevated: true` when admin work is required, and advertised actions/capabilities. Also inspect `heaven-bridge/status/hosts/<target_host>/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
