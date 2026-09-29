@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-104130-releasefix-cancel-installgh",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:41:49.956852+00:00"
+}
