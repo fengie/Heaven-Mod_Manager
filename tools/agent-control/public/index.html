@@ -46,6 +46,14 @@
     .control-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
     .control-grid .wide { grid-column:1 / -1; }
     .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .start-card { align-self:start; }
+    .start-hero { display:grid; gap:10px; padding:8px 0 4px; }
+    .start-swarm { width:100%; min-height:88px; font-size:22px; font-weight:900; letter-spacing:.04em; }
+    .start-status { color:var(--muted); line-height:1.45; text-align:center; }
+    details.diagnostics { margin-top:16px; }
+    details.diagnostics > summary { cursor:pointer; color:var(--muted); font-weight:800; padding:14px 16px; }
+    details.diagnostics[open] > summary { color:var(--text); border-bottom:1px solid var(--line); }
+    .diagnostics-body { padding:0 12px 12px; }
     .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:10px 0 12px; }
     .quick-action,.quick-autopilot { min-height:58px; text-align:left; font-weight:800; padding:12px 13px; }
     .quick-action small,.quick-autopilot small { display:block; margin-top:3px; color:var(--muted); font-weight:500; line-height:1.25; }
@@ -105,37 +113,25 @@
       <div>
         <div class="eyebrow">MHW Swarm · Control Plane</div>
         <h1>Agent Control</h1>
-        <div class="sub">Federated runtime view of ChatGPT sessions, local workers, control-machine state, GitHub/CI, leases, outputs, and integration candidates.</div>
+        <div class="sub">Open Agent Control, press Start Swarm, and let the controller handle the setup.</div>
       </div>
       <div class="toolbar">
         <div class="pill" id="connection">Connecting…</div>
-        <button id="refresh">Refresh</button>
-        <button id="sync">Sync Git</button>
       </div>
     </header>
 
     <div class="grid">
-      <aside class="card composer">
-        <div class="section-title"><h2>One-click launch</h2><span class="pill" id="repoPill">repo</span></div>
-
-        <div class="quick-grid">
-          <button class="quick-action primary" id="quickContinue" data-preset="continue">▶ Continue Project<small>Pick the highest-value unfinished work and keep going.</small></button>
-          <button class="quick-action" id="quickSwarm" data-preset="swarm">🐝 Usual Swarm<small>Manager + primary programmer + support lanes.</small></button>
-          <button class="quick-action" id="quickFix" data-preset="fix">🐛 Fix Bugs<small>Find, reproduce, fix, regress, and verify.</small></button>
-          <button class="quick-action" id="quickPlan" data-preset="planned">🧱 Implement Planned<small>Take the next useful planned features to completion.</small></button>
-          <button class="quick-action" id="quickVerify" data-preset="verify">✅ Verify & Repair<small>Run gates, repair failures, and leave evidence.</small></button>
-          <button class="quick-action" id="quickBacklog" data-preset="backlog">🔀 Clean Backlog<small>Resolve useful issues/PRs/branches and clean stale work.</small></button>
-          <button class="quick-action" id="quickRelease" data-preset="release">🚀 Release Ready<small>Finish release gates and publish when allowed.</small></button>
-          <button class="quick-autopilot" id="quickAutopilot">♾ Start Autopilot<small>Keep advancing routine engineering until a governed gate.</small></button>
+      <aside class="card composer start-card">
+        <div class="section-title"><h2>Start the swarm</h2><span class="pill" id="repoPill">ready</span></div>
+        <div class="start-hero">
+          <button class="primary start-swarm" id="startSwarm">▶ START SWARM</button>
+          <div class="start-status" id="startSwarmStatus">One click fills the useful Manager, Primary Programmer, and support lanes. Internal modes and routing are handled for you.</div>
         </div>
 
-        <label for="task">Custom objective <span style="font-weight:400">(optional)</span></label>
-        <textarea id="task" style="min-height:92px" placeholder="Leave blank and click Deploy Usual Swarm to continue the highest-value unfinished work."></textarea>
-        <button class="primary deploy-now" id="deploySwarm">Deploy Usual Swarm</button>
-        <div class="tiny">No typing required. The button uses a safe default objective when this box is blank.</div>
-
         <details class="advanced">
-          <summary>Advanced deploy options</summary>
+          <summary>Custom launch options</summary>
+          <label for="task">Custom objective <span style="font-weight:400">(optional)</span></label>
+          <textarea id="task" style="min-height:92px" placeholder="Leave blank to continue the highest-value unfinished work."></textarea>
 
           <div class="row2">
             <div>
@@ -150,7 +146,6 @@
 
           <label for="boundary">Mutable boundary lease <span style="font-weight:400">(optional)</span></label>
           <input id="boundary" placeholder="Example: updater-release-pipeline" spellcheck="false" />
-          <div class="tiny">Leave blank for an isolated per-agent lease. Name a boundary when you want collision prevention across related work.</div>
 
           <div class="row3">
             <div>
@@ -179,8 +174,6 @@
             <button class="deploy" data-role="release">Release</button>
           </div>
         </details>
-
-        <div class="tiny">Controller capacity, ownership, leases, and server-side authorization remain authoritative. Unsupported remote placement still fails closed.</div>
       </aside>
 
       <main>
@@ -198,6 +191,13 @@
           <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
         </div>
 
+        <details class="card diagnostics">
+          <summary>Advanced / diagnostics</summary>
+          <div class="diagnostics-body">
+            <div class="actions">
+              <button id="refresh">Refresh status</button>
+              <button id="sync">Sync Git</button>
+            </div>
         <section class="card section">
           <div class="section-title">
             <h2>Operator controls</h2>
@@ -249,6 +249,10 @@
           </div>
           <div class="tiny" id="autopilotMeta">Autopilot never auto-merges or publishes. Stale routing, missing structured evidence, exhausted repair budget, and safety boundaries stop the loop.</div>
         </section>
+
+
+          </div>
+        </details>
 
         <section class="card section">
           <div class="section-title">
@@ -697,17 +701,10 @@
     }
 
     function setDeployControlsDisabled(disabled) {
-      document.querySelectorAll(".deploy, .quick-action, .quick-autopilot, #deploySwarm").forEach(button => button.disabled = disabled);
+      document.querySelectorAll(".deploy, #startSwarm").forEach(button => button.disabled = disabled);
     }
 
-    async function runPreset(key) {
-      const objective = presetObjectives[key];
-      if (!objective) return toast("Unknown quick action.");
-      $("task").value = objective;
-      await deploySwarm(objective);
-    }
-
-    async function deploySwarm(objectiveOverride="") {
+    async function startSwarm(objectiveOverride="") {
       const objective = (objectiveOverride || $("task").value.trim() || presetObjectives.continue).trim();
       $("task").value = objective;
       if (state.busy) return;
@@ -715,7 +712,8 @@
       setDeployControlsDisabled(true);
 
       try {
-        const result = await api("/api/workflows/usual-swarm/execute", {
+        $("startSwarmStatus").textContent = "Starting swarm…";
+        const result = await api("/api/swarm/start", {
           method:"POST",
           body:JSON.stringify({
             objective,
@@ -728,9 +726,12 @@
         const created = result.created || [];
         const blocked = (result.blocked || []).map(item => item?.error || item).filter(Boolean);
         if (!created.length && blocked.length) throw new Error(blocked.join(" "));
-        toast(`Deployed swarm: ${created.length} new agent${created.length === 1 ? "" : "s"}${blocked.length ? ` · ${blocked.join(" ")}` : "."}`);
+        const message = created.length ? `Started ${created.length} missing swarm lane${created.length === 1 ? "" : "s"}.` : "Swarm is already covered; no missing lanes to start.";
+        $("startSwarmStatus").textContent = blocked.length ? `${message} ${blocked.join(" ")}` : message;
+        toast(message);
         await refresh();
       } catch (error) {
+        $("startSwarmStatus").textContent = error.message;
         toast(error.message);
       } finally {
         state.busy = false;
@@ -803,9 +804,7 @@
     }
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
-    document.querySelectorAll(".quick-action[data-preset]").forEach(button => button.addEventListener("click", () => runPreset(button.dataset.preset)));
-    $("quickAutopilot").addEventListener("click", () => autopilotAction("start", presetObjectives.continue));
-    $("deploySwarm").addEventListener("click", () => deploySwarm());
+    $("startSwarm").addEventListener("click", () => startSwarm());
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
     $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
