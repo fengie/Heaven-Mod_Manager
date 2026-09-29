@@ -1,0 +1,17 @@
+{
+  "id": "swarm-20260929-1546-sandbox-exe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:46:02Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:47:47.981997+00:00",
+  "finished_at": "2026-09-29T15:47:47.984543+00:00",
+  "host": "heaven",
+  "action": "fs_write",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\swarm-sandbox-fabf715f\\FakeMHW\\MonsterHunterWorld.exe",
+    "bytes": 0,
+    "mode": "rewrite"
+  },
+  "job_hash": "44d39af1aa343d78117d08a5ad640257f777d4947b45a7b19904ba82f195c3f1"
+}
