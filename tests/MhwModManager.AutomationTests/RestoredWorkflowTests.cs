@@ -21,8 +21,8 @@ public sealed class RestoredWorkflowTests : IDisposable
     {
         var package = Path.Combine(root, "package");
         Directory.CreateDirectory(Path.Combine(package, "fomod"));
-        await File.WriteAllTextAsync(Path.Combine(package, "a.tex"), "A");
-        await File.WriteAllTextAsync(Path.Combine(package, "b.tex"), "B");
+        await File.WriteAllTextAsync(Path.Combine(package, "a.tex"), "A", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(package, "b.tex"), "B", TestContext.Current.CancellationToken);
         await File.WriteAllTextAsync(Path.Combine(package, "fomod", "ModuleConfig.xml"), """
         <config>
           <moduleName>Test</moduleName>
@@ -39,7 +39,7 @@ public sealed class RestoredWorkflowTests : IDisposable
             </installStep>
           </installSteps>
         </config>
-        """);
+        """, TestContext.Current.CancellationToken);
 
         var service = new FomodInstallerService(package);
         var game = GameProfile.MonsterHunterWorld(root);
@@ -56,14 +56,14 @@ public sealed class RestoredWorkflowTests : IDisposable
     public async Task RulesEditorRejectsOverlayCyclesOnCurrentSnapshotRepository()
     {
         var db = new ManagerDatabase(Path.Combine(root, "rules.db"));
-        await db.InitializeAsync();
-        await db.UpsertModAsync(new("a", "a", "a", Path.Combine(root, "a"), true, 1));
-        await db.UpsertModAsync(new("b", "b", "b", Path.Combine(root, "b"), true, 2));
-        await db.ReplaceModFilesAsync("a", [new("a", @"nativePC\a.tex", new string('a', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)]);
-        await db.ReplaceModFilesAsync("b", [new("b", @"nativePC\a.tex", new string('b', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)]);
+        await db.InitializeAsync(TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("a", "a", "a", Path.Combine(root, "a"), true, 1), TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("b", "b", "b", Path.Combine(root, "b"), true, 2), TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("a", [new("a", @"nativePC\a.tex", new string('a', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)], TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b", [new("b", @"nativePC\a.tex", new string('b', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)], TestContext.Current.CancellationToken);
 
         var rules = new RulesEditorService(db);
-        await rules.SaveAsync(new("ab", RuleKind.Overlay, RuleScope.ModPair, "a", "b", "b", null, "b overlays a", true, DateTimeOffset.UtcNow));
+        await rules.SaveAsync(new("ab", RuleKind.Overlay, RuleScope.ModPair, "a", "b", "b", null, "b overlays a", true, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
         var ex = await Assert.ThrowsAsync<InvalidDataException>(() =>
             rules.SaveAsync(new("ba", RuleKind.Overlay, RuleScope.ModPair, "b", "a", "a", null, "cycle", true, DateTimeOffset.UtcNow)));
         Assert.Contains("cycle", ex.Message, StringComparison.OrdinalIgnoreCase);
