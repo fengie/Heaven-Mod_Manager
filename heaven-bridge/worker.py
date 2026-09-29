@@ -33,6 +33,7 @@ SCREENSHOTS_DIR = STATE / "screenshots"
 LOCKS_DIR = STATE / "locks"
 CACHE_DIR = STATE / "result-cache"
 PROCESSED_LOG = STATE / "processed.jsonl"
+CONTROLLER_STATE_PATH = "heaven-bridge/controller/state.json"
 
 MAX_TIMEOUT = int(os.environ.get("HEAVEN_BRIDGE_MAX_TIMEOUT", "7200"))
 MAX_OUTPUT_TAIL = int(os.environ.get("HEAVEN_BRIDGE_MAX_OUTPUT_TAIL", "60000"))
@@ -58,9 +59,10 @@ RECENT_STARTS = collections.deque()
 LAST_HEARTBEAT = 0.0
 
 SENSITIVE_ENV_RE = re.compile(r"(PASS|PASSWORD|TOKEN|SECRET|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH)", re.I)
+CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
 
 DIRECT_ACTIONS = {
-    "health", "system_info", "job_status", "cancel", "job_output_read",
+    "health", "system_info", "job_status", "cancel", "job_output_read", "controller_checkpoint",
     "fs_read", "fs_read_many", "fs_write", "fs_edit", "fs_mkdir",
     "fs_list", "fs_move", "fs_copy", "fs_delete", "fs_info", "fs_search",
     "fs_read_binary", "fs_write_binary",
@@ -69,7 +71,7 @@ DIRECT_ACTIONS = {
     "powershell", "cmd", "python", "codex",
 }
 CONTROL_ACTIONS = {
-    "health", "system_info", "job_status", "cancel",
+    "health", "system_info", "job_status", "cancel", "controller_checkpoint",
     "proc_read", "proc_input", "proc_kill", "proc_list_sessions",
 }
 RAW_ACTIONS = {"powershell", "cmd", "python", "codex"}
@@ -205,6 +207,59 @@ def publish_json(relative_path, body, message, max_attempts=6):
                 git("rebase", "--abort", check=False)
             time.sleep(min(12, 1.5 ** attempt))
     raise BridgeError("RESULT_PUBLISH_FAILED", "could not publish relay JSON", {"path": relative_path, "last_error": last})
+
+
+def find_sensitive_controller_key(value, path="$"):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            key_text = str(key)
+            child_path = f"{path}.{key_text}"
+            if CONTROLLER_SECRET_KEY_RE.search(key_text):
+                return child_path
+            found = find_sensitive_controller_key(child, child_path)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            found = find_sensitive_controller_key(child, f"{path}[{index}]")
+            if found:
+                return found
+    return None
+
+
+def write_controller_checkpoint(state, expected_previous_cycle_id):
+    if not isinstance(state, dict):
+        raise BridgeError("INVALID_CONTROLLER_STATE", "params.state must be a JSON object")
+    if state.get("schema") != "permanent-dev-controller-v1":
+        raise BridgeError("INVALID_CONTROLLER_STATE", "unsupported controller state schema", {"schema": state.get("schema")})
+    cycle_id = str(state.get("cycle_id") or "").strip()
+    expected = str(expected_previous_cycle_id or "").strip()
+    if not cycle_id:
+        raise BridgeError("INVALID_CONTROLLER_STATE", "state.cycle_id is required")
+    if not expected:
+        raise BridgeError("EXPECTED_PREVIOUS_CYCLE_REQUIRED", "params.expected_previous_cycle_id is required")
+    sensitive_path = find_sensitive_controller_key(state)
+    if sensitive_path:
+        raise BridgeError("CONTROLLER_STATE_SECRET_KEY_BLOCKED", "controller state contains a secret-like field name", {"path": sensitive_path})
+
+    # Hold the relay git lock from authoritative refresh through the checkpoint
+    # publication so two controllers cannot both pass the same stale-state check.
+    with GIT_LOCK:
+        git_sync()
+        target = ROOT / CONTROLLER_STATE_PATH
+        if not target.exists():
+            raise BridgeError("CONTROLLER_STATE_MISSING", "controller state file is missing")
+        try:
+            previous = json.loads(target.read_text(encoding="utf-8-sig"))
+        except Exception as e:
+            raise BridgeError("CONTROLLER_STATE_INVALID", "existing controller state is not valid JSON", {"error": repr(e)})
+        actual = str(previous.get("cycle_id") or "").strip()
+        if actual != expected:
+            raise BridgeError("STALE_CONTROLLER_STATE", "controller state advanced since this cycle started", {"expected_previous_cycle_id": expected, "actual_cycle_id": actual})
+        if cycle_id == actual:
+            raise BridgeError("CONTROLLER_CYCLE_NOT_ADVANCED", "new controller state must advance cycle_id", {"cycle_id": cycle_id})
+        publish_json(CONTROLLER_STATE_PATH, state, f"heaven bridge controller checkpoint {cycle_id}")
+    return {"path": CONTROLLER_STATE_PATH, "previous_cycle_id": actual, "cycle_id": cycle_id, "persisted": True}
 
 
 def safe_id(name):
@@ -781,6 +836,10 @@ def run_job(job_id, job, cancel_event):
     if action == "job_output_read":
         data = read_output_chunk(str(p.get("job_id") or ""), str(p.get("stream") or "stdout"),
                                  p.get("offset", 0), p.get("length", 200000))
+        return make_result(job, action, data=data, started_at=started)
+
+    if action == "controller_checkpoint":
+        data = write_controller_checkpoint(p.get("state"), p.get("expected_previous_cycle_id"))
         return make_result(job, action, data=data, started_at=started)
 
     if action == "fs_read":
