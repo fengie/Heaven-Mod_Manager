@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0851-agent-control-api-snapshot",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:51:10Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:52:11.890645+00:00",
+  "finished_at": "2026-09-29T08:52:12.318707+00:00",
+  "stdout": "HTTP 0\r\n",
+  "stderr": "Invoke-WebRequest : {\r\n  \"error\": \"Not found.\"\r\n}\r\nAt line:1 char:4\r\n+ $r=Invoke-WebRequest -UseBasicParsing -TimeoutSec 10 http://127.0.0.1 ...\r\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-WebRequest], WebExc \r\n   eption\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0851-agent-control-api-snapshot.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0851-agent-control-api-snapshot.stderr.log",
+    "stdout_bytes": 8,
+    "stderr_bytes": 466,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "bfd8ad6fb5cd79bbdbefc87300c8e66c6aaebb8ca6d023a3c42cb984d81a7332"
+}
