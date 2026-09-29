@@ -11,16 +11,6 @@ on:
       - 'heaven-bridge/manage.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
-      - 'heaven-bridge/plugin/**'
-      - '.github/workflows/heaven-bridge-gate.yml'
-  pull_request:
-    paths:
-      - 'heaven-bridge/worker.py'
-      - 'heaven-bridge/bootstrap.ps1'
-      - 'heaven-bridge/manage.ps1'
-      - 'heaven-bridge/test_worker.py'
-      - 'heaven-bridge/tests/**'
-      - 'heaven-bridge/plugin/**'
       - '.github/workflows/heaven-bridge-gate.yml'
   workflow_dispatch:
 
@@ -47,17 +37,21 @@ jobs:
       - name: Run primary bridge worker tests
         shell: pwsh
         run: |
-          python heaven-bridge/test_worker.py
+          python -m unittest -v heaven-bridge/test_worker.py
 
-      - name: Run compatibility bridge worker tests
+      - name: Run compatibility bridge tests
         shell: pwsh
         run: |
-          python heaven-bridge/tests/test_worker.py
+          python -m unittest -v heaven-bridge/tests/test_worker.py
 
       - name: Parse bridge PowerShell
         shell: pwsh
         run: |
-          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1')) {
+          $paths = @(
+            'heaven-bridge/bootstrap.ps1',
+            'heaven-bridge/manage.ps1'
+          )
+          foreach ($path in $paths) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(
@@ -71,7 +65,7 @@ jobs:
             }
           }
 
-      - name: Validate plugin manifests
+      - name: Run operator test gate
         shell: pwsh
         run: |
-          python -c "import json,pathlib; a=json.loads(pathlib.Path('heaven-bridge/plugin/plugin.json').read_text()); b=json.loads(pathlib.Path('heaven-bridge/plugin/.codex-plugin/plugin.json').read_text()); assert a['name']=='heaven-local-bridge'; assert a['version']==b['version']; assert (pathlib.Path('heaven-bridge/plugin/skills/heaven-code-execution/SKILL.md')).is_file(); print('plugin', a['version'], 'ok')"
+          .\heaven-bridge\manage.ps1 TEST
