@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0037-deploy-checkpoint-worker",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T00:37:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $bootstrap=Join-Path $env:USERPROFILE 'HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'; if(-not (Test-Path $bootstrap)){throw \"bootstrap missing: $bootstrap\"}; Start-Process powershell.exe -WindowStyle Hidden -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-Command',(\"Start-Sleep -Seconds 5; & '\"+$bootstrap+\"'\"); Write-Output 'HEAVEN_BRIDGE_RESTART_SCHEDULED'"
+  },
+  "priority": "highest"
+}
