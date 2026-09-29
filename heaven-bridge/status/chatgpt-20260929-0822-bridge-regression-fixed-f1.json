@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0822-bridge-regression-fixed-f1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:20:58.951188+00:00"
+  "updated_at": "2026-09-29T08:21:06.833702+00:00",
+  "exit_code": 1
 }
