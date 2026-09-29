@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0905-read-recovered-session",
+  "state": "running",
+  "action": "proc_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:05:21.281729+00:00"
+}
