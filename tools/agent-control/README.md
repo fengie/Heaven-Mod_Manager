@@ -4,11 +4,15 @@ A zero-dependency local control plane for the MHW programming-agent swarm.
 
 This is the execution layer that sits above the repository's existing agent doctrine and continuity system:
 
-**You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
+**You → federated providers → normalized agent registry → heartbeat/reconciliation → tasks/leasing/routing → review/integration → Git/CI**
 
-## What v0.4.1 does
+## What v0.5.0 does
 
 - Runs locally on `127.0.0.1:7331` by default.
+- Maintains a normalized federated agent registry across managed local workers plus bridge-registered ChatGPT sessions, `heaven2` control state, and GitHub/CI observations.
+- Reconciles stable source identities into logical `agent_id` records, supports explicit cross-provider correlation keys, and keeps simultaneous sessions distinct unless they are deliberately correlated.
+- Defines normalized agent states `working`, `tool_wait`, `blocked`, `idle`, `done`, `failed`, and `disconnected`, with explicit fresh/stale/disconnected heartbeat semantics.
+- Derives the dashboard's live-agent count from fresh normalized live states; completed/failed historical records never inflate current capacity.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
 - Gives every deployed agent its own Git worktree and unique `agent/control-*` branch.
 - Maintains a runtime registry of:
@@ -23,18 +27,25 @@ This is the execution layer that sits above the repository's existing agent doct
 - Enforces a local active-worker capacity.
 - Lets you stop a managed worker.
 - Lets you launch a reviewer against a completed agent branch with one click.
-- Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Remote Desktop Commander.
+- Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through the user's authorized Heaven Local Bridge.
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
 - Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
 - Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
 - Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 
-## Important limitation
+## Federation providers
 
-The controller is authoritative for workers it launches, but it does **not** assume that its local registry describes the whole engineering organization.
+Provider capability is represented honestly:
 
-External PR/session ownership is supplied through a freshness-scoped routing manifest. Broad `usual-swarm` execution fails closed when that ownership context is unavailable or expired, rather than silently creating duplicate implementation lanes.
+- `local-control` — automated discovery/registration for workers launched by this controller.
+- `chatgpt` — bridge registration is implemented; automatic enumeration of arbitrary ChatGPT project sessions is not available.
+- `github` — bridge registration is implemented for PR/workflow/automation observations when stable IDs are available.
+- `heaven2-control` — bridge registration is implemented for control-machine state.
+
+External observations use stable `provider + source_id` identity and may include explicit `correlation_keys` to reconcile the same logical worker across providers. Similar titles are display metadata only and do not merge sessions.
+
+The routing manifest remains the authoritative ownership overlay for broad planning. Fresh normalized federated agents also participate in duplicate-work prevention, so a live external Manager/Main/support lane is not treated as missing merely because no local child process exists.
 
 ## Start
 
@@ -63,6 +74,11 @@ http://127.0.0.1:7331
 node .\agentctl.mjs status
 node .\agentctl.mjs snapshot
 node .\agentctl.mjs workers
+node .\agentctl.mjs federation
+node .\agentctl.mjs providers
+node .\agentctl.mjs federation-register --file C:\Temp\agent-observation.json
+node .\agentctl.mjs federation-heartbeat --file C:\Temp\agent-heartbeat.json
+node .\agentctl.mjs provider-heartbeat chatgpt --status online
 node .\agentctl.mjs leases
 node .\agentctl.mjs queue
 node .\agentctl.mjs branches
@@ -136,6 +152,8 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - Counted deploy requests preflight the whole batch against available capacity, so a near-capacity request is rejected before any partial worker launch.
 - Pre-launch setup failures converge reserved tasks to failed, release their lease only because no process was launched, and explicitly retain any created worktree/branch for evidence-safe cleanup.
 - Broad `usual-swarm` execution requires current reconciled ownership context.
+- Fresh federated agents participate in role/lane occupancy and mission selection, reducing duplicate implementation lanes across local and external runtimes.
+- Stale/disconnected external observations remain visible for diagnosis but do not count as live capacity.
 - An authoritative routing manifest fills only manager-declared open slots; claimed external ownership counts as occupied, while stale/superseded claims do not block a lane forever.
 - Autonomy permissions are checked server-side before workflow execution, direct deployment, review dispatch, persisted takeover/evidence mutation, integration verdict mutation, and self-improvement execution.
 - Engineering autopilot is control-authority-bound to `heaven2`; it rechecks remote `main` with `git ls-remote` and requires a current routing manifest before advancing.
@@ -145,8 +163,8 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 ## ChatGPT plugin
 
-`chatgpt-plugin/` contains a private skills-only plugin designed to let ChatGPT operate this local controller through the already connected **Remote Desktop Commander** app.
+`chatgpt-plugin/` contains a private skills-only plugin designed to let ChatGPT operate this local controller through the user's authorized **Heaven Local Bridge**. Do not silently substitute another remote-control system when the local bridge is available.
 
-That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin therefore tells ChatGPT how to locate `agentctl.mjs`, start the controller when needed, write task text to a temporary file, deploy agents, inspect the snapshot, read logs, stop workers, and launch reviewers through the authorized Heaven machine.
+ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The bridge can operate `agentctl.mjs`, and it can also publish stable ChatGPT/GitHub/control-machine observations to the federation endpoints without inventing telemetry.
 
-See `CONTROL_PLANE.md` for the current v0.4.1 architecture, engineering-autopilot state machine, and remaining remote-worker transport work.
+See `CONTROL_PLANE.md` for the current v0.5.0 architecture, heartbeat semantics, engineering-autopilot state machine, and remaining authenticated remote-worker transport work.
