@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-audit-remaining-20260929-1112",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:12:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\ngit -C $repo fetch origin --prune\n$branches=@(\n'agent/bridge-uia-native-20260929',\n'agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm',\n'agent/launch-observation-atomicity-20260928',\n'agent/swarm-contract-v3-20260929-0540',\n'agent-bridge',\n'codex/complete-mod-workflows',\n'fix/codex-quota-dispatch-circuit-20260929'\n)\n$out=@()\nforeach($b in $branches){\n  git -C $repo show-ref --verify --quiet (\"refs/remotes/origin/\"+$b)\n  if($LASTEXITCODE -ne 0){$out += [pscustomobject]@{branch=$b;state='missing'}; continue}\n  $tip=(git -C $repo rev-parse (\"origin/\"+$b)).Trim()\n  $counts=(git -C $repo rev-list --left-right --count (\"origin/main...origin/\"+$b)).Trim() -split '\\s+'\n  $cherry=@(git -C $repo cherry origin/main (\"origin/\"+$b))\n  $plus=@($cherry | Where-Object {$_ -like '+ *'})\n  $minus=@($cherry | Where-Object {$_ -like '- *'})\n  $subjects=@()\n  foreach($line in $plus){\n    $sha=($line -split '\\s+')[1]\n    $subjects += (git -C $repo show -s --format='%h %s' $sha).Trim()\n  }\n  $out += [pscustomobject]@{\n    branch=$b; tip=$tip; behind=[int]$counts[0]; ahead=[int]$counts[1];\n    patch_unique_count=$plus.Count; patch_equivalent_count=$minus.Count;\n    patch_unique_commits=$subjects\n  }\n}\n[pscustomobject]@{main=(git -C $repo rev-parse origin/main).Trim(); branches=$out} | ConvertTo-Json -Depth 6",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 300
+  },
+  "priority": "highest"
+}
