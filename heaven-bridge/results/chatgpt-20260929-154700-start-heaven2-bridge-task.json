@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-154700-start-heaven2-bridge-task",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:47:00Z",
+  "status": "timeout",
+  "exit_code": 124,
+  "started_at": "2026-09-29T15:46:44.069529+00:00",
+  "finished_at": "2026-09-29T15:47:04.504590+00:00",
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154700-start-heaven2-bridge-task.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154700-start-heaven2-bridge-task.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3d3b1288c3058c737a3edaff135b4a33e3c2fa1913540303b7c93b5ca4565cd3"
+}
