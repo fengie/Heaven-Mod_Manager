@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-095900-branch-audit-ps-31f8",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:57:29.768554+00:00"
+  "updated_at": "2026-09-29T10:05:31.169802+00:00",
+  "exit_code": 0
 }
