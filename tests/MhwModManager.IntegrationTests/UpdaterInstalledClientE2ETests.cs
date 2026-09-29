@@ -505,9 +505,7 @@ public sealed class UpdaterInstalledClientE2ETests
                 x.Name, "update-manifest.json", StringComparison.OrdinalIgnoreCase));
         var manifestBytes = await DownloadAssetBytesAsync(
             http, token, manifestAsset.ApiUrl, 64 * 1024, ct);
-        var manifest = JsonSerializer.Deserialize<UpdateManifest>(
-                           manifestBytes, UpdateProtocol.Json)
-                       ?? throw new InvalidDataException($"Release {tag} manifest is empty.");
+        var manifest = DeserializeManifestBytes(manifestBytes, tag);
         manifest.Validate();
         Assert.Equal(expectedBuild, manifest.BuildNumber);
         Assert.Equal(expectedSource, manifest.SourceSha, ignoreCase: true);
@@ -529,6 +527,15 @@ public sealed class UpdaterInstalledClientE2ETests
         Assert.Equal(manifest.Sha256, archiveHash, ignoreCase: true);
 
         return new DownloadedRelease(manifest, archivePath);
+    }
+
+    private static UpdateManifest DeserializeManifestBytes(byte[] bytes, string tag)
+    {
+        ReadOnlySpan<byte> json = bytes;
+        if (json.Length >= 3 && json[0] == 0xEF && json[1] == 0xBB && json[2] == 0xBF)
+            json = json[3..];
+        return JsonSerializer.Deserialize<UpdateManifest>(json, UpdateProtocol.Json)
+               ?? throw new InvalidDataException($"Release {tag} manifest is empty.");
     }
 
     private static HttpRequestMessage CreateGitHubRequest(
