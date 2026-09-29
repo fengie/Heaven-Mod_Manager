@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-1548-clean-closed-branches",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:47:55.050917+00:00"
+  "updated_at": "2026-09-29T15:48:27.555406+00:00",
+  "exit_code": 0
 }
