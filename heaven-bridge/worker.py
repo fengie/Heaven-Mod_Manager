@@ -13,7 +13,7 @@ import threading
 import time
 import uuid
 from ctypes import wintypes
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 WORKER_VERSION = 4
@@ -1771,7 +1771,7 @@ def consume_secret_value(p):
         created = _parse_secret_time(envelope.get("created_at"), "created_at")
         expires = _parse_secret_time(envelope.get("expires_at"), "expires_at")
         current = utcnow()
-        if created > current.replace(microsecond=current.microsecond) + __import__("datetime").timedelta(seconds=FUTURE_SKEW_SECONDS):
+        if created > current + timedelta(seconds=FUTURE_SKEW_SECONDS):
             raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope creation time is invalid")
         ttl = (expires - created).total_seconds()
         if ttl <= 0 or ttl > SECRET_MAX_TTL_SECONDS:
