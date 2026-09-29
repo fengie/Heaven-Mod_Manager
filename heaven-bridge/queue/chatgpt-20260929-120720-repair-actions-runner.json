@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-120720-repair-actions-runner",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$script='C:\\Users\\Xxkan\\mhw-mods-work-canonical\\heaven-bridge\\install-github-runner.ps1'\nif (-not (Test-Path -LiteralPath $script)) { throw \"runner installer missing: $script\" }\n& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -Repository 'fengie/mhw-mods' -RunnerName 'heaven' -RunnerDirectory 'C:\\Users\\Xxkan\\actions-runner-heaven' -Labels 'heaven-v2','local-bridge','mhw-mods'\nif ($LASTEXITCODE -ne 0) { throw \"runner installer failed: $LASTEXITCODE\" }",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T12:07:20Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
