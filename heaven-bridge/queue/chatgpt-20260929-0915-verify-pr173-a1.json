@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0915-verify-pr173-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'; $wt='C:\\Users\\Xxkan\\mhw-worktrees\\verify-pr173'; git -C $repo fetch origin fix/release-windows-host-detection-20260929 --prune; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null }; git -C $repo worktree add --detach $wt origin/fix/release-windows-host-detection-20260929; Push-Location $wt; try { powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\\scripts\\Verify-Release.ps1'; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output ('VERIFIED_HEAD='+(git rev-parse HEAD)); git status --short } finally { Pop-Location }"
+  },
+  "created_at": "2026-09-29T13:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
