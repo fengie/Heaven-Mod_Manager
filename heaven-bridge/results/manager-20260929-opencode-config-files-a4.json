@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-opencode-config-files-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:51:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:46:29.551447+00:00",
+  "finished_at": "2026-09-29T08:46:30.005682+00:00",
+  "stdout": "{\r\n    \"Name\":  \"service.json\",\r\n    \"Length\":  64,\r\n    \"LastWriteTimeUtc\":  \"\\/Date(1790591051450)\\/\"\r\n}\r\n---FILE service.json---\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-config-files-a4.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-opencode-config-files-a4.stderr.log",
+    "stdout_bytes": 133,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a80ae3e6f873b31a420973901e6ab5e6f72c32fbf261f0f9cd1bed5b1982d47e"
+}
