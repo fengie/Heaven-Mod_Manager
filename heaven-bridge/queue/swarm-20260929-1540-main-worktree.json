@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-1540-main-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop'; git fetch origin main; $p='C:\\Users\\Xxkan\\HeavenWork\\swarm-main-499f4fd3'; if(Test-Path $p){ throw \"WORKTREE_EXISTS $p\" }; git worktree add --detach $p 499f4fd3e3f53c97569f94b439168a39097f53c0; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; git -C $p rev-parse HEAD; git -C $p status --short --branch"
+  },
+  "created_at": "2026-09-29T15:40:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
