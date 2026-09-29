@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0853-pr90-merge-start-e1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; $wt='C:\\Users\\Xxkan\\mhw-pr90-integration'; $tmp='integration/pr90-reconcile-local-20260929'; git -C $repo fetch origin --prune; if(Test-Path $wt){ throw 'WORKTREE_PATH_EXISTS' }; if((git -C $repo branch --list $tmp)){ throw 'TEMP_BRANCH_EXISTS' }; git -C $repo worktree add -b $tmp $wt origin/agent/game-profile-id-containment-v8.8.5-reconcile; Set-Location $wt; $ec=0; git merge --no-commit --no-ff origin/main; if($LASTEXITCODE -ne 0){$ec=$LASTEXITCODE}; 'MERGE_EXIT='+$ec; 'STATUS_BEGIN'; git status --short --branch; 'STATUS_END'; 'CONFLICTS_BEGIN'; git diff --name-only --diff-filter=U; 'CONFLICTS_END'; 'HEAD='+(git rev-parse HEAD); 'MAIN='+(git rev-parse origin/main); exit 0",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T08:53:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
