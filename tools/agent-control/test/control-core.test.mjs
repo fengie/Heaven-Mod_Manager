@@ -243,14 +243,14 @@ test("autonomy profiles enforce declared permissions and workflow requirements",
   assert.equal(workflowPermission("unknown-workflow"), null);
 });
 
-test("heaven is the default repository-writing worker while heaven2 remains control authority", () => {
+test("heaven is the preferred heavy worker but repository credentials remain explicitly scoped", () => {
   const current = state();
-  const heaven = canUseMachineForRepositoryWrite(current, "heaven", false);
-  const heavenExplicit = canUseMachineForRepositoryWrite(current, "heaven", true);
+  const heavenDefault = canUseMachineForRepositoryWrite(current, "heaven", false);
+  const heavenAuthorized = canUseMachineForRepositoryWrite(current, "heaven", true);
   const heaven2 = canUseMachineForRepositoryWrite(current, "heaven2", false);
   const unknown = canUseMachineForRepositoryWrite(current, "unknown-worker", false);
-  assert.equal(heaven.allowed, true);
-  assert.equal(heavenExplicit.allowed, true);
+  assert.equal(heavenDefault.allowed, false);
+  assert.equal(heavenAuthorized.allowed, true);
   assert.equal(heaven2.allowed, true);
   assert.equal(unknown.allowed, false);
 });
