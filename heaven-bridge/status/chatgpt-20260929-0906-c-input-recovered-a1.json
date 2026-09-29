@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0906-c-input-recovered-a1",
+  "state": "running",
+  "action": "proc_input",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:06:48.793323+00:00"
+}
