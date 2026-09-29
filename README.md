@@ -1,4 +1,12 @@
-# v8.8.14 Universal Mod Manager
+# v8.8.15 Universal Mod Manager
+
+## v8.8.15 — true visual overhaul
+
+The application shell and Dashboard now have a genuinely different information architecture rather than another wording-only pass. The old two-row command strip and dominant 2×2 stat-card grid are replaced by a single app bar, a current-setup hero with the next actions directly attached, a compact metric strip, and separate Setup Details / Quick Actions areas.
+
+The shared WPF visual system now uses deeper navy surfaces, teal interaction accents, larger-radius cards, clearer selected navigation, and reusable action tiles across the app. Deployment, updater, conflict, rollback, filesystem, and diagnostics behavior is unchanged; the redesign reuses the existing commands and bindings.
+
+Runtime diagnostics now also report the executing build identity instead of stale hard-coded v8.3.0/v8.8.6 labels in support bundles, startup trace records, and structured logs.
 
 ## v8.8.14 — fail-closed Smart Inbox rollback
 
