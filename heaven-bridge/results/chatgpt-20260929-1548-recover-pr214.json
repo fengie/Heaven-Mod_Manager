@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1548-recover-pr214",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:48:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:46:47.950934+00:00",
+  "finished_at": "2026-09-29T15:46:50.781861+00:00",
+  "stdout": "branch 'recover-pr214-temp' set up to track 'origin/main'.\nHEAD is now at 99521ca4 Merge pull request #222 from fengie/agent/bughunt-inbox-source-move-rollback-20260929\n[recover-pr214-temp 83f8f151] Fix legacy migration corrupt CAS retry\n Date: Tue Sep 29 11:19:57 2026 -0400\n 1 file changed, 32 insertions(+), 2 deletions(-)\n[recover-pr214-temp 39390a7f] Add corrupt CAS migration regression\n Date: Tue Sep 29 11:20:35 2026 -0400\n 1 file changed, 74 insertions(+)\n create mode 100644 tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs\n[recover-pr214-temp b7ce5016] Stream migration blob integrity checks\n Date: Tue Sep 29 11:20:52 2026 -0400\n 1 file changed, 6 insertions(+), 2 deletions(-)\nAuto-merging .github/workflows/workflow-feature-pr-gate.yml\nCONFLICT (content): Merge conflict in .github/workflows/workflow-feature-pr-gate.yml\nUU .github/workflows/workflow-feature-pr-gate.yml\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\n * branch              fix/legacy-migration-corrupt-cas-20260929 -> FETCH_HEAD\n   fabf715f..99521ca4  main       -> origin/main\n + 59ce506d...ddf24be3 fix/legacy-migration-corrupt-cas-20260929 -> origin/fix/legacy-migration-corrupt-cas-20260929  (forced update)\nPreparing worktree (new branch 'recover-pr214-temp')\nerror: could not apply 59ce506d... ci: run legacy migration regression on PRs\nhint: After resolving the conflicts, mark them with\nhint: \"git add/rm <pathspec>\", then run\nhint: \"git cherry-pick --continue\".\nhint: You can instead skip this commit with \"git cherry-pick --skip\".\nhint: To abort and get back to the state before \"git cherry-pick\",\nhint: run \"git cherry-pick --abort\".\nhint: Disable this message with \"git config advice.mergeConflict false\"\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1548-recover-pr214.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1548-recover-pr214.stderr.log",
+    "stdout_bytes": 897,
+    "stderr_bytes": 855,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9e413cd8e5ddc16195c92a393ea077d23f36628591c105a1a8388151aa408db7"
+}
