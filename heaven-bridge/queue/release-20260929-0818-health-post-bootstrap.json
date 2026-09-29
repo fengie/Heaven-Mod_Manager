@@ -1,0 +1,10 @@
+{
+  "id": "release-20260929-0818-health-post-bootstrap",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "health",
+  "params": {},
+  "created_at": "2026-09-29T08:18:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Post-bootstrap worker health verification."
+}
