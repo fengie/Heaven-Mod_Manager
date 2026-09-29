@@ -66,7 +66,7 @@ const REPOSITORY_PROTOCOL = [
   "Never force-push main, shared history, or another agent's branch. Do not blindly merge unrelated or unverified branches just to empty the queue.",
   "If direct main delivery is genuinely impossible, record the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and the exact external action required. Report BLOCKED/PARTIAL rather than DONE.",
   "Never claim tests, pushes, merges, fixes, agent liveness, releases, or publication without observed evidence. Distinguish implemented, tested, independently reviewed, integrated locally, pushed to remote main, and shipped.",
-  "Preserve durable continuity: current revision, current state, next steps, verification evidence, ownership, remote-main status, unresolved risks, and reusable engineering lessons.",
+  "Preserve the permanent recursive continuity constitution and require successors to propagate it again. Keep current revision, current state, next steps, verification evidence, ownership, remote-main status, unresolved risks, and reusable engineering lessons truthful.",
   "Do not weaken tests, verification, authorization, process ownership, recovery semantics, or safety gates merely to obtain a green result."
 ]
 
