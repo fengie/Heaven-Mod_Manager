@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using MhwModManager.Core;
 
 namespace MhwModManager.Filesystem;
@@ -10,8 +9,16 @@ namespace MhwModManager.Filesystem;
 /// historical Nexus key file are read-only development/compatibility fallbacks; secrets entered
 /// through the catalog UI are never written to the repository, database, logs, or plaintext state.
 /// </summary>
-public sealed class CatalogCredentialStore(string nextStateRoot)
+public sealed class CatalogCredentialStore
 {
+    private readonly string nextStateRoot;
+
+    public CatalogCredentialStore(string nextStateRoot)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        this.nextStateRoot = nextStateRoot;
+    }
+
     private const uint CredTypeGeneric = 1;
     private const uint CredPersistLocalMachine = 2;
 
@@ -66,16 +73,15 @@ public sealed class CatalogCredentialStore(string nextStateRoot)
 
         var normalized = NormalizeProviderId(providerId);
         var value = secret.Trim();
-        var bytes = Encoding.Unicode.GetBytes(value);
-        var blob = Marshal.AllocCoTaskMem(bytes.Length);
+        var byteCount = checked(value.Length * sizeof(char));
+        var blob = Marshal.StringToCoTaskMemUni(value);
         try
         {
-            Marshal.Copy(bytes, 0, blob, bytes.Length);
             var credential = new NativeCredential
             {
                 Type = CredTypeGeneric,
                 TargetName = BuildTarget(normalized),
-                CredentialBlobSize = checked((uint)bytes.Length),
+                CredentialBlobSize = checked((uint)byteCount),
                 CredentialBlob = blob,
                 Persist = CredPersistLocalMachine,
                 UserName = Environment.UserName
