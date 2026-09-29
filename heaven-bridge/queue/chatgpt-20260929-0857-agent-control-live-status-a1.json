@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0857-agent-control-live-status-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$r=Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -Method Get -TimeoutSec 10; $r | ConvertTo-Json -Depth 8",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-29T08:57:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
