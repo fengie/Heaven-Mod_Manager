@@ -57,36 +57,47 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 6);
+  assert.equal(migrated.version, 7);
   assert.equal(migrated.autopilot.phase, "waiting-for-direction");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
   assert.equal(migrated.controller.sessionId, "new-session");
   assert.equal(migrated.settings.autonomyLevel, "assist");
-  assert.equal(migrated.settings.defaultAgentExecutionMode, "chat");
-  assert.equal(migrated.settings.requireExplicitCodexOptIn, true);
+  assert.equal(migrated.settings.defaultAgentExecutionMode, "direct");
+  assert.equal(migrated.settings.requireExplicitCodexOptIn, false);
+  assert.equal(migrated.settings.allowAutomaticWorkHandoff, false);
   assert.ok(migrated.federation);
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
 });
 
-test("agent execution defaults to normal Chat and requires explicit Codex opt-in", () => {
+test("agent execution keeps working on a non-Work path by default", () => {
   const implicit = agentExecutionModeDecision();
-  assert.equal(implicit.allowed, false);
-  assert.equal(implicit.mode, "chat");
-  assert.equal(implicit.code, "CHAT_SESSION_REQUIRED");
-  assert.match(implicit.reason, /will not silently fall back to Codex/i);
+  assert.equal(implicit.allowed, true);
+  assert.equal(implicit.mode, "direct");
+  assert.equal(implicit.requestedMode, "chat");
+  assert.equal(implicit.workModeAllowed, false);
+  assert.equal(implicit.code, null);
+  assert.match(implicit.reason, /direct non-Work local worker path/i);
 
   const chat = agentExecutionModeDecision("chat");
-  assert.equal(chat.allowed, false);
-  assert.equal(chat.mode, "chat");
+  assert.equal(chat.allowed, true);
+  assert.equal(chat.mode, "direct");
+  assert.equal(chat.workModeAllowed, false);
+
+  const direct = agentExecutionModeDecision("direct");
+  assert.equal(direct.allowed, true);
+  assert.equal(direct.mode, "direct");
 
   const codex = agentExecutionModeDecision("codex");
   assert.equal(codex.allowed, true);
   assert.equal(codex.mode, "codex");
+  assert.equal(codex.workModeAllowed, false);
 
   const work = agentExecutionModeDecision("work");
   assert.equal(work.allowed, false);
-  assert.equal(work.code, "WORK_MODE_EXTERNAL");
+  assert.equal(work.workModeAllowed, true);
+  assert.equal(work.code, "WORK_MODE_EXPLICIT_EXTERNAL");
+  assert.match(work.reason, /never triggers/i);
 });
 
 test("usual swarm fills only missing roles and distinct support lanes", () => {
