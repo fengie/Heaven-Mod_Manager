@@ -1,0 +1,13 @@
+{
+  "schema":"heaven-plugin/manifest/v1",
+  "name":"heaven-process-services",
+  "version":"0.1.0",
+  "entrypoint":"heaven_process_services.service:ProcessServicesPlugin",
+  "capabilities":[
+    "process.list","network.port_probe","network.wait_port",
+    "service.status","service.start","service.stop","service.restart",
+    "devserver.start","devserver.read","devserver.stop"
+  ],
+  "depends_on":{"heaven-control-plane":">=0.4.0"},
+  "security":{"service_mutation_requires_confirmation":true,"shell_interpolation_for_hosts":false}
+}
