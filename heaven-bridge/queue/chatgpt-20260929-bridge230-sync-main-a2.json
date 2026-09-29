@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-bridge230-sync-main-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "created_at": "2026-09-29T16:25:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "action": "powershell",
+  "cwd": "~",
+  "timeout_seconds": 900,
+  "payload": "$ErrorActionPreference='Stop'\n$repo = Join-Path $env:USERPROFILE 'mhw-pr230-sync2'\nif (Test-Path $repo) { Remove-Item -Recurse -Force $repo }\ngit clone --quiet https://github.com/fengie/mhw-mods.git $repo\nif ($LASTEXITCODE -ne 0) { throw \"clone failed $LASTEXITCODE\" }\ngit -C $repo checkout --quiet fix/heaven2-bridge-self-heal-20260929\nif ($LASTEXITCODE -ne 0) { throw \"checkout failed $LASTEXITCODE\" }\ngit -C $repo fetch --quiet origin main\nif ($LASTEXITCODE -ne 0) { throw \"fetch main failed $LASTEXITCODE\" }\ngit -C $repo merge --no-edit origin/main\nif ($LASTEXITCODE -ne 0) {\n  git -C $repo status --short\n  git -C $repo diff --name-only --diff-filter=U\n  git -C $repo merge --abort 2>$null\n  throw \"merge main failed\"\n}\ngit -C $repo push origin HEAD:fix/heaven2-bridge-self-heal-20260929\nif ($LASTEXITCODE -ne 0) { throw \"push failed $LASTEXITCODE\" }\n$head=(git -C $repo rev-parse HEAD).Trim()\n$base=(git -C $repo rev-parse origin/main).Trim()\nWrite-Output \"PR230_SYNC2_OK head=$head base=$base\""
+}
