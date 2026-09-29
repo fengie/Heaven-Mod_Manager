@@ -1,0 +1,133 @@
+name: Updater Installed Client E2E
+
+on:
+  push:
+    branches:
+      - agent/updater-installed-e2e-20260929-manager
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  updater-installed-client-e2e:
+    name: Immutable build 60 to 61 + rollback
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      MHW_E2E_OLD_BUILD: '60'
+      MHW_E2E_TARGET_BUILD: '61'
+      MHW_E2E_TARGET_SHA: '5abe40304dfcb48f96e750bd7da3d0075315625b'
+      MHW_E2E_OLD_ZIP_SHA: 'EF9A9352C64C71C1D17947D17129F9CE2835BA14F63110047750CFFDDBB87F2B'
+
+    steps:
+      - name: Check out harness branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Record hosted E2E provenance
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path BuildLogs | Out-Null
+          @(
+            "github_sha=$env:GITHUB_SHA"
+            "github_ref=$env:GITHUB_REF"
+            "runner_os=$env:RUNNER_OS"
+            "runner_arch=$env:RUNNER_ARCH"
+            "dotnet_sdk=$(& dotnet --version)"
+            "old_release=updater-main-$env:MHW_E2E_OLD_BUILD"
+            "target_release=updater-main-$env:MHW_E2E_TARGET_BUILD"
+            "target_source=$env:MHW_E2E_TARGET_SHA"
+          ) | Set-Content -Path BuildLogs\updater-installed-e2e-provenance.txt -Encoding UTF8
+
+      - name: Acquire immutable prior installed-client package
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = Join-Path $env:RUNNER_TEMP 'mhw-updater-old-release'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          gh release download "updater-main-$env:MHW_E2E_OLD_BUILD" `
+            --repo $env:GITHUB_REPOSITORY `
+            --pattern 'MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip' `
+            --dir $dir `
+            --clobber
+          $zip = Join-Path $dir 'MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip'
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
+            throw "Prior release ZIP was not downloaded: $zip"
+          }
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+          if ($hash -ne $env:MHW_E2E_OLD_ZIP_SHA) {
+            throw "Prior release ZIP SHA-256 mismatch. expected=$env:MHW_E2E_OLD_ZIP_SHA actual=$hash"
+          }
+          "MHW_E2E_OLD_ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "old_zip_sha256=$hash" | Add-Content -LiteralPath BuildLogs\updater-installed-e2e-provenance.txt
+
+      - name: Build updater E2E harness
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet restore .\tools\MhwModManager.UpdaterE2E\MhwModManager.UpdaterE2E.csproj `
+            --source .\data `
+            --ignore-failed-sources `
+            -p:NuGetAudit=false
+          dotnet build .\tools\MhwModManager.UpdaterE2E\MhwModManager.UpdaterE2E.csproj `
+            -c Release `
+            --no-restore `
+            -p:NuGetAudit=false
+
+      - name: Run live installed-client updater and rollback E2E
+        shell: powershell
+        env:
+          MHW_E2E_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet run `
+            --project .\tools\MhwModManager.UpdaterE2E\MhwModManager.UpdaterE2E.csproj `
+            -c Release `
+            --no-build `
+            -- `
+            --old-zip "$env:MHW_E2E_OLD_ZIP" `
+            --evidence ".\BuildLogs\updater-installed-e2e.txt" `
+            --old-build "$env:MHW_E2E_OLD_BUILD" `
+            --target-build "$env:MHW_E2E_TARGET_BUILD" `
+            --target-sha "$env:MHW_E2E_TARGET_SHA" `
+            --old-zip-sha "$env:MHW_E2E_OLD_ZIP_SHA"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Updater installed-client E2E failed with exit $LASTEXITCODE."
+          }
+
+      - name: Collect updater runtime evidence
+        if: always()
+        shell: powershell
+        run: |
+          $updaterRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'MhwModManager\Updater'
+          if (Test-Path -LiteralPath $updaterRoot) {
+            $dest = Join-Path (Resolve-Path BuildLogs).Path 'updater-runtime'
+            New-Item -ItemType Directory -Force -Path $dest | Out-Null
+            Get-ChildItem -LiteralPath $updaterRoot -Recurse -File -ErrorAction SilentlyContinue |
+              Where-Object { $_.Name -match '^(updater\.log|journal\.json|health\.json|apply-request\.json|pending-update\.json)$' } |
+              ForEach-Object {
+                $relative = $_.FullName.Substring($updaterRoot.Length).TrimStart('\','/')
+                $target = Join-Path $dest $relative
+                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+                Copy-Item -LiteralPath $_.FullName -Destination $target -Force
+              }
+          }
+
+      - name: Preserve installed-client E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-installed-client-e2e-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            BuildLogs/**
