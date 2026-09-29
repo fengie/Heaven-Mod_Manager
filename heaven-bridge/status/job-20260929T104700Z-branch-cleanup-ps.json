@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T104700Z-branch-cleanup-ps",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:49:29.338919+00:00"
+}
