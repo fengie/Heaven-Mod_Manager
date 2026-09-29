@@ -4,37 +4,12 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T10:37:10.017192+00:00",
+  "updated_at": "2026-09-29T10:42:31.140860+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-103550-bridge-main-integrator",
+      "id": "chatgpt-20260929-104100-releasefix-build887-62",
       "action": "proc_run",
-      "started_at": "2026-09-29T10:35:55.959817+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-1036-display-smoke-a1",
-      "action": "display_list",
-      "started_at": "2026-09-29T10:36:14.581796+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-103200-operator-ui-main-merge-a2",
-      "action": "powershell",
-      "started_at": "2026-09-29T10:36:37.667142+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-1036-finalize-tests-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:36:37.681076+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-1036-window-smoke-a1",
-      "action": "window_list",
-      "started_at": "2026-09-29T10:36:53.435114+00:00"
-    },
-    {
-      "id": "chatgpt-20260929-103600-releasefix-installghonly",
-      "action": "proc_run",
-      "started_at": "2026-09-29T10:37:08.516650+00:00"
+      "started_at": "2026-09-29T10:41:24.703871+00:00"
     }
   ],
   "capabilities": [
