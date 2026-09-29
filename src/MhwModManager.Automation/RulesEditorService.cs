@@ -55,7 +55,7 @@ public sealed class RulesEditorService(ManagerDatabase db)
         {
             await db.ExecuteAsync("DELETE FROM resource_providers WHERE namespace=$p", new Dictionary<string, object?> { ["$p"] = path }, ct); return;
         }
-        var snapshot = await db.LoadPlannerSnapshotAsync(ct);
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(ct);
         if (!snapshot.Files.Any(f => StringComparer.OrdinalIgnoreCase.Equals(f.ModId, modId) && PathRules.Comparer.Equals(PathRules.ResourceNamespace(f.Path), path)))
             throw new InvalidDataException("The mod does not provide this resource namespace.");
         await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES($p,$m) ON CONFLICT(namespace) DO UPDATE SET mod_id=excluded.mod_id",
