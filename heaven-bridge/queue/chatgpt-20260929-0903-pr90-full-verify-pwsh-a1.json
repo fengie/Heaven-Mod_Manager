@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0903-pr90-full-verify-pwsh-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$wt=\"$env:USERPROFILE\\mhw-mods-pr90-integration\"\nPush-Location $wt\ntry {\n  $head=(git rev-parse HEAD).Trim()\n  Write-Output \"VERIFY_HEAD=$head\"\n  git restore -- .verification/function-status.json .verification/stage-status.json MHW-DEBUG-ALL.log\n  if(Test-Path BuildLogs){ Remove-Item BuildLogs -Recurse -Force }\n  Write-Output 'CLEAN_STATUS_BEGIN'; git status --short --branch; Write-Output 'CLEAN_STATUS_END'\n  $pwsh=(Get-Command pwsh.exe -ErrorAction Stop).Source\n  Write-Output \"PWSH=$pwsh\"\n  & $pwsh -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\Verify-Release.ps1\n  $code=$LASTEXITCODE\n  Write-Output \"VERIFY_EXIT=$code\"\n  Write-Output 'POST_STATUS_BEGIN'; git status --short; Write-Output 'POST_STATUS_END'\n  Write-Output \"VERIFY_HEAD_AFTER=$((git rev-parse HEAD).Trim())\"\n  exit $code\n} finally { Pop-Location }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 7200
+  },
+  "created_at": "2026-09-29T09:03:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
