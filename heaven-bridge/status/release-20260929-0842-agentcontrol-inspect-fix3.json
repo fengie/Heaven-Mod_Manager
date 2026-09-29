@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0842-agentcontrol-inspect-fix3",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:39:16.557259+00:00"
+}
