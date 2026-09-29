@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T153100Z-bughunt-swarm-01",
-  "state": "running",
+  "state": "failed",
   "action": "codex",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:31:12.715001+00:00"
+  "updated_at": "2026-09-29T15:31:32.412254+00:00",
+  "exit_code": 1
 }
