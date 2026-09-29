@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.15</Version>
-    <InformationalVersion>8.8.15-visual-overhaul-diagnostic-identity</InformationalVersion>
+    <Version>8.8.16</Version>
+    <InformationalVersion>8.8.16-startup-mod-discovery-relaunch</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
