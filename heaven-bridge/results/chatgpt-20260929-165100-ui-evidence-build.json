@@ -1,0 +1,18 @@
+{
+  "id": "chatgpt-20260929-165100-ui-evidence-build",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:49:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:52:05.110505+00:00",
+  "finished_at": "2026-09-29T16:52:05.110505+00:00",
+  "host": "heaven2",
+  "action": "proc_run",
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "[WinError 267] The directory name is invalid"
+  },
+  "stderr": "[WinError 267] The directory name is invalid",
+  "stdout": "",
+  "job_hash": "bb99b69b8be03aedaa3995b5d135b2d6415690a70151d599fdafc437a666f163"
+}
