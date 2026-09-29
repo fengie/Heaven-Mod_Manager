@@ -186,6 +186,7 @@ jobs:
 
       - name: Upload installed-client E2E evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: updater-installed-client-e2e-${{ github.sha }}
@@ -207,9 +208,30 @@ jobs:
             throw 'Failed to fetch origin/main before persisting updater E2E evidence.'
           }
           $remoteMain = (git rev-parse origin/main).Trim()
+          $persistenceBaseSha = $remoteMain
           if ($remoteMain -ne $env:MHW_E2E_SOURCE_SHA) {
-            Write-Host "::notice::Skipping updater E2E evidence persistence for $env:MHW_E2E_SOURCE_SHA because main advanced to $remoteMain. The exact evidence remains in the workflow artifact."
-            exit 0
+            git merge-base --is-ancestor $env:MHW_E2E_SOURCE_SHA $remoteMain
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::notice::Skipping updater E2E evidence persistence because current main $remoteMain is not a descendant of tested source $env:MHW_E2E_SOURCE_SHA."
+              exit 0
+            }
+
+            $driftPaths = @(& git diff --name-only "$env:MHW_E2E_SOURCE_SHA..$remoteMain" --)
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Failed to classify main drift before persisting updater E2E evidence.'
+            }
+            . (Join-Path $PWD 'scripts\UpdaterReleasePolicy.ps1')
+            $drift = Get-UpdaterMainDriftDecision -CurrentSourceSha $env:MHW_E2E_SOURCE_SHA -RemoteMainSha $remoteMain -ChangedPaths $driftPaths
+            if (-not $drift.Publish) {
+              Write-Host "::notice::Skipping updater E2E evidence persistence because main advanced through release-relevant paths ($($drift.Reason))."
+              exit 0
+            }
+
+            Write-Host "::notice::Main advanced only through release-irrelevant evidence/cache paths; persisting E2E closure on top of $remoteMain."
+            git reset --hard origin/main
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Failed to move the E2E evidence persistence checkout to current evidence-only main.'
+            }
           }
 
           $evidenceDir = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
@@ -253,9 +275,9 @@ jobs:
               throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
             }
             $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $env:MHW_E2E_SOURCE_SHA) {
-              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced to $remoteMain during the push race."
+            if ($remoteMain -ne $persistenceBaseSha) {
+              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced from persistence base $persistenceBaseSha to $remoteMain during the push race."
               exit 0
             }
-            throw "Failed to persist updater E2E evidence while origin/main still points at exact source $env:MHW_E2E_SOURCE_SHA."
+            throw "Failed to persist updater E2E evidence while origin/main still points at persistence base $persistenceBaseSha."
           }
