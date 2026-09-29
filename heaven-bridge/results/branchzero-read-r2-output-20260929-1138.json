@@ -1,0 +1,22 @@
+{
+  "id": "branchzero-read-r2-output-20260929-1138",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:38:11Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:41:42.341407+00:00",
+  "finished_at": "2026-09-29T11:41:42.342922+00:00",
+  "host": "heaven",
+  "action": "job_output_read",
+  "data": {
+    "job_id": "branchzero-complete-workflows-final-reconcile-r2-20260929",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 1134,
+    "total_bytes": 1134,
+    "next_offset": 1134,
+    "eof": true,
+    "content": "branch 'local/complete-workflows-final-r2-20260929-chatgpt' set up to track 'origin/main'.\nHEAD is now at 94593567 ci: remove one-shot Heaven v2 bootstrap workflow\n{\"type\":\"step_start\",\"timestamp\":1790682001731,\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"part\":{\"id\":\"prt_0ecf6f1430019R4Wu06psiI0Am\",\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"messageID\":\"msg_0ecf6d6fb001jlaFjVT7yKVHf3\",\"type\":\"step-start\",\"snapshot\":\"2354bfd8f105bedb719ef9b0f68abfd45e61bfda\"}}\r\n{\"type\":\"text\",\"timestamp\":1790682011571,\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"part\":{\"id\":\"prt_0ecf6f14e001BGNXyr781cA3HE\",\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"messageID\":\"msg_0ecf6d6fb001jlaFjVT7yKVHf3\",\"type\":\"text\",\"text\":\"{\\n  \\\"name\\\": \\\"read\\\",\\n  \\\"arguments\\\": {\\n    \\\"path\\\": \\\"https://example.com\\\",\\n    \\\"limit\\\": 2000,\\n    \\\"offset\\\": 0\\n  }\\n}\",\"time\":{\"start\":1790682001742,\"end\":1790682011571}}}\r\n=== FINAL_STATUS ===\r\n945935671b7ede1122597fc607ed70f92ae5c97b\n94593567 ci: remove one-shot Heaven v2 bootstrap workflow\n3c2070b5 docs: close Heaven control-plane first-slice ownership\n5a937116 ci: remove hosted-runner rescue probe\n"
+  },
+  "job_hash": "20b00164d243dea7719a70edb258d46319f230b034a929f5403d6de8386c2efe"
+}
