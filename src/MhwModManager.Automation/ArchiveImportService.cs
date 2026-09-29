@@ -33,13 +33,13 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         {
             await archive.ExtractSafelyAsync(archivePath, staging, workspaceRoot, ct);
             await Task.Run(() => NormalizeSingleWrapper(staging), ct);
-            ImportPublicationWorkspace.Publish(staging, destination);
+            ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
             await catalog.RefreshFoldersAsync(ct);
             return new(destination, Path.GetFileName(destination));
         }
         finally
         {
-            ImportPublicationWorkspace.Cleanup(staging);
+            ImportPublicationWorkspace.Cleanup(modsRoot, staging);
         }
     }
 
@@ -64,7 +64,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         }
         catch
         {
-            ImportPublicationWorkspace.Cleanup(staging);
+            ImportPublicationWorkspace.Cleanup(modsRoot, staging);
             throw;
         }
     }
@@ -82,14 +82,14 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         try
         {
             await preparation.Installer.InstallAsync(selected, game, installationStaging, ct);
-            ImportPublicationWorkspace.Publish(installationStaging, preparation.DestinationPath);
+            ImportPublicationWorkspace.Publish(modsRoot, installationStaging, preparation.DestinationPath);
             await catalog.RefreshFoldersAsync(ct);
             return new(preparation.DestinationPath, preparation.DisplayName);
         }
         finally
         {
-            ImportPublicationWorkspace.Cleanup(installationStaging);
-            ImportPublicationWorkspace.Cleanup(preparation.StagingPath);
+            ImportPublicationWorkspace.Cleanup(modsRoot, installationStaging);
+            ImportPublicationWorkspace.Cleanup(modsRoot, preparation.StagingPath);
         }
     }
 
