@@ -407,6 +407,55 @@ test("broad workflow execution fails closed until a routing manifest is current"
   assert.equal(reconciled.body.plan.ownership.reconciled, true);
 });
 
+test("explicit Start Swarm normalizes operator friction without weakening automatic workflow routing safety", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-one-click-start-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const manifest = await postJson(port, "/api/control/routing-manifest", {
+    source: "test-occupied-swarm",
+    mode: "authoritative",
+    ttlMinutes: 30,
+    assignments: [
+      { slotId: "manager", role: "manager", status: "claimed", owner: "existing-manager" },
+      { slotId: "main", role: "main", status: "claimed", owner: "existing-main" },
+      { slotId: "support-1", role: "support", lane: "architecture", status: "claimed", owner: "existing-support-1" },
+      { slotId: "support-2", role: "support", lane: "tests", status: "claimed", owner: "existing-support-2" },
+      { slotId: "support-3", role: "support", lane: "adversarial", status: "claimed", owner: "existing-support-3" },
+      { slotId: "support-4", role: "support", lane: "continuity", status: "claimed", owner: "existing-support-4" }
+    ]
+  });
+  assert.equal(manifest.status, 200);
+
+  const restricted = await postJson(port, "/api/control/settings", {
+    autonomyLevel: "observe",
+    dispatchPaused: true,
+    readOnly: true,
+    draining: true
+  });
+  assert.equal(restricted.status, 200);
+  const stopped = await postJson(port, "/api/control/emergency-stop", {});
+  assert.equal(stopped.status, 200);
+
+  const started = await postJson(port, "/api/swarm/start", {
+    objective: "Continue the highest-value unfinished project work"
+  });
+  assert.equal(started.status, 201);
+  assert.equal(started.body.created.length, 0);
+  assert.equal(started.body.blocked.length, 0);
+
+  const snapshot = await getJson(port);
+  assert.equal(snapshot.status, 200);
+  assert.equal(snapshot.body.settings.autonomyLevel, "coordinate");
+  assert.equal(snapshot.body.settings.dispatchPaused, false);
+  assert.equal(snapshot.body.settings.readOnly, false);
+  assert.equal(snapshot.body.settings.draining, false);
+  assert.equal(snapshot.body.settings.emergencyStop, false);
+});
+
 test("federated bridge observations drive normalized live counts without duplicate agents", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-federation-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
