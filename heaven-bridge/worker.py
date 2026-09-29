@@ -1585,6 +1585,11 @@ def _validate_uia_request(p, operation):
     if scope not in ("children", "descendants"):
         raise BridgeError("INVALID_UIA_SCOPE", "scope must be children or descendants")
     if operation == "uia_set_value":
+        if not bool(p.get("allow_relay_text", False)):
+            raise BridgeError(
+                "UIA_RELAY_TEXT_OPT_IN_REQUIRED",
+                "uia_set_value persists params.value in the private relay; set allow_relay_text=true only for explicitly non-secret text",
+            )
         if p.get("value") is None:
             raise BridgeError("UIA_VALUE_REQUIRED", "uia_set_value requires params.value")
         if len(str(p.get("value"))) > 10000:
@@ -1651,7 +1656,7 @@ def desktop_uia(p, operation):
                 continue
             return data
         except BridgeError as exc:
-            if wait_ms and exc.code == "UIA_NOT_FOUND" and time.monotonic() < deadline:
+            if wait_ms and exc.code in ("UIA_NOT_FOUND", "UIA_WINDOW_NOT_FOUND") and time.monotonic() < deadline:
                 time.sleep(0.15)
                 continue
             raise
@@ -1830,7 +1835,7 @@ def run_job(job_id, job, cancel_event):
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
-                "uia_password_set_value_blocked": True,
+                "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
                 "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
             },
             "capability_schema": 2,
@@ -1840,7 +1845,7 @@ def run_job(job_id, job, cancel_event):
                     "version": 1, "available": os.name == "nt", "backend": "windows-uia-powershell",
                     "actions": sorted(UIA_ACTIONS), "max_nodes": UIA_MAX_NODES, "max_depth": UIA_MAX_DEPTH,
                     "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
-                    "password_set_value_allowed": False,
+                    "password_set_value_allowed": False, "set_value_requires_relay_opt_in": True,
                 },
                 "secret_input": {
                     "version": 1, "available": False, "transport": "not_configured",
