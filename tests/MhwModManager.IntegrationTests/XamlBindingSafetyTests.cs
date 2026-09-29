@@ -161,6 +161,21 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);", mainViewModel);
     }
 
+    [Fact]
+    public void ModsPagePrioritizesWindowedLibraryViewport()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("<Grid Margin=\"8,6,8,6\">", xaml);
+        Assert.DoesNotContain("<Grid Margin=\"28,14,32,14\">", xaml);
+        Assert.Contains("x:Name=\"ModLibraryToolbar\"", xaml);
+        Assert.Contains("HorizontalScrollBarVisibility=\"Auto\"", xaml);
+        Assert.Contains("Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\"", xaml);
+        Assert.Contains("ToolTip=\"{Binding PlanPreviewText}\"", xaml);
+        Assert.Contains("MinHeight=\"32\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

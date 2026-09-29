@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.17</Version>
-    <InformationalVersion>8.8.17-startup-mod-discovery-relaunch</InformationalVersion>
+    <Version>8.8.18</Version>
+    <InformationalVersion>8.8.18-maximized-windowed-mods-workspace</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
