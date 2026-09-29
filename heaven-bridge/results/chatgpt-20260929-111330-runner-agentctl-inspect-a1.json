@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:13:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:45:10.768282+00:00",
+  "finished_at": "2026-09-29T11:45:16.810343+00:00",
+  "stdout": "{\"services\":[],\"processes\":[],\"runnerDirs\":[{\"path\":\"C:\\\\actions-runner\",\"exists\":false},{\"path\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner\",\"exists\":false},{\"path\":\"C:\\\\Users\\\\Xxkan\\\\github-actions-runner\",\"exists\":false}],\"runnerApi\":\"gh-api-error: The term \\u0027gh\\u0027 is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.\",\"agentStatus\":\"agentctl-api-error: The operation has timed out.\",\"git\":{\"branch\":\"main\",\"status\":{},\"head\":\"81ab2a7992826c2d6fd04d769a91e5ae174557b5\",\"originMain\":\"5b7d20e81704453aa483dcaa150bf3c21cd0b26b\"}}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111330-runner-agentctl-inspect-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-111330-runner-agentctl-inspect-a1.stderr.log",
+    "stdout_bytes": 669,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b3cc8f730bba056f8d32a3b9871b11f7332964679a2548a1ee55320e1503dc4b"
+}
