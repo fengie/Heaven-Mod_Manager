@@ -249,11 +249,12 @@ export function buildTaskGraph(tasks = []) {
   return nodes;
 }
 
-function activeAgents(state, role = null) {
+function activeAgents(state, role = null, now = Date.now()) {
   const byId = new Map();
+  const thresholds = livenessThresholds(state);
 
   for (const agent of state.agents || []) {
-    if (!isActiveStatus(agent.status)) continue;
+    if (!managedAgentLiveness(agent, { now, ...thresholds }).live) continue;
     if (role && agent.role !== role) continue;
     byId.set(agent.id, agent);
   }
@@ -317,7 +318,7 @@ function currentRoutingAssignments(state, now = Date.now()) {
 }
 
 function roleIsOccupied(state, role, now = Date.now()) {
-  if (activeAgents(state, role).length) return true;
+  if (activeAgents(state, role, now).length) return true;
   const federated = federationSnapshot(migrateFederationState(state.federation), { now });
   if (federated.agents.some(agent => agent.live && agent.role === role)) return true;
   return currentRoutingAssignments(state, now).some(item => item.role === role && routingAssignmentOccupied(item));
@@ -372,11 +373,11 @@ export function workflowLeasePreflight(state, steps = [], { now = Date.now() } =
     occupied.add(boundary);
   }
 
-  return { allowed: true, boundary: null, taskId: null, reason: null };
+  return { allowed: true, boundary: null, reason: null };
 }
 
 function activeLaneSet(state, now = Date.now()) {
-  const lanes = new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
+  const lanes = new Set(activeAgents(state, null, now).map(agent => agent.lane).filter(Boolean));
   const federated = federationSnapshot(migrateFederationState(state.federation), { now });
   for (const agent of federated.agents) {
     if (!agent.live) continue;
