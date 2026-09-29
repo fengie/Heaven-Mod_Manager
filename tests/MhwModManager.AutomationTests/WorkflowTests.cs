@@ -141,6 +141,30 @@ public sealed class WorkflowTests : IDisposable
     }
 
     [Fact]
+    public async Task FomodCommitDoesNotCatalogPreparationAsGhostMod()
+    {
+        var db = await DatabaseAsync();
+        var modsRoot = Path.Combine(root, "fomod-commit-mods"); Directory.CreateDirectory(modsRoot);
+        var staging = Path.Combine(modsRoot, CatalogService.ImportStagingDirectoryName, "fomod-test");
+        Directory.CreateDirectory(Path.Combine(staging, "fomod"));
+        await File.WriteAllTextAsync(Path.Combine(staging, "payload.bin"), "payload", Token);
+        await File.WriteAllTextAsync(Path.Combine(staging, "fomod", "ModuleConfig.xml"),
+            "<config><moduleName>Test</moduleName><requiredInstallFiles><file source=\"payload.bin\" destination=\"payload.bin\"/></requiredInstallFiles></config>", Token);
+        var destination = Path.Combine(modsRoot, "Installed Mod");
+        var installer = new FomodInstallerService(staging);
+        var catalog = new CatalogService(db, null!, modsRoot);
+        var importer = new ArchiveImportService(new ArchiveInspector(), catalog, modsRoot);
+        var preparation = new FomodImportPreparation(staging, destination, "Installed Mod", installer);
+
+        await importer.CommitFomodAsync(preparation, new HashSet<string>(), GameProfile.MonsterHunterWorld(root), Token);
+
+        var mod = Assert.Single(await db.GetModsAsync(Token));
+        Assert.Equal(destination, mod.SourcePath);
+        Assert.False(Directory.Exists(staging));
+        Assert.DoesNotContain(CatalogService.ImportStagingDirectoryName, mod.SourcePath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task FomodCancelRefusesToDeleteOutsideManagerStagingRoot()
     {
         var db = await DatabaseAsync();
