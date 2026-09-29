@@ -5,17 +5,12 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T15:55:40.843466+00:00",
+  "updated_at": "2026-09-29T16:00:42.553033+00:00",
   "running": [
     {
-      "id": "swarm-20260929-155600-bughunt-list",
-      "action": "fs_list",
-      "started_at": "2026-09-29T15:55:23.278170+00:00"
-    },
-    {
-      "id": "swarm-20260929-155601-canonical-list",
-      "action": "fs_list",
-      "started_at": "2026-09-29T15:55:29.618617+00:00"
+      "id": "swarm-20260929-160100-detached-audits",
+      "action": "proc_run",
+      "started_at": "2026-09-29T16:00:26.131286+00:00"
     }
   ],
   "capabilities": [
