@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-health-20260929-1126",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:26:20Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:48:29.358975+00:00",
+  "finished_at": "2026-09-29T11:48:29.358975+00:00",
+  "host": "heaven",
+  "action": "health",
+  "error": {
+    "code": "JOB_EXPIRED",
+    "message": "job exceeded its TTL",
+    "details": {
+      "age_seconds": 1329,
+      "ttl_seconds": 600
+    }
+  },
+  "stderr": "job exceeded its TTL",
+  "stdout": ""
+}
