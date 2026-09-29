@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-20260929-154800-heaven2-agent-control-shortcut",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:48:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:45:31.220431+00:00",
+  "finished_at": "2026-09-29T16:45:31.637543+00:00",
+  "host": "heaven2",
+  "action": "desktop_shortcut_create",
+  "data": {
+    "path": "C:\\Users\\fengc\\OneDrive\\Desktop\\Heaven Agent Control.lnk",
+    "target": "C:\\Windows\\System32\\cmd.exe",
+    "arguments": "/c \"\\\"%USERPROFILE%\\local-ai-workspaces\\mhw-mods\\tools\\agent-control\\Start Agent Control.bat\\\"\"",
+    "working_directory": "%USERPROFILE%\\local-ai-workspaces\\mhw-mods\\tools\\agent-control",
+    "icon_location": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe,0",
+    "created": true
+  },
+  "job_hash": "fda115bd69d257ce85403deb8430445ec15374967cc17011a807e5ea4cf55566"
+}
