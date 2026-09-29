@@ -1,3 +1,10 @@
+# v8.8.16 — Larger mod library workspace
+
+- Give the Mods library more vertical room by compacting the controls around it instead of shrinking mod rows.
+- Place Filters and Bulk Actions side-by-side on wide layouts while preserving natural wrapping on narrower windows.
+- Keep pending-change summary and actions on one row when space allows, recovering another row of height for the library.
+- Tighten the Mods page vertical margins and add a structural UX regression covering the larger-library layout.
+
 # v8.8.15 — True visual overhaul
 
 - Replace the two-row command strip with a single calmer app bar that keeps game context and primary actions visible without dominating the window.
