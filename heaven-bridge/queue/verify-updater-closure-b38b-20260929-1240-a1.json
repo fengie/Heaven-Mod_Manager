@@ -1,0 +1,14 @@
+{
+  "id": "verify-updater-closure-b38b-20260929-1240-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:40:30Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$wt='C:\\Users\\Xxkan\\agent-worktrees\\verify-updater-closure-b38b'\n$expected='b38b171e8a1a63a3fc0dfd6cae0d2621285afe98'\ngit -C $repo fetch origin --prune\n$actual=(git -C $repo rev-parse origin/fix/heaven-default-routing-20260929).Trim()\nif($actual -ne $expected){throw \"branch moved expected=$expected actual=$actual\"}\nif(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }\ngit -C $repo worktree add --detach $wt $expected\ntry {\n  git -C $wt diff --check \"$((git -C $wt merge-base origin/main HEAD).Trim())..HEAD\"\n  if($LASTEXITCODE -ne 0){throw 'git diff --check failed'}\n  dotnet restore \"$wt\\tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj\" -p:NuGetAudit=false\n  if($LASTEXITCODE -ne 0){throw 'restore failed'}\n  dotnet build \"$wt\\tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj\" -c Release --no-restore -p:NuGetAudit=false\n  if($LASTEXITCODE -ne 0){throw 'build failed'}\n  $runner=\"$wt\\tests\\MhwModManager.IntegrationTests\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.IntegrationTests.exe\"\n  & $runner --filter-class \"MhwModManager.IntegrationTests.UpdaterGitHubAssetDownloadTests\"\n  if($LASTEXITCODE -ne 0){throw 'UpdaterGitHubAssetDownloadTests failed'}\n  $env:MHW_RUN_UPDATER_INSTALLED_E2E='0'\n  & $runner --filter-class \"MhwModManager.IntegrationTests.UpdaterInstalledClientE2ETests\"\n  if($LASTEXITCODE -ne 0){throw 'UpdaterInstalledClientE2ETests disabled-path failed'}\n  Write-Host \"VERIFIED_SHA=$expected\"\n  Write-Host \"BUILD=PASS\"\n  Write-Host \"FOCUSED_TESTS=PASS\"\n} finally {\n  git -C $repo worktree remove --force $wt 2>$null\n}"
+  },
+  "priority": "highest"
+}
