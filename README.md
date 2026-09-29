@@ -1,4 +1,10 @@
-# v8.8.4 Universal Mod Manager
+# v8.8.5 Universal Mod Manager
+
+## v8.8.5 — persisted game-profile ID containment
+
+Persisted and upserted game-profile IDs must now be exact canonical single-segment storage identifiers. Traversal strings, path separators, uppercase/noncanonical spellings, and other hostile IDs are rejected before they can gain filesystem authority. Generic-game workspace and per-game state paths are normalized and checked for containment under manager-owned roots before any manager-owned directories are created.
+
+Rejected persisted profiles are ignored without rewriting hostile registry input. Regressions cover traversal, separator and casing attacks plus escaped-workspace sentinels, while preserving the canonical v8.8.4 updater/publication state underneath this candidate.
 
 ## v8.8.4 — support recovery hardening
 
@@ -17,7 +23,7 @@ Smart Inbox now re-checks requested cancellation before classifying filesystem e
 
 This integration combines three independently reviewed shipped safeguards: crash bisection now validates a clean control and reproducing full suspect set before it can isolate a culprit; duplicate cleanup compensates ordinary database-delete failures after an archive move without guessing through ambiguous persistence state; and shareable support bundles sanitize recent structured logs at export while preserving full-fidelity local logs.
 
-It also adds the profile-save rollback regression, adversarial continuity-validator fixtures, and durable audits for persisted game-profile path containment and launch-observation atomicity. Duplicate cleanup crash-durable reconciliation, broader diagnostic export sanitization, remaining crash-bisector evidence risks, game-profile ID repair, and launch-observation transaction repair remain explicit follow-ups.
+It also adds the profile-save rollback regression, adversarial continuity-validator fixtures, and durable audits for persisted game-profile path containment and launch-observation atomicity. Duplicate cleanup crash-durable reconciliation, broader diagnostic export sanitization, remaining crash-bisector evidence risks, and launch-observation transaction repair remain explicit follow-ups. Persisted game-profile ID repair is closed by the v8.8.5 candidate above.
 
 ## v8.8.1 — updater publication verification hardening
 
