@@ -1,4 +1,8 @@
-# v8.8.5 Universal Mod Manager
+# v8.8.6 Universal Mod Manager
+
+## v8.8.6 — profile containment and responsive UX integration
+
+This release carries the post-v8.8.5 product integrations now present on canonical `main`: persisted game-profile IDs must be exact canonical single-segment IDs before registry trust or workspace-path creation, with hostile persisted-state regressions covering traversal, separators, casing, and escaped workspace attempts. The desktop frontend also receives the reconciled responsive UX overhaul with denser mod identity/state presentation, clearer empty and recovery states, improved minimum-window behavior, and accessibility/automation labels while preserving the newer updater, backend, and Agent Control 0.5.0 contracts. The final UI trace-verification gap found after integration is repaired before release promotion.
 
 ## v8.8.5 — Agent Control federation and release recovery
 
