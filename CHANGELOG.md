@@ -1,3 +1,11 @@
+# v8.8.15 — True visual overhaul
+
+- Replace the two-row command strip with a single calmer app bar that keeps game context and primary actions visible without dominating the window.
+- Rebuild the Dashboard around a current-setup hero, explicit next actions, a compact four-metric strip, and separate Setup Details / Quick Actions areas.
+- Replace the old gold-heavy flat panel treatment with a cohesive deep-navy and teal visual system across shared WPF cards, navigation, buttons, focus states, and action tiles.
+- Preserve the existing deployment, updater, conflict-resolution, filesystem, and diagnostics behavior by reusing the same commands and bindings.
+- Add a structural UX regression so the application cannot silently return to the old four-card + “System status” / “Start here” dashboard while still passing copy-only tests.
+
 # v8.8.14 — Fail-closed Smart Inbox rollback
 
 - Make published-package rollback report failure instead of swallowing cleanup errors after source archival fails.
