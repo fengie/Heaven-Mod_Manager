@@ -238,6 +238,31 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("merge', '--ff-only'", bootstrap)
         self.assertIn("$LASTEXITCODE -ne 0", bootstrap)
 
+    def test_worker_instance_lock_is_releasable(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCKS_DIR", Path(td)), \
+             patch.object(hb, "WORKER_LOCK_PATH", Path(td) / "worker-instance.lock"):
+            handle = hb.acquire_worker_instance_lock()
+            self.assertFalse(handle.closed)
+            self.assertIn(str(os.getpid()), (Path(td) / "worker-instance.lock").read_text(encoding="utf-8"))
+            hb.release_worker_instance_lock()
+            self.assertTrue(handle.closed)
+
+    def test_clean_stale_locks_preserves_worker_instance_lock(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            worker_lock = root / "worker-instance.lock"
+            stale_job = root / "old-job.lock"
+            worker_lock.write_text("worker", encoding="utf-8")
+            stale_job.write_text("job", encoding="utf-8")
+            old = time.time() - max(hb.MAX_TIMEOUT, hb.DEFAULT_SESSION_MAX, 21600) - 10
+            os.utime(worker_lock, (old, old))
+            os.utime(stale_job, (old, old))
+            with patch.object(hb, "LOCKS_DIR", root), patch.object(hb, "WORKER_LOCK_PATH", worker_lock):
+                hb.clean_stale_locks()
+            self.assertTrue(worker_lock.exists())
+            self.assertFalse(stale_job.exists())
+
     def test_publish_write_is_serialized_by_git_lock(self):
         wrote = threading.Event()
 
