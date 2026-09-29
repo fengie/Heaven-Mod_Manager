@@ -269,8 +269,9 @@
         <section class="card section">
           <div class="section-title">
             <h2>Federated agent registry</h2>
-            <span class="pill" id="federationSummary">0 live</span>
+            <span class="pill" id="federationSummary">loading</span>
           </div>
+          <div class="tiny" id="coverageWarning"></div>
           <div id="providers"></div>
           <div class="agent-list" id="federatedAgents"></div>
           <div class="tiny">Local workers are synchronized automatically. ChatGPT, GitHub/CI, and heaven2 observations use stable bridge identities and explicit heartbeats; unavailable providers are shown honestly rather than fabricated.</div>
@@ -331,6 +332,12 @@
       $("toast").classList.add("show");
       clearTimeout(window.__toastTimer);
       window.__toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
+    };
+
+    const federatedCount = (value, coverage) => {
+      const count = Number.isFinite(Number(value)) ? Number(value) : 0;
+      if (coverage?.authoritative === true) return String(count);
+      return count > 0 ? `${count}+` : "—";
     };
 
     async function api(path, options={}) {
@@ -435,7 +442,14 @@
       const counts = federation.counts || {};
       const agents = federation.agents || [];
       const providers = federation.providers || [];
-      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.active || 0} active · ${counts.working || 0} working · ${counts.tool_wait || 0} waiting · ${counts.blocked || 0} blocked · ${counts.idle || 0} idle · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
+      const coverage = federation.coverage || {};
+      const count = value => federatedCount(value, coverage);
+      $("federationSummary").textContent = coverage.authoritative === true
+        ? `${count(counts.live)} live · ${count(counts.active)} active · ${count(counts.working)} working · ${count(counts.tool_wait)} waiting · ${count(counts.blocked)} blocked · ${count(counts.idle)} idle · ${count(counts.stale)} stale · ${count(counts.disconnected)} disconnected`
+        : `PARTIAL COVERAGE · ${count(counts.live)} known live · ${count(counts.active)} known active`;
+      $("coverageWarning").textContent = coverage.authoritative === true
+        ? "Agent-session discovery coverage is authoritative."
+        : (coverage.message || "Known-agent counts are lower bounds; at least one agent-session source is not automatically discoverable.");
 
       $("providers").innerHTML = providers.length ? providers.map(p => `
         <div class="worker">
@@ -564,17 +578,18 @@
 
     function render(snapshot) {
       const t = snapshot.telemetry || {};
-      $("running").textContent = t.running ?? 0;
-      $("working").textContent = t.working ?? 0;
-      $("waiting").textContent = t.toolWait ?? 0;
-      $("blocked").textContent = t.blocked ?? 0;
-      $("idle").textContent = t.idle ?? 0;
-      $("stale").textContent = t.stale ?? 0;
-      $("disconnected").textContent = t.disconnected ?? 0;
+      const coverage = snapshot.federation?.coverage || t.coverage || {};
+      $("running").textContent = federatedCount(t.running, coverage);
+      $("working").textContent = federatedCount(t.working, coverage);
+      $("waiting").textContent = federatedCount(t.toolWait, coverage);
+      $("blocked").textContent = federatedCount(t.blocked, coverage);
+      $("idle").textContent = federatedCount(t.idle, coverage);
+      $("stale").textContent = federatedCount(t.stale, coverage);
+      $("disconnected").textContent = federatedCount(t.disconnected, coverage);
       $("leases").textContent = t.activeLeases ?? 0;
       $("candidates").textContent = t.integrationCandidates ?? 0;
       $("success").textContent = t.successRate == null ? "—" : `${t.successRate}%`;
-      $("total").textContent = t.total ?? 0;
+      $("total").textContent = federatedCount(t.total, coverage);
 
       const controller = snapshot.controller || {};
       $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} live`;
