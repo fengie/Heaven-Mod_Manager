@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-160001-canonical-state",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git status --short --branch; git rev-parse HEAD; git fetch origin main --prune; git rev-parse origin/main; git worktree list",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:00:01Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
