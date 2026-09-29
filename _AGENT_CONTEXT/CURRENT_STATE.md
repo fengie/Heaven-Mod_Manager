@@ -1,3 +1,15 @@
+# 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
+
+Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
+
+Publication is no longer pending. Immutable release `updater-main-61` targets the exact source commit and contains exactly the release ZIP plus `update-manifest.json` (manifest SHA-256 `4021E5303263A42255E80B40DA6C9C9349B055FB87BB970C2A71DA149DB4D2BE`). Hosted verification/cache evidence was persisted at `4f0e2402d3a61e9ba3db005f026b02ccb4aba7de` without production-source changes.
+
+The **only remaining automatic-updater completion boundary** is live behavior in a disposable installed-client environment: (1) old→new update to build 61 with exact restarted-build identity and health acknowledgement plus unchanged seeded `Mods`/`State`/unknown-file hashes; and (2) a separate injected-failure rollback proving previous owned bytes/metadata/executable restoration, removal of new-only product files, unchanged seeded data, and fail-closed recovery semantics.
+
+Do not merge unrelated support, Agent Control, game-profile, privacy, crash-bisector, or continuity-hardening work into this E2E lane. Re-query ownership before assigning any adjacent work.
+
+---
+
 ﻿# Canonical updater closure update — 2026-09-29
 
 - Verified product source: `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91 merged after an exact 0-behind race check).
