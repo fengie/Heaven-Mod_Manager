@@ -8,6 +8,8 @@ const execFileAsync = promisify(execFile);
 export const HEAVEN_BRIDGE_PROTOCOL = "chatgpt-heaven-bridge-v2";
 export const HEAVEN_BRIDGE_BRANCH = "heaven-bridge";
 export const HEAVEN_BRIDGE_HOST = "heaven";
+export const HEAVEN2_BRIDGE_HOST = "heaven2";
+export const DEFAULT_CONTROL_HOST = HEAVEN2_BRIDGE_HOST;
 export const DEFAULT_HEARTBEAT_MAX_AGE_MS = 10 * 60_000;
 export const DEFAULT_RESULT_TIMEOUT_MS = 2 * 60 * 60_000;
 const DEFAULT_RELAY_REPOSITORY = "fengie/mhw-mods";
@@ -126,8 +128,27 @@ async function withRelayLock(relayDir, fn, {
   }
 }
 
-function heartbeatPath(relayDir) {
-  return path.join(relayDir, "heaven-bridge", "status", "heartbeat.json");
+function normalizeBridgeHost(host = HEAVEN_BRIDGE_HOST) {
+  const value = clean(host).toLowerCase();
+  if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(value)) {
+    throw new Error(`Invalid Heaven Bridge target host "${host}".`);
+  }
+  return value;
+}
+
+function heartbeatPath(relayDir, host = HEAVEN_BRIDGE_HOST) {
+  return path.join(relayDir, "heaven-bridge", "status", "hosts", normalizeBridgeHost(host), "heartbeat.json");
+}
+
+function resolveHeartbeatPath(relayDir, host = HEAVEN_BRIDGE_HOST) {
+  const normalized = normalizeBridgeHost(host);
+  const scoped = heartbeatPath(relayDir, normalized);
+  if (fs.existsSync(scoped)) return scoped;
+  if (normalized === HEAVEN_BRIDGE_HOST) {
+    const legacy = path.join(relayDir, "heaven-bridge", "status", "heartbeat.json");
+    if (fs.existsSync(legacy)) return legacy;
+  }
+  return scoped;
 }
 
 function resultPath(relayDir, jobId) {
@@ -144,12 +165,13 @@ function readJson(file) {
 
 function heartbeatAssessment(heartbeat, {
   now = Date.now(),
-  maxAgeMs = DEFAULT_HEARTBEAT_MAX_AGE_MS
+  maxAgeMs = DEFAULT_HEARTBEAT_MAX_AGE_MS,
+  expectedHost = HEAVEN_BRIDGE_HOST
 } = {}) {
   if (!heartbeat || typeof heartbeat !== "object") {
     return { healthy: false, reason: "heartbeat-malformed", heartbeat: null };
   }
-  if (heartbeat.host !== HEAVEN_BRIDGE_HOST) {
+  if (clean(heartbeat.host).toLowerCase() !== normalizeBridgeHost(expectedHost)) {
     return { healthy: false, reason: "heartbeat-host-mismatch", heartbeat: null };
   }
   if (heartbeat.protocol !== HEAVEN_BRIDGE_PROTOCOL) {
@@ -203,28 +225,30 @@ async function syncUnlocked(relayDir, {
 }
 
 export async function inspectHeavenBridge({
+  host = HEAVEN_BRIDGE_HOST,
   relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY,
   maxAgeMs = Number(process.env.AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS || DEFAULT_HEARTBEAT_MAX_AGE_MS),
   now = Date.now(),
   sync = true
 } = {}) {
+  const targetHost = normalizeBridgeHost(host);
   if (!relayDir) {
-    return { configured: false, healthy: false, reason: "relay-not-configured", machine: HEAVEN_BRIDGE_HOST };
+    return { configured: false, healthy: false, reason: "relay-not-configured", machine: targetHost };
   }
   try {
     return await withRelayLock(relayDir, async () => {
       await syncUnlocked(relayDir, { expectedRepository, pull: sync });
-      const file = heartbeatPath(relayDir);
+      const file = resolveHeartbeatPath(relayDir, targetHost);
       if (!fs.existsSync(file)) {
-        return { configured: true, healthy: false, reason: "heartbeat-missing", machine: HEAVEN_BRIDGE_HOST };
+        return { configured: true, healthy: false, reason: "heartbeat-missing", machine: targetHost };
       }
-      const assessment = heartbeatAssessment(readJson(file), { now, maxAgeMs });
+      const assessment = heartbeatAssessment(readJson(file), { now, maxAgeMs, expectedHost: targetHost });
       return {
         configured: true,
         healthy: assessment.healthy,
         reason: assessment.reason,
-        machine: HEAVEN_BRIDGE_HOST,
+        machine: targetHost,
         protocol: HEAVEN_BRIDGE_PROTOCOL,
         heartbeat: assessment.heartbeat
       };
@@ -234,7 +258,7 @@ export async function inspectHeavenBridge({
       configured: true,
       healthy: false,
       reason: error?.message || String(error),
-      machine: HEAVEN_BRIDGE_HOST,
+      machine: targetHost,
       protocol: HEAVEN_BRIDGE_PROTOCOL
     };
   }
@@ -270,6 +294,7 @@ export function buildBridgeJob({
   id,
   action,
   params = {},
+  targetHost = HEAVEN_BRIDGE_HOST,
   priority = "highest",
   ttlSeconds = 21_600,
   createdAt = new Date().toISOString()
@@ -279,6 +304,7 @@ export function buildBridgeJob({
   return {
     id: jobId,
     source: HEAVEN_BRIDGE_PROTOCOL,
+    target_host: normalizeBridgeHost(targetHost),
     action: clean(action),
     params: params && typeof params === "object" ? params : {},
     created_at: createdAt,
@@ -309,15 +335,17 @@ export async function submitHeavenBridgeJob(job, {
   relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for heaven execution.");
+  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  const targetHost = normalizeBridgeHost(job?.target_host || HEAVEN_BRIDGE_HOST);
   return withRelayLock(relayDir, async () => {
     await syncUnlocked(relayDir, { expectedRepository, pull: true });
-    const healthFile = heartbeatPath(relayDir);
-    if (!fs.existsSync(healthFile)) throw new Error("Heaven relay heartbeat is missing.");
+    const healthFile = resolveHeartbeatPath(relayDir, targetHost);
+    if (!fs.existsSync(healthFile)) throw new Error(`Heaven Bridge heartbeat is missing for ${targetHost}.`);
     const health = heartbeatAssessment(readJson(healthFile), {
-      maxAgeMs: Number(process.env.AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS || DEFAULT_HEARTBEAT_MAX_AGE_MS)
+      maxAgeMs: Number(process.env.AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS || DEFAULT_HEARTBEAT_MAX_AGE_MS),
+      expectedHost: targetHost
     });
-    if (!health.healthy) throw new Error(`Heaven relay is not healthy: ${health.reason}.`);
+    if (!health.healthy) throw new Error(`Heaven Bridge target ${targetHost} is not healthy: ${health.reason}.`);
 
     const file = queuePath(relayDir, job.id);
     if (fs.existsSync(file)) {
@@ -350,12 +378,13 @@ export async function submitHeavenBridgeJob(job, {
 export async function waitForHeavenBridgeResult({
   id,
   action,
+  targetHost = HEAVEN_BRIDGE_HOST,
   relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
   timeoutMs = DEFAULT_RESULT_TIMEOUT_MS,
   pollMs = 1_500,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for heaven execution.");
+  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
   const deadline = Date.now() + Math.max(1_000, Number(timeoutMs) || DEFAULT_RESULT_TIMEOUT_MS);
   while (Date.now() < deadline) {
     const result = await withRelayLock(relayDir, async () => {
@@ -363,7 +392,7 @@ export async function waitForHeavenBridgeResult({
       const file = resultPath(relayDir, id);
       return fs.existsSync(file) ? readJson(file) : null;
     });
-    if (result) return validateBridgeResult(result, { id, action });
+    if (result) return validateBridgeResult(result, { id, action, requireHost: normalizeBridgeHost(targetHost) });
     await delay(Math.max(250, Number(pollMs) || 1_500));
   }
   throw new Error(`Timed out waiting for authoritative Heaven Bridge result for ${id}.`);
@@ -373,12 +402,17 @@ export async function runHeavenBridgeAction({
   id,
   action,
   params = {},
+  targetHost = HEAVEN_BRIDGE_HOST,
   timeoutMs = DEFAULT_RESULT_TIMEOUT_MS,
   priority = "highest"
 } = {}) {
-  const job = buildBridgeJob({ id, action, params, priority });
+  const job = buildBridgeJob({ id, action, params, targetHost, priority });
   await submitHeavenBridgeJob(job);
-  return waitForHeavenBridgeResult({ id: job.id, action: job.action, timeoutMs });
+  return waitForHeavenBridgeResult({ id: job.id, action: job.action, targetHost: job.target_host, timeoutMs });
+}
+
+export async function runHeaven2BridgeAction(options = {}) {
+  return runHeavenBridgeAction({ ...options, targetHost: HEAVEN2_BRIDGE_HOST });
 }
 
 export async function cancelHeavenBridgeJob(targetJobId, { reason = "agent-control-stop" } = {}) {
