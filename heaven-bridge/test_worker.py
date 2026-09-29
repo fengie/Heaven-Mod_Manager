@@ -282,7 +282,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":false}\n',
             stderr="",
         )
-        unc = r"\\\\heaven2\\secrets"
+        unc = r"\\heaven2\secrets"
         with patch.object(hb.Path, "is_dir", return_value=True), \
                 patch.object(hb.subprocess, "run", return_value=encrypted):
             self.assertTrue(hb.verify_secret_inbox_transport(unc))
@@ -294,7 +294,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         with patch.dict(
             os.environ,
             {
-                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\\\heaven2\\secrets",
+                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\heaven2\secrets",
                 "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
             },
             clear=False,
@@ -683,14 +683,58 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
+    def test_local_watchdog_heartbeat_is_network_independent_and_pid_bound(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_HEARTBEAT", Path(td) / "worker-local-heartbeat.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_local_heartbeat()
+            row = json.loads(hb.LOCAL_HEARTBEAT.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertEqual(row["worker_version"], hb.WORKER_VERSION)
+        self.assertEqual(row["protocol"], hb.PROTOCOL)
+        self.assertIn("updated_at", row)
+
+    def test_loop_progress_is_pid_bound_and_local(self):
+        with tempfile.TemporaryDirectory() as td, \
+             patch.object(hb, "LOCAL_PROGRESS", Path(td) / "worker-loop-progress.json"), \
+             patch.object(hb, "current_host", return_value="heaven2"):
+            hb.write_loop_progress()
+            row = json.loads(hb.LOCAL_PROGRESS.read_text(encoding="utf-8"))
+        self.assertEqual(row["host"], "heaven2")
+        self.assertEqual(row["pid"], os.getpid())
+        self.assertIn("updated_at", row)
+
+    def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")
+        manage = MODULE_PATH.with_name("manage.ps1").read_text(encoding="utf-8")
+        self.assertIn("-RestartCount 255", bootstrap)
+        self.assertIn("-ExecutionTimeLimit ([TimeSpan]::Zero)", bootstrap)
+        self.assertIn("$WatchdogTaskName = 'Heaven Local Bridge Watchdog'", bootstrap)
+        self.assertIn("Register-ScheduledTask", bootstrap)
+        self.assertIn("HeavenBridgeWatchdog.vbs", bootstrap)
+        self.assertIn("-StartupFallback", bootstrap)
+        self.assertIn("Remove-Item $StartupVbs", bootstrap)
+        self.assertIn("worker-local-heartbeat.json", watchdog)
+        self.assertIn("Startup fallback handed ownership to the scheduled watchdog", watchdog)
+        self.assertIn("local heartbeat stale", watchdog)
+        self.assertIn("worker queue loop stalled", watchdog)
+        self.assertIn("worker-loop-progress.json", watchdog)
+        self.assertIn('Global\\MHW.HeavenBridgeWatchdog', watchdog)
+        self.assertNotIn("git -C", watchdog)
+        self.assertIn("@('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
+
     def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         compile_idx = bootstrap.index("& $python -m py_compile $staged")
         suite_idx = bootstrap.index("& $python -m unittest -q 'heaven-bridge\\test_worker.py'")
         stop_idx = bootstrap.index("foreach ($oldPid in $oldWorkerIds)")
         start_idx = bootstrap.index("$candidate = Start-Process")
+        publish_idx = bootstrap.index("Move-Item $staged $RuntimeWorker -Force")
         self.assertLess(compile_idx, suite_idx)
-        self.assertLess(suite_idx, stop_idx)
+        self.assertLess(suite_idx, publish_idx)
+        self.assertLess(publish_idx, stop_idx)
         self.assertLess(stop_idx, start_idx)
         self.assertIn("process-lifetime singleton lock", bootstrap)
         self.assertIn("Copy-Item $BackupWorker $RuntimeWorker -Force", bootstrap)

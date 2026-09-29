@@ -39,6 +39,8 @@ LOCKS_DIR = STATE / "locks"
 CACHE_DIR = STATE / "result-cache"
 PROCESSED_LOG = STATE / "processed.jsonl"
 WORKER_LOCK_PATH = LOCKS_DIR / "worker-instance.lock"
+LOCAL_HEARTBEAT = STATE / "worker-local-heartbeat.json"
+LOCAL_PROGRESS = STATE / "worker-loop-progress.json"
 CONTROLLER_STATE_PATH = "heaven-bridge/controller/state.json"
 
 MAX_TIMEOUT = int(os.environ.get("HEAVEN_BRIDGE_MAX_TIMEOUT", "7200"))
@@ -52,6 +54,7 @@ DEFAULT_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_DEFAULT_TTL", "21600"))
 MAX_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_MAX_TTL", "86400"))
 FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_FUTURE_SKEW", "300"))
 HEARTBEAT_SECONDS = max(120, int(os.environ.get("HEAVEN_BRIDGE_HEARTBEAT_SECONDS", "300")))
+LOCAL_HEARTBEAT_SECONDS = max(5, min(int(os.environ.get("HEAVEN_BRIDGE_LOCAL_HEARTBEAT_SECONDS", "15")), 60))
 RATE_LIMIT_PER_MINUTE = max(10, int(os.environ.get("HEAVEN_BRIDGE_RATE_PER_MINUTE", "60")))
 QUEUE_PRIORITY_AGING_SECONDS = max(30, int(os.environ.get("HEAVEN_BRIDGE_PRIORITY_AGING_SECONDS", "300")))
 DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
@@ -2842,6 +2845,38 @@ def heartbeat(force=False):
         log(f"heartbeat publish failed: {e}")
 
 
+def write_local_heartbeat():
+    """Write a Git/network-independent liveness signal for the local watchdog."""
+    body = {
+        "host": current_host(),
+        "pid": os.getpid(),
+        "worker_version": WORKER_VERSION,
+        "protocol": PROTOCOL,
+        "updated_at": now(),
+    }
+    atomic_write_text(LOCAL_HEARTBEAT, json.dumps(body, indent=2, ensure_ascii=False))
+
+
+def local_heartbeat_loop(stop_event):
+    while not stop_event.is_set():
+        try:
+            write_local_heartbeat()
+        except Exception as e:
+            log(f"local heartbeat write failed: {e}")
+        stop_event.wait(LOCAL_HEARTBEAT_SECONDS)
+
+
+def write_loop_progress():
+    body = {
+        "host": current_host(),
+        "pid": os.getpid(),
+        "worker_version": WORKER_VERSION,
+        "protocol": PROTOCOL,
+        "updated_at": now(),
+    }
+    atomic_write_text(LOCAL_PROGRESS, json.dumps(body, indent=2, ensure_ascii=False))
+
+
 def restore_cached_result(job_id, row):
     cache_path = Path(row.get("cache_path") or "")
     if not cache_path.exists():
@@ -3000,10 +3035,20 @@ def main():
             f"sessions_blocked={recovery['blocked']}"
         )
         audit("worker_start", pid=os.getpid(), version=WORKER_VERSION, protocol=PROTOCOL, auth_mode=auth_mode())
+        local_heartbeat_stop = threading.Event()
+        write_local_heartbeat()
+        local_heartbeat_thread = threading.Thread(
+            target=local_heartbeat_loop,
+            args=(local_heartbeat_stop,),
+            name="heaven-local-heartbeat",
+            daemon=True,
+        )
+        local_heartbeat_thread.start()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix="heaven-job")
         try:
             while True:
                 try:
+                    write_loop_progress()
                     cleanup_sessions()
                     heartbeat()
                     process_queue(executor)
@@ -3019,6 +3064,16 @@ def main():
                 for info in RUNNING.values():
                     info["cancel_event"].set()
             executor.shutdown(wait=False, cancel_futures=True)
+            local_heartbeat_stop.set()
+            local_heartbeat_thread.join(timeout=2)
+            try:
+                for local_path in (LOCAL_HEARTBEAT, LOCAL_PROGRESS):
+                    if local_path.exists():
+                        row = json.loads(local_path.read_text(encoding="utf-8"))
+                        if int(row.get("pid") or 0) == os.getpid():
+                            local_path.unlink(missing_ok=True)
+            except Exception as e:
+                log(f"local heartbeat cleanup failed: {e}")
             audit("worker_stop", pid=os.getpid())
             log("worker exiting")
     finally:
