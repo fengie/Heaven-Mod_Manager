@@ -1,0 +1,14 @@
+{
+  "id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "command": "$ErrorActionPreference='Stop'\n$tmp=Join-Path $env:TEMP 'mhw-runner-v2-clean'\nif(Test-Path $tmp){Remove-Item -LiteralPath $tmp -Recurse -Force}\ngit clone --depth 1 --branch main https://github.com/fengie/mhw-mods.git $tmp\nif($LASTEXITCODE -ne 0){throw ('git clone failed: '+$LASTEXITCODE)}\n$src=Join-Path $tmp 'heaven-bridge\\install-github-runner.ps1'\n$text=Get-Content -Raw -LiteralPath $src\n$text=$text.Replace(\"$RunnerName = 'heaven'\",\"$RunnerName = 'heaven-v2'\")\n$text=$text.Replace(\"'actions-runner-heaven'\",\"'actions-runner-heaven-v2'\")\n$patched=Join-Path $tmp 'heaven-bridge\\install-github-runner-v2.ps1'\nSet-Content -LiteralPath $patched -Value $text -Encoding UTF8\n& $patched\nif($LASTEXITCODE -ne 0){throw ('runner installer failed: '+$LASTEXITCODE)}",
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "priority": "highest"
+}
