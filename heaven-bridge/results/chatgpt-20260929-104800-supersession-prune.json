@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104800-supersession-prune",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:30:00.304162+00:00",
+  "finished_at": "2026-09-29T11:30:04.367923+00:00",
+  "stdout": "{\r\n    \"main\":  \"655f804867826c48bcddcd6af461c02f576a337d\",\r\n    \"deleted\":  [\r\n\r\n                ],\r\n    \"kept\":  [\r\n\r\n             ],\r\n    \"active_worktrees\":  [\r\n                             \"main\",\r\n                             \"agent/security-authorization-20260929\",\r\n                             \"audit/complete-workflows-current-main-20260929\",\r\n                             \"reconcile/smart-pack-current-main-20260929\",\r\n                             \"agent/federation-registry-20260929\",\r\n                             \"integration/final-main-reconcile-20260929\",\r\n                             \"converge/final-v886-20260929b\",\r\n                             \"integration/release-lead-20260929-0543\",\r\n                             \"converge/main-20260929\",\r\n                             \"integration/pr90-reconcile-20260929\",\r\n                             \"agent/auto-updater-publication-fix-20260928\",\r\n                             \"integration/pr90-reconcile-local-20260929\",\r\n                             \"release/v8.8.5-20260929\",\r\n                             \"fix/v8.8.5-installed-label-trace\",\r\n                             \"agent/verification-reliability-20260929\"\r\n                         ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   4d6002d9..05347b2b  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104800-supersession-prune.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104800-supersession-prune.stderr.log",
+    "stdout_bytes": 1211,
+    "stderr_bytes": 101,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "42be90ea6ae6361411865d9849539439ed4f655cfbdfa70395e6b7e916dfa5ff"
+}
