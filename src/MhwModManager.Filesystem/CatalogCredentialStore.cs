@@ -65,7 +65,7 @@ public sealed class CatalogCredentialStore
         return null;
     }
 
-    public void WriteSecret(string providerId, string secret)
+    public static void WriteSecret(string providerId, string secret)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"provider={providerId}; secret=<redacted>");
         if (string.IsNullOrWhiteSpace(secret)) throw new ArgumentException("A non-empty provider secret is required.", nameof(secret));
