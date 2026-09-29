@@ -1,0 +1,14 @@
+{
+  "id": "verify-pr166-d24d55-serial-20260929-1307-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:07:00Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$wt='C:\\Users\\Xxkan\\agent-worktrees\\verify-pr166-d24d55'\n$sha='d24d55a87ec38fc65b33976a53f6286d61d82b42'\ngit -C $repo fetch origin --prune\nif(Test-Path $wt){git -C $repo worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue}\ngit -C $repo worktree add --detach $wt $sha\ntry{\n  dotnet restore \"$wt\\MhwModManager.sln\"\n  if($LASTEXITCODE -ne 0){throw 'restore failed'}\n  dotnet build \"$wt\\MhwModManager.sln\" -c Release --no-restore -m:1 -warnaserror\n  if($LASTEXITCODE -ne 0){throw 'serial build failed'}\n  dotnet test \"$wt\\MhwModManager.sln\" -c Release --no-build --no-restore -m:1\n  if($LASTEXITCODE -ne 0){throw 'serial test failed'}\n  git -C $wt diff --check \"$((git -C $wt merge-base origin/main HEAD).Trim())..HEAD\"\n  if($LASTEXITCODE -ne 0){throw 'diff check failed'}\n  Write-Host \"VERIFIED_SHA=$sha\"\n  Write-Host \"SERIAL_BUILD=PASS\"\n  Write-Host \"SOLUTION_TESTS=PASS\"\n} finally {\n  git -C $repo worktree remove --force $wt 2>$null\n}"
+  },
+  "priority": "highest"
+}
