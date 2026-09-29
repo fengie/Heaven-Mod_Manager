@@ -1,0 +1,11 @@
+{
+  "id": "ctrl-jobstatus-agentctl-inspect-20260929-112000",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:20:00Z",
+  "ttl_seconds": 3600,
+  "action": "job_status",
+  "params": {
+    "job_id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1"
+  },
+  "priority": "highest"
+}
