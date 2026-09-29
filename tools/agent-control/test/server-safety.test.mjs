@@ -505,3 +505,18 @@ test("engineering autopilot explicitly authorizes scoped heaven repository work"
     assert.match(section, /repositoryWriteAuthorized:\s*true/);
   }
 });
+
+
+test("first-party operator deploy and review controls explicitly authorize scoped Heaven work", () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const ui = fs.readFileSync(path.resolve(here, "..", "public", "index.html"), "utf8");
+  const cli = fs.readFileSync(path.resolve(here, "..", "agentctl.mjs"), "utf8");
+
+  const uiDeploy = ui.slice(ui.indexOf("async function deploy(role)"), ui.indexOf("async function stopAgent", ui.indexOf("async function deploy(role)")));
+  assert.match(uiDeploy, /repositoryWriteAuthorized:true/);
+  const uiReview = ui.slice(ui.indexOf("async function reviewAgent"), ui.indexOf("async function showLog", ui.indexOf("async function reviewAgent")));
+  assert.match(uiReview, /repositoryWriteAuthorized:true/);
+
+  const cliDeploy = cli.slice(cli.indexOf('command === "deploy"'), cli.indexOf('command === "stop"', cli.indexOf('command === "deploy"')));
+  assert.match(cliDeploy, /repositoryWriteAuthorized: true/);
+});
