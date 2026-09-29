@@ -118,7 +118,9 @@ function Install-RunnerFiles {
     $version = ([string]$release.tag_name).TrimStart('v')
     if ([string]::IsNullOrWhiteSpace($version)) { throw 'Unable to determine the latest GitHub Actions runner version.' }
 
-    $archive = Join-Path $env:TEMP "actions-runner-win-x64-$version.zip"
+    # Multiple bridge/repair agents can race this bootstrap. Use a unique
+    # download path so concurrent installers never contend on one temp zip.
+    $archive = Join-Path $env:TEMP ("actions-runner-win-x64-{0}-{1}.zip" -f $version, [Guid]::NewGuid().ToString('N'))
     $url = "https://github.com/actions/runner/releases/download/v$version/actions-runner-win-x64-$version.zip"
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $archive
     try { Expand-Archive -LiteralPath $archive -DestinationPath $RunnerDirectory -Force }
