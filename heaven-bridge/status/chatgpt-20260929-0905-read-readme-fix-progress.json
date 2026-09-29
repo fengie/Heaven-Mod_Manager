@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0905-read-readme-fix-progress",
-  "state": "running",
+  "state": "completed",
   "action": "job_output_read",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:05:44.093278+00:00"
+  "updated_at": "2026-09-29T09:06:10.270699+00:00",
+  "exit_code": 0
 }
