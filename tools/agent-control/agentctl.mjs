@@ -50,6 +50,8 @@ Commands:
   workers
   federation
   providers
+  events
+  control
   federation-register --file C:\\path\\observation.json
   federation-heartbeat --file C:\\path\\heartbeat.json
   provider-heartbeat PROVIDER [--status online]
@@ -61,6 +63,12 @@ Commands:
   routing-clear
   autonomy
   autonomy-set LEVEL
+  pause [--reason TEXT]
+  resume [--reason TEXT] [--clear-emergency-stop]
+  read-only on|off [--reason TEXT]
+  drain [--reason TEXT]
+  emergency-stop
+  stop-swarm [--discard]
   autopilot
   autopilot-start --task "big direction" [--base main] [--max-repairs 3] [--max-iterations 40]
   autopilot-start --task-file C:\\path\\direction.txt [options]
@@ -131,6 +139,18 @@ try {
     print(await request("/api/federation"));
   } else if (command === "providers") {
     print(await request("/api/providers"));
+  } else if (command === "events") {
+    const data = await request("/api/snapshot");
+    print(data.recentEvents || []);
+  } else if (command === "control") {
+    const data = await request("/api/snapshot");
+    print({
+      settings: data.settings || {},
+      autonomyProfile: data.settings?.autonomyLevel
+        ? data.autonomyProfiles?.[data.settings.autonomyLevel] || null
+        : null,
+      routingManifest: data.settings?.routingManifest || null
+    });
   } else if (command === "federation-register" || command === "federation-heartbeat") {
     const file = String(flags.file || "").trim();
     if (!file) throw new Error("--file is required.");
@@ -152,7 +172,10 @@ try {
   } else if (command === "branches") {
     print(await request("/api/branches"));
   } else if (command === "sync") {
-    print(await request("/api/sync", { method: "POST", body: "{}" }));
+    print(await request("/api/sync", {
+      method: "POST",
+      body: JSON.stringify({ repositoryWriteAuthorized: true })
+    }));
   } else if (command === "routing") {
     print(await request("/api/control/routing-manifest"));
   } else if (command === "routing-set") {
@@ -181,6 +204,41 @@ try {
     print(await request("/api/control/settings", {
       method: "POST",
       body: JSON.stringify({ autonomyLevel: level, reason: "agentctl-autonomy-set" })
+    }));
+  } else if (command === "pause") {
+    print(await request("/api/control/pause", {
+      method: "POST",
+      body: JSON.stringify({ reason: flags.reason || "agentctl-pause" })
+    }));
+  } else if (command === "resume") {
+    print(await request("/api/control/resume", {
+      method: "POST",
+      body: JSON.stringify({
+        reason: flags.reason || "agentctl-resume",
+        clearEmergencyStop: Boolean(flags["clear-emergency-stop"])
+      })
+    }));
+  } else if (command === "read-only") {
+    const raw = String(flags._[1] || "").trim().toLowerCase();
+    if (!["on", "off"].includes(raw)) throw new Error("read-only requires on or off.");
+    print(await request("/api/control/read-only", {
+      method: "POST",
+      body: JSON.stringify({
+        enabled: raw === "on",
+        reason: flags.reason || "agentctl-read-only"
+      })
+    }));
+  } else if (command === "drain") {
+    print(await request("/api/control/drain", {
+      method: "POST",
+      body: JSON.stringify({ reason: flags.reason || "agentctl-drain" })
+    }));
+  } else if (command === "emergency-stop") {
+    print(await request("/api/control/emergency-stop", { method: "POST", body: "{}" }));
+  } else if (command === "stop-swarm") {
+    print(await request("/api/control/stop-swarm", {
+      method: "POST",
+      body: JSON.stringify({ preserve: !Boolean(flags.discard) })
     }));
   } else if (command === "autopilot") {
     print(await request("/api/autopilot"));

@@ -43,6 +43,8 @@
     textarea { min-height:135px; resize:vertical; }
     .row2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
     .row3 { display:grid; grid-template-columns:1fr 100px 100px; gap:9px; }
+    .control-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .control-grid .wide { grid-column:1 / -1; }
     .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
     button {
       border:1px solid var(--line); background:var(--panel2); color:var(--text);
@@ -118,7 +120,7 @@
           </div>
           <div>
             <label for="machine">Worker</label>
-            <select id="machine"><option value="auto">Auto / local</option></select>
+            <select id="machine"><option value="auto">Auto / heaven</option></select>
           </div>
         </div>
 
@@ -158,11 +160,53 @@
       <main>
         <div class="stats">
           <div class="card stat"><span>Live agents</span><strong id="running">0</strong></div>
+          <div class="card stat"><span>Working</span><strong id="working">0</strong></div>
+          <div class="card stat"><span>Waiting</span><strong id="waiting">0</strong></div>
+          <div class="card stat"><span>Blocked</span><strong id="blocked">0</strong></div>
+          <div class="card stat"><span>Idle</span><strong id="idle">0</strong></div>
+          <div class="card stat"><span>Stale</span><strong id="stale">0</strong></div>
+          <div class="card stat"><span>Disconnected</span><strong id="disconnected">0</strong></div>
           <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
           <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
           <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
           <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
         </div>
+
+        <section class="card section">
+          <div class="section-title">
+            <h2>Operator controls</h2>
+            <span class="pill" id="controlSummary">loading</span>
+          </div>
+          <div class="row2">
+            <div>
+              <label for="autonomyLevel">Autonomy</label>
+              <select id="autonomyLevel">
+                <option value="observe">observe</option>
+                <option value="assist">assist</option>
+                <option value="coordinate">coordinate</option>
+                <option value="engineering-autopilot">engineering-autopilot</option>
+              </select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button class="primary" id="autonomyApply">Apply autonomy</button>
+            </div>
+          </div>
+          <div class="control-grid">
+            <button id="controlPause">Pause dispatch</button>
+            <button id="controlResume">Resume</button>
+            <button id="controlReadOnly">Toggle read-only</button>
+            <button id="controlDrain">Drain</button>
+            <button class="danger wide" id="controlEmergency">Emergency stop</button>
+          </div>
+          <label for="routingManifest">Routing manifest</label>
+          <textarea id="routingManifest" style="min-height:110px" spellcheck="false" placeholder='{"mode":"overlay","observedAt":"...","expiresAt":"...","slots":[]}'></textarea>
+          <div class="actions">
+            <button id="routingApply">Apply routing</button>
+            <button id="routingClear">Clear routing</button>
+          </div>
+          <div class="tiny" id="controlState">Server-side authorization remains authoritative; UI state never grants permission.</div>
+        </section>
 
         <section class="card section">
           <div class="section-title">
@@ -223,6 +267,11 @@
           <div class="branch-list" id="branches"></div>
           <div class="tiny">Branch discovery complements the federated registry. Automatic ChatGPT project-session enumeration is unavailable, so ChatGPT sessions must register through the bridge/API using stable source identities.</div>
         </section>
+
+        <section class="card section">
+          <div class="section-title"><h2>Recent events</h2><span class="pill" id="eventSummary">0 recent</span></div>
+          <div class="branch-list" id="events"></div>
+        </section>
       </main>
     </div>
   </div>
@@ -270,7 +319,7 @@
     function renderWorkers(snapshot) {
       const workers = snapshot.workers || [];
       $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
-      $("machine").innerHTML = '<option value="auto">Auto / local</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
+      $("machine").innerHTML = '<option value="auto">Auto / heaven</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
       if (!workers.length) {
         $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
         return;
@@ -334,14 +383,14 @@
       const counts = federation.counts || {};
       const agents = federation.agents || [];
       const providers = federation.providers || [];
-      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
+      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.active || 0} active · ${counts.working || 0} working · ${counts.tool_wait || 0} waiting · ${counts.blocked || 0} blocked · ${counts.idle || 0} idle · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
 
       $("providers").innerHTML = providers.length ? providers.map(p => `
         <div class="worker">
           <div class="item-top">
             <div>
               <div class="item-name"><span class="dot ${p.status === "online" ? "running" : ""}"></span>${escapeHtml(p.label || p.id)} <span class="meta">· ${escapeHtml(p.status || "unknown")}</span></div>
-              <div class="meta">${escapeHtml(p.kind || "provider")} · discovery ${escapeHtml(p.discovery || "unavailable")} · registration ${escapeHtml(p.registration || "unavailable")} · heartbeat ${fmt(p.last_heartbeat_at)}</div>
+              <div class="meta">${escapeHtml(p.kind || "provider")} · discovery ${escapeHtml(p.discovery || "unavailable")} · registration ${escapeHtml(p.registration || "unavailable")} · heartbeat ${fmt(p.last_heartbeat_at)} · error ${escapeHtml(p.last_error || "none")}</div>
             </div>
             <span class="tag">${escapeHtml(p.id)}</span>
           </div>
@@ -359,6 +408,7 @@
           </div>
           <div class="task">${escapeHtml(a.task || a.last_action_summary || "No current task summary")}</div>
           <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
+          <div class="meta">Last action: ${escapeHtml(a.last_action_summary || "—")} · lease ${escapeHtml(a.source_metadata?.lease_id || "—")} · boundary ${escapeHtml(a.source_metadata?.boundary || "—")}</div>
         </article>
       `).join("") : '<div class="empty">No federated agent observations yet.</div>';
     }
@@ -404,7 +454,8 @@
             <span class="tag">${q.ahead ?? "?"} ahead / ${q.behind ?? "?"} behind</span>
           </div>
           <div class="task">${escapeHtml(q.task)}</div>
-          <div class="meta">${escapeHtml(q.branchName)}</div>
+          <div class="meta">${escapeHtml(q.branchName)} · review ${escapeHtml(q.reviewState || "unknown")} · risk ${escapeHtml(q.riskLevel || "unknown")} · ${q.integrationReady ? "integration ready" : "not integration ready"}</div>
+          ${q.error ? `<div class="meta"><strong style="color:var(--bad)">Error:</strong> ${escapeHtml(q.error)}</div>` : ""}
         </div>
       `).join("");
     }
@@ -430,9 +481,43 @@
       `).join("");
     }
 
+    function renderControl(snapshot) {
+      const settings = snapshot.settings || {};
+      const level = settings.autonomyLevel || "assist";
+      $("autonomyLevel").value = level;
+      const flags = [
+        settings.dispatchPaused ? "paused" : "dispatching",
+        settings.readOnly ? "read-only" : "writable",
+        settings.draining ? "draining" : null,
+        settings.emergencyStop ? "emergency-stop" : null
+      ].filter(Boolean);
+      $("controlSummary").textContent = level;
+      $("controlState").textContent = flags.join(" · ") + " · server-side authorization remains authoritative";
+      $("controlReadOnly").textContent = settings.readOnly ? "Disable read-only" : "Enable read-only";
+      if (document.activeElement !== $("routingManifest")) {
+        $("routingManifest").value = settings.routingManifest ? JSON.stringify(settings.routingManifest, null, 2) : "";
+      }
+    }
+
+    function renderEvents(snapshot) {
+      const events = snapshot.recentEvents || [];
+      $("eventSummary").textContent = events.length + " recent";
+      $("events").innerHTML = events.length ? events.slice(0,30).map(e =>
+        '<div class="branch-item"><div class="item-top"><div><div class="item-name">' +
+        escapeHtml(e.type || "event") + '</div><div class="meta">' + fmt(e.at) + '</div></div></div>' +
+        '<div class="task">' + escapeHtml(e.message || e.reason || "") + '</div></div>'
+      ).join("") : '<div class="empty">No recent control-plane events.</div>';
+    }
+
     function render(snapshot) {
       const t = snapshot.telemetry || {};
       $("running").textContent = t.running ?? 0;
+      $("working").textContent = t.working ?? 0;
+      $("waiting").textContent = t.toolWait ?? 0;
+      $("blocked").textContent = t.blocked ?? 0;
+      $("idle").textContent = t.idle ?? 0;
+      $("stale").textContent = t.stale ?? 0;
+      $("disconnected").textContent = t.disconnected ?? 0;
       $("leases").textContent = t.activeLeases ?? 0;
       $("candidates").textContent = t.integrationCandidates ?? 0;
       $("success").textContent = t.successRate == null ? "—" : `${t.successRate}%`;
@@ -453,17 +538,19 @@
       ].filter(Boolean).join(" · ");
       if (!$("autopilotObjective").value && autopilot.objective) $("autopilotObjective").value = autopilot.objective;
 
+      renderControl(snapshot);
       renderWorkers(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);
+      renderEvents(snapshot);
     }
 
     async function refresh(sync=false) {
       try {
-        const snapshot = await api(sync ? "/api/sync" : "/api/snapshot", sync ? {method:"POST",body:"{}"} : {});
+        const snapshot = await api(sync ? "/api/sync" : "/api/snapshot", sync ? {method:"POST",body:JSON.stringify({repositoryWriteAuthorized:true})} : {});
         state.snapshot = snapshot;
         render(snapshot);
         if (sync) toast("Git state synchronized.");
@@ -481,6 +568,61 @@
         if (action === "start" && !body.objective) return toast("Set a big direction first.");
         await api(`/api/autopilot/${action}`, { method:"POST", body:JSON.stringify(body) });
         toast(`Autopilot ${action} requested.`);
+        await refresh();
+      } catch (error) { toast(error.message); }
+    }
+
+    async function controlAction(action) {
+      try {
+        const settings = state.snapshot?.settings || {};
+        const endpoints = {
+          "pause": "/api/control/pause",
+          "resume": "/api/control/resume",
+          "read-only": "/api/control/read-only",
+          "drain": "/api/control/drain",
+          "emergency-stop": "/api/control/emergency-stop"
+        };
+        const endpoint = endpoints[action];
+        if (!endpoint) throw new Error("Unsupported control action.");
+        let body = { reason: "ui-" + action };
+        if (action === "read-only") body.enabled = !settings.readOnly;
+        if (action === "resume") body.clearEmergencyStop = false;
+        if (action === "emergency-stop" && !window.confirm("Emergency stop all controller-owned active workers?")) return;
+        await api(endpoint, { method:"POST", body:JSON.stringify(body) });
+        toast("Control action applied: " + action + ".");
+        await refresh();
+      } catch (error) { toast(error.message); }
+    }
+
+    async function applyAutonomy() {
+      try {
+        await api("/api/control/settings", {
+          method:"POST",
+          body:JSON.stringify({ autonomyLevel:$("autonomyLevel").value, reason:"ui-autonomy-set" })
+        });
+        toast("Autonomy updated.");
+        await refresh();
+      } catch (error) { toast(error.message); }
+    }
+
+    async function applyRouting() {
+      try {
+        const raw = $("routingManifest").value.trim();
+        if (!raw) return toast("Enter a routing manifest or use Clear routing.");
+        const manifest = JSON.parse(raw);
+        await api("/api/control/routing-manifest", { method:"POST", body:JSON.stringify(manifest) });
+        toast("Routing manifest updated.");
+        await refresh();
+      } catch (error) { toast(error.message); }
+    }
+
+    async function clearRouting() {
+      try {
+        await api("/api/control/routing-manifest", {
+          method:"POST",
+          body:JSON.stringify({ clear:true, reason:"ui-routing-clear" })
+        });
+        toast("Routing manifest cleared.");
         await refresh();
       } catch (error) { toast(error.message); }
     }
@@ -556,6 +698,14 @@
     $("autopilotPause").addEventListener("click", () => autopilotAction("pause"));
     $("autopilotResume").addEventListener("click", () => autopilotAction("resume"));
     $("autopilotStop").addEventListener("click", () => autopilotAction("stop"));
+    $("autonomyApply").addEventListener("click", applyAutonomy);
+    $("controlPause").addEventListener("click", () => controlAction("pause"));
+    $("controlResume").addEventListener("click", () => controlAction("resume"));
+    $("controlReadOnly").addEventListener("click", () => controlAction("read-only"));
+    $("controlDrain").addEventListener("click", () => controlAction("drain"));
+    $("controlEmergency").addEventListener("click", () => controlAction("emergency-stop"));
+    $("routingApply").addEventListener("click", applyRouting);
+    $("routingClear").addEventListener("click", clearRouting);
 
     refresh();
     setInterval(() => refresh(false), 4000);

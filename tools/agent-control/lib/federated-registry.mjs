@@ -799,6 +799,7 @@ export function federationSnapshot(federation, { now = Date.now() } = {}) {
 
   const counts = {
     live: agents.filter(agent => agent.live).length,
+    active: agents.filter(agent => agent.live && ["working", "tool_wait", "blocked"].includes(agent.effective_state)).length,
     working: agents.filter(agent => agent.live && agent.effective_state === "working").length,
     tool_wait: agents.filter(agent => agent.live && agent.effective_state === "tool_wait").length,
     blocked: agents.filter(agent => agent.live && agent.effective_state === "blocked").length,
