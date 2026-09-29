@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T155515Z-heaven-display-list-01",
+  "state": "running",
+  "action": "display_list",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:56:24.641196+00:00"
+}
