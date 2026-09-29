@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1054-branchzero-probe-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:54:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:42:51.871865+00:00",
+  "finished_at": "2026-09-29T11:42:52.607345+00:00",
+  "stdout": "https://github.com/fengie/mhw-mods.git\n## feature/agent-control-panel-20260928...origin/feature/agent-control-panel-20260928 [gone]\n M .gitignore\n M tools/agent-control/CONTROL_PLANE.md\n M tools/agent-control/README.md\n M \"tools/agent-control/Start Agent Control.bat\"\n M tools/agent-control/agentctl.mjs\n M tools/agent-control/chatgpt-plugin/skills/agent-control/SKILL.md\n M tools/agent-control/package.json\n M tools/agent-control/server.mjs\n?? tools/agent-control/REMOTE_CALL_CONSERVATION.md\n?? tools/agent-control/cycle-supervisor.mjs\n?? tools/agent-control/executor-cli.mjs\n?? tools/agent-control/executor-daemon.mjs\n?? tools/agent-control/executor-fixture.mjs\n?? tools/agent-control/executor-smoke.mjs\n?? tools/agent-control/executor-worker.mjs\n?? tools/agent-control/executor.mjs\n?? tools/agent-control/executor.test.mjs\nC:/Users/Xxkan/agent-control-panel\n8\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1054-branchzero-probe-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1054-branchzero-probe-a2.stderr.log",
+    "stdout_bytes": 864,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ddfd6bb911a8590b56f5897588089914ffe21817dd38a1587594c6a35c602de6"
+}
