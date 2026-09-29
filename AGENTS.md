@@ -17,6 +17,8 @@ This repository is the canonical working state for MHW Manual Mod Manager.
 - Never knowingly break `main` just to merge quickly; validation remains mandatory.
 - `GLOBAL_GIT_DIRECTIVE.md` overrides older workflow guidance that parks ordinary completed work on long-lived branches for a separate integration agent.
 
+For Agent Manager / engineering-swarm work, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt` is the mandatory shared contract and `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` is the manager-specific convergence contract. Runtime-generated swarm prompts must remain aligned with them.
+
 Before modifying code or durable project state:
 
 1. Verify the actual canonical `main` HEAD; repository state overrides stale chat/prompt state.
