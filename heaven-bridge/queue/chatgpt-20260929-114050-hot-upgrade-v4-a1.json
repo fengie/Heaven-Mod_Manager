@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-114050-hot-upgrade-v4-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:40:50Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$src=Join-Path $env:USERPROFILE 'HeavenBridgeRepo\\heaven-bridge\\worker.py'; $dst=Join-Path $env:USERPROFILE '.mhw-local-tools\\heaven-desktop-worker.py'; $pyw=(Get-Command pythonw.exe -ErrorAction Stop).Source; Copy-Item -LiteralPath $src -Destination $dst -Force; $parentPid=92824; $deferred=Join-Path $env:TEMP 'heaven-bridge-v4-restart.ps1'; @(\"Start-Sleep -Seconds 3\",\"try { Stop-Process -Id $parentPid -Force -ErrorAction SilentlyContinue } catch {}\",\"Start-Sleep -Seconds 2\",\"try { Start-ScheduledTask -TaskName 'Heaven Local Bridge' -ErrorAction Stop } catch { Start-Process -WindowStyle Hidden -FilePath '$pyw' -ArgumentList '\\\"$dst\\\"' }\") | Set-Content -LiteralPath $deferred -Encoding UTF8; Start-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',$deferred); 'V4_RESTART_STAGED'",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
