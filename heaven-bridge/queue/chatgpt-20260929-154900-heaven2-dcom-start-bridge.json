@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-154900-heaven2-dcom-start-bridge",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $opt=New-CimSessionOption -Protocol Dcom; $s=New-CimSession -ComputerName heaven2 -SessionOption $opt -OperationTimeoutSec 8; try{$os=Get-CimInstance -CimSession $s -ClassName Win32_OperatingSystem -OperationTimeoutSec 8; $r=Invoke-CimMethod -CimSession $s -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine='schtasks.exe /Run /TN \"Heaven Local Bridge\"'} -OperationTimeoutSec 8; [pscustomobject]@{caption=$os.Caption;return_value=$r.ReturnValue;process_id=$r.ProcessId}|ConvertTo-Json -Compress} finally {Remove-CimSession $s}",
+    "cwd": "C:\\Users",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-29T15:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
