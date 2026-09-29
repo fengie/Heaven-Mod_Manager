@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-heaven2-install-agent-control-shortcut-20260929-1650",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$src=Join-Path $env:USERPROFILE 'HeavenBridgeSource\\tools\\agent-control\\Install-AgentControlShortcut.ps1'; $repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; if(-not (Test-Path $src)){throw \"Installer missing: $src\"}; if(-not (Test-Path $repo)){throw \"Agent Control repo missing: $repo\"}; & $src -RepoRoot $repo",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:49:58Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
