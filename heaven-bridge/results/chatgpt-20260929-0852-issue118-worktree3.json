@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0852-issue118-worktree3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:52:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:52:26.230461+00:00",
+  "finished_at": "2026-09-29T12:52:29.530415+00:00",
+  "stdout": "HEAD is now at e4a24251 bridge: fall back to per-user startup for self-hosted runner\n## fix/credential-safe-secret-input-20260929\ne4a242515946aa210bb473d6667709af8058d302\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nPreparing worktree (new branch 'fix/credential-safe-secret-input-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0852-issue118-worktree3.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0852-issue118-worktree3.stderr.log",
+    "stdout_bytes": 171,
+    "stderr_bytes": 164,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e8285a9ed625037e6df744bdb95f5b4d4a2f5352cd576bbb15d5057941e8de21"
+}
