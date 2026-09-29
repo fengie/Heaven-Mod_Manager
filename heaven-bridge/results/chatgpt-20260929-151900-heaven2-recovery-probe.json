@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-151900-heaven2-recovery-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:19:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:29:12.932958+00:00",
+  "finished_at": "2026-09-29T15:29:21.568649+00:00",
+  "stdout": "{\"host\":null,\"ping\":true,\"winrm\":false,\"admin_share\":false,\"users_share\":false}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-151900-heaven2-recovery-probe.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-151900-heaven2-recovery-probe.stderr.log",
+    "stdout_bytes": 81,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4bb2016eead4a8b28cf64a4a5eb3c7ad90801bd34a8ee63b88ed79a20efc2908"
+}
