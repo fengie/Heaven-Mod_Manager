@@ -117,9 +117,9 @@ try {
 }
 
 # Retire only pre-upgrade workers after a replacement has already survived.
-foreach ($pid in $oldWorkerIds) {
-    if ($pid -eq $candidate.Id) { continue }
-    try { Stop-Process -Id $pid -Force -ErrorAction Stop } catch {}
+foreach ($oldPid in $oldWorkerIds) {
+    if ($oldPid -eq $candidate.Id) { continue }
+    try { Stop-Process -Id $oldPid -Force -ErrorAction Stop } catch {}
 }
 
 if ($taskManaged) {
