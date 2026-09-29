@@ -1,0 +1,69 @@
+name: Branch Sweep Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/branch-sweep-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Delete branches already represented in main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+          deleted=0
+          kept=0
+          {
+            echo "## One-shot branch sweep"
+            echo
+            echo "| Branch | Disposition | Reason |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS= read -r ref; do
+            branch="${ref#origin/}"
+            case "$branch" in
+              main|heaven-bridge|HEAD) continue ;;
+            esac
+
+            safe=0
+            reason=""
+            if git merge-base --is-ancestor "origin/$branch" origin/main 2>/dev/null; then
+              safe=1
+              reason="tip is ancestor of main"
+            else
+              cherry="$(git cherry origin/main "origin/$branch" 2>/dev/null || true)"
+              if [[ -z "$cherry" ]] || ! grep -q '^+' <<<"$cherry"; then
+                safe=1
+                reason="no patch-unique commits versus main"
+              fi
+            fi
+
+            if [[ "$safe" -eq 1 ]]; then
+              if git push origin --delete "$branch"; then
+                deleted=$((deleted+1))
+                echo "| `$branch` | deleted | $reason |" >> "$GITHUB_STEP_SUMMARY"
+              else
+                kept=$((kept+1))
+                echo "| `$branch` | kept | delete failed |" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            else
+              kept=$((kept+1))
+              echo "| `$branch` | kept | contains patch-unique work |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done < <(git for-each-ref --format='%(refname:short)' refs/remotes/origin | sort)
+
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "Deleted: $deleted" >> "$GITHUB_STEP_SUMMARY"
+          echo "Kept: $kept" >> "$GITHUB_STEP_SUMMARY"
+          echo "deleted=$deleted kept=$kept"
