@@ -1,0 +1,14 @@
+{
+  "id": "reconcile-complete-workflows-local-agent-20260929-1132",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 3600,
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\n$wt=Join-Path $env:USERPROFILE 'agent-worktrees\\integration-complete-mod-workflows-20260929-chatgpt'\ngit -C $repo fetch origin --prune\ngit -C $repo worktree add $wt origin/integration/complete-mod-workflows-main-20260929\n$env:OPENCODE_CONFIG='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'\n$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'\nPush-Location $wt\ntry {\n $prompt='Read AGENTS.md and current repository instructions. Reconcile origin/codex/complete-mod-workflows (cae2407e...) into this fresh current-main integration branch without replaying stale history. Preserve newer main behavior. Salvage all still-useful workflow functionality, especially missing FOMOD installer/UI, game adapter SDK, rules editor, update migration, workflow docs, richer collection recipe behavior, crash bisector improvements, SmartInbox/FOMOD hold behavior, workflow UI, conflict/deployment/storage changes, and relevant tests. Do not overwrite newer version, continuity, CI, or verification-state files with stale copies. Resolve conflicts semantically. Run relevant Release builds/tests. Commit the reconciled code/docs/tests to the current branch. Do not push. End with exact tests, limitations, and HEAD SHA.'\n & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json $prompt\n if($LASTEXITCODE -ne 0){throw 'LOCAL_AGENT_FAILED'}\n git status --short\n git log -5 --oneline\n} finally {Pop-Location}"
+  },
+  "priority": "highest"
+}
