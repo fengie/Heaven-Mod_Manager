@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-cancel-obsolete-pr-runs-20260929-1237-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:37:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:38:45.134383+00:00",
+  "finished_at": "2026-09-29T12:38:45.564307+00:00",
+  "stdout": "",
+  "stderr": "At line:5 char:55\r\n+   if($LASTEXITCODE -ne 0){ Write-Host \"cancel-nonzero:$id:$LASTEXITCO ...\r\n+                                                       ~~~~\r\nVariable reference is not valid. ':' was not followed by a valid variable name character. Consider using ${} to \r\ndelimit the name.\r\n    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : InvalidVariableReferenceWithDrive\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cancel-obsolete-pr-runs-20260929-1237-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cancel-obsolete-pr-runs-20260929-1237-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 446,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0084b703078c1243463b69a5689a16378889dcda00ec4daabe13378fe05b7e02"
+}
