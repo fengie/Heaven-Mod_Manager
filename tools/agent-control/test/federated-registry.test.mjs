@@ -325,6 +325,15 @@ test("malformed and unknown provider data fails safely", () => {
   assert.throws(() => recordProviderHeartbeat(federation, "chatgpt", {
     status: "invented-health-state"
   }), /Unsupported provider health status/);
+  assert.throws(() => reconcileObservation(federation, {
+    provider: "chatgpt",
+    source_id: "bad-correlation-array",
+    state: "working",
+    correlation_keys: "worker:not-an-array"
+  }), /correlation_keys must be an array/);
+  assert.throws(() => recordProviderHeartbeat(federation, "chatgpt", {
+    metadata: "not-an-object"
+  }), /metadata must be an object/);
 });
 
 test("persisted registry reload preserves logical identity and upgrades schema safely", () => {
@@ -400,5 +409,10 @@ test("migration preserves unsupported persisted providers without treating them 
   const provider = restored.providers.find(item => item.id === "legacy-cloud");
   assert.equal(provider.status, "unsupported");
   assert.equal(provider.registration, "unavailable");
-  assert.throws(() => agentSourceAdapter(defaultFederationState(), "legacy-cloud"), /Unsupported federation provider/);
+  assert.throws(() => agentSourceAdapter(restored, "legacy-cloud"), /no installed adapter/);
+  assert.throws(() => reconcileObservation(restored, {
+    provider: "legacy-cloud",
+    source_id: "legacy-2",
+    state: "working"
+  }), /no installed adapter/);
 });
