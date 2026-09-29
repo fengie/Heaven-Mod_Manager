@@ -29,8 +29,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-        with:
-          fetch-depth: 2
 
       - name: Verify system Python
         shell: powershell
