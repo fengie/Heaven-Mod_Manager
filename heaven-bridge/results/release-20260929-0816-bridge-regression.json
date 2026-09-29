@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0816-bridge-regression",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:16:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:15:38.165791+00:00",
+  "finished_at": "2026-09-29T08:15:38.783881+00:00",
+  "stdout": "HEAD=b9766ad80a6476b57405fdd431ebbabb9016e444\r\n",
+  "stderr": "test_binary_roundtrip_and_pagination (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_binary_roundtrip_and_pagination) ... ok\r\ntest_bootstrap_verifies_replacement_before_retiring_old_worker (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_bootstrap_verifies_replacement_before_retiring_old_worker) ... ok\r\ntest_canonical_hash_ignores_signature_only (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_canonical_hash_ignores_signature_only) ... ok\r\ntest_controller_checkpoint_is_stale_safe_and_secret_safe (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_controller_checkpoint_is_stale_safe_and_secret_safe) ... ok\r\ntest_controller_checkpoint_requires_previous_cycle (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_controller_checkpoint_requires_previous_cycle) ... ok\r\ntest_copy_and_safe_delete (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_copy_and_safe_delete) ... ok\r\ntest_health_capabilities (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_health_capabilities) ... ok\r\ntest_path_allowlist_and_dangerous_delete (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_path_allowlist_and_dangerous_delete) ... ok\r\ntest_publish_write_is_serialized_by_git_lock (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_publish_write_is_serialized_by_git_lock) ... ok\r\ntest_search_accepts_plural_names_mode (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_search_accepts_plural_names_mode) ... ok\r\ntest_secret_like_inline_env_is_blocked (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_secret_like_inline_env_is_blocked) ... ok\r\ntest_structured_error_shape (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_structured_error_shape) ... ok\r\ntest_ttl_accepts_fresh_and_rejects_expired (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_ttl_accepts_fresh_and_rejects_expired) ... ok\r\ntest_ttl_rejects_future_skew (heaven-bridge.test_worker.HeavenBridgeWorkerTests.test_ttl_rejects_future_skew) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 14 tests in 0.073s\r\n\r\nOK\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0816-bridge-regression.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0816-bridge-regression.stderr.log",
+    "stdout_bytes": 47,
+    "stderr_bytes": 2074,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "89fd12eb2f183884c1700e9154856ec6b8b7c39b42f54a6298107e33a0cc7171"
+}
