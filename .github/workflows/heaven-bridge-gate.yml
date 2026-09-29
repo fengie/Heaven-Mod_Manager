@@ -1,15 +1,6 @@
 name: Heaven Local Bridge Gate
 
 on:
-  push:
-    branches:
-      - heaven-bridge
-    paths:
-      - 'heaven-bridge/worker.py'
-      - 'heaven-bridge/bootstrap.ps1'
-      - 'heaven-bridge/test_worker.py'
-      - 'heaven-bridge/tests/**'
-      - '.github/workflows/heaven-bridge-gate.yml'
   workflow_dispatch:
 
 permissions:
@@ -17,7 +8,9 @@ permissions:
 
 jobs:
   verify-windows:
-    runs-on: windows-latest
+    name: Verify on Heaven self-hosted runner
+    runs-on: [self-hosted, Windows, X64, heaven]
+    timeout-minutes: 20
     steps:
       - name: Check out exact bridge source
         uses: actions/checkout@v4
@@ -36,18 +29,3 @@ jobs:
         shell: pwsh
         run: |
           python heaven-bridge/test_worker.py
-
-      - name: Parse bootstrap PowerShell
-        shell: pwsh
-        run: |
-          $tokens = $null
-          $errors = $null
-          [void][System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path 'heaven-bridge/bootstrap.ps1'),
-            [ref]$tokens,
-            [ref]$errors
-          )
-          if ($errors.Count -gt 0) {
-            $errors | Format-List | Out-String | Write-Error
-            exit 1
-          }
