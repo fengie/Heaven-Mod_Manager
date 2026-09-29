@@ -1,0 +1,21 @@
+{
+  "id": "000-0000-patcheq-clean-20260929105817",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:58:17.869Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:14:27.899105+00:00",
+  "finished_at": "2026-09-29T11:14:37.136922+00:00",
+  "stdout": "{\"deleted\":[],\"deleted_count\":0,\"remaining\":[{\"branch\":\"agent-bridge\",\"unique_patches\":11},{\"branch\":\"agent/bridge-uia-hardening-20260929\",\"unique_patches\":10},{\"branch\":\"agent/bridge-uia-native-20260929\",\"unique_patches\":8},{\"branch\":\"agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\",\"unique_patches\":1},{\"branch\":\"agent/launch-observation-atomicity-20260928\",\"unique_patches\":1},{\"branch\":\"agent/swarm-contract-v3-20260929-0540\",\"unique_patches\":3},{\"branch\":\"codex/complete-mod-workflows\",\"unique_patches\":10},{\"branch\":\"fix/codex-quota-dispatch-circuit-20260929\",\"unique_patches\":5}],\"remaining_count\":8,\"failed\":[],\"failed_count\":0,\"main\":\"279d647edc97037bbd72f15c9baeca324a04b7de\"}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-0000-patcheq-clean-20260929105817.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-0000-patcheq-clean-20260929105817.stderr.log",
+    "stdout_bytes": 714,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "992b6e4b6851c941b3a4c6421b3616cd7d2a2a1909736fbd445caa8c668c5068"
+}
