@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-20260929-170710-install-sentinel-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "created_at": "2026-09-29T17:07:10Z",
+  "ttl_seconds": 3600,
+  "action": "proc_start",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\nStart-Sleep -Seconds 3\n$src = Join-Path $env:USERPROFILE 'HeavenBridgeSource'\nif (-not (Test-Path (Join-Path $src '.git'))) {\n  & git clone --branch main --single-branch https://github.com/fengie/mhw-mods.git $src\n  if ($LASTEXITCODE -ne 0) { throw \"clone failed: $LASTEXITCODE\" }\n}\n& git -C $src fetch origin main\nif ($LASTEXITCODE -ne 0) { throw \"fetch failed: $LASTEXITCODE\" }\n& git -C $src checkout -B main origin/main\nif ($LASTEXITCODE -ne 0) { throw \"checkout failed: $LASTEXITCODE\" }\n& git -C $src reset --hard origin/main\nif ($LASTEXITCODE -ne 0) { throw \"reset failed: $LASTEXITCODE\" }\n& git -C $src clean -fd -- heaven-bridge\nif ($LASTEXITCODE -ne 0) { throw \"clean failed: $LASTEXITCODE\" }\n$head = (& git -C $src rev-parse HEAD).Trim()\nWrite-Output \"INSTALL_SOURCE=$head\"\n& (Join-Path $src 'heaven-bridge\\bootstrap.ps1')\nif (-not $?) { throw 'bootstrap failed' }\nStart-Sleep -Seconds 5\n& (Join-Path $src 'heaven-bridge\\manage.ps1') STATUS",
+    "cwd": "C:\\Users\\fengc",
+    "idle_timeout_seconds": 1800,
+    "max_runtime_seconds": 3600
+  },
+  "priority": "highest"
+}
