@@ -1,0 +1,11 @@
+{
+  "id": "003-bridge-hardening-20260929-1044-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:44:00Z",
+  "ttl_seconds": 21600,
+  "action": "codex",
+  "priority": "highest",
+  "timeout_seconds": 5400,
+  "payload": "You are Agent HARDEN for Heaven Local Bridge. Work independently and actually implement reliability/security/agent-ergonomics improvements in fengie/mhw-mods.\n\nContext:\n- heaven = worker/execution Windows machine; heaven2 = control/credential authority.\n- Durable source is main; heaven-bridge branch is long-lived queue/result transport only.\n- Worker v3 supports filesystem, processes, sessions, jobs/cancel, desktop, screenshots, controller checkpoints, local Codex, Docker worker fabric.\n- Do NOT use Remote Desktop Commander.\n- Other agents are concurrently implementing secret-safe GUI input and Windows UIA; avoid overlapping their feature code when possible.\n\nPriorities:\n1. Fix relay scheduling/starvation: worker currently sorts queue filenames and can stop once non-control workers are saturated, so late health/cancel/highest-priority control jobs can be delayed. Implement explicit priority/control-plane scheduling with deterministic fairness and tests.\n2. Improve capability negotiation metadata/versioning so clients can distinguish feature sets and optional degraded capabilities without parsing prose.\n3. Tighten result/log redaction and error hygiene, especially around subprocess environment/argv/output metadata. Never weaken existing secret protections.\n4. Improve crash/restart recovery, stale-running cleanup, idempotency, and diagnostics where low-risk and testable.\n5. Add compact agent-facing docs/examples that minimize token usage and make the bridge easy to operate through the GitHub connector.\n6. Run full bridge gate and add targeted regression tests.\n\nWorkflow:\n- Start from current origin/main in dedicated worktree/branch agent/bridge-hardening (or collision-safe equivalent).\n- Preserve unrelated concurrent work.\n- Do not merge to main; push the task branch for a dedicated integrator.\n- Final stdout must include branch, commit SHA, changed files, exact tests/pass counts, what was hardened, and remaining gaps.\n- Clean temporary artifacts but keep task branch for integration.",
+  "params": {}
+}
