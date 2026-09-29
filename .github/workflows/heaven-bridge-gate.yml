@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - heaven-bridge
     paths:
       - 'heaven-bridge/worker.py'
       - 'heaven-bridge/bootstrap.ps1'
