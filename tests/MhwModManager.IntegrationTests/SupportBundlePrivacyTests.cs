@@ -133,5 +133,4 @@ public sealed class SupportBundlePrivacyTests : IDisposable
         }
         throw new DirectoryNotFoundException("Repository root not found.");
     }
-
 }
