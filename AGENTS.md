@@ -255,6 +255,9 @@ A missing bridge heartbeat, missing result, unavailable plugin surface, queued s
 - If the user is actively interacting from the target machine, treat host presence as established and diagnose the bridge, watchdog, runner, relay, or plugin surface separately.
 - Use precise wording such as `heaven2 control path unavailable`, `bridge worker not publishing`, or `self-hosted runner unallocated` until host-level reachability is independently proven.
 - Recovery work must continue against the failed control component; do not convert a control-channel failure into a host-availability conclusion.
+- Read-only health/status surfaces must not trust a cached local relay snapshot for a negative availability claim. If local heartbeat evidence is missing or stale, refresh an authoritative source before degrading the status when that refresh is safe and bounded.
+- Model **host presence** and **control-path health** as separate states. When transport health is bad and independent host presence is not established, report `presence-unknown` (or an equivalent neutral state), not `offline` / `not-connected`.
+- A dirty, diverged, or stale relay checkout may block mutation/write readiness, but it must not by itself become evidence that the remote host is offline. Read-only presence checks and write-readiness checks require separate semantics and regression coverage.
 
 
 ## Stream/response failure reconciliation rule
