@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-pr151-20260929-1218-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:19:11.287568+00:00",
+  "finished_at": "2026-09-29T12:19:15.324055+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/agent/hcp-converge-0.2.0-20260929\n - [deleted]           (none)        -> origin/agent/hcp-indexing-20260929-0746\n - [deleted]           (none)        -> origin/agent/hcp-phase0-hardening-20260929-1138\n - [deleted]           (none)        -> origin/agent/hcp-sessions-search-20260929\n - [deleted]           (none)        -> origin/agent/hcp-verification-20260929-0753\n - [deleted]           (none)        -> origin/integration/hcp-0.2.0-main-20260929\n   6fbd1e6e..9f45477f  main          -> origin/main\n * [new branch]        agent/hcp-index-wiring-20260929 -> origin/agent/hcp-index-wiring-20260929\n * [new branch]        agent/hcp-processes-20260929-0804 -> origin/agent/hcp-processes-20260929-0804\n * [new branch]        agent/hcp-verification-wire-20260929-0806 -> origin/agent/hcp-verification-wire-20260929-0806\n * [new branch]        fix/heaven-runner-single-session-20260929 -> origin/fix/heaven-runner-single-session-20260929\n * [new branch]        fix/updater-bom-e2e-20260929 -> origin/fix/updater-bom-e2e-20260929\n * [new branch]        fix/updater-e2e-heaven-runner-20260929 -> origin/fix/updater-e2e-heaven-runner-20260929\n   dba39d8a..d8511204  heaven-bridge -> origin/heaven-bridge\n * [new branch]        integration/hcp-index-wiring-20260929 -> origin/integration/hcp-index-wiring-20260929\n * [new branch]        integration/hcp-index-wiring-v040-20260929 -> origin/integration/hcp-index-wiring-v040-20260929\ntip changed for fix/heaven-runner-single-session-20260929 expected=4ebc5825779ceba58e03716aef322193f14c4e0f \r\nactual=4ebc5825779ceba58e03716aef322193f14c4e0f\trefs/heads/fix/heaven-runner-single-session-20260929\r\nAt line:7 char:71\r\n+ ...  $expected){throw \"tip changed for $b expected=$expected actual=$actu ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (tip changed for...ession-20260929:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : tip changed for fix/heaven-runner-single-session-20260929 expected=4ebc5825779ceba58e037 \r\n   16aef322193f14c4e0f actual=4ebc5825779ceba58e03716aef322193f14c4e0f\trefs/heads/fix/heaven-runner-single-session-20  \r\n  260929\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-pr151-20260929-1218-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-pr151-20260929-1218-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2270,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "4b10a8961e8e4c74fab318200bdf670e285aadcfdfa9cf2939f853a97b7d5181"
+}
