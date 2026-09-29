@@ -41,7 +41,8 @@ import {
   bridgeResultSucceeded,
   cancelHeavenBridgeJob,
   inspectHeavenBridge
-} from "./lib/heaven-bridge-provider.mjs";\nimport { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
+} from "./lib/heaven-bridge-provider.mjs";
+import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
