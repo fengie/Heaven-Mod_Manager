@@ -6,7 +6,7 @@ Private, local-first desktop-control bridge for the `heaven` worker PC. Routine 
 
 ```text
 ChatGPT
-  -> private GitHub relay (fengie/mhw-mods, branch heaven-bridge)
+  -> private GitHub relay (fengie/mhw-mods, transport branch heaven-bridge)
   -> heaven local worker
   -> Windows/files/processes/local Codex
   -> result/status back through GitHub
@@ -31,7 +31,9 @@ Do not use Remote Desktop Commander for `heaven` work unless the user explicitly
 
 ## Worker v3
 
-`heaven-bridge/worker.py` is the repository source of truth. `bootstrap.ps1` installs it to:
+Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and runtime mirror; do not merge its operational job history wholesale into `main`.
+
+`heaven-bridge/worker.py` is the canonical worker source path. `bootstrap.ps1` installs the relay-mirrored copy to:
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
@@ -246,6 +248,19 @@ Desktop selectors fail closed on ambiguous window matches unless `first_match:tr
 The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, or controller state.
 
 For full credential-safe desktop parity, secrets should be referenced by a local named-secret handle owned by the credential authority and resolved only on the destination machine; the secret value itself must never enter GitHub. Until that channel is implemented, credential entry remains outside the bridge's safe structured surface.
+
+## Agent code, build, and test workflow
+
+Use the bridge as the normal execution surface for repository work on `heaven`, not as a last-resort remote shell.
+
+- Use `proc_run` with an explicit `cwd` and timeout for bounded builds, linters, test suites, Git commands, and one-shot scripts. Treat exit code `0` plus the command's own assertions as success.
+- Full stdout/stderr are persisted locally. Keep relay results compact and use `job_output_read` only when additional failing output is needed.
+- Use `proc_start` / `proc_read` / `proc_input` / `proc_kill` for dev servers, watchers, REPL-like processes, and other long-lived commands.
+- Run independent test shards or build jobs concurrently when useful; use `job_status` and `cancel` instead of launching duplicate work.
+- Use `fs_search`, `fs_read`, `fs_edit`, `fs_write`, copy/delete, and binary actions for source inspection and patching before falling back to raw PowerShell/CMD/Python.
+- Before integration, capture branch/HEAD, `git status --short`, changed files, and `git diff --check`; after integration, verify the pushed remote `main` SHA and rerun the relevant exact-main tests on `heaven`.
+- Local Codex is optional acceleration. If its quota/runtime is unavailable, structured bridge actions and `proc_run` remain a complete code/build/test path.
+- Do not use Remote Desktop Commander for these workflows unless the user explicitly authorizes it in the current request.
 
 ## Raw shell fallback
 
