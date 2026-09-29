@@ -1,0 +1,21 @@
+{
+  "id": "0001-smoke-20260929-recovered-kill",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:05:16.369043+00:00",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:25:36.819643+00:00",
+  "finished_at": "2026-09-29T15:25:36.819643+00:00",
+  "host": "heaven",
+  "action": "proc_kill",
+  "error": {
+    "code": "JOB_EXPIRED",
+    "message": "job exceeded its TTL",
+    "details": {
+      "age_seconds": 22820,
+      "ttl_seconds": 21600
+    }
+  },
+  "stderr": "job exceeded its TTL",
+  "stdout": ""
+}
