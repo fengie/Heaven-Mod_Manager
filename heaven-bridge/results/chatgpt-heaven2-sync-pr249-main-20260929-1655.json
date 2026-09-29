@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-heaven2-sync-pr249-main-20260929-1655",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:54:55Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:55:09.129356+00:00",
+  "finished_at": "2026-09-29T16:55:11.752062+00:00",
+  "stdout": "",
+  "stderr": "Cloning into 'C:\\Users\\fengc\\HeavenWork\\sync-pr249-main'...\nFrom https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nmerge: origin/main - not something we can merge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-heaven2-sync-pr249-main-20260929-1655.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-heaven2-sync-pr249-main-20260929-1655.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 194,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "5314f649091c2401c55d3302f153b97767db5ea87d938c8b25cbd9d6f3a1ba15"
+}
