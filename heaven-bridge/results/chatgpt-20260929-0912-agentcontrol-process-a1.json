@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0912-agentcontrol-process-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:12:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:12:20.544184+00:00",
+  "finished_at": "2026-09-29T09:12:21.767178+00:00",
+  "stdout": "{\r\n    \"listeners\":  [\r\n                      {\r\n                          \"LocalAddress\":  \"::\",\r\n                          \"LocalPort\":  7443,\r\n                          \"OwningProcess\":  44916\r\n                      },\r\n                      {\r\n                          \"LocalAddress\":  \"127.0.0.1\",\r\n                          \"LocalPort\":  7331,\r\n                          \"OwningProcess\":  117120\r\n                      }\r\n                  ],\r\n    \"processes\":  [\r\n                      {\r\n                          \"ProcessId\":  117120,\r\n                          \"ParentProcessId\":  99936,\r\n                          \"Name\":  \"node.exe\",\r\n                          \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n                          \"CommandLine\":  \"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" .\\\\server.mjs\"\r\n                      },\r\n                      {\r\n                          \"ProcessId\":  44916,\r\n                          \"ParentProcessId\":  57564,\r\n                          \"Name\":  \"node.exe\",\r\n                          \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n                          \"CommandLine\":  \"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" \\\"C:\\\\Users\\\\Xxkan\\\\.mhw-local-tools\\\\heaven-agent-control-proxy.mjs\\\" \"\r\n                      }\r\n                  ]\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0912-agentcontrol-process-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0912-agentcontrol-process-a1.stderr.log",
+    "stdout_bytes": 1324,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "16a7d14472e85781bb2719aafd6639d2625c66b243e7a6af9244a37c6eb844a9"
+}
