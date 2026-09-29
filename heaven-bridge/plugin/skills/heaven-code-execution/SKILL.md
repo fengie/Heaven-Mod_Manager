@@ -11,21 +11,7 @@ Use Heaven Local Bridge as the default execution backend for code and repository
 
 For code verification, do not merely inspect files or claim that commands should pass. Execute the relevant commands through `proc_run` or a persistent process session and read the authoritative bridge result.
 
-Use `proc_run` for bounded commands:
-
-```json
-{
-  "action": "proc_run",
-  "params": {
-    "shell": "powershell",
-    "command": "python -m pytest -q",
-    "cwd": "C:\\path\\to\\repo",
-    "timeout_seconds": 900
-  }
-}
-```
-
-Use `proc_start` + `proc_read`/`proc_input`/`proc_kill` for long-lived servers, REPLs, watchers or interactive test processes. Use `job_output_read` for paged output when stdout/stderr is large.
+Use `proc_run` for bounded commands. Use `proc_start` + `proc_read`/`proc_input`/`proc_kill` for long-lived servers, REPLs, watchers or interactive test processes. Use `job_output_read` for paged output when stdout/stderr is large.
 
 ## What to run
 
@@ -37,7 +23,7 @@ Choose commands from the repository's own build/test configuration. Typical exam
 - Git: `git diff --check`, exact-HEAD/status checks
 - Project scripts: the repository's documented verify/build/release gates
 
-Do not invent success. Report the exact command, target revision when relevant, exit code and the meaningful pass/fail counts.
+Do not invent success. Report the exact command, target revision when relevant, exit code and meaningful pass/fail counts.
 
 ## Exact-main verification
 
@@ -47,14 +33,7 @@ When validating canonical `main`, fetch current `origin/main` and use a temporar
 
 ## Repository integration
 
-`main` is canonical for completed development work. Temporary task branches are allowed only while work is active. After implementation is complete:
-
-1. fetch current `main`;
-2. reconcile the completed change with current `main`;
-3. rerun affected validation on the reconciled exact source;
-4. merge/fast-forward into `main`;
-5. push and verify remote `main`;
-6. delete the completed temporary branch only after proving it contains no unique work.
+`main` is canonical for completed development work. Temporary task branches are allowed only while work is active. After implementation is complete: fetch current `main`, reconcile, rerun affected validation, integrate to `main`, push and verify remote `main`, then delete completed temporary branches only after proving they contain no unique work.
 
 Do not merge the relay branch wholesale into `main`; it contains transport queue/result/status traffic. Promote source changes selectively.
 
