@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-branch-prune-postmerge-20260929-1224",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:24:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:27:23.933319+00:00",
+  "finished_at": "2026-09-29T12:27:37.209188+00:00",
+  "stdout": "{\"deleted\":[\"agent/hcp-processes-20260929-0804\",\"fix/heaven-runner-single-session-20260929\"],\"deleted_count\":2,\"skipped\":[],\"failed\":[]}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-prune-postmerge-20260929-1224.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-prune-postmerge-20260929-1224.stderr.log",
+    "stdout_bytes": 138,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c1565dcdb25740d4afe4c04dc4fd6f9a4bf5402d85e3f8d8784e759b920f1261"
+}
