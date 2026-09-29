@@ -1,7 +1,7 @@
 # Agent Control Federation / Registry v2 — 2026-09-29
 
 
-> **Mandatory execution-mode rule (2026-09-29):** Normal Chat is the default for every agent/task. Do not use ChatGPT Work or Codex unless the user explicitly requests that execution mode for the current task. Agent Control must fail closed rather than silently substitute Codex when normal-Chat spawning is unavailable. Quota/capacity failures must not trigger reviewer/takeover/recovery spawn loops on the same blocked provider.
+> **Mandatory execution-mode rule (2026-09-29):** Normal Chat is preferred, but work must continue on an authorized non-Work path when a normal Chat session cannot be auto-created. Never invoke, suggest, request, or hand off to ChatGPT Work unless the user explicitly asks for Work mode for the current task; that permission is task-local and never inherited. Direct local/Codex/Heaven Bridge execution is allowed as a non-Work fallback rather than failing closed. Quota/capacity failures must not trigger retry storms on the same blocked provider.
 
 > **Mandatory task/plugin preflight (2026-09-29):** Every agent must re-read its complete assigned task, discover the actual plugins/connectors/skills available in that runtime, load/read the instructions for materially relevant capabilities, and select/activate the correct purpose-built route **before** planning or task-specific action. User-named plugins are routing requirements unless positively proven unavailable/unsafe/insufficient. Every worker must preserve `PLUGIN-PREFLIGHT` evidence; managers must reject workers that skipped discovery or claimed a plugin was unavailable from stale assumptions.
 
