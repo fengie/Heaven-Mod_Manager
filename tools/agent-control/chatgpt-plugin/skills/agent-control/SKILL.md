@@ -158,3 +158,13 @@ node <agentctl-path> federation-heartbeat --file <heartbeat.json>
 Required observation fields are `provider`, `source_id`, and normalized `state`. Prefer real stable provider IDs; never use a chat title as identity. Use explicit `correlation_keys` only when two provider observations are known to represent the same logical worker.
 
 A fresh registration/heartbeat is observability evidence, not remote execution authority.
+
+## Adaptive ChatGPT Work handoff recovery
+
+Agent Control treats ChatGPT Work handoffs as UI that may change over time. The controller keeps a mutable, versioned signature registry at `tools/agent-control/data/work-handoff-signatures.json` on heaven2 (the directory is gitignored) and exposes it at `GET /api/work-handoff-signatures`.
+
+- Known labels are handled normally.
+- If ChatGPT renames the card/buttons but the accessible UI still exposes one clear Work action and one clear non-Work action on the same action row, Agent Control chooses the non-Work action, verifies the Work action disappeared, then learns those labels into the registry.
+- If the changed UI is ambiguous, Agent Control does **not** guess. It records a bounded drift observation in the registry and raises a control-plane warning so the plugin can be updated deliberately.
+- Learned runtime signatures update behavior immediately without modifying tracked repository files or dirtying canonical `main`.
+- Never reinterpret an unknown button as permission to enter Work. The only adaptive action allowed is preserving normal Chat/non-Work execution.
