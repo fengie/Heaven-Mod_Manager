@@ -1,0 +1,13 @@
+{
+  "id": "branchzero-read-cycle-20260929-1133",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:57Z",
+  "ttl_seconds": 21600,
+  "action": "fs_read",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\data\\cycles\\cycle-20260929113159-gekqi.json",
+    "offset": 0,
+    "length": 2000
+  },
+  "priority": "highest"
+}
