@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0850-cancel-obsolete-e2e-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "command": "$ErrorActionPreference='Stop'; gh run cancel 36568584953 --repo fengie/mhw-mods; Start-Sleep -Seconds 3; gh run view 36568584953 --repo fengie/mhw-mods --json status,conclusion,url",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T12:50:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
