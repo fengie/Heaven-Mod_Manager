@@ -1,0 +1,5 @@
+[project]
+name = "heaven-workflows"
+version = "0.1.0"
+description = "Reusable verified workflows composed from Heaven Control Plane capabilities"
+requires-python = ">=3.10"
