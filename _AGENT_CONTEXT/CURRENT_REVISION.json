@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.10",
+  "currentVersion": "8.8.13",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "publish and verify the first BOM-free immutable v8.8.10 updater release from exact current main, then complete installed-client build-60 success plus deterministic rollback/sentinel E2E and close #84",
+  "nextMilestone": "close the v8.8.13 exact-main Windows release gate after restoring continuity metadata and required function tracing, then verify immutable private-to-public updater publication from the exact verified source",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.9 updater manifest compatibility and installed-client closure",
-  "status": "v8.8.10-release-gate-updater-e2e-pending",
+  "immediateParentRevision": "v8.8.12 import publication isolation",
+  "status": "v8.8.13-release-verification-repair",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": "106052f079f6ec23bda7679cb6973d63bdc89052",
-  "verificationScopeNote": "Current release identity is v8.8.10 after the workflow-feature closure. Earlier verification/release evidence remains exact-SHA evidence only and is not extended to current main. GitHub-hosted allocation is bypassed by the verified Heaven self-hosted runner; Codex provider capacity is circuit-broken. The next authoritative closure is an exact-current-main Windows Release Gate followed by installed-client build-60 success and deterministic rollback/sentinel E2E against the newly published immutable BOM-free release.",
+  "verificationScopeNote": "v8.8.13 current product state includes the v8.8.12 import publication isolation and duplicate-cleanup retirement hardening plus repeatable recipe family restore. Earlier verification evidence remains exact-SHA evidence only. This repair restores continuity identity and LR-001 tracing so the combined current product can be judged by a fresh exact-input Windows release gate.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 v8.8.13 release candidate: adds repeatable recipe family restore on top of v8.8.12 import publication isolation and duplicate-cleanup retirement hardening; release verification is intentionally pending until continuity identity and LR-001 tracing are restored and a fresh exact-input Windows gate passes.",
     "2026-09-29 reconciliation: release identity advanced to v8.8.7; canonical source audited at fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f; stale release PR #95 and conflicted reconciliation PRs #107/#109 were retired rather than forced; concurrent Agent Control liveness/reliability/security and updater cross-session ownership integrations were preserved; exact verification remains SHA-scoped.",
     "2026-09-29 v8.8.7: cross-session updater ownership integrated on canonical main via Global\\\\ installation semaphore with separate-process contention, crashed-owner recovery, independent-install, and type-collision regressions; hosted exact-main verification and installed-client E2E evidence remain required for closure.",
     "2026-09-29 updater hosted/publication closure: PR #91 merged at 5abe40304dfcb48f96e750bd7da3d0075315625b; Windows Release Gate 36541891969 passed 25/25; functions 748/748 promoted; Build-Release produced updater build 61 ZIP SHA-256 C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420; immutable updater-main-61 published against exact source with exactly ZIP + update-manifest.json; evidence persistence 4f0e2402d3a61e9ba3db005f026b02ccb4aba7de; only disposable old-to-new and injected-rollback installed-client E2E remain.",
@@ -134,7 +135,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Commit/push and integrate the locally release-verified C12 repair at code commit 9234c61c47f9ebc82b3a6ce546799ccaa6f395a2, then run/inspect the exact-main Windows Release Gate and verify the immutable updater tag/release plus exact ZIP and update-manifest assets/digests. After hosted publication is green, run disposable real old-to-new and injected rollback end-to-end tests with seeded Mods/State/unknown-file hashes and exact restart/health identity. Preserve and recursively propagate continuity and LR-001 through LR-010.",
+  "nextRequiredAction": "Run the exact v8.8.13 repository verification on Heaven, merge only if green on the exact head, then inspect the exact-main Windows Release Gate and immutable private-to-public updater publication. Preserve and recursively propagate continuity and active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
