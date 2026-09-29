@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0031-controller-checkpoint-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T00:31:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T00:34:39.893586+00:00",
+  "finished_at": "2026-09-29T00:34:42.321645+00:00",
+  "stdout": "",
+  "stderr": "test_binary_roundtrip_and_pagination (__main__.HeavenBridgeWorkerTests.test_binary_roundtrip_and_pagination) ... ok\r\ntest_canonical_hash_ignores_signature_only (__main__.HeavenBridgeWorkerTests.test_canonical_hash_ignores_signature_only) ... ok\r\ntest_controller_checkpoint_is_stale_safe_and_secret_safe (__main__.HeavenBridgeWorkerTests.test_controller_checkpoint_is_stale_safe_and_secret_safe) ... ok\r\ntest_controller_checkpoint_requires_previous_cycle (__main__.HeavenBridgeWorkerTests.test_controller_checkpoint_requires_previous_cycle) ... ok\r\ntest_copy_and_safe_delete (__main__.HeavenBridgeWorkerTests.test_copy_and_safe_delete) ... ok\r\ntest_health_capabilities (__main__.HeavenBridgeWorkerTests.test_health_capabilities) ... ok\r\ntest_path_allowlist_and_dangerous_delete (__main__.HeavenBridgeWorkerTests.test_path_allowlist_and_dangerous_delete) ... ok\r\ntest_publish_write_is_serialized_by_git_lock (__main__.HeavenBridgeWorkerTests.test_publish_write_is_serialized_by_git_lock) ... ok\r\ntest_search_accepts_plural_names_mode (__main__.HeavenBridgeWorkerTests.test_search_accepts_plural_names_mode) ... ok\r\ntest_secret_like_inline_env_is_blocked (__main__.HeavenBridgeWorkerTests.test_secret_like_inline_env_is_blocked) ... ok\r\ntest_structured_error_shape (__main__.HeavenBridgeWorkerTests.test_structured_error_shape) ... ok\r\ntest_ttl_accepts_fresh_and_rejects_expired (__main__.HeavenBridgeWorkerTests.test_ttl_accepts_fresh_and_rejects_expired) ... ok\r\ntest_ttl_rejects_future_skew (__main__.HeavenBridgeWorkerTests.test_ttl_rejects_future_skew) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 13 tests in 0.080s\r\n\r\nOK\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0031-controller-checkpoint-tests.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0031-controller-checkpoint-tests.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1667,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ba088757f2d556bc4aad7517e23002f599e8a160c34c0386096402df40bec31e"
+}
