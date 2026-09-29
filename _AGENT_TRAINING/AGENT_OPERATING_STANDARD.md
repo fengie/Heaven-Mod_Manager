@@ -20,6 +20,17 @@
 - Keep changes interruption-safe and checkpoint meaningful progress.
 - Update architecture/current-state/verification/knowledge docs when their truth changes.
 
+
+## Research and wraparound under blockers
+- A failed preferred path is a routing/research event, not automatically a blocker.
+- Verify the limitation using current evidence, then research authoritative docs, available capabilities, existing code, and compatible alternate routes.
+- If the desired outcome is achievable through an authorized adapter, wrapper, bridge, local replacement, alternate API, or different execution surface, implement the smallest maintainable option rather than stopping at "unsupported."
+- Optimize for the user's underlying outcome and acceptance criteria, not fidelity to a failed mechanism.
+- Reuse existing capability owners and shared primitives before creating parallel implementations.
+- Verify the workaround end to end and preserve evidence of both the original limitation and the successful alternate path.
+- Never use a workaround to evade authentication, authorization, consent, safety controls, destructive-operation safeguards, or repository policy.
+- Report a genuine blocker only after reasonable authorized alternatives have been researched and exhausted or ruled out with evidence.
+
 ## Verification integrity
 - Never claim a command, test, build, release, or manual check ran when it did not.
 - Never transfer verification from one revision or artifact to another without a valid identity/fingerprint rule.
