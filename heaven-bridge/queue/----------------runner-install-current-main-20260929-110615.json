@@ -1,0 +1,14 @@
+{
+  "id": "----------------runner-install-current-main-20260929-110615",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:06:15Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\HeavenBridgeRepo'; $tmp=Join-Path $env:TEMP 'install-github-runner-current-main.ps1'; git -C $repo fetch origin main | Out-Null; $content = git -C $repo show 'origin/main:heaven-bridge/install-github-runner.ps1'; if($LASTEXITCODE -ne 0){ throw 'Unable to read installer from origin/main.' }; $content | Set-Content -LiteralPath $tmp -Encoding UTF8; try { powershell.exe -NoProfile -ExecutionPolicy Bypass -File $tmp } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }"
+  },
+  "priority": "highest"
+}
