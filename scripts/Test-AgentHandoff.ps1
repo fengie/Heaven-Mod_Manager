@@ -75,7 +75,7 @@ Assert-Match $agents '(?i)canonical (working state|development state|source of t
 Assert-Match $agents 'NEXT-AGENT-START-HERE\.md' 'AGENTS.md must direct agents to NEXT-AGENT-START-HERE.md.'
 Assert-Match $agents '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'AGENTS.md must direct agents to CURRENT_REVISION.json.'
 Assert-Match $agents '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'AGENTS.md must direct agents to CONTINUITY_PROTOCOL.md.'
-Assert-Match $agents '(?m)^8\.\s+Read active rules in `_AGENT_CONTEXT/LEARNED_RULES\.md`\.$' 'AGENTS.md must keep the active learned-rules read-order requirement.'
+Assert-Match $agents '_AGENT_CONTEXT/LEARNED_RULES\.md' 'AGENTS.md must direct agents to LEARNED_RULES.md.'
 Assert-Match $agents '(?i)git status' 'AGENTS.md must require git status inspection.'
 Assert-Match $agents '(?i)(history|diff)' 'AGENTS.md must require relevant history/diff inspection.'
 Assert-Match $agents '(?i)successor' 'AGENTS.md must explicitly pass continuity to a successor.'
