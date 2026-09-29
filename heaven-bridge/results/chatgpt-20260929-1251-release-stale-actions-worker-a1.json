@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1251-release-stale-actions-worker-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:50:20Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:52:01.961262+00:00",
+  "finished_at": "2026-09-29T12:52:03.200166+00:00",
+  "stdout": "{\"released\":false,\"reason\":\"worker_already_gone\",\"listenerPid\":52236,\"workerPid\":84736}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1251-release-stale-actions-worker-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1251-release-stale-actions-worker-a1.stderr.log",
+    "stdout_bytes": 89,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0c1ec61106ce057f4c4ae362f1afed921021c9cf71df1320838a1eb31d618e45"
+}
