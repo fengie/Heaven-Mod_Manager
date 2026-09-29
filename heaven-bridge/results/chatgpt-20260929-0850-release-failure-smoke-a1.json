@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0850-release-failure-smoke-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:50:00Z",
+  "status": "failed",
+  "exit_code": 23,
+  "started_at": "2026-09-29T08:50:08.499873+00:00",
+  "finished_at": "2026-09-29T08:50:08.918780+00:00",
+  "stdout": "",
+  "stderr": "Write-Error 'INTENTIONAL_RELEASE_FAILURE_SMOKE'; exit 23 : INTENTIONAL_RELEASE_FAILURE_SMOKE\r\n    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException\r\n    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-release-failure-smoke-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-release-failure-smoke-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 262,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "00f3ab6c08a242e8597408136414f406596d098ba3ffbc0269327f9fba7ca121"
+}
