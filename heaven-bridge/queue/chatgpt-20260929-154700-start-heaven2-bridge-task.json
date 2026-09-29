@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-154700-start-heaven2-bridge-task",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $q=& schtasks.exe /Query /S heaven2 /TN 'Heaven Local Bridge' /FO LIST 2>&1; $qc=$LASTEXITCODE; $run=''; $rc=-1; if($qc -eq 0){$run=& schtasks.exe /Run /S heaven2 /TN 'Heaven Local Bridge' 2>&1; $rc=$LASTEXITCODE}; [pscustomobject]@{query_exit=$qc;query=($q -join \"`n\");run_exit=$rc;run=($run -join \"`n\")}|ConvertTo-Json -Compress",
+    "cwd": "C:\\Users",
+    "timeout_seconds": 20
+  },
+  "created_at": "2026-09-29T15:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
