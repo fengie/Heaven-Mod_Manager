@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-095700-worker-fabric-inventory",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:58:20.643343+00:00",
+  "finished_at": "2026-09-29T09:58:23.270175+00:00",
+  "stdout": "{\"computer\":null,\"cpu\":{\"Name\":\"AMD Ryzen 9 7945HX with Radeon Graphics        \",\"NumberOfCores\":16,\"NumberOfLogicalProcessors\":32},\"os\":{\"Caption\":\"Microsoft Windows 11 Pro\",\"Version\":\"10.0.26200\",\"FreePhysicalMemoryGB\":3.85,\"TotalVisibleMemoryGB\":31.21},\"disks\":{\"DeviceID\":\"C:\",\"FreeGB\":217.2,\"SizeGB\":928.5},\"features\":{\"Microsoft-Hyper-V-All\":\"Unavailable\",\"Microsoft-Windows-Subsystem-Linux\":\"Unavailable\",\"Containers\":\"Unavailable\",\"VirtualMachinePlatform\":\"Unavailable\"},\"wsl\":\"\\u0000 \\u0000N\\u0000A\\u0000M\\u0000E\\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000S\\u0000T\\u0000A\\u0000T\\u0000E\\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000V\\u0000E\\u0000R\\u0000S\\u0000I\\u0000O\\u0000N\\u0000\\r\\n\\u0000\\r\\n\\u0000*\\u0000 \\u0000U\\u0000b\\u0000u\\u0000n\\u0000t\\u0000u\\u0000 \\u0000 \\u0000 \\u0000 \\u0000R\\u0000u\\u0000n\\u0000n\\u0000i\\u0000n\\u0000g\\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u0000 \\u00002\\u0000\\r\\n\\u0000\\r\\n\\u0000\",\"dockerVersion\":null,\"dockerInfo\":null,\"dockerPs\":null,\"compose\":null,\"heavenServices\":[{\"Name\":\"apps\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790617248211)\\/\"},{\"Name\":\"backups\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618907193)\\/\"},{\"Name\":\"benchmarks\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618439603)\\/\"},{\"Name\":\"compose\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790617754899)\\/\"},{\"Name\":\"config\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790617210638)\\/\"},{\"Name\":\"data\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618661122)\\/\"},{\"Name\":\"docs\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618857685)\\/\"},{\"Name\":\"logs\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618833598)\\/\"},{\"Name\":\"models\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790617108978)\\/\"},{\"Name\":\"scripts\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790621314147)\\/\"},{\"Name\":\"Sync\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790616830280)\\/\"},{\"Name\":\"venvs\",\"Mode\":\"d-----\",\"LastWriteTime\":\"\\/Date(1790618383794)\\/\"},{\"Name\":\"services.json\",\"Mode\":\"-a----\",\"LastWriteTime\":\"\\/Date(1790619040792)\\/\"}],\"agentControl\":\"Invoke-RestMethod : {\\r\\n  \\\"error\\\": \\\"Not found.\\\"\\r\\n}\\r\\nAt line:16 char:21\\r\\n+ ... ntrol = try{Invoke-RestMethod -Uri \\u0027http://127.0.0.1:7331/health\\u0027 -Ti ...\\r\\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\r\\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebExc \\r\\n   eption\\r\\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand\\r\\n\"}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-095700-worker-fabric-inventory.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-095700-worker-fabric-inventory.stderr.log",
+    "stdout_bytes": 2583,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0cbde629ba2e04c8fb039275709987dbd9331df9fe8a388deb48e8ca61691032"
+}
