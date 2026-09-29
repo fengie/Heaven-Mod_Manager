@@ -80,22 +80,31 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         return results;
     }
 
-    private bool HasLoader() =>
-        File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
-        File.Exists(Path.Combine(gameRoot, "loader.dll"));
+    private bool HasLoader()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
+               File.Exists(Path.Combine(gameRoot, "loader.dll"));
+    }
 
     private static bool SelectedProvidesLoader(
-        IReadOnlySet<string> selected,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        selected.Any(id =>
+        HashSet<string> selected,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return selected.Any(id =>
             filesByMod.TryGetValue(id, out var files) &&
             files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)));
+    }
 
     private static bool SelectedProvidesPath(
         string path,
-        IReadOnlySet<string> selected,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        selected.Any(id =>
+        HashSet<string> selected,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return selected.Any(id =>
             filesByMod.TryGetValue(id, out var files) &&
             files.Any(f => PathRules.Comparer.Equals(f.Path, path)));
+    }
 }
