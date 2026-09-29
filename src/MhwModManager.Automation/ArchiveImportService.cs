@@ -76,8 +76,6 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"destination={preparation.DestinationPath}");
-        var modsRoot = Path.GetDirectoryName(Path.GetFullPath(preparation.DestinationPath))
-            ?? throw new InvalidOperationException("FOMOD destination must be inside a Mods root.");
         var installationStaging = ImportPublicationWorkspace.Allocate(modsRoot, "fomod-install");
         try
         {
@@ -97,7 +95,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
     public Task CancelFomodAsync(FomodImportPreparation preparation)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"staging={preparation.StagingPath}");
-        ImportPublicationWorkspace.Cleanup(preparation.StagingPath);
+        ImportPublicationWorkspace.Cleanup(modsRoot, preparation.StagingPath);
         return Task.CompletedTask;
     }
 
