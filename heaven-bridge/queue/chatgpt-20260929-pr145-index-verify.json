@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-pr145-index-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "priority": "highest",
+  "created_at": "2026-09-29T12:08:00Z",
+  "ttl_seconds": 7200,
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $temp=Join-Path $env:TEMP 'mhw-hcp-pr145-index-verify'; if(Test-Path $temp){Remove-Item -Recurse -Force $temp}; git clone --branch agent/hcp-indexing-20260929-0746 --single-branch https://github.com/fengie/mhw-mods.git $temp; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $temp fetch origin main:refs/remotes/origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $sha=(git -C $temp rev-parse HEAD).Trim(); Write-Output ('HEAD_SHA='+$sha); python -m py_compile (Join-Path $temp 'plugins\\heaven-control-plane\\heaven_control_plane\\indexing.py') (Join-Path $temp 'plugins\\heaven-control-plane\\tests\\test_indexing.py'); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python (Join-Path $temp 'plugins\\heaven-control-plane\\tests\\test_indexing.py'); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $temp diff --check origin/main...HEAD -- plugins/heaven-control-plane/heaven_control_plane/indexing.py plugins/heaven-control-plane/tests/test_indexing.py; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output 'PR145_INDEX_GATE_PASS'; Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue"
+  }
+}
