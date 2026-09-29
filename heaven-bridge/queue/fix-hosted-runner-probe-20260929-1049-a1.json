@@ -1,0 +1,14 @@
+{
+  "id": "fix-hosted-runner-probe-20260929-1049-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Continue'; Write-Output ('HOST=' + $env:COMPUTERNAME); Write-Output ('USER=' + $env:USERNAME); Write-Output ('ARCH=' + $env:PROCESSOR_ARCHITECTURE); Write-Output ('GH=' + ((Get-Command gh -ErrorAction SilentlyContinue).Source)); gh auth status 2>&1 | ForEach-Object { $_ }; Write-Output '---RUNNER_DIRS---'; @('C:\\actions-runner','C:\\Users\\Xxkan\\actions-runner','C:\\Users\\Xxkan\\github-actions-runner') | ForEach-Object { if(Test-Path $_){ Write-Output $_; Get-ChildItem $_ -Force | Select-Object -First 20 Name,Length | Format-Table -AutoSize | Out-String | Write-Output } }; Write-Output '---RUNNER_SERVICES---'; Get-CimInstance Win32_Service | Where-Object { $_.Name -like 'actions.runner*' -or $_.DisplayName -like '*GitHub Actions*' } | Select-Object Name,State,StartMode,PathName | Format-List | Out-String | Write-Output; Write-Output '---REPO_RUNNERS---'; gh api repos/fengie/mhw-mods/actions/runners --jq '.runners[] | {id,name,os,status,busy,labels:[.labels[].name]}' 2>&1 | ForEach-Object { $_ }"
+  },
+  "created_at": "2026-09-29T10:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
