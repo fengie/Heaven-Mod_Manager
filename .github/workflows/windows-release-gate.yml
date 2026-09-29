@@ -1,4 +1,5 @@
 name: Windows Release Gate
+# Exact-main retrigger after v8.8.9 continuity and FunctionVerifier repair.
 
 on:
   push:
