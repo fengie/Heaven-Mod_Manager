@@ -38,6 +38,18 @@ test("training gate is rendered before the user task", () => {
   for (const requiredPath of REQUIRED_REPOSITORY_TRAINING_PATHS) assert.ok(prompt.includes(requiredPath), `missing ${requiredPath}`);
 });
 
+test("bug precedents are mandatory training and prevention closure is rendered", () => {
+  assert.ok(
+    REQUIRED_REPOSITORY_TRAINING_PATHS.includes("_AGENT_CONTEXT/BUG_PRECEDENTS.md"),
+    "BUG_PRECEDENTS.md must be mandatory training"
+  );
+  const prompt = render();
+  assert.match(prompt, /BUG PREVENTION CLOSURE:/);
+  assert.match(prompt, /root cause and violated invariant/);
+  assert.match(prompt, /regression coverage or strongest durable verifier/);
+  assert.match(prompt, /before DONE\/FIXED\/merge\/release/);
+});
+
 test("manager prompt requires manager-specific training", () => {
   const prompt = render("manager");
   assert.match(prompt, /01_MANAGER_ORCHESTRATOR\.txt/);
@@ -45,5 +57,5 @@ test("manager prompt requires manager-specific training", () => {
 });
 
 test("prompt library version records the training-gate revision", () => {
-  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.29.4");
+  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.29.5");
 });
