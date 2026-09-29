@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-161730-read-fingerprint-failure",
-  "state": "running",
+  "state": "completed",
   "action": "fs_read",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:15:47.837212+00:00"
+  "updated_at": "2026-09-29T16:16:00.114295+00:00",
+  "exit_code": 0
 }
