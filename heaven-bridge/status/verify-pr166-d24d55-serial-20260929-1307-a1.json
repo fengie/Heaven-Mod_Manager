@@ -1,0 +1,9 @@
+{
+  "id": "verify-pr166-d24d55-serial-20260929-1307-a1",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T13:07:12.660296+00:00"
+}
