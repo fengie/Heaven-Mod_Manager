@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-170300-ui-base-focus",
-  "state": "running",
+  "state": "error",
   "action": "window_focus",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T17:01:31.077527+00:00"
+  "updated_at": "2026-09-29T17:01:40.788229+00:00",
+  "exit_code": 1
 }
