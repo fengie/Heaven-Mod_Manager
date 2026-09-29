@@ -1,0 +1,13 @@
+{
+  "id": "!!!!-branch-disposition-delete-20260929110620",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:06:20.094Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'\n$relay=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$url=(git -C $relay remote get-url origin).Trim()\n$targets=@(\n@{branch='agent/bridge-priority-scheduler-20260929';sha='6fb237790f49a65c8a68220e1b2872187655f9a6'},\n@{branch='integration/bridge-priority-aging-main-20260929';sha='6a3074831612179d8115d238593f62ff5885abc3'},\n@{branch='integration/bridge-priority-aging-main-r2-20260929';sha='780ae0e6308e58f6a80e14d0a054a2d7747de5a1'},\n@{branch='agent/updater-installed-e2e-20260929-manager';sha='9dca0f2ba007b2489c8b26241274e9b5962277db'},\n@{branch='agent/programmer-updater-rest-handoff-20260928';sha='e5138793961af55d04183115cb8175eb5c4de672'},\n@{branch='agent/reconciliation-continuity-20260929-final-github';sha='2777034ae3e1254024cab9420aaa5e7af039c7a6'},\n@{branch='agent/reconciliation-continuity-20260929-r3';sha='59c9db0502b116f59af06f04000b537e992ac1e3'},\n@{branch='feature/agent-control-panel-20260928';sha='cc3278f5467735bc2e170ba2910edb1b54508a42'},\n@{branch='agent/support-pr-disposition-ledger-20260928';sha='d193cd7b3b1be769c2becfb8c0924ed76ae9077f'}\n)\n$deleted=@(); $skipped=@(); $failed=@()\nforeach($t in $targets){\n  $line=(git ls-remote $url \"refs/heads/$($t.branch)\" 2>$null)\n  if(-not $line){ $skipped += [pscustomobject]@{branch=$t.branch;reason='already-absent'}; continue }\n  $sha=($line -split '\\s+')[0]\n  if($sha -ne $t.sha){ $skipped += [pscustomobject]@{branch=$t.branch;reason='tip-changed';expected=$t.sha;actual=$sha}; continue }\n  git -C $relay push origin \":refs/heads/$($t.branch)\" *> $null\n  if($LASTEXITCODE -eq 0){$deleted += $t.branch}else{$failed += $t.branch}\n}\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;skipped=$skipped;failed=$failed} | ConvertTo-Json -Depth 5 -Compress",
+    "timeout_seconds": 300
+  },
+  "priority": "highest"
+}
