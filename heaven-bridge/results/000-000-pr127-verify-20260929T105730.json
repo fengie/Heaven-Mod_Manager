@@ -1,0 +1,21 @@
+{
+  "id": "000-000-pr127-verify-20260929T105730",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:57:30+00:00",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:13:10.118650+00:00",
+  "finished_at": "2026-09-29T11:13:11.743559+00:00",
+  "stdout": "",
+  "stderr": "warning: Could not find remote branch agent/bridge-priority-scheduler-20260929 to clone.\nfatal: Remote branch agent/bridge-priority-scheduler-20260929 not found in upstream origin\nclone failed\r\nAt line:9 char:28\r\n+   if($LASTEXITCODE -ne 0){ throw 'clone failed' }\r\n+                            ~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (clone failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : clone failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-000-pr127-verify-20260929T105730.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-000-pr127-verify-20260929T105730.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 456,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3fb958c6e82e13d5fc8a5dabb1ff4a5509aabc82314cd590ceeaeeb7785a4b74"
+}
