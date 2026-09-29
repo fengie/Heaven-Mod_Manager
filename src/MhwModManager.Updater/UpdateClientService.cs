@@ -72,8 +72,8 @@ public sealed class UpdateClientService : IDisposable
             candidate = await source.FindLatestAsync(
                 current,
                 token: null,
-                ct,
-                UpdateProtocol.PublicReleaseRepository);
+                ct: ct,
+                repository: UpdateProtocol.PublicReleaseRepository);
             if (candidate is not null)
                 writeLog($"update public feed selected build={candidate.Manifest.BuildNumber}");
         }
