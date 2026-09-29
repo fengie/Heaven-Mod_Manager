@@ -1,8 +1,9 @@
 # v8.8.11 — FOMOD staging cleanup
 
-- Always clean a prepared FOMOD staging directory after the interactive chooser exits, including validation/rendering failures before the dialog can be shown.
-- Preserve the existing commit path while making cancellation and exceptional dialog exits converge on the same manager-owned cleanup boundary.
-- Prevent invalid or unsupported FOMOD metadata from accumulating hidden `.fomod-*.staging` directories in the managed mod library.
+- Keep archive/FOMOD temporary extraction state under a dedicated manager-owned staging root that catalog refreshes explicitly ignore.
+- Always clean a prepared FOMOD staging leaf after the interactive chooser exits, including validation/rendering failures before the dialog can be shown.
+- Prevent successful FOMOD commits from cataloging their still-live preparation folder as a ghost mod row before cleanup.
+- Clean ordinary archive staging leaves on exceptional exits and add regression coverage proving the catalog never adopts the manager-owned staging root.
 
 # v8.8.10 — Workflow feature closure
 
