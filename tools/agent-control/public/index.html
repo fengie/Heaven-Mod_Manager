@@ -47,8 +47,8 @@
     .control-grid .wide { grid-column:1 / -1; }
     .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
     .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:10px 0 12px; }
-    .quick-action,.quick-autopilot { min-height:58px; text-align:left; font-weight:800; padding:12px 13px; }
-    .quick-action small,.quick-autopilot small { display:block; margin-top:3px; color:var(--muted); font-weight:500; line-height:1.25; }
+    .quick-action,.quick-autopilot,.quick-perpetual { min-height:58px; text-align:left; font-weight:800; padding:12px 13px; }
+    .quick-action small,.quick-autopilot small,.quick-perpetual small { display:block; margin-top:3px; color:var(--muted); font-weight:500; line-height:1.25; }
     .quick-action.primary small { color:#dceaff; }
     .deploy-now { width:100%; min-height:48px; font-size:15px; margin-top:10px; }
     details.advanced { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
@@ -126,7 +126,8 @@
           <button class="quick-action" id="quickVerify" data-preset="verify">✅ Verify & Repair<small>Run gates, repair failures, and leave evidence.</small></button>
           <button class="quick-action" id="quickBacklog" data-preset="backlog">🔀 Clean Backlog<small>Resolve useful issues/PRs/branches and clean stale work.</small></button>
           <button class="quick-action" id="quickRelease" data-preset="release">🚀 Release Ready<small>Finish release gates and publish when allowed.</small></button>
-          <button class="quick-autopilot" id="quickAutopilot">♾ Start Autopilot<small>Keep advancing routine engineering until a governed gate.</small></button>
+          <button class="quick-autopilot" id="quickAutopilot">▶ Bounded Autopilot<small>Advance one governed engineering cycle.</small></button>
+          <button class="quick-perpetual primary" id="quickPerpetual">♾ Perpetual Machine<small>Keep creating fresh swarms and replacing stuck lanes until you stop it.</small></button>
         </div>
 
         <label for="task">Custom objective <span style="font-weight:400">(optional)</span></label>
@@ -232,6 +233,22 @@
             <button id="routingClear">Clear routing</button>
           </div>
           <div class="tiny" id="controlState">Server-side authorization remains authoritative; UI state never grants permission.</div>
+        </section>
+
+        <section class="card section">
+          <div class="section-title">
+            <h2>Perpetual Machine</h2>
+            <span class="pill" id="perpetualStatus">stopped</span>
+          </div>
+          <label for="perpetualObjective">Standing direction <span style="font-weight:400">(optional)</span></label>
+          <textarea id="perpetualObjective" style="min-height:82px" placeholder="Leave blank: continuously pick the highest-value unfinished project work from current canonical state."></textarea>
+          <div class="role-grid">
+            <button class="primary" id="perpetualStart">Start Forever</button>
+            <button id="perpetualPause">Pause</button>
+            <button id="perpetualResume">Resume</button>
+            <button class="danger" id="perpetualStop">Stop</button>
+          </div>
+          <div class="tiny" id="perpetualMeta">Persists intent across manager restarts. Replaces stale/stuck owned lanes only after preserving takeover state; quota/restart storms enter automatic cooldown instead of thrashing.</div>
         </section>
 
         <section class="card section">
@@ -595,6 +612,20 @@
       $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} live`;
       $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
 
+      const perpetual = snapshot.perpetualSwarm || {};
+      $("perpetualStatus").textContent = perpetual.enabled
+        ? (perpetual.paused ? "paused" : (perpetual.lastReason || "running"))
+        : "stopped";
+      $("perpetualMeta").textContent = [
+        perpetual.enabled ? "enabled" : "stopped",
+        `generation ${perpetual.generation ?? 0}`,
+        `replacements ${perpetual.replacementCount ?? 0}`,
+        perpetual.lastAction ? `last: ${perpetual.lastAction}` : null,
+        perpetual.nextActionAt ? `next ${fmt(perpetual.nextActionAt)}` : null,
+        perpetual.lastError ? `error: ${perpetual.lastError}` : null
+      ].filter(Boolean).join(" · ");
+      if (!$("perpetualObjective").value && perpetual.objective) $("perpetualObjective").value = perpetual.objective;
+
       const autopilot = snapshot.autopilot || {};
       $("autopilotStatus").textContent = autopilot.paused ? `${autopilot.phase || "unknown"} · paused` : (autopilot.phase || "waiting-for-direction");
       $("autopilotMeta").textContent = [
@@ -626,6 +657,24 @@
         $("connection").textContent = "Offline";
         toast(error.message);
       }
+    }
+
+    async function perpetualAction(action, objectiveOverride="") {
+      try {
+        const objective = (objectiveOverride || $("perpetualObjective").value.trim() || presetObjectives.continue).trim();
+        const body = action === "start"
+          ? {
+              objective,
+              baseBranch:$("baseBranch").value.trim() || "main",
+              machine:$("machine").value || "auto",
+              reason:"ui-start"
+            }
+          : { reason: `ui-${action}` };
+        if (action === "start") $("perpetualObjective").value = objective;
+        await api(`/api/perpetual/${action}`, { method:"POST", body:JSON.stringify(body) });
+        toast(`Perpetual Machine ${action} requested.`);
+        await refresh();
+      } catch (error) { toast(error.message); }
     }
 
     async function autopilotAction(action, objectiveOverride="") {
@@ -697,7 +746,7 @@
     }
 
     function setDeployControlsDisabled(disabled) {
-      document.querySelectorAll(".deploy, .quick-action, .quick-autopilot, #deploySwarm").forEach(button => button.disabled = disabled);
+      document.querySelectorAll(".deploy, .quick-action, .quick-autopilot, .quick-perpetual, #deploySwarm").forEach(button => button.disabled = disabled);
     }
 
     async function runPreset(key) {
@@ -805,9 +854,14 @@
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
     document.querySelectorAll(".quick-action[data-preset]").forEach(button => button.addEventListener("click", () => runPreset(button.dataset.preset)));
     $("quickAutopilot").addEventListener("click", () => autopilotAction("start", presetObjectives.continue));
+    $("quickPerpetual").addEventListener("click", () => perpetualAction("start", presetObjectives.continue));
     $("deploySwarm").addEventListener("click", () => deploySwarm());
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
+    $("perpetualStart").addEventListener("click", () => perpetualAction("start"));
+    $("perpetualPause").addEventListener("click", () => perpetualAction("pause"));
+    $("perpetualResume").addEventListener("click", () => perpetualAction("resume"));
+    $("perpetualStop").addEventListener("click", () => perpetualAction("stop"));
     $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
     $("autopilotPause").addEventListener("click", () => autopilotAction("pause"));
     $("autopilotResume").addEventListener("click", () => autopilotAction("resume"));
