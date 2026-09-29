@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-heaven-runner-live-diag-20260929-1220",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:25:16.895925+00:00"
+  "updated_at": "2026-09-29T12:25:28.853573+00:00",
+  "exit_code": 0
 }
