@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1110-branchzero-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:10:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'\n$r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\ngit -C $r fetch origin --prune | Out-Null\n$main=(git -C $r rev-parse origin/main).Trim()\n$refs=@(git -C $r for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object { $_ -and $_ -notin @('HEAD','main','heaven-bridge') })\n$out=@()\nforeach($b in $refs){\n  $ab=((git -C $r rev-list --left-right --count \"origin/main...origin/$b\") -split '\\s+')\n  $ch=@(git -C $r cherry origin/main \"origin/$b\")\n  $plus=@($ch | Where-Object { $_ -like '+ *' }).Count\n  $minus=@($ch | Where-Object { $_ -like '- *' }).Count\n  git -C $r merge-base --is-ancestor \"origin/$b\" origin/main 2>$null\n  $ancestor=($LASTEXITCODE -eq 0)\n  $treeBranch=(git -C $r rev-parse \"origin/$b^{tree}\").Trim()\n  $treeMain=(git -C $r rev-parse 'origin/main^{tree}').Trim()\n  $files=@(git -C $r diff --name-only \"origin/main..origin/$b\")\n  $logs=@(git -C $r log --format='%h %s' -n 6 \"origin/main..origin/$b\")\n  $out += [pscustomobject]@{\n    branch=$b; behind=[int]$ab[0]; ahead=[int]$ab[1]; cherry_plus=$plus; cherry_minus=$minus;\n    ancestor_of_main=$ancestor; tree_equal_main=($treeBranch -eq $treeMain); changed_files=$files; unique_log=$logs\n  }\n}\n[pscustomobject]@{main=$main;count=$out.Count;branches=$out}|ConvertTo-Json -Depth 8 -Compress"
+  }
+}
