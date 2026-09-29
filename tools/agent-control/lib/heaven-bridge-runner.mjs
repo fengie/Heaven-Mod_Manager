@@ -48,10 +48,15 @@ function writeLastMessage(spec, text) {
   fs.writeFileSync(spec.lastMessagePath, value ? `${value}\n` : "", "utf8");
 }
 
-async function postLoopbackJson(port, pathname, value) {
+async function postLoopbackJson(port, pathname, value, capabilityToken) {
+  const token = String(capabilityToken || "").trim();
+  if (!token) throw new Error("Scoped Agent Control task capability is required for loopback mutation.");
   const response = await fetch(`http://127.0.0.1:${Number(port || 7331)}${pathname}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Agent-Control-Task-Token": token
+    },
     body: JSON.stringify(value)
   });
   const body = await response.json().catch(() => ({}));
@@ -62,12 +67,15 @@ async function postLoopbackJson(port, pathname, value) {
 }
 
 async function relayStructuredEvidence(spec, document) {
+  const capabilityToken = String(process.env.AGENT_CONTROL_TASK_TOKEN || "").trim();
+  if (!capabilityToken) throw new Error("AGENT_CONTROL_TASK_TOKEN is required for scoped evidence relay.");
   const evidence = Array.isArray(document?.evidence) ? document.evidence : [];
   for (const item of evidence) {
     await postLoopbackJson(
       spec.controlPort,
       `/api/tasks/${encodeURIComponent(spec.taskId)}/evidence`,
-      item
+      item,
+      capabilityToken
     );
   }
 
@@ -76,7 +84,8 @@ async function relayStructuredEvidence(spec, document) {
     await postLoopbackJson(
       spec.controlPort,
       `/api/integration/${encodeURIComponent(spec.targetAgentId)}/review-verdict`,
-      document.reviewVerdict
+      document.reviewVerdict,
+      capabilityToken
     );
   }
 
