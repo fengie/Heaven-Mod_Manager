@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-155730-canonical-git-state",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:57:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:56:21.853527+00:00",
+  "finished_at": "2026-09-29T15:56:22.477770+00:00",
+  "stdout": "C:/Users/Xxkan/mhw-mods-work-canonical\n## main...origin/main [behind 404]\n M .verification/function-status.json\n M .verification/stage-status.json\n M MHW-DEBUG-ALL.log\n?? BuildLogs/\norigin\thttps://github.com/fengie/mhw-mods.git (fetch)\norigin\thttps://github.com/fengie/mhw-mods.git (push)\nC:/Users/Xxkan/mhw-mods-work-canonical                                        ad3de9e7 [main]\nC:/Users/Xxkan/agent-worktrees/security-authz-20260929                        ad3de9e7 [agent/security-authorization-20260929]\nC:/Users/Xxkan/AppData/Local/Temp/agent-control-dashboard-main-20260929-0540  1d5bac2b (detached HEAD)\nC:/Users/Xxkan/AppData/Local/Temp/mhw-complete-workflows-audit-a1             50ded0b6 [audit/complete-workflows-current-main-20260929]\nC:/Users/Xxkan/AppData/Local/Temp/mhw-smart-pack-salvage-a1                   50ded0b6 [reconcile/smart-pack-current-main-20260929]\nC:/Users/Xxkan/AppData/Local/Temp/mhw-workflows-feature-dryrun                5a937116 [audit/workflows-feature-dryrun-20260929]\nC:/Users/Xxkan/AppData/Local/Temp/mhw-workflows-final-int                     94593567 [integration/complete-mod-workflows-final-20260929]\nC:/Users/Xxkan/HeavenWork/recover-pr214                                       b7ce5016 [recover-pr214-temp]\nC:/Users/Xxkan/HeavenWork/swarm-main-499f4fd3                                 499f4fd3 (detached HEAD)\nC:/Users/Xxkan/HeavenWork/swarm-main-fabf715f                                 fabf715f (detached HEAD)\nC:/Users/Xxkan/HeavenWork/verify-pr214-recovered                              3ef3f861 (detached HEAD)\nC:/Users/Xxkan/mhw-agent-control-release-verify                               88dfded0 (detached HEAD)\nC:/Users/Xxkan/mhw-catalog-pr208                                              f7d59469 (detached HEAD)\nC:/Users/Xxkan/mhw-federation-registry-20260929                               ad3de9e7 [agent/federation-registry-20260929]\nC:/Users/Xxkan/mhw-final-reconcile-20260929                                   9cb2cfd8 [integration/final-main-reconcile-20260929]\nC:/Users/Xxkan/mhw-final-v886-b                                               5ce5bcfe [converge/final-v886-20260929b]\nC:/Users/Xxkan/mhw-integration-release-20260929-0543                          18adc37d [integration/release-lead-20260929-0543]\nC:/Users/Xxkan/mhw-main-converge-20260929                                     58505e2b [converge/main-20260929]\nC:/Users/Xxkan/mhw-main-finalize-20260929-0540                                68831fe4 (detached HEAD)\nC:/Users/Xxkan/mhw-mods-pr90-integration                                      2f478059 [integration/pr90-reconcile-20260929]\nC:/Users/Xxkan/mhw-mods-updater-publication-fix                               9234c61c [agent/auto-updater-publication-fix-20260928]\nC:/Users/Xxkan/mhw-pr59-finalverify                                           0a87bb6a (detached HEAD)\nC:/Users/Xxkan/mhw-pr90-integration                                           e25b68da [integration/pr90-reconcile-local-20260929]\nC:/Users/Xxkan/mhw-release-885                                                aba60bf1 [release/v8.8.5-20260929]\nC:/Users/Xxkan/mhw-swarm-contract-v3-verify                                   aab737f4 (detached HEAD)\nC:/Users/Xxkan/mhw-trace-fix-885                                              1a369651 [fix/v8.8.5-installed-label-trace]\nC:/Users/Xxkan/mhw-verification-reliability-20260929                          9d138da2 [agent/verification-reliability-20260929]\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-155730-canonical-git-state.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-155730-canonical-git-state.stderr.log",
+    "stdout_bytes": 3448,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a3db1a0e1d8703adbaee047b3cbd67b504ae71453869a221f6e1dda2143c5dc0"
+}
