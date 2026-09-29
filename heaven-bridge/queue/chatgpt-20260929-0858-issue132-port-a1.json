@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0858-issue132-port-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'; $wt='C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows'; git -C $repo fetch origin --prune; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null }; if(git -C $repo show-ref --verify --quiet refs/heads/fix/issue132-workflow-rebuild-20260929){ git -C $repo branch -D fix/issue132-workflow-rebuild-20260929 | Out-Null }; git -C $repo worktree add -b fix/issue132-workflow-rebuild-20260929 $wt origin/main; $parent='91f2b9e9815caab2e4670084022a5c2ab3e45f55'; $commit='02fa1dd5c3e98d319067043598bfdfd32617e65f'; $paths=@('docs/GAME-ADAPTER-SDK.md','docs/WORKFLOWS.md','src/MhwModManager.App/App.xaml.cs','src/MhwModManager.App/FomodInstallerWindow.cs','src/MhwModManager.App/MainWindow.xaml','src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs','src/MhwModManager.App/ViewModels/MainWindowViewModel.cs','src/MhwModManager.App/WorkflowWindow.xaml','src/MhwModManager.App/WorkflowWindow.xaml.cs','src/MhwModManager.Automation/CollectionRecipeService.cs','src/MhwModManager.Automation/CrashBisectorEngine.cs','src/MhwModManager.Automation/FomodInstallerService.cs','src/MhwModManager.Automation/ModTrustService.cs','src/MhwModManager.Automation/RulesEditorService.cs','src/MhwModManager.Automation/SmartInboxService.cs','src/MhwModManager.Automation/UpdateMigrationService.cs','src/MhwModManager.Core/ConflictEngine.cs','src/MhwModManager.Core/ConflictRuleIndex.cs','src/MhwModManager.Core/DeploymentPlanner.cs','src/MhwModManager.Core/GameAdapters.cs','src/MhwModManager.Core/WorkflowAnalysis.cs','src/MhwModManager.Filesystem/DeploymentExecutor.cs','src/MhwModManager.Storage/DeploymentMetadata.cs','src/MhwModManager.Storage/ProfileRepository.cs','src/MhwModManager.Storage/Schema.cs','tests/MhwModManager.AutomationTests/AutomationLogicTests.cs','tests/MhwModManager.AutomationTests/WorkflowTests.cs','tools/MhwModManager.SelfTest/Program.cs'); $patch=Join-Path $env:TEMP 'issue132-product.patch'; git -C $repo diff --binary $parent $commit -- $paths | Set-Content -LiteralPath $patch -Encoding utf8; git -C $wt apply --3way --index $patch; $apply=$LASTEXITCODE; Write-Output ('APPLY_EXIT='+$apply); git -C $wt status --short; if($apply -ne 0){ Write-Output '---CONFLICTS---'; git -C $wt diff --name-only --diff-filter=U; exit 2 }; git -C $wt commit -m 'Rebuild remaining mod workflow features from current main'; git -C $wt rev-parse HEAD"
+  },
+  "created_at": "2026-09-29T12:58:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
