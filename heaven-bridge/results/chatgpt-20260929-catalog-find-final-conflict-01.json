@@ -1,0 +1,25 @@
+{
+  "id": "chatgpt-20260929-catalog-find-final-conflict-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:47:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:45:03.822117+00:00",
+  "finished_at": "2026-09-29T15:45:03.839742+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\mhw-catalog-pr208\\src\\MhwModManager.App",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\mhw-catalog-pr208\\src\\MhwModManager.App\\MainWindow.xaml",
+        "line": 63,
+        "text": "<<<<<<< HEAD"
+      }
+    ],
+    "scanned_files": 1,
+    "truncated": false
+  },
+  "job_hash": "19c5418d28a8b92280ded26f5109799f25d9653b438daccdc8e1fba1a5d41418"
+}
