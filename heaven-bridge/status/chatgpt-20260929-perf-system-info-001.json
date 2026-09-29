@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-perf-system-info-001",
-  "state": "running",
+  "state": "completed",
   "action": "system_info",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:17:59.196190+00:00"
+  "updated_at": "2026-09-29T16:18:07.933771+00:00",
+  "exit_code": 0
 }
