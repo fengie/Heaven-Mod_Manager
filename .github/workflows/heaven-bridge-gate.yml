@@ -9,6 +9,7 @@ on:
       - 'heaven-bridge/bootstrap.ps1'
       - 'heaven-bridge/manage.ps1'
       - 'heaven-bridge/watchdog.ps1'
+      - 'heaven-bridge/sentinel.ps1'
       - 'heaven-bridge/git-state.ps1'
       - 'heaven-bridge/install-github-runner.ps1'
       - 'heaven-bridge/uia.ps1'
@@ -25,6 +26,7 @@ on:
       - 'heaven-bridge/bootstrap.ps1'
       - 'heaven-bridge/manage.ps1'
       - 'heaven-bridge/watchdog.ps1'
+      - 'heaven-bridge/sentinel.ps1'
       - 'heaven-bridge/git-state.ps1'
       - 'heaven-bridge/install-github-runner.ps1'
       - 'heaven-bridge/uia.ps1'
@@ -88,7 +90,7 @@ jobs:
       - name: Parse operator PowerShell
         shell: powershell
         run: |
-          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/watchdog.ps1', 'heaven-bridge/git-state.ps1', 'heaven-bridge/install-github-runner.ps1', 'heaven-bridge/uia.ps1', 'heaven-bridge/New-HeavenSecretEnvelope.ps1', 'heaven-bridge/secret-envelope-io.ps1', 'heaven-bridge/tests/Test-GitState.ps1', 'heaven-bridge/tests/Test-SecretEnvelopeIo.ps1')) {
+          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/watchdog.ps1', 'heaven-bridge/sentinel.ps1', 'heaven-bridge/git-state.ps1', 'heaven-bridge/install-github-runner.ps1', 'heaven-bridge/uia.ps1', 'heaven-bridge/New-HeavenSecretEnvelope.ps1', 'heaven-bridge/secret-envelope-io.ps1', 'heaven-bridge/tests/Test-GitState.ps1', 'heaven-bridge/tests/Test-SecretEnvelopeIo.ps1')) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(
