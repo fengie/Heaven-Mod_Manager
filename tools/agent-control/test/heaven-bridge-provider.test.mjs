@@ -123,6 +123,8 @@ test("remote runner stages new files and pushes only from the control-side workt
   const source = fs.readFileSync(path.resolve(here, "..", "lib", "heaven-bridge-runner.mjs"), "utf8");
   assert.match(source, /git -C \$\{psQuote\(remoteWorktree\)\} add -A/);
   assert.match(source, /diff --cached --binary/);
+  assert.match(source, /AGENT_CONTROL_TASK_TOKEN/);
+  assert.match(source, /X-Agent-Control-Task-Token/);
   assert.match(source, /const remoteParent = path\.win32\.dirname\(remoteWorktree\)/);
   assert.match(source, /git\(spec\.localWorktree, \["push", "--set-upstream", "origin", spec\.branchName\]\)/);
   assert.doesNotMatch(source, /git -C \$\{psQuote\(remoteWorktree\)\} push/);
