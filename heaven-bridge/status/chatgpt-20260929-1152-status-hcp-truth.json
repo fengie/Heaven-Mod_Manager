@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1152-status-hcp-truth",
-  "state": "running",
+  "state": "completed",
   "action": "job_status",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:52:42.885403+00:00"
+  "updated_at": "2026-09-29T11:53:09.787742+00:00",
+  "exit_code": 0
 }
