@@ -1,0 +1,41 @@
+name: Temporary Agent Control Diagnostics
+on:
+  push:
+    branches:
+      - "reconcile/operator-ui-cli-main-v2-20260929"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/agent-control
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - id: syntax
+        name: Syntax checks
+        continue-on-error: true
+        run: npm run check > ci-check.log 2>&1
+      - id: tests
+        name: Deterministic tests
+        continue-on-error: true
+        run: npm test > ci-test.log 2>&1
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-control-diagnostic-log
+          path: |
+            tools/agent-control/ci-check.log
+            tools/agent-control/ci-test.log
+      - name: Preserve gate result
+        if: always()
+        run: |
+          test "${{ steps.syntax.outcome }}" = "success"
+          test "${{ steps.tests.outcome }}" = "success"
