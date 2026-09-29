@@ -336,6 +336,86 @@ test("broad workflow execution fails closed until a routing manifest is current"
   assert.equal(reconciled.body.plan.ownership.reconciled, true);
 });
 
+test("federated bridge observations drive normalized live counts without duplicate agents", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-federation-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child, dataDir } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const observed = await postJson(port, "/api/federation/observations", {
+    provider: "chatgpt",
+    source_id: "conversation-123",
+    role: "manager",
+    machine: "cloud",
+    state: "working",
+    task: "Coordinate Agent Control",
+    correlation_keys: ["work-item:59"]
+  });
+  assert.equal(observed.status, 200);
+  assert.equal(observed.body.accepted, 1);
+  const firstId = observed.body.agents[0].agent_id;
+
+  const heartbeat = await postJson(port, "/api/federation/heartbeat", {
+    provider: "chatgpt",
+    source_id: "conversation-123",
+    state: "tool_wait",
+    correlation_keys: ["work-item:59"]
+  });
+  assert.equal(heartbeat.status, 200);
+  assert.equal(heartbeat.body.agents[0].agent_id, firstId);
+
+  const correlated = await postJson(port, "/api/federation/observations", {
+    provider: "github",
+    source_id: "workflow-run-999",
+    state: "tool_wait",
+    pr_number: 59,
+    correlation_keys: ["work-item:59"]
+  });
+  assert.equal(correlated.status, 200);
+  assert.equal(correlated.body.agents[0].agent_id, firstId);
+
+  const federation = await getJson(port, "/api/federation");
+  assert.equal(federation.status, 200);
+  assert.equal(federation.body.agents.length, 1);
+  assert.equal(federation.body.counts.live, 1);
+  assert.equal(federation.body.counts.tool_wait, 1);
+  assert.deepEqual(new Set(federation.body.agents[0].providers), new Set(["chatgpt", "github"]));
+
+  const snapshot = await getJson(port, "/api/snapshot");
+  assert.equal(snapshot.body.telemetry.running, 1);
+  assert.equal(snapshot.body.telemetry.total, 1);
+  assert.equal(snapshot.body.federatedAgents.length, 1);
+
+  const persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
+  assert.equal(persisted.version, 5);
+  assert.equal(persisted.federation.agents.length, 1);
+});
+
+test("stale external heartbeat is visible but excluded from active-agent count", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-federation-stale-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const oldHeartbeat = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const observed = await postJson(port, "/api/federation/observations", {
+    provider: "chatgpt",
+    source_id: "conversation-stale",
+    state: "working",
+    heartbeat_at: oldHeartbeat
+  });
+  assert.equal(observed.status, 200);
+
+  const federation = await getJson(port, "/api/federation");
+  assert.equal(federation.body.counts.live, 0);
+  assert.equal(federation.body.counts.disconnected, 1);
+  assert.equal(federation.body.agents[0].effective_state, "disconnected");
+});
+
 test("engineering autopilot exposes governed control routes and a periodic internal loop", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   for (const route of [
