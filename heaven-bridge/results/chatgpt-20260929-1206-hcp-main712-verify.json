@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1206-hcp-main712-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:06:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:06:26.119293+00:00",
+  "finished_at": "2026-09-29T12:06:28.764109+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\n + c7ed09b4...24ce46d9 main       -> origin/main  (forced update)\norigin/main moved: 24ce46d92cc9b1d977fbf0c43d01de295b8de059\r\nAt line:8 char:67\r\n+ ... 0be66e60e8cd20cfb4a7010a') { throw \"origin/main moved: $originMain\" }\r\n+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (origin/main mov...d01de295b8de059:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : origin/main moved: 24ce46d92cc9b1d977fbf0c43d01de295b8de059\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1206-hcp-main712-verify.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1206-hcp-main712-verify.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 593,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1ce692750e0b092c3c09697442d4dbba85b1e29f5768b192704eec4cd9c35c9b"
+}
