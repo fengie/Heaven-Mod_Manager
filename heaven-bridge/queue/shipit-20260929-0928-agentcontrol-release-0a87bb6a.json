@@ -1,0 +1,14 @@
+{
+  "id": "shipit-20260929-0928-agentcontrol-release-0a87bb6a",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$dest = Join-Path $env:TEMP 'shipit-20260929-0928-agentcontrol-release-0a87bb6a'\nif (Test-Path $dest) { Remove-Item -Recurse -Force $dest }\ngit clone --no-checkout https://github.com/fengie/mhw-mods.git $dest\ngit -C $dest fetch origin 0a87bb6a021fabd76f1de452dcb721ee35d58e40\ngit -C $dest checkout --detach 0a87bb6a021fabd76f1de452dcb721ee35d58e40\n$actual = (git -C $dest rev-parse HEAD).Trim()\nif ($actual -ne '0a87bb6a021fabd76f1de452dcb721ee35d58e40') { throw \"HEAD mismatch: $actual\" }\nPush-Location (Join-Path $dest 'tools\\agent-control')\ntry {\n  node --version\n  npm run check\n  node --test --test-reporter tap test/*.test.mjs\n} finally { Pop-Location }\n$dirty = (git -C $dest status --porcelain)\nif ($dirty) { throw \"verification checkout dirty: $dirty\" }\nWrite-Output \"VERIFIED_HEAD=$actual\"\nWrite-Output \"WORKTREE_CLEAN=true\"",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T09:28:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
