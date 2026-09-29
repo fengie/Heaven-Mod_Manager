@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0916-issue84-osfix2",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T13:15:50.362201+00:00"
+  "updated_at": "2026-09-29T13:16:55.307982+00:00",
+  "exit_code": 0
 }
