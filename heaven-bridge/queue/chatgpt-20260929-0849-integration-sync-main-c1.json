@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0849-integration-sync-main-c1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; git -C $r fetch origin --prune; git -C $r switch main; git -C $r merge --ff-only origin/main; 'HEAD='+(git -C $r rev-parse HEAD); git -C $r status --porcelain=v1 -b",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T08:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
