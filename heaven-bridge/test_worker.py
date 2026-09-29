@@ -141,8 +141,56 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         )
         self.assertEqual(result["data"]["worker_version"], 3)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
-        for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel"):
+        for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel", "controller_checkpoint"):
             self.assertIn(action, result["data"]["actions"])
+
+    def test_controller_checkpoint_is_stale_safe_and_secret_safe(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            state_path = root / hb.CONTROLLER_STATE_PATH
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            state_path.write_text(
+                '{"schema":"permanent-dev-controller-v1","cycle_id":"cycle-1"}',
+                encoding="utf-8",
+            )
+            next_state = {
+                "schema": "permanent-dev-controller-v1",
+                "cycle_id": "cycle-2",
+                "selected_task": {"target": "checkpoint durability"},
+            }
+            published = {}
+
+            def fake_publish(path, body, message, max_attempts=6):
+                published["path"] = path
+                published["body"] = body
+                published["message"] = message
+
+            with patch.object(hb, "ROOT", root), \
+                 patch.object(hb, "git_sync"), \
+                 patch.object(hb, "publish_json", side_effect=fake_publish):
+                result = hb.write_controller_checkpoint(next_state, "cycle-1")
+                self.assertTrue(result["persisted"])
+                self.assertEqual(result["previous_cycle_id"], "cycle-1")
+                self.assertEqual(result["cycle_id"], "cycle-2")
+                self.assertEqual(published["path"], hb.CONTROLLER_STATE_PATH)
+
+                with self.assertRaises(hb.BridgeError) as stale:
+                    hb.write_controller_checkpoint(next_state, "wrong-cycle")
+                self.assertEqual(stale.exception.code, "STALE_CONTROLLER_STATE")
+
+                secret_state = dict(next_state)
+                secret_state["credentials"] = {"api_key": "must-not-enter-relay-state"}
+                with self.assertRaises(hb.BridgeError) as secret:
+                    hb.write_controller_checkpoint(secret_state, "cycle-1")
+                self.assertEqual(secret.exception.code, "CONTROLLER_STATE_SECRET_KEY_BLOCKED")
+
+    def test_controller_checkpoint_requires_previous_cycle(self):
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.write_controller_checkpoint(
+                {"schema": "permanent-dev-controller-v1", "cycle_id": "cycle-2"},
+                "",
+            )
+        self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
     def test_publish_write_is_serialized_by_git_lock(self):
         wrote = threading.Event()
