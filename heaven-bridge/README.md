@@ -84,7 +84,7 @@ Both task definitions are refreshed on every bootstrap, use `MultipleInstances I
 
 The worker writes `%USERPROFILE%\HeavenBridge\worker-local-heartbeat.json` every 15 seconds from a dedicated local thread. The watchdog checks the exact canonical worker process plus this heartbeat every 30 seconds. A missing worker is restarted immediately; a live worker with a stale/mismatched heartbeat is recycled after the startup grace window. The watchdog never needs GitHub, relay state, or a healthy worker to make that decision.
 
-Task Scheduler is not the sole persistence path. Bootstrap also installs Startup-folder fallbacks for both worker and watchdog, and the worker's singleton lock plus the watchdog's singleton mutex prevent duplicate live owners.
+Task Scheduler is not the sole persistence path. Bootstrap installs a Startup-folder watchdog recovery shim. That shim first hands ownership to the elevated scheduled watchdog; only when Task Scheduler cannot provide it does the shim remain as the direct recovery owner. The old direct-worker Startup fallback is explicitly removed so it cannot race the elevated task and capture the worker singleton with a non-elevated process.
 
 `manage.ps1 STATUS` is healthy only when the worker, watchdog, current runtime copies, scheduled-task run levels, local heartbeat, and remote relay heartbeat all agree. `STOP` deliberately stops the watchdog before the worker so an intentional shutdown is not auto-repaired.
 
