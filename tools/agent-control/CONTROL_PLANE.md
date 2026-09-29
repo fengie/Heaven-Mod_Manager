@@ -93,7 +93,7 @@ The declared profiles map to concrete permissions:
 - `coordinate` — adds `dispatch-support`, `replace-stale`, `request-review`, and `run-tests`;
 - `engineering-autopilot` — adds `prepare-integration` and `maintain-continuity`.
 
-Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; evidence/persisted-takeover mutation requires `maintain-continuity`; integration verdict mutation and self-improvement execution require `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
+Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; structured verification evidence may be recorded under `run-tests` (or `maintain-continuity`); other evidence/persisted-takeover mutation requires `maintain-continuity`; review verdict recording is allowed to `request-review` or `prepare-integration`, while self-improvement/integration preparation remains gated by `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
 
 The default is `assist`, so a fresh controller can inspect, recommend, and preview without launching agents. The operator must explicitly raise autonomy before dispatch. Safety controls remain outside this restriction so pause/drain/emergency-stop/owned-worker stop and autonomy changes cannot be blocked by the current profile.
 
