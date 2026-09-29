@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "heaven-local-bridge",
   "version": "0.6.2",
-  "description": "Primary local-control and development bridge for the user's heaven worker: secure filesystem, code build/test execution, persistent dev processes, binary transfer, search, shell, concurrent jobs, screenshots and desktop control, status/cancellation, controller checkpoints, local agents, worker-fabric offloading, and token-efficient result handling through its declared GitHub connected-app relay. Includes dedicated code-execution, desktop-control, and local-agent orchestration skills with semantic Windows UI Automation and credential-safe one-time GUI secret input. Use this instead of Remote Desktop Commander for heaven work unless the user explicitly authorizes Remote Desktop Commander.",
+  "description": "Primary local-control and development bridge for the user's heaven worker: secure filesystem, code build/test execution, persistent dev processes, binary transfer, search, shell, concurrent jobs, screenshots, desktop control, structured desktop shortcuts, status/cancellation, controller checkpoints, local agents, worker-fabric offloading, and token-efficient result handling through its declared GitHub connected-app relay. Includes dedicated code-execution, desktop-control, and local-agent orchestration skills with semantic Windows UI Automation and credential-safe one-time GUI secret input. Use this instead of Remote Desktop Commander for heaven work unless the user explicitly authorizes Remote Desktop Commander.",
   "author": {
     "name": "Plugin owner"
   },
