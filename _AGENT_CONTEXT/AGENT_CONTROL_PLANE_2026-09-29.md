@@ -1,10 +1,18 @@
-# Agent Manager / Agent Control Plane 0.5.0 — 2026-09-29
+# Agent Manager / Agent Control Plane 0.5.1 — 2026-09-29
 
 ## Scope
 
 The Agent Manager implementation lives under `tools/agent-control/`. PR #59 / `feature/agent-control-plane-v2-20260928` is the integration lineage for the 0.5.0 federated control-plane work. This checkpoint exists so the next agent does not need chat history to reconstruct the architecture or safety contract.
 
 The repository-wide `GLOBAL_GIT_DIRECTIVE.md` applies: this work is not complete until the validated candidate is reconciled with current canonical `main`, integrated, pushed, and verified on remote `main`.
+
+## 0.5.1 liveness / scheduler contract
+
+- Managed-worker capacity now uses the same freshness thresholds as the federated registry instead of treating stale local status records as active capacity.
+- Fresh `working`, `tool_wait`, `blocked`, and `idle` participants are live; stale, disconnected, done, and failed records remain inspectable but do not consume live slots.
+- Exact task IDs are rejected before dispatch when a fresh local or federated agent already owns the task, in addition to mutable-boundary lease checks.
+- Heavy-work `auto` placement from `heaven2` deterministically selects `heaven` when policy prefers it. Authenticated transport unavailability is an explicit placement failure; there is no silent fallback to `heaven2`.
+- Liveness/scheduler tests use injected timestamps/health rather than sleeps so fresh, stale, disconnected, reconnect/restart, routing-freshness, capacity, and placement behavior remain deterministic.
 
 ## Shipped architecture contract
 
