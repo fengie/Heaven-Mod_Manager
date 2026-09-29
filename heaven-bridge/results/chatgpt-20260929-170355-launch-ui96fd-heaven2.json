@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-170355-launch-ui96fd-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:03:55Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:04:10.851860+00:00",
+  "finished_at": "2026-09-29T17:04:15.273733+00:00",
+  "stdout": "APP_PID=29212\r\nAPP_EXITED=False\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-170355-launch-ui96fd-heaven2.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-170355-launch-ui96fd-heaven2.stderr.log",
+    "stdout_bytes": 33,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "3ca1659e89b934bcc8e37585ff0303a2768b1db1878927010708a322951f5213"
+}
