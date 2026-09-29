@@ -1,0 +1,27 @@
+{
+  "id": "chatgpt-20260929-1036-display-smoke-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:36:01Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:36:44.390306+00:00",
+  "finished_at": "2026-09-29T10:36:44.804569+00:00",
+  "host": "heaven",
+  "action": "display_list",
+  "data": [
+    {
+      "index": 0,
+      "device": "\\\\.\\DISPLAY6",
+      "primary": true,
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "work_x": 0,
+      "work_y": 0,
+      "work_width": 1920,
+      "work_height": 1032
+    }
+  ],
+  "job_hash": "f26437573a110fe44a4f6238a5c020f5cd4bb0ac593e9a5170f62d11982e9171"
+}
