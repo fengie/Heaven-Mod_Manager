@@ -361,7 +361,7 @@ public partial class CatalogWindow : Window, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod($"host={uri.Host}");
         if (!uri.Scheme.Equals(Uri.UriSchemeHttps,StringComparison.OrdinalIgnoreCase) &&
             !uri.Scheme.Equals(Uri.UriSchemeHttp,StringComparison.OrdinalIgnoreCase)) return;
-        Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        ProcessDebug.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }, "open catalog source");
     }
 
     private async Task RefreshProviderHealthAsync(CancellationToken ct)
