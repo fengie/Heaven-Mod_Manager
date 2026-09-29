@@ -26,6 +26,7 @@ on:
       - '_AGENT_CONTEXT/handoff-manifest.json'
       - '_AGENT_CONTEXT/CURRENT_REVISION.json'
       - 'scripts/Test-AgentHandoff.ps1'
+      - 'scripts/Test-AgentHandoff-NegativeFixtures.ps1'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 
