@@ -1,9 +1,10 @@
 {
   "id": "000-manager-20260929-1047-status-hardening",
-  "state": "running",
+  "state": "completed",
   "action": "job_status",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:48:04.986784+00:00"
+  "updated_at": "2026-09-29T10:48:47.791535+00:00",
+  "exit_code": 0
 }
