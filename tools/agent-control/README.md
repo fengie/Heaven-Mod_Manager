@@ -174,7 +174,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
 - `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
-- `AGENT_CONTROL_HEAVEN_RELAY_DIR` — dedicated local checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch
+- `AGENT_CONTROL_HEAVEN_RELAY_DIR` — optional override for the dedicated local relay checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch; when unset, Agent Control auto-discovers the documented `%USERPROFILE%\HeavenBridgeRepo` checkout if it exists
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
 - `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
 - `AGENT_CONTROL_HEAVEN_REPO_URL` — optional repository URL used by remote Heaven workspace preparation
