@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0905-agent-control-version-probe-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p=Get-CimInstance Win32_Process -Filter \"ProcessId=117120\" | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine; $eps=@(); foreach($u in @('/api/agents','/api/status','/')){ $sw=[Diagnostics.Stopwatch]::StartNew(); try{$r=Invoke-WebRequest -UseBasicParsing -Uri ('http://127.0.0.1:7331'+$u) -TimeoutSec 3; $sw.Stop(); $eps += [pscustomobject]@{path=$u;ok=$true;status=[int]$r.StatusCode;elapsed_ms=$sw.ElapsedMilliseconds;bytes=$r.RawContentLength}}catch{$sw.Stop(); $status=$null; if($_.Exception.Response){$status=[int]$_.Exception.Response.StatusCode}; $eps += [pscustomobject]@{path=$u;ok=$false;status=$status;elapsed_ms=$sw.ElapsedMilliseconds;error=$_.Exception.Message}}}; [ordered]@{process=$p;endpoints=$eps}|ConvertTo-Json -Depth 7",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 20
+  },
+  "created_at": "2026-09-29T09:05:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
