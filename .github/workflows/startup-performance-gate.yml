@@ -66,10 +66,10 @@ jobs:
         run: |
           .\scripts\Measure-StartupPerformance.ps1 -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 120
 
-      - name: Verify lazy startup-page behavior
+      - name: Verify startup optimization guards
         shell: powershell
         run: |
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release -p:NuGetAudit=false --filter "FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release -p:NuGetAudit=false --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Preserve startup benchmark evidence
