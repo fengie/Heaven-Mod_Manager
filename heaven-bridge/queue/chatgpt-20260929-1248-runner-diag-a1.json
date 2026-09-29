@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1248-runner-diag-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:47:40Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\actions-runner-heaven",
+    "timeout_seconds": 90,
+    "command": "$ErrorActionPreference='Stop'\n$dir='C:\\Users\\Xxkan\\actions-runner-heaven'\n$meta=Get-Content -Raw -LiteralPath (Join-Path $dir '.runner') | ConvertFrom-Json\n$procs=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -in @('Runner.Listener.exe','Runner.Worker.exe') } | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine,CreationDate)\n$logs=@(Get-ChildItem -LiteralPath (Join-Path $dir '_diag') -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 4)\n$tails=@()\nforeach($log in $logs){\n  $lines=@(Get-Content -LiteralPath $log.FullName -Tail 100 -ErrorAction SilentlyContinue)\n  $tails += [pscustomobject]@{name=$log.Name;lastWriteUtc=$log.LastWriteTimeUtc.ToString('o');tail=($lines -join [Environment]::NewLine)}\n}\n[pscustomobject]@{agentId=$meta.agentId;agentName=$meta.agentName;poolId=$meta.poolId;serverUrl=$meta.serverUrl;workFolder=$meta.workFolder;processes=$procs;logs=$tails} | ConvertTo-Json -Depth 6 -Compress"
+  }
+}
