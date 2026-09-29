@@ -163,7 +163,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
 
         self.assertEqual(
             captured["argv"],
-            ["cmd.exe", "/d", "/s", "/c", "call", codex_path, "exec", "--skip-git-repo-check", "-"],
+            ["cmd.exe", "/d", "/s", "/c", "call", codex_path, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"],
         )
         self.assertEqual(captured["stdin"], "echo test")
         self.assertEqual(result["status"], "done")
