@@ -1,0 +1,9 @@
+{
+  "id": "manager-20260929-local-agent-capability-probe-a4",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:42:37.141047+00:00"
+}
