@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0824-agentcontrol-provider-fix",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:24:14.242129+00:00"
+}
