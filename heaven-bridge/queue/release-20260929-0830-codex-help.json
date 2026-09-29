@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0830-codex-help",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60,
+    "command": "cmd.exe /d /s /c call \"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Roaming\\\\npm\\\\codex.cmd\" exec --help"
+  },
+  "created_at": "2026-09-29T08:30:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Inspect installed Codex CLI exec options to establish a verified writable local-worker contract without guessing flags."
+}
