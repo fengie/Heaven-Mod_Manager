@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0905-read118",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:05:00Z",
+  "ttl_seconds": 86400,
+  "action": "job_output_read",
+  "priority": "highest",
+  "params": {
+    "job_id": "chatgpt-20260929-0902-issue118-applytest",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 200000
+  }
+}
