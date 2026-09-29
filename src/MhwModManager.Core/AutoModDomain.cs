@@ -12,6 +12,10 @@ public static class AutoModConstants
     public const int MaxOutputs = 64;
 }
 
+// These enum names are serialized as stable Auto Mod Recipe v1 wire tokens via
+// JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower). Renaming them would
+// break the public recipe contract, so suppress CA1720 only for this enum.
+#pragma warning disable CA1720
 public enum AutoModInputKind
 {
     Integer,
@@ -26,6 +30,7 @@ public enum AutoModInputKind
     List,
     Group
 }
+#pragma warning restore CA1720
 
 public enum AutoModOperationKind
 {
