@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-154800-heaven2-agent-control-shortcut",
-  "state": "running",
+  "state": "completed",
   "action": "desktop_shortcut_create",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:45:28.530273+00:00"
+  "updated_at": "2026-09-29T16:45:45.394173+00:00",
+  "exit_code": 0
 }
