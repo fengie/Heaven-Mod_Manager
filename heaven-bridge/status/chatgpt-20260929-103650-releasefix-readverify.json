@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-103650-releasefix-readverify",
-  "state": "running",
+  "state": "completed",
   "action": "fs_read",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:37:55.129026+00:00"
+  "updated_at": "2026-09-29T10:38:23.833342+00:00",
+  "exit_code": 0
 }
