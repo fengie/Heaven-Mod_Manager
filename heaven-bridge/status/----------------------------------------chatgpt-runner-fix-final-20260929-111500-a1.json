@@ -1,9 +1,10 @@
 {
   "id": "----------------------------------------chatgpt-runner-fix-final-20260929-111500-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:16:36.854888+00:00"
+  "updated_at": "2026-09-29T11:17:25.924787+00:00",
+  "exit_code": 0
 }
