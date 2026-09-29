@@ -20,6 +20,10 @@ on:
       - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
+      - 'tests/MhwModManager.IntegrationTests/SupportBundlePrivacyTests.cs'
+      - 'src/MhwModManager.App/App.xaml.cs'
+      - 'src/MhwModManager.Diagnostics/AppLogging.cs'
+      - 'src/MhwModManager.Diagnostics/SupportBundleService.cs'
       - 'src/MhwModManager.App/**'
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
       - 'tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs'
@@ -85,7 +89,7 @@ jobs:
       - name: Run focused UX and XAML regressions
         shell: powershell
         run: |
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~UxHardeningTests|FullyQualifiedName~XamlBindingSafetyTests"
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~UxHardeningTests|FullyQualifiedName~XamlBindingSafetyTests|FullyQualifiedName~SupportBundlePrivacyTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run legacy migration regression
