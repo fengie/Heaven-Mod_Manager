@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-1051-branchzero-support-a1",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:41:47.187805+00:00"
+}
