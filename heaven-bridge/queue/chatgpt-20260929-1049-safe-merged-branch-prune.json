@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1049-safe-merged-branch-prune",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; git -C $r fetch origin --prune; $main='origin/main'; $deleted=@(); $kept=@(); $refs=git -C $r for-each-ref --format='%(refname:short)' refs/remotes/origin; foreach($ref in $refs){ if($ref -eq 'origin/main' -or $ref -eq 'origin/HEAD' -or $ref -eq 'origin/heaven-bridge'){ continue }; $name=$ref.Substring(7); git -C $r merge-base --is-ancestor $ref $main 2>$null; if($LASTEXITCODE -eq 0){ git -C $r push origin --delete -- $name; if($LASTEXITCODE -eq 0){$deleted += \"$name|ancestor\"} else {$kept += \"$name|delete_failed\"}; continue }; $cherry=@(git -C $r cherry $main $ref 2>$null); if($LASTEXITCODE -eq 0 -and $cherry.Count -gt 0 -and (@($cherry | Where-Object {$_ -like '+ *'}).Count -eq 0)){ git -C $r push origin --delete -- $name; if($LASTEXITCODE -eq 0){$deleted += \"$name|patch_equivalent\"} else {$kept += \"$name|delete_failed\"} } else { $plus=@($cherry | Where-Object {$_ -like '+ *'}).Count; $minus=@($cherry | Where-Object {$_ -like '- *'}).Count; $kept += \"$name|unique=$plus|equiv=$minus\" } }; git -C $r fetch origin --prune; 'DELETED_COUNT='+$deleted.Count; $deleted | Sort-Object; 'KEPT_COUNT='+$kept.Count; $kept | Sort-Object; 'REMOTE_NON_MAIN_COUNT='+(@(git -C $r for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object {$_ -notin @('origin/main','origin/HEAD')}).Count)",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T10:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
