@@ -1,0 +1,21 @@
+{
+  "id": "opencode-local-edit-acceptance-20260929-1114",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:14:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:50:42.699831+00:00",
+  "finished_at": "2026-09-29T11:52:12.511315+00:00",
+  "stdout": "{\"type\":\"step_start\",\"timestamp\":1790682725259,\"sessionID\":\"ses_f12ff4388ffeHeHL7AqIJAuI7d\",\"part\":{\"id\":\"prt_0ed01fb8b001eTk6pK2czaFedP\",\"sessionID\":\"ses_f12ff4388ffeHeHL7AqIJAuI7d\",\"messageID\":\"msg_0ed01e582001842M3A23Mcvase\",\"type\":\"step-start\"}}\r\n{\"type\":\"text\",\"timestamp\":1790682731480,\"sessionID\":\"ses_f12ff4388ffeHeHL7AqIJAuI7d\",\"part\":{\"id\":\"prt_0ed01e582001842M3A23Mcvase_text-0\",\"sessionID\":\"ses_f12ff4388ffeHeHL7AqIJAuI7d\",\"messageID\":\"msg_0ed01e582001842M3A23Mcvase\",\"type\":\"text\",\"text\":\"{\\\"name\\\": \\\"summary\\\", \\\"arguments\\\": {\\\"description\\\": \\\"Provide a structured summary of the conversation up to this point.\\\"}}\",\"time\":{\"start\":1790682719679,\"end\":1790682731480}}}\r\nOPENCODE_EXIT=0\r\n",
+  "stderr": "$ErrorActionPreference='Stop'; $root=Join-Path $env:TEMP 'opencode-edit-acceptance-1114'; if(Test-Path \r\n$root){Remove-Item $root -Recurse -Force}; New-Item -ItemType Directory -Path $root | Out-Null; \r\n$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; \r\n$cfg='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'; $env:OPENCODE_CONFIG=$cfg; Push-Location $root; try { & $oc \r\nrun --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json 'Create a file named fallback-proof.txt in the \r\ncurrent directory containing exactly LOCAL_FALLBACK_TOOL_OK and a trailing newline. Actually use the file-writing \r\ntool; do not merely describe the action.'; $code=$LASTEXITCODE } finally { Pop-Location }; Write-Output \r\n('OPENCODE_EXIT='+$code); if($code -ne 0){exit $code}; $proof=Join-Path $root 'fallback-proof.txt'; if(-not (Test-Path \r\n$proof)){Write-Error 'PROOF_FILE_MISSING'; exit 21}; $content=(Get-Content -Raw -LiteralPath $proof).Trim(); \r\nWrite-Output ('PROOF_CONTENT='+$content); if($content -ne 'LOCAL_FALLBACK_TOOL_OK'){Write-Error \r\n'PROOF_CONTENT_MISMATCH'; exit 22}; Write-Output 'OPENCODE_LOCAL_EDIT_GREEN' : PROOF_FILE_MISSING\r\nAt line:1 char:855\r\n+ ...  if(-not (Test-Path $proof)){Write-Error 'PROOF_FILE_MISSING'; exit 2 ...\r\n+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException\r\n    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\opencode-local-edit-acceptance-20260929-1114.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\opencode-local-edit-acceptance-20260929-1114.stderr.log",
+    "stdout_bytes": 704,
+    "stderr_bytes": 1507,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "fc778d7658fc5e42762a53e65e80069ec016b85ea79785003b385e8704ebda65"
+}
