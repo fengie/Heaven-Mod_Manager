@@ -1,8 +1,9 @@
 # v8.8.14 Universal Mod Manager
 
-## v8.8.14 — accurate runtime diagnostic version identity
+## v8.8.14 — fail-closed Smart Inbox rollback
 
-Support bundles, startup trace/bootstrap records, and structured JSON logs now derive their release identity from the assemblies that are actually running. Diagnostic artifacts no longer claim stale v8.3.0/v8.8.6 identities, which makes support and reproduction evidence trustworthy across updates.
+Smart Inbox now treats source archival and published-package rollback as one atomic outcome. If moving the original Inbox item fails, the manager rolls back the newly published package; if that rollback itself cannot complete, the run fails closed instead of reporting a harmless skip while leaving both a live package and retryable source behind. A deterministic Windows regression forces rollback deletion failure and verifies the inconsistency is surfaced.
+
 
 ## v8.8.13 — repeatable recipe family restore
 
