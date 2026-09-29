@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-0832-write-launch-prompt-l1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:32:00Z",
+  "ttl_seconds": 3600,
+  "action": "fs_write",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\prompts\\agentcontrol-safe-launch.txt",
+    "content": "Continue the existing Agent Control v2 Main Programmer lane in this worktree. Make a small, bounded fix only.\n\nWorktree:\nC:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt\nBranch: controller-agentcontrol-cycle4\nStarting HEAD: b9685d2f2e32af99596dc90d46278a129106d8e2\n\nVerified defect:\ntools/agent-control/server.mjs deployOne() currently launches Codex with:\nexec --json --approve-for-me -C <worktree> -o <lastMessage> ...\nThis violates the validated local-worker contract.\n\nThe exact installed Codex 0.158.0 contract has now been tested on heaven and succeeded:\ncodex -a never -s workspace-write exec --skip-git-repo-check -C <dir> -\nThe probe reported:\napproval: never\nsandbox: workspace-write\nexit 0\nand successfully wrote inside the workspace.\n\nTask:\n1. Replace the Agent Control direct local Codex launch so it uses the explicit safe noninteractive contract:\n   global args -a never -s workspace-write BEFORE exec,\n   then existing exec/json/C/output/model/prompt behavior as appropriate.\n2. Remove --approve-for-me completely from production launch code.\n3. Add/adjust deterministic regression coverage that pins the exact launch-argument contract, including correct placement of global flags before exec and absence of --approve-for-me / danger-full-access / dangerous bypass flags.\n4. Keep existing process ownership, lease, worktree, autonomy, and lifecycle semantics unchanged.\n5. Do not implement the remote heaven provider in this task.\n6. Do not touch unrelated product files or version/release metadata unless a test/document directly requires it.\n7. Run from tools/agent-control:\n   npm run check\n   npm test\n8. Do NOT commit, push, merge, or force-update. Leave the working tree changes for controller review.\n\nAt end report files changed, exact args now used, test results, and git status.",
+    "mode": "rewrite"
+  },
+  "priority": "highest"
+}
