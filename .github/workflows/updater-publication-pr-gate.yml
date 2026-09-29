@@ -51,6 +51,20 @@ jobs:
             throw "Checked-out source $head does not match PR head ${{ github.event.pull_request.head.sha }}."
           }
 
+      - name: Parse updater publisher without GitHub CLI
+        shell: powershell
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.\scripts\Publish-UpdaterRelease.ps1'),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host "::error::$($_.Message)" }
+            throw 'Publish-UpdaterRelease.ps1 contains PowerShell parse errors.'
+          }
+          if(Select-String -LiteralPath '.\scripts\Publish-UpdaterRelease.ps1' -Pattern 'Get-Command gh|& gh ' -Quiet) {
+            throw 'Updater publication must not depend on GitHub CLI on Heaven.'
+          }
+
       - name: Run updater publication policy and fault tests
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
@@ -69,6 +83,7 @@ jobs:
 
       - name: Preserve PR verification evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
