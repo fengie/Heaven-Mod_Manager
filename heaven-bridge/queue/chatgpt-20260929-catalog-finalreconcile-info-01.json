@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-catalog-finalreconcile-info-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_info",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\mhw-final-reconcile-20260929\\.git"
+  },
+  "created_at": "2026-09-29T15:40:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
