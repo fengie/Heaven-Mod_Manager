@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1541-main-verify-release",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "created_at": "2026-09-29T15:41:00Z",
+  "ttl_seconds": 7200,
+  "priority": "normal",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 3600,
+    "command": "$repo=\"$env:USERPROFILE\\local-ai-workspaces\\mhw-mods\"; $wt=\"$env:USERPROFILE\\bughunt-worktrees\\main-499f4fd3\"; if(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null; if(Test-Path $wt){Remove-Item -Recurse -Force $wt} }; git -C $repo fetch origin main; if($LASTEXITCODE){exit $LASTEXITCODE}; git -C $repo worktree add --detach $wt 499f4fd3e3f53c97569f94b439168a39097f53c0; if($LASTEXITCODE){exit $LASTEXITCODE}; try { Write-Output ('VERIFY_SHA='+(git -C $wt rev-parse HEAD)); & \"$wt\\scripts\\Verify-Release.ps1\"; exit $LASTEXITCODE } finally { git -C $repo worktree remove --force $wt 2>$null }"
+  }
+}
