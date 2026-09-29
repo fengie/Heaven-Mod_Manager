@@ -1,0 +1,14 @@
+{
+  "id": "--------------------branchzero-delete-b1-20260929-1107",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-safe-branch-delete2'; git -C $r fetch origin --prune | Out-Null; $targets=@('agent/bridge-priority-scheduler-20260929','integration/bridge-priority-aging-main-20260929','integration/bridge-priority-aging-main-r2-20260929','agent/game-profile-id-containment-20260928','agent/game-profile-id-containment-v2-20260928','agent/game-profile-id-containment-v8.8.5-reconcile','ui/frontend-responsive-polish-20260928','agent/auto-updater-postupload-publication-pre-reconcile-20260928','agent/updater-installed-e2e-20260929-manager','agent/v881-updater-publication-handoff-20260928','agent/programmer-updater-rest-handoff-20260928','agent/replacefilew-failure-characterization-20260927'); $deleted=@(); $missing=@(); foreach($b in $targets){$x=@(git -C $r ls-remote --heads origin \"refs/heads/$b\"); if([string]::IsNullOrWhiteSpace(($x -join ''))){$missing+=$b;continue}; git -C $r push origin --delete $b | Out-Host; if($LASTEXITCODE -ne 0){throw \"DELETE_FAILED:$b\"}; $deleted+=$b}; [pscustomobject]@{deleted=$deleted;missing=$missing}|ConvertTo-Json -Depth 4",
+    "cwd": "C:\\Users\\Xxkan\\mhw-safe-branch-delete2",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T11:07:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
