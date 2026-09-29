@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-155850-canonical-files",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_list",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "depth": 1,
+    "max_items": 100,
+    "offset": 0
+  },
+  "created_at": "2026-09-29T15:58:50Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
