@@ -1,0 +1,1219 @@
+{
+  "id": "swarm-20260929-160330-watcher-search",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:03:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:03:40.336681+00:00",
+  "finished_at": "2026-09-29T16:03:41.342654+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 74,
+        "text": "            startup.Run(\"bootstrap.state-directories\",()=>Directory.CreateDirectory(paths.NextStateRoot));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 125,
+        "text": "                if(hint.WatcherOverflowed)logger.Warning(\"FileSystemWatcher overflowed; authoritative reconciliation is required before the next deployment\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 127,
+        "text": "                _=telemetry.RecordSignalAsync(hint.WatcherOverflowed?\"watcher.overflow\":\"watcher.hints\",null,null,"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 128,
+        "text": "                    new Dictionary<string,object?>{{\"count\",hint.Paths.Count},{\"overflow\",hint.WatcherOverflowed}});"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 157,
+        "text": "            startup.Info(\"startup.intelligence.game-build.result\",$\"Changed={buildResult.Changed}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 158,
+        "text": "            var impact=await startup.RunAsync(\"startup.intelligence.game-impact\",ct=>gameImpact.BuildAsync(buildResult.Changed,ct));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 159,
+        "text": "            if(buildResult.Changed)await startup.RunAsync(\"startup.intelligence.timeline\",ct=>timeline.RecordAsync(\"game.update\",AutomationSeverity.Warning,impact.Message,impact,ct));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "line": 392,
+        "text": "        Directory.CreateDirectory(mods);Directory.CreateDirectory(inbox);Directory.CreateDirectory(archive);Directory.CreateDirectory(next);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\GameProfileEditorWindow.cs",
+        "line": 34,
+        "text": "        var subtitle=new TextBlock{Text=\"Change the name and mod locations for this game. Settings found automatically are shown but cannot be changed here.\",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)};"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 86,
+        "text": "    private void FilterChanged(object sender, TextChangedEventArgs e)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 114,
+        "text": "    private void FolderSelected(object sender, RoutedPropertyChangedEventArgs<object> e)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 119,
+        "text": "    private void FileSelected(object sender, SelectionChangedEventArgs e)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 186,
+        "text": "            ProfileDiff.Text = $\"{a.Name} → {b.Name}\\n{diff.Mods.Count(m => !m.BeforeEnabled && m.AfterEnabled)} enabled · {diff.Mods.Count(m => m.BeforeEnabled && !m.AfterEnabled)} disabled · {diff.Mods.Count(m => m.BeforePriority != m.AfterPriority)} load-order changes\\n{diff.ProviderChanges.Count} file choices change · {diff.IntroducedConflicts.Count} conflicts introduced · {diff.ResolvedConflicts.Count} resolved · {diff.ChangedArmorComponents.Count} armor components change\\n\\n\" + string.Join(\"\\n\", diff.Mods.Select(m => $\"{m.Name}: {(m.BeforeEnabled ? \"Enabled\" : \"Disabled\")} → {(m.AfterEnabled ? \"Enabled\" : \"Disabled\")}; load order {m.BeforePriority} → {m.AfterPriority}\")) + \"\\n\\nNew conflicts:\\n\" + string.Join(\"\\n\", diff.IntroducedConflicts) + \"\\n\\nChanged file choices:\\n\" + string.Join(\"\\n\", diff.ProviderChanges);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 195,
+        "text": "    private void RuleSelected(object sender, SelectionChangedEventArgs e)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\WorkflowWindow.xaml.cs",
+        "line": 298,
+        "text": "            UpdateDetails.Text = $\"{old.DisplayName} → {newer.DisplayName}\\n\\n{d.Unchanged} unchanged · {d.Changed} modified · {d.Removed} removed · {d.Added} added\\n{d.StructuralChanged} structural changes · {d.TextureChanged} texture changes\\nPriority: preserve {old.Priority}\\nRules transferable: {preview.TransferableRules}/{preview.TotalRules}\\n\\n\" + string.Join(\"\\n\", preview.Warnings) + \"\\n\\n\" + string.Join(\"\\n\", preview.Plan.Conflicts.Where(c => c.Blocking).Select(c => c.Explanation)) + \"\\n\\nUpgrade deploys the preview through the existing transaction journal. Family/rule transfer and supersession commit with the files; Undo restores both.\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 26,
+        "text": "    private bool suppressChanged;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 189,
+        "text": "        PropertyChanged += (_, args) => MasterDebugLog.Write(\"VM-PROPERTY\", $\"MainWindowViewModel property changed: {args.PropertyName ?? \"<unknown>\"}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 190,
+        "text": "        Mods.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"Mods change={args.Action}; count={Mods.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 191,
+        "text": "        Conflicts.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"Conflicts change={args.Action}; count={Conflicts.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 192,
+        "text": "        OutfitRows.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"OutfitRows change={args.Action}; count={OutfitRows.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 193,
+        "text": "        Profiles.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"Profiles change={args.Action}; count={Profiles.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 194,
+        "text": "        ActivityRows.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"ActivityRows change={args.Action}; count={ActivityRows.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 195,
+        "text": "        IssueSuspects.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"IssueSuspects change={args.Action}; count={IssueSuspects.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 196,
+        "text": "        OverlapRows.CollectionChanged += (_, args) => MasterDebugLog.Write(\"VM-COLLECTION\", $\"OverlapRows change={args.Action}; count={OverlapRows.Count}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 255,
+        "text": "    partial void OnUnmanagedFileCountChanged(int value)=>OnPropertyChanged(nameof(UnmanagedAdoptionLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 256,
+        "text": "    partial void OnSelectedModChanged(ModRowViewModel? value)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 275,
+        "text": "    partial void OnModViewModeChanged(string value)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 278,
+        "text": "        MasterDebugLog.Write(\"UI-FILTER\",$\"Mod smart view changed to {value}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 280,
+        "text": "        OnPropertyChanged(nameof(VisibleModCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 283,
+        "text": "    partial void OnSearchTextChanged(string value)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 300,
+        "text": "                OnPropertyChanged(nameof(VisibleModCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 332,
+        "text": "    private void Changed()"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 335,
+        "text": "        if(suppressChanged)return;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 336,
+        "text": "        OnPropertyChanged(nameof(EnabledCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 337,
+        "text": "        OnPropertyChanged(nameof(StagedCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 338,
+        "text": "        OnPropertyChanged(nameof(StagedEnableCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 339,
+        "text": "        OnPropertyChanged(nameof(StagedDisableCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 340,
+        "text": "        OnPropertyChanged(nameof(StagedSummary));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 341,
+        "text": "        OnPropertyChanged(nameof(UpdateCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 342,
+        "text": "        OnPropertyChanged(nameof(AllViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 343,
+        "text": "        OnPropertyChanged(nameof(EnabledViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 344,
+        "text": "        OnPropertyChanged(nameof(StagedViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 345,
+        "text": "        OnPropertyChanged(nameof(UpdatesViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 346,
+        "text": "        OnPropertyChanged(nameof(InstalledCountLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 347,
+        "text": "        OnPropertyChanged(nameof(IssuesViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 348,
+        "text": "        OnPropertyChanged(nameof(RevalidateViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 349,
+        "text": "        OnPropertyChanged(nameof(SupersededViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 350,
+        "text": "        OnPropertyChanged(nameof(HeaderSummary));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 352,
+        "text": "        OnPropertyChanged(nameof(VisibleModCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 353,
+        "text": "        FooterText=StagedCount==0?\"No pending changes\":$\"{StagedCount} pending change(s) — game files stay unchanged until you apply them\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 365,
+        "text": "            var rows=logical.Select(m=>new ModRowViewModel(m,Changed)).ToArray();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 374,
+        "text": "            Changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 515,
+        "text": "                else if(row.NeedsRevalidation){state=EffectiveModState.NeedsRevalidation;reason=\"The game was updated or changed, so this mod should be checked again before use.\";}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 538,
+        "text": "            OnPropertyChanged(nameof(BlockerCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 539,
+        "text": "            OnPropertyChanged(nameof(FullyEffectiveCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 540,
+        "text": "            OnPropertyChanged(nameof(ComposedCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 541,
+        "text": "            OnPropertyChanged(nameof(RevalidationCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 542,
+        "text": "            OnPropertyChanged(nameof(SupersededCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 543,
+        "text": "            OnPropertyChanged(nameof(VisibleModCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 544,
+        "text": "            OnPropertyChanged(nameof(RevalidateViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 545,
+        "text": "            OnPropertyChanged(nameof(SupersededViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 546,
+        "text": "            OnPropertyChanged(nameof(HeaderSummary));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 606,
+        "text": "        suppressChanged=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 608,
+        "text": "        finally{suppressChanged=false;Changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 610,
+        "text": "        StatusText=\"Discarded all pending changes. Your installed game files were not changed.\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 689,
+        "text": "        Changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 699,
+        "text": "        suppressChanged=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 701,
+        "text": "        finally{suppressChanged=false;Changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 747,
+        "text": "        if(!result.Created){StatusText=result.Message;return;}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 804,
+        "text": "                suppressChanged=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 809,
+        "text": "                finally{suppressChanged=false;Changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 811,
+        "text": "            StatusText=$\"Profile '{SelectedProfile.Name}' is ready to use. Game files stay unchanged until you apply the changes.\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 855,
+        "text": "            OnPropertyChanged(nameof(IssueCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 856,
+        "text": "            OnPropertyChanged(nameof(IssuesViewLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 857,
+        "text": "            OnPropertyChanged(nameof(VisibleModCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 858,
+        "text": "            OnPropertyChanged(nameof(HeaderSummary));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 889,
+        "text": "            StatusText=\"Cleared the issue mark. No mod files or enabled state were changed.\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 948,
+        "text": "        if(plan.IsBlocked)throw new InvalidOperationException(\"The saved setup now has a blocking conflict under the current files; nothing was changed.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 962,
+        "text": "        var dir=Path.Combine(s.Paths.ToolRoot,\"Collection Recipes\");Directory.CreateDirectory(dir);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 972,
+        "text": "        await RunBusy(\"automation.cleanup\",\"Cleaning Up Duplicate Mods\",\"Moving only safe disabled duplicates and older replaced packages into the archive. Nothing is permanently deleted…\",true,async ct=>"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 981,
+        "text": "    private async Task AutoDiagnoseCrash()=>await RunBusy(\"automation.bisect\",\"Automatic crash diagnosis\",\"Bisecting changed mods or persisted issue suspects against a safe baseline. The game may launch several times and surviving probes will be closed automatically…\",false,async ct=>"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 1073,
+        "text": "        suppressChanged=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 1078,
+        "text": "        finally{suppressChanged=false;Changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 1120,
+        "text": "            suppressChanged=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 1125,
+        "text": "            finally{suppressChanged=false;Changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.cs",
+        "line": 1191,
+        "text": "            busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.Import.cs",
+        "line": 35,
+        "text": "                        StatusText=\"Mod installation canceled. The downloaded file was left unchanged.\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\MainWindowViewModel.Overlaps.cs",
+        "line": 32,
+        "text": "            OnPropertyChanged(nameof(OverlapCount));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\ObservableRangeCollection.cs",
+        "line": 16,
+        "text": "        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\ObservableRangeCollection.cs",
+        "line": 17,
+        "text": "        OnPropertyChanged(new PropertyChangedEventArgs(\"Item[]\"));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\ObservableRangeCollection.cs",
+        "line": 18,
+        "text": "        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 8,
+        "text": "    private readonly Action<string,bool> changed;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 17,
+        "text": "    public ModPartRowViewModel(ModDescriptor mod,string label,bool initial,Action<string,bool> onChanged)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 20,
+        "text": "        MemberId=mod.Id;Label=label;Role=DescribeRole(mod);Source=mod.SourcePath;changed=onChanged;enabled=initial;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 23,
+        "text": "    partial void OnEnabledChanged(bool value){if(!suppress)changed(MemberId,value);}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 47,
+        "text": "    private readonly Action _changed;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 133,
+        "text": "    public ModRowViewModel(LogicalModFamily family,Action changed)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 150,
+        "text": "        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 152,
+        "text": "        foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 156,
+        "text": "    partial void OnStagedEnabledChanged(bool? value)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 160,
+        "text": "        SyncParts();RaiseStateChanged();_changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 177,
+        "text": "        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);SetSummaryFromMembers();_changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 189,
+        "text": "        SetSummaryFromMembers();_changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 193,
+        "text": "        _appliedMembers.Clear();foreach(var item in _stagedMembers)_appliedMembers[item.Key]=item.Value;RaiseStateChanged();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 201,
+        "text": "        _changed();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 207,
+        "text": "        EffectiveState=summary.State;EffectiveReason=summary.Reason;WinningFiles=summary.WinningFiles;ShadowedFiles=summary.ShadowedFiles;OnPropertyChanged(nameof(EffectLabel));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 213,
+        "text": "        IssueBadge=badge;IssueScore=score;IssueReason=reason;OnPropertyChanged(nameof(HasIssue));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 222,
+        "text": "        OnPropertyChanged(nameof(HasVisuals));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 228,
+        "text": "        UpdateBadge=text;OnPropertyChanged(nameof(HasUpdate));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 231,
+        "text": "    private void OnPartChanged(string id,bool enabled){"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 233,
+        "text": "        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);SetSummaryFromMembers();_changed();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 239,
+        "text": "        _updatingSummary=true;try{var enabled=StagedEnabledMembers;StagedEnabled=enabled==0?false:enabled==MemberCount?true:null;}finally{_updatingSummary=false;}SyncParts();RaiseStateChanged();}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 240,
+        "text": "    private void RaiseStateChanged(){"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.App\\ViewModels\\Rows.cs",
+        "line": 242,
+        "text": "        OnPropertyChanged(nameof(Priority));OnPropertyChanged(nameof(AppliedEnabled));OnPropertyChanged(nameof(AppliedEnabledMembers));OnPropertyChanged(nameof(HasStagedChanges));OnPropertyChanged(nameof(StagedEnabledMembers));OnPropertyChanged(nameof(WillEnable));OnPropertyChanged(nameof(WillDisable));OnPropertyChanged(nameof(StateLabel));OnPropertyChanged(nameof(PartsLabel));}"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationCoordinator.cs",
+        "line": 140,
+        "text": "            var severity=diff.StructuralChanged>0?AutomationSeverity.Warning:AutomationSeverity.Info;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationCoordinator.cs",
+        "line": 141,
+        "text": "            await timeline.RecordAsync(\"update.diff\",severity,$\"Update diff {pair.older} → {pair.newer}: +{diff.Added} / -{diff.Removed} / {diff.Changed} changed ({diff.StructuralChanged} structural, {diff.TextureChanged} texture).\",diff,ct);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationCoordinator.cs",
+        "line": 142,
+        "text": "            UnifiedDebugLog.Write(\"AUTOMATION\", $\"Update diff PASS older={pair.older}; newer={pair.newer}; added={diff.Added}; removed={diff.Removed}; changed={diff.Changed}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationCoordinator.cs",
+        "line": 209,
+        "text": "        return new(true,survived,exitCode,sw.Elapsed,survived?$\"{game?.DisplayName??\"Monster Hunter: World\"} launched and survived the startup observation window.\":$\"{game?.DisplayName??\"Monster Hunter: World\"} exited during startup; automatic crash diagnosis can use mods changed since the last known good launch.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationModels.cs",
+        "line": 13,
+        "text": "public sealed record UpdateDiffSummary(string OlderModId, string NewerModId, int Added, int Removed, int Changed, int Unchanged, int StructuralChanged, int TextureChanged, IReadOnlyList<string> ChangedPaths);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\AutomationModels.cs",
+        "line": 40,
+        "text": "public sealed record GameUpdateImpactReport(bool Changed, int Revalidate, int TextureOnly, int OtherLowRisk, IReadOnlyList<string> HighRiskMods, string Message);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CollectionRecipeService.cs",
+        "line": 30,
+        "text": "        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destination))!);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CollectionRecipeService.cs",
+        "line": 141,
+        "text": "                    create.Transaction = tx; create.CommandText = \"INSERT INTO mod_families(id,name,created_at) VALUES($i,$n,$u)\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CollectionRecipeService.cs",
+        "line": 150,
+        "text": "                    if (await cmd.ExecuteNonQueryAsync(token) != 1) throw new InvalidOperationException(\"Family changed since preview; nothing was restored.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "line": 12,
+        "text": "        if (suspects.Count == 0) return new(false, [], 0, \"No changed mods are available to bisect.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "line": 31,
+        "text": "        var changed = true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "line": 32,
+        "text": "        while (changed && remaining.Count > 1)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "line": 34,
+        "text": "            changed = false;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "line": 47,
+        "text": "                changed = true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\DuplicateCleanupService.cs",
+        "line": 46,
+        "text": "        Directory.CreateDirectory(archiveRoot);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\DuplicateCleanupService.cs",
+        "line": 66,
+        "text": "                    await RestoreSourceWhenDeleteDidNotCommitAsync(id,mod.SourcePath,dest);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\DuplicateCleanupService.cs",
+        "line": 82,
+        "text": "    private async Task RestoreSourceWhenDeleteDidNotCommitAsync(string modId,string sourcePath,string archivePath)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\FomodInstallerService.cs",
+        "line": 161,
+        "text": "        Directory.CreateDirectory(destination);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\FomodInstallerService.cs",
+        "line": 167,
+        "text": "                var target = SafePath(destination, copy.Destination); Directory.CreateDirectory(Path.GetDirectoryName(target)!);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\GameUpdateImpactService.cs",
+        "line": 8,
+        "text": "    public async Task<GameUpdateImpactReport> BuildAsync(bool changed, CancellationToken ct=default)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\GameUpdateImpactService.cs",
+        "line": 15,
+        "text": "        return new(changed,high.Count,textureOnly,other,high,$\"{textureOnly} texture-only mod(s) are low risk; {high.Count} plugin/executable/game-data mod(s) should be revalidated.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ImportPublicationWorkspace.cs",
+        "line": 22,
+        "text": "        Directory.CreateDirectory(workspace);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ImportPublicationWorkspace.cs",
+        "line": 56,
+        "text": "        Directory.CreateDirectory(fullModsRoot);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\LastKnownGoodService.cs",
+        "line": 37,
+        "text": "    public async Task<IReadOnlyList<string>> ChangedSinceLastGoodAsync(CancellationToken ct = default)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\LaunchHealthGateService.cs",
+        "line": 23,
+        "text": "        foreach (var mod in snap.Mods.Where(x => x.Enabled && x.NeedsRevalidation)) findings.Add(new(\"revalidate\", AutomationSeverity.Warning, $\"{mod.DisplayName} needs revalidation\", \"The game executable changed since this mod was last validated.\", mod.Id));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ModIssueFallbackService.cs",
+        "line": 138,
+        "text": "            var priorityChanged = old is not null && old.Enabled && launch.State[id].Priority != old.Priority;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ModIssueFallbackService.cs",
+        "line": 145,
+        "text": "            var score = newlyEnabled ? 58 : priorityChanged ? 43 : 24;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ModIssueFallbackService.cs",
+        "line": 148,
+        "text": "            if (priorityChanged) evidence.Add(\"priority changed since the previous successful launch\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\ModIssueFallbackService.cs",
+        "line": 149,
+        "text": "            if (!newlyEnabled && !priorityChanged) evidence.Add(\"enabled during the failing launch; no changed-only candidate was available\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\RulesEditorService.cs",
+        "line": 40,
+        "text": "        await db.ExecuteAsync(\"INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at) VALUES($i,$k,$s,$l,$r,$w,$p,$d,1,$u) ON CONFLICT(id) DO UPDATE SET kind=excluded.kind,scope=excluded.scope,left_mod_id=excluded.left_mod_id,right_mod_id=excluded.right_mod_id,winner_mod_id=excluded.winner_mod_id,path_pattern=excluded.path_pattern,reason=excluded.reason,explicit=1\","
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 17,
+        "text": "        Directory.CreateDirectory(root);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 23,
+        "text": "            Directory.CreateDirectory(saves);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 36,
+        "text": "            createdAt = DateTimeOffset.UtcNow,"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 45,
+        "text": "        return new(true, id, root, source, copied, source is null ? $\"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured.\" : $\"{game.DisplayName} save + mod/deployment snapshot created.\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 89,
+        "text": "        cmd.CommandText = \"INSERT INTO save_snapshots(id,created_at,reason,root_path,save_source,mod_state_json,game_build_sha256,manifest_json,success) VALUES($i,$t,$r,$p,$s,$m,$g,$f,1)\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "line": 129,
+        "text": "            cmd.CommandText = \"SELECT id,root_path FROM save_snapshots ORDER BY created_at DESC,id DESC\";"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "line": 14,
+        "text": "        Directory.CreateDirectory(inboxRoot); Directory.CreateDirectory(modsRoot);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "line": 99,
+        "text": "        var processed = Path.Combine(inboxRoot, \"Processed\"); Directory.CreateDirectory(processed);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "line": 109,
+        "text": "        Directory.CreateDirectory(destination);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "line": 110,
+        "text": "        foreach (var dir in snapshot.Directories) Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, dir)));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "line": 113,
+        "text": "            ct.ThrowIfCancellationRequested(); var dest = Path.Combine(destination, Path.GetRelativePath(source, file)); Directory.CreateDirectory(Path.GetDirectoryName(dest)!);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "line": 16,
+        "text": "        var changed = shared.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(oldFiles[p].sha, newFiles[p].sha)).ToArray();"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "line": 17,
+        "text": "        var unchanged = shared.Length - changed.Length;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "line": 18,
+        "text": "        var structural = changed.Count(p => newFiles[p].cls == FileClass.Structural || oldFiles[p].cls == FileClass.Structural);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "line": 19,
+        "text": "        var texture = changed.Count(p => newFiles[p].cls == FileClass.Texture || oldFiles[p].cls == FileClass.Texture);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "line": 20,
+        "text": "        return new(olderModId, newerModId, added.Length, removed.Length, changed.Length, unchanged, structural, texture, changed.Order(PathRules.Comparer).Take(200).ToArray());"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Automation\\UpdateMigrationService.cs",
+        "line": 55,
+        "text": "        var supersession = new Dictionary<string, string?>(StringComparer.Ordinal) { [\"older_mod_id\"] = olderId, [\"newer_mod_id\"] = newerId, [\"confidence_score\"] = \"100\", [\"reason\"] = \"User-approved update migration\", [\"created_at\"] = DateTimeOffset.UtcNow.ToString(\"O\") };"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\AutoCompatibility.cs",
+        "line": 374,
+        "text": "        var textureNamed = tokens.Any(TextureWords.Contains) ||"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\AutoCompatibility.cs",
+        "line": 377,
+        "text": "        if (!textureNamed) return false;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\ConflictRuleIndex.cs",
+        "line": 43,
+        "text": "                    (rule.Explicit == current.Explicit && rule.CreatedUtc >= current.CreatedUtc))"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\ConflictRuleIndex.cs",
+        "line": 95,
+        "text": "            .ThenByDescending(r => r.CreatedUtc)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\Domain.cs",
+        "line": 9,
+        "text": "public enum ExternalChangeKind { Unchanged, DeployedModified, DeployedReplaced, DeployedDeleted, ManagedSourceChanged, OriginalChanged, UnmanagedAppeared }"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\Domain.cs",
+        "line": 34,
+        "text": "    string? WinnerModId, string? PathPattern, string Reason, bool Explicit, DateTimeOffset CreatedUtc,"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\Domain.cs",
+        "line": 64,
+        "text": "    string Id, DateTimeOffset CreatedUtc, IReadOnlyList<DeploymentChange> Changes,"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\Domain.cs",
+        "line": 101,
+        "text": "    int FilesChanged = 0);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\MasterDebugLog.cs",
+        "line": 42,
+        "text": "            Directory.CreateDirectory(newRoot);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\MasterDebugLog.cs",
+        "line": 177,
+        "text": "        Directory.CreateDirectory(rootDirectory);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Core\\WorkflowAnalysis.cs",
+        "line": 8,
+        "text": "    IReadOnlyList<string> IntroducedConflicts, IReadOnlyList<string> ResolvedConflicts, IReadOnlyList<string> ChangedArmorComponents);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\AppLogging.cs",
+        "line": 13,
+        "text": "        Directory.CreateDirectory(logDir);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\HealthService.cs",
+        "line": 35,
+        "text": "                            issues.Add(new(\"DEPLOYED_CHANGED\",\"Warning\",\"Managed file changed outside the manager.\",e.Path,Detail:$\"expected={e.ExpectedLiveSha256} actual={h.Sha256}\"));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\HealthService.cs",
+        "line": 63,
+        "text": "                    issues.Add(new(\"TEX_SOURCE_CHANGED\", \"Warning\", $\"Texture source changed after it was indexed: {mod.DisplayName}.\", f.Path, mod.Id, $\"indexedLength={f.Length} currentLength={info.Length}\"));"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\StartupDiagnosticSession.cs",
+        "line": 33,
+        "text": "        Directory.CreateDirectory(logDirectory);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\StartupDiagnosticSession.cs",
+        "line": 52,
+        "text": "            Directory.CreateDirectory(preferred);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\StartupDiagnosticSession.cs",
+        "line": 58,
+        "text": "            Directory.CreateDirectory(fallback);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\SupportBundleService.cs",
+        "line": 24,
+        "text": "        Directory.CreateDirectory(outputDirectory);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\SupportBundleService.cs",
+        "line": 26,
+        "text": "        Directory.CreateDirectory(temp);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\SupportBundleService.cs",
+        "line": 53,
+        "text": "                \"SELECT id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at FROM conflict_rules ORDER BY created_at\",ct,5000);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Diagnostics\\SupportBundleService.cs",
+        "line": 133,
+        "text": "            \"The full-fidelity local logs remain unchanged on this computer.\","
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\ArchiveInspector.cs",
+        "line": 111,
+        "text": "            var createdOutput=false;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\ArchiveInspector.cs",
+        "line": 122,
+        "text": "                createdOutput=true;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\ArchiveInspector.cs",
+        "line": 143,
+        "text": "            catch(Exception primaryFailure) when(createdOutput)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\ArchiveInspector.cs",
+        "line": 197,
+        "text": "            Directory.CreateDirectory(current);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\AtomicFileOps.cs",
+        "line": 30,
+        "text": "        Directory.CreateDirectory(dir);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\BlobStore.cs",
+        "line": 35,
+        "text": "        Directory.CreateDirectory(Root);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\BlobStore.cs",
+        "line": 64,
+        "text": "                throw new IOException($\"Source changed while it was being captured: {source}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\BlobStore.cs",
+        "line": 89,
+        "text": "                    \"INSERT OR IGNORE INTO blobs(sha256,size,created_at,verified_at) VALUES($h,$s,$u,$u)\","
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\BlobStore.cs",
+        "line": 112,
+        "text": "        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\CatalogService.cs",
+        "line": 14,
+        "text": "        Directory.CreateDirectory(modsRoot);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 62,
+        "text": "        var filesChanged=0;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 99,
+        "text": "                filesChanged++;"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 117,
+        "text": "            return new(true,$\"Applied {prepared.Count} file change(s).\",plan.Id,null,null,false,filesChanged);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 128,
+        "text": "                return new(false,\"Deployment failed before any live-file transaction began.\",plan.Id,ex,Classify(ex),false,filesChanged);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 134,
+        "text": "                return new(false,\"Deployment failed and rollback restored the previous managed state.\",plan.Id,ex,Classify(ex),true,filesChanged);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 140,
+        "text": "                return new(false,\"Deployment failed and rollback requires recovery. Do not manually delete State or nativePC files; restart the manager and run Health/Diagnostics.\",plan.Id,aggregate,FailureCategory.DataIntegrityFailure,false,filesChanged);"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 267,
+        "text": "                throw new IOException($\"Precondition failed: live file changed since planning: {ch.Path}\");"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929\\src\\MhwModManager.Filesystem\\DeploymentExecutor.cs",
+        "line": 420,
+        "text": "        if(!looksApplied)throw new IOException($\"Recovery stopped safely: '{row.Path}' matches neither the transaction's before nor after image. The file may have been changed externally.\");"
+      }
+    ],
+    "scanned_files": 81,
+    "truncated": true
+  },
+  "job_hash": "a71b5b0697b9b59a2effc4c1535e07083b47e6fdc373f5a1d2f4796bcc59252a"
+}
