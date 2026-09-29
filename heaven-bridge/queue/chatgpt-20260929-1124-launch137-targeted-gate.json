@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1124-launch137-targeted-gate",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:24:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference='Stop'\n$r='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$wt='C:\\Users\\Xxkan\\HeavenBridge\\verify-pr137'\ngit -C $r fetch origin --prune | Out-Null\nif(Test-Path $wt){git -C $r worktree remove --force $wt 2>$null | Out-Null}\ngit -C $r worktree prune | Out-Null\ngit -C $r worktree add --detach $wt origin/integration/launch-observation-atomicity-main-20260929 | Out-Host\nif($LASTEXITCODE -ne 0){throw 'worktree add failed'}\ntry {\n  Write-Output ('HEAD='+(git -C $wt rev-parse HEAD).Trim())\n  git -C $wt diff --check origin/main...HEAD\n  if($LASTEXITCODE -ne 0){throw 'git diff --check failed'}\n  dotnet test (Join-Path $wt 'tests\\MhwModManager.AutomationTests\\MhwModManager.AutomationTests.csproj') -c Release --filter 'FullyQualifiedName~LaunchObservationRepositoryTests' --no-restore\n  if($LASTEXITCODE -ne 0){throw 'targeted launch observation tests failed'}\n  dotnet build (Join-Path $wt 'src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release --no-restore\n  if($LASTEXITCODE -ne 0){throw 'app build failed'}\n  Write-Output 'PR137_TARGETED_GATE_OK'\n} finally {\n  git -C $r worktree remove --force $wt 2>$null | Out-Null\n  git -C $r worktree prune | Out-Null\n}"
+  }
+}
