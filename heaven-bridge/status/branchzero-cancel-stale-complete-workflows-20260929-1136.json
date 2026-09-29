@@ -1,0 +1,9 @@
+{
+  "id": "branchzero-cancel-stale-complete-workflows-20260929-1136",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:34:49.069433+00:00"
+}
