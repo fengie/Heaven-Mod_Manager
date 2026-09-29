@@ -278,3 +278,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+---
+
+## LR-017 — a control channel needs an independent recovery owner
+
+- **Rule ID:** LR-017
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** persistent local agents, bridge workers, schedulers, watchdogs, operator control planes
+- **Rule:** A persistent control channel is not reliable if the only mechanism that can diagnose or repair it depends on that same channel being alive. Give the channel an independent local recovery owner and a local liveness/progress signal that does not require its network/relay path.
+- **Trigger / evidence:** The `heaven2` Heaven Local Bridge worker was offline while a desktop operation needed it. The existing canonical task had a finite 12-restart budget, no independent watchdog, and did not override Task Scheduler's default execution-time limit. The direct Startup worker fallback could also race the elevated scheduled worker for singleton ownership.
+- **Rationale:** Restart-on-failure is finite and a worker cannot execute its own recovery when it is absent. Network-backed heartbeats do not distinguish process failure from transport failure, and a fallback that races the canonical elevated owner can degrade capability while appearing alive.
+- **Enforcement:** Persistent bridge hosts require separate worker/watchdog ownership, Git-independent local process heartbeat plus queue-loop progress, indefinite Task Scheduler execution, bounded duplicate ownership, startup handoff that prefers the elevated owner, and health checks that verify the recovery path—not just process existence.
+- **Relevant implementation:** PR #230, Heaven Local Bridge plugin v0.8.1.
+- **Supersedes:** none
+- **Superseded by:** none
