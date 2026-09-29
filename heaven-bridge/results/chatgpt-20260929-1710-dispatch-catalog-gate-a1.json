@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1710-dispatch-catalog-gate-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:10:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T17:08:08.751931+00:00",
+  "finished_at": "2026-09-29T17:08:09.171834+00:00",
+  "stdout": "",
+  "stderr": "gh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:32\r\n+ $ErrorActionPreference='Stop'; gh workflow run workflow-feature-pr-ga ...\r\n+                                ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1710-dispatch-catalog-gate-a1.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1710-dispatch-catalog-gate-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 505,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "fa3403880d74428a57359045f4c1c89b364e7cde3e144995f8ba97a8759a36f7"
+}
