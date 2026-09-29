@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-100320-active-local-branches-c91d",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:03:20Z",
+  "ttl_seconds": 3600,
+  "action": "powershell",
+  "payload": "\n$ErrorActionPreference='SilentlyContinue'\n$rows=@()\n$configs=Get-ChildItem -Path 'C:\\Users\\Xxkan' -Filter config -File -Recurse -ErrorAction SilentlyContinue |\n  Where-Object { $_.Directory.Name -eq '.git' -and (Select-String -Path $_.FullName -Pattern 'fengie/mhw-mods' -Quiet -ErrorAction SilentlyContinue) }\nforeach($cfg in $configs){\n  $repo=$cfg.Directory.Parent.FullName\n  Push-Location $repo\n  try{\n    $current=(& git branch --show-current 2>$null | Out-String).Trim()\n    $head=(& git rev-parse HEAD 2>$null | Out-String).Trim()\n    $dirty=((& git status --porcelain=v1 2>$null | Out-String).Trim().Length -gt 0)\n    $worktrees=(& git worktree list --porcelain 2>$null | Out-String).Trim()\n    $rows += [ordered]@{repo=$repo;current=$current;head=$head;dirty=$dirty;worktrees=$worktrees}\n  } finally {Pop-Location}\n}\n$rows|ConvertTo-Json -Depth 5\n",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 300,
+  "priority": "highest"
+}
