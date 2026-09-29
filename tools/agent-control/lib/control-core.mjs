@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
@@ -76,12 +76,14 @@ export function workflowPermission(workflowId) {
 export function agentExecutionModeDecision(requestedMode = "") {
   const requested = String(requestedMode || "").trim().toLowerCase();
 
-  if (!requested || requested === "chat" || requested === "normal-chat" || requested === "normal_chat") {
+  if (!requested || ["chat", "normal-chat", "normal_chat", "direct", "non-work", "non_work"].includes(requested)) {
     return {
-      allowed: false,
-      mode: "chat",
-      code: "CHAT_SESSION_REQUIRED",
-      reason: "Normal Chat is the default agent mode. Agent Control cannot create ChatGPT chats automatically and will not silently fall back to Codex. Use or register a normal ChatGPT session for this task, or explicitly request executionMode=\"codex\" only when you intentionally want a Codex worker."
+      allowed: true,
+      mode: "direct",
+      requestedMode: requested || "chat",
+      workModeAllowed: false,
+      code: null,
+      reason: "Normal Chat is preferred. Because Agent Control cannot create arbitrary ChatGPT conversations, dispatch continues through the direct non-Work local worker path instead of stopping or handing off to Work."
     };
   }
 
@@ -89,8 +91,10 @@ export function agentExecutionModeDecision(requestedMode = "") {
     return {
       allowed: true,
       mode: "codex",
+      requestedMode: "codex",
+      workModeAllowed: false,
       code: null,
-      reason: "Explicit Codex opt-in accepted for this task."
+      reason: "Explicit Codex/local-worker execution accepted. ChatGPT Work handoff remains disabled."
     };
   }
 
@@ -98,16 +102,20 @@ export function agentExecutionModeDecision(requestedMode = "") {
     return {
       allowed: false,
       mode: "work",
-      code: "WORK_MODE_EXTERNAL",
-      reason: "Work is a ChatGPT product mode and must be explicitly selected in ChatGPT. Agent Control will not translate a Work request into a Codex worker."
+      requestedMode: "work",
+      workModeAllowed: true,
+      code: "WORK_MODE_EXPLICIT_EXTERNAL",
+      reason: "Work mode is external to Agent Control. Only an explicit current-task request in ChatGPT may authorize a Work handoff; Agent Control never triggers or substitutes that handoff automatically."
     };
   }
 
   return {
     allowed: false,
     mode: requested,
+    requestedMode: requested,
+    workModeAllowed: false,
     code: "UNKNOWN_EXECUTION_MODE",
-    reason: `Unknown execution mode "${requested}". Normal Chat is the default; Codex requires an explicit executionMode="codex" request.`
+    reason: `Unknown execution mode "${requested}". Use normal Chat/direct non-Work execution by default, or explicitly request Codex. Work requires a separate explicit ChatGPT request.`
   };
 }
 
@@ -157,8 +165,9 @@ export function defaultControlState({ sessionId, hostname }) {
     controller: { sessionId, hostname, startedAt: new Date().toISOString() },
     settings: {
       autonomyLevel: "assist",
-      defaultAgentExecutionMode: "chat",
-      requireExplicitCodexOptIn: true,
+      defaultAgentExecutionMode: "direct",
+      requireExplicitCodexOptIn: false,
+      allowAutomaticWorkHandoff: false,
       dispatchPaused: false,
       readOnly: false,
       emergencyStop: false,
@@ -196,6 +205,11 @@ export function migrateControlState(parsed, context) {
     settings: {
       ...base.settings,
       ...(parsed.settings || {}),
+      ...(Number(parsed.version || 0) < 7 ? {
+        defaultAgentExecutionMode: "direct",
+        requireExplicitCodexOptIn: false,
+        allowAutomaticWorkHandoff: false
+      } : {}),
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) },
       noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) }
     },
