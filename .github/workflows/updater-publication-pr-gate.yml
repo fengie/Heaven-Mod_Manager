@@ -14,10 +14,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: updater-publication-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   publication-policy:
     name: Verify updater publication exact source
-    runs-on: windows-latest
+    # GitHub-hosted Windows can fail before runner allocation; use the repaired Heaven runner.
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
     env:
       MHW_UPDATE_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -30,10 +35,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Install pinned .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.0.401
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') {
+            throw "Heaven updater publication runner requires .NET SDK 10.0.401; found $version."
+          }
 
       - name: Assert exact checked-out source
         shell: powershell
