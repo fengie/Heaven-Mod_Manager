@@ -1,9 +1,10 @@
 {
   "id": "--------a-branch-inventory-20260929-1105",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:05:28.419575+00:00"
+  "updated_at": "2026-09-29T11:06:05.275014+00:00",
+  "exit_code": 0
 }
