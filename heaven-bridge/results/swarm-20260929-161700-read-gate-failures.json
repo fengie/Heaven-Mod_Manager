@@ -1,0 +1,73 @@
+{
+  "id": "swarm-20260929-161700-read-gate-failures",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:17:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:15:22.272925+00:00",
+  "finished_at": "2026-09-29T16:15:22.600729+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 26,
+        "text": "PASS: Report serialization preflight"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 27,
+        "text": "PASS: Agent handoff continuity preflight. Version=8.8.13; requiredFiles=92"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 28,
+        "text": "PASS: Agent handoff continuity preflight. Version=8.8.13; requiredFiles=92"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 29,
+        "text": "PASS: Agent handoff continuity preflight. Version=8.8.13; requiredFiles=92"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 62,
+        "text": "PASS: Agent handoff negative fixtures prove recursive continuity checks fail closed."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 63,
+        "text": "PASS: Agent handoff negative fixtures prove recursive continuity checks fail closed."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 66,
+        "text": "PASS: Agent handoff continuity preflight"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 81,
+        "text": "FAIL: Function fingerprint scan (exit 4)"
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+        "line": 344,
+        "text": "Verification finished: 24 passed / 1 failed."
+      }
+    ],
+    "scanned_files": 25,
+    "truncated": false
+  },
+  "job_hash": "4dd16c0435cdf1524cf02e0c19fc339503352fe03e6de8accf4cc9917a723566"
+}
