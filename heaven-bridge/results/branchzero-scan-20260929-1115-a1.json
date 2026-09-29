@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-scan-20260929-1115-a1",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T11:15:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:25:13.705146+00:00",
+  "finished_at": "2026-09-29T11:25:32.155527+00:00",
+  "stdout": "REPO=C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods\r\nBRANCH=agent-bridge|ANCESTOR=False|PLUS=11|MINUS=0\r\nBRANCH=agent/bridge-uia-native-20260929|ANCESTOR=False|PLUS=8|MINUS=0\r\nBRANCH=agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm|ANCESTOR=True|PLUS=0|MINUS=0\r\nBRANCH=agent/launch-observation-atomicity-20260928|ANCESTOR=False|PLUS=1|MINUS=0\r\nBRANCH=agent/swarm-contract-v3-20260929-0540|ANCESTOR=False|PLUS=3|MINUS=4\r\nBRANCH=codex/complete-mod-workflows|ANCESTOR=False|PLUS=10|MINUS=0\r\nBRANCH=fix/heaven-gate-concurrency-20260929|ANCESTOR=False|PLUS=2|MINUS=0\r\nBRANCH=heaven-bridge|ANCESTOR=False|PLUS=2334|MINUS=11\r\nBRANCH=integration/launch-observation-atomicity-main-20260929|ANCESTOR=True|PLUS=0|MINUS=0\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * [new branch]      agent-bridge  -> origin/agent-bridge\n * [new branch]      agent/bridge-uia-native-20260929 -> origin/agent/bridge-uia-native-20260929\n * [new branch]      agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm -> origin/agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\n * [new branch]      agent/launch-observation-atomicity-20260928 -> origin/agent/launch-observation-atomicity-20260928\n * [new branch]      agent/swarm-contract-v3-20260929-0540 -> origin/agent/swarm-contract-v3-20260929-0540\n * [new branch]      codex/complete-mod-workflows -> origin/codex/complete-mod-workflows\n * [new branch]      fix/heaven-gate-concurrency-20260929 -> origin/fix/heaven-gate-concurrency-20260929\n * [new branch]      heaven-bridge -> origin/heaven-bridge\n * [new branch]      integration/launch-observation-atomicity-main-20260929 -> origin/integration/launch-observation-atomicity-main-20260929\n * [new branch]      main          -> origin/main\n * [new tag]         updater-main-43 -> updater-main-43\n * [new tag]         updater-main-44 -> updater-main-44\n * [new tag]         updater-main-52 -> updater-main-52\n * [new tag]         updater-main-56 -> updater-main-56\n * [new tag]         updater-main-57 -> updater-main-57\n * [new tag]         updater-main-58 -> updater-main-58\n * [new tag]         updater-main-60 -> updater-main-60\n * [new tag]         updater-main-61 -> updater-main-61\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-scan-20260929-1115-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-scan-20260929-1115-a1.stderr.log",
+    "stdout_bytes": 749,
+    "stderr_bytes": 1490,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "636be8b5d01780c4ef9d3f3bb2dd10af761d472a975988d6853d4b2d81f3448b"
+}
