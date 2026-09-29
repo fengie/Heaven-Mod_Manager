@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0836-provider-diffstat",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix2",
+    "timeout_seconds": 60,
+    "command": "$ErrorActionPreference='Continue'; Write-Output ('HEAD='+(git rev-parse HEAD)); git status --short; Write-Output '===DIFFSTAT==='; git diff --stat; Write-Output '===CHANGED==='; git diff --name-only; exit 0"
+  },
+  "created_at": "2026-09-29T08:36:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Read-only incremental review of the active Agent Control provider implementation."
+}
