@@ -192,6 +192,16 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             )
         self.assertEqual(ctx.exception.code, "EXPECTED_PREVIOUS_CYCLE_REQUIRED")
 
+    def test_bootstrap_verifies_replacement_before_retiring_old_worker(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        start_idx = bootstrap.index("$candidate = Start-Process")
+        verify_idx = bootstrap.index("$candidateAlive = Get-Process")
+        retire_idx = bootstrap.index("# Retire only pre-upgrade workers")
+        self.assertLess(start_idx, verify_idx)
+        self.assertLess(verify_idx, retire_idx)
+        self.assertIn("existing worker(s) were left untouched", bootstrap)
+        self.assertIn("Start-ScheduledTask -TaskName $TaskName", bootstrap)
+
     def test_publish_write_is_serialized_by_git_lock(self):
         wrote = threading.Event()
 
