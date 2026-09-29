@@ -1,0 +1,10 @@
+{
+  "id": "chatgpt-20260929-perf-system-info-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "system_info",
+  "params": {},
+  "created_at": "2026-09-29T16:16:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
