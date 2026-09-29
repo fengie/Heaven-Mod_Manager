@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-hcp-verification-rebase2-20260929-1212-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:12:20Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:12:25.699320+00:00",
+  "finished_at": "2026-09-29T12:12:34.752508+00:00",
+  "stdout": "BEFORE=6830c3ca2c31af9c1864f5ee05e9e8aded668ade\r\nBASE=c60cea3d5e966ed94dee84f0ffc556c35655dcda\r\nREBASED_SHA=86f36c398b882a1ba1c8205471ea569ac15ab1cd\r\n",
+  "stderr": "Rebasing (1/8)\rRebasing (2/8)\rRebasing (3/8)\rRebasing (4/8)\rRebasing (5/8)\rRebasing (6/8)\rRebasing (7/8)\rRebasing (8/8)\rSuccessfully rebased and updated refs/heads/agent/hcp-verification-wire-20260929-0806.\nTo https://github.com/fengie/mhw-mods.git\n + 6830c3c...86f36c3 HEAD -> agent/hcp-verification-wire-20260929-0806 (forced update)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-verification-rebase2-20260929-1212-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-verification-rebase2-20260929-1212-a1.stderr.log",
+    "stdout_bytes": 150,
+    "stderr_bytes": 336,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "886a598242583f577f21d7a033a564a8b66eff556c84201688f75e422637f134"
+}
