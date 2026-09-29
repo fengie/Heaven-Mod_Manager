@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0831-agentcontrol-writable-prep-l1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:31:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:29:21.906482+00:00",
+  "finished_at": "2026-09-29T08:29:25.337071+00:00",
+  "stdout": "=== EXISTING ===\r\n## controller-agentcontrol-cycle4...origin/feature/agent-control-plane-v2-20260928 [ahead 57]\norigin\thttps://github.com/fengie/mhw-mods.git (fetch)\norigin\thttps://github.com/fengie/mhw-mods.git (push)\nHEAD=b9685d2f2e32af99596dc90d46278a129106d8e2\r\n=== REFRESH ===\r\nORIGIN_MAIN=5edcf84b7bc1c3743af793b38a8121178308c6e6\r\nORIGIN_PR=06f8085f54833d24b4c42e77e22f6c09f1f621b7\r\nCOMMON=C:/Users/Xxkan/AppData/Local/Temp/mhw-agentcontrol-cycle4/.git\r\nbranch 'feature/agent-control-plane-v2-20260928' set up to track 'origin/feature/agent-control-plane-v2-20260928'.\nDEST=C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix2\r\nDEST_HEAD=06f8085f54833d24b4c42e77e22f6c09f1f621b7\r\nDEST_MAIN=5edcf84b7bc1c3743af793b38a8121178308c6e6\r\n## feature/agent-control-plane-v2-20260928...origin/feature/agent-control-plane-v2-20260928\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n * branch            feature/agent-control-plane-v2-20260928 -> FETCH_HEAD\n   fd2866e..5edcf84  main       -> origin/main\nCloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix2'...\ndone.\nFrom https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n * branch            feature/agent-control-plane-v2-20260928 -> FETCH_HEAD\n   fd2866e..5edcf84  main       -> origin/main\n * [new branch]      feature/agent-control-plane-v2-20260928 -> origin/feature/agent-control-plane-v2-20260928\nSwitched to a new branch 'feature/agent-control-plane-v2-20260928'\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0831-agentcontrol-writable-prep-l1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0831-agentcontrol-writable-prep-l1.stderr.log",
+    "stdout_bytes": 842,
+    "stderr_bytes": 683,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ea3254b29e9772130f0ea8a05b8bb44296aca5e415c1f668856378c75a92ff08"
+}
