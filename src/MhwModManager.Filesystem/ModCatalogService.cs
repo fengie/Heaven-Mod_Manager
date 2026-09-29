@@ -122,7 +122,7 @@ public sealed class ModCatalogService(
         foreach (var provider in registry.Providers)
         {
             ct.ThrowIfCancellationRequested();
-            if (!request.Game.HasNexusIntegration && provider.ProviderId.Equals("nexus", StringComparison.OrdinalIgnoreCase)) continue;
+            if (string.IsNullOrWhiteSpace(request.Game.NexusGameDomain) && provider.ProviderId.Equals("nexus", StringComparison.OrdinalIgnoreCase)) continue;
 
             var cached = await cache.ReadAsync(provider.ProviderId, request.Game.Id, ct);
             IReadOnlyList<CatalogMod> providerMods;
