@@ -3,11 +3,17 @@ param(
     [int]$WarmIterations = 3,
     [int]$ModCount = 80,
     [int]$FilesPerMod = 25,
-    [int]$TimeoutSeconds = 120
+    [int]$TimeoutSeconds = 120,
+    [string]$RepositoryRoot = '',
+    [string]$OutputPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
-$Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$Root = if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+    (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+} else {
+    (Resolve-Path $RepositoryRoot).Path
+}
 $BuildLogs = Join-Path $Root 'BuildLogs'
 New-Item -ItemType Directory -Force -Path $BuildLogs | Out-Null
 
@@ -220,7 +226,7 @@ try {
     )
 
     $summary = [ordered]@{
-        source_sha = $env:GITHUB_SHA
+        source_sha = (& git -C $Root rev-parse HEAD).Trim()
         mod_count = $ModCount
         files_per_mod = $FilesPerMod
         total_mod_files = $ModCount * $FilesPerMod
@@ -240,7 +246,14 @@ try {
     }
 
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $resultPath = Join-Path $BuildLogs "startup-performance-$stamp.json"
+    $resultPath = if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+        Join-Path $BuildLogs "startup-performance-$stamp.json"
+    } else {
+        $resolvedOutput = if ([IO.Path]::IsPathRooted($OutputPath)) { $OutputPath } else { Join-Path $Root $OutputPath }
+        $outputDirectory = Split-Path -Parent $resolvedOutput
+        if ($outputDirectory) { New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null }
+        $resolvedOutput
+    }
     $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $resultPath -Encoding UTF8
     Write-Host ('STARTUP_PERF_SUMMARY=' + (($summary | ConvertTo-Json -Depth 8 -Compress)))
     Write-Host "Startup performance report: $resultPath"
