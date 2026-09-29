@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-hcp-verification-rebase-20260929-1211-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:11:30Z",
+  "status": "failed",
+  "exit_code": 128,
+  "started_at": "2026-09-29T12:11:19.736844+00:00",
+  "finished_at": "2026-09-29T12:11:24.173733+00:00",
+  "stdout": "",
+  "stderr": "fatal: invalid upstream 'origin/main'\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-verification-rebase-20260929-1211-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-verification-rebase-20260929-1211-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 38,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "babb05367e418c2f140a96943f1506bea163595a3c25ce542fc3b40c2a6c927c"
+}
