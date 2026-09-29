@@ -1,0 +1,17 @@
+{
+  "id": "chatgpt-20260929-100500-find-mhw-git-configs-3f6a",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:05:00Z",
+  "ttl_seconds": 3600,
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan",
+    "pattern": "fengie/mhw-mods",
+    "mode": "content",
+    "case_sensitive": false,
+    "regex": false,
+    "glob": "config",
+    "max_results": 100
+  },
+  "priority": "highest"
+}
