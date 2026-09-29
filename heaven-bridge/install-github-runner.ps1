@@ -173,34 +173,80 @@ function Configure-Runner {
     }
 }
 
-function Ensure-RunnerScheduledTask {
+function Get-RunnerListener {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -eq 'Runner.Listener.exe' -and
+            $_.ExecutablePath -and
+            $_.ExecutablePath.StartsWith($RunnerDirectory, [System.StringComparison]::OrdinalIgnoreCase)
+        } |
+        Select-Object -First 1
+}
+
+function Ensure-RunnerLaunch {
     $taskName = "GitHub Actions Runner - $RunnerName"
     $runCmd = Join-Path $RunnerDirectory 'run.cmd'
     if (-not (Test-Path $runCmd)) { throw "Runner entrypoint missing: $runCmd" }
 
-    Stop-RunnerTask -TaskName $taskName
-    $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
     $cmdExe = Join-Path ([Environment]::SystemDirectory) 'cmd.exe'
     if (-not (Test-Path -LiteralPath $cmdExe)) { throw "Windows command processor missing: $cmdExe" }
-    $action = New-ScheduledTaskAction -Execute $cmdExe -Argument ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
-    $settings = New-ScheduledTaskSettingsSet `
-        -AllowStartIfOnBatteries `
-        -DontStopIfGoingOnBatteries `
-        -StartWhenAvailable `
-        -MultipleInstances IgnoreNew `
-        -RestartCount 999 `
-        -RestartInterval (New-TimeSpan -Minutes 1) `
-        -ExecutionTimeLimit ([TimeSpan]::Zero)
-    $principal = New-ScheduledTaskPrincipal -UserId $identityName -LogonType Interactive -RunLevel Limited
 
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
-    $registered = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
-    if ([string]$registered.Principal.RunLevel -ne 'Limited') {
-        throw "Runner task registered with unexpected RunLevel '$($registered.Principal.RunLevel)'."
+    try {
+        Stop-RunnerTask -TaskName $taskName
+        $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $action = New-ScheduledTaskAction -Execute $cmdExe -Argument ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory
+        $trigger = New-ScheduledTaskTrigger -AtLogOn
+        $settings = New-ScheduledTaskSettingsSet `
+            -AllowStartIfOnBatteries `
+            -DontStopIfGoingOnBatteries `
+            -StartWhenAvailable `
+            -MultipleInstances IgnoreNew `
+            -RestartCount 999 `
+            -RestartInterval (New-TimeSpan -Minutes 1) `
+            -ExecutionTimeLimit ([TimeSpan]::Zero)
+        $principal = New-ScheduledTaskPrincipal -UserId $identityName -LogonType Interactive -RunLevel Limited
+
+        Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
+        $registered = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
+        if ([string]$registered.Principal.RunLevel -ne 'Limited') {
+            throw "Runner task registered with unexpected RunLevel '$($registered.Principal.RunLevel)'."
+        }
+        Start-ScheduledTask -TaskName $taskName
+        return [ordered]@{
+            mode = 'scheduled-task'
+            scheduled_task = $taskName
+            scheduled_task_run_level = [string]$registered.Principal.RunLevel
+            startup_fallback = $null
+        }
+    } catch {
+        # Some locked-down user sessions deny task registration even at Limited.
+        # GitHub's runner does not need admin; persist it through the per-user
+        # Startup folder instead of turning that policy into a CI blocker.
+        Write-Warning "Scheduled task unavailable; using per-user Startup fallback. $($_.Exception.Message)"
+
+        $startup = [Environment]::GetFolderPath('Startup')
+        $startupVbs = Join-Path $startup 'HeavenGitHubActionsRunner.vbs'
+        $escapedCmd = $cmdExe.Replace('"', '""')
+        $escapedRun = $runCmd.Replace('"', '""')
+        $escapedCwd = $RunnerDirectory.Replace('"', '""')
+        $vbs = @"
+Set sh = CreateObject("WScript.Shell")
+sh.CurrentDirectory = "$escapedCwd"
+sh.Run """$escapedCmd"" /d /c """"$escapedRun""""", 0, False
+"@
+        Set-Content -LiteralPath $startupVbs -Value $vbs -Encoding ASCII
+
+        if (-not (Get-RunnerListener)) {
+            Start-Process -FilePath $cmdExe -ArgumentList ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory -WindowStyle Hidden | Out-Null
+        }
+
+        return [ordered]@{
+            mode = 'startup-fallback'
+            scheduled_task = $null
+            scheduled_task_run_level = $null
+            startup_fallback = $startupVbs
+        }
     }
-    Start-ScheduledTask -TaskName $taskName
-    return $taskName
 }
 
 try {
@@ -215,7 +261,7 @@ try {
     }
     if (-not $configured) { Configure-Runner }
 
-    $taskName = Ensure-RunnerScheduledTask
+    $launch = Ensure-RunnerLaunch
 
     $deadline = (Get-Date).AddMinutes(2)
     $record = $null
@@ -236,8 +282,10 @@ try {
         busy = [bool]$record.busy
         labels = @($record.labels | ForEach-Object { $_.name })
         runner_directory = $RunnerDirectory
-        scheduled_task = $taskName
-        scheduled_task_run_level = [string](Get-ScheduledTask -TaskName $taskName).Principal.RunLevel
+        launch_mode = $launch.mode
+        scheduled_task = $launch.scheduled_task
+        scheduled_task_run_level = $launch.scheduled_task_run_level
+        startup_fallback = $launch.startup_fallback
         elevated = [bool](Test-IsElevated)
         auth_source = 'local-git-credential'
     } | ConvertTo-Json -Depth 5
