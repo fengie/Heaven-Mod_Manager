@@ -70,7 +70,7 @@ Commands:
   emergency-stop
   stop-swarm [--discard]
   autopilot
-  autopilot-start --task "big direction" [--base main] [--max-repairs 3] [--max-iterations 40]
+  autopilot-start --task "big direction" [--perpetual] [--max-cycles 0] [--base main] [--max-repairs 3] [--max-phase-retries 2] [--max-iterations 40]
   autopilot-start --task-file C:\\path\\direction.txt [options]
   autopilot-pause
   autopilot-resume
@@ -255,7 +255,10 @@ try {
         objective,
         baseBranch: flags.base || "main",
         maxRepairLoops: flags["max-repairs"] === undefined ? undefined : Number(flags["max-repairs"]),
-        maxIterations: flags["max-iterations"] === undefined ? undefined : Number(flags["max-iterations"])
+        maxIterations: flags["max-iterations"] === undefined ? undefined : Number(flags["max-iterations"]),
+        perpetual: Boolean(flags.perpetual),
+        maxCycles: flags["max-cycles"] === undefined ? undefined : Number(flags["max-cycles"]),
+        maxPhaseRetries: flags["max-phase-retries"] === undefined ? undefined : Number(flags["max-phase-retries"])
       })
     }));
   } else if (command === "autopilot-pause") {
