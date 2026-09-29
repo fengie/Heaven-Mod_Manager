@@ -390,7 +390,7 @@ public sealed partial class NexusCatalogProvider : IModCatalogProvider
             ProviderMetadata: file.GetRawText());
     }
 
-    internal static CatalogFileCategory ParseFileCategory(string? categoryName)
+    public static CatalogFileCategory ParseFileCategory(string? categoryName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = categoryName?.Trim().Replace(' ', '_').Replace('-', '_').ToLowerInvariant();
