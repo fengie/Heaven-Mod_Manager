@@ -1,0 +1,22 @@
+{
+  "id": "chatgpt-20260929-0908-read-pr90-readme-recover",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:08:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:08:35.122868+00:00",
+  "finished_at": "2026-09-29T09:08:35.122868+00:00",
+  "host": "heaven",
+  "action": "job_output_read",
+  "data": {
+    "job_id": "chatgpt-20260929-0906-pr90-readme-recover-a1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 443,
+    "total_bytes": 443,
+    "next_offset": 443,
+    "eof": true,
+    "content": "HEAD_BEFORE=2f478059601970b4618dfc463b22ed40572efce3\r\nGIT_DIR=C:/Users/Xxkan/mhw-mods-work-canonical/.git/worktrees/mhw-mods-pr90-integration\r\nINDEX_LOCK=C:/Users/Xxkan/mhw-mods-work-canonical/.git/worktrees/mhw-mods-pr90-integration/index.lock EXISTS=False\r\nSTATUS_BEFORE_BEGIN\r\n## integration/pr90-reconcile-20260929...origin/agent/game-profile-id-containment-v8.8.5-reconcile\nSTATUS_BEFORE_END\r\nREADME_FIRST=# v8.8.4 Universal Mod Manager\r\n"
+  },
+  "job_hash": "434fcb8929fc9555bb6371e223dbc6d096f173f05ed02220e5a33f1758681d1b"
+}
