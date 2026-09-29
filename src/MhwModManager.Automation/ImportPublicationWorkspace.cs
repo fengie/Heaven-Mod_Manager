@@ -57,6 +57,36 @@ internal static class ImportPublicationWorkspace
         Directory.Move(stagingFull, destinationFull);
     }
 
+    public static void RollbackPublished(string modsRoot, string? destination)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(destination)) return;
+        try
+        {
+            var fullModsRoot = Path.GetFullPath(modsRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var candidate = Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(candidate), fullModsRoot))
+            {
+                MasterDebugLog.Write("IMPORT-ROLLBACK", $"Refusing to delete non-ModsRoot published path: {candidate}");
+                return;
+            }
+            if (!Directory.Exists(candidate)) return;
+            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
+            {
+                MasterDebugLog.Write("IMPORT-ROLLBACK", $"Refusing recursive rollback of reparse published path: {candidate}");
+                return;
+            }
+            Directory.Delete(candidate, true);
+        }
+        catch (Exception ex)
+        {
+            MasterDebugLog.Write(
+                "IMPORT-ROLLBACK",
+                $"Failed to roll back published import '{destination}' after source archival failed.",
+                ex);
+        }
+    }
+
     public static void Cleanup(string modsRoot, string? staging)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
