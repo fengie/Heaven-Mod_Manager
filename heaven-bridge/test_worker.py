@@ -202,6 +202,18 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("existing worker(s) were left untouched", bootstrap)
         self.assertIn("Start-ScheduledTask -TaskName $TaskName", bootstrap)
 
+    def test_bootstrap_preserves_relay_before_destructive_realign(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        preserve_idx = bootstrap.index("& git -C $RepoRoot branch $backupBranch $head")
+        reset_idx = bootstrap.index("Invoke-GitChecked @('reset', '--hard', 'HEAD')")
+        self.assertLess(preserve_idx, reset_idx)
+        self.assertIn("bootstrap-recovery", bootstrap)
+        self.assertIn("status --porcelain --untracked-files=no", bootstrap)
+        self.assertIn("rev-list --left-right --count", bootstrap)
+        self.assertIn("working-tree.patch", bootstrap)
+        self.assertIn("merge', '--ff-only'", bootstrap)
+        self.assertIn("$LASTEXITCODE -ne 0", bootstrap)
+
     def test_publish_write_is_serialized_by_git_lock(self):
         wrote = threading.Event()
 
