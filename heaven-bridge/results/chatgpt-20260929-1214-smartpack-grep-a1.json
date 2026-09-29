@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1214-smartpack-grep-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:14:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:10:04.955670+00:00",
+  "finished_at": "2026-09-29T12:10:07.188344+00:00",
+  "stdout": "origin/main:src/MhwModManager.Core/SmartPackPlanner.cs:54:public sealed record SmartPackPlannerRequest(\norigin/main:src/MhwModManager.Core/SmartPackPlanner.cs:89:public sealed class SmartPackPlanner\norigin/main:src/MhwModManager.Core/SmartPackPlanner.cs:91:    public SmartPackPlan Build(SmartPackPlannerRequest request)\norigin/main:tests/MhwModManager.Tests/SmartPackPlannerTests.cs:6:public sealed class SmartPackPlannerTests\norigin/main:tests/MhwModManager.Tests/SmartPackPlannerTests.cs:261:        new SmartPackPlanner().Build(new(\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1214-smartpack-grep-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1214-smartpack-grep-a1.stderr.log",
+    "stdout_bytes": 537,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d94ab119614dac4d3d8592221b2948160b953e78c1901fcf8a5ae7ff6e6ee6b7"
+}
