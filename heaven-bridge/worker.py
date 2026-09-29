@@ -72,7 +72,10 @@ DIRECT_ACTIONS = {
     "fs_list", "fs_move", "fs_copy", "fs_delete", "fs_info", "fs_search",
     "fs_read_binary", "fs_write_binary",
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
-    "proc_list_sessions", "proc_list", "screenshot",
+    "proc_list_sessions", "proc_list", "screenshot", "display_list",
+    "clipboard_read", "clipboard_write", "app_launch",
+    "window_list", "window_focus", "window_move", "window_close",
+    "gui_mouse_move", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
     "powershell", "cmd", "python", "codex",
 }
 CONTROL_ACTIONS = {
@@ -1228,6 +1231,393 @@ def cleanup_sessions():
                 audit("session_pruned", session_id=sid, pid=int(s.get("pid") or 0))
 
 
+
+def _require_windows_desktop():
+    if os.name != "nt":
+        raise BridgeError("DESKTOP_UNSUPPORTED", "desktop control is only available on Windows")
+    return ctypes.WinDLL("user32", use_last_error=True)
+
+
+def _desktop_window_rows(limit=200, visible_only=True):
+    user32 = _require_windows_desktop()
+    limit = max(1, min(int(limit or 200), 1000))
+    rows = []
+    callback_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+    def callback(hwnd, _lparam):
+        if visible_only and not user32.IsWindowVisible(hwnd):
+            return True
+        length = int(user32.GetWindowTextLengthW(hwnd))
+        if length <= 0:
+            return True
+        buf = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buf, len(buf))
+        title = buf.value.strip()
+        if not title:
+            return True
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        rect = wintypes.RECT()
+        user32.GetWindowRect(hwnd, ctypes.byref(rect))
+        rows.append({
+            "hwnd": int(hwnd),
+            "pid": int(pid.value),
+            "title": title,
+            "visible": bool(user32.IsWindowVisible(hwnd)),
+            "minimized": bool(user32.IsIconic(hwnd)),
+            "rect": {
+                "x": int(rect.left), "y": int(rect.top),
+                "width": max(0, int(rect.right - rect.left)),
+                "height": max(0, int(rect.bottom - rect.top)),
+            },
+        })
+        return len(rows) < limit
+
+    cb = callback_type(callback)
+    if not user32.EnumWindows(cb, 0):
+        err = ctypes.get_last_error()
+        if err:
+            raise BridgeError("WINDOW_ENUM_FAILED", "EnumWindows failed", {"win32_error": err})
+    return rows
+
+
+def _resolve_window(p):
+    user32 = _require_windows_desktop()
+    if p.get("hwnd") is not None:
+        hwnd = int(p.get("hwnd"))
+        if hwnd <= 0 or not user32.IsWindow(hwnd):
+            raise BridgeError("WINDOW_NOT_FOUND", "window handle is not valid", {"hwnd": hwnd})
+        return hwnd
+
+    title = str(p.get("title") or "").strip().casefold()
+    pid = int(p.get("pid") or 0)
+    if not title and pid <= 0:
+        raise BridgeError("WINDOW_SELECTOR_REQUIRED", "provide hwnd, pid, or title")
+
+    matches = []
+    for row in _desktop_window_rows(limit=1000, visible_only=bool(p.get("visible_only", True))):
+        if pid > 0 and row["pid"] != pid:
+            continue
+        if title and title not in row["title"].casefold():
+            continue
+        matches.append(row)
+
+    if not matches:
+        raise BridgeError("WINDOW_NOT_FOUND", "no matching desktop window found")
+    if len(matches) > 1 and not bool(p.get("first_match", False)):
+        raise BridgeError(
+            "WINDOW_AMBIGUOUS",
+            "multiple desktop windows matched; provide hwnd or a narrower selector",
+            {"matches": matches[:10], "total": len(matches)},
+        )
+    return int(matches[0]["hwnd"])
+
+
+def desktop_focus_window(p):
+    user32 = _require_windows_desktop()
+    hwnd = _resolve_window(p)
+    user32.ShowWindowAsync(hwnd, 9)  # SW_RESTORE
+    user32.BringWindowToTop(hwnd)
+    focused = bool(user32.SetForegroundWindow(hwnd))
+    return {"hwnd": hwnd, "focused": focused}
+
+
+def desktop_move_window(p):
+    user32 = _require_windows_desktop()
+    hwnd = _resolve_window(p)
+    rect = wintypes.RECT()
+    if not user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        raise BridgeError("WINDOW_RECT_FAILED", "failed to read window rectangle", {"hwnd": hwnd})
+    x = int(p.get("x") if p.get("x") is not None else rect.left)
+    y = int(p.get("y") if p.get("y") is not None else rect.top)
+    width = int(p.get("width") if p.get("width") is not None else rect.right - rect.left)
+    height = int(p.get("height") if p.get("height") is not None else rect.bottom - rect.top)
+    if width < 1 or height < 1 or width > 32768 or height > 32768:
+        raise BridgeError("INVALID_WINDOW_SIZE", "window width/height must be between 1 and 32768")
+    ok = bool(user32.MoveWindow(hwnd, x, y, width, height, True))
+    if not ok:
+        raise BridgeError("WINDOW_MOVE_FAILED", "MoveWindow failed", {"hwnd": hwnd, "win32_error": ctypes.get_last_error()})
+    return {"hwnd": hwnd, "rect": {"x": x, "y": y, "width": width, "height": height}}
+
+
+def desktop_close_window(p):
+    user32 = _require_windows_desktop()
+    hwnd = _resolve_window(p)
+    ok = bool(user32.PostMessageW(hwnd, 0x0010, 0, 0))  # WM_CLOSE
+    if not ok:
+        raise BridgeError("WINDOW_CLOSE_FAILED", "failed to post WM_CLOSE", {"hwnd": hwnd, "win32_error": ctypes.get_last_error()})
+    return {"hwnd": hwnd, "close_requested": True}
+
+
+def _cursor_position(user32=None):
+    user32 = user32 or _require_windows_desktop()
+    point = wintypes.POINT()
+    if not user32.GetCursorPos(ctypes.byref(point)):
+        raise BridgeError("CURSOR_READ_FAILED", "GetCursorPos failed", {"win32_error": ctypes.get_last_error()})
+    return int(point.x), int(point.y)
+
+
+def desktop_mouse_move(p):
+    user32 = _require_windows_desktop()
+    x = int(p.get("x"))
+    y = int(p.get("y"))
+    duration_ms = max(0, min(int(p.get("duration_ms") or 0), 5000))
+    if duration_ms:
+        sx, sy = _cursor_position(user32)
+        steps = max(2, min(120, duration_ms // 8 or 2))
+        for step in range(1, steps + 1):
+            px = round(sx + (x - sx) * step / steps)
+            py = round(sy + (y - sy) * step / steps)
+            if not user32.SetCursorPos(px, py):
+                raise BridgeError("CURSOR_MOVE_FAILED", "SetCursorPos failed", {"win32_error": ctypes.get_last_error()})
+            time.sleep(duration_ms / steps / 1000.0)
+    elif not user32.SetCursorPos(x, y):
+        raise BridgeError("CURSOR_MOVE_FAILED", "SetCursorPos failed", {"win32_error": ctypes.get_last_error()})
+    cx, cy = _cursor_position(user32)
+    return {"x": cx, "y": cy}
+
+
+def desktop_mouse_click(p):
+    user32 = _require_windows_desktop()
+    if p.get("x") is not None or p.get("y") is not None:
+        if p.get("x") is None or p.get("y") is None:
+            raise BridgeError("INVALID_POINTER", "x and y must be provided together")
+        desktop_mouse_move({"x": p.get("x"), "y": p.get("y"), "duration_ms": p.get("duration_ms", 0)})
+    button = str(p.get("button") or "left").lower()
+    flags = {
+        "left": (0x0002, 0x0004),
+        "right": (0x0008, 0x0010),
+        "middle": (0x0020, 0x0040),
+    }.get(button)
+    if not flags:
+        raise BridgeError("INVALID_MOUSE_BUTTON", "button must be left, right, or middle")
+    count = max(1, min(int(p.get("count") or 1), 3))
+    interval_ms = max(0, min(int(p.get("interval_ms") or 80), 1000))
+    for index in range(count):
+        user32.mouse_event(flags[0], 0, 0, 0, 0)
+        user32.mouse_event(flags[1], 0, 0, 0, 0)
+        if index + 1 < count and interval_ms:
+            time.sleep(interval_ms / 1000.0)
+    x, y = _cursor_position(user32)
+    return {"button": button, "count": count, "x": x, "y": y}
+
+
+def desktop_mouse_scroll(p):
+    user32 = _require_windows_desktop()
+    clicks = max(-100, min(int(p.get("clicks") or 0), 100))
+    if clicks == 0:
+        raise BridgeError("INVALID_SCROLL", "clicks must be a non-zero integer")
+    horizontal = bool(p.get("horizontal", False))
+    flag = 0x1000 if horizontal else 0x0800
+    user32.mouse_event(flag, 0, 0, clicks * 120, 0)
+    return {"clicks": clicks, "horizontal": horizontal}
+
+
+def _vk_code(name):
+    key = str(name or "").strip().lower()
+    table = {
+        "backspace": 0x08, "tab": 0x09, "enter": 0x0D, "shift": 0x10, "ctrl": 0x11,
+        "control": 0x11, "alt": 0x12, "pause": 0x13, "capslock": 0x14, "escape": 0x1B,
+        "esc": 0x1B, "space": 0x20, "pageup": 0x21, "pagedown": 0x22, "end": 0x23,
+        "home": 0x24, "left": 0x25, "up": 0x26, "right": 0x27, "down": 0x28,
+        "insert": 0x2D, "delete": 0x2E, "win": 0x5B, "windows": 0x5B,
+    }
+    if key in table:
+        return table[key]
+    if re.fullmatch(r"f(?:[1-9]|1[0-9]|2[0-4])", key):
+        return 0x70 + int(key[1:]) - 1
+    if len(key) == 1 and (key.isalpha() or key.isdigit()):
+        return ord(key.upper())
+    raise BridgeError("INVALID_KEY", "unsupported key name", {"key": name})
+
+
+def desktop_key(p):
+    user32 = _require_windows_desktop()
+    key = _vk_code(p.get("key"))
+    modifiers = p.get("modifiers") or []
+    if isinstance(modifiers, str):
+        modifiers = [x.strip() for x in modifiers.split("+") if x.strip()]
+    if not isinstance(modifiers, list):
+        raise BridgeError("INVALID_MODIFIERS", "modifiers must be a list or + separated string")
+    modifier_codes = [_vk_code(x) for x in modifiers]
+    count = max(1, min(int(p.get("count") or 1), 20))
+    for code in modifier_codes:
+        user32.keybd_event(code, 0, 0, 0)
+    try:
+        for _ in range(count):
+            user32.keybd_event(key, 0, 0, 0)
+            user32.keybd_event(key, 0, 0x0002, 0)
+    finally:
+        for code in reversed(modifier_codes):
+            user32.keybd_event(code, 0, 0x0002, 0)
+    return {"key": str(p.get("key")), "modifiers": [str(x) for x in modifiers], "count": count}
+
+
+def desktop_type_text(p):
+    user32 = _require_windows_desktop()
+    value = str(p.get("text") if p.get("text") is not None else "")
+    if len(value) > 10000:
+        raise BridgeError("TEXT_TOO_LARGE", "gui_type is limited to 10000 characters per job")
+
+    ulong_ptr = wintypes.WPARAM
+
+    class MouseInput(ctypes.Structure):
+        _fields_ = [
+            ("dx", wintypes.LONG), ("dy", wintypes.LONG), ("mouseData", wintypes.DWORD),
+            ("dwFlags", wintypes.DWORD), ("time", wintypes.DWORD), ("dwExtraInfo", ulong_ptr),
+        ]
+
+    class KeyboardInput(ctypes.Structure):
+        _fields_ = [
+            ("wVk", wintypes.WORD), ("wScan", wintypes.WORD), ("dwFlags", wintypes.DWORD),
+            ("time", wintypes.DWORD), ("dwExtraInfo", ulong_ptr),
+        ]
+
+    class HardwareInput(ctypes.Structure):
+        _fields_ = [("uMsg", wintypes.DWORD), ("wParamL", wintypes.WORD), ("wParamH", wintypes.WORD)]
+
+    class InputUnion(ctypes.Union):
+        _fields_ = [("mi", MouseInput), ("ki", KeyboardInput), ("hi", HardwareInput)]
+
+    class Input(ctypes.Structure):
+        _anonymous_ = ("u",)
+        _fields_ = [("type", wintypes.DWORD), ("u", InputUnion)]
+
+    units = value.encode("utf-16-le")
+    sent_units = 0
+    for offset in range(0, len(units), 2):
+        scan = int.from_bytes(units[offset:offset + 2], "little")
+        down = Input(type=1, ki=KeyboardInput(0, scan, 0x0004, 0, 0))
+        up = Input(type=1, ki=KeyboardInput(0, scan, 0x0004 | 0x0002, 0, 0))
+        if user32.SendInput(1, ctypes.byref(down), ctypes.sizeof(Input)) != 1:
+            raise BridgeError("KEY_INPUT_FAILED", "SendInput key-down failed", {"win32_error": ctypes.get_last_error()})
+        if user32.SendInput(1, ctypes.byref(up), ctypes.sizeof(Input)) != 1:
+            raise BridgeError("KEY_INPUT_FAILED", "SendInput key-up failed", {"win32_error": ctypes.get_last_error()})
+        sent_units += 1
+    return {"characters": len(value), "utf16_units": sent_units}
+
+
+def _open_clipboard(user32, attempts=20):
+    for _ in range(attempts):
+        if user32.OpenClipboard(None):
+            return
+        time.sleep(0.05)
+    raise BridgeError("CLIPBOARD_BUSY", "clipboard could not be opened", {"win32_error": ctypes.get_last_error()})
+
+
+def desktop_clipboard_read():
+    user32 = _require_windows_desktop()
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    _open_clipboard(user32)
+    try:
+        if not user32.IsClipboardFormatAvailable(13):  # CF_UNICODETEXT
+            return {"text": "", "characters": 0, "format": "unicode_text", "available": False}
+        handle = user32.GetClipboardData(13)
+        if not handle:
+            raise BridgeError("CLIPBOARD_READ_FAILED", "GetClipboardData failed", {"win32_error": ctypes.get_last_error()})
+        kernel32.GlobalLock.restype = ctypes.c_void_p
+        ptr = kernel32.GlobalLock(handle)
+        if not ptr:
+            raise BridgeError("CLIPBOARD_READ_FAILED", "GlobalLock failed", {"win32_error": ctypes.get_last_error()})
+        try:
+            text = ctypes.wstring_at(ptr)
+        finally:
+            kernel32.GlobalUnlock(handle)
+    finally:
+        user32.CloseClipboard()
+    if len(text) > 200000:
+        return {"text": text[:200000], "characters": len(text), "format": "unicode_text", "available": True, "truncated": True}
+    return {"text": text, "characters": len(text), "format": "unicode_text", "available": True, "truncated": False}
+
+
+def desktop_clipboard_write(value):
+    user32 = _require_windows_desktop()
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    text = str(value if value is not None else "")
+    if len(text) > 1000000:
+        raise BridgeError("TEXT_TOO_LARGE", "clipboard_write is limited to 1000000 characters")
+    raw = (text + "\0").encode("utf-16-le")
+    kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    handle = kernel32.GlobalAlloc(0x0002, len(raw))  # GMEM_MOVEABLE
+    if not handle:
+        raise BridgeError("CLIPBOARD_WRITE_FAILED", "GlobalAlloc failed", {"win32_error": ctypes.get_last_error()})
+    ptr = kernel32.GlobalLock(handle)
+    if not ptr:
+        kernel32.GlobalFree(handle)
+        raise BridgeError("CLIPBOARD_WRITE_FAILED", "GlobalLock failed", {"win32_error": ctypes.get_last_error()})
+    try:
+        ctypes.memmove(ptr, raw, len(raw))
+    finally:
+        kernel32.GlobalUnlock(handle)
+
+    transferred = False
+    _open_clipboard(user32)
+    try:
+        if not user32.EmptyClipboard():
+            raise BridgeError("CLIPBOARD_WRITE_FAILED", "EmptyClipboard failed", {"win32_error": ctypes.get_last_error()})
+        if not user32.SetClipboardData(13, handle):
+            raise BridgeError("CLIPBOARD_WRITE_FAILED", "SetClipboardData failed", {"win32_error": ctypes.get_last_error()})
+        transferred = True
+    finally:
+        user32.CloseClipboard()
+        if not transferred:
+            kernel32.GlobalFree(handle)
+    return {"characters": len(text), "format": "unicode_text"}
+
+
+def desktop_launch_app(p):
+    if os.name != "nt":
+        raise BridgeError("DESKTOP_UNSUPPORTED", "app_launch is only available on Windows")
+    target = str(p.get("path") or p.get("target") or "").strip()
+    if not target:
+        raise BridgeError("APP_TARGET_REQUIRED", "params.path or params.target is required")
+    args = p.get("args") or []
+    if not isinstance(args, list) or any(not isinstance(x, str) for x in args):
+        raise BridgeError("INVALID_APP_ARGS", "params.args must be a list of strings")
+    cwd = expand_path(p.get("cwd")) if p.get("cwd") else Path.home()
+    resolved = shutil.which(target) or target
+    flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    if bool(p.get("detached", True)):
+        flags |= getattr(subprocess, "DETACHED_PROCESS", 0)
+    try:
+        proc = subprocess.Popen(
+            [resolved, *args], cwd=str(cwd), stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            creationflags=flags,
+        )
+        return {"target": target, "resolved": str(resolved), "pid": proc.pid, "started": True}
+    except OSError:
+        if args:
+            raise BridgeError("APP_LAUNCH_FAILED", "direct launch failed and shell association cannot safely accept args")
+        try:
+            os.startfile(target)
+            return {"target": target, "pid": None, "started": True, "via": "shell_association"}
+        except OSError as e:
+            raise BridgeError("APP_LAUNCH_FAILED", str(e), {"target": target}) from e
+
+
+def desktop_display_list(job_id, cancel_event):
+    command = (
+        "Add-Type -AssemblyName System.Windows.Forms; "
+        "$i=0; @([System.Windows.Forms.Screen]::AllScreens | ForEach-Object { "
+        "[pscustomobject]@{index=$i;device=$_.DeviceName;primary=$_.Primary;"
+        "x=$_.Bounds.X;y=$_.Bounds.Y;width=$_.Bounds.Width;height=$_.Bounds.Height;"
+        "work_x=$_.WorkingArea.X;work_y=$_.WorkingArea.Y;work_width=$_.WorkingArea.Width;work_height=$_.WorkingArea.Height}; $i++ "
+        "}) | ConvertTo-Json -Compress"
+    )
+    result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
+    if result["exit_code"] != 0:
+        raise BridgeError("DISPLAY_ENUM_FAILED", result.get("stderr") or "display enumeration failed")
+    raw = (result.get("stdout") or "").strip()
+    if not raw:
+        return []
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise BridgeError("DISPLAY_ENUM_FAILED", "display enumeration returned invalid JSON", {"stdout": raw[-2000:]}) from e
+    return value if isinstance(value, list) else [value]
+
 def make_result(job, action, status="completed", exit_code=0, data=None, stdout=None, stderr=None, started_at=None):
     out = {
         "status": status, "exit_code": exit_code, "started_at": started_at or now(), "finished_at": now(),
@@ -1259,7 +1649,12 @@ def run_job(job_id, job, cancel_event):
                 "binary_files": True, "file_delete": True, "file_copy": True, "output_pagination": True,
                 "process_tree_kill": True, "session_timeouts": True, "session_restart_recovery": True,
                 "heartbeat": True, "audit_log": True,
-                "screenshot": True, "clipboard_read": False, "public_raw_shell": False,
+                "screenshot": True, "screenshot_all_displays": True,
+                "desktop_control": os.name == "nt", "mouse_control": os.name == "nt",
+                "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
+                "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
+                "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
+                "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
             },
         }
         return make_result(job, action, data=data, started_at=started)
@@ -1493,6 +1888,54 @@ def run_job(job_id, job, cancel_event):
             data = [session_snapshot(sid, s) for sid, s in SESSIONS.items()]
         return make_result(job, action, data=data, started_at=started)
 
+    if action == "display_list":
+        return make_result(job, action, data=desktop_display_list(job_id, cancel_event), started_at=started)
+
+    if action == "clipboard_read":
+        if not bool(p.get("allow_relay", False)):
+            raise BridgeError(
+                "CLIPBOARD_RELAY_OPT_IN_REQUIRED",
+                "clipboard_read returns clipboard text through the private relay; set params.allow_relay=true only for an explicit clipboard-read request",
+            )
+        return make_result(job, action, data=desktop_clipboard_read(), started_at=started)
+
+    if action == "clipboard_write":
+        return make_result(job, action, data=desktop_clipboard_write(p.get("text")), started_at=started)
+
+    if action == "app_launch":
+        return make_result(job, action, data=desktop_launch_app(p), started_at=started)
+
+    if action == "window_list":
+        return make_result(
+            job, action,
+            data=_desktop_window_rows(p.get("limit", 200), bool(p.get("visible_only", True))),
+            started_at=started,
+        )
+
+    if action == "window_focus":
+        return make_result(job, action, data=desktop_focus_window(p), started_at=started)
+
+    if action == "window_move":
+        return make_result(job, action, data=desktop_move_window(p), started_at=started)
+
+    if action == "window_close":
+        return make_result(job, action, data=desktop_close_window(p), started_at=started)
+
+    if action == "gui_mouse_move":
+        return make_result(job, action, data=desktop_mouse_move(p), started_at=started)
+
+    if action == "gui_mouse_click":
+        return make_result(job, action, data=desktop_mouse_click(p), started_at=started)
+
+    if action == "gui_mouse_scroll":
+        return make_result(job, action, data=desktop_mouse_scroll(p), started_at=started)
+
+    if action == "gui_key":
+        return make_result(job, action, data=desktop_key(p), started_at=started)
+
+    if action == "gui_type":
+        return make_result(job, action, data=desktop_type_text(p), started_at=started)
+
     if action == "proc_list":
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
@@ -1504,20 +1947,40 @@ def run_job(job_id, job, cancel_event):
         SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
         target = SCREENSHOTS_DIR / f"{job_id}.png"
         ps_target = str(target).replace("'", "''")
+        scope = str(p.get("scope") or "primary").lower()
+        monitor_index = p.get("monitor_index")
+        if scope not in ("primary", "all", "monitor"):
+            raise BridgeError("INVALID_SCREENSHOT_SCOPE", "scope must be primary, all, or monitor")
+        if scope == "monitor" and monitor_index is None:
+            raise BridgeError("MONITOR_INDEX_REQUIRED", "monitor_index is required when scope=monitor")
+        if scope == "all":
+            bounds_expr = "[System.Windows.Forms.SystemInformation]::VirtualScreen"
+        elif scope == "monitor":
+            bounds_expr = f"[System.Windows.Forms.Screen]::AllScreens[{int(monitor_index)}].Bounds"
+        else:
+            bounds_expr = "[System.Windows.Forms.Screen]::PrimaryScreen.Bounds"
         command = (
             "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
-            "$b=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds; "
+            f"$b={bounds_expr}; "
             "$bmp=New-Object System.Drawing.Bitmap $b.Width,$b.Height; "
             "$g=[System.Drawing.Graphics]::FromImage($bmp); "
             "$g.CopyFromScreen($b.Location,[System.Drawing.Point]::Empty,$b.Size); "
             f"$bmp.Save('{ps_target}',[System.Drawing.Imaging.ImageFormat]::Png); "
             "$g.Dispose(); $bmp.Dispose(); "
-            "$b.Width.ToString()+'x'+$b.Height.ToString()"
+            "$b.X.ToString()+','+$b.Y.ToString()+','+$b.Width.ToString()+'x'+$b.Height.ToString()"
         )
         result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
         if result["exit_code"] != 0 or not target.exists():
             raise BridgeError("SCREENSHOT_FAILED", result.get("stderr") or "screenshot capture failed")
-        return make_result(job, action, data={"path": str(target), "bytes": target.stat().st_size, "display": result.get("stdout", "").strip()}, started_at=started)
+        return make_result(
+            job, action,
+            data={
+                "path": str(target), "bytes": target.stat().st_size,
+                "display": result.get("stdout", "").strip(), "scope": scope,
+                "monitor_index": int(monitor_index) if monitor_index is not None else None,
+            },
+            started_at=started,
+        )
 
     # Raw fallback actions. These are intentionally retained only for compatibility/recovery.
     payload = job.get("payload")
