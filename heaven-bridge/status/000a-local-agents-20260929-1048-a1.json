@@ -1,0 +1,9 @@
+{
+  "id": "000a-local-agents-20260929-1048-a1",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:49:55.991868+00:00"
+}
