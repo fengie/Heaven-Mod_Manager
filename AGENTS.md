@@ -49,16 +49,16 @@ Unless the user explicitly says **read only**, **review only**, **summarize only
 - Preserve safety, ownership, verification, and repository policy while executing.
 - If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
 
-## Mandatory Chat-first execution mode
+## Mandatory no-Work-handoff execution mode
 
-Normal Chat is the default execution mode for agent work.
+Normal Chat is the preferred interactive surface. ChatGPT Work is deny-by-default.
 
-- Do not select, invoke, or silently fall back to ChatGPT Work, Codex, or another quota-metered agent execution surface unless the user explicitly requests that mode for the current task.
-- Work and Codex are distinct execution surfaces. Permission to use one does not imply permission to use the other.
-- Task complexity, prior historical use, available quota, autonomy level, swarm preset, reviewer/takeover status, or an agent failure never counts as implicit permission to escalate from normal Chat.
-- Agent Control cannot automatically create arbitrary normal ChatGPT conversations. When no normal-Chat session is already available/registered, fail closed and surface that routing limitation; never substitute a Codex worker.
-- A Codex usage-limit/quota error is a routing signal. Preserve unfinished work and wait for an explicit future Codex request; do not create recursive reviewer, takeover, replacement, or recovery workers that consume the same blocked provider.
-- Managers, reviewers, recovery agents, plugins, and successors must preserve this rule recursively.
+- Never invoke, suggest, request, or hand off to ChatGPT Work unless the user explicitly asks for Work mode for the current task. Permission is task-local and never carries forward to a later task, retry, reviewer, replacement, or sub-agent.
+- If the current ChatGPT session can execute the task with available tools, execute it in the current chat. Do not ask the user to switch modes merely because the task is long, multi-step, involves code/files/computer use, or one tool failed.
+- Agent Control must keep work moving on an authorized non-Work path when arbitrary normal-Chat spawning is unavailable. The direct local worker/Codex/Heaven Bridge/repository route may be used as a non-Work execution fallback instead of failing closed or handing work back.
+- Work and Codex are distinct execution surfaces. `executionMode="work"` is external-only and must never be silently translated into Codex; ordinary chat/direct/Codex execution must never escalate into Work.
+- A provider usage-limit/quota error is a routing signal. Preserve unfinished work and use another authorized non-Work path where possible; do not create retry storms on the same blocked provider.
+- Managers, reviewers, recovery agents, plugins, and successors must preserve this rule recursively and include it in dispatched prompts.
 
 ## Heaven Local Bridge execution policy
 
