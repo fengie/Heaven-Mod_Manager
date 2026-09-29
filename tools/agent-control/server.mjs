@@ -1004,8 +1004,35 @@ async function workerSnapshot(state = refreshState()) {
   });
 }
 
+function federationCountCoverage(snapshot) {
+  const providers = Array.isArray(snapshot?.providers) ? snapshot.providers : [];
+  const chatgpt = providers.find(item => item.id === "chatgpt") || null;
+  const incompleteProviders = [];
+  if (!chatgpt || chatgpt.discovery !== "automated" || chatgpt.status !== "online") {
+    incompleteProviders.push({
+      id: "chatgpt",
+      label: chatgpt?.label || "ChatGPT sessions",
+      discovery: chatgpt?.discovery || "unavailable",
+      status: chatgpt?.status || "missing",
+      reason: chatgpt?.last_error || (chatgpt?.discovery === "automated"
+        ? "automatic discovery is not currently online"
+        : "automatic ChatGPT session discovery is unavailable")
+    });
+  }
+  return {
+    authoritative: incompleteProviders.length === 0,
+    mode: incompleteProviders.length === 0 ? "authoritative" : "lower-bound",
+    incomplete_provider_ids: incompleteProviders.map(item => item.id),
+    incomplete_providers: incompleteProviders,
+    message: incompleteProviders.length
+      ? "Known-agent counts are a lower bound because not every ChatGPT session is discoverable."
+      : "All configured agent-session sources are being discovered automatically."
+  };
+}
+
 async function runtimeFederationSnapshot(state = refreshState()) {
   const snapshot = federationSnapshot(state.federation, { now: Date.now() });
+  snapshot.coverage = federationCountCoverage(snapshot);
   if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
 
   const health = await inspectHeavenBridge({ sync: false });
@@ -1022,6 +1049,7 @@ async function runtimeFederationSnapshot(state = refreshState()) {
       running: health.heartbeat?.running ?? null
     };
   }
+  snapshot.coverage = federationCountCoverage(snapshot);
   return snapshot;
 }
 
@@ -2814,7 +2842,8 @@ function telemetry(state, queue, federation = federationSnapshot(state.federatio
     integrationCandidates: queue.filter(item => item.state === "candidate").length,
     blockedIntegration: queue.filter(item => item.state === "preserved-noneligible").length,
     noChangeCompleted: queue.filter(item => item.state === "no-change").length,
-    federated: federation.counts
+    federated: federation.counts,
+    coverage: federation.coverage || federationCountCoverage(federation)
   };
 }
 
