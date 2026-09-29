@@ -24,7 +24,7 @@ Use this as the default computer-control path for `heaven`.
 - Protocol remains `chatgpt-heaven-bridge-v2` for compatibility.
 - Healthy implementation reports `data.worker_version: 4`.
 - `heaven` is the worker/execution machine. `heaven2` is the main/control machine and credential authority.
-- Keep secrets on `heaven2` unless runtime access is explicitly required. Never place secrets in queue/results/logs/commits.
+- Keep secrets on `heaven2` unless runtime access is explicitly required. Never place secrets in queue/results/logs/commits. When a GUI credential must be entered on heaven, use `stage-secret.ps1` on heaven2 and relay only the resulting opaque handle to `secret_type`; require `health.features.secret_input.available=true`.
 - Do not expose an unauthenticated raw shell to the public internet.
 - Do not use Remote Desktop Commander for heaven work unless the user explicitly authorizes it in the current request. A broken bridge is a bridge-repair task, not implicit permission to switch remote-control providers.
 
@@ -56,7 +56,7 @@ Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
 - synchronous/persistent processes: `proc_run`, `proc_start`, `proc_input`, `proc_read`, `proc_kill`, `proc_list_sessions`, `proc_list`, `job_output_read`
 - job control/waits: `job_status`, `cancel`, `wait_for` (`file_*`, `process_*`, `session_*`, and `window_*` conditions with bounded timeout/cancellation evidence)
-- desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`
+- desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`, `secret_type` (handle-only credential typing when the local heaven2 authority channel is available)
 - semantic UIA: `uia_tree`, `uia_find`, `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`; mutation searches fail closed on ambiguity/truncation, password values are never exposed, and `uia_set_value` requires explicit non-secret relay opt-in
 - clipboard: `clipboard_read`, `clipboard_write` (relay reads require explicit opt-in)
 - controller/agents: `controller_checkpoint`, `codex`
