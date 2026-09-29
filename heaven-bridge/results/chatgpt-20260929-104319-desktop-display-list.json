@@ -1,0 +1,27 @@
+{
+  "id": "chatgpt-20260929-104319-desktop-display-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:43:19.208Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:44:02.432082+00:00",
+  "finished_at": "2026-09-29T10:44:02.844722+00:00",
+  "host": "heaven",
+  "action": "display_list",
+  "data": [
+    {
+      "index": 0,
+      "device": "\\\\.\\DISPLAY6",
+      "primary": true,
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "work_x": 0,
+      "work_y": 0,
+      "work_width": 1920,
+      "work_height": 1032
+    }
+  ],
+  "job_hash": "9d8aa01ca714fb10818b9b975b2a42ce51f8edf3a6b7d0589fbb84286e59c60b"
+}
