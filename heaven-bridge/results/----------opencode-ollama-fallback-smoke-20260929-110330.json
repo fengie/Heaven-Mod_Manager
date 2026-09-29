@@ -1,0 +1,21 @@
+{
+  "id": "----------opencode-ollama-fallback-smoke-20260929-110330",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:03:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:03:24.138204+00:00",
+  "finished_at": "2026-09-29T11:03:24.569913+00:00",
+  "stdout": "",
+  "stderr": "At line:1 char:168\r\n+ ... xe'; $cfg='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'; @'; {\r\n+                                                                       ~\r\nNo characters are allowed after a here-string header but before the end of the line.\r\nAt line:2 char:12\r\n+   \"$schema\": \"https://opencode.ai/config.json\",\r\n+            ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:4 char:13\r\n+     \"ollama\": {\r\n+             ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:5 char:12\r\n+       \"npm\": \"@ai-sdk/openai-compatible\",\r\n+            ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:8 char:18\r\n+         \"baseURL\": \"http://127.0.0.1:11434/v1\"\r\n+                  ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:11 char:27\r\n+         \"qwen2.5-coder:7b\": {\r\n+                           ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:12 char:17\r\n+           \"name\": \"Qwen 2.5 Coder 7B local\"\r\n+                 ~\r\nUnexpected token ':' in expression or statement.\r\nAt line:18 char:1\r\n+ }; '@ | Set-Content -LiteralPath $cfg -Encoding UTF8; $env:OPENCODE_C ...\r\n+ ~\r\nUnexpected token '}' in expression or statement.\r\nAt line:18 char:427\r\n+ ... 2>&1 | Select-Object -Last 80; Write-Output ('EXIT=' + $LASTEXITCODE)\r\n+                                                        ~~~~~~~~~~~~~~~~~~\r\nThe string is missing the terminator: '.\r\nAt line:18 char:4\r\n+ }; '@ | Set-Content -LiteralPath $cfg -Encoding UTF8; $env:OPENCODE_C ...\r\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\nThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept \r\nassignments, such as a variable or a property.\r\n    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : UnexpectedCharactersAfterHereStringHeader\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------opencode-ollama-fallback-smoke-20260929-110330.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------opencode-ollama-fallback-smoke-20260929-110330.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1909,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ce60d6473e5e67b78383aa1a89d500f7ab567c3a257b5fc4a834899bc161249f"
+}
