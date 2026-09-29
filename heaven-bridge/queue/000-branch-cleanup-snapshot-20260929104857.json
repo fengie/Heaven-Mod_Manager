@@ -1,0 +1,13 @@
+{
+  "id": "000-branch-cleanup-snapshot-20260929104857",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:57.525Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$paths=@(\n  (Join-Path $env:USERPROFILE 'agent-control-panel\\tools\\agent-control\\agentctl.mjs'),\n  (Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods\\tools\\agent-control\\agentctl.mjs')\n)\n$ctl=$paths | Where-Object { Test-Path $_ } | Select-Object -First 1\nif(-not $ctl){ throw 'agentctl.mjs not found in known locations' }\n$status = node $ctl status 2>&1\n$snapshot = node $ctl snapshot 2>&1\nWrite-Output ('AGENTCTL='+$ctl)\nWrite-Output '---STATUS---'\n$status\nWrite-Output '---SNAPSHOT---'\n$snapshot",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
