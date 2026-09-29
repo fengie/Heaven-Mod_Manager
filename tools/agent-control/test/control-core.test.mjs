@@ -11,6 +11,7 @@ import {
   deploymentBatchCapacity,
   migrateControlState,
   planWorkflow,
+  providerCapacityActiveTerminationDecision,
   providerCapacityCircuit,
   interpretCommand,
   supportLanesFor,
@@ -315,6 +316,10 @@ test("operator stop intent dominates an authoritative zero exit", () => {
     lastMessage: "You've hit your usage limit. Try again later."
   }, 1), "capacity-blocked");
   assert.equal(classifyAuthoritativeExit({
+    status: "capacity-blocked",
+    lastMessage: "You've hit your usage limit. Try again later."
+  }, 0), "capacity-blocked");
+  assert.equal(classifyAuthoritativeExit({
     status: "running",
     lastMessage: "429 insufficient_quota"
   }, 1), "capacity-blocked");
@@ -329,6 +334,29 @@ test("operator stop intent dominates an authoritative zero exit", () => {
   }), false);
 });
 
+
+test("live hard-quota output is an immediate terminal termination decision", () => {
+  assert.deepEqual(providerCapacityActiveTerminationDecision({
+    status: "running",
+    lastMessage: "You've hit your usage limit. Upgrade to Pro or try again at Oct 4th, 2026 8:18 AM."
+  }), {
+    terminate: true,
+    status: "capacity-blocked",
+    failureClass: "provider-capacity",
+    completionEvidence: "provider-capacity",
+    reason: "provider-capacity-message-detected"
+  });
+
+  assert.equal(providerCapacityActiveTerminationDecision({
+    status: "running",
+    lastMessage: "Still working through the regression suite."
+  }).terminate, false);
+
+  assert.equal(providerCapacityActiveTerminationDecision({
+    status: "done",
+    lastMessage: "You've hit your usage limit."
+  }).terminate, false);
+});
 
 test("provider capacity circuit honors explicit reset and closes after a later successful worker", () => {
   const current = state();

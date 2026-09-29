@@ -361,3 +361,17 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rule:** A reported analyzer warning is a defect-class signal, not permission for a one-line-only repair. Inspect adjacent/sibling uses of the same API pattern and mechanically escalate the analyzer when the rule is a durable invariant.
 - **Trigger / evidence:** PR #261 repaired one cancellation-unaware deployment wait, but run 36606848564 later surfaced another xUnit1051 in the same integration-test boundary.
 - **Enforcement:** Integration tests treat xUnit1051 as an explicit error; bounded waits that offer a cancellation-token overload must pass the project test token. Reviewers reject a narrow analyzer repair that does not state which sibling cases were checked.
+
+## LR-021 — primary data surfaces outrank wrapping auxiliary controls
+
+- **Rule ID:** LR-021
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** resizable desktop UI, dense library/table pages, WPF layout
+- **Rule:** When a page's main purpose is a data library/table, the star-sized primary surface gets first claim on remaining window space. Auxiliary filters, bulk actions, summaries, and help text should stay single-row where practical and use horizontal overflow, trimming, or tooltips rather than wrapping into extra vertical rows that materially shrink the primary surface at supported window sizes.
+- **Trigger / evidence:** The v8.8.16 Mods-page compaction still left the windowed library feeling too small because controls around the DataGrid could occupy multiple rows.
+- **Rationale:** “Responsive” wrapping is not automatically good responsiveness on dense desktop tools; it can make the core workspace progressively smaller exactly when the window is already constrained.
+- **Enforcement:** Add structural/layout regressions for compact margins and overflow behavior on dense pages, and verify the actual windowed operator path when a suitable Windows UI surface is available.
+- **Related policy:** `AGENTS.md` bug-prevention protocol and operator-facing verification rule.
+- **Supersedes:** none
+- **Superseded by:** none

@@ -1,3 +1,11 @@
+# v8.8.18 — Maximum windowed Mods workspace
+
+- Make the Mods library consume nearly all available client space in windowed mode by cutting the page's outer padding from 60 horizontal pixels to 16 and tightening vertical spacing.
+- Collapse the title, status, help text, and maintenance actions into one compact header row.
+- Keep Filters and Bulk Actions on a single compact horizontal strip; at narrower widths the strip scrolls horizontally instead of wrapping into extra rows that steal library height.
+- Collapse the pending-change footer to one line and preserve the detailed plan as a tooltip.
+- Add a structural regression that locks in the compact windowed layout and prevents the earlier oversized margins/wrapping behavior from returning.
+
 # v8.8.17 — Reliable mod discovery after update restart
 
 - Preserve the canonical manager-home path explicitly across updater handoff and application restart so the first launch after an update reads the real Mods and State directories instead of an install-local empty library.

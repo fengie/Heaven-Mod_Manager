@@ -704,7 +704,7 @@ function localState(status) {
   if (value === "waiting") return "tool_wait";
   if (["blocked", "stale"].includes(value)) return "blocked";
   if (["done", "finished", "stopped"].includes(value)) return "done";
-  if (value === "failed") return "failed";
+  if (["failed", "capacity-blocked"].includes(value)) return "failed";
   if (["interrupted", "orphaned"].includes(value)) return "disconnected";
   return "idle";
 }

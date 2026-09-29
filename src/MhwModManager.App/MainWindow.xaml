@@ -194,26 +194,35 @@
 
             <TabItem Header="Mods">
                 <Grid Width="{Binding ActualWidth,RelativeSource={RelativeSource AncestorType=ContentPresenter}}" HorizontalAlignment="Stretch">
-                <Grid Margin="28,14,32,14">
+                <Grid Margin="8,6,8,6">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <Grid>
-                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
-                                <Border Margin="12,5,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Top">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold" Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
-                                </Border>
-                            </StackPanel>
-                            <TextBlock Text="Stage what you want active, inspect the result, then apply once." Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"/>
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
+                            <Border Margin="10,0,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Center">
+                                <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold" Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
+                            </Border>
                         </StackPanel>
-                        <WrapPanel Grid.Row="1" Margin="0,10,0,0" HorizontalAlignment="Left">
-                            <Button Content="Check Mod Info" Command="{Binding SyncMetadataCommand}" Style="{StaticResource QuietButton}" ToolTip="Refresh mod names, artwork, known relationships, and update availability."/>
-                            <Button Content="Bring In Manual Mods" Command="{Binding AdoptManualFilesCommand}" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
-                        </WrapPanel>
+                        <TextBlock Grid.Column="1"
+                                   Margin="14,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{StaticResource Muted}"
+                                   FontSize="12"
+                                   Text="Stage what you want active, inspect the result, then apply once."
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip="Stage what you want active, inspect the result, then apply once."/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Button Content="Check Mod Info" Command="{Binding SyncMetadataCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Refresh mod names, artwork, known relationships, and update availability."/>
+                            <Button Content="Bring In Manual Mods" Command="{Binding AdoptManualFilesCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
+                        </StackPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Margin="0,14,0,10" Style="{StaticResource SubtleCard}">
+                    <Border Grid.Row="1" Margin="0,6,0,6" Style="{StaticResource SubtleCard}" Padding="8">
                         <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
@@ -244,28 +253,32 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                            <WrapPanel x:Name="ModLibraryToolbar" Grid.Row="1" Margin="0,10,0,0" HorizontalAlignment="Left">
-                                <StackPanel Margin="0,0,24,0">
-                                    <TextBlock Text="FILTERS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
-                                    <WrapPanel>
-                                            <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" ToolTip="Show every mod in this library."/>
-                                            <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" ToolTip="Show mods that are enabled in the pending setup."/>
-                                            <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" ToolTip="Show only unapplied changes."/>
-                                            <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" ToolTip="Show mods with detected Nexus updates."/>
-                                            <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" ToolTip="Show mods with saved crash or graphics-problem evidence."/>
-                                            <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" ToolTip="Show mods that should be checked again after a game update."/>
-                                            <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" ToolTip="Show enabled mods whose files are completely replaced by other enabled mods."/>
-                                    </WrapPanel>
+                            <ScrollViewer x:Name="ModLibraryToolbar"
+                                          Grid.Row="1"
+                                          Margin="0,6,0,0"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          CanContentScroll="False">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="FILTERS" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show every mod in this library."/>
+                                        <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show mods that are enabled in the pending setup."/>
+                                        <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show only unapplied changes."/>
+                                        <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show mods with detected Nexus updates."/>
+                                        <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show mods with saved crash or graphics-problem evidence."/>
+                                        <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show mods that should be checked again after a game update."/>
+                                        <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show enabled mods whose files are completely replaced by other enabled mods."/>
+                                    </StackPanel>
+                                    <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
+                                    <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Enable Visible Mods" Command="{Binding EnableSelectedCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Turn on every mod currently shown by the search and filters."/>
+                                        <Button Content="Disable Visible Mods" Command="{Binding DisableSelectedCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Turn off every mod currently shown by the search and filters."/>
+                                        <Button Content="Refresh Mod Info" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Re-read the files and information for every mod currently shown."/>
+                                    </StackPanel>
                                 </StackPanel>
-                                <StackPanel>
-                                    <TextBlock Text="BULK ACTIONS · VISIBLE MODS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
-                                    <WrapPanel>
-                                        <Button Content="Enable Visible Mods" Command="{Binding EnableSelectedCommand}" ToolTip="Turn on every mod currently shown by the search and filters."/>
-                                        <Button Content="Disable Visible Mods" Command="{Binding DisableSelectedCommand}" ToolTip="Turn off every mod currently shown by the search and filters."/>
-                                        <Button Content="Refresh Mod Info" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" ToolTip="Re-read the files and information for every mod currently shown."/>
-                                    </WrapPanel>
-                                </StackPanel>
-                            </WrapPanel>
+                            </ScrollViewer>
                         </Grid>
                     </Border>
 
@@ -443,18 +456,21 @@
                             </StackPanel>
                         </Border>
                     </Grid>
-                    <Border Grid.Row="3" Margin="0,8,0,0" Style="{StaticResource SubtleCard}" Padding="10">
+                    <Border Grid.Row="3" Margin="0,6,0,0" Style="{StaticResource SubtleCard}" Padding="6,5">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Foreground="{StaticResource Text}" FontSize="12" FontWeight="SemiBold" Text="{Binding StagedSummary}"/>
-                                <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Margin="0,3,0,0" Text="{Binding PlanPreviewText}" TextWrapping="Wrap"/>
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{StaticResource Text}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding StagedSummary}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding PlanPreviewText}"/>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files."/>
+                                <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed."/>
+                                <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter."/>
                             </StackPanel>
-                            <WrapPanel Grid.Column="1" Margin="20,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" ToolTip="See exactly what would change without editing game files."/>
-                                <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed."/>
-                                <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Safely install your pending mod changes. Ctrl+Enter."/>
-                            </WrapPanel>
                         </Grid>
                     </Border>
                 </Grid>
