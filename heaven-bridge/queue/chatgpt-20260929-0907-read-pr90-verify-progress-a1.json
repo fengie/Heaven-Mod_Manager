@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0907-read-pr90-verify-progress-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-0905-pr90-full-verify-windows-env-a1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 200000
+  },
+  "created_at": "2026-09-29T09:07:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
