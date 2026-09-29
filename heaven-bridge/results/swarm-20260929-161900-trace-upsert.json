@@ -1,0 +1,16 @@
+{
+  "id": "swarm-20260929-161900-trace-upsert",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:19:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:16:28.286360+00:00",
+  "finished_at": "2026-09-29T16:16:28.289414+00:00",
+  "host": "heaven",
+  "action": "fs_edit",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\src\\MhwModManager.Filesystem\\GameProfileRegistry.cs",
+    "replacements": 1
+  },
+  "job_hash": "541fc34b3a7e909dac6104251f02ebb8ae1a50d4c418083a5398f82b1a4ebb1f"
+}
