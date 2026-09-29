@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-120230-runner1-meta",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:02:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:03:03.892300+00:00",
+  "finished_at": "2026-09-29T12:03:03.893532+00:00",
+  "host": "heaven",
+  "action": "fs_read",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\.runner",
+    "offset": 0,
+    "length": 11,
+    "total_lines": 11,
+    "next_offset": 11,
+    "eof": true,
+    "content": "﻿{\n  \"agentId\": 21,\n  \"agentName\": \"heaven\",\n  \"poolId\": 1,\n  \"poolName\": \"Default\",\n  \"serverUrl\": \"https://pipelinesghubeus8.actions.githubusercontent.com/6CIbgq1pauGLA6hVshUStqZoyODrq4erRZWZ6nE0f1erjT4cSF/\",\n  \"gitHubUrl\": \"https://github.com/fengie/mhw-mods\",\n  \"workFolder\": \"_work\",\n  \"useV2Flow\": true,\n  \"serverUrlV2\": \"https://broker.actions.githubusercontent.com/\"\n}"
+  },
+  "job_hash": "203ae1a2772d7f3d430698d0c1a18fc04e16053ba68db34f2a6dc2fe87d7f22b"
+}
