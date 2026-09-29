@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0916-issue84-osfix2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:16:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 300,
+    "command": "git fetch origin main && git worktree add -b fix/release-gate-windows-detection-20260929b C:\\Users\\Xxkan\\mhw-worktrees\\issue84-osfix2 origin/main && git -C C:\\Users\\Xxkan\\mhw-worktrees\\issue84-osfix2 rev-parse HEAD"
+  }
+}
