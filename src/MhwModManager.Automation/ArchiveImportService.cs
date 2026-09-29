@@ -8,6 +8,12 @@ namespace MhwModManager.Automation;
 /// stages, normalizes and atomically publishes the source folder before refreshing the catalog.
 /// Live game files are never touched by this workflow.
 /// </summary>
+public sealed record FomodImportPreparation(
+    string StagingPath,
+    string DestinationPath,
+    string DisplayName,
+    FomodInstallerService Installer);
+
 public sealed class ArchiveImportService(ArchiveInspector archive, CatalogService catalog, string modsRoot)
 {
     public async Task<ArchiveImportResult> ImportAsync(string archivePath, CancellationToken ct = default)
@@ -29,6 +35,58 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         Directory.Move(staging, destination);
         await catalog.RefreshFoldersAsync(ct);
         return new(destination, Path.GetFileName(destination));
+    }
+
+    public async Task<FomodImportPreparation> PrepareFomodAsync(string archivePath, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={Path.GetFileName(archivePath)}");
+        if (string.IsNullOrWhiteSpace(archivePath)) throw new ArgumentException("Archive path is required.", nameof(archivePath));
+        var info = await archive.InspectAsync(archivePath, ct);
+        if (info.HasSuspiciousPaths) throw new InvalidDataException("Archive contains unsafe absolute/traversal/device paths.");
+
+        var displayName = Path.GetFileNameWithoutExtension(archivePath);
+        var destination = UniqueDirectory(Path.Combine(modsRoot, displayName));
+        var staging = Path.Combine(modsRoot, $".fomod-{Guid.NewGuid():N}.staging");
+        try
+        {
+            await archive.ExtractSafelyAsync(archivePath, staging, modsRoot, ct);
+            await Task.Run(() => NormalizeSingleWrapper(staging), ct);
+            if (!FomodInstallerService.HasInstaller(staging))
+                throw new InvalidDataException("Archive does not contain exactly one supported FOMOD installer.");
+            return new(staging, destination, Path.GetFileName(destination), new FomodInstallerService(staging));
+        }
+        catch
+        {
+            try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { }
+            throw;
+        }
+    }
+
+    public async Task<ArchiveImportResult> CommitFomodAsync(
+        FomodImportPreparation preparation,
+        IReadOnlySet<string> selected,
+        GameProfile game,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"destination={preparation.DestinationPath}");
+        try
+        {
+            await preparation.Installer.InstallAsync(selected, game, preparation.DestinationPath, ct);
+            await catalog.RefreshFoldersAsync(ct);
+            return new(preparation.DestinationPath, preparation.DisplayName);
+        }
+        finally
+        {
+            try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveImportService is intentionally consumed as an injectable instance workflow service.")]
+    public Task CancelFomodAsync(FomodImportPreparation preparation)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"staging={preparation.StagingPath}");
+        try { if (Directory.Exists(preparation.StagingPath)) Directory.Delete(preparation.StagingPath, true); } catch { }
+        return Task.CompletedTask;
     }
 
     private static string UniqueDirectory(string path)
