@@ -314,3 +314,19 @@ Worker v4 adds bounded semantic control through Windows UI Automation. Use `uia_
 
 Semantic actions fail closed when multiple controls match unless `first_match=true` is explicit, and mutation actions also fail closed if `max_nodes` truncates the search before uniqueness can be proven. Tree depth, node count, text lengths, and waits are bounded. Element descriptors never include ValuePattern text. Password controls are marked with `is_password=true`, and `uia_set_value` refuses them because relay-carried secret values are not credential-safe. `uia_set_value` additionally requires `allow_relay_text=true` so callers explicitly acknowledge that the supplied non-secret text is persisted in the private relay. Coordinate mouse/keyboard actions remain available as a fallback.
 
+
+
+## Credential-safe GUI secret input (worker v5)
+
+GitHub relay JSON is persisted, so credentials must **never** be placed in `gui_type`, `clipboard_write`, `uia_set_value`, queue params, result JSON, logs, or controller checkpoints. Worker v5 adds `gui_type_secret`, which carries only an opaque one-time handle plus an exact top-level window `hwnd`.
+
+The credential value stays out-of-band:
+
+1. On `heaven2`, create a dedicated SMB share for one-time credential envelopes. Require SMB encryption on the share and restrict its ACL to the credential-authority account and the `heaven` worker identity.
+2. On `heaven`, configure `HEAVEN_BRIDGE_SECRET_INBOX=\\heaven2\<encrypted-share>` and `HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED=1`, then restart the bridge worker. `health.features.secret_input.available` remains false and `gui_type_secret` is not advertised unless both configuration and inbox availability are present.
+3. Use `heaven-bridge/New-HeavenSecretEnvelope.ps1 -InboxPath <UNC> -Hwnd <window-handle>` on `heaven2`. It prompts with `Read-Host -AsSecureString`, verifies the active SMB connection is encrypted, writes a short-lived destination/HWND-bound envelope, and prints only non-secret metadata: `handle`, `hwnd`, destination, and expiry.
+4. Submit `gui_type_secret` through the normal private relay using only `{"handle":"<opaque-hex>","hwnd":12345}`. The worker validates/focuses that exact HWND before consuming the envelope, atomically claims the handle, persists a local replay guard, validates destination/purpose/TTL/target binding, deletes the envelope, injects the value directly with Win32 `SendInput`, and returns only `{"consumed":true,"typed":true}`.
+
+A claimed handle is single-use even if validation or input later fails. Re-create a fresh handle rather than retrying a consumed one. The envelope TTL is bounded (default helper TTL 120 seconds; worker maximum 300 seconds unless explicitly lowered/raised within the hard cap). Secret values are never copied to clipboard or passed through the UIA PowerShell environment.
+
+The bridge test suite includes canary checks ensuring the secret value is absent from canonical relay jobs and returned result payloads, plus expiry, destination-binding, target-binding, unavailable-channel, relay-value rejection, and replay tests.

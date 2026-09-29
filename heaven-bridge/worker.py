@@ -16,7 +16,7 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 4
+WORKER_VERSION = 5
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
@@ -74,6 +74,15 @@ UIA_ACTIONS = {
     "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
 }
 
+SECRET_ENVELOPE_SCHEMA = "heaven-secret-envelope-v1"
+SECRET_PURPOSE = "gui_type_secret"
+SECRET_INBOX_ENV = "HEAVEN_BRIDGE_SECRET_INBOX"
+SECRET_INBOX_ENCRYPTED_ENV = "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED"
+SECRET_MAX_TTL_SECONDS = max(30, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_TTL", "300")), 900))
+SECRET_MAX_FILE_BYTES = max(1024, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_FILE_BYTES", "65536")), 262144))
+SECRET_MAX_CHARACTERS = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_CHARACTERS", "10000")), 100000))
+SECRET_CONSUMED_DIR = STATE / "secret-consumed"
+
 DIRECT_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "job_output_read", "controller_checkpoint",
     "fs_read", "fs_read_many", "fs_write", "fs_edit", "fs_mkdir",
@@ -83,7 +92,7 @@ DIRECT_ACTIONS = {
     "proc_list_sessions", "proc_list", "wait_for", "screenshot", "display_list",
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
-    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type", "gui_type_secret",
     *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
@@ -1676,6 +1685,193 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def secret_channel_status():
+    raw = str(os.environ.get(SECRET_INBOX_ENV) or "").strip()
+    encrypted = str(os.environ.get(SECRET_INBOX_ENCRYPTED_ENV) or "").strip() == "1"
+    available = False
+    if raw and encrypted:
+        try:
+            available = Path(os.path.expandvars(os.path.expanduser(raw))).is_dir()
+        except OSError:
+            available = False
+    return {
+        "available": available,
+        "transport": "encrypted-smb-inbox-v1" if available else "not_configured",
+        "relay_secret_values_allowed": False,
+        "single_use": True,
+        "destination_bound": True,
+        "target_bound": True,
+    }
+
+
+def advertised_actions():
+    actions = set(DIRECT_ACTIONS)
+    if not secret_channel_status()["available"]:
+        actions.discard("gui_type_secret")
+    return sorted(actions)
+
+
+def secret_target_binding(hwnd, destination=None):
+    try:
+        hwnd_value = int(hwnd)
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a numeric params.hwnd") from exc
+    if hwnd_value <= 0:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a positive params.hwnd")
+    host = str(destination or os.environ.get("COMPUTERNAME") or "heaven").strip().casefold()
+    if not host:
+        raise BridgeError("SECRET_DESTINATION_INVALID", "secret destination host is empty")
+    material = f"{SECRET_PURPOSE}|{host}|hwnd:{hwnd_value}".encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
+
+
+def _parse_secret_timestamp(value, field):
+    if not value:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", f"secret envelope is missing {field}")
+    text = str(value).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", f"secret envelope {field} must be ISO-8601") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _secret_inbox_path():
+    status = secret_channel_status()
+    if not status["available"]:
+        raise BridgeError(
+            "SECRET_CHANNEL_UNAVAILABLE",
+            "credential-safe GUI input requires a locally configured encrypted secret inbox",
+        )
+    return Path(os.path.expandvars(os.path.expanduser(str(os.environ.get(SECRET_INBOX_ENV)))))
+
+
+def _validate_secret_handle(handle):
+    value = str(handle or "").strip()
+    if not re.fullmatch(r"[A-Fa-f0-9]{32,120}", value):
+        raise BridgeError("SECRET_HANDLE_INVALID", "secret handle must be a 32-120 character hexadecimal opaque id")
+    return value.lower()
+
+
+def consume_secret_envelope(handle, hwnd, current=None):
+    handle = _validate_secret_handle(handle)
+    inbox = _secret_inbox_path()
+    envelope = inbox / f"{handle}.json"
+    claim = inbox / f".claim-{handle}-{os.getpid()}-{uuid.uuid4().hex}.json"
+
+    if (SECRET_CONSUMED_DIR / f"{handle}.used").exists():
+        raise BridgeError("SECRET_REPLAYED", "secret handle has already been consumed")
+
+    try:
+        os.replace(envelope, claim)
+    except FileNotFoundError as exc:
+        raise BridgeError("SECRET_HANDLE_NOT_FOUND", "secret handle is missing or already consumed") from exc
+    except OSError as exc:
+        raise BridgeError("SECRET_CLAIM_FAILED", "could not atomically claim the secret envelope") from exc
+
+    SECRET_CONSUMED_DIR.mkdir(parents=True, exist_ok=True)
+    marker = SECRET_CONSUMED_DIR / f"{handle}.used"
+    try:
+        try:
+            with marker.open("x", encoding="utf-8") as f:
+                f.write(json.dumps({"handle": handle, "claimed_at": now()}, separators=(",", ":")))
+        except FileExistsError as exc:
+            raise BridgeError("SECRET_REPLAYED", "secret handle has already been consumed") from exc
+        except OSError as exc:
+            raise BridgeError("SECRET_REPLAY_GUARD_FAILED", "could not persist the secret replay guard") from exc
+
+        try:
+            size = claim.stat().st_size
+        except OSError as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "claimed secret envelope is unreadable") from exc
+        if size <= 0 or size > SECRET_MAX_FILE_BYTES:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope size is outside the allowed budget")
+
+        try:
+            doc = json.loads(claim.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope is not valid UTF-8 JSON") from exc
+        if not isinstance(doc, dict):
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope must be a JSON object")
+        if doc.get("schema") != SECRET_ENVELOPE_SCHEMA:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "unsupported secret envelope schema")
+        if str(doc.get("handle") or "").strip().lower() != handle:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope handle does not match its opaque id")
+        if str(doc.get("purpose") or "") != SECRET_PURPOSE:
+            raise BridgeError("SECRET_PURPOSE_MISMATCH", "secret envelope purpose does not match gui_type_secret")
+
+        expected_host = str(os.environ.get("COMPUTERNAME") or "heaven").strip().casefold()
+        destination = str(doc.get("destination") or "").strip().casefold()
+        if destination != expected_host:
+            raise BridgeError("SECRET_DESTINATION_MISMATCH", "secret envelope is bound to a different destination host")
+
+        expected_binding = secret_target_binding(hwnd, expected_host)
+        actual_binding = str(doc.get("target_binding") or "").strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", actual_binding) or not hmac.compare_digest(actual_binding, expected_binding):
+            raise BridgeError("SECRET_TARGET_MISMATCH", "secret envelope is bound to a different GUI target")
+
+        created = _parse_secret_timestamp(doc.get("created_at"), "created_at")
+        expires = _parse_secret_timestamp(doc.get("expires_at"), "expires_at")
+        if expires <= created:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope expiration must be after creation")
+        ttl = (expires - created).total_seconds()
+        if ttl > SECRET_MAX_TTL_SECONDS:
+            raise BridgeError("SECRET_TTL_TOO_LONG", "secret envelope TTL exceeds the configured maximum")
+
+        current = current or utcnow()
+        if (created - current).total_seconds() > FUTURE_SKEW_SECONDS:
+            raise BridgeError("SECRET_FROM_FUTURE", "secret envelope creation time is too far in the future")
+        if current >= expires:
+            raise BridgeError("SECRET_EXPIRED", "secret envelope has expired")
+
+        value = doc.get("value")
+        if not isinstance(value, str) or not value:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope value must be a non-empty string")
+        if len(value) > SECRET_MAX_CHARACTERS:
+            raise BridgeError("SECRET_TOO_LARGE", "secret value exceeds the configured character budget")
+        return value
+    finally:
+        try:
+            claim.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def desktop_type_secret(p):
+    if not isinstance(p, dict):
+        raise BridgeError("INVALID_SECRET_INPUT_PARAMS", "gui_type_secret params must be an object")
+    unknown = sorted(set(p) - {"handle", "hwnd"})
+    if unknown:
+        if any(CONTROLLER_SECRET_KEY_RE.search(str(key)) or str(key).lower() in ("text", "value") for key in unknown):
+            raise BridgeError("SECRET_RELAY_VALUE_BLOCKED", "secret values must never be included in GitHub relay params")
+        raise BridgeError("INVALID_SECRET_INPUT_PARAMS", "gui_type_secret accepts only handle and hwnd", {"fields": unknown})
+
+    handle = _validate_secret_handle(p.get("handle"))
+    try:
+        hwnd = int(p.get("hwnd"))
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a numeric params.hwnd") from exc
+    if hwnd <= 0:
+        raise BridgeError("SECRET_TARGET_REQUIRED", "gui_type_secret requires a positive params.hwnd")
+
+    if not secret_channel_status()["available"]:
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "credential-safe GUI input is not configured")
+
+    # Resolve/focus the exact target before consuming the one-time secret.
+    desktop_focus_window({"hwnd": hwnd})
+    value = consume_secret_envelope(handle, hwnd)
+    try:
+        desktop_type_text({"text": value})
+    finally:
+        value = None
+    return {"consumed": True, "typed": True}
+
+
+
 def _validate_uia_request(p, operation):
     if not isinstance(p, dict):
         raise BridgeError("INVALID_UIA_REQUEST", "UI Automation params must be an object")
@@ -1933,8 +2129,9 @@ def run_job(job_id, job, cancel_event):
     started = now()
 
     if action == "health":
+        secret_status = secret_channel_status()
         data = {
-            "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": sorted(DIRECT_ACTIONS),
+            "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": advertised_actions(),
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
             "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
@@ -1950,7 +2147,7 @@ def run_job(job_id, job, cancel_event):
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
                 "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
-                "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
+                "clipboard_relay_requires_opt_in": True, "credential_safe_gui_input": secret_status["available"], "public_raw_shell": False,
             },
             "capability_schema": 2,
             "features": {
@@ -1961,10 +2158,7 @@ def run_job(job_id, job, cancel_event):
                     "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
                     "password_set_value_allowed": False, "set_value_requires_relay_opt_in": True,
                 },
-                "secret_input": {
-                    "version": 1, "available": False, "transport": "not_configured",
-                    "relay_secret_values_allowed": False,
-                },
+                "secret_input": {"version": 1, **secret_status},
             },
         }
         return make_result(job, action, data=data, started_at=started)
@@ -2260,6 +2454,9 @@ def run_job(job_id, job, cancel_event):
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
 
+    if action == "gui_type_secret":
+        return make_result(job, action, data=desktop_type_secret(p), started_at=started)
+
     if action in UIA_ACTIONS:
         return make_result(job, action, data=desktop_uia(p, action), started_at=started)
 
@@ -2445,7 +2642,7 @@ def heartbeat(force=False):
     body = {
         "host": os.environ.get("COMPUTERNAME", "heaven"), "pid": os.getpid(), "worker_version": WORKER_VERSION,
         "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
-        "capabilities": sorted(DIRECT_ACTIONS),
+        "capabilities": advertised_actions(),
     }
     try:
         publish_json("heaven-bridge/status/heartbeat.json", body, "heaven bridge heartbeat", max_attempts=3)

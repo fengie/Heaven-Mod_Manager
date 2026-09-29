@@ -29,7 +29,8 @@ Use the existing Heaven Local Bridge relay and worker. This skill extends, rathe
 - `gui_mouse_click`: click at current or supplied coordinates; `count` is bounded.
 - `gui_mouse_scroll`: wheel input; `horizontal:true` for horizontal scrolling.
 - `gui_key`: named key input with optional modifiers. Use for shortcuts and navigation.
-- `gui_type`: Unicode text injection with Win32 SendInput.
+- `gui_type`: Unicode text injection with Win32 SendInput for non-secret text.
+- `gui_type_secret`: credential-safe Win32 text injection using an opaque one-time handle plus exact `hwnd`. It is advertised only when the encrypted heaven2 secret inbox is configured; never put the credential itself in relay params.
 - `window_focus`: restore/focus a window.
 - `window_move`: move/resize a window.
 - `window_state`: hide, normal, maximize, show, minimize, or restore.
@@ -53,7 +54,7 @@ Mutation actions fail closed on ambiguous matches and on truncated searches unle
 
 ## Safety and privacy invariants
 
-The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state.
+The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state. For credential entry, use `New-HeavenSecretEnvelope.ps1` on `heaven2` and relay only the returned opaque handle plus exact HWND to `gui_type_secret`. The out-of-band SMB inbox must be encrypted and access-restricted.
 
 `clipboard_read` is privacy-sensitive because its returned text traverses the private relay. Do not use it speculatively. Require an explicit clipboard-read intent and set `allow_relay:true` only for that operation.
 
