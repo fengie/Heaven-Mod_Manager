@@ -41,6 +41,7 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 24. **Exact identity beats labels.** Folder names, shortcut names, UI titles, branch names, cached status, and chat summaries are hints; verify canonical revision/build/path/hash/process/ref identity.
 25. **Primary data surfaces get first claim on constrained space.** On dense desktop/table/library pages, keep the core data workspace star/fill-sized and prevent auxiliary filters/actions/help from consuming extra vertical rows at supported window sizes; prefer horizontal overflow, trimming, tooltips, or compact controls and verify the real constrained/windowed path.
 26. **Sequential durable IDs need collision-safe allocation.** Concurrent writers must not infer the same next integer from stale state; serialize/reserve allocation or use collision-resistant IDs, and make integration validate uniqueness before canonicalization.
+27. **A blocked direct path should trigger research and wraparound, not premature surrender.** Prove the limitation with current evidence, research authoritative alternatives, and when the underlying outcome remains technically achievable, use or build the narrowest authorized adapter/wrapper/bridge/local replacement; verify the original acceptance criteria end to end and never bypass legitimate auth, consent, safety, or governance boundaries.
 
 ## Future-project rule
 
