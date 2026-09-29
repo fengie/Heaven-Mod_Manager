@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.19</Version>
-    <InformationalVersion>8.8.19-auto-mod-foundation</InformationalVersion>
+    <Version>8.8.20</Version>
+    <InformationalVersion>8.8.20-auto-populate</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
