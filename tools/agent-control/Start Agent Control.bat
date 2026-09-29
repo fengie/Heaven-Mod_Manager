@@ -15,6 +15,13 @@ if exist "%~dp0Install-AgentControlShortcut.ps1" (
   )
 )
 
+if exist "%~dp0Install-StartupRestore.ps1" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-StartupRestore.ps1" -RepoRoot "%AGENT_CONTROL_REPO%" >nul
+  if errorlevel 1 (
+    echo WARNING: Could not install or verify automatic startup restore.
+  )
+)
+
 if not "%AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP%"=="1" (
   if exist "%~dp0..\..\heaven-bridge\bootstrap.ps1" (
     echo Ensuring Heaven Local Bridge is installed on heaven2...
