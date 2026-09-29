@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104100-main-bridge-verify-b1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:41:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:39:03.453597+00:00",
+  "finished_at": "2026-09-29T10:39:05.281201+00:00",
+  "stdout": "HEAD is now at 38772a9 chore: run one-shot obsolete branch cleanup\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nPreparing worktree (detached HEAD 38772a9)\n[Errno 2] No such file or directory: 'C:\\\\Users\\\\Xxkan\\\\HeavenBridgeMainVerify-104100\\\\heaven-bridge\\\\worker.py'py_compile failed\r\nAt line:1 char:529\r\n+ ... orker.py'); if($LASTEXITCODE -ne 0){throw 'py_compile failed'}; pytho ...\r\n+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (py_compile failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : py_compile failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104100-main-bridge-verify-b1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104100-main-bridge-verify-b1.stderr.log",
+    "stdout_bytes": 67,
+    "stderr_bytes": 579,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2a8aa4ac80759612b4e17f0029fe442e0e9a40d2abd1b11720297a5c0dcfa58c"
+}
