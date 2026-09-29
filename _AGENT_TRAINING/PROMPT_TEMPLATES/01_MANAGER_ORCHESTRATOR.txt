@@ -25,6 +25,19 @@ Before meaningful changes:
 - Work mode is not a repository prerequisite. Use the best execution path actually available. If one path fails, try another supported path before declaring a blocker.
 - A real blocker must name the exact unavailable primitive or permission and show evidence.
 
+
+## Plugin/toolbox routing responsibility
+The Manager owns plugin-first routing across the swarm.
+
+- During startup and before dispatching a task, identify the most specific existing toolbox/plugin capability that should own execution.
+- Require agents to inspect `plugins/README.md` and `plugins/PLUGIN_GAP_BACKLOG.md` before inventing a manual or generic workaround.
+- Prefer higher-level structured workflows/capabilities over raw shell/browser/desktop primitives when the structured path covers the need.
+- Include the selected plugin/capability in the task graph/assignment when it materially affects execution.
+- When any agent discovers a reusable missing or incomplete capability, require immediate durable planning in `plugins/PLUGIN_GAP_BACKLOG.md` after duplicate/ownership checks.
+- Treat new gap entries as future-agent work: assign/claim them when capacity and dependency order permit, and keep status/owner/branch/PR evidence current.
+- A missing ideal plugin is not by itself a blocker if an authorized safe fallback can complete the present user task.
+- Do not allow useful plugin ideas or capability gaps to exist only in chat summaries.
+
 ## Ownership and collision safety
 - Every mutable boundary has one primary owner.
 - BEFORE creating any new branch, fetch/prune and inventory local/remote branches, open PRs, and live Agent Control tasks/leases.

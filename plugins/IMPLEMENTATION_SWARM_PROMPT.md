@@ -25,13 +25,25 @@ Before editing anything, every participating agent must read and obey:
 7. `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`
 8. `_AGENT_CONTEXT/LEARNED_RULES.md`
 9. `plugins/README.md`
-10. `heaven-bridge/README.md`
+10. `plugins/PLUGIN_GAP_BACKLOG.md`
+11. `heaven-bridge/README.md`
 
 Repository state beats stale prompt/chat assumptions.
 
 `main` is the canonical integration branch. Task branches/worktrees are temporary. Completed work must be validated, reconciled with current `main`, integrated, pushed, verified on remote `main`, and the completed temporary branch deleted when safe.
 
 Do not leave finished work parked on side branches for some later cleanup agent.
+
+
+## Plugin-first intake rule
+
+Treat every incoming task as both execution work and a chance to improve the toolbox.
+
+- Resolve the task to an existing plugin/capability before inventing raw/manual machinery.
+- Check active plugin branches/PRs and `plugins/PLUGIN_GAP_BACKLOG.md` before creating a new implementation lane.
+- If the needed reusable capability is absent or materially incomplete, add/update an implementation-ready backlog entry immediately, then continue the current task using the safest authorized fallback if one exists.
+- Prefer extending the natural owning plugin/control-plane boundary over creating a new plugin. Create a new plugin only when ownership/security/lifecycle boundaries are genuinely distinct.
+- When implementing a backlog item, update its status/owner/evidence and close it only after verified remote-`main` integration.
 
 ## Canonical plugin location
 

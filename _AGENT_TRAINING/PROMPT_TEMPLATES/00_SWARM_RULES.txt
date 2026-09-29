@@ -27,6 +27,16 @@ Before meaningful changes:
 - Work mode is not a repository prerequisite. Use the best execution path actually available. If one path fails, try another supported path before declaring a blocker.
 - A real blocker must name the exact unavailable primitive or permission and show evidence.
 
+
+## Plugin-first toolbox rule
+- Before using generic shell/browser/desktop/API fallbacks, inspect the available plugin/toolbox capabilities for the task and read `plugins/README.md` plus `plugins/PLUGIN_GAP_BACKLOG.md`.
+- Route work through the narrowest purpose-built implemented plugin/capability. Prefer structured high-level workflows over raw primitives when they preserve the required safety and evidence.
+- For `heaven`, prefer the most specific Heaven toolbox capability, then structured Heaven Local Bridge actions. Do not use Remote Desktop Commander unless the user explicitly authorizes it in the current request.
+- If a reusable capability is missing or materially incomplete, search existing packages, branches, PRs, and backlog entries for duplicates, then immediately create/update a durable implementation plan in `plugins/PLUGIN_GAP_BACKLOG.md`.
+- A gap plan must state the triggering use case, owner/new-plugin decision, capability/API contract, security boundary, dependencies, acceptance tests, priority, and status.
+- Continue the user's current task with the safest authorized fallback when possible; plugin-gap capture is mandatory but must not become an excuse to stop execution.
+- Never leave reusable plugin ideas only in chat or transient agent state.
+
 ## Ownership and collision safety
 - Every mutable boundary has one primary owner.
 - BEFORE creating any new branch, fetch/prune and inventory local/remote branches, open PRs, and live Agent Control tasks/leases.
