@@ -10,6 +10,9 @@ $SourceWorker = Join-Path $RepoRoot 'heaven-bridge\worker.py'
 $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $TaskName = 'Heaven Local Bridge'
+$GitStateHelper = Join-Path $PSScriptRoot 'git-state.ps1'
+
+. $GitStateHelper
 
 function Test-IsElevated {
     $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -81,7 +84,7 @@ if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
 } else {
     Invoke-GitChecked @('fetch', 'origin', $Branch)
 
-    $currentBranch = (& git -C $RepoRoot branch --show-current).Trim()
+    $currentBranch = Get-HeavenBridgeGitCurrentBranch -Repository $RepoRoot
     if ($LASTEXITCODE -ne 0) { throw 'Unable to read relay branch.' }
 
     $trackedDirty = @(& git -C $RepoRoot status --porcelain --untracked-files=no)
