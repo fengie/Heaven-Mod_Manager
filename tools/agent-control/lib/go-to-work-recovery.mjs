@@ -94,7 +94,7 @@ export function goToWorkRecoveryCandidate(agent, {
     || agent?.go_to_work_recovery_last_checked_at
   );
   const cooldown = Math.max(5_000, Number(cooldownMs) || 60_000);
-  if (!explicitPending && lastCheckedMs !== null && Number(now) - lastCheckedMs < cooldown) {
+  if (lastCheckedMs !== null && Number(now) - lastCheckedMs < cooldown) {
     return { eligible: false, reason: "cooldown", url };
   }
 
