@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-163500-pr238-agent-control-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'; if (-not (Test-Path (Join-Path $repo '.git'))) { throw \"repo missing: $repo\" }; git -C $repo fetch origin 3706cbd1861f2d6a6d482e64164e8eec44835659; if ($LASTEXITCODE -ne 0) { throw 'fetch failed' }; $wt=Join-Path $env:TEMP 'mhw-pr238-3706cbd'; if (Test-Path $wt) { git -C $repo worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }; git -C $repo worktree add --detach $wt 3706cbd1861f2d6a6d482e64164e8eec44835659; if ($LASTEXITCODE -ne 0) { throw 'worktree add failed' }; try { Set-Location (Join-Path $wt 'tools\\agent-control'); node --check server.mjs; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; npm test; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; powershell -NoProfile -Command \"$tokens=$null;$errors=$null;[void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.\\Install-AgentControlShortcut.ps1'),[ref]$tokens,[ref]$errors); if($errors.Count){$errors | Format-List | Out-String | Write-Error; exit 1}\"; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; Write-Output 'PR238_EXACT_HEAD_OK' } finally { Set-Location $repo; git -C $repo worktree remove --force $wt 2>$null }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T16:35:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
