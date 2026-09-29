@@ -505,6 +505,17 @@ test("engineering autopilot exposes governed control routes and a periodic inter
   assert.match(autopilotCore, /operator-integration-approval-required/);
 });
 
+test("swarm recovery dispatch is evaluated before waiting for the active wave to finish", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function reconcileSwarmTailRecoveries");
+  const end = source.indexOf("async function killProcessTree", start);
+  const block = source.slice(start, end);
+  const planAt = block.indexOf("planSwarmTailRecoveryBatch");
+  const completionGateAt = block.indexOf("if (scopedAgents.some(agent => coreIsActiveStatus(agent.status))) return;");
+  assert.ok(planAt >= 0);
+  assert.ok(completionGateAt > planAt);
+});
+
 test("workflow execution preflights the full plan before launching its first worker", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const start = source.indexOf("async function executeWorkflow");
