@@ -168,7 +168,8 @@ public sealed partial class MainWindowViewModel
                     UpdateClientService.GetInstallRoot(),
                     s.StartupArguments,
                     Environment.ProcessId,
-                    ct);
+                    ct,
+                    managerHomeRoot:s.Paths.ToolRoot);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
