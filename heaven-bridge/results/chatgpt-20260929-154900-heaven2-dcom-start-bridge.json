@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-154900-heaven2-dcom-start-bridge",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:49:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:48:35.651792+00:00",
+  "finished_at": "2026-09-29T15:48:36.480474+00:00",
+  "stdout": "",
+  "stderr": "New-CimSession : Access is denied. \r\nAt line:1 char:77\r\n+ ... ol Dcom; $s=New-CimSession -ComputerName heaven2 -SessionOption $opt  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : PermissionDenied: (:) [New-CimSession], CimException\r\n    + FullyQualifiedErrorId : HRESULT 0x80070005,Microsoft.Management.Infrastructure.CimCmdlets.NewCimSessionCommand\r\n    + PSComputerName        : heaven2\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154900-heaven2-dcom-start-bridge.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-154900-heaven2-dcom-start-bridge.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 458,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "524fc0088730207126a13611c5cf791ef83f2805193f152ae0303b6cf6b1582f"
+}
