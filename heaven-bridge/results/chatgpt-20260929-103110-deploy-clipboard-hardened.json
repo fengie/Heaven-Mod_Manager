@@ -1,0 +1,31 @@
+{
+  "id": "chatgpt-20260929-103110-deploy-clipboard-hardened",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:31:10Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:31:59.858435+00:00",
+  "finished_at": "2026-09-29T10:31:59.869917+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "data": {
+    "session_id": "9c91491170ef4f96",
+    "pid": 81516,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "& '.\\heaven-bridge\\bootstrap.ps1'",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "started_at": "2026-09-29T10:31:59.868396+00:00",
+    "last_activity_at": "2026-09-29T10:31:59.868396+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 900,
+    "max_runtime_seconds": 1800,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\9c91491170ef4f96.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\9c91491170ef4f96.err.log",
+    "recovered": false,
+    "stdin_available": true,
+    "recovery_state": "local-live"
+  },
+  "job_hash": "c04dd8a498cc224657290c2cef620f64567e05f4923399e13967526400903b1a"
+}
