@@ -18,6 +18,7 @@ import {
   canUseMachineForRepositoryWrite,
   classifyAuthoritativeExit,
   buildTaskGraph,
+  buildSwarmPromptEvolutionContext,
   defaultControlState,
   deploymentBatchCapacity,
   deriveMission,
@@ -1148,7 +1149,8 @@ function buildPrompt({
   acceptanceCriteria = [],
   verification = [],
   additionalConstraints = [],
-  repositoryTrainingManifest = []
+  repositoryTrainingManifest = [],
+  swarmEvolutionContext = []
 }) {
   return renderAgentPrompt({
     role,
@@ -1161,6 +1163,7 @@ function buildPrompt({
     verification,
     additionalConstraints,
     repositoryTrainingManifest,
+    swarmEvolutionContext,
     assignment: { taskId, priority, boundary, baseBranch, baseSha, branchName }
   });
 }
@@ -1181,7 +1184,8 @@ async function deployOne({
   acceptanceCriteria = [],
   verification = [],
   additionalConstraints = [],
-  recoveryContext = null
+  recoveryContext = null,
+  swarmContext = null
 }) {
   if (!rolePresets[role]) throw new Error(`Unknown role: ${role}`);
   if (!task || !task.trim()) throw new Error("Task is required.");
@@ -1295,7 +1299,13 @@ async function deployOne({
     workerCapabilityHash: taskCapability.hash,
     repositoryWriteAuthorized: Boolean(repositoryWriteAuthorized),
     retryOfTaskId: recoveryContext?.retryOfTaskId || null,
-    recoveryRootAgentId: recoveryContext?.rootAgentId || null
+    recoveryRootAgentId: recoveryContext?.rootAgentId || null,
+    workflowId: swarmContext?.workflowId || null,
+    swarmWaveId: swarmContext?.waveId || null,
+    swarmStepIndex: Number.isFinite(Number(swarmContext?.stepIndex)) ? Number(swarmContext.stepIndex) : null,
+    swarmStepTotal: Number.isFinite(Number(swarmContext?.totalSteps)) ? Number(swarmContext.totalSteps) : null,
+    swarmPromptGeneration: null,
+    swarmPromptContextHash: null
   };
   currentState.tasks.unshift(taskRecord);
   addEvent(currentState, "task.created", `${taskId} assigned to ${id}`, { agentId: id, taskId });
@@ -1333,6 +1343,12 @@ async function deployOne({
   try {
     const repositoryTrainingManifest = buildRepositoryTrainingManifest(worktree, role);
     if (!remoteExecution) codex = findCodex();
+    const swarmEvolution = swarmContext
+      ? buildSwarmPromptEvolutionContext(refreshState(), {
+          ...swarmContext,
+          mission: swarmContext.mission || task
+        })
+      : null;
     prompt = buildPrompt({
       role,
       task,
@@ -1349,6 +1365,7 @@ async function deployOne({
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
       repositoryTrainingManifest,
+      swarmEvolutionContext: swarmEvolution?.lines || [],
       additionalConstraints: [
         ...additionalConstraints,
         branchPlan.mode === "reused"
@@ -1366,6 +1383,8 @@ async function deployOne({
       promptedTask.promptTemplateId = prompt.templateId;
       promptedTask.promptTemplateVersion = prompt.templateVersion;
       promptedTask.promptHash = prompt.sha256;
+      promptedTask.swarmPromptGeneration = swarmEvolution?.generation || null;
+      promptedTask.swarmPromptContextHash = prompt.swarmContextHash || null;
       promptedTask.updatedAt = isoNow();
     }
     promptedState.promptHistory.unshift({
@@ -1375,6 +1394,12 @@ async function deployOne({
       templateVersion: prompt.templateVersion,
       sha256: prompt.sha256,
       promptPath,
+      workflowId: swarmContext?.workflowId || null,
+      swarmWaveId: swarmContext?.waveId || null,
+      swarmStepIndex: Number.isFinite(Number(swarmContext?.stepIndex)) ? Number(swarmContext.stepIndex) : null,
+      swarmStepTotal: Number.isFinite(Number(swarmContext?.totalSteps)) ? Number(swarmContext.totalSteps) : null,
+      swarmPromptGeneration: swarmEvolution?.generation || null,
+      swarmContextHash: prompt.swarmContextHash || null,
       createdAt: isoNow()
     });
     saveState(promptedState);
@@ -2400,6 +2425,14 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
         retryOfAgentId: source.id,
         retryOfTaskId: source.taskId || null,
         rootAgentId: rootId
+      },
+      swarmContext: {
+        workflowId: state.settings?.swarmTailRecovery?.armedWorkflowId || task.workflowId || "usual-swarm",
+        waveId: state.settings?.swarmTailRecovery?.waveId || task.swarmWaveId || `recovery:${rootId}`,
+        mission: state.settings?.swarmTailRecovery?.armedMission || task.objective || source.task || recoveryTask,
+        stepIndex: Math.max(0, Number(attempt || 1) - 1),
+        totalSteps: Math.max(1, Number(state.settings?.swarmTailRecovery?.maxAttemptsPerRoot || attempt || 1)),
+        source: "swarm-tail-recovery"
       }
     });
 
@@ -3155,6 +3188,7 @@ async function previewWorkflow(workflowId, body = {}) {
 async function executeWorkflow(workflowId, body = {}) {
   return withDeployLock(async () => {
     const workflowStartedAt = isoNow();
+    const workflowWaveId = randomUUID();
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
     assertWorkflowAutonomy(state, workflowId);
@@ -3189,7 +3223,7 @@ async function executeWorkflow(workflowId, body = {}) {
 
     const created = [];
     const blocked = [];
-    for (const work of plan.steps) {
+    for (const [stepIndex, work] of plan.steps.entries()) {
       try {
         const agent = await deployOne({
           role: work.role,
@@ -3211,7 +3245,15 @@ async function executeWorkflow(workflowId, body = {}) {
           verification: [
             "Run the strongest targeted checks applicable to the assigned lane.",
             "Tie claims to exact source/artifact identity and report any unverified environment honestly."
-          ]
+          ],
+          swarmContext: {
+            workflowId,
+            waveId: workflowWaveId,
+            mission: plan.mission || body.objective || work.task,
+            stepIndex,
+            totalSteps: plan.steps.length,
+            source: "one-click-workflow"
+          }
         });
         created.push(agent);
       } catch (error) {
@@ -3230,7 +3272,7 @@ async function executeWorkflow(workflowId, body = {}) {
         armedAt: workflowStartedAt,
         armedWorkflowId: workflowId,
         armedMission: plan.mission || body.objective || null,
-        waveId: randomUUID()
+        waveId: workflowWaveId
       };
       addEvent(linked, "swarm.tail-recovery-armed", `Cleanup wave armed for ${workflowId}`, {
         reason: "swarm-workflow-started",
