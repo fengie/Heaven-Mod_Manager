@@ -1,9 +1,10 @@
 {
   "id": "branchzero-cancel-stale-backend-probe-20260929-1139",
-  "state": "running",
+  "state": "completed",
   "action": "cancel",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:40:43.077324+00:00"
+  "updated_at": "2026-09-29T11:41:20.266817+00:00",
+  "exit_code": 0
 }
