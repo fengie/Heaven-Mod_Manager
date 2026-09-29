@@ -294,7 +294,7 @@ class VerticalSliceTests(unittest.TestCase):
                     for item in node.value.elts
                     if isinstance(item, ast.Constant) and isinstance(item.value, str)
                 )
-        required = {"health", "cancel", "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill", "proc_list_sessions", "fs_read", "fs_write", "fs_edit", "fs_info", "fs_search"}
+        required = {"health", "cancel", "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill", "proc_list_sessions", "fs_read", "fs_write", "fs_edit", "fs_info", "fs_list", "fs_search"}
         self.assertTrue(required.issubset(actions), required - actions)
 
 
