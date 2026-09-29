@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1704-cancel-stale-ci-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 180,
+    "command": "gh run cancel 36600935355 --repo fengie/mhw-mods; gh run cancel 36601107945 --repo fengie/mhw-mods; gh run cancel 36601242332 --repo fengie/mhw-mods; gh run cancel 36601088731 --repo fengie/mhw-mods; gh run cancel 36601419929 --repo fengie/mhw-mods; Write-Output 'STALE_RUN_CANCEL_REQUESTS_SENT'"
+  },
+  "created_at": "2026-09-29T17:04:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
