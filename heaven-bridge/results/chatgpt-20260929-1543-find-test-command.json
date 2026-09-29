@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1543-find-test-command",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:43:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:39:06.462873+00:00",
+  "finished_at": "2026-09-29T15:39:06.886695+00:00",
+  "stdout": "",
+  "stderr": "rg : The term 'rg' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:1 char:1\r\n+ rg -n --glob '!**/bin/**' --glob '!**/obj/**' \"dotnet test|TestingPla ...\r\n+ ~~\r\n    + CategoryInfo          : ObjectNotFound: (rg:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1543-find-test-command.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1543-find-test-command.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 463,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "411f177519e32226ec18a062b21e6c39556ddf52fa9977413b65d376e91c9f87"
+}
