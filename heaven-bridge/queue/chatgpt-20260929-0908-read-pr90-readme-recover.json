@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0908-read-pr90-readme-recover",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-0906-pr90-readme-recover-a1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 200000
+  },
+  "created_at": "2026-09-29T09:08:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
