@@ -124,6 +124,15 @@ jobs:
         run: |
           .\scripts\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
+      - name: Mirror immutable updater release to public client feed
+        if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
+        run: |
+          .\scripts\Publish-PublicUpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
+
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
         continue-on-error: true
