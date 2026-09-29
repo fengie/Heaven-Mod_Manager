@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.1";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.2";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -54,6 +54,7 @@ export const ROLE_TEMPLATES = Object.freeze({
 });
 
 const REPOSITORY_PROTOCOL = [
+  "Unless the user explicitly marks the assignment read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, treat it as an execution assignment: reading and planning are preparatory, make concrete progress with available authorized tools, and try another supported execution path before declaring a blocker.",
   "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
   "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
   "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
