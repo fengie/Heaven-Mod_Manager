@@ -260,9 +260,9 @@
     }
 
     function statusClass(status) {
-      if (["running","starting"].includes(status)) return "running";
-      if (status === "failed") return "failed";
-      if (status === "stopping") return "stopping";
+      if (["running","starting","working","tool_wait","idle","online"].includes(status)) return "running";
+      if (["failed","blocked","disconnected","unhealthy","not-connected"].includes(status)) return "failed";
+      if (["stopping","stale"].includes(status)) return "stopping";
       if (status === "candidate") return "candidate";
       return "";
     }
@@ -277,17 +277,24 @@
       }
 
       $("workers").innerHTML = workers.map(w => {
-        const pct = w.capacity ? Math.min(100, Math.round((w.running / w.capacity) * 100)) : 0;
+        const pct = w.capacity ? Math.min(100, Math.round(((w.running || 0) / w.capacity) * 100)) : 0;
         const freeGb = w.freeMemoryBytes ? (w.freeMemoryBytes / 1073741824).toFixed(1) : "—";
+        const remote = w.kind === "remote-provider";
+        const details = remote
+          ? `${escapeHtml(w.provider || "remote provider")} · heartbeat ${fmt(w.lastHeartbeat)}${w.providerHealth?.reason ? ` · ${escapeHtml(w.providerHealth.reason)}` : ""}`
+          : `${escapeHtml(w.platform || "—")} / ${escapeHtml(w.arch || "—")} · ${escapeHtml(w.cpus || "—")} CPU threads · ${freeGb} GB free RAM`;
+        const capacity = w.capacity == null
+          ? (w.running == null ? "provider capacity" : `${escapeHtml(w.running)} running`)
+          : `${escapeHtml(w.running || 0)}/${escapeHtml(w.capacity)} slots`;
         return `<div class="worker">
           <div class="item-top">
             <div>
-              <div class="item-name"><span class="dot running"></span>${escapeHtml(w.name)} <span class="meta">· ${escapeHtml(w.status)}</span></div>
-              <div class="meta">${escapeHtml(w.platform)} / ${escapeHtml(w.arch)} · ${escapeHtml(w.cpus || "—")} CPU threads · ${freeGb} GB free RAM</div>
+              <div class="item-name"><span class="dot ${statusClass(w.status)}"></span>${escapeHtml(w.name)} <span class="meta">· ${escapeHtml(w.status)}</span></div>
+              <div class="meta">${details}</div>
             </div>
-            <span class="tag">${w.running}/${w.capacity} slots</span>
+            <span class="tag">${capacity}</span>
           </div>
-          <div class="progress"><span style="width:${pct}%"></span></div>
+          ${w.capacity ? `<div class="progress"><span style="width:${pct}%"></span></div>` : ""}
         </div>`;
       }).join("");
     }
