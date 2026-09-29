@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-170300-ui-base-focus",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:02:30Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T17:01:35.745829+00:00",
+  "finished_at": "2026-09-29T17:01:35.745829+00:00",
+  "host": "heaven2",
+  "action": "window_focus",
+  "error": {
+    "code": "WINDOW_NOT_FOUND",
+    "message": "window handle is not valid",
+    "details": {
+      "hwnd": 19530006
+    }
+  },
+  "stderr": "window handle is not valid",
+  "stdout": "",
+  "job_hash": "88c8959fded696f0645ba53534e057cde149babeb57247832e1998c89349437b"
+}
