@@ -51,6 +51,19 @@ NOT:
 
 # BRANCH POLICY
 
+## Mandatory branch inventory before branch creation
+
+Before creating any task branch, every agent, manager, dispatcher, integration worker, recovery worker, and automation MUST:
+
+1. fetch and prune remote refs;
+2. inspect current local and remote branches;
+3. inspect open pull requests plus live Agent Control tasks and leases when available;
+4. identify whether an existing unowned branch already covers the same mutable scope or task;
+5. reuse/continue a compatible branch when safe instead of creating a duplicate;
+6. create a new branch only when no safe compatible branch exists, and record that decision.
+
+Do not create successor, retry, or numbered replacement branches for the same scope merely for convenience. One mutable scope should have one active implementation branch/lease at a time. If an existing branch is abandoned but contains useful compatible work, inspect it and continue/take it over safely rather than spawning a duplicate. A new branch is justified only when the existing branch is actively owned, incompatible, protected/reserved, unsafe to reuse, or contains unrelated unique work.
+
 Branches are allowed while active work is in progress.
 
 They are NOT intended to become permanent parking lots for completed work.
