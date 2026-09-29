@@ -1,0 +1,14 @@
+{
+  "id": "------------------------------chatgpt-opencode-ollama-fallback-smoke-20260929-1109-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; $cfg='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'; $cfgObj=[ordered]@{ '$schema'='https://opencode.ai/config.json'; provider=[ordered]@{ ollama=[ordered]@{ npm='@ai-sdk/openai-compatible'; name='Ollama (local)'; options=[ordered]@{ baseURL='http://127.0.0.1:11434/v1' }; models=[ordered]@{ 'qwen2.5-coder:7b'=[ordered]@{ name='Qwen 2.5 Coder 7B local' } } } }; model='ollama/qwen2.5-coder:7b' }; $cfgObj | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $cfg -Encoding UTF8; $env:OPENCODE_CONFIG=$cfg; Write-Output ('OPENCODE_EXISTS='+(Test-Path -LiteralPath $oc)); Write-Output '=== OLLAMA TAGS ==='; try { (Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 5) | ConvertTo-Json -Depth 6 -Compress } catch { Write-Output ('OLLAMA_ERROR='+$_.Exception.Message) }; Write-Output '=== VERSION ==='; & $oc --version; Write-Output '=== MODELS ==='; & $oc models 2>&1 | Select-Object -First 80; Write-Output '=== SMOKE ==='; & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json 'Reply with exactly LOCAL_FALLBACK_OK and do not use tools.' 2>&1 | Select-Object -Last 80; Write-Output ('EXIT=' + $LASTEXITCODE)",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T11:09:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
