@@ -1,0 +1,9 @@
+{
+  "id": "updater-release-runner-agent-20260929-1255-a1",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T12:55:00Z",
+  "action": "codex",
+  "payload": "Priority operational task for fengie/mhw-mods. The canonical updater release is merged on main at 83fec76cb908b78b7c58192e61a44956eae6fb01. GitHub Actions Windows Release Gate run 36569830891 is queued for labels self-hosted, Windows, X64, mhw-mods. Heaven runner id 21 is online, but older updater jobs have been consuming it. Diagnose the local GitHub Actions runner at C:\\Users\\Xxkan\\actions-runner-heaven and get the canonical release gate 36569830891 running as soon as safely possible. Do not manually publish a release and do not modify product code. If an active job is clearly superseded by merged #158 or belongs to obsolete main before 83fec76c, safely stop only that obsolete job/worker as needed while preserving/restarting Runner.Listener so Heaven remains registered. Verify the runner is listening and, if possible, confirm the canonical release gate is assigned/running. Report exactly what you changed and current runner/job state. Avoid secrets and do not push repository changes.",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 1200
+}
