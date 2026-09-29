@@ -1,0 +1,11 @@
+{
+  "id": "release-20260929-0832-codex-write-smoke",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "codex",
+  "payload": "In the current working directory only, create a file named codex-write-proof.txt containing exactly HEAVEN_CODEX_WRITE_OK followed by a newline. Do not modify anything else. Then print exactly HEAVEN_CODEX_WRITE_OK as the final response.",
+  "cwd": "C:\\Users\\Xxkan\\HeavenBridge\\release-smoke-20260929",
+  "timeout_seconds": 300,
+  "created_at": "2026-09-29T08:32:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
