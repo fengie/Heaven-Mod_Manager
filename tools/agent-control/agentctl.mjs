@@ -86,14 +86,14 @@ Deploy options:
   --count N
   --base BRANCH
   --model MODEL
-  --execution-mode chat|codex
+  --execution-mode chat|direct|codex
   --boundary NAME
   --priority 0-100
   --machine auto|HOSTNAME
   --depends TASK_ID[,TASK_ID...]
 
-Normal Chat is the default. The local controller does not auto-create ChatGPT chats and never falls back to Codex.
-Use --execution-mode codex only when the user explicitly requested a Codex/local worker for that task.
+Normal Chat is preferred. Because the local controller cannot auto-create arbitrary ChatGPT chats, chat/default dispatch continues through the direct non-Work local worker path instead of stopping.
+Agent Control never requests ChatGPT Work mode. Use --execution-mode codex only when you want to label the local-worker route explicitly.
 
 Examples:
   node agentctl.mjs snapshot
