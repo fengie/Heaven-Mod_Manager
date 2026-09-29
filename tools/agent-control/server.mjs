@@ -5,7 +5,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { renderAgentPrompt } from "./lib/prompt-templates.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
@@ -65,6 +65,7 @@ const STALE_PROGRESS_MS = Number(process.env.AGENT_CONTROL_STALE_PROGRESS_MS || 
 const HEAVEN_BRIDGE_RUNNER = path.join(HERE, "lib", "heaven-bridge-runner.mjs");
 const SESSION_ID = randomUUID();
 const children = new Map();
+const stopOperations = new Map();
 let degradedReason = null;
 let deployMutex = Promise.resolve();
 let autopilotTickRunning = false;
@@ -74,6 +75,34 @@ const rolePresets = roleCatalog();
 
 function isoNow() {
   return new Date().toISOString();
+}
+
+function taskCapabilityDigest(value) {
+  return createHash("sha256").update(String(value || ""), "utf8").digest();
+}
+
+function createTaskCapability() {
+  const token = randomBytes(32).toString("base64url");
+  return { token, hash: taskCapabilityDigest(token).toString("hex") };
+}
+
+function taskCapabilityMatches(expectedHash, token) {
+  const normalized = String(expectedHash || "").trim();
+  const candidate = String(token || "").trim();
+  if (!candidate || !/^[0-9a-f]{64}$/i.test(normalized)) return false;
+  const expected = Buffer.from(normalized, "hex");
+  const actual = taskCapabilityDigest(candidate);
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
+
+function requestTaskCapability(req) {
+  return String(req?.headers?.["x-agent-control-task-token"] || "").trim();
+}
+
+function authorizationError(message) {
+  const error = new Error(message);
+  error.statusCode = 403;
+  return error;
 }
 
 function defaultState() {
@@ -736,6 +765,7 @@ async function deployOne({
   const branchName = `agent/control-${role}-${slugify(task)}-${stamp}-${suffix}`;
   const mutableBoundary = (boundary || "").trim() || `isolated:${branchName}`;
   const normalizedPriority = normalizePriority(priority);
+  const taskCapability = createTaskCapability();
 
   const worktree = path.join(WORKTREE_ROOT, id);
   const logPath = path.join(DATA_DIR, `${id}.jsonl`);
@@ -778,7 +808,8 @@ async function deployOne({
     nextAction: null,
     promptTemplateId: null,
     promptTemplateVersion: null,
-    promptHash: null
+    promptHash: null,
+    workerCapabilityHash: taskCapability.hash
   };
   currentState.tasks.unshift(taskRecord);
   addEvent(currentState, "task.created", `${taskId} assigned to ${id}`, { agentId: id, taskId });
@@ -901,7 +932,13 @@ async function deployOne({
       stdio: ["pipe", logFd, logFd],
       windowsHide: true,
       detached: false,
-      env: { ...process.env }
+      env: {
+        ...process.env,
+        AGENT_CONTROL_TASK_TOKEN: taskCapability.token,
+        AGENT_CONTROL_AGENT_ID: id,
+        AGENT_CONTROL_TASK_ID: taskId,
+        AGENT_CONTROL_PORT: String(PORT)
+      }
     });
   } catch (error) {
     if (logFd !== null) {
@@ -1093,6 +1130,18 @@ async function waitForPidExit(pid, timeoutMs = 5000) {
 }
 
 async function stopAgent(id) {
+  const existing = stopOperations.get(id);
+  if (existing) return existing;
+  const operation = stopAgentOnce(id);
+  stopOperations.set(id, operation);
+  try {
+    return await operation;
+  } finally {
+    if (stopOperations.get(id) === operation) stopOperations.delete(id);
+  }
+}
+
+async function stopAgentOnce(id) {
   const state = refreshState();
   assertMutationsAllowed(state, { safetyControl: true });
   const agent = state.agents.find(item => item.id === id);
@@ -1100,9 +1149,13 @@ async function stopAgent(id) {
   if (isTerminalStatus(agent.status)) return agent;
 
   const child = children.get(id);
-  const ownsProcess = agent.ownerSessionId === SESSION_ID && child && child.pid === agent.pid;
+  const ownsProcess = agent.ownerSessionId === SESSION_ID
+    && child
+    && child.pid === agent.pid
+    && child.exitCode === null
+    && child.signalCode === null;
   if (!ownsProcess) {
-    throw new Error(`Cannot safely stop ${id}: this controller session cannot prove ownership of PID ${agent.pid || "unknown"}. Preserve state and reconcile or replace instead.`);
+    throw new Error(`Cannot safely stop ${id}: this controller session cannot prove a still-live owned child for PID ${agent.pid || "unknown"}. Preserve state and reconcile or replace instead.`);
   }
   if (!isPidAlive(agent.pid)) {
     agent.status = "interrupted";
@@ -1705,7 +1758,7 @@ function createImprovementProposal(body = {}) {
   return proposal;
 }
 
-function recordTaskEvidence(taskId, body = {}) {
+function recordTaskEvidence(taskId, body = {}, capabilityToken = null) {
   const state = loadState();
   assertMutationsAllowed(state);
   const evidenceType = String(body.type || "note").trim().toLowerCase();
@@ -1716,6 +1769,9 @@ function recordTaskEvidence(taskId, body = {}) {
   }
   const task = state.tasks.find(item => item.id === taskId);
   if (!task) throw new Error("Task not found.");
+  if (!taskCapabilityMatches(task.workerCapabilityHash, capabilityToken)) {
+    throw authorizationError("Task evidence mutation requires the scoped capability for this exact worker task.");
+  }
   const evidence = {
     id: `evidence-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     recordedAt: isoNow(),
@@ -1738,7 +1794,7 @@ function recordTaskEvidence(taskId, body = {}) {
   return evidence;
 }
 
-function setReviewVerdict(agentId, body = {}) {
+function setReviewVerdict(agentId, body = {}, capabilityToken = null) {
   const verdict = String(body.verdict || "").trim().toLowerCase();
   if (!["approved", "changes-requested", "rejected"].includes(verdict)) {
     throw new Error("Review verdict must be approved, changes-requested, or rejected.");
@@ -1748,9 +1804,16 @@ function setReviewVerdict(agentId, body = {}) {
   assertAnyAutonomyPermission(state, ["request-review", "prepare-integration"], "integration review verdict");
   const agent = state.agents.find(item => item.id === agentId);
   if (!agent) throw new Error("Candidate agent not found.");
+
+  const reviewerTask = state.tasks.find(task => taskCapabilityMatches(task.workerCapabilityHash, capabilityToken)) || null;
+  const reviewer = reviewerTask ? state.agents.find(item => item.id === reviewerTask.agentId) || null : null;
+  if (!reviewer || reviewer.role !== "reviewer" || reviewer.targetAgentId !== agentId) {
+    throw authorizationError("Review verdict mutation requires the scoped capability of the reviewer assigned to this exact candidate.");
+  }
+
   agent.reviewVerdict = verdict;
   agent.reviewVerdictAt = isoNow();
-  agent.reviewVerdictBy = String(body.by || "operator");
+  agent.reviewVerdictBy = reviewer.id;
   agent.reviewEvidence = body.evidence || null;
   addEvent(state, "integration.review-verdict", `${agentId} review verdict: ${verdict}`, {
     agentId,
@@ -2154,7 +2217,7 @@ async function dispatchAutopilotVerification(state) {
       `Independently verify candidate ${candidate.id} on branch ${candidate.branchName}.`,
       "Run the strongest targeted check/test/lint/type/build gates applicable to the change.",
       "Record structured task evidence with type=verification, exact sourceSha, command, and result=pass or fail before exiting.",
-      `Use the task id in your assignment and POST that evidence to http://127.0.0.1:${PORT}/api/tasks/<task-id>/evidence before exiting.`
+      `Use the task id in your assignment and POST that evidence to http://127.0.0.1:${PORT}/api/tasks/<task-id>/evidence with header X-Agent-Control-Task-Token set from AGENT_CONTROL_TASK_TOKEN. Never print that token.`
     ].join("\n"),
     baseBranch: candidate.branchName,
     boundary: `autopilot:verify:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
@@ -2174,7 +2237,7 @@ async function dispatchAutopilotReview(state) {
     `Independently review candidate ${candidate.id} on branch ${candidate.branchName}.`,
     "Inspect implementation, verification evidence, safety, regressions, ownership, docs and version consistency.",
     `Before exiting, record an explicit review verdict for candidate ${candidate.id}: approved, changes-requested, or rejected, with structured evidence.`,
-    `POST the verdict to http://127.0.0.1:${PORT}/api/integration/${encodeURIComponent(candidate.id)}/review-verdict as JSON with verdict, reason, and evidence.`
+    `POST the verdict to http://127.0.0.1:${PORT}/api/integration/${encodeURIComponent(candidate.id)}/review-verdict as JSON with verdict, reason, and evidence, using header X-Agent-Control-Task-Token from AGENT_CONTROL_TASK_TOKEN. Never print that token.`
   ].join("\n");
   return withDeployLock(() => deployReview(candidate.id, {
     task,
@@ -2348,10 +2411,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && pathname === "/api/sync") {
-      const body = await readJson(req);
       return sendJson(res, 200, await buildSnapshot({
         fetchRemote: true,
-        repositoryWriteAuthorized: Boolean(body.repositoryWriteAuthorized)
+        repositoryWriteAuthorized: true
       }));
     }
 
@@ -2445,7 +2507,10 @@ const server = http.createServer(async (req, res) => {
       if (workflowMatch[2] === "preview") {
         return sendJson(res, 200, await previewWorkflow(workflowId, body));
       }
-      return sendJson(res, 201, await executeWorkflow(workflowId, body));
+      return sendJson(res, 201, await executeWorkflow(workflowId, {
+        ...body,
+        repositoryWriteAuthorized: true
+      }));
     }
 
     if (req.method === "GET" && pathname === "/api/autopilot") {
@@ -2558,7 +2623,7 @@ const server = http.createServer(async (req, res) => {
             dependencies: Array.isArray(body.dependencies) ? body.dependencies : [],
             targetAgentId: body.targetAgentId || null,
             lane: body.lane || null,
-            repositoryWriteAuthorized: Boolean(body.repositoryWriteAuthorized),
+            repositoryWriteAuthorized: true,
             acceptanceCriteria: Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [],
             verification: Array.isArray(body.verification) ? body.verification : [],
             additionalConstraints: Array.isArray(body.additionalConstraints) ? body.additionalConstraints : []
@@ -2572,7 +2637,10 @@ const server = http.createServer(async (req, res) => {
     const reviewMatch = pathname.match(/^\/api\/agents\/([^/]+)\/review$/);
     if (req.method === "POST" && reviewMatch) {
       const body = await readJson(req);
-      const agent = await withDeployLock(() => deployReview(reviewMatch[1], body));
+      const agent = await withDeployLock(() => deployReview(reviewMatch[1], {
+        ...body,
+        repositoryWriteAuthorized: true
+      }));
       return sendJson(res, 201, { agent });
     }
 
@@ -2607,13 +2675,13 @@ const server = http.createServer(async (req, res) => {
     const evidenceMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/evidence$/);
     if (req.method === "POST" && evidenceMatch) {
       const body = await readJson(req);
-      return sendJson(res, 201, recordTaskEvidence(evidenceMatch[1], body));
+      return sendJson(res, 201, recordTaskEvidence(evidenceMatch[1], body, requestTaskCapability(req)));
     }
 
     const reviewVerdictMatch = pathname.match(/^\/api\/integration\/([^/]+)\/review-verdict$/);
     if (req.method === "POST" && reviewVerdictMatch) {
       const body = await readJson(req);
-      return sendJson(res, 200, setReviewVerdict(reviewVerdictMatch[1], body));
+      return sendJson(res, 200, setReviewVerdict(reviewVerdictMatch[1], body, requestTaskCapability(req)));
     }
 
     const improvementStartMatch = pathname.match(/^\/api\/improvements\/([^/]+)\/start$/);
@@ -2624,7 +2692,8 @@ const server = http.createServer(async (req, res) => {
       const body = await readJson(req);
       const result = await executeWorkflow("self-improve", {
         ...body,
-        objective: proposal.request
+        objective: proposal.request,
+        repositoryWriteAuthorized: true
       });
       const updated = loadState();
       const currentProposal = updated.improvements.find(item => item.id === proposal.id);

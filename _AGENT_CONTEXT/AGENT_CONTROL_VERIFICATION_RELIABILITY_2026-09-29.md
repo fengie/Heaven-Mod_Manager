@@ -88,3 +88,18 @@ Blocked environment paths: the local Codex worker on `heaven` was quota-blocked 
 ## Delivery rule
 
 Do not mark this checkpoint DONE until PR #99 has been reconciled with current `origin/main`, the affected exact-merge Agent Control gate is green, the change is merged to `main`, and remote `main` is re-read to prove the test file and this report are present. Never manually mark verification green.
+
+
+## Final delivery closure
+
+Final reconciled verification branch head: `85ef0155db25beb207cf6e6b08473fd6841f6dce`.
+
+Agent Control PR Gate run `36552960456` executed the PR as synthetic merge `00b8b925ad274ce4b2a89bb8ea12c5c95e7fa234` against then-current canonical base `38772a9bcf8547402de7f98ada0740d7a6aa070f`. Both Ubuntu and Windows jobs passed syntax checks and the deterministic test suite. Windows reported 85 tests / 85 pass / 0 fail. The four reliability tests above and the new Agent Control 0.5.1 liveness/scheduler tests were explicitly green.
+
+Immediately before merge, remote `main` was re-read and was exactly `38772a9bcf8547402de7f98ada0740d7a6aa070f`, the base used by the successful exact-merge gate.
+
+PR #99 was merged with a merge commit as `c83ce7a47fb8d9f82e132f46c5e6f7f3a5a80f20`. Remote `main` then advanced by one unrelated updater-workflow-only commit to `7a0f0d0d5f5bda4ebf97436572bc5a5f79b43c7b`, whose parent is the reliability merge. The current remote `main` was re-read after that race: both `tools/agent-control/test/federated-registry.test.mjs` with all four added tests and this verification checkpoint are present.
+
+STATUS: DONE for implementation, executed verification, PR merge, and remote-main presence proof.
+
+Temporary branch cleanup is the only administrative remainder: PR #99 is closed/merged, but the available GitHub connector exposes ref creation/update and not ref deletion, while the local Desktop Commander path is currently usage-capped. The branch `agent/verification-reliability-20260929` therefore remains safe-to-delete rather than being falsely reported deleted.

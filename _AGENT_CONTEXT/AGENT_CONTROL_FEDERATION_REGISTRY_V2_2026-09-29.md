@@ -4,7 +4,7 @@
 
 This checkpoint is the Federation & Registry Lead implementation for Agent Control 0.5.1. It changes only the engineering control-plane tooling under `tools/agent-control/` plus repository continuity. It does not change the shipped WPF mod-manager executable or updater payload, so the root application version remains v8.8.6.
 
-The implementation lineage is PR #101, branch `agent/federation-registry-20260929`. The branch was created from canonical `origin/main` at `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c`, then explicitly reconciled after main advanced to `ee06bb4c77d4f3431b699af6b078047fcb891e47`. The federation-owned source/test files were byte-identical across that main race before the reconciliation merge.
+The implementation lineage is PR #101, branch `agent/federation-registry-20260929`. The branch was created from canonical `origin/main` at `ad3de9e78232fe9f66dace188c3e31dd4ced7a7c` and repeatedly reconciled as concurrent integration advanced canonical main. The final pre-merge canonical base recorded by this checkpoint is `9a051815882345c3b25f4eae8681002ff3a70f52`. Federation source stayed byte-identical across the later races; an upstream federation-test expansion was preserved and combined with the v2 invariant suite rather than overwritten.
 
 ## Schema / contract
 
@@ -85,7 +85,9 @@ No destructive registry reset is required for the schema upgrade.
 Required exact-head gate: **Agent Control PR Gate**, Node 22, syntax checks plus `node --test test/*.test.mjs` on both Ubuntu and Windows.
 
 - Reconciled implementation checkpoint `580d11338cb37a017952ae8737430db34742cfee`: GitHub Actions run **36552185691** passed on both `ubuntu-latest` and `windows-latest`.
-- Final Agent Control 0.5.1 source/docs checkpoint `99a6c9aa889aabc0f6af22a4aaa13205c6495468`: GitHub Actions run **36552604730** is the required exact-source gate. Do not merge or call the source verified unless both matrix jobs succeed.
+- Reconciled Agent Control 0.5.1 + liveness checkpoint `61ce8f5124495eccbbc3348547f6e063fccd9f3d`: GitHub Actions run **36553004754** passed on both `ubuntu-latest` and `windows-latest`.
+- Reconciled checkpoint `e13b6ba9fb5cc52c079e6f52749634c973f292fa`, which combines the concurrent upstream federation-test expansion with the v2 invariant suite: GitHub Actions run **36553210697** passed on both `ubuntu-latest` and `windows-latest`.
+- The branch is reconciled again onto canonical base `9a051815882345c3b25f4eae8681002ff3a70f52`. The resulting final PR head must pass the same exact-head matrix gate before merge; do not infer final verification solely from the earlier green checkpoints.
 - Local Heaven test execution could not be used after the Remote Desktop Commander monthly tool quota was exhausted; no local-pass claim is made from that path.
 
 Regression coverage now explicitly proves:

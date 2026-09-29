@@ -8,6 +8,7 @@ import net from "node:net";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.resolve(HERE, "..", "server.mjs");
@@ -67,7 +68,7 @@ function getJson(port, pathname = "/api/snapshot") {
   });
 }
 
-function postJson(port, pathname, value = {}) {
+function postJson(port, pathname, value = {}, extraHeaders = {}) {
   const payload = JSON.stringify(value);
   return new Promise((resolve, reject) => {
     const request = http.request({
@@ -78,7 +79,8 @@ function postJson(port, pathname, value = {}) {
       timeout: 1500,
       headers: {
         "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(payload)
+        "Content-Length": Buffer.byteLength(payload),
+        ...extraHeaders
       }
     }, response => {
       let body = "";
@@ -294,6 +296,73 @@ test("assist autonomy blocks dispatch and governed mutations before side effects
   assert.match(routing.body.error, /preview/i);
 });
 
+
+test("worker evidence and review verdicts require exact scoped task capabilities", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-capability-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const dataDir = path.join(root, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+
+  const verifyToken = "verify-capability-token";
+  const reviewerToken = "reviewer-capability-token";
+  const candidateToken = "candidate-capability-token";
+  const hash = value => createHash("sha256").update(value, "utf8").digest("hex");
+  const now = new Date().toISOString();
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), JSON.stringify({
+    version: 5,
+    settings: { autonomyLevel: "engineering-autopilot" },
+    agents: [
+      { id: "candidate-1", role: "main", roleLabel: "Primary Programmer", taskId: "task-candidate", task: "Implement", status: "done", exitCode: 0, completionEvidence: "authoritative-exit", targetAgentId: null, startedAt: now, finishedAt: now },
+      { id: "verifier-1", role: "test", roleLabel: "Verification", taskId: "task-verify", task: "Verify", status: "done", exitCode: 0, completionEvidence: "authoritative-exit", targetAgentId: "candidate-1", startedAt: now, finishedAt: now },
+      { id: "reviewer-1", role: "reviewer", roleLabel: "Reviewer", taskId: "task-review", task: "Review", status: "done", exitCode: 0, completionEvidence: "authoritative-exit", targetAgentId: "candidate-1", startedAt: now, finishedAt: now }
+    ],
+    tasks: [
+      { id: "task-candidate", objective: "Implement", status: "candidate", agentId: "candidate-1", evidence: [], workerCapabilityHash: hash(candidateToken) },
+      { id: "task-verify", objective: "Verify", status: "done", agentId: "verifier-1", evidence: [], workerCapabilityHash: hash(verifyToken) },
+      { id: "task-review", objective: "Review", status: "done", agentId: "reviewer-1", evidence: [], workerCapabilityHash: hash(reviewerToken) }
+    ],
+    leases: [],
+    events: [],
+    notifications: [],
+    improvements: [],
+    promptHistory: []
+  }, null, 2), "utf8");
+
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const missingEvidence = await postJson(port, "/api/tasks/task-verify/evidence", {
+    type: "verification", result: "pass"
+  });
+  assert.equal(missingEvidence.status, 403);
+  assert.match(missingEvidence.body.error, /scoped capability/i);
+
+  const wrongEvidence = await postJson(port, "/api/tasks/task-verify/evidence", {
+    type: "verification", result: "pass"
+  }, { "X-Agent-Control-Task-Token": candidateToken });
+  assert.equal(wrongEvidence.status, 403);
+
+  const acceptedEvidence = await postJson(port, "/api/tasks/task-verify/evidence", {
+    type: "verification", result: "pass", sourceSha: "abc"
+  }, { "X-Agent-Control-Task-Token": verifyToken });
+  assert.equal(acceptedEvidence.status, 201);
+  assert.equal(acceptedEvidence.body.result, "pass");
+
+  const forgedVerdict = await postJson(port, "/api/integration/candidate-1/review-verdict", {
+    verdict: "approved", by: "forged-provider"
+  }, { "X-Agent-Control-Task-Token": candidateToken });
+  assert.equal(forgedVerdict.status, 403);
+
+  const acceptedVerdict = await postJson(port, "/api/integration/candidate-1/review-verdict", {
+    verdict: "approved", by: "forged-provider"
+  }, { "X-Agent-Control-Task-Token": reviewerToken });
+  assert.equal(acceptedVerdict.status, 200);
+  assert.equal(acceptedVerdict.body.reviewVerdict, "approved");
+  assert.equal(acceptedVerdict.body.reviewVerdictBy, "reviewer-1");
+});
+
 test("broad workflow execution fails closed until a routing manifest is current", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-routing-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -477,8 +546,21 @@ test("remote Heaven execution keeps an owned local runner and authoritative canc
   assert.match(deploy, /HEAVEN_BRIDGE_RUNNER/);
   assert.match(deploy, /executionProvider: placement\.provider/);
   assert.match(deploy, /remoteJobId/);
+  assert.match(deploy, /AGENT_CONTROL_TASK_TOKEN:\s*taskCapability\.token/);
   assert.match(source, /cancelHeavenBridgeJob\(agent\.remoteJobId/);
   assert.match(source, /bridgeResultSucceeded\(cancellation\)/);
+});
+
+test("stop safety deduplicates concurrent termination and rejects exited child identities", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /const stopOperations = new Map\(\)/);
+  const start = source.indexOf("async function stopAgent(id)");
+  const end = source.indexOf("async function branchDivergence", start);
+  const block = source.slice(start, end);
+  assert.match(block, /stopOperations\.get\(id\)/);
+  assert.match(block, /stopAgentOnce\(id\)/);
+  assert.match(block, /child\.exitCode === null/);
+  assert.match(block, /child\.signalCode === null/);
 });
 
 
@@ -507,16 +589,24 @@ test("engineering autopilot explicitly authorizes scoped heaven repository work"
 });
 
 
-test("first-party operator deploy and review controls explicitly authorize scoped Heaven work", () => {
-  const here = path.dirname(fileURLToPath(import.meta.url));
-  const ui = fs.readFileSync(path.resolve(here, "..", "public", "index.html"), "utf8");
-  const cli = fs.readFileSync(path.resolve(here, "..", "agentctl.mjs"), "utf8");
+test("operator routes derive scoped Heaven repository authorization server-side", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const deployRoute = source.slice(
+    source.indexOf('if (req.method === "POST" && pathname === "/api/deploy")'),
+    source.indexOf("const reviewMatch", source.indexOf('pathname === "/api/deploy"'))
+  );
+  assert.match(deployRoute, /repositoryWriteAuthorized:\s*true/);
+  assert.doesNotMatch(deployRoute, /Boolean\(body\.repositoryWriteAuthorized\)/);
 
-  const uiDeploy = ui.slice(ui.indexOf("async function deploy(role)"), ui.indexOf("async function stopAgent", ui.indexOf("async function deploy(role)")));
-  assert.match(uiDeploy, /repositoryWriteAuthorized:true/);
-  const uiReview = ui.slice(ui.indexOf("async function reviewAgent"), ui.indexOf("async function showLog", ui.indexOf("async function reviewAgent")));
-  assert.match(uiReview, /repositoryWriteAuthorized:true/);
+  const reviewRoute = source.slice(
+    source.indexOf("const reviewMatch"),
+    source.indexOf("const promptMatch", source.indexOf("const reviewMatch"))
+  );
+  assert.match(reviewRoute, /repositoryWriteAuthorized:\s*true/);
 
-  const cliDeploy = cli.slice(cli.indexOf('command === "deploy"'), cli.indexOf('command === "stop"', cli.indexOf('command === "deploy"')));
-  assert.match(cliDeploy, /repositoryWriteAuthorized: true/);
+  const workflowRoute = source.slice(
+    source.indexOf("const workflowMatch"),
+    source.indexOf('pathname === "/api/autopilot"', source.indexOf("const workflowMatch"))
+  );
+  assert.match(workflowRoute, /repositoryWriteAuthorized:\s*true/);
 });
