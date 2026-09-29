@@ -5,8 +5,14 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T12:54:12.069947+00:00",
-  "running": [],
+  "updated_at": "2026-09-29T12:59:15.519034+00:00",
+  "running": [
+    {
+      "id": "chatgpt-20260929-1258-repair-heaven-v2-runner-a2",
+      "action": "proc_run",
+      "started_at": "2026-09-29T12:56:33.123113+00:00"
+    }
+  ],
   "capabilities": [
     "app_launch",
     "cancel",
