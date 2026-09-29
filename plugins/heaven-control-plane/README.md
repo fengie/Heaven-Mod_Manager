@@ -45,7 +45,7 @@ Prefer safe structured functions over raw shell. High-level workflows compose pr
 `heaven-bridge/` remains active infrastructure until a verified migration says otherwise. Any migration must update every runtime/bootstrap/workflow/test/doc reference and preserve compatibility during rollout.
 
 
-## Implemented platform slice (v0.3.0)
+## Implemented platform slice (v0.4.0)
 
 The first production slice is implemented as a small Python standard-library package:
 
@@ -82,3 +82,8 @@ Version 0.2.0 extends the verified control-plane slice without introducing a sec
 ## Phase 1 tranche: project verification
 
 Version 0.3.0 adds `verification.detect` and `verification.run`. Detection reads only bounded filesystem marker metadata through the existing Heaven Bridge; execution selects from fixed Python, Node, and .NET command plans rather than accepting command text from callers. Mixed repositories require an explicit detected project type, traversal is rejected before transport, and failed tools return `VERIFICATION_FAILED` with bounded stderr metadata.
+
+
+## Phase 1 tranche: repository indexing capability wiring
+
+Version 0.4.0 exposes the already-verified bounded repository index through an optional local provider without duplicating Heaven Bridge runtime behavior. Construct `RepositoryIndex` for the repository root, wrap it in `IndexCapabilityProvider`, and pass it as `HeavenControlPlane(index_provider=...)`. Discovery advertises `index.refresh`, `index.stats`, `index.search.text`, and `index.search.symbols` only when that provider is configured. The provider retains the engine's file/byte/result caps, secret-bearing filename skips, traversal and symlink-containment checks, secret-like snippet redaction, pagination, and concurrency-safe snapshots.
