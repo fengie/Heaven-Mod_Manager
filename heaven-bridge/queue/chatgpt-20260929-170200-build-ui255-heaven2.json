@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170200-build-ui255-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $p=Join-Path $env:USERPROFILE 'MhwUiValidation'; if(-not (Test-Path (Join-Path $p '.git'))){ git clone --branch integrate/finish-leftovers-20260929-v3 --single-branch https://github.com/fengie/mhw-mods.git $p; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE} } else { git -C $p fetch origin integrate/finish-leftovers-20260929-v3; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; git -C $p checkout -B integrate/finish-leftovers-20260929-v3 origin/integrate/finish-leftovers-20260929-v3; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; git -C $p reset --hard origin/integrate/finish-leftovers-20260929-v3; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE} }; git -C $p clean -fdx; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; dotnet restore (Join-Path $p 'src\\MhwModManager.App\\MhwModManager.App.csproj') -p:NuGetAudit=false; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; dotnet build (Join-Path $p 'src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release --no-restore -p:NuGetAudit=false; if($LASTEXITCODE-ne 0){exit $LASTEXITCODE}; Write-Output ('UI_VALIDATION_HEAD='+(git -C $p rev-parse HEAD)); Write-Output ('APP_DLL='+(Join-Path $p 'src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.dll'))",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T17:02:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
