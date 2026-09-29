@@ -48,6 +48,11 @@ Commands:
   tasks
   leases
   workers
+  federation
+  providers
+  federation-register --file C:\\path\\observation.json
+  federation-heartbeat --file C:\\path\\heartbeat.json
+  provider-heartbeat PROVIDER [--status online]
   queue
   branches
   sync
@@ -122,6 +127,26 @@ try {
     print(await request("/api/leases"));
   } else if (command === "workers") {
     print(await request("/api/workers"));
+  } else if (command === "federation") {
+    print(await request("/api/federation"));
+  } else if (command === "providers") {
+    print(await request("/api/providers"));
+  } else if (command === "federation-register" || command === "federation-heartbeat") {
+    const file = String(flags.file || "").trim();
+    if (!file) throw new Error("--file is required.");
+    const observation = JSON.parse(fs.readFileSync(file, "utf8"));
+    const endpoint = command === "federation-register" ? "/api/federation/observations" : "/api/federation/heartbeat";
+    print(await request(endpoint, {
+      method: "POST",
+      body: JSON.stringify(observation)
+    }));
+  } else if (command === "provider-heartbeat") {
+    const provider = String(flags._[1] || "").trim();
+    if (!provider) throw new Error("Provider id is required.");
+    print(await request(`/api/federation/providers/${encodeURIComponent(provider)}/heartbeat`, {
+      method: "POST",
+      body: JSON.stringify({ status: flags.status || "online" })
+    }));
   } else if (command === "queue") {
     print(await request("/api/integration"));
   } else if (command === "branches") {
