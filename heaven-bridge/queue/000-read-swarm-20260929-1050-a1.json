@@ -1,0 +1,13 @@
+{
+  "id": "000-read-swarm-20260929-1050-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:50:00Z",
+  "ttl_seconds": 21600,
+  "action": "fs_read",
+  "priority": "highest",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\data\\cycles\\cycle-20260929104636-yytns.json",
+    "offset": 0,
+    "length": 1200
+  }
+}
