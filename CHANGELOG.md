@@ -1,3 +1,9 @@
+# v8.8.11 — FOMOD staging cleanup
+
+- Always clean a prepared FOMOD staging directory after the interactive chooser exits, including validation/rendering failures before the dialog can be shown.
+- Preserve the existing commit path while making cancellation and exceptional dialog exits converge on the same manager-owned cleanup boundary.
+- Prevent invalid or unsupported FOMOD metadata from accumulating hidden `.fomod-*.staging` directories in the managed mod library.
+
 # v8.8.10 — Workflow feature closure
 
 - Add a consolidated Loadouts, rules & diagnostics workspace for effective-file inspection, portable recipe import/export, inherited profile comparison, relationship graphs, rule editing, update migration, stability history, and adapter diagnostics.
