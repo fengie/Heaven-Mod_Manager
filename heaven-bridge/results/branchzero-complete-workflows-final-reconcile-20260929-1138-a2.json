@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-complete-workflows-final-reconcile-20260929-1138-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:37:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:40:47.927001+00:00",
+  "finished_at": "2026-09-29T11:41:54.074695+00:00",
+  "stdout": "{\"type\":\"step_start\",\"timestamp\":1790682100115,\"sessionID\":\"ses_f13084c53ffeskGdAEyzB3lJb2\",\"part\":{\"id\":\"prt_0ecf87192001FV0GJZaaISqRJj\",\"sessionID\":\"ses_f13084c53ffeskGdAEyzB3lJb2\",\"messageID\":\"msg_0ecf85982001mD4HqPsAIpI4Ng\",\"type\":\"step-start\",\"snapshot\":\"843767975e523dce58986e9f9f690b805aa8aded\"}}\r\n{\"type\":\"text\",\"timestamp\":1790682112715,\"sessionID\":\"ses_f13084c53ffeskGdAEyzB3lJb2\",\"part\":{\"id\":\"prt_0ecf8719b001s33EHi4ccunqDE\",\"sessionID\":\"ses_f13084c53ffeskGdAEyzB3lJb2\",\"messageID\":\"msg_0ecf85982001mD4HqPsAIpI4Ng\",\"type\":\"text\",\"text\":\"{\\\"name\\\": \\\"subagent\\\", \\\"arguments\\\": {\\\"agent\\\": \\\"explore\\\", \\\"background\\\": false, \\\"description\\\": \\\"Find and analyze API endpoints\\\", \\\"model\\\": \\\"general\\\", \\\"prompt\\\": \\\"Explore the codebase for API endpoints and provide a comprehensive analysis of how they work.\\\", \\\"sessionID\\\": null}}\",\"time\":{\"start\":1790682100123,\"end\":1790682112715}}}\r\n=== FINAL_STATUS ===\r\nBASE=5fe74bb1241b9b9fab91f8601e168696f66260af\r\nHEAD=5fe74bb1241b9b9fab91f8601e168696f66260af\r\n5fe74bb1 ci: use stable Heaven runner capability label\n94593567 ci: remove one-shot Heaven v2 bootstrap workflow\n3c2070b5 docs: close Heaven control-plane first-slice ownership\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   94593567..5fe74bb1  main          -> origin/main\n * [new branch]        agent/hcp-hardening-review-20260929-1137-a1 -> origin/agent/hcp-hardening-review-20260929-1137-a1\n   0e62e9e6..dd2769b0  agent/hcp-sessions-search-20260929 -> origin/agent/hcp-sessions-search-20260929\n * [new branch]        chore/repo-root-cleanup-20260929 -> origin/chore/repo-root-cleanup-20260929\n   6a63309f..ad2d979a  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (new branch 'local/complete-workflows-final-20260929-a2')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-20260929-1138-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-20260929-1138-a2.stderr.log",
+    "stdout_bytes": 1195,
+    "stderr_bytes": 553,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "31a00f19cee4a392ba1480bf38d255f59f192d452f8dae806a557f8e1bd80d8b"
+}
