@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0830-probe-err-k2",
+  "state": "running",
+  "action": "job_output_read",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:27:15.780607+00:00"
+}
