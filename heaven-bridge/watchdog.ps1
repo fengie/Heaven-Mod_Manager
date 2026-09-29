@@ -19,7 +19,8 @@ $StateDir = Join-Path $env:USERPROFILE 'HeavenBridge'
 $LocalHeartbeat = Join-Path $StateDir 'worker-local-heartbeat.json'
 $LoopProgress = Join-Path $StateDir 'worker-loop-progress.json'
 $WatchdogLog = Join-Path $StateDir 'watchdog.log'
-$MutexName = 'Local\MHW.HeavenBridgeWatchdog'
+$CurrentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value.Replace('-', '_')
+$MutexName = "Global\MHW.HeavenBridgeWatchdog.$CurrentSid"
 $StartupGraceSeconds = 45
 
 New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
