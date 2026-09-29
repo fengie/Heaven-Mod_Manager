@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T160020Z-gui-uia-tree-pidroot-02",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:00:20Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:00:04.857205+00:00",
+  "finished_at": "2026-09-29T16:00:04.857205+00:00",
+  "host": "heaven",
+  "action": "uia_tree",
+  "error": {
+    "code": "UIA_BACKEND_ERROR",
+    "message": "Windows UI Automation operation failed",
+    "details": {
+      "type": "System.Management.Automation.ParameterBindingArgumentTransformationException"
+    }
+  },
+  "stderr": "Windows UI Automation operation failed",
+  "stdout": "",
+  "job_hash": "1dfee2e5d8133f54aec1f062d998cbb7cf57d2c12fc9367ca2f948778e79aa6d"
+}
