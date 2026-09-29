@@ -1,0 +1,16 @@
+{
+  "id": "branchzero-cancel-stale-backend-probe-20260929-1139",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:38:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:41:04.865946+00:00",
+  "finished_at": "2026-09-29T11:41:04.865946+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133",
+    "cancel_requested": true
+  },
+  "job_hash": "4b2f2d59fe1a6e471d5e4331322c23c2c1b4bb1788cf5acd3b9e08aded1a14a9"
+}
