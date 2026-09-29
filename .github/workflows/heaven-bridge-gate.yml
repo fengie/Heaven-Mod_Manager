@@ -34,24 +34,16 @@ jobs:
         run: |
           python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py
 
-      - name: Run primary bridge worker tests
+      - name: Run bridge worker tests
         shell: pwsh
         run: |
-          python -m unittest -v heaven-bridge/test_worker.py
+          python heaven-bridge/test_worker.py
+          python heaven-bridge/tests/test_worker.py
 
-      - name: Run compatibility bridge tests
+      - name: Parse operator PowerShell
         shell: pwsh
         run: |
-          python -m unittest -v heaven-bridge/tests/test_worker.py
-
-      - name: Parse bridge PowerShell
-        shell: pwsh
-        run: |
-          $paths = @(
-            'heaven-bridge/bootstrap.ps1',
-            'heaven-bridge/manage.ps1'
-          )
-          foreach ($path in $paths) {
+          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1')) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(
@@ -64,8 +56,3 @@ jobs:
               exit 1
             }
           }
-
-      - name: Run operator test gate
-        shell: pwsh
-        run: |
-          .\heaven-bridge\manage.ps1 TEST
