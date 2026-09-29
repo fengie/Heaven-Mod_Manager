@@ -1,0 +1,21 @@
+{
+  "id": "000--selfhosted-runner-install-20260929-1054",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:54:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:59:42.649779+00:00",
+  "finished_at": "2026-09-29T10:59:43.479866+00:00",
+  "stdout": "",
+  "stderr": "At C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\install-github-runner.ps1:4 char:27\r\n+     [string]$Repository = 'fengie/mhw-mods',\r\n+                           ~~~~~~~~~~~~~~~~~\r\nThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept \r\nassignments, such as a variable or a property.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\install-github-runner.ps1:5 char:27\r\n+     [string]$RunnerName = 'heaven',\r\n+                           ~~~~~~~~\r\nThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept \r\nassignments, such as a variable or a property.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\install-github-runner.ps1:6 char:33\r\n+ ... nnerDirectory = (Join-Path $env:USERPROFILE 'actions-runner-heaven'),\r\n+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\nThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept \r\nassignments, such as a variable or a property.\r\n    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : InvalidLeftHandSide\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000--selfhosted-runner-install-20260929-1054.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000--selfhosted-runner-install-20260929-1054.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 1224,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d6b131f37d98c64d40382320bee8091869f02cbc443b2a54dd690b6c6adc6dd2"
+}
