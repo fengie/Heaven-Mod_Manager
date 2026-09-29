@@ -1,0 +1,9 @@
+{
+  "id": "agent-control-pr59-final-8062eef-v1",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:24:36.657600+00:00"
+}
