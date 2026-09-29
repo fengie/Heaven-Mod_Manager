@@ -153,21 +153,16 @@ if (Test-Path $RuntimeWorker) {
 Move-Item $staged $RuntimeWorker -Force
 Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
 
-# Startup-folder fallbacks are deliberately independent of Task Scheduler.
-# The watchdog fallback repairs the canonical worker without GitHub or the bridge itself.
-$escapedPythonw = $pythonw.Replace('"', '""')
-$escapedWorker = $RuntimeWorker.Replace('"', '""')
-$vbs = @"
-Set sh = CreateObject("WScript.Shell")
-sh.Run """$escapedPythonw"" ""$escapedWorker""", 0, False
-"@
-Set-Content -Path $StartupVbs -Value $vbs -Encoding ASCII
+# Startup-folder recovery is deliberately independent of Task Scheduler.
+# Retire the legacy direct-worker fallback: at logon it could beat the Highest
+# scheduled task and hold the singleton with a non-elevated worker.
+Remove-Item $StartupVbs -Force -ErrorAction SilentlyContinue
 
 $escapedPowerShell = $powershell.Replace('"', '""')
 $escapedWatchdog = $RuntimeWatchdog.Replace('"', '""')
 $watchdogVbs = @"
 Set sh = CreateObject("WScript.Shell")
-sh.Run """$escapedPowerShell"" -NoProfile -ExecutionPolicy Bypass -File ""$escapedWatchdog""", 0, False
+sh.Run """$escapedPowerShell"" -NoProfile -ExecutionPolicy Bypass -File ""$escapedWatchdog"" -StartupFallback", 0, False
 "@
 Set-Content -Path $StartupWatchdogVbs -Value $watchdogVbs -Encoding ASCII
 
@@ -267,6 +262,31 @@ function Get-HeavenBridgeWorker {
         Select-Object -First 1
 }
 
+function Get-HeavenBridgeWatchdog {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+        } |
+        Sort-Object CreationDate -Descending |
+        Select-Object -First 1
+}
+
+# Stop the old watchdog before intentionally replacing the worker. Otherwise a
+# healthy watchdog can correctly interpret bootstrap's handoff as a crash and
+# race the replacement.
+try { Stop-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction SilentlyContinue } catch {}
+foreach ($watchdogProc in @(
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+        }
+)) {
+    try { Stop-Process -Id ([int]$watchdogProc.ProcessId) -Force -ErrorAction Stop } catch {}
+}
+Start-Sleep -Milliseconds 500
+
 # worker.py now owns a process-lifetime singleton lock. Therefore a bootstrap
 # cannot verify a second live candidate while the old worker remains running.
 # The safe handoff is: static verification + backup, stop old worker(s), start
@@ -334,7 +354,9 @@ if ($watchdogTaskInstalled) {
     try {
         Start-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction Stop
         Start-Sleep -Seconds 2
-        $watchdogManaged = $true
+        if (Get-HeavenBridgeWatchdog) {
+            $watchdogManaged = $true
+        }
     } catch {
         Write-Warning "Watchdog Task Scheduler start failed; falling back to direct watchdog start. $($_.Exception.Message)"
     }
@@ -345,6 +367,11 @@ if (-not $watchdogManaged) {
         '-ExecutionPolicy', 'Bypass',
         '-File', ('"{0}"' -f $RuntimeWatchdog)
     ) -WorkingDirectory $env:USERPROFILE | Out-Null
+    Start-Sleep -Seconds 2
+}
+$watchdogProc = Get-HeavenBridgeWatchdog
+if (-not $watchdogProc) {
+    throw 'Heaven Local Bridge watchdog failed to start through both Task Scheduler and direct fallback.'
 }
 
-Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_managed={5} watchdog_run_level={6}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogManaged, $watchdogRunLevel)
+Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_pid={5} watchdog_managed={6} watchdog_run_level={7}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogProc.ProcessId, $watchdogManaged, $watchdogRunLevel)
