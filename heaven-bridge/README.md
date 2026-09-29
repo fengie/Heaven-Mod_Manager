@@ -212,6 +212,8 @@ The action fails closed when the existing cycle no longer matches `expected_prev
 
 - `job_status`: returns running/completed/unknown state.
 - `cancel`: requests cancellation of a running job.
+- Control-plane jobs such as `health`, `job_status`, `cancel`, and checkpoints are serviced ahead of ordinary execution jobs so a saturated worker can still be observed or stopped.
+- Queue scheduling honors `priority`: `highest`/`critical`/`urgent`, then `high`, `normal`/`default`, `low`, and `lowest`. Jobs at the same priority are FIFO by `created_at`; filenames are only a final deterministic tie-breaker.
 - per-job status files are published under `heaven-bridge/status/`.
 - `heartbeat.json` periodically publishes worker version, protocol, capabilities, and running job IDs.
 
