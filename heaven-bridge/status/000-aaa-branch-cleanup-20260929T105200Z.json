@@ -1,0 +1,9 @@
+{
+  "id": "000-aaa-branch-cleanup-20260929T105200Z",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:52:13.039143+00:00"
+}
