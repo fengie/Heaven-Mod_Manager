@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-pr145-index-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:08:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:08:28.694428+00:00",
+  "finished_at": "2026-09-29T12:08:33.742361+00:00",
+  "stdout": "HEAD_SHA=b31339da2e61702f07630fe6f410795f14d8568d\r\nPR145_INDEX_GATE_PASS\r\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-hcp-pr145-index-verify'...\nFrom https://github.com/fengie/mhw-mods\n * [new branch]      main       -> origin/main\n......s\r\n----------------------------------------------------------------------\r\nRan 7 tests in 0.088s\r\n\r\nOK (skipped=1)\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-pr145-index-verify.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-pr145-index-verify.stderr.log",
+    "stdout_bytes": 74,
+    "stderr_bytes": 288,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d61579a4eed5b1ab4452debad2f6d154cba45d974ae930455ce116e1609f95c4"
+}
