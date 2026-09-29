@@ -1,0 +1,14 @@
+{
+  "id": "opencode-local-edit-acceptance-20260929-1114",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'; $root=Join-Path $env:TEMP 'opencode-edit-acceptance-1114'; if(Test-Path $root){Remove-Item $root -Recurse -Force}; New-Item -ItemType Directory -Path $root | Out-Null; $oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; $cfg='C:\\Users\\Xxkan\\HeavenBridge\\opencode-fallback.json'; $env:OPENCODE_CONFIG=$cfg; Push-Location $root; try { & $oc run --standalone --auto --model 'ollama/qwen2.5-coder:7b' --format json 'Create a file named fallback-proof.txt in the current directory containing exactly LOCAL_FALLBACK_TOOL_OK and a trailing newline. Actually use the file-writing tool; do not merely describe the action.'; $code=$LASTEXITCODE } finally { Pop-Location }; Write-Output ('OPENCODE_EXIT='+$code); if($code -ne 0){exit $code}; $proof=Join-Path $root 'fallback-proof.txt'; if(-not (Test-Path $proof)){Write-Error 'PROOF_FILE_MISSING'; exit 21}; $content=(Get-Content -Raw -LiteralPath $proof).Trim(); Write-Output ('PROOF_CONTENT='+$content); if($content -ne 'LOCAL_FALLBACK_TOOL_OK'){Write-Error 'PROOF_CONTENT_MISMATCH'; exit 22}; Write-Output 'OPENCODE_LOCAL_EDIT_GREEN'"
+  },
+  "created_at": "2026-09-29T11:14:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
