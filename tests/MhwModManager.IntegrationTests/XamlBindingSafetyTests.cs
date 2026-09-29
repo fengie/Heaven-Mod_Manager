@@ -117,6 +117,28 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
     }
 
+
+    [Fact]
+    public void HiddenSecondaryPagesAreLazyLoadedAfterStartup()
+    {
+        var root = FindRepositoryRoot();
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+
+        var initializeStart = mainViewModel.IndexOf("public async Task InitializeAsync()", StringComparison.Ordinal);
+        var initializeEnd = mainViewModel.IndexOf("partial void OnSelectedTabChanged", initializeStart, StringComparison.Ordinal);
+        Assert.True(initializeStart >= 0 && initializeEnd > initializeStart);
+        var initialize = mainViewModel[initializeStart..initializeEnd];
+
+        Assert.DoesNotContain("await RefreshProfiles(ct);", initialize);
+        Assert.DoesNotContain("await RefreshActivity(ct);", initialize);
+        Assert.Contains("partial void OnSelectedTabChanged(int value)", mainViewModel);
+        Assert.Contains("case 4 when !profilesLoaded:", mainViewModel);
+        Assert.Contains("case 5 when !activityLoaded:", mainViewModel);
+        Assert.Contains("case 6 when !overlapsLoaded:", mainViewModel);
+        Assert.Contains("overlapsLoaded=false;", mainViewModel);
+        Assert.Contains("if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);", mainViewModel);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
