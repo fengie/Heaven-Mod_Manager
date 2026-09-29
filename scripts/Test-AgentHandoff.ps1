@@ -75,7 +75,16 @@ Assert-Match $agents '(?i)canonical (working state|development state|source of t
 Assert-Match $agents 'NEXT-AGENT-START-HERE\.md' 'AGENTS.md must direct agents to NEXT-AGENT-START-HERE.md.'
 Assert-Match $agents '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'AGENTS.md must direct agents to CURRENT_REVISION.json.'
 Assert-Match $agents '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'AGENTS.md must direct agents to CONTINUITY_PROTOCOL.md.'
-Assert-Match $agents '(?m)^8\.\s+Read active rules in `_AGENT_CONTEXT/LEARNED_RULES\.md`\.$' 'AGENTS.md must keep the active learned-rules read-order requirement.'
+$trainingGateMatch=[regex]::Match($agents,'(?ms)^## Mandatory pre-response repository training gate\s*(?<body>.*?)(?=^##\s|\z)')
+if(-not $trainingGateMatch.Success){throw 'AGENTS.md must contain the mandatory pre-response repository training gate.'}
+$trainingGate=$trainingGateMatch.Groups['body'].Value
+$trainingReadMatch=[regex]::Match($trainingGate,'(?ms)^2\.\s*(?<body>.*?)(?=^3\.\s|\z)')
+if(-not $trainingReadMatch.Success){throw 'AGENTS.md mandatory training gate must contain ordered read step 2.'}
+$trainingRead=$trainingReadMatch.Groups['body'].Value
+Assert-Match $trainingRead '_AGENT_CONTEXT/LEARNED_RULES\.md' 'AGENTS.md mandatory training read step must include LEARNED_RULES.md.'
+$trainingProtocolIndex=$trainingRead.IndexOf('_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',[StringComparison]::Ordinal)
+$trainingLearnedIndex=$trainingRead.IndexOf('_AGENT_CONTEXT/LEARNED_RULES.md',[StringComparison]::Ordinal)
+if($trainingProtocolIndex -lt 0 -or $trainingLearnedIndex -lt 0 -or $trainingProtocolIndex -gt $trainingLearnedIndex){throw 'AGENTS.md mandatory training read step must place CONTINUITY_PROTOCOL.md before LEARNED_RULES.md.'}
 Assert-Match $agents '(?i)git status' 'AGENTS.md must require git status inspection.'
 Assert-Match $agents '(?i)(history|diff)' 'AGENTS.md must require relevant history/diff inspection.'
 Assert-Match $agents '(?i)successor' 'AGENTS.md must explicitly pass continuity to a successor.'
