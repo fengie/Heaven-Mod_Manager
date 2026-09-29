@@ -1,3 +1,11 @@
+# Agent Manager / Agent Control Plane 0.5.0 — 2026-09-29
+
+The active Agent Manager / Agent Control Plane architecture and release evidence are preserved in `_AGENT_CONTEXT/AGENT_CONTROL_PLANE_2026-09-29.md`. Read that file before changing `tools/agent-control/`. The final Agent Control integration must obey `GLOBAL_GIT_DIRECTIVE.md`: reconcile current `main`, rerun affected exact-head gates after any race, integrate, push, and verify remote `main`. Preserve heaven2 as control/credential authority, heaven as the authenticated heavy worker, fail-closed transport/ownership semantics, and honest bridge/manual registration where automatic provider discovery is unavailable.
+
+The successor must preserve the permanent continuity constitution and recursively pass it to the agent after them. **Do not break the chain.**
+
+---
+
 # v8.8.4 final support reconciliation — current handoff
 
 Canonical `origin/main` advanced during integration to `317ba6c86d54012a65a41772109a72566d29c0a9`, which already contains the v8.8.3 archive-streaming cleanup release. The v8.8.4 candidate was rebuilt from that exact head by squash-merging only reviewed support-harvest results, so the newer archive code, tests, verification state, and evidence are preserved.
