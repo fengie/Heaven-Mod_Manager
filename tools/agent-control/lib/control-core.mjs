@@ -1,6 +1,7 @@
 import { defaultFederationState, federationSnapshot, migrateFederationState } from "./federated-registry.mjs";
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
+import { defaultFederationState, federationSnapshot, migrateFederationState } from "./federated-registry.mjs";
 
 export const STATE_VERSION = 5;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
@@ -75,19 +76,23 @@ export function workflowPermission(workflowId) {
 export const DEFAULT_MACHINE_POLICIES = Object.freeze({
   heaven: {
     label: "heaven",
-    role: "default-worker",
-    repositoryWriteAllowed: false,
+    role: "heavy-worker",
+    repositoryWriteAllowed: true,
     foregroundUiAllowed: false,
     preserveResponsiveness: false,
-    notes: "Preferred machine for builds, tests, scans, local agents, indexing, automation, and other heavy execution. Repository writes still require explicit per-task authorization when credentials are not local."
+    credentialAuthority: false,
+    preferredForHeavyWork: true,
+    notes: "Default worker for builds, tests, worktrees, local agents, indexing, automation, and other heavy work. Remote placement is allowed only when an authenticated transport is actually connected."
   },
   heaven2: {
     label: "heaven2",
-    role: "control-credential-authority",
+    role: "control-authority",
     repositoryWriteAllowed: true,
     foregroundUiAllowed: true,
     preserveResponsiveness: true,
-    notes: "Main/control machine and credential authority. Preserve responsiveness; use for coordination, credentials, canonical Windows/MHW state, or explicitly selected local execution."
+    credentialAuthority: true,
+    preferredForHeavyWork: false,
+    notes: "Main/control machine and credential authority. Keep secrets here unless scoped runtime access on heaven is genuinely required."
   }
 });
 
@@ -245,7 +250,37 @@ export function buildTaskGraph(tasks = []) {
 }
 
 function activeAgents(state, role = null) {
-  return state.agents.filter(agent => isActiveStatus(agent.status) && (!role || agent.role === role));
+  const byId = new Map();
+
+  for (const agent of state.agents || []) {
+    if (!isActiveStatus(agent.status)) continue;
+    if (role && agent.role !== role) continue;
+    byId.set(agent.id, agent);
+  }
+
+  const federation = federationSnapshot(state.federation, { now: Date.now() });
+  for (const agent of federation.agents) {
+    if (!agent.live) continue;
+    if (role && agent.role !== role) continue;
+    const id = agent.agent_id;
+    if (byId.has(id)) continue;
+    byId.set(id, {
+      id,
+      role: agent.role,
+      roleLabel: agent.role,
+      taskId: agent.task_id || null,
+      task: agent.task || null,
+      lane: agent.source_metadata?.lane || null,
+      status: agent.effective_state === "tool_wait" ? "waiting" : agent.effective_state,
+      machine: agent.machine || null,
+      branchName: agent.branch || null,
+      prNumber: agent.pr_number ?? null,
+      heartbeatAt: agent.heartbeat_at || null,
+      source: "federated-registry"
+    });
+  }
+
+  return [...byId.values()];
 }
 
 const OCCUPIED_ROUTING_STATUSES = new Set(["claimed", "assigned", "active", "running", "blocked", "review", "verification"]);
@@ -291,7 +326,7 @@ function roleIsOccupied(state, role, now = Date.now()) {
 export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents) {
   const count = Math.max(1, Math.floor(Number(requestedCount) || 1));
   const maximum = Math.max(0, Math.floor(Number(maxActiveAgents) || 0));
-  const active = activeAgents(state).length;
+  const active = (state.agents || []).filter(agent => isActiveStatus(agent.status)).length;
   const available = Math.max(0, maximum - active);
   return {
     count,
