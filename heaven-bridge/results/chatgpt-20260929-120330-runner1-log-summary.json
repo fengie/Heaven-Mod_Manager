@@ -1,0 +1,61 @@
+{
+  "id": "chatgpt-20260929-120330-runner1-log-summary",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:03:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:05:03.829004+00:00",
+  "finished_at": "2026-09-29T12:05:03.853548+00:00",
+  "host": "heaven",
+  "action": "fs_search",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag",
+    "results": [
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 141,
+        "text": "[2026-09-29 11:53:34Z ERR  Terminal] WRITE ERROR: A session for this runner already exists."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 143,
+        "text": "[2026-09-29 11:53:34Z ERR  Terminal] WRITE ERROR: 2026-09-29 11:53:34Z: Runner connect error: Error: Conflict. Retrying until reconnected."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 180,
+        "text": "[2026-09-29 11:54:05Z ERR  Terminal] WRITE ERROR: A session for this runner already exists."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 218,
+        "text": "[2026-09-29 11:54:35Z ERR  Terminal] WRITE ERROR: A session for this runner already exists."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 256,
+        "text": "[2026-09-29 11:55:05Z ERR  Terminal] WRITE ERROR: A session for this runner already exists."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 294,
+        "text": "[2026-09-29 11:55:35Z ERR  Terminal] WRITE ERROR: A session for this runner already exists."
+      },
+      {
+        "type": "content",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "line": 328,
+        "text": "[2026-09-29 11:56:06Z INFO Terminal] WRITE LINE: 2026-09-29 11:56:06Z: Listening for Jobs"
+      }
+    ],
+    "scanned_files": 1,
+    "truncated": false
+  },
+  "job_hash": "2d98c448bb8311beaec0555abfa7a3574153c577091d44d71c997b7bcfca79ed"
+}
