@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-delete-quota-merged-20260929-1116",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:16:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo=Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'\n$b='fix/codex-quota-dispatch-circuit-20260929'\n$expected='40d4454fd6f5eabda9650acb58246025daff5ecc'\ngit -C $repo fetch origin --prune\n$line=(git -C $repo ls-remote origin (\"refs/heads/\"+$b))\nif(-not $line){ [pscustomobject]@{branch=$b;state='already-absent'}|ConvertTo-Json -Compress; exit 0 }\n$actual=($line -split '\\s+')[0]\nif($actual -ne $expected){ throw \"tip changed: $actual\" }\n$paths=@('tools/agent-control/README.md','tools/agent-control/lib/control-core.mjs','tools/agent-control/package.json','tools/agent-control/server.mjs','tools/agent-control/test/control-core.test.mjs')\nforeach($p in $paths){\n  $a=(git -C $repo rev-parse (\"origin/main:\"+$p)).Trim()\n  $c=(git -C $repo rev-parse (\"origin/\"+$b+\":\"+$p)).Trim()\n  if($a -ne $c){ throw \"main no longer matches merged branch at $p\" }\n}\ngit -C $repo push origin --delete $b\nif($LASTEXITCODE -ne 0){ throw \"remote delete failed\" }\ngit -C $repo fetch origin --prune\n[pscustomobject]@{branch=$b;deleted=$true;proof='all 5 changed blobs identical on origin/main';main=(git -C $repo rev-parse origin/main).Trim()}|ConvertTo-Json -Compress",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 180
+  },
+  "priority": "highest"
+}
