@@ -1,0 +1,18 @@
+{
+  "id": "swarm-20260929-160330-watcher-search",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-watcher-external-20260929",
+    "pattern": "FileSystemWatcher|Watcher|Changed|Created|Deleted|Renamed",
+    "regex": true,
+    "case_sensitive": false,
+    "mode": "content",
+    "glob": "*.cs",
+    "max_results": 200
+  },
+  "created_at": "2026-09-29T16:03:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
