@@ -1,0 +1,14 @@
+{
+  "id": "------releasefix-tail-finalgate-20260929-105535",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:55:35Z",
+  "ttl_seconds": 3600,
+  "action": "job_output_read",
+  "params": {
+    "job_id": "-----releasefix-finalgate-51af62-20260929-105425",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 200000
+  },
+  "priority": "highest"
+}
