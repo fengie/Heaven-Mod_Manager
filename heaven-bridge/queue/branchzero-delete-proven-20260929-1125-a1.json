@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-delete-proven-20260929-1125-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nif(!(Test-Path (Join-Path $repo '.git'))){throw 'canonical repo missing'}\n$targets=@(\n  @{b='agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm';s='b8f9424e274644ff5e76590e7dd44b05fe7c01a6';why='merged-pr136'},\n  @{b='agent/launch-observation-atomicity-20260928';s='44f86d94fa4f5b9ddf878b706ab23e28be56ac6f';why='selectively-ported-pr137'},\n  @{b='integration/launch-observation-atomicity-main-20260929';s='93372a48b59f1d5f65f028b097a531b8c5662323';why='merged-pr137-head'},\n  @{b='fix/codex-quota-dispatch-circuit-20260929';s='40d4454fd6f5eabda9650acb58246025daff5ecc';why='squash-merged-pr130-verified'},\n  @{b='agent/bridge-uia-native-20260929';s='e52328aea7a2cfa26a63a35e07003c736c9c571a';why='superseded-by-merged-uia-hardening-pr131'},\n  @{b='agent-bridge';s='30fcf1d6a4946aaa8f760ab9b5141453b6b87e69';why='legacy-bridge-superseded-by-current-main-and-heaven-bridge-relay'}\n)\ngit -C $repo fetch origin --prune | Out-Null\n$deleted=@();$skipped=@();$failed=@()\nforeach($t in $targets){\n  $line=@(git -C $repo ls-remote --heads origin ('refs/heads/'+$t.b))\n  if(!$line.Count){$skipped += [pscustomobject]@{branch=$t.b;reason='already-absent'};continue}\n  $actual=($line[0] -split '\\s+')[0]\n  if($actual -ne $t.s){$skipped += [pscustomobject]@{branch=$t.b;reason='tip-changed';expected=$t.s;actual=$actual};continue}\n  git -C $repo push origin (':refs/heads/'+$t.b) | Out-Null\n  if($LASTEXITCODE -eq 0){$deleted += [pscustomobject]@{branch=$t.b;reason=$t.why}} else {$failed += $t.b}\n}\ngit -C $repo fetch origin --prune | Out-Null\n$remaining=@(git -C $repo for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object {$_ -and $_ -notin @('HEAD','main','heaven-bridge')})\n[pscustomobject]@{deleted=$deleted;skipped=$skipped;failed=$failed;remaining=$remaining;remaining_count=$remaining.Count;main=(git -C $repo rev-parse origin/main).Trim()} | ConvertTo-Json -Depth 6 -Compress",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T11:25:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
