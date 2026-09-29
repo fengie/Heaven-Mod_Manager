@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-local-agent-absolute-probe-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Continue'; $oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; Write-Output '---OPENCODE---'; if(Test-Path $oc){& $oc --help 2>&1 | Select-Object -First 140}else{Write-Output 'OPENCODE_MISSING'}; Write-Output '---OLLAMA TAGS---'; try{$x=Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 10; $x | ConvertTo-Json -Depth 6}catch{Write-Output ('OLLAMA_API_ERROR='+$_.Exception.Message)}; Write-Output '---OPENAI MODELS 8080---'; try{Invoke-RestMethod -Uri 'http://127.0.0.1:8080/v1/models' -TimeoutSec 10 | ConvertTo-Json -Depth 6}catch{Write-Output ('PORT8080_ERROR='+$_.Exception.Message)}"
+  },
+  "created_at": "2026-09-29T08:46:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
