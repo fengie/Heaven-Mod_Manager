@@ -151,6 +151,10 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
 - `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
+- `AGENT_CONTROL_HEAVEN_RELAY_DIR` — dedicated local checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch
+- `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
+- `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
+- `AGENT_CONTROL_HEAVEN_REPO_URL` — optional repository URL used by remote Heaven workspace preparation
 - `CODEX_EXE` — optional explicit path to `codex.exe`; otherwise the newest ChatGPT Codex install is discovered automatically.
 
 ## Safety / isolation
@@ -179,4 +183,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
-See `CONTROL_PLANE.md` for the current v0.5.0 architecture, engineering-autopilot state machine, and remaining remote-worker transport work.
+See `CONTROL_PLANE.md` for the current v0.5.0 federation architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
