@@ -7,10 +7,7 @@ namespace MhwModManager.Automation;
 public sealed record CatalogAcquisitionResult(
     CatalogDownloadArtifact? Artifact,
     Uri? AssistedUri,
-    string Message)
-{
-    public bool RequiresAssistedDownload => Artifact is null && AssistedUri is not null;
-}
+    string Message);
 
 public sealed class CatalogInstallService(
     ManagerDatabase database,
