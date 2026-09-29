@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0859-pr90-failure-details-i2",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:59:40.247341+00:00"
+}
