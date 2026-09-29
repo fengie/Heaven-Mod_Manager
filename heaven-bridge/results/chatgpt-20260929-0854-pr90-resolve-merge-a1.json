@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0854-pr90-resolve-merge-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:56:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:54:37.088604+00:00",
+  "finished_at": "2026-09-29T08:54:37.912182+00:00",
+  "stdout": "STAGED_STAT_BEGIN\r\n .verification/function-status.json                 | 1498 ++++++++++----------\n .verification/stage-status.json                    |   10 +-\n _AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md          |   12 +\n _AGENT_CONTEXT/CURRENT_REVISION.json               |   41 +-\n _AGENT_CONTEXT/CURRENT_STATE.md                    |   24 +\n .../EVIDENCE/v8.8.4-hosted-windows-closure.log     |   66 +-\n _AGENT_CONTEXT/MANAGER_SWARM_STATUS_2026-09-29.md  |   40 +\n _AGENT_CONTEXT/NEXT_STEPS.md                       |   22 +\n .../SUPPORT_BRANCH_INTEGRATION_2026-09-28.md       |   32 +\n scripts/Publish-UpdaterRelease.ps1                 |   10 +-\n scripts/Test-UpdaterReleasePolicy.ps1              |   10 +\n 11 files changed, 957 insertions(+), 808 deletions(-)\nSTAGED_STAT_END\r\n[integration/pr90-reconcile-20260929 023156e] Reconcile v8.8.5 profile containment onto current main\nMERGE_COMMIT=023156ea4223a4697be19b9f48f10ebd80813184\r\n## integration/pr90-reconcile-20260929...origin/agent/game-profile-id-containment-v8.8.5-reconcile [ahead 11]\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0854-pr90-resolve-merge-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0854-pr90-resolve-merge-a1.stderr.log",
+    "stdout_bytes": 1051,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8627c9ff4b96348fd91544cfc1f17c6599995d29baf9fe8013ba30d07d95f46b"
+}
