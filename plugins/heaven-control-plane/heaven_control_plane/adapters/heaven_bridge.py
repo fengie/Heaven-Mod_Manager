@@ -65,15 +65,44 @@ class HeavenBridgeAdapter:
     def __init__(self, transport: BridgeTransport):
         self.transport = transport
 
+    def _request(self, action: str, params: Mapping[str, Any], timeout_seconds: int) -> Mapping[str, Any]:
+        response = self.transport.request(action, params, timeout_seconds)
+        if not isinstance(response, Mapping):
+            raise ControlPlaneError("INVALID_BRIDGE_RESULT", "bridge result must be an object")
+        status = str(response.get("status") or "").lower()
+        raw_error = response.get("error")
+        if status == "error" or raw_error:
+            if isinstance(raw_error, Mapping):
+                code = str(raw_error.get("code") or "BRIDGE_ERROR")
+                message = str(raw_error.get("message") or "bridge request failed")
+                details = raw_error.get("details") if isinstance(raw_error.get("details"), Mapping) else {}
+            else:
+                code = "BRIDGE_ERROR"
+                message = str(response.get("stderr") or raw_error or "bridge request failed")
+                details = {}
+            raise ControlPlaneError(code, message, details)
+        return response
+
+    @staticmethod
+    def _require_git_success(response: Mapping[str, Any]) -> Mapping[str, Any]:
+        exit_code = response.get("exit_code")
+        if exit_code is not None and int(exit_code) != 0:
+            raise ControlPlaneError(
+                "GIT_COMMAND_FAILED",
+                "git command failed",
+                {"exit_code": int(exit_code), "stderr": str(response.get("stderr") or "")[:2048]},
+            )
+        return response
+
     def invoke(self, capability: CapabilitySpec, payload: Mapping[str, Any]) -> Mapping[str, Any]:
         data = require_mapping(payload)
 
         if capability.name == "control.health":
-            return self.transport.request("health", {}, min(capability.timeout_seconds, 15))
+            return self._request("health", {}, min(capability.timeout_seconds, 15))
 
         if capability.name == "control.cancel":
             job_id = require_string(data.get("job_id"), "job_id", max_length=200)
-            return self.transport.request("cancel", {"job_id": job_id}, min(capability.timeout_seconds, 15))
+            return self._request("cancel", {"job_id": job_id}, min(capability.timeout_seconds, 15))
 
         if capability.name == "execution.run":
             shell = str(data.get("shell") or "powershell").lower()
@@ -95,7 +124,7 @@ class HeavenBridgeAdapter:
                 params["env"] = env
             if handles is not None:
                 params["env_from_host"] = handles
-            return self.transport.request("proc_run", params, timeout + 15)
+            return self._request("proc_run", params, timeout + 15)
 
         if capability.name == "filesystem.read":
             params = {
@@ -103,26 +132,44 @@ class HeavenBridgeAdapter:
                 "offset": bounded_int(data.get("offset"), "offset", default=0, minimum=0, maximum=50_000_000),
                 "length": bounded_int(data.get("length"), "length", default=1000, minimum=1, maximum=5000),
             }
-            return self.transport.request("fs_read", params, capability.timeout_seconds)
+            return self._request("fs_read", params, capability.timeout_seconds)
 
         if capability.name == "filesystem.write":
             content = require_string(data.get("content"), "content", allow_empty=True, max_length=1_000_000)
             mode = str(data.get("mode") or "rewrite").lower()
             if mode not in {"rewrite", "append"}:
                 raise ControlPlaneError("INVALID_MODE", "mode must be rewrite or append")
-            params = {"path": _safe_path(data.get("path")), "content": content, "mode": mode}
-            return self.transport.request("fs_write", params, capability.timeout_seconds)
+            path = _safe_path(data.get("path"))
+            overwrite = data.get("overwrite", False)
+            if not isinstance(overwrite, bool):
+                raise ControlPlaneError("INVALID_INPUT", "overwrite must be a boolean")
+            if mode == "rewrite" and not overwrite:
+                info = self._request("fs_info", {"path": path}, capability.timeout_seconds)
+                info_data = info.get("data") if isinstance(info.get("data"), Mapping) else {}
+                if bool(info_data.get("exists")):
+                    raise ControlPlaneError(
+                        "OVERWRITE_CONFIRMATION_REQUIRED",
+                        "path exists; set overwrite=true to replace it",
+                        {"path": path},
+                    )
+            params = {"path": path, "content": content, "mode": mode}
+            return self._request("fs_write", params, capability.timeout_seconds)
 
         if capability.name == "filesystem.patch":
             old = require_string(data.get("old_string"), "old_string", max_length=250_000)
             new = require_string(data.get("new_string"), "new_string", allow_empty=True, max_length=250_000)
+            if bool(data.get("replace_all", False)):
+                raise ControlPlaneError(
+                    "BULK_PATCH_REQUIRES_EXACT_PRIMITIVE",
+                    "filesystem.patch v1 only permits the bridge's unique single-replacement mode",
+                )
             params = {
                 "path": _safe_path(data.get("path")),
                 "old_string": old,
                 "new_string": new,
-                "replace_all": bool(data.get("replace_all", False)),
+                "replace_all": False,
             }
-            return self.transport.request("fs_edit", params, capability.timeout_seconds)
+            return self._request("fs_edit", params, capability.timeout_seconds)
 
         if capability.name in {"git.status", "git.diff", "git.verify_remote_main"}:
             cwd = _safe_path(data.get("repo"), "repo")
@@ -136,18 +183,20 @@ class HeavenBridgeAdapter:
             else:
                 command = (
                     "$ErrorActionPreference='Stop'; "
-                    "git fetch --quiet origin main; "
                     "$local=(git rev-parse HEAD).Trim(); "
-                    "$remote=(git rev-parse origin/main).Trim(); "
+                    "$remoteLine=(git ls-remote --exit-code origin refs/heads/main | Select-Object -First 1); "
+                    "if($LASTEXITCODE -ne 0 -or -not $remoteLine){ throw 'origin/main not found' }; "
+                    "$remote=(($remoteLine -split '\\s+')[0]).Trim(); "
                     "$branch=(git branch --show-current).Trim(); "
                     "[pscustomobject]@{branch=$branch;local=$local;remote_main=$remote;exact=($local -eq $remote)} "
                     "| ConvertTo-Json -Compress"
                 )
                 timeout = 120
-            return self.transport.request(
+            response = self._request(
                 "proc_run",
                 {"shell": "powershell", "command": command, "cwd": cwd, "timeout_seconds": timeout},
                 timeout + 15,
             )
+            return self._require_git_success(response)
 
         raise ControlPlaneError("ADAPTER_UNSUPPORTED", f"no Heaven Bridge adapter for {capability.name}")

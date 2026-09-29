@@ -45,7 +45,7 @@ Prefer safe structured functions over raw shell. High-level workflows compose pr
 `heaven-bridge/` remains active infrastructure until a verified migration says otherwise. Any migration must update every runtime/bootstrap/workflow/test/doc reference and preserve compatibility during rollout.
 
 
-## Implemented vertical slice (v0.1.0)
+## Implemented vertical slice (v0.1.1)
 
 The first production slice is implemented as a small Python standard-library package:
 
@@ -53,10 +53,11 @@ The first production slice is implemented as a small Python standard-library pac
 - discovery, health, and cancellation conventions;
 - bounded structured command execution through existing Heaven Bridge `proc_run`;
 - bounded filesystem read/write/exact-patch adapters over `fs_read`, `fs_write`, and `fs_edit`;
-- Git status/diff/exact remote-`main` verification using a structured working directory instead of path interpolation;
+- Git status/diff/exact remote-`main` verification using `git ls-remote` against `refs/heads/main` and a structured working directory instead of path interpolation;
 - payload-free bounded audit metadata and text-artifact pagination;
 - inline secret-environment rejection with host-side `env_from_host` handles;
 - traversal-segment rejection before filesystem/repository requests reach the bridge;
+- explicit overwrite confirmation for existing-file rewrites, unique-only v1 text patching, and bridge-error propagation into structured control-plane failures;
 - unit tests for success, malformed/oversized input, timeout mapping, cancellation mapping, path traversal, output truncation, pagination, and concurrent audit writes.
 
 Run the exact plugin gate from repository root:

@@ -9,11 +9,15 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from heaven_control_plane.protocol import PLUGIN_VERSION
+
 
 def main() -> int:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     if manifest.get("schema") != "heaven-control-plane/manifest/v1":
         raise SystemExit("invalid manifest schema")
+    if manifest.get("version") != PLUGIN_VERSION:
+        raise SystemExit("manifest version does not match protocol PLUGIN_VERSION")
     suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"), pattern="test_*.py")
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     return 0 if result.wasSuccessful() else 1

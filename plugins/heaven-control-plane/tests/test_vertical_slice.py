@@ -11,7 +11,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from heaven_control_plane.adapters.heaven_bridge import CallableBridgeTransport, HeavenBridgeAdapter
-from heaven_control_plane.protocol import SCHEMA_VERSION
+from heaven_control_plane.protocol import PLUGIN_VERSION, SCHEMA_VERSION
 from heaven_control_plane.service import HeavenControlPlane
 
 
@@ -19,13 +19,14 @@ class FakeTransport:
     def __init__(self):
         self.calls = []
         self.response = {"status": "completed", "data": {"ok": True}}
+        self.responses = {}
         self.error = None
 
     def request(self, action, params, timeout_seconds):
         self.calls.append((action, dict(params), timeout_seconds))
         if self.error:
             raise self.error
-        return self.response
+        return self.responses.get(action, self.response)
 
 
 class VerticalSliceTests(unittest.TestCase):
@@ -49,6 +50,10 @@ class VerticalSliceTests(unittest.TestCase):
             self.assertIn("timeout_seconds", item)
             self.assertIn("cancellable", item)
             self.assertIn("max_output_bytes", item)
+
+    def test_manifest_version_matches_protocol_version(self):
+        manifest = json.loads((PLUGIN_ROOT / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["version"], PLUGIN_VERSION)
 
     def test_health_maps_to_existing_bridge_primitive(self):
         result = self.control.invoke("control.health")
@@ -75,6 +80,16 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["error"]["code"], "INPUT_TOO_LARGE")
         self.assertEqual(self.transport.calls, [])
+
+    def test_bridge_error_is_not_wrapped_as_success(self):
+        self.transport.response = {
+            "status": "error",
+            "exit_code": 1,
+            "error": {"code": "PATH_OUTSIDE_ALLOWED_ROOTS", "message": "blocked"},
+        }
+        result = self.control.invoke("filesystem.read", {"path": r"C:\repo\x.txt"})
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"]["code"], "PATH_OUTSIDE_ALLOWED_ROOTS")
 
     def test_execution_maps_to_proc_run_and_bounds_timeout(self):
         result = self.control.invoke(
@@ -119,6 +134,23 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertFalse(bad["ok"])
         self.assertEqual(bad["error"]["code"], "PATH_TRAVERSAL")
 
+    def test_filesystem_write_refuses_existing_rewrite_without_overwrite_confirmation(self):
+        self.transport.responses["fs_info"] = {"status": "completed", "data": {"exists": True}}
+        denied = self.control.invoke(
+            "filesystem.write",
+            {"path": r"C:\repo\a.txt", "content": "two", "mode": "rewrite"},
+        )
+        self.assertFalse(denied["ok"])
+        self.assertEqual(denied["error"]["code"], "OVERWRITE_CONFIRMATION_REQUIRED")
+        self.assertEqual([call[0] for call in self.transport.calls], ["fs_info"])
+
+        allowed = self.control.invoke(
+            "filesystem.write",
+            {"path": r"C:\repo\a.txt", "content": "two", "mode": "rewrite", "overwrite": True},
+        )
+        self.assertTrue(allowed["ok"])
+        self.assertEqual(self.transport.calls[-1][0], "fs_write")
+
     def test_filesystem_patch_matches_bridge_contract(self):
         result = self.control.invoke(
             "filesystem.patch",
@@ -129,6 +161,16 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertEqual(action, "fs_edit")
         self.assertEqual(params["old_string"], "old")
         self.assertEqual(params["new_string"], "new")
+        self.assertFalse(params["replace_all"])
+
+        before = len(self.transport.calls)
+        bulk = self.control.invoke(
+            "filesystem.patch",
+            {"path": r"C:\repo\a.txt", "old_string": "x", "new_string": "y", "replace_all": True},
+        )
+        self.assertFalse(bulk["ok"])
+        self.assertEqual(bulk["error"]["code"], "BULK_PATCH_REQUIRES_EXACT_PRIMITIVE")
+        self.assertEqual(len(self.transport.calls), before)
 
     def test_cancel_maps_to_bridge_job_id(self):
         result = self.control.invoke("control.cancel", {"job_id": "job-123"})
@@ -149,9 +191,15 @@ class VerticalSliceTests(unittest.TestCase):
         result = self.control.invoke("git.verify_remote_main", {"repo": r"C:\repo"})
         self.assertTrue(result["ok"])
         command = self.transport.calls[-1][1]["command"]
-        self.assertIn("git fetch --quiet origin main", command)
-        self.assertIn("origin/main", command)
+        self.assertIn("git ls-remote --exit-code origin refs/heads/main", command)
+        self.assertNotIn("git fetch", command)
         self.assertIn("exact=($local -eq $remote)", command)
+
+    def test_git_nonzero_exit_becomes_structured_error(self):
+        self.transport.response = {"status": "completed", "exit_code": 128, "stderr": "fatal: not a git repository"}
+        result = self.control.invoke("git.status", {"repo": r"C:\repo"})
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"]["code"], "GIT_COMMAND_FAILED")
 
     def test_transport_timeout_becomes_structured_timeout(self):
         self.transport.error = TimeoutError("slow")
