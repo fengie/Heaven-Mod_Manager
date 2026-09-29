@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-165500-ui-evidence-build2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:54:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:56:31.732592+00:00",
+  "finished_at": "2026-09-29T16:56:51.383553+00:00",
+  "stdout": "HEAD is now at f238c42 Agent Control: reconcile failed streams against durable work (#232)\n  Determining projects to restore...\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Core\\MhwModManager.Core.csproj (in 65 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Storage\\MhwModManager.Storage.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Mhw\\MhwModManager.Mhw.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Updater\\MhwModManager.Updater.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Automation\\MhwModManager.Automation.csproj (in 127 ms).\r\n  Restored C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.App\\MhwModManager.App.csproj (in 127 ms).\r\n  MhwModManager.Core -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Core\\bin\\Release\\net10.0\\MhwModManager.Core.dll\r\n  MhwModManager.Storage -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Storage\\bin\\Release\\net10.0\\MhwModManager.Storage.dll\r\n  MhwModManager.Mhw -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Mhw\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Mhw.dll\r\n  MhwModManager.Filesystem -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Filesystem\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Filesystem.dll\r\n  MhwModManager.Updater -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Updater\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Updater.dll\r\n  MhwModManager.Diagnostics -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Diagnostics\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Diagnostics.dll\r\n  MhwModManager.Automation -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.Automation\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Automation.dll\r\n  MhwModManager.App -> C:\\Users\\fengc\\MhwUiEvidence\\base\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:17.43\r\nMSBUILD : error MSB1009: Project file does not exist.\r\nSwitch: C:\\Users\\fengc\\MhwUiEvidence\\candidate\\src\\MhwModManager.App\\MhwModManager.App.csproj\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   290bd86..1b9ab1d  main       -> origin/main\nPreparing worktree (detached HEAD f238c42)\nfatal: invalid reference: 5dab6bd456e96d4087ab21ee460be5f6b06ae60a\nCandidate UI build failed\r\nAt line:1 char:1058\r\n+ ... e; if($LASTEXITCODE -ne 0){ throw 'Candidate UI build failed' }; $be= ...\r\n+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Candidate UI build failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Candidate UI build failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165500-ui-evidence-build2.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165500-ui-evidence-build2.stderr.log",
+    "stdout_bytes": 2457,
+    "stderr_bytes": 560,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "9b8b8cdce33685d656bb4dabe4afc55dc4dc8cda8d5e7fe37e6fef95920a677b"
+}
