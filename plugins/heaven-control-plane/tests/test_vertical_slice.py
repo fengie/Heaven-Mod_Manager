@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import sys
 import threading
@@ -11,7 +12,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from heaven_control_plane.adapters.heaven_bridge import CallableBridgeTransport, HeavenBridgeAdapter
-from heaven_control_plane.protocol import PLUGIN_VERSION, SCHEMA_VERSION
+from heaven_control_plane.protocol import PLUGIN_VERSION, SCHEMA_VERSION, ControlPlaneError
 from heaven_control_plane.service import HeavenControlPlane
 
 
@@ -74,6 +75,25 @@ class VerticalSliceTests(unittest.TestCase):
         result = self.control.invoke("control.discovery", [])
         self.assertFalse(result["ok"])
         self.assertEqual(result["error"]["code"], "INVALID_INPUT")
+
+    def test_invalid_request_id_is_a_structured_error(self):
+        result = self.control.invoke("control.discovery", {}, req_id="x" * 129)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["request_id"], "invalid-request")
+        self.assertEqual(result["error"]["code"], "INVALID_REQUEST_ID")
+
+    def test_capability_permissions_are_enforced_before_transport(self):
+        restricted = HeavenControlPlane(
+            HeavenBridgeAdapter(self.transport),
+            granted_permissions={"control.read"},
+        )
+        allowed = restricted.invoke("control.discovery")
+        self.assertTrue(allowed["ok"])
+        denied = restricted.invoke("execution.run", {"command": "Write-Output nope"})
+        self.assertFalse(denied["ok"])
+        self.assertEqual(denied["error"]["code"], "PERMISSION_DENIED")
+        self.assertEqual(denied["error"]["details"]["required_permission"], "execution.run")
+        self.assertEqual(self.transport.calls, [])
 
     def test_oversized_request_is_rejected_before_transport(self):
         result = self.control.invoke("execution.run", {"command": "x" * 1_100_000})
@@ -224,6 +244,20 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertGreaterEqual(page["data"]["total"], 1)
         self.assertIn("duration_ms", page["data"]["items"][-1])
 
+    def test_artifact_secret_canary_is_refused(self):
+        canaries = (
+            "API_TOKEN=abcdefgh12345678",
+            "refresh_token: abcdefgh12345678",
+            "password=correct-horse-battery-staple",
+            "Authorization: Bearer abcdefgh12345678",
+            "ghp_abcdefghijklmnopqrstuvwxyz",
+        )
+        for index, canary in enumerate(canaries):
+            with self.subTest(canary=canary):
+                with self.assertRaises(ControlPlaneError) as raised:
+                    self.control.artifacts.put(f"secret-{index}", canary)
+                self.assertEqual(raised.exception.code, "SECRET_ARTIFACT_BLOCKED")
+
     def test_artifact_pagination(self):
         self.control.artifacts.put("a1", "abcdefghij", name="demo")
         page = self.control.invoke(
@@ -245,6 +279,23 @@ class VerticalSliceTests(unittest.TestCase):
             thread.join()
         page = self.control.audit_log.page(offset=0, length=100)
         self.assertGreaterEqual(page["total"], 20)
+    def test_bridge_adapter_actions_exist_in_canonical_worker(self):
+        worker = PLUGIN_ROOT.parents[1] / "heaven-bridge" / "worker.py"
+        tree = ast.parse(worker.read_text(encoding="utf-8"))
+        actions = set()
+        for node in tree.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if not any(isinstance(target, ast.Name) and target.id == "DIRECT_ACTIONS" for target in node.targets):
+                continue
+            if isinstance(node.value, ast.Set):
+                actions.update(
+                    item.value
+                    for item in node.value.elts
+                    if isinstance(item, ast.Constant) and isinstance(item.value, str)
+                )
+        required = {"health", "cancel", "proc_run", "fs_read", "fs_write", "fs_edit", "fs_info"}
+        self.assertTrue(required.issubset(actions), required - actions)
 
 
 class CallableTransportTests(unittest.TestCase):
