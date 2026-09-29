@@ -27,7 +27,7 @@ jobs:
           npm test
 
       - name: Parse shortcut installer PowerShell
-        shell: pwsh
+        shell: powershell
         run: |
           $tokens = $null
           $errors = $null
