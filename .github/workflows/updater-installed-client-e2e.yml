@@ -79,7 +79,11 @@ jobs:
         run: |
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
           $log = Join-Path $evidence 'runtime-ownership-tests.log'
-          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" 2>&1 |
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          if (!(Test-Path -LiteralPath $runner)) {
+            throw "Built xUnit v3 integration runner is missing: $runner"
+          }
+          & $runner 2>&1 |
             Tee-Object -FilePath $log
           $exit = $LASTEXITCODE
           if ($exit -ne 0) { exit $exit }
