@@ -1,0 +1,106 @@
+name: Temporary Heaven2 Agent Control Shortcut
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/temp-heaven2-agent-control-shortcut.yml'
+
+jobs:
+  create-shortcut:
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 5
+    steps:
+      - name: Create Heaven Agent Control shortcut on heaven2
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $server = 'heaven2'
+
+          function New-AgentShortcut([string]$ShortcutPath, [string]$LocalBatch) {
+            $wsh = New-Object -ComObject WScript.Shell
+            $shortcut = $wsh.CreateShortcut($ShortcutPath)
+            $shortcut.TargetPath = $LocalBatch
+            $shortcut.WorkingDirectory = Split-Path -Parent $LocalBatch
+            $shortcut.Description = 'Open the Heaven Agent Control dashboard on heaven2'
+            $shortcut.IconLocation = 'C:\Windows\System32\Taskmgr.exe,0'
+            $shortcut.Save()
+
+            $verify = $wsh.CreateShortcut($ShortcutPath)
+            if ($verify.TargetPath -ne $LocalBatch) {
+              throw "Shortcut target verification failed at $ShortcutPath"
+            }
+            [pscustomobject]@{
+              shortcut = $ShortcutPath
+              target = $verify.TargetPath
+              working_directory = $verify.WorkingDirectory
+              icon = $verify.IconLocation
+            }
+          }
+
+          $localBatch = $null
+          $profileName = $null
+
+          if ($env:COMPUTERNAME -ieq $server) {
+            foreach ($candidate in @(
+              "$env:USERPROFILE\local-ai-workspaces\mhw-mods\tools\agent-control\Start Agent Control.bat",
+              "$env:USERPROFILE\agent-control-panel\tools\agent-control\Start Agent Control.bat"
+            )) {
+              if (Test-Path -LiteralPath $candidate) {
+                $localBatch = $candidate
+                $profileName = Split-Path -Leaf $env:USERPROFILE
+                break
+              }
+            }
+            if (-not $localBatch) { throw 'Agent Control launcher was not found on heaven2.' }
+
+            $desktop = [Environment]::GetFolderPath('Desktop')
+            if (-not $desktop) { throw 'Could not resolve heaven2 Desktop.' }
+            $result = New-AgentShortcut -ShortcutPath (Join-Path $desktop 'Heaven Agent Control.lnk') -LocalBatch $localBatch
+            $result | ConvertTo-Json -Compress
+            exit 0
+          }
+
+          $usersRoot = "\\$server\c$\Users"
+          if (-not (Test-Path -LiteralPath $usersRoot)) {
+            throw 'heaven2 admin share is not reachable from the self-hosted runner.'
+          }
+
+          foreach ($profile in Get-ChildItem -LiteralPath $usersRoot -Directory -ErrorAction Stop) {
+            $candidates = @(
+              (Join-Path $profile.FullName 'local-ai-workspaces\mhw-mods\tools\agent-control\Start Agent Control.bat'),
+              (Join-Path $profile.FullName 'agent-control-panel\tools\agent-control\Start Agent Control.bat')
+            )
+            foreach ($candidate in $candidates) {
+              if (Test-Path -LiteralPath $candidate) {
+                $profileName = $profile.Name
+                $suffix = $candidate.Substring($profile.FullName.Length).TrimStart('\')
+                $localBatch = "C:\Users\$profileName\$suffix"
+                break
+              }
+            }
+            if ($localBatch) { break }
+          }
+
+          if (-not $localBatch) {
+            throw 'Could not locate the Agent Control launcher in any heaven2 user profile.'
+          }
+
+          $remoteProfile = "\\$server\c$\Users\$profileName"
+          $desktopCandidates = @(
+            (Join-Path $remoteProfile 'OneDrive\Desktop'),
+            (Join-Path $remoteProfile 'Desktop')
+          ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -Unique
+
+          if (-not $desktopCandidates) {
+            throw 'Could not locate a writable heaven2 Desktop folder.'
+          }
+
+          $results = @()
+          foreach ($desktop in $desktopCandidates) {
+            $shortcutPath = Join-Path $desktop 'Heaven Agent Control.lnk'
+            $results += New-AgentShortcut -ShortcutPath $shortcutPath -LocalBatch $localBatch
+          }
+
+          $results | ConvertTo-Json -Compress
