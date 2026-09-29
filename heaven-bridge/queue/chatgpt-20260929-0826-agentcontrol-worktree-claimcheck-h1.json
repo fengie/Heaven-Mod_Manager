@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0826-agentcontrol-worktree-claimcheck-h1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:26:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Continue'; Write-Output ('BRANCH='+(git branch --show-current).Trim()); Write-Output ('HEAD='+(git rev-parse HEAD).Trim()); Write-Output 'STATUS'; git status --short --branch; Write-Output 'RELATED_PROCESSES'; Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -like '*mhw-agentcontrol-cycle4-wt*' -or $_.CommandLine -like '*feature/agent-control-plane-v2-20260928*') } | Select-Object ProcessId,CreationDate,Name,CommandLine | Format-List; exit 0"
+  },
+  "priority": "highest"
+}
