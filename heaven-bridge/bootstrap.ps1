@@ -9,8 +9,10 @@ $RuntimeDir = Join-Path $env:USERPROFILE '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
 $RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
+$RuntimeSentinel = Join-Path $RuntimeDir 'heaven-bridge-sentinel.ps1'
 $SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\worker.py'
 $SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\watchdog.ps1'
+$SourceSentinel = Join-Path $SourceRepoRoot 'heaven-bridge\sentinel.ps1'
 $SourceTestWorker = Join-Path $SourceRepoRoot 'heaven-bridge\test_worker.py'
 $SourceBootstrap = Join-Path $SourceRepoRoot 'heaven-bridge\bootstrap.ps1'
 $Startup = [Environment]::GetFolderPath('Startup')
@@ -18,6 +20,7 @@ $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $StartupWatchdogVbs = Join-Path $Startup 'HeavenBridgeWatchdog.vbs'
 $TaskName = 'Heaven Local Bridge'
 $WatchdogTaskName = 'Heaven Local Bridge Watchdog'
+$SentinelTaskName = 'Heaven Local Bridge Sentinel'
 
 # Keep the recovery entrypoint self-contained. The relay/bootstrap copy must be
 # able to refresh and hand off to canonical main even when neighboring relay
@@ -192,6 +195,9 @@ if (-not (Test-Path $SourceWorker)) {
 if (-not (Test-Path $SourceWatchdog)) {
     throw "Bridge watchdog source missing from canonical source mirror: $SourceWatchdog"
 }
+if (-not (Test-Path $SourceSentinel)) {
+    throw "Bridge sentinel source missing from canonical source mirror: $SourceSentinel"
+}
 if (-not (Test-Path $SourceTestWorker)) {
     throw "Bridge regression suite missing from canonical source mirror: $SourceTestWorker"
 }
@@ -223,16 +229,18 @@ $python = (Get-Command python.exe -ErrorAction Stop).Source
 $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
 $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
 
-$watchdogTokens = $null
-$watchdogErrors = $null
-[void][System.Management.Automation.Language.Parser]::ParseFile(
-    (Resolve-Path $SourceWatchdog),
-    [ref]$watchdogTokens,
-    [ref]$watchdogErrors
-)
-if ($watchdogErrors.Count -gt 0) {
-    $watchdogErrors | Format-List | Out-String | Write-Error
-    throw 'Watchdog syntax validation failed.'
+foreach ($scriptToValidate in @($SourceWatchdog, $SourceSentinel)) {
+    $scriptTokens = $null
+    $scriptErrors = $null
+    [void][System.Management.Automation.Language.Parser]::ParseFile(
+        (Resolve-Path $scriptToValidate),
+        [ref]$scriptTokens,
+        [ref]$scriptErrors
+    )
+    if ($scriptErrors.Count -gt 0) {
+        $scriptErrors | Format-List | Out-String | Write-Error
+        throw "Bridge recovery script syntax validation failed: $scriptToValidate"
+    }
 }
 
 $staged = Join-Path $RuntimeDir 'heaven-desktop-worker.py.new'
@@ -263,6 +271,7 @@ if (Test-Path $RuntimeWorker) {
 }
 Move-Item $staged $RuntimeWorker -Force
 Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
+Copy-Item $SourceSentinel $RuntimeSentinel -Force
 
 # Startup-folder recovery is deliberately independent of Task Scheduler.
 # Retire the legacy direct-worker fallback: at logon it could beat the Highest
@@ -287,6 +296,8 @@ $taskInstalled = $false
 $taskRunLevel = 'Unavailable'
 $watchdogTaskInstalled = $false
 $watchdogRunLevel = 'Unavailable'
+$sentinelTaskInstalled = $false
+$sentinelRunLevel = 'Unavailable'
 
 try {
     $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
@@ -341,8 +352,31 @@ try {
         throw "Watchdog task registered but reports unexpected RunLevel '$watchdogRunLevel'."
     }
     $watchdogTaskInstalled = $true
+
+    # Machine-start repair owner in a separate principal/trigger failure domain.
+    # It never runs bridge jobs; it only repairs persistence for the interactive
+    # worker/watchdog and the user Startup fallback.
+    $sentinelArguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -UserProfile "{1}" -UserIdentity "{2}" -Pythonw "{3}" -PowerShellExe "{4}"' -f $RuntimeSentinel, $env:USERPROFILE, $identityName, $pythonw, $powershell
+    $sentinelAction = New-ScheduledTaskAction -Execute $powershell -Argument $sentinelArguments
+    $sentinelTrigger = New-ScheduledTaskTrigger -AtStartup
+    $sentinelPrincipal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+    Register-ScheduledTask `
+        -TaskName $SentinelTaskName `
+        -Action $sentinelAction `
+        -Trigger $sentinelTrigger `
+        -Settings $settings `
+        -Principal $sentinelPrincipal `
+        -Force | Out-Null
+
+    $sentinelTask = Get-ScheduledTask -TaskName $SentinelTaskName -ErrorAction Stop
+    $sentinelRunLevel = [string]$sentinelTask.Principal.RunLevel
+    $sentinelPrincipalId = [string]$sentinelTask.Principal.UserId
+    if ($sentinelRunLevel -ne 'Highest' -or $sentinelPrincipalId -notmatch '(?i)(^|\\)SYSTEM$|^S-1-5-18$') {
+        throw "Sentinel task registered with unexpected principal/run level: principal='$sentinelPrincipalId' runLevel='$sentinelRunLevel'."
+    }
+    $sentinelTaskInstalled = $true
 } catch {
-    Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; independent Startup fallbacks remain configured. A one-time elevated registration is required before both tasks can hold an administrator token. $($_.Exception.Message)"
+    Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; the Startup fallback remains configured, but worker/watchdog/sentinel task health is degraded until elevated registration succeeds. $($_.Exception.Message)"
 }
 
 function Get-HeavenBridgeWorker {
@@ -366,6 +400,30 @@ function Get-HeavenBridgeWatchdog {
         Sort-Object CreationDate -Descending |
         Select-Object -First 1
 }
+
+function Get-HeavenBridgeSentinel {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-sentinel.ps1*'
+        } |
+        Sort-Object CreationDate -Descending |
+        Select-Object -First 1
+}
+
+# Stop the SYSTEM sentinel before an intentional worker/watchdog handoff so it
+# cannot race bootstrap by repairing the tasks we are deliberately replacing.
+try { Stop-ScheduledTask -TaskName $SentinelTaskName -ErrorAction SilentlyContinue } catch {}
+foreach ($sentinelProc in @(
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-sentinel.ps1*'
+        }
+)) {
+    try { Stop-Process -Id ([int]$sentinelProc.ProcessId) -Force -ErrorAction Stop } catch {}
+}
+Start-Sleep -Milliseconds 250
 
 # Stop the old watchdog before intentionally replacing the worker. Otherwise a
 # healthy watchdog can correctly interpret bootstrap's handoff as a crash and
@@ -469,4 +527,19 @@ if (-not $watchdogProc) {
     throw 'Heaven Local Bridge watchdog failed to start through both Task Scheduler and direct fallback.'
 }
 
-Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_pid={5} watchdog_managed={6} watchdog_run_level={7}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogProc.ProcessId, $watchdogManaged, $watchdogRunLevel)
+$sentinelProc = $null
+if ($sentinelTaskInstalled) {
+    try {
+        Start-ScheduledTask -TaskName $SentinelTaskName -ErrorAction Stop
+        Start-Sleep -Seconds 2
+        $sentinelProc = Get-HeavenBridgeSentinel
+    } catch {
+        Write-Warning "SYSTEM sentinel start failed: $($_.Exception.Message)"
+    }
+}
+if ($sentinelTaskInstalled -and -not $sentinelProc) {
+    throw 'Heaven Local Bridge SYSTEM sentinel task is installed but its process did not start.'
+}
+
+$sentinelPid = if ($sentinelProc) { [string]$sentinelProc.ProcessId } else { 'unavailable' }
+Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_pid={5} watchdog_managed={6} watchdog_run_level={7} sentinel_pid={8} sentinel_run_level={9}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogProc.ProcessId, $watchdogManaged, $watchdogRunLevel, $sentinelPid, $sentinelRunLevel)
