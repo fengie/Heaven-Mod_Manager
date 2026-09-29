@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-1113-control-plane-inspect",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; Write-Output ('PWD=' + (Get-Location).Path); Get-ChildItem -Path $HOME -Directory -Force | Select-Object -ExpandProperty FullName; Get-ChildItem -Path $HOME -Directory -Recurse -Depth 3 -Force -ErrorAction SilentlyContinue | Where-Object { Test-Path (Join-Path $_.FullName '.git') } | Select-Object -First 20 -ExpandProperty FullName",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T11:13:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
