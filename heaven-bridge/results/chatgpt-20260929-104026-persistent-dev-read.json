@@ -1,0 +1,33 @@
+{
+  "id": "chatgpt-20260929-104026-persistent-dev-read",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:26.974Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:41:04.280167+00:00",
+  "finished_at": "2026-09-29T10:41:04.291918+00:00",
+  "host": "heaven",
+  "action": "proc_read",
+  "data": {
+    "session_id": "4c26cf188c344d81",
+    "pid": 21792,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T10:37:41.632331+00:00",
+    "last_activity_at": "2026-09-29T10:41:04.280167+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 1800,
+    "max_runtime_seconds": 14400,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\4c26cf188c344d81.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\4c26cf188c344d81.err.log",
+    "recovered": false,
+    "stdin_available": true,
+    "recovery_state": "local-live",
+    "stdout": "PS C:\\Users\\Xxkan> Write-Output 'DEV_SERVER_START'; python -m http.server 8765 --bind 127.0.0.1\r\nDEV_SERVER_START\r\n",
+    "stderr": "127.0.0.1 - - [29/Sep/2026 06:40:58] \"GET / HTTP/1.1\" 200 -\r\n"
+  },
+  "job_hash": "0d7ac99b3ac41df0d48b778ca1f1384c5be68c7dea2196d9d85d9232758b2e14"
+}
