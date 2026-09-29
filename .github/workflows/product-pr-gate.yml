@@ -41,13 +41,17 @@ jobs:
       - name: Test
         shell: powershell
         run: |
-          $projects = @(
-            '.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj',
-            '.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj',
-            '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj'
+          # xUnit v3 projects are executable Microsoft.Testing.Platform runners.
+          # Execute those runners directly on Heaven; dotnet test on SDK 10.0.401
+          # is currently returning discovery exit 5 despite successful builds.
+          $runners = @(
+            '.\tests\MhwModManager.Tests\bin\Release\net10.0\MhwModManager.Tests.exe',
+            '.\tests\MhwModManager.AutomationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.AutomationTests.exe',
+            '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
           )
-          foreach ($project in $projects) {
-            & dotnet test $project -c Release --no-build --no-restore
+          foreach ($runner in $runners) {
+            if (-not (Test-Path -LiteralPath $runner)) { throw "Missing built test runner: $runner" }
+            & $runner
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
       - name: Diff check
