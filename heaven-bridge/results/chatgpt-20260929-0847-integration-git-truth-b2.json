@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0847-integration-git-truth-b2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:47:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:47:44.682850+00:00",
+  "finished_at": "2026-09-29T08:47:46.505179+00:00",
+  "stdout": "ROOT=C:/Users/Xxkan/mhw-mods-work-canonical\r\nBRANCH=main\r\nHEAD=a83dc6e047ccf98e896f10c25772df99b95426d1\r\nLOCAL_MAIN=a83dc6e047ccf98e896f10c25772df99b95426d1\r\nORIGIN_MAIN=1583300aea9ac3ae20750d1ad0af6592f6993acc\r\nDIVERGENCE=0\t110\r\nSTATUS_BEGIN\r\n## main...origin/main [behind 110]\nSTATUS_END\r\nSTASH_BEGIN\r\nSTASH_END\r\nWORKTREES_BEGIN\r\nworktree C:/Users/Xxkan/mhw-mods-work-canonical\nHEAD a83dc6e047ccf98e896f10c25772df99b95426d1\nbranch refs/heads/main\n\nworktree C:/Users/Xxkan/mhw-mods-updater-publication-fix\nHEAD 9234c61c47f9ebc82b3a6ce546799ccaa6f395a2\nbranch refs/heads/agent/auto-updater-publication-fix-20260928\n\nWORKTREES_END\r\nREMOTE_BEGIN\r\norigin\thttps://github.com/fengie/mhw-mods.git (fetch)\norigin\thttps://github.com/fengie/mhw-mods.git (push)\nREMOTE_END\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   3dbee40..477cebc  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0847-integration-git-truth-b2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0847-integration-git-truth-b2.stderr.log",
+    "stdout_bytes": 764,
+    "stderr_bytes": 99,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c9c9a5ae063d0588619285eaad8101a83a9c24ae6148c2572ba106b170b27758"
+}
