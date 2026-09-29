@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-branch-prune-postmerge-20260929-1224",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:27:11.973714+00:00"
+  "updated_at": "2026-09-29T12:27:43.299549+00:00",
+  "exit_code": 0
 }
