@@ -55,6 +55,10 @@ DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
 DEFAULT_SESSION_MAX = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX", "14400"))
 SESSION_METADATA_VERSION = 1
 SESSION_RETENTION_SECONDS = max(3600, int(os.environ.get("HEAVEN_BRIDGE_SESSION_RETENTION", "86400")))
+SECRET_MAX_TTL_SECONDS = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_TTL", "120")), 300))
+SECRET_MAX_CHARS = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_CHARS", "4096")), 10000))
+SECRET_REPLAY_RETENTION_SECONDS = max(3600, int(os.environ.get("HEAVEN_BRIDGE_SECRET_REPLAY_RETENTION", "86400")))
+SECRET_CONSUMED_DIR = STATE / "secret-consumed"
 
 GIT_LOCK = threading.RLock()
 STATE_LOCK = threading.RLock()
@@ -83,7 +87,7 @@ DIRECT_ACTIONS = {
     "proc_list_sessions", "proc_list", "wait_for", "screenshot", "display_list",
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
-    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type", "secret_type",
     *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
@@ -1632,6 +1636,171 @@ def desktop_key(p):
     return {"key": str(p.get("key")), "modifiers": [str(x) for x in modifiers], "count": count}
 
 
+def _path_is_within(path, root):
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def secret_channel_status():
+    configured = str(os.environ.get("HEAVEN_BRIDGE_SECRET_INBOX") or "").strip()
+    if not configured:
+        return {"available": False, "transport": "not_configured"}
+    try:
+        inbox = Path(configured).expanduser().resolve()
+        repo_root = ROOT.resolve()
+        state_root = STATE.resolve()
+    except Exception:
+        return {"available": False, "transport": "unavailable"}
+    if not inbox.is_dir():
+        return {"available": False, "transport": "unavailable"}
+    if _path_is_within(inbox, repo_root) or _path_is_within(inbox, state_root):
+        return {"available": False, "transport": "unsafe_location"}
+    return {"available": True, "transport": "local_one_time_inbox", "inbox": inbox}
+
+
+def _foreground_window_handle():
+    user32 = _require_windows_desktop()
+    hwnd = int(user32.GetForegroundWindow())
+    if hwnd <= 0:
+        raise BridgeError("SECRET_TARGET_UNAVAILABLE", "no foreground window is available for secret input")
+    return hwnd
+
+
+def _secret_marker_path(handle):
+    return SECRET_CONSUMED_DIR / f"{handle}.json"
+
+
+def cleanup_secret_state():
+    SECRET_CONSUMED_DIR.mkdir(parents=True, exist_ok=True)
+    cutoff = time.time() - SECRET_REPLAY_RETENTION_SECONDS
+    for marker in SECRET_CONSUMED_DIR.glob("*.json"):
+        try:
+            if marker.stat().st_mtime < cutoff:
+                marker.unlink(missing_ok=True)
+        except OSError:
+            pass
+    status = secret_channel_status()
+    inbox = status.get("inbox") if status.get("available") else None
+    if inbox:
+        for claim in inbox.glob(".*.claim"):
+            try:
+                claim.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+def _parse_secret_time(value, field):
+    if not value:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope time metadata is invalid")
+    text = str(value).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope time metadata is invalid") from exc
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def consume_secret_value(p):
+    if not isinstance(p, dict):
+        raise BridgeError("SECRET_REQUEST_INVALID", "secret_type params must be an object")
+    unknown = sorted(set(p) - {"handle", "target_hwnd"})
+    if unknown:
+        raise BridgeError("SECRET_REQUEST_INVALID", "secret_type accepts only handle and target_hwnd")
+    handle = str(p.get("handle") or "").strip()
+    if not safe_id(handle):
+        raise BridgeError("SECRET_HANDLE_INVALID", "secret handle is invalid")
+    try:
+        target_hwnd = int(p.get("target_hwnd") or 0)
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("SECRET_TARGET_INVALID", "target_hwnd must be a positive integer") from exc
+    if target_hwnd <= 0:
+        raise BridgeError("SECRET_TARGET_INVALID", "target_hwnd must be a positive integer")
+    if _foreground_window_handle() != target_hwnd:
+        raise BridgeError("SECRET_TARGET_NOT_FOCUSED", "the bound target window is not foreground; secret was not consumed")
+
+    status = secret_channel_status()
+    if not status.get("available"):
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "credential-safe secret input is not configured")
+    inbox = status["inbox"]
+    marker = _secret_marker_path(handle)
+    if marker.exists():
+        raise BridgeError("SECRET_REPLAY_BLOCKED", "secret handle was already consumed")
+
+    source = inbox / f"{handle}.json"
+    claim = inbox / f".{handle}.{uuid.uuid4().hex}.claim"
+    try:
+        os.replace(source, claim)
+    except FileNotFoundError as exc:
+        if marker.exists():
+            raise BridgeError("SECRET_REPLAY_BLOCKED", "secret handle was already consumed") from exc
+        raise BridgeError("SECRET_HANDLE_UNAVAILABLE", "secret handle is unavailable or expired") from exc
+    except OSError as exc:
+        raise BridgeError("SECRET_CHANNEL_UNAVAILABLE", "secret channel could not atomically claim the envelope") from exc
+
+    SECRET_CONSUMED_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        atomic_write_text(marker, json.dumps({
+            "handle": handle,
+            "target_hwnd": target_hwnd,
+            "consumed_at": now(),
+        }, sort_keys=True, separators=(",", ":")))
+        try:
+            envelope = json.loads(claim.read_text(encoding="utf-8-sig"))
+        except Exception as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope is invalid") from exc
+        if not isinstance(envelope, dict) or envelope.get("schema") != "heaven-bridge-secret-v1":
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope schema is invalid")
+        host = str(os.environ.get("COMPUTERNAME", "heaven")).strip()
+        if str(envelope.get("destination") or "").casefold() != host.casefold():
+            raise BridgeError("SECRET_DESTINATION_MISMATCH", "secret envelope is bound to a different destination")
+        if envelope.get("purpose") != "secret_type" or str(envelope.get("handle") or "") != handle:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope binding is invalid")
+        try:
+            envelope_hwnd = int(envelope.get("target_hwnd") or 0)
+        except (TypeError, ValueError) as exc:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret target binding is invalid") from exc
+        if envelope_hwnd != target_hwnd:
+            raise BridgeError("SECRET_TARGET_MISMATCH", "secret envelope is bound to a different target window")
+        created = _parse_secret_time(envelope.get("created_at"), "created_at")
+        expires = _parse_secret_time(envelope.get("expires_at"), "expires_at")
+        current = utcnow()
+        if created > current.replace(microsecond=current.microsecond) + __import__("datetime").timedelta(seconds=FUTURE_SKEW_SECONDS):
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope creation time is invalid")
+        ttl = (expires - created).total_seconds()
+        if ttl <= 0 or ttl > SECRET_MAX_TTL_SECONDS:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret envelope TTL is invalid")
+        if current >= expires:
+            raise BridgeError("SECRET_EXPIRED", "secret envelope expired before use")
+        value = envelope.get("value")
+        if not isinstance(value, str) or len(value) > SECRET_MAX_CHARS:
+            raise BridgeError("SECRET_ENVELOPE_INVALID", "secret value is invalid or too large")
+        claim.unlink(missing_ok=True)
+        return value
+    finally:
+        try:
+            claim.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def desktop_type_secret(p):
+    value = consume_secret_value(p)
+    try:
+        desktop_type_text({"text": value})
+    except Exception as exc:
+        raise BridgeError("SECRET_INPUT_FAILED", "secret was consumed but desktop input failed; create a new handle") from exc
+    finally:
+        value = None
+    return {"typed": True, "consumed": True}
+
+
 def desktop_type_text(p):
     user32 = _require_windows_desktop()
     value = str(p.get("text") if p.get("text") is not None else "")
@@ -1933,6 +2102,7 @@ def run_job(job_id, job, cancel_event):
     started = now()
 
     if action == "health":
+        secret_status = secret_channel_status()
         data = {
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": sorted(DIRECT_ACTIONS),
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
@@ -1948,6 +2118,7 @@ def run_job(job_id, job, cancel_event):
                 "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
+                "secret_input": bool(secret_status.get("available")),
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
                 "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
                 "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
@@ -1962,8 +2133,9 @@ def run_job(job_id, job, cancel_event):
                     "password_set_value_allowed": False, "set_value_requires_relay_opt_in": True,
                 },
                 "secret_input": {
-                    "version": 1, "available": False, "transport": "not_configured",
-                    "relay_secret_values_allowed": False,
+                    "version": 1, "available": bool(secret_status.get("available")), "transport": secret_status.get("transport"),
+                    "relay_secret_values_allowed": False, "max_ttl_seconds": SECRET_MAX_TTL_SECONDS,
+                    "target_binding": "foreground_hwnd", "single_use": True,
                 },
             },
         }
@@ -2259,6 +2431,9 @@ def run_job(job_id, job, cancel_event):
 
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
+
+    if action == "secret_type":
+        return make_result(job, action, data=desktop_type_secret(p), started_at=started)
 
     if action in UIA_ACTIONS:
         return make_result(job, action, data=desktop_uia(p, action), started_at=started)
@@ -2603,6 +2778,7 @@ def main():
             d.mkdir(parents=True, exist_ok=True)
         load_processed()
         clean_stale_locks()
+        cleanup_secret_state()
         recovery = recover_sessions()
         log(
             f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
