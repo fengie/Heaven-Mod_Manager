@@ -20,8 +20,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Verify control plane on Heaven
+  contract:
+    name: Verify control-plane contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile control-plane Python
+        run: |
+          python -m compileall -q plugins/heaven-control-plane/heaven_control_plane plugins/heaven-control-plane/tests plugins/heaven-control-plane/verify.py
+
+      - name: Run control-plane vertical slice tests
+        run: python plugins/heaven-control-plane/verify.py
+
+      - name: Check patch whitespace
+        run: git diff --check HEAD^ HEAD
+
+  heaven-integration:
+    name: Verify bridge compatibility on Heaven
     runs-on: [self-hosted, Windows, X64, heaven-v2]
     timeout-minutes: 20
     steps:
@@ -48,10 +71,8 @@ jobs:
 
       - name: Run Heaven control-plane vertical slice tests
         shell: pwsh
-        run: |
-          python plugins/heaven-control-plane/verify.py
+        run: python plugins/heaven-control-plane/verify.py
 
       - name: Check patch whitespace
         shell: pwsh
-        run: |
-          git diff --check HEAD^ HEAD
+        run: git diff --check HEAD^ HEAD
