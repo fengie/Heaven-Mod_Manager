@@ -1,15 +1,23 @@
 $ErrorActionPreference = 'Stop'
 
 $RepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'
+$SourceRepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeSource'
 $RepoUrl = 'https://github.com/fengie/mhw-mods.git'
 $Branch = 'heaven-bridge'
+$SourceBranch = 'main'
 $RuntimeDir = Join-Path $env:USERPROFILE '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
-$SourceWorker = Join-Path $RepoRoot 'heaven-bridge\worker.py'
+$RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
+$SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\worker.py'
+$SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\watchdog.ps1'
+$SourceTestWorker = Join-Path $SourceRepoRoot 'heaven-bridge\test_worker.py'
+$SourceBootstrap = Join-Path $SourceRepoRoot 'heaven-bridge\bootstrap.ps1'
 $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
+$StartupWatchdogVbs = Join-Path $Startup 'HeavenBridgeWatchdog.vbs'
 $TaskName = 'Heaven Local Bridge'
+$WatchdogTaskName = 'Heaven Local Bridge Watchdog'
 $GitStateHelper = Join-Path $PSScriptRoot 'git-state.ps1'
 
 . $GitStateHelper
@@ -44,6 +52,14 @@ function Invoke-GitChecked {
     & git -C $RepoRoot @GitArgs
     if ($LASTEXITCODE -ne 0) {
         throw ('git {0} failed with exit code {1}' -f ($GitArgs -join ' '), $LASTEXITCODE)
+    }
+}
+
+function Invoke-SourceGitChecked {
+    param([Parameter(Mandatory = $true)][string[]]$GitArgs)
+    & git -C $SourceRepoRoot @GitArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw ('source git {0} failed with exit code {1}' -f ($GitArgs -join ' '), $LASTEXITCODE)
     }
 }
 
@@ -111,12 +127,91 @@ if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
     }
 }
 
+# Keep runtime source independent from the operational relay checkout. The relay
+# branch is queue/status/results transport and may intentionally diverge from
+# canonical development history. Runtime binaries always come from a disposable
+# main-branch source mirror when GitHub is reachable; if refresh is temporarily
+# unavailable, bootstrap may use the last-known-good mirror already on disk.
+$sourceRefreshSucceeded = $false
+if (-not (Test-Path (Join-Path $SourceRepoRoot '.git'))) {
+    git clone --branch $SourceBranch --single-branch $RepoUrl $SourceRepoRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "canonical source clone failed with exit code $LASTEXITCODE"
+    }
+    $sourceRefreshSucceeded = $true
+} else {
+    $sourceCurrentBranch = Get-HeavenBridgeGitCurrentBranch -Repository $SourceRepoRoot
+    $sourceTrackedDirty = @(& git -C $SourceRepoRoot status --porcelain --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect canonical source mirror.' }
+    $sourceFallbackEligible = (
+        $sourceCurrentBranch -eq $SourceBranch -and
+        $sourceTrackedDirty.Count -eq 0
+    )
+
+    try {
+        Invoke-SourceGitChecked @('fetch', 'origin', $SourceBranch)
+        Invoke-SourceGitChecked @('checkout', '-B', $SourceBranch, "origin/$SourceBranch")
+        Invoke-SourceGitChecked @('reset', '--hard', "origin/$SourceBranch")
+        # This checkout is explicitly disposable. Remove stale untracked bridge
+        # source/test files so they cannot shadow canonical tracked content.
+        Invoke-SourceGitChecked @('clean', '-fd', '--', 'heaven-bridge')
+        $sourceRefreshSucceeded = $true
+    } catch {
+        if (-not $sourceFallbackEligible) {
+            throw ("Canonical main source refresh failed and the local source mirror is not a clean main checkout. {0}" -f $_.Exception.Message)
+        }
+        Write-Warning ("Canonical main source refresh failed; using clean last-known-good main source mirror. {0}" -f $_.Exception.Message)
+    }
+}
+
 if (-not (Test-Path $SourceWorker)) {
-    throw "Bridge worker source missing: $SourceWorker"
+    throw "Bridge worker source missing from canonical source mirror: $SourceWorker"
+}
+if (-not (Test-Path $SourceWatchdog)) {
+    throw "Bridge watchdog source missing from canonical source mirror: $SourceWatchdog"
+}
+if (-not (Test-Path $SourceTestWorker)) {
+    throw "Bridge regression suite missing from canonical source mirror: $SourceTestWorker"
+}
+if (-not (Test-Path $SourceBootstrap)) {
+    throw "Bridge bootstrap missing from canonical source mirror: $SourceBootstrap"
+}
+
+$SourceRevision = (& git -C $SourceRepoRoot rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($SourceRevision)) {
+    throw 'Unable to resolve canonical bridge source revision.'
+}
+Write-Output ("HEAVEN_BRIDGE_SOURCE revision={0} refreshed={1} branch={2}" -f $SourceRevision, $sourceRefreshSucceeded, $SourceBranch)
+
+# A relay/runtime copy of bootstrap is only a stable entrypoint. After it has
+# refreshed the canonical source mirror, hand execution to main's bootstrap so
+# future bootstrap fixes do not require manual transport-branch synchronization.
+$currentBootstrap = [System.IO.Path]::GetFullPath($PSCommandPath)
+$canonicalBootstrap = [System.IO.Path]::GetFullPath((Resolve-Path $SourceBootstrap).Path)
+if ($currentBootstrap -ne $canonicalBootstrap) {
+    Write-Output ("HEAVEN_BRIDGE_BOOTSTRAP_HANDOFF source={0}" -f $canonicalBootstrap)
+    & $SourceBootstrap
+    if (-not $?) {
+        throw 'Canonical Heaven Bridge bootstrap handoff failed.'
+    }
+    exit 0
 }
 
 $python = (Get-Command python.exe -ErrorAction Stop).Source
 $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
+$powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
+
+$watchdogTokens = $null
+$watchdogErrors = $null
+[void][System.Management.Automation.Language.Parser]::ParseFile(
+    (Resolve-Path $SourceWatchdog),
+    [ref]$watchdogTokens,
+    [ref]$watchdogErrors
+)
+if ($watchdogErrors.Count -gt 0) {
+    $watchdogErrors | Format-List | Out-String | Write-Error
+    throw 'Watchdog syntax validation failed.'
+}
 
 $staged = Join-Path $RuntimeDir 'heaven-desktop-worker.py.new'
 Copy-Item $SourceWorker $staged -Force
@@ -127,35 +222,38 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Worker syntax validation failed.'
 }
 
+# Validate the exact repository source before any running worker is stopped.
+# This is intentionally stronger than syntax-only validation: bootstrap must not
+# trade a working control path for an untested replacement.
+Push-Location $SourceRepoRoot
+try {
+    & $python -m unittest -q 'heaven-bridge\test_worker.py'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Worker regression suite failed with exit code $LASTEXITCODE."
+    }
+} finally {
+    Pop-Location
+}
+
+# Publish the validated runtime only after the full regression suite passes.
 if (Test-Path $RuntimeWorker) {
     Copy-Item $RuntimeWorker $BackupWorker -Force
 }
 Move-Item $staged $RuntimeWorker -Force
+Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
 
-# Startup-folder fallback. Use an absolute pythonw path so a reduced logon PATH cannot break startup.
-$escapedPythonw = $pythonw.Replace('"', '""')
-$escapedWorker = $RuntimeWorker.Replace('"', '""')
-$vbs = @"
+# Startup-folder recovery is deliberately independent of Task Scheduler.
+# Retire the legacy direct-worker fallback: at logon it could beat the Highest
+# scheduled task and hold the singleton with a non-elevated worker.
+Remove-Item $StartupVbs -Force -ErrorAction SilentlyContinue
+
+$escapedPowerShell = $powershell.Replace('"', '""')
+$escapedWatchdog = $RuntimeWatchdog.Replace('"', '""')
+$watchdogVbs = @"
 Set sh = CreateObject("WScript.Shell")
-sh.Run """$escapedPythonw"" ""$escapedWorker""", 0, False
+sh.Run """$escapedPowerShell"" -NoProfile -ExecutionPolicy Bypass -File ""$escapedWatchdog"" -StartupFallback", 0, False
 "@
-Set-Content -Path $StartupVbs -Value $vbs -Encoding ASCII
-
-# Validate the exact repository source before any running worker is stopped.
-# This is intentionally stronger than syntax-only validation: bootstrap must not
-# trade a working control path for an untested replacement.
-$TestWorker = Join-Path $RepoRoot 'heaven-bridge\test_worker.py'
-if (Test-Path $TestWorker) {
-    Push-Location $RepoRoot
-    try {
-        & $python -m unittest -q 'heaven-bridge\test_worker.py'
-        if ($LASTEXITCODE -ne 0) {
-            throw "Worker regression suite failed with exit code $LASTEXITCODE."
-        }
-    } finally {
-        Pop-Location
-    }
-}
+Set-Content -Path $StartupWatchdogVbs -Value $watchdogVbs -Encoding ASCII
 
 # Prefer Task Scheduler because it supports restart-on-failure. The canonical task
 # runs in the currently logged-in user's interactive session at RunLevel Highest.
@@ -165,53 +263,64 @@ if (Test-Path $TestWorker) {
 # jobs do not need per-command UAC elevation.
 $taskInstalled = $false
 $taskRunLevel = 'Unavailable'
-$existingTask = $null
+$watchdogTaskInstalled = $false
+$watchdogRunLevel = 'Unavailable'
+
 try {
-    $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
-    $taskRunLevel = [string]$existingTask.Principal.RunLevel
-} catch {}
-
-if ($existingTask -and $taskRunLevel -eq 'Highest') {
-    # Keep an already-elevated task. Its action points at the stable runtime path,
-    # which bootstrap refreshes above on every update.
-    $taskInstalled = $true
-} else {
-    try {
-        $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        if ([string]::IsNullOrWhiteSpace($identityName)) {
-            throw 'Unable to resolve the current Windows identity for the scheduled-task principal.'
-        }
-
-        $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
-        $trigger = New-ScheduledTaskTrigger -AtLogOn
-        $settings = New-ScheduledTaskSettingsSet `
-            -AllowStartIfOnBatteries `
-            -DontStopIfGoingOnBatteries `
-            -StartWhenAvailable `
-            -MultipleInstances IgnoreNew `
-            -RestartCount 12 `
-            -RestartInterval (New-TimeSpan -Minutes 1)
-        $principal = New-ScheduledTaskPrincipal `
-            -UserId $identityName `
-            -LogonType Interactive `
-            -RunLevel Highest
-
-        Register-ScheduledTask `
-            -TaskName $TaskName `
-            -Action $action `
-            -Trigger $trigger `
-            -Settings $settings `
-            -Principal $principal `
-            -Force | Out-Null
-
-        $taskRunLevel = [string](Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop).Principal.RunLevel
-        if ($taskRunLevel -ne 'Highest') {
-            throw "Scheduled task registered but reports unexpected RunLevel '$taskRunLevel'."
-        }
-        $taskInstalled = $true
-    } catch {
-        Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; Startup VBS remains configured. A one-time elevated registration is required before the bridge can hold an administrator token. $($_.Exception.Message)"
+    $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    if ([string]::IsNullOrWhiteSpace($identityName)) {
+        throw 'Unable to resolve the current Windows identity for the scheduled-task principal.'
     }
+
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $settings = New-ScheduledTaskSettingsSet `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -StartWhenAvailable `
+        -MultipleInstances IgnoreNew `
+        -RestartCount 255 `
+        -RestartInterval (New-TimeSpan -Minutes 1) `
+        -ExecutionTimeLimit ([TimeSpan]::Zero)
+    $principal = New-ScheduledTaskPrincipal `
+        -UserId $identityName `
+        -LogonType Interactive `
+        -RunLevel Highest
+
+    # Always refresh the definition. Keeping an old Highest task would preserve
+    # stale restart limits or Windows' default 72-hour execution limit.
+    $workerAction = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
+    Register-ScheduledTask `
+        -TaskName $TaskName `
+        -Action $workerAction `
+        -Trigger $trigger `
+        -Settings $settings `
+        -Principal $principal `
+        -Force | Out-Null
+
+    $taskRunLevel = [string](Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop).Principal.RunLevel
+    if ($taskRunLevel -ne 'Highest') {
+        throw "Scheduled task registered but reports unexpected RunLevel '$taskRunLevel'."
+    }
+    $taskInstalled = $true
+
+    $watchdogAction = New-ScheduledTaskAction `
+        -Execute $powershell `
+        -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
+    Register-ScheduledTask `
+        -TaskName $WatchdogTaskName `
+        -Action $watchdogAction `
+        -Trigger $trigger `
+        -Settings $settings `
+        -Principal $principal `
+        -Force | Out-Null
+
+    $watchdogRunLevel = [string](Get-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction Stop).Principal.RunLevel
+    if ($watchdogRunLevel -ne 'Highest') {
+        throw "Watchdog task registered but reports unexpected RunLevel '$watchdogRunLevel'."
+    }
+    $watchdogTaskInstalled = $true
+} catch {
+    Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; independent Startup fallbacks remain configured. A one-time elevated registration is required before both tasks can hold an administrator token. $($_.Exception.Message)"
 }
 
 function Get-HeavenBridgeWorker {
@@ -225,6 +334,31 @@ function Get-HeavenBridgeWorker {
         Sort-Object CreationDate -Descending |
         Select-Object -First 1
 }
+
+function Get-HeavenBridgeWatchdog {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+        } |
+        Sort-Object CreationDate -Descending |
+        Select-Object -First 1
+}
+
+# Stop the old watchdog before intentionally replacing the worker. Otherwise a
+# healthy watchdog can correctly interpret bootstrap's handoff as a crash and
+# race the replacement.
+try { Stop-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction SilentlyContinue } catch {}
+foreach ($watchdogProc in @(
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+        }
+)) {
+    try { Stop-Process -Id ([int]$watchdogProc.ProcessId) -Force -ErrorAction Stop } catch {}
+}
+Start-Sleep -Milliseconds 500
 
 # worker.py now owns a process-lifetime singleton lock. Therefore a bootstrap
 # cannot verify a second live candidate while the old worker remains running.
@@ -288,4 +422,29 @@ if (-not $proc) {
     throw 'Replacement Heaven Local Bridge worker failed and backup restart also failed; Startup fallback remains configured.'
 }
 
-Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel)
+$watchdogManaged = $false
+if ($watchdogTaskInstalled) {
+    try {
+        Start-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction Stop
+        Start-Sleep -Seconds 2
+        if (Get-HeavenBridgeWatchdog) {
+            $watchdogManaged = $true
+        }
+    } catch {
+        Write-Warning "Watchdog Task Scheduler start failed; falling back to direct watchdog start. $($_.Exception.Message)"
+    }
+}
+if (-not $watchdogManaged) {
+    Start-Process -WindowStyle Hidden -FilePath $powershell -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', ('"{0}"' -f $RuntimeWatchdog)
+    ) -WorkingDirectory $env:USERPROFILE | Out-Null
+    Start-Sleep -Seconds 2
+}
+$watchdogProc = Get-HeavenBridgeWatchdog
+if (-not $watchdogProc) {
+    throw 'Heaven Local Bridge watchdog failed to start through both Task Scheduler and direct fallback.'
+}
+
+Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4} watchdog_pid={5} watchdog_managed={6} watchdog_run_level={7}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel, $watchdogProc.ProcessId, $watchdogManaged, $watchdogRunLevel)

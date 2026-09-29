@@ -13,7 +13,9 @@ $RelayBridgeDir = Join-Path $RelayRepoRoot 'heaven-bridge'
 $Bootstrap = Join-Path $BridgeDir 'bootstrap.ps1'
 $GitStateHelper = Join-Path $BridgeDir 'git-state.ps1'
 $WorkerSource = Join-Path $BridgeDir 'worker.py'
+$WatchdogSource = Join-Path $BridgeDir 'watchdog.ps1'
 $RelayWorkerSource = Join-Path $RelayBridgeDir 'worker.py'
+$RelayWatchdogSource = Join-Path $RelayBridgeDir 'watchdog.ps1'
 $PrimaryTests = Join-Path $BridgeDir 'test_worker.py'
 $CompatibilityTests = Join-Path $BridgeDir 'tests\test_worker.py'
 $GitStateTests = Join-Path $BridgeDir 'tests\Test-GitState.ps1'
@@ -21,6 +23,9 @@ $SecretEnvelopeIoTests = Join-Path $BridgeDir 'tests\Test-SecretEnvelopeIo.ps1'
 $SecretEnvelopeHelper = Join-Path $BridgeDir 'New-HeavenSecretEnvelope.ps1'
 $SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
+$RuntimeWatchdog = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-bridge-watchdog.ps1'
+$LocalHeartbeat = Join-Path $env:USERPROFILE 'HeavenBridge\worker-local-heartbeat.json'
+$LoopProgress = Join-Path $env:USERPROFILE 'HeavenBridge\worker-loop-progress.json'
 $HostId = if ($env:HEAVEN_BRIDGE_HOST) { $env:HEAVEN_BRIDGE_HOST.Trim().ToLowerInvariant() } elseif ($env:COMPUTERNAME) { $env:COMPUTERNAME.Trim().ToLowerInvariant() } else { 'heaven' }
 $ScopedHeartbeat = Join-Path $RelayBridgeDir ("status\hosts\{0}\heartbeat.json" -f $HostId)
 $LegacyHeartbeat = Join-Path $RelayBridgeDir 'status\heartbeat.json'
@@ -35,6 +40,35 @@ function Get-CanonicalWorkers {
                 $_.CommandLine -like '*\.mhw-local-tools\heaven-desktop-worker.py*'
             }
     )
+}
+
+function Get-WatchdogWorkers {
+    @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.CommandLine -and
+                $_.CommandLine -like '*\.mhw-local-tools\heaven-bridge-watchdog.ps1*'
+            }
+    )
+}
+
+function Get-LocalHeartbeatState {
+    if (-not (Test-Path $LocalHeartbeat)) {
+        return [ordered]@{ exists = $false; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $null }
+    }
+    try {
+        $row = Get-Content -Raw -Path $LocalHeartbeat | ConvertFrom-Json
+        $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
+        return [ordered]@{
+            exists = $true
+            updated_at = [string]$row.updated_at
+            pid = if ($null -eq $row.pid) { $null } else { [int]$row.pid }
+            age_seconds = [Math]::Max(0, [int]([DateTimeOffset]::UtcNow - $updated).TotalSeconds)
+            parse_error = $null
+        }
+    } catch {
+        return [ordered]@{ exists = $true; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $_.Exception.Message }
+    }
 }
 
 function Get-LegacyWorkers {
@@ -67,6 +101,25 @@ function Get-TaskRunLevel {
     }
 }
 
+function Get-LoopProgressState {
+    if (-not (Test-Path $LoopProgress)) {
+        return [ordered]@{ exists = $false; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $null }
+    }
+    try {
+        $row = Get-Content -Raw -Path $LoopProgress | ConvertFrom-Json
+        $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
+        return [ordered]@{
+            exists = $true
+            updated_at = [string]$row.updated_at
+            pid = if ($null -eq $row.pid) { $null } else { [int]$row.pid }
+            age_seconds = [Math]::Max(0, [int]([DateTimeOffset]::UtcNow - $updated).TotalSeconds)
+            parse_error = $null
+        }
+    } catch {
+        return [ordered]@{ exists = $true; updated_at = $null; pid = $null; age_seconds = $null; parse_error = $_.Exception.Message }
+    }
+}
+
 function Get-HeartbeatState {
     $heartbeatPath = $ScopedHeartbeat
     if (-not (Test-Path $heartbeatPath) -and $HostId -eq 'heaven' -and (Test-Path $LegacyHeartbeat)) {
@@ -96,6 +149,7 @@ function Get-HeartbeatState {
 
 function Show-Status {
     $canonical = @(Get-CanonicalWorkers)
+    $watchdogs = @(Get-WatchdogWorkers)
     $legacy = @(Get-LegacyWorkers)
 
     $branch = $null
@@ -108,22 +162,48 @@ function Show-Status {
 
     $sourceHash = $null
     $runtimeHash = $null
+    $watchdogSourceHash = $null
+    $watchdogRuntimeHash = $null
     if (Test-Path $RelayWorkerSource) {
         $sourceHash = (Get-FileHash $RelayWorkerSource -Algorithm SHA256).Hash
     }
     if (Test-Path $RuntimeWorker) {
         $runtimeHash = (Get-FileHash $RuntimeWorker -Algorithm SHA256).Hash
     }
+    if (Test-Path $RelayWatchdogSource) {
+        $watchdogSourceHash = (Get-FileHash $RelayWatchdogSource -Algorithm SHA256).Hash
+    }
+    if (Test-Path $RuntimeWatchdog) {
+        $watchdogRuntimeHash = (Get-FileHash $RuntimeWatchdog -Algorithm SHA256).Hash
+    }
 
     $heartbeat = Get-HeartbeatState
+    $localHeartbeat = Get-LocalHeartbeatState
+    $loopProgress = Get-LoopProgressState
     $canonicalRunLevel = Get-TaskRunLevel 'Heaven Local Bridge'
+    $watchdogRunLevel = Get-TaskRunLevel 'Heaven Local Bridge Watchdog'
+    $canonicalPid = if ($canonical.Count -eq 1) { [int]$canonical[0].ProcessId } else { $null }
     $healthy = (
         $canonical.Count -eq 1 -and
+        $watchdogs.Count -eq 1 -and
         $legacy.Count -eq 0 -and
         $branch -eq 'heaven-bridge' -and
         $sourceHash -and
         $sourceHash -eq $runtimeHash -and
+        $watchdogSourceHash -and
+        $watchdogSourceHash -eq $watchdogRuntimeHash -and
         $canonicalRunLevel -eq 'Highest' -and
+        $watchdogRunLevel -eq 'Highest' -and
+        $localHeartbeat.exists -and
+        $localHeartbeat.parse_error -eq $null -and
+        $localHeartbeat.pid -eq $canonicalPid -and
+        $localHeartbeat.age_seconds -ne $null -and
+        $localHeartbeat.age_seconds -le 120 -and
+        $loopProgress.exists -and
+        $loopProgress.parse_error -eq $null -and
+        $loopProgress.pid -eq $canonicalPid -and
+        $loopProgress.age_seconds -ne $null -and
+        $loopProgress.age_seconds -le 900 -and
         $heartbeat.exists -and
         $heartbeat.host -eq $HostId -and
         $heartbeat.protocol -eq 'chatgpt-heaven-bridge-v2' -and
@@ -140,17 +220,25 @@ function Show-Status {
         tracked_or_untracked_changes = $gitStatus
         canonical_worker_count = $canonical.Count
         canonical_worker_pids = @($canonical | ForEach-Object { [int]$_.ProcessId })
+        watchdog_count = $watchdogs.Count
+        watchdog_pids = @($watchdogs | ForEach-Object { [int]$_.ProcessId })
         legacy_worker_count = $legacy.Count
         legacy_worker_pids = @($legacy | ForEach-Object { [int]$_.ProcessId })
         source_matches_runtime = [bool]($sourceHash -and $sourceHash -eq $runtimeHash)
+        watchdog_source_matches_runtime = [bool]($watchdogSourceHash -and $watchdogSourceHash -eq $watchdogRuntimeHash)
+        local_heartbeat = $localHeartbeat
+        loop_progress = $loopProgress
         heartbeat = $heartbeat
         scheduled_task = @{
             canonical = Get-TaskState 'Heaven Local Bridge'
             canonical_run_level = $canonicalRunLevel
+            watchdog = Get-TaskState 'Heaven Local Bridge Watchdog'
+            watchdog_run_level = $watchdogRunLevel
             legacy = Get-TaskState 'HeavenLocalBridge'
             legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
-        startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWorker.vbs')
+        startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWatchdog.vbs')
+        legacy_worker_startup_fallback = Test-Path (Join-Path ([Environment]::GetFolderPath('Startup')) 'HeavenBridgeWorker.vbs')
     }
 
     $report | ConvertTo-Json -Depth 6
@@ -175,7 +263,7 @@ function Invoke-Tests {
     & $SecretEnvelopeIoTests
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    foreach ($path in @($Bootstrap, $PSCommandPath, $GitStateHelper, $GitStateTests, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
+    foreach ($path in @($Bootstrap, $PSCommandPath, $WatchdogSource, $GitStateHelper, $GitStateTests, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile(
@@ -194,7 +282,12 @@ function Invoke-Tests {
 
 switch ($Action) {
     'START' {
-        if (@(Get-CanonicalWorkers).Count -eq 0) {
+        if (
+            @(Get-CanonicalWorkers).Count -ne 1 -or
+            @(Get-WatchdogWorkers).Count -ne 1 -or
+            (Get-TaskRunLevel 'Heaven Local Bridge') -ne 'Highest' -or
+            (Get-TaskRunLevel 'Heaven Local Bridge Watchdog') -ne 'Highest'
+        ) {
             & $Bootstrap
         }
         Show-Status
@@ -209,8 +302,15 @@ switch ($Action) {
     }
 
     'STOP' {
-        foreach ($taskName in @('Heaven Local Bridge')) {
+        # Stop the watchdog first or it can correctly interpret the intentional
+        # worker shutdown as a failure and immediately resurrect it.
+        foreach ($taskName in @('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')) {
             try { Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue } catch {}
+        }
+        foreach ($proc in @(Get-WatchdogWorkers)) {
+            try { Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop } catch {
+                Write-Warning "Failed to stop watchdog PID $($proc.ProcessId): $($_.Exception.Message)"
+            }
         }
         foreach ($proc in @(Get-CanonicalWorkers)) {
             try { Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop } catch {
@@ -218,9 +318,14 @@ switch ($Action) {
             }
         }
         Start-Sleep -Milliseconds 500
+        if (@(Get-WatchdogWorkers).Count -gt 0) {
+            throw 'One or more Heaven Bridge watchdogs are still running.'
+        }
         if (@(Get-CanonicalWorkers).Count -gt 0) {
             throw 'One or more canonical Heaven Bridge workers are still running.'
         }
+        Remove-Item $LocalHeartbeat -Force -ErrorAction SilentlyContinue
+        Remove-Item $LoopProgress -Force -ErrorAction SilentlyContinue
         Write-Output 'HEAVEN_BRIDGE_STOPPED'
     }
 

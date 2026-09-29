@@ -56,12 +56,13 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Prefer Heaven Local Bridge for filesystem access, command execution, builds/tests, persistent processes, local agents, screenshots, and structured desktop actions.
 - Do not silently fall back to Remote Desktop Commander. Use Remote Desktop Commander for `heaven` only when the user explicitly authorizes it in the current request.
 - Treat a bridge failure as a bridge repair/recovery problem first.
+- Bridge persistence is part of machine readiness: both `heaven2` and `heaven` must keep the canonical worker plus independent local watchdog installed, elevated, current, and self-healing. A transient worker process without the watchdog/local-heartbeat recovery path is not a healthy control channel. If this invariant fails, repair persistence before treating the host as available.
 - `heaven` is the worker/execution machine; `heaven2` is the main/control and credential-authority machine.
 - **Operator-surface invariant:** the user interacts with `heaven2`. Dashboards, control panels, Agent Control, browser/UI automation, screenshots intended for operator interaction, app/window/mouse/keyboard work, and other human-facing desktop operations default to `heaven2`.
 - Treat `heaven` as a delegated resource/worker by default. Do not move control panels or routine user interaction there merely because builds/tests/agents execute there. Interactive control of `heaven` requires an explicit worker-desktop request or a genuinely worker-specific GUI validation.
 - New Heaven Bridge jobs must set top-level `target_host` explicitly: `heaven2` for control/interactive work, `heaven` for delegated heavy execution. Missing `target_host` is legacy compatibility behavior only and defaults to `heaven`.
 - Never put credentials, tokens, passwords, cookies, private keys, or recovery codes into bridge queue/result/status payloads.
-- The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below.
+- The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below. Bridge bootstrap/runtime deployment must source worker/watchdog code from a clean canonical-`main` source mirror, never from relay-branch drift; the relay checkout is only queue/status/results transport plus compatibility history.
 - For build/test/code execution details, the canonical plugin source is `heaven-bridge/plugin/`, including the `heaven-code-execution` skill.
 
 ### Capacity and runner circuit breakers
@@ -193,3 +194,26 @@ Every agent must preserve this rule system and require its successor to preserve
 If context, execution time, tool access, or usage allowance becomes dangerously low, stop expanding scope and enter the preservation mode defined in the continuity protocol.
 
 **Do not break the chain.**
+
+
+## Control-path diagnosis rule
+
+A missing bridge heartbeat, missing result, unavailable plugin surface, queued self-hosted job, `runner_id=0`, or failed remote-control action proves only that the **control path is unavailable or unhealthy**. It does **not** prove that the target computer is powered off, disconnected, or otherwise offline.
+
+- Never report `heaven2` or `heaven` itself as offline solely from bridge/runner evidence.
+- If the user is actively interacting from the target machine, treat host presence as established and diagnose the bridge, watchdog, runner, relay, or plugin surface separately.
+- Use precise wording such as `heaven2 control path unavailable`, `bridge worker not publishing`, or `self-hosted runner unallocated` until host-level reachability is independently proven.
+- Recovery work must continue against the failed control component; do not convert a control-channel failure into a host-availability conclusion.
+
+
+## Stream/response failure reconciliation rule
+
+A failed ChatGPT/agent response stream is **not** proof that the assigned work failed and is never, by itself, permission to restart the whole assignment.
+
+- Treat a lost response/transport stream as **execution state unknown** and reconcile durable evidence first.
+- Surface the lifecycle as: `STREAM LOST · CHECKING WORK` → exactly one of `WORK DETECTED · INCOMPLETE`, `WORK VERIFIED · COMPLETE`, or `NO DURABLE WORK DETECTED · RETRY`.
+- Durable work includes, when applicable, commits/SHA divergence, changed files, dirty worktrees, artifacts, PR/branch evidence, test/verification records, or other externally persisted execution outputs.
+- If durable work exists but completion is not proven, preserve it and resume/reconcile that exact work. **Do not restart from scratch and do not dispatch a competing full-task duplicate.**
+- Mark work complete only from durable completion evidence (for example explicit completion verification, or integrated/merged-to-main evidence plus passing verification/acceptance evidence). A cheerful final message alone is not completion proof.
+- Automatic replacement is allowed only when no durable work is detected, and it must remain bounded/backed off as Agent Control's retry policy requires.
+- Managers/reviewers must apply this rule after UI/WebSocket/network/stream failures and use repository/CI/worker evidence as the source of truth.

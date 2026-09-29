@@ -278,3 +278,37 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+---
+
+## LR-017 — a control channel needs an independent recovery owner
+
+- **Rule ID:** LR-017
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** persistent local agents, bridge workers, schedulers, watchdogs, operator control planes
+- **Rule:** A persistent control channel is not reliable if the only mechanism that can diagnose or repair it depends on that same channel being alive. Give the channel an independent local recovery owner and a local liveness/progress signal that does not require its network/relay path.
+- **Trigger / evidence:** The `heaven2` Heaven Local Bridge worker was offline while a desktop operation needed it. The existing canonical task had a finite 12-restart budget, no independent watchdog, and did not override Task Scheduler's default execution-time limit. The direct Startup worker fallback could also race the elevated scheduled worker for singleton ownership.
+- **Rationale:** Restart-on-failure is finite and a worker cannot execute its own recovery when it is absent. Network-backed heartbeats do not distinguish process failure from transport failure, and a fallback that races the canonical elevated owner can degrade capability while appearing alive.
+- **Enforcement:** Persistent bridge hosts require separate worker/watchdog ownership, Git-independent local process heartbeat plus queue-loop progress, indefinite Task Scheduler execution, bounded duplicate ownership, startup handoff that prefers the elevated owner, and health checks that verify the recovery path—not just process existence.
+- **Relevant implementation:** PR #230, Heaven Local Bridge plugin v0.8.1.
+- **Supersedes:** none
+- **Superseded by:** none
+
+
+---
+
+## LR-018 — control-path failure is not host-offline evidence
+
+- **Rule ID:** LR-018
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** remote-control diagnosis, bridge/runner/plugin health, machine-presence claims, recovery routing
+- **Rule:** Failure of a bridge, relay heartbeat, self-hosted runner, plugin surface, or remote-control action establishes failure of that control path only. Do not infer that the target host itself is offline without independent host-level evidence.
+- **Trigger / evidence:** During the `heaven2` Agent Control shortcut incident, the user was actively using ChatGPT on `heaven2` while the bridge heartbeat was absent and a self-hosted workflow initially showed `runner_id=0`. Describing the computer itself as offline conflated control-plane reachability with machine presence.
+- **Rationale:** A control process can be dead while the operating system, browser session, network stack, and user session remain healthy. Conflating those layers produces incorrect diagnoses and sends recovery toward the wrong target.
+- **Enforcement:** Report the narrowest failed layer: bridge worker, watchdog, GitHub relay, runner allocation, plugin exposure, or host reachability. If user interaction proves host presence, state that explicitly and continue repairing the control path. Host-offline claims require separate evidence such as failed network reachability from an authorized source plus absence of stronger contrary evidence.
+- **Relevant implementation:** PR #230 establishes independent bridge recovery; this rule governs diagnosis and wording when any control path fails.
+- **Supersedes:** none
+- **Superseded by:** none

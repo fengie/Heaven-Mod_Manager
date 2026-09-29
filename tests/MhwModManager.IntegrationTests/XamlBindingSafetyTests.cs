@@ -117,6 +117,29 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
     }
 
+    [Fact]
+    public void ConflictCollectionChangesNotifyDerivedAttentionState()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.True(Regex.IsMatch(
+            source,
+            @"Conflicts\.CollectionChanged\s*\+=\s*\(_, args\)\s*=>\s*\{[\s\S]*?NotifyConflictDerivedState\(\);[\s\S]*?\};",
+            RegexOptions.CultureInvariant));
+
+        var helper = Regex.Match(
+            source,
+            @"private void NotifyConflictDerivedState\(\)\s*\{(?<body>[\s\S]*?)\}",
+            RegexOptions.CultureInvariant);
+        Assert.True(helper.Success);
+        Assert.Contains("MasterDebugLog.BeginMethod()", helper.Groups["body"].Value);
+        Assert.Contains("OnPropertyChanged(nameof(BlockerCount));", helper.Groups["body"].Value);
+        Assert.Contains("OnPropertyChanged(nameof(HeaderSummary));", helper.Groups["body"].Value);
+        Assert.Contains("DataTrigger Binding=\"{Binding BlockerCount}\" Value=\"0\"", xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
