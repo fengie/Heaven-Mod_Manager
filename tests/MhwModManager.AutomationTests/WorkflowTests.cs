@@ -112,7 +112,7 @@ public sealed class WorkflowTests : IDisposable
     {
         var engine = new CrashBisectorEngine();
         var result = await engine.RunAsync(["a", "b", "c", "d", "e", "f"], (set, _) => Task.FromResult(set.Contains("a") && set.Contains("f")), Token);
-        Assert.True(result.Isolated); Assert.Equal(["a", "f"], result.Suspects);
+        Assert.False(result.Isolated); Assert.Equal(["a", "f"], result.Suspects); Assert.Contains("interacting", result.Message, StringComparison.OrdinalIgnoreCase);
         var baseline = await engine.RunAsync(["a"], (_, _) => Task.FromResult(true), Token); Assert.False(baseline.Isolated);
         var absent = await engine.RunAsync(["a"], (_, _) => Task.FromResult(false), Token); Assert.False(absent.Isolated);
     }
