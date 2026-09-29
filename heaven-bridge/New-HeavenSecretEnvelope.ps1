@@ -6,6 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'secret-envelope-io.ps1')
 if ($Hwnd -le 0) { throw 'Hwnd must be a positive top-level window handle.' }
 if ([string]::IsNullOrWhiteSpace($Destination)) { throw 'Destination is required.' }
 if (-not $InboxPath.StartsWith('\\')) {
@@ -60,10 +61,7 @@ try {
     value = $plain
   }
   $json = $envelope | ConvertTo-Json -Compress
-  $temp = Join-Path $resolvedInbox (".$handle.tmp-$PID-$([Guid]::NewGuid().ToString('N')).json")
-  $final = Join-Path $resolvedInbox ("$handle.json")
-  [IO.File]::WriteAllText($temp, $json, [Text.UTF8Encoding]::new($false))
-  Move-Item -LiteralPath $temp -Destination $final -ErrorAction Stop
+  Publish-HeavenSecretEnvelopeFile -ResolvedInbox $resolvedInbox -Handle $handle -Json $json | Out-Null
 } finally {
   if ($bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
   $plain = $null
