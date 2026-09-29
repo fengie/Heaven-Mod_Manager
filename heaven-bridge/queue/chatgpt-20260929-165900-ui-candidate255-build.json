@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165900-ui-candidate255-build",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $src=Join-Path $env:USERPROFILE 'HeavenBridgeSource'; $root=Join-Path $env:USERPROFILE 'MhwUiEvidence'; $cand=Join-Path $root 'candidate255'; git -C $src fetch origin refs/heads/integrate/finish-leftovers-20260929-v3:refs/remotes/origin/integrate/finish-leftovers-20260929-v3; if(Test-Path $cand){ try { git -C $src worktree remove --force $cand } catch {}; Remove-Item -LiteralPath $cand -Recurse -Force -ErrorAction SilentlyContinue }; git -C $src worktree add --detach $cand 5a7182621e2f147c39f8dc4c5e81992eed481ee7; dotnet build (Join-Path $cand 'src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release -p:NuGetAudit=false; if($LASTEXITCODE -ne 0){ throw 'Candidate UI build failed' }; $ce=(Get-ChildItem (Join-Path $cand 'src\\MhwModManager.App\\bin\\Release') -Filter 'MHW Mod Manager.exe' -Recurse -File | Select-Object -First 1 -ExpandProperty FullName); if(-not $ce){ throw 'Candidate EXE not found' }; Write-Output \"CANDIDATE_EXE=$ce\"",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T16:58:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
