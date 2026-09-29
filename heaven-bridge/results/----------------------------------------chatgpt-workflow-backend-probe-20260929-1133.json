@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------chatgpt-workflow-backend-probe-20260929-1133",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:33:00Z",
+  "status": "cancelled",
+  "exit_code": 130,
+  "started_at": "2026-09-29T11:33:31.979325+00:00",
+  "finished_at": "2026-09-29T11:41:05.805632+00:00",
+  "stdout": "branch 'integration/complete-mod-workflows-backend-20260929' set up to track 'origin/main'.\r\nHEAD is now at fc8ac424 ci: bootstrap parallel Heaven v2 runner\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   31554b4b..fc8ac424  main          -> origin/main\n   695f7fe8..245c552c  heaven-bridge -> origin/heaven-bridge\n * [new branch]        integration/complete-mod-workflows-final-20260929 -> origin/integration/complete-mod-workflows-final-20260929\nPreparing worktree (new branch 'integration/complete-mod-workflows-backend-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-workflow-backend-probe-20260929-1133.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-workflow-backend-probe-20260929-1133.stderr.log",
+    "stdout_bytes": 158,
+    "stderr_bytes": 372,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b6fe5340afad1529faff6c54384e33364f88bbf9733dfa6392f3c325146e54d2"
+}
