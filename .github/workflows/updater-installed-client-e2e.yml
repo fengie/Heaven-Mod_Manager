@@ -64,6 +64,15 @@ jobs:
           dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Run updater runtime ownership regressions
+        shell: powershell
+        run: |
+          $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          $log = Join-Path $evidence 'runtime-ownership-tests.log'
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --filter "FullyQualifiedName~UpdateRuntimeTests" --logger "console;verbosity=detailed" 2>&1 |
+            Tee-Object -FilePath $log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Run real packaged updater E2E
         shell: powershell
         run: |
