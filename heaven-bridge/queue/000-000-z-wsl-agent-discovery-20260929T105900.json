@@ -1,0 +1,14 @@
+{
+  "id": "000-000-z-wsl-agent-discovery-20260929T105900",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:59:00+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'\nwsl.exe -e bash -lc \"echo '===commands==='; for c in docker ollama aider python3 git; do printf '%s=' \\\"$c\\\"; command -v \\\"$c\\\" || true; done; echo '===docker==='; docker ps --format '{{.Names}}|{{.Status}}|{{.Image}}' 2>/dev/null || true; echo '===ollama==='; ollama list 2>/dev/null || true; echo '===python packages==='; python3 - <<'PY'\nimport importlib.util\nfor n in ('aider','litellm','openai'):\n print(n+'='+str(bool(importlib.util.find_spec(n))))\nPY\"",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "priority": "highest"
+}
