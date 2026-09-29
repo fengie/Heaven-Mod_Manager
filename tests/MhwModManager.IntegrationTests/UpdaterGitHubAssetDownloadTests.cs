@@ -115,6 +115,7 @@ public sealed class UpdaterGitHubAssetDownloadTests : IDisposable
             new Uri("https://api.github.com/assets/1"),
             new Uri("https://api.github.com/assets/2"));
         var sawBinaryAccept = false;
+        var sawAuthorization = false;
         using var http = new HttpClient(new FakeHandler(request =>
         {
             sawBinaryAccept = request.Headers.Accept.Any(x =>
@@ -122,6 +123,7 @@ public sealed class UpdaterGitHubAssetDownloadTests : IDisposable
                     x.MediaType,
                     "application/octet-stream",
                     StringComparison.OrdinalIgnoreCase));
+            sawAuthorization = request.Headers.Authorization is not null;
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new ByteArrayContent(bytes)
@@ -131,11 +133,12 @@ public sealed class UpdaterGitHubAssetDownloadTests : IDisposable
 
         await new GitHubUpdateSource(http).DownloadArtifactAsync(
             candidate,
-            "fixture-token",
-            destination,
-            TestToken);
+            token: null,
+            destination: destination,
+            ct: TestToken);
 
         Assert.True(sawBinaryAccept);
+        Assert.False(sawAuthorization);
         Assert.Equal(bytes, await File.ReadAllBytesAsync(destination, TestToken));
     }
 
