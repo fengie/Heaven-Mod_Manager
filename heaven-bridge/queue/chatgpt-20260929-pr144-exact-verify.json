@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-pr144-exact-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "priority": "highest",
+  "created_at": "2026-09-29T11:59:00Z",
+  "ttl_seconds": 7200,
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'; $temp=Join-Path $env:TEMP 'mhw-hcp-pr144-verify'; if(Test-Path $temp){Remove-Item -Recurse -Force $temp}; git clone --branch agent/hcp-converge-0.2.0-20260929 --single-branch https://github.com/fengie/mhw-mods.git $temp; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $sha=(git -C $temp rev-parse HEAD).Trim(); Write-Output ('HEAD_SHA='+$sha); python (Join-Path $temp 'heaven-bridge\\test_worker.py'); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python (Join-Path $temp 'heaven-bridge\\tests\\test_worker.py'); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; python (Join-Path $temp 'plugins\\heaven-control-plane\\verify.py'); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $temp diff --check origin/main...HEAD; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output 'PR144_EXACT_GATE_PASS'; Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue"
+  }
+}
