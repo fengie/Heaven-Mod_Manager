@@ -1,0 +1,19 @@
+{
+  "id": "chatgpt-20260929-102734-screenshot-all",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:27:34Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:28:53.089181+00:00",
+  "finished_at": "2026-09-29T10:28:55.110123+00:00",
+  "host": "heaven",
+  "action": "screenshot",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\screenshots\\chatgpt-20260929-102734-screenshot-all.png",
+    "bytes": 3097338,
+    "display": "0,0,1920x1080",
+    "scope": "all",
+    "monitor_index": null
+  },
+  "job_hash": "43d5626f2b02830ad70b8ddf65ff96f62210786201240af5f0a5d5bf142e4150"
+}
