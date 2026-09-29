@@ -406,3 +406,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+## LR-025 — generated or startup PowerShell needs parser-class regression coverage
+
+- **Rule ID:** LR-025
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** PowerShell launchers, startup/recovery scripts, generated PowerShell, Windows automation
+- **Rule:** Before a PowerShell script becomes a startup, recovery, installer, or control-plane dependency, validate it with the PowerShell parser on the target Windows surface and add a platform-independent regression for any escaped syntax class. In double-quoted strings, punctuation immediately after a variable must not create an unintended scoped-variable token; prefer `${name}:` or formatting over `$name:`.
+- **Trigger / evidence:** Agent Control v0.5.6 startup restore reached heaven2 but failed parser validation because a log line contained `$taskName:`.
+- **Rationale:** Structural tests can prove wiring while missing PowerShell-specific lexical rules. Startup code has a high blast radius because a syntax error can disable the recovery mechanism intended to repair everything else.
+- **Enforcement:** Startup/recovery delivery gates parse every changed `.ps1` with `System.Management.Automation.Language.Parser` on Windows before registration/execution. Cross-platform source tests reject the known ambiguous variable-colon pattern so the class is caught even when PowerShell is unavailable.
+- **Relevant commit/run:** failed bridge job `chatgpt-startup-setup-restore-heaven2-20260929-1819`; fixes `f78ac9337b6df935170bfcf62b726cd003d16896`, `989bebbb567cb98bffd4f41e206e09ea4c9878af`.
+- **Supersedes:** none
+- **Superseded by:** none
