@@ -1,0 +1,21 @@
+{
+  "id": "agent-control-review-0a87bb6a021f",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:26:30.472Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T09:26:56.579554+00:00",
+  "finished_at": "2026-09-29T09:27:01.812374+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n * branch            feature/agent-control-plane-v2-20260928 -> FETCH_HEAD\nPreparing worktree (detached HEAD 0a87bb6)\nOpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\\AppData\\Local\\Temp\\agent-control-review-0a87bb6a021f\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ec7d-209b-79b3-9bd4-8930793c8c3a\n--------\nuser\nYou are the independent release-blocking reviewer for Agent Control v0.5.0.\nReview exact candidate 0a87bb6a021fabd76f1de452dcb721ee35d58e40 against canonical main aba60bf19c09da2d0558031bb2bbbf06362e3621.\nThis is review-only: do not edit files, commit, push, or mutate repository state.\n\nInspect the full diff and relevant surrounding code under tools/agent-control plus the Agent Control PR gate.\nFocus especially on:\n- authenticated heaven2 -> heaven remote execution and fail-closed behavior;\n- process ownership, remote cancellation, lease release, and stop safety;\n- normalized federated identity, heartbeat freshness, stale/disconnected/live counting, and duplicate reconciliation;\n- ChatGPT/GitHub/manual bridge registration honesty (no invented telemetry);\n- routing duplicate-work prevention and autonomy server-side authorization;\n- local Codex invocation safety;\n- structured verification/review evidence flow;\n- state migration/persistence and restart semantics;\n- UI/CLI consistency, docs/version consistency, and accidental regressions relative to main.\n\nTreat hosted tests as evidence, not proof. Identify concrete correctness, security, data-loss, integration, or release-blocking defects.\n\nOutput ONLY this compact structure:\nVERDICT: APPROVED\nBLOCKERS:\n- none\nNONBLOCKING:\n- <items or none>\nEVIDENCE:\n- <specific files/functions/tests reviewed>\n\nIf any release-blocking issue exists, use VERDICT: BLOCKED and list exact blockers with file/function and failure mode.\r\n\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nindependent review failed with 1\r\nAt line:28 char:227\r\n+ ... DE -ne 0) { throw ('independent review failed with ' + $LASTEXITCODE) ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (independent review failed with 1:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : independent review failed with 1\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-review-0a87bb6a021f.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\agent-control-review-0a87bb6a021f.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2771,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2a0a92f69db7876cd5aacfd5813b1b8fc3d8959cae53bfa9ceb81cbf3431f573"
+}
