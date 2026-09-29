@@ -1,0 +1,9 @@
+{
+  "id": "hcp-exact-main-verify-20260929-1128",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:54:12.457926+00:00"
+}
