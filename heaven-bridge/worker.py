@@ -16,13 +16,25 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 6
+WORKER_VERSION = 7
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
 LEGACY_DEFAULT_HOST = "heaven"
 CONTROL_HOST = "heaven2"
 HOST_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
+
+def _float_env(name, default, minimum, maximum):
+    try:
+        value = float(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        value = float(default)
+    return max(float(minimum), min(float(value), float(maximum)))
+
+
+def _default_worker_limit():
+    logical = max(2, int(os.cpu_count() or 4))
+    return max(8, min(24, (logical * 3 + 3) // 4))
 
 ROOT = Path(os.environ.get("HEAVEN_BRIDGE_REPO", str(Path.home() / "HeavenBridgeRepo"))).resolve()
 QUEUE = ROOT / "heaven-bridge" / "queue"
@@ -49,7 +61,19 @@ MAX_READ_BYTES = int(os.environ.get("HEAVEN_BRIDGE_MAX_READ_BYTES", "2000000"))
 MAX_BINARY_CHUNK = int(os.environ.get("HEAVEN_BRIDGE_MAX_BINARY_CHUNK", "1000000"))
 MAX_SEARCH_FILE_BYTES = int(os.environ.get("HEAVEN_BRIDGE_MAX_SEARCH_FILE_BYTES", "2000000"))
 MAX_RESULTS = int(os.environ.get("HEAVEN_BRIDGE_MAX_RESULTS", "500"))
-MAX_WORKERS = max(2, min(int(os.environ.get("HEAVEN_BRIDGE_MAX_WORKERS", "4")), 8))
+LOGICAL_CPUS = max(2, int(os.cpu_count() or 4))
+AUTO_MAX_WORKERS = _default_worker_limit()
+MAX_WORKERS = max(2, min(int(os.environ.get("HEAVEN_BRIDGE_MAX_WORKERS", str(AUTO_MAX_WORKERS))), 32))
+MEMORY_RESERVE_GB = _float_env("HEAVEN_BRIDGE_MEMORY_RESERVE_GB", 4.0, 1.0, 64.0)
+MEMORY_RESERVE_PERCENT = _float_env("HEAVEN_BRIDGE_MEMORY_RESERVE_PERCENT", 12.0, 0.0, 50.0)
+MEMORY_PER_WORKER_GB = _float_env("HEAVEN_BRIDGE_MEMORY_PER_WORKER_GB", 1.25, 0.25, 16.0)
+MAX_STARTS_PER_TICK = max(
+    1,
+    min(
+        int(os.environ.get("HEAVEN_BRIDGE_MAX_STARTS_PER_TICK", str(max(2, min(8, MAX_WORKERS // 3))))),
+        16,
+    ),
+)
 DEFAULT_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_DEFAULT_TTL", "21600"))
 MAX_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_MAX_TTL", "86400"))
 FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_FUTURE_SKEW", "300"))
@@ -69,6 +93,93 @@ SESSIONS = {}
 PROCESSED = {}
 RECENT_STARTS = collections.deque()
 LAST_HEARTBEAT = 0.0
+
+
+class _MemoryStatusEx(ctypes.Structure):
+    _fields_ = [
+        ("dwLength", wintypes.DWORD),
+        ("dwMemoryLoad", wintypes.DWORD),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+    ]
+
+
+def memory_snapshot():
+    if os.name == "nt":
+        status = _MemoryStatusEx()
+        status.dwLength = ctypes.sizeof(_MemoryStatusEx)
+        try:
+            ok = ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))
+        except Exception:
+            ok = 0
+        if ok:
+            return {
+                "total_bytes": int(status.ullTotalPhys),
+                "available_bytes": int(status.ullAvailPhys),
+                "load_percent": int(status.dwMemoryLoad),
+            }
+
+    try:
+        page_size = int(os.sysconf("SC_PAGE_SIZE"))
+        total_pages = int(os.sysconf("SC_PHYS_PAGES"))
+        available_pages = int(os.sysconf("SC_AVPHYS_PAGES"))
+        return {
+            "total_bytes": page_size * total_pages,
+            "available_bytes": page_size * available_pages,
+            "load_percent": None,
+        }
+    except (AttributeError, OSError, TypeError, ValueError):
+        return None
+
+
+def worker_capacity_snapshot(active_noncontrol=0):
+    active = max(0, int(active_noncontrol or 0))
+    memory = memory_snapshot()
+    base = {
+        "logical_cpus": LOGICAL_CPUS,
+        "auto_max_workers": AUTO_MAX_WORKERS,
+        "configured_max_workers": MAX_WORKERS,
+        "max_starts_per_tick": MAX_STARTS_PER_TICK,
+        "active_noncontrol": active,
+        "memory_reserve_gb": MEMORY_RESERVE_GB,
+        "memory_reserve_percent": MEMORY_RESERVE_PERCENT,
+        "memory_per_worker_gb": MEMORY_PER_WORKER_GB,
+    }
+    if not memory:
+        effective = max(active, MAX_WORKERS)
+        return {
+            **base,
+            "effective_max_workers": effective,
+            "available_start_slots": max(0, MAX_WORKERS - active),
+            "memory": None,
+            "limited_by": "configured-limit",
+        }
+
+    gib = float(1024 ** 3)
+    total_gb = memory["total_bytes"] / gib
+    available_gb = memory["available_bytes"] / gib
+    reserve_gb = max(MEMORY_RESERVE_GB, total_gb * MEMORY_RESERVE_PERCENT / 100.0)
+    startable_by_memory = max(0, int((available_gb - reserve_gb) // MEMORY_PER_WORKER_GB))
+    effective = max(active, min(MAX_WORKERS, active + startable_by_memory))
+    available_slots = max(0, effective - active)
+    return {
+        **base,
+        "effective_max_workers": effective,
+        "available_start_slots": available_slots,
+        "memory": {
+            "total_gb": round(total_gb, 2),
+            "available_gb": round(available_gb, 2),
+            "load_percent": memory.get("load_percent"),
+            "effective_reserve_gb": round(reserve_gb, 2),
+        },
+        "limited_by": "memory-headroom" if effective < MAX_WORKERS else "configured-limit",
+    }
+
 
 SENSITIVE_ENV_RE = re.compile(r"(PASS|PASSWORD|TOKEN|SECRET|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH)", re.I)
 CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
@@ -2315,10 +2426,14 @@ def run_job(job_id, job, cancel_event):
 
     if action == "health":
         secret_status = secret_channel_status()
+        with STATE_LOCK:
+            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
+        capacity = worker_capacity_snapshot(active_noncontrol)
         data = {
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": advertised_actions(),
             "host": current_host(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
+            "resources": capacity,
             "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
             "capabilities": {
@@ -2830,10 +2945,12 @@ def heartbeat(force=False):
         return
     with STATE_LOCK:
         running = [{"id": jid, "action": info["action"], "started_at": info["started_at"]} for jid, info in RUNNING.items()]
+        active_noncontrol = sum(1 for info in RUNNING.values() if info.get("future") is not None)
     host = current_host()
     body = {
         "host": host, "pid": os.getpid(), "worker_version": WORKER_VERSION,
         "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
+        "resources": worker_capacity_snapshot(active_noncontrol),
         "capabilities": advertised_actions(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
     }
     try:
@@ -2948,6 +3065,11 @@ def process_queue(executor):
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
 
     files = sorted(QUEUE.glob("*.json"), key=queue_order_key)
+    with STATE_LOCK:
+        initial_active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
+    capacity = worker_capacity_snapshot(initial_active_noncontrol)
+    start_budget = min(MAX_STARTS_PER_TICK, capacity["available_start_slots"])
+
     for path in files:
         job_id = path.stem
         if not safe_id(job_id):
@@ -2985,9 +3107,7 @@ def process_queue(executor):
             continue
 
         action = str(job.get("action") or job.get("kind") or "codex").lower()
-        with STATE_LOCK:
-            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
-        if action not in CONTROL_ACTIONS and active_noncontrol >= MAX_WORKERS:
+        if action not in CONTROL_ACTIONS and start_budget <= 0:
             continue
         if action not in CONTROL_ACTIONS and not rate_limit_ok():
             log("rate limit reached; deferring non-control jobs")
@@ -3005,6 +3125,7 @@ def process_queue(executor):
         else:
             future = executor.submit(execute_job, job_id, job, digest, cancel_event)
             info["future"] = future
+            start_budget -= 1
 
 
 
@@ -3031,6 +3152,7 @@ def main():
         recovery = recover_sessions()
         log(
             f"worker starting host={current_host()} version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
+            f"auto_max_workers={AUTO_MAX_WORKERS} max_starts_per_tick={MAX_STARTS_PER_TICK} "
             f"auth={auth_mode()} sessions_loaded={recovery['loaded']} sessions_live={recovery['live']} "
             f"sessions_blocked={recovery['blocked']}"
         )
