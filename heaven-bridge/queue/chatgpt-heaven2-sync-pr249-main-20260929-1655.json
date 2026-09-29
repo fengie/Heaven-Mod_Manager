@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-heaven2-sync-pr249-main-20260929-1655",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $work=Join-Path $env:USERPROFILE 'HeavenWork\\sync-pr249-main'; if(Test-Path $work){Remove-Item -Recurse -Force $work}; git clone --branch fix/bridge-bootstrap-self-contained-20260929 --single-branch https://github.com/fengie/mhw-mods.git $work; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Set-Location $work; git fetch origin main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git merge --no-edit origin/main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git push origin HEAD:fix/bridge-bootstrap-self-contained-20260929; exit $LASTEXITCODE",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T16:54:55Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
