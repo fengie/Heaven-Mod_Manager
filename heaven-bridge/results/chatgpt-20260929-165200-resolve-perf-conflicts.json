@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-165200-resolve-perf-conflicts",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:52:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:56:43.424781+00:00",
+  "finished_at": "2026-09-29T16:56:43.854782+00:00",
+  "stdout": "",
+  "stderr": "Set-Content : A positional parameter cannot be found that accepts argument '+'.\r\nAt line:2 char:69\r\n+ ... isting=Get-Content -Raw $chg; Set-Content -LiteralPath $chg -Value @'\r\n+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidArgument: (:) [Set-Content], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : PositionalParameterNotFound,Microsoft.PowerShell.Commands.SetContentCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165200-resolve-perf-conflicts.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165200-resolve-perf-conflicts.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 466,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "463a50f619b9b488059ec9263eed6fcc8b5f87961b2b8ab6c151347f3098594a"
+}
