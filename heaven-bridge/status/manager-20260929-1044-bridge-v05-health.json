@@ -1,9 +1,10 @@
 {
   "id": "manager-20260929-1044-bridge-v05-health",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:45:42.610896+00:00"
+  "updated_at": "2026-09-29T10:46:06.293534+00:00",
+  "exit_code": 0
 }
