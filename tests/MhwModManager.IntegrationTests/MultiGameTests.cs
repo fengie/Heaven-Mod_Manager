@@ -1,3 +1,5 @@
+using System.Text.Json;
+using MhwModManager.App;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Storage;
@@ -7,6 +9,7 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class MultiGameTests : IDisposable
 {
+    private static readonly JsonSerializerOptions JsonOptions=new(JsonSerializerDefaults.Web){WriteIndented=true};
     private static CancellationToken TestToken=>TestContext.Current.CancellationToken;
     private readonly string root=Path.Combine(Path.GetTempPath(),"umm-multigame-"+Guid.NewGuid().ToString("N"));
     public MultiGameTests()=>Directory.CreateDirectory(root);
@@ -23,6 +26,57 @@ public sealed class MultiGameTests : IDisposable
         Assert.Equal("Example",profile.DisplayName);
         Assert.Equal("Mods",profile.ModRootRelativePath,StringComparer.OrdinalIgnoreCase);
         Assert.Equal(profile.Id,registry.GetActive()!.Id);
+    }
+
+    [Theory]
+    [InlineData(@"..\\..\\escaped")]
+    [InlineData(@"bad\\child")]
+    [InlineData("bad/child")]
+    [InlineData("Not Canonical")]
+    [InlineData("UPPERCASE")]
+    public void Registry_rejects_noncanonical_persisted_ids_without_rewriting_registry(string id)
+    {
+        var game=Path.Combine(root,"registry-game");Directory.CreateDirectory(game);
+        var exe=Path.Combine(game,"Game.exe");File.WriteAllBytes(exe,[0x4d,0x5a]);
+        var profile=GameProfile.Generic("safe-game","Safe Game",game,"Game.exe","") with { Id=id };
+        var state=Path.Combine(root,"registry-state");Directory.CreateDirectory(state);
+        var registry=new GameProfileRegistry(state);
+        var json=JsonSerializer.Serialize(new[]{profile},JsonOptions);
+        File.WriteAllText(registry.RegistryPath,json);
+
+        Assert.Empty(registry.Load());
+        Assert.Equal(json,File.ReadAllText(registry.RegistryPath));
+    }
+
+    [Fact]
+    public void App_paths_ignore_malicious_active_profile_before_creating_workspace_paths()
+    {
+        var tool=Path.Combine(root,"tool");var state=Path.Combine(tool,"State");Directory.CreateDirectory(state);
+        var game=Path.Combine(root,"app-game");Directory.CreateDirectory(game);
+        var exe=Path.Combine(game,"Game.exe");File.WriteAllBytes(exe,[0x4d,0x5a]);
+        var safe=GameProfile.Generic("safe-game","Safe Game",game,"Game.exe","");
+        var malicious=safe with { Id=@"..\\..\\escaped-workspace", DisplayName="Malicious" };
+        var registry=new GameProfileRegistry(state);
+        var json=JsonSerializer.Serialize(new[]{malicious,safe},JsonOptions);
+        File.WriteAllText(registry.RegistryPath,json);File.WriteAllText(Path.Combine(state,"active-game.txt"),malicious.Id);
+        var escapedWorkspace=Path.Combine(root,"escaped-workspace");Directory.CreateDirectory(escapedWorkspace);
+        var sentinel=Path.Combine(escapedWorkspace,"sentinel.txt");File.WriteAllText(sentinel,"keep");
+        var oldHome=Environment.GetEnvironmentVariable("MOD_MANAGER_HOME");
+        var oldLegacyHome=Environment.GetEnvironmentVariable("MHW_MANAGER_HOME");
+        try
+        {
+            Environment.SetEnvironmentVariable("MOD_MANAGER_HOME",tool);Environment.SetEnvironmentVariable("MHW_MANAGER_HOME",null);
+            var paths=AppPaths.Discover();
+            Assert.Equal(safe.Id,paths.Game.Id);
+            Assert.False(Directory.Exists(Path.Combine(escapedWorkspace,"Mods")));
+            Assert.False(Directory.Exists(Path.Combine(tool,"escaped-workspace","Next")));
+            Assert.Equal("keep",File.ReadAllText(sentinel));
+            Assert.Equal(json,File.ReadAllText(registry.RegistryPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MOD_MANAGER_HOME",oldHome);Environment.SetEnvironmentVariable("MHW_MANAGER_HOME",oldLegacyHome);
+        }
     }
 
     [Fact]

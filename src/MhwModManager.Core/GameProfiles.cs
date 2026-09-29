@@ -92,6 +92,13 @@ public sealed record GameProfile(
         return string.IsNullOrWhiteSpace(collapsed)?"game":collapsed;
     }
 
+    public static bool IsCanonicalId(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(string.IsNullOrWhiteSpace(value)||value.Contains('\\')||value.Contains('/')||Path.IsPathRooted(value))return false;
+        return value.Equals(NormalizeId(value),StringComparison.Ordinal);
+    }
+
     /// <summary>Validates a path relative to the game root without applying managed-file namespaces.</summary>
     public static string NormalizeRelative(string value,bool allowEmpty)
     {
