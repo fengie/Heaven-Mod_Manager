@@ -4,27 +4,54 @@ on:
   push:
     branches: [main]
     paths:
-      - "plugins/heaven-control-plane/**"
-      - ".github/workflows/heaven-control-plane-gate.yml"
+      - 'plugins/heaven-control-plane/**'
+      - '.github/workflows/heaven-control-plane-gate.yml'
   pull_request:
     paths:
-      - "plugins/heaven-control-plane/**"
-      - ".github/workflows/heaven-control-plane-gate.yml"
+      - 'plugins/heaven-control-plane/**'
+      - '.github/workflows/heaven-control-plane-gate.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: heaven-control-plane-gate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    name: Verify control plane on Heaven
+    runs-on: [self-hosted, Windows, X64, heaven]
+    timeout-minutes: 20
     steps:
-      - name: Check out repository
+      - name: Check out exact source
         uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Verify Heaven Control Plane
-        run: python plugins/heaven-control-plane/verify.py
+
+      - name: Verify system Python
+        shell: pwsh
+        run: |
+          python --version
+          python -c "import sys; assert sys.version_info >= (3, 10), sys.version"
+
+      - name: Compile bridge and control-plane Python
+        shell: pwsh
+        run: |
+          python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py
+          python -m compileall -q plugins/heaven-control-plane/heaven_control_plane plugins/heaven-control-plane/tests plugins/heaven-control-plane/verify.py
+
+      - name: Run Heaven Bridge regressions
+        shell: pwsh
+        run: |
+          python heaven-bridge/test_worker.py
+          python heaven-bridge/tests/test_worker.py
+
+      - name: Run Heaven control-plane vertical slice tests
+        shell: pwsh
+        run: |
+          python plugins/heaven-control-plane/verify.py
+
+      - name: Check patch whitespace
+        shell: pwsh
+        run: |
+          git diff --check HEAD^ HEAD
