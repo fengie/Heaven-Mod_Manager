@@ -14,6 +14,18 @@ Unless the user explicitly says **read only**, **review only**, **summarize only
 - Preserve safety, ownership, verification, and repository policy while executing.
 - If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
 
+## Heaven Local Bridge execution policy
+
+For computer work on the device named `heaven`, use the repository-backed **Heaven Local Bridge** as the default execution path.
+
+- Prefer Heaven Local Bridge for filesystem access, command execution, builds/tests, persistent processes, local agents, screenshots, and structured desktop actions.
+- Do not silently fall back to Remote Desktop Commander. Use Remote Desktop Commander for `heaven` only when the user explicitly authorizes it in the current request.
+- Treat a bridge failure as a bridge repair/recovery problem first.
+- `heaven` is the worker/execution machine; `heaven2` is the main/control and credential-authority machine.
+- Never put credentials, tokens, passwords, cookies, private keys, or recovery codes into bridge queue/result/status payloads.
+- The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below.
+- For build/test/code execution details, the canonical plugin source is `heaven-bridge/plugin/`, including the `heaven-code-execution` skill.
+
 ## Mandatory `main` integration rule
 
 `GLOBAL_GIT_DIRECTIVE.md` is a mandatory repository-wide operating rule for every development agent, sub-agent, swarm, manager, integration agent, reviewer, and automation.
