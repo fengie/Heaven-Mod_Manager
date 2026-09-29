@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
 using MhwModManager.Storage;
@@ -26,11 +25,7 @@ public sealed class AutoPopulateServiceTests : IDisposable
 
         await File.WriteAllTextAsync(
             Path.Combine(addon.SourcePath, "mod-manager.requirements.json"),
-            JsonSerializer.Serialize(new
-            {
-                mods = new[] { "base" },
-                textures = new[] { @"nativePC\shared\skin.tex" }
-            }),
+            """{"mods":["base"],"textures":["nativePC\\shared\\skin.tex"]}""",
             TestContext.Current.CancellationToken);
 
         await db.ReplaceModFilesAsync("base",
@@ -44,6 +39,16 @@ public sealed class AutoPopulateServiceTests : IDisposable
             TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("conflict",
             [ModFile("conflict", @"nativePC\armor\body.bin", "other", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            """
+            INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at)
+            VALUES('auto-populate-hard-conflict','Incompatible','ModPair','addon','conflict',NULL,NULL,'Auto Populate regression hard incompatibility',1,$t)
+            """,
+            new Dictionary<string,object?>
+            {
+                ["$t"] = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture)
+            },
             TestContext.Current.CancellationToken);
 
         var game = GameProfile.MonsterHunterWorld(gameRoot);
