@@ -125,6 +125,9 @@ export function machinePolicyFor(machine, { repositoryWriteAuthorized = false } 
   if (name === "heaven" && repositoryWriteAuthorized) {
     return [...base, "This task includes explicit per-task repository-write authorization on heaven; keep that authorization narrow to the assigned boundary."];
   }
+  if (name === "heaven") {
+    return [...base, "This exact assignment does not include repository-write authorization for heaven: do not clone, fetch, pull, push, create/change remotes, alter credentials, create Git worktrees, or modify repository contents on heaven. Use read-only worker actions or an authorized delivery path until permission is explicit."];
+  }
   return base;
 }
 
