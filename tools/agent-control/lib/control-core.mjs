@@ -1,7 +1,6 @@
 import { defaultFederationState, federationSnapshot, migrateFederationState } from "./federated-registry.mjs";
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
-import { defaultFederationState, migrateFederationState } from "./federated-registry.mjs";
 
 export const STATE_VERSION = 5;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
