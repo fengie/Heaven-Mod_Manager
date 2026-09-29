@@ -1,0 +1,9 @@
+{
+  "id": "manager-20260929-updater-acquire-proclist-a2",
+  "state": "running",
+  "action": "proc_list",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:37:49.948282+00:00"
+}
