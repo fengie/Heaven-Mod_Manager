@@ -144,7 +144,7 @@ function Remove-ExistingConfiguration {
     $token = Get-RemovalToken
     Push-Location $RunnerDirectory
     try {
-        & (Join-Path $RunnerDirectory 'config.cmd') remove --unattended --token $token
+        & (Join-Path $RunnerDirectory 'config.cmd') remove --token $token
         if ($LASTEXITCODE -ne 0) { throw "config.cmd remove failed with exit code $LASTEXITCODE." }
     } finally {
         Pop-Location
