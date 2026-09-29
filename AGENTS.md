@@ -89,6 +89,21 @@ Unless the user explicitly says **read only**, **review only**, **summarize only
 - Preserve safety, ownership, verification, and repository policy while executing.
 - If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
 
+
+### Mandatory research-and-wraparound rule
+
+A blocked or unavailable direct solution is **not** a stopping condition by itself. When the obvious path cannot satisfy the user's underlying requirement, agents must research and pursue an authorized alternate path instead of handing the limitation back to the user.
+
+1. Prove the direct-path limitation with current evidence. Do not treat stale memory, one failed call, or an assumed platform limitation as proof.
+2. Research the missing capability, constraint, protocol, API, tool/plugin surface, repository implementation, and relevant authoritative documentation needed to understand viable alternatives.
+3. Enumerate materially viable authorized routes, including existing plugins/tools, local implementations, adapters/wrappers, alternate APIs, machine-local execution, repository automation, or a newly implemented compatibility layer.
+4. Prefer the narrowest, safest, most maintainable workaround that still fulfills the **underlying user outcome**, not merely the literal failed mechanism.
+5. When no direct integration exists but the requirement is technically achievable, build or extend a wrapper/adapter/bridge/local replacement rather than stopping at "unsupported." Reuse existing repository primitives and ownership boundaries before creating parallel implementations.
+6. Verify the workaround end to end against the original acceptance criteria. A fallback is not successful merely because it runs; it must actually deliver the requested result.
+7. Record durable knowledge when the workaround reveals a reusable capability, constraint, or failure mode, and promote general lessons into `_AGENT_TRAINING/`.
+
+Wraparounds must **not** bypass authentication, authorization, user consent, safety controls, destructive-operation protections, repository governance, or other legitimate hard boundaries. A task may be declared genuinely blocked only after reasonable current research and authorized alternate paths have been exhausted or shown incapable, with exact evidence preserved.
+
 ## Mandatory no-Work-handoff execution mode
 
 Normal Chat is the preferred interactive surface. ChatGPT Work is deny-by-default.
