@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0856-proxy-access-control-proof",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:56:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:56:27.751655+00:00",
+  "finished_at": "2026-09-29T08:56:28.175577+00:00",
+  "stdout": "001: import http from 'node:http';\r\n002: import dns from 'node:dns/promises';\r\n003: \r\n004: const targetHost = '127.0.0.1';\r\n005: const targetPort = 7331;\r\n006: const listenPort = 7443;\r\n007: const normalize = value => (value || '').replace(/^::ffff:/, '').toLowerCase();\r\n008: const trusted = new Set(['127.0.0.1', '::1']);\r\n009: \r\n010: async function refreshTrusted() {\r\n011:   for (const host of ['heaven2', 'heaven2.myfiosgateway.com']) {\r\n012:     try {\r\n013:       const rows = await dns.lookup(host, { all: true, verbatim: true });\r\n014:       for (const row of rows) trusted.add(normalize(row.address));\r\n015:     } catch {}\r\n016:   }\r\n017: }\r\n018: \r\n019: await refreshTrusted();\r\n020: setInterval(refreshTrusted, 60000).unref();\r\n021: \r\n022: const server = http.createServer(async (req, res) => {\r\n023:   const remote = normalize(req.socket.remoteAddress);\r\n024:   if (!trusted.has(remote)) {\r\n025:     await refreshTrusted();\r\n026:     if (!trusted.has(remote)) {\r\n027:       res.writeHead(403, { 'Content-Type': 'text/plain' });\r\n028:       res.end('Forbidden: LAN peer not trusted');\r\n029:       return;\r\n030:     }\r\n031:   }\r\n032:   if (req.url === '/health') {\r\n033:     res.writeHead(200, { 'Content-Type': 'application/json' });\r\n034:     res.end(JSON.stringify({ ok: true, peer: remote, target: targetPort }));\r\n035:     return;\r\n036:   }\r\n037:   const headers = { ...req.headers, host: `${targetHost}:${targetPort}` };\r\n038:   const proxy = http.request({\r\n039:     host: targetHost,\r\n040:     port: targetPort,\r\n041:     path: req.url,\r\n042:     method: req.method,\r\n043:     headers\r\n044:   }, upstream => {\r\n045:     res.writeHead(upstream.statusCode || 502, upstream.headers);\r\n046:     upstream.pipe(res);\r\n047:   });\r\n048:   proxy.on('error', err => {\r\n049:     res.writeHead(502, { 'Content-Type': 'text/plain' });\r\n050:     res.end(err.message);\r\n051:   });\r\n052:   req.pipe(proxy);\r\n053: });\r\n054: \r\n055: server.listen({ port: listenPort, host: '::', ipv6Only: false }, () => {\r\n056:   console.log(`Heaven LAN control proxy listening on [::]:${listenPort}; backend 127.0.0.1:${targetPort}`);\r\n057: });\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0856-proxy-access-control-proof.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0856-proxy-access-control-proof.stderr.log",
+    "stdout_bytes": 2129,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "af3f397e2bb856c2eaf4bb3487822ac571c51457adb6d45f7308047c2d07f5a3"
+}
