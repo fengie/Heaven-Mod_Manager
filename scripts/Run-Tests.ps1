@@ -8,7 +8,7 @@ try{
     Write-MhwMasterDebug -Root $Root -Area 'RUN-TESTS' -Message 'Starting Core tests.'
     dotnet test .\tests\MhwModManager.Tests\MhwModManager.Tests.csproj -c Release 2>&1 | ForEach-Object{$line=$_.ToString();Write-Host $line;Write-MhwMasterDebug -Root $Root -Area 'DOTNET' -Message ('[Core tests] '+$line)}
     if($LASTEXITCODE){throw "Core tests failed with exit code $LASTEXITCODE"}
-    if($env:OS -eq 'Windows_NT'){
+    if([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT){
         Write-MhwMasterDebug -Root $Root -Area 'RUN-TESTS' -Message 'Starting Integration tests.'
         dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release 2>&1 | ForEach-Object{$line=$_.ToString();Write-Host $line;Write-MhwMasterDebug -Root $Root -Area 'DOTNET' -Message ('[Integration tests] '+$line)}
         if($LASTEXITCODE){throw "Integration tests failed with exit code $LASTEXITCODE"}
