@@ -117,7 +117,25 @@ sh.Run """$escapedPythonw"" ""$escapedWorker""", 0, False
 "@
 Set-Content -Path $StartupVbs -Value $vbs -Encoding ASCII
 
-# Prefer Task Scheduler because it supports restart-on-failure. This is user-level; fallback remains the Startup VBS.
+# Validate the exact repository source before any running worker is stopped.
+# This is intentionally stronger than syntax-only validation: bootstrap must not
+# trade a working control path for an untested replacement.
+$TestWorker = Join-Path $RepoRoot 'heaven-bridge\test_worker.py'
+if (Test-Path $TestWorker) {
+    Push-Location $RepoRoot
+    try {
+        & $python -m unittest -q 'heaven-bridge\test_worker.py'
+        if ($LASTEXITCODE -ne 0) {
+            throw "Worker regression suite failed with exit code $LASTEXITCODE."
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Prefer Task Scheduler because it supports restart-on-failure. The Startup VBS
+# remains the no-elevation fallback when task registration is unavailable.
+$taskInstalled = $false
 try {
     $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
     $trigger = New-ScheduledTaskTrigger -AtLogOn
@@ -129,13 +147,28 @@ try {
         -RestartCount 12 `
         -RestartInterval (New-TimeSpan -Minutes 1)
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null
+    $taskInstalled = $true
 } catch {
     Write-Warning "Scheduled Task install failed; Startup VBS remains configured. $($_.Exception.Message)"
 }
 
-# Fail-safe handoff: start and verify the replacement before touching any
-# existing bridge worker. A failed upgrade must never strand ChatGPT without
-# its only authorized local-control path.
+function Get-HeavenBridgeWorker {
+    Get-CimInstance Win32_Process |
+        Where-Object {
+            $_.CommandLine -and (
+                $_.CommandLine -like '*\.mhw-local-tools\heaven-desktop-worker.py*' -or
+                $_.CommandLine -like '*\heaven-bridge\worker.py*'
+            )
+        } |
+        Sort-Object CreationDate -Descending |
+        Select-Object -First 1
+}
+
+# worker.py now owns a process-lifetime singleton lock. Therefore a bootstrap
+# cannot verify a second live candidate while the old worker remains running.
+# The safe handoff is: static verification + backup, stop old worker(s), start
+# exactly one replacement, and restore/restart the backup if the replacement
+# does not survive its startup window.
 $oldWorkers = @(Get-CimInstance Win32_Process |
     Where-Object {
         $_.CommandLine -and (
@@ -145,59 +178,52 @@ $oldWorkers = @(Get-CimInstance Win32_Process |
     })
 $oldWorkerIds = @($oldWorkers | ForEach-Object { [int]$_.ProcessId })
 
-$candidate = Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('"{0}"' -f $RuntimeWorker) -WorkingDirectory $env:USERPROFILE -PassThru
-Start-Sleep -Seconds 3
-
-$candidateAlive = Get-Process -Id $candidate.Id -ErrorAction SilentlyContinue
-if (-not $candidateAlive) {
-    if (Test-Path $BackupWorker) {
-        Copy-Item $BackupWorker $RuntimeWorker -Force
-    }
-    throw 'Replacement Heaven Local Bridge worker failed before handoff; existing worker(s) were left untouched.'
-}
-
-# The verified candidate now covers the handoff window. Move steady-state
-# ownership to Task Scheduler when available so restart-on-failure supervises
-# the running worker rather than only a future logon instance.
-$taskManaged = $false
-try {
-    Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
-    Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
-    Start-Sleep -Seconds 3
-
-    $taskWorker = Get-CimInstance Win32_Process |
-        Where-Object {
-            $_.ProcessId -ne $candidate.Id -and
-            $_.CommandLine -and
-            $_.CommandLine -like '*\.mhw-local-tools\heaven-desktop-worker.py*'
-        } |
-        Sort-Object CreationDate -Descending |
-        Select-Object -First 1
-
-    if ($taskWorker) {
-        $taskManaged = $true
-    }
-} catch {
-    Write-Warning "Task Scheduler handoff failed; verified candidate remains running. $($_.Exception.Message)"
-}
-
-# Retire only pre-upgrade workers after a replacement has already survived.
 foreach ($oldPid in $oldWorkerIds) {
-    if ($oldPid -eq $candidate.Id) { continue }
     try { Stop-Process -Id $oldPid -Force -ErrorAction Stop } catch {}
 }
+Start-Sleep -Seconds 1
 
-if ($taskManaged) {
-    try { Stop-Process -Id $candidate.Id -Force -ErrorAction Stop } catch {}
-    $proc = $taskWorker
-} else {
+$taskManaged = $false
+$proc = $null
+
+if ($taskInstalled) {
+    try {
+        Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+        Start-Sleep -Seconds 3
+        $proc = Get-HeavenBridgeWorker
+        if ($proc) {
+            $taskManaged = $true
+        }
+    } catch {
+        Write-Warning "Task Scheduler start failed; falling back to direct worker start. $($_.Exception.Message)"
+    }
+}
+
+if (-not $proc) {
+    $candidate = Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('"{0}"' -f $RuntimeWorker) -WorkingDirectory $env:USERPROFILE -PassThru
+    Start-Sleep -Seconds 3
     $proc = Get-CimInstance Win32_Process |
         Where-Object { $_.ProcessId -eq $candidate.Id } |
         Select-Object -First 1
 }
 
 if (-not $proc) {
-    throw 'Verified replacement disappeared during handoff. Startup fallback remains configured; manual bootstrap may be required.'
+    $rollback = $null
+    if (Test-Path $BackupWorker) {
+        Copy-Item $BackupWorker $RuntimeWorker -Force
+        try {
+            $rollbackCandidate = Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('"{0}"' -f $RuntimeWorker) -WorkingDirectory $env:USERPROFILE -PassThru
+            Start-Sleep -Seconds 3
+            $rollback = Get-CimInstance Win32_Process |
+                Where-Object { $_.ProcessId -eq $rollbackCandidate.Id } |
+                Select-Object -First 1
+        } catch {}
+    }
+
+    if ($rollback) {
+        throw ('Replacement Heaven Local Bridge worker failed; backup worker was restored and restarted as pid {0}.' -f $rollback.ProcessId)
+    }
+    throw 'Replacement Heaven Local Bridge worker failed and backup restart also failed; Startup fallback remains configured.'
 }
 
 Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged)
