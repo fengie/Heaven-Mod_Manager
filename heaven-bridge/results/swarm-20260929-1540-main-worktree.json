@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-1540-main-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:40:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:39:34.551607+00:00",
+  "finished_at": "2026-09-29T15:39:37.782911+00:00",
+  "stdout": "HEAD is now at 499f4fd3 Enforce private-to-public release workflow\n499f4fd3e3f53c97569f94b439168a39097f53c0\n## HEAD (no branch)\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\n   77dd75b5..b76983b1  main       -> origin/main\nPreparing worktree (detached HEAD 499f4fd3)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1540-main-worktree.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1540-main-worktree.stderr.log",
+    "stdout_bytes": 128,
+    "stderr_bytes": 181,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b1656e76df5385ee3be532f4e0b748eea741f32398a98df47fd0e3fc7ddab3d0"
+}
