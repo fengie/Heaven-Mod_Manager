@@ -139,5 +139,18 @@ CREATE TABLE IF NOT EXISTS mod_issue_suspects(
     PRIMARY KEY(mod_id,issue_kind)
 );
 CREATE INDEX IF NOT EXISTS ix_mod_issue_active ON mod_issue_suspects(active,confirmed DESC,score DESC,last_seen DESC);
+CREATE TABLE IF NOT EXISTS catalog_install_origins(
+    mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
+    provider_id TEXT NOT NULL,
+    provider_mod_id TEXT NOT NULL,
+    provider_file_id TEXT NOT NULL,
+    installed_version TEXT NULL,
+    downloaded_at TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    archive_sha256 TEXT NOT NULL,
+    provider_metadata_json TEXT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_catalog_install_provider_mod ON catalog_install_origins(provider_id,provider_mod_id);
+CREATE INDEX IF NOT EXISTS ix_catalog_install_provider_file ON catalog_install_origins(provider_id,provider_mod_id,provider_file_id);
 """;
 }
