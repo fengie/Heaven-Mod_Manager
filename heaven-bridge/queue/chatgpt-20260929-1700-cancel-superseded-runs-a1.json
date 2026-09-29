@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1700-cancel-superseded-runs-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Continue'; gh run cancel 36601099350 --repo fengie/mhw-mods; gh run cancel 36600894003 --repo fengie/mhw-mods; Write-Output 'CANCEL_REQUESTS_SENT'"
+  },
+  "created_at": "2026-09-29T17:00:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
