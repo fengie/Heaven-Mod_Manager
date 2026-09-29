@@ -1,3 +1,13 @@
+# 2026-09-29 v8.8.6 reconciliation checkpoint — CURRENT
+
+Canonical `main` was audited at `ce74d6abafb02bf4b5af1b59237751dcac84c298`. Agent Control liveness (0.5.1), reliability stress coverage, security/authorization hardening, and updater cross-session ownership have all reached canonical main. PR #95 is closed as a superseded release snapshot; conflicted reconciliation PR #107 was closed instead of being forced over newer work.
+
+Verification remains exact-SHA scoped: hosted run `36541891969` applies to source `5abe40304dfcb48f96e750bd7da3d0075315625b` only. Later v8.8.6 main still needs exact-current-main release verification and installed-client updater 60→61 success plus injected rollback evidence.
+
+Remaining open owner lanes at this audit are #98 updater cross-session (stale/diverged relative to ownership work already delivered on main), #101 federation registry, #100 dashboard contract, and #105 operator UI/CLI. The three Agent Control PRs overlap federated-registry/package/public-UI surfaces and require semantic owner reconciliation; do not blind-merge them.
+
+---
+
 # 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
 
 Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
