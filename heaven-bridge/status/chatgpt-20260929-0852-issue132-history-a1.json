@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0852-issue132-history-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:55:47.526645+00:00"
+  "updated_at": "2026-09-29T12:56:29.606839+00:00",
+  "exit_code": 0
 }
