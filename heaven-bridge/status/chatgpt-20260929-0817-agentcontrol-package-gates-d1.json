@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0817-agentcontrol-package-gates-d1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:16:52.257711+00:00"
+  "updated_at": "2026-09-29T08:17:03.447264+00:00",
+  "exit_code": 0
 }
