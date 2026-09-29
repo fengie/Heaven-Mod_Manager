@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-prune-updater-family-20260929-1249-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:49:00Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$expected=[ordered]@{\n  'fix/heaven-default-routing-20260929'='b38b171e8a1a63a3fc0dfd6cae0d2621285afe98'\n  'fix/updater-bom-release-closure-20260929'='d9ca6aff0b26ce4cc21bd794bd500d0fce8c7ad4'\n  'fix/updater-e2e-heaven-runner-20260929'='5913d4a3385c1b862e673f7dee68e49275a0fb0e'\n  'fix/updater-e2e-latest-release-20260929'='4f9d40e9c9616b46b2ca93117af9f7fc84637673'\n  'fix/updater-final-closure-20260929'='a8007d22281e43498b615f918be1804cd49793f2'\n  'fix/updater-heaven-routing-20260929'='61e9fd266746f4e0c4ca5f28b65ffd8f88107e28'\n  'fix/updater-release-heaven-closure-20260929'='83fec76cb908b78b7c58192e61a44956eae6fb01'\n}\ngit -C $repo fetch origin --prune\n$deleted=@(); $skipped=@()\nforeach($b in $expected.Keys){\n  $line=(git -C $repo ls-remote origin \"refs/heads/$b\")\n  if(-not $line){$skipped += [pscustomobject]@{branch=$b;reason='already-absent'}; continue}\n  $actual=(($line.Trim()) -split '\\s+')[0]\n  if($actual -ne $expected[$b]){$skipped += [pscustomobject]@{branch=$b;reason='tip-moved';expected=$expected[$b];actual=$actual}; continue}\n  git -C $repo push origin --delete $b\n  if($LASTEXITCODE -ne 0){throw \"delete failed for $b\"}\n  $deleted += $b\n}\ngit -C $repo fetch origin --prune\n$remaining=@(git -C $repo for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object {$_ -notmatch 'origin/HEAD'})\n[pscustomobject]@{deleted=$deleted;skipped=$skipped;remaining=$remaining} | ConvertTo-Json -Depth 6"
+  },
+  "priority": "highest"
+}
