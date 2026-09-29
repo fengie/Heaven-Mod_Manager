@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.5</Version>
-    <InformationalVersion>8.8.5-agent-control-federation</InformationalVersion>
+    <Version>8.8.6</Version>
+    <InformationalVersion>8.8.6-profile-containment-ui-polish</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

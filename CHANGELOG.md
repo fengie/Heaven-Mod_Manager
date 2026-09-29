@@ -1,3 +1,9 @@
+# v8.8.6 - Profile containment and responsive UI integration
+
+- Reject noncanonical persisted/upserted game-profile IDs before registry trust and enforce lexical containment of generic-game workspace/state roots.
+- Add hostile traversal, separator, casing, and escaped-workspace regressions for the profile boundary.
+- Integrate the reviewed responsive WPF UI/UX overhaul while preserving current updater, backend, and safety behavior.
+- Preserve Agent Control 0.5.0 and authenticated Heaven Local Bridge execution from v8.8.5.
 # v8.8.5 — Agent Control federation and release recovery
 
 - Integrated Agent Control 0.5.0 with federated agent identity, heartbeat freshness, ownership-aware planning, routing-manifest support, and governed autonomy permissions.

@@ -1,4 +1,4 @@
-# v8.8.5 Universal Mod Manager
+# v8.8.6 Universal Mod Manager
 
 ## v8.8.5 — Agent Control federation and release recovery
 
