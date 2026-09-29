@@ -9,7 +9,7 @@ Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, 
 Before the first task-facing response or action, the agent must:
 
 1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
-2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
+2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
 3. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` before responding or dispatching work.
 4. Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming an answer or plan.
 5. Treat the repository itself as the source of truth. Stale chat context, old SHAs, filenames, summaries, or prior-agent prose do not satisfy this gate.
@@ -21,6 +21,46 @@ Agent Control must enforce this mechanically for spawned workers: required train
 Every successor and sub-agent inherits this same gate. **No untrained agent gets to answer first and “catch up” afterward.**
 
 
+
+## Mandatory bug-prevention and precedent protocol
+
+Bugs are prevention failures, not routine cleanup. Every agent must optimize for preventing defects from escaping into canonical `main`, releases, updater paths, or user-visible behavior.
+
+### Prevention-first execution
+- Before changing a risky or user-facing path, identify its invariants, failure modes, state transitions, integration boundaries, restart/update/rollback behavior, and likely regression surface. Do not rely on the happy path alone.
+- Read relevant entries in `_AGENT_CONTEXT/BUG_PRECEDENTS.md` before implementation or review. Existing precedents are binding engineering constraints for materially similar work.
+- Reproduce a reported defect before fixing it when feasible. Convert the reproduction into an automated regression test or durable verifier whenever technically practical.
+- A fix is incomplete if it only patches the observed symptom. Identify the root cause and the missed invariant, contract, test, review step, or process control that allowed the bug to escape.
+- Verification must match the risk. Unit tests alone are insufficient for bugs involving integration, startup, updater/install flows, persistence, concurrency, process lifetime, UI state, machine routing, branch/integration state, or real user-visible behavior.
+- For operator-facing behavior, verify the actual user path on the appropriate machine/environment when available; do not substitute an internal API/unit assertion for an observable UI/runtime claim.
+- Review changed code for adjacent instances of the same defect class. Fix or explicitly rule out sibling cases before closure.
+
+### Mandatory bug-to-precedent closure
+Whenever any bug, regression, escaped defect, false completion claim, broken integration, or process failure is discovered, the owning agent must complete this chain before marking the work done:
+
+**bug → root cause → precedent log → guideline/process change → regression coverage → verification evidence → propagation**
+
+The agent must immediately add or update an entry in `_AGENT_CONTEXT/BUG_PRECEDENTS.md` containing, at minimum:
+1. date and affected subsystem;
+2. user-visible or engineering symptom;
+3. root cause;
+4. the invariant/assumption that was violated;
+5. why existing tests/review/process failed to catch it;
+6. the direct corrective fix;
+7. the preventive rule or process change;
+8. regression tests/verifiers added or strengthened;
+9. exact verification evidence and environment;
+10. adjacent/sibling cases checked;
+11. links/SHAs/PRs/issues when available.
+
+If the incident reveals a reusable lesson, also update `_AGENT_CONTEXT/LEARNED_RULES.md`, `AGENTS.md`, training templates, verifier scripts, Agent Control enforcement, or other durable governance as appropriate. Process bugs require process fixes, not just product-code fixes.
+
+### Completion and review gate
+- `DONE`, `FIXED`, `SHIPPED`, merge, and release claims are forbidden while the required precedent entry, preventive change, regression coverage, or verification evidence is missing.
+- Managers/reviewers/integration agents must reject or redispatch work that fixes a bug without completing the prevention chain.
+- When a regression test cannot reasonably be automated, record why and add the strongest durable deterministic verification available.
+- If the preventive rule can be mechanically enforced, prefer enforcement in code/tests/CI/Agent Control over prose alone.
+- Repeated occurrence of an already logged defect class is a severity escalation: inspect why the prior prevention control failed and strengthen that control before closing the new incident.
 
 ## Mandatory task-review and plugin activation gate
 
