@@ -59,7 +59,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // High-confidence base/option/patch relationships become transient overlay rules. They are
         // recomputed from indexed source files every plan, so stale auto rules are never persisted.
         // Explicit user rules always win and suppress inference for that pair.
-        var autoRules = game is null || game.IsMonsterHunterWorld
+        var autoRules = GameAdapters.Resolve(game).SupportsMhwConflictSemantics
             ? AutoCompatibility.GenerateOverlayRules(enabled, pairStats, snapshot.Rules)
             : Array.Empty<ConflictRule>();
         var effectiveRules = snapshot.Rules.Concat(autoRules).ToArray();
@@ -70,6 +70,26 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
             var decision = new ConflictDecision("<rules>", ConflictKind.Incompatible, true, null, "precedence-cycle", "Overlay precedence contains a cycle: " + string.Join(" -> ", cycle), Confidence.Explicit);
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], [decision], ["Remove at least one rule in the displayed cycle."]);
         }
+
+        var explicitIncompatibilities = effectiveRules
+            .Where(r => r.Kind == RuleKind.Incompatible &&
+                        r.Scope == RuleScope.ModPair &&
+                        r.LeftModId is not null &&
+                        r.RightModId is not null &&
+                        enabled.ContainsKey(r.LeftModId) &&
+                        enabled.ContainsKey(r.RightModId))
+            .Select(r => new ConflictDecision(
+                "<rules>",
+                ConflictKind.Incompatible,
+                true,
+                null,
+                "explicit-incompatible",
+                $"Enabled mods '{r.LeftModId}' and '{r.RightModId}' are explicitly marked incompatible.",
+                Confidence.Explicit,
+                r.Id))
+            .ToArray();
+        if (explicitIncompatibilities.Length > 0)
+            return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], explicitIncompatibilities, ["Disable one incompatible mod or remove the explicit incompatibility rule before deployment."]);
 
         var ruleIndex = ConflictRuleIndex.Create(effectiveRules);
         var decisions = new List<ConflictDecision>(providers.Count);

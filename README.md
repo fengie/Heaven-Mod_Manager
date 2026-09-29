@@ -1,4 +1,8 @@
-# v8.8.9 Universal Mod Manager
+# v8.8.10 Universal Mod Manager
+
+## v8.8.10 — workflow feature closure
+
+The workflow layer is now integrated on current architecture rather than replayed from the retired complete-workflows branch. The dashboard opens a single Loadouts, rules & diagnostics workspace for effective-file explanations, portable loadout recipes, inherited profiles/diffs, compatibility rules, relationships, safe update migration, stability evidence, and the active game adapter. FOMOD archives are parsed with bounded XML semantics and interactive choices; Smart Inbox leaves them untouched when user selection is required. Update migration journals selected metadata changes with the existing deployment transaction so rollback and Undo restore both live files and relationship state together.
 
 ## v8.8.9 — updater manifest compatibility and installed-client closure
 

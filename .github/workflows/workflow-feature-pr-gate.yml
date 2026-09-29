@@ -1,0 +1,79 @@
+name: Workflow Feature PR Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/MhwModManager.Automation/FomodInstallerService.cs'
+      - 'src/MhwModManager.Automation/RulesEditorService.cs'
+      - 'src/MhwModManager.Automation/UpdateMigrationService.cs'
+      - 'src/MhwModManager.Automation/CollectionRecipeService.cs'
+      - 'src/MhwModManager.Automation/ArchiveImportService.cs'
+      - 'src/MhwModManager.Automation/SmartInboxService.cs'
+      - 'src/MhwModManager.Core/GameAdapters.cs'
+      - 'src/MhwModManager.Core/WorkflowAnalysis.cs'
+      - 'src/MhwModManager.Storage/DeploymentMetadata.cs'
+      - 'src/MhwModManager.Storage/ProfileRepository.cs'
+      - 'src/MhwModManager.Storage/ManagerDatabaseWorkflowExtensions.cs'
+      - 'src/MhwModManager.Storage/Schema.cs'
+      - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
+      - 'src/MhwModManager.App/WorkflowWindow.xaml'
+      - 'src/MhwModManager.App/WorkflowWindow.xaml.cs'
+      - 'src/MhwModManager.App/FomodInstallerWindow.cs'
+      - 'src/MhwModManager.App/MainWindow.xaml'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
+      - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
+      - '.github/workflows/workflow-feature-pr-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflow-feature-pr-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build and test workflow feature set on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact pull request head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') { throw "Workflow gate requires .NET SDK 10.0.401; found $version." }
+
+      - name: Restore workflow projects
+        shell: powershell
+        run: |
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet restore .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build workflow product and tests
+        shell: powershell
+        run: |
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run focused workflow regressions
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore -p:NuGetAudit=false --filter "FullyQualifiedName~WorkflowTests"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Check patch whitespace
+        shell: powershell
+        run: git diff --check origin/main...HEAD
