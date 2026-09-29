@@ -1,0 +1,43 @@
+name: Temporary Heaven Bridge Runtime Restart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temporary-heaven-bridge-runtime-restart.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  restart:
+    name: Restart ordinary Heaven bridge worker
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Launch canonical runtime worker without elevation
+        shell: powershell
+        run: |
+          $runtime = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
+          $source = Join-Path $PWD 'heaven-bridge\worker.py'
+          if (-not (Test-Path $runtime)) { throw "Runtime worker missing: $runtime" }
+          if ((Get-FileHash $runtime -Algorithm SHA256).Hash -ne (Get-FileHash $source -Algorithm SHA256).Hash) {
+            throw 'Runtime worker does not match canonical source; refusing to launch stale code.'
+          }
+          $existing = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.CommandLine -and $_.CommandLine -like '*\.mhw-local-tools\heaven-desktop-worker.py*'
+          })
+          if ($existing.Count -gt 0) {
+            Write-Output "Worker already running: $($existing.ProcessId -join ',')"
+            exit 0
+          }
+          $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
+          $env:RUNNER_TRACKING_ID = ''
+          $candidate = Start-Process -WindowStyle Hidden -FilePath $pythonw -ArgumentList ('"{0}"' -f $runtime) -WorkingDirectory $env:USERPROFILE -PassThru
+          Start-Sleep -Seconds 6
+          $alive = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessId -eq $candidate.Id } | Select-Object -First 1
+          if (-not $alive) { throw 'Ordinary Heaven bridge worker failed to stay running.' }
+          Write-Output "HEAVEN_BRIDGE_ORDINARY_WORKER_STARTED pid=$($candidate.Id)"
