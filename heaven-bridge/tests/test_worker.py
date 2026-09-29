@@ -29,10 +29,71 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
     def test_health_capabilities(self):
         result = self.run_job(self.make_job("health", job_id="health-capabilities"))
         self.assertEqual(result["status"], "completed")
-        self.assertEqual(result["data"]["worker_version"], 3)
+        self.assertEqual(result["data"]["worker_version"], 4)
         self.assertEqual(result["data"]["protocol"], "chatgpt-heaven-bridge-v2")
         for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read"):
             self.assertIn(action, result["data"]["actions"])
+
+    def test_priority_queue_ordering_keeps_control_responsive(self):
+        base = Path.home() / "HeavenBridge" / "test-sandbox"
+        base.mkdir(parents=True, exist_ok=True)
+        td = Path(tempfile.mkdtemp(dir=base))
+        try:
+            regular = td / "regular.json"
+            regular.write_text('{"action":"proc_run","priority":"highest","created_at":"2026-09-29T10:00:00Z"}', encoding="utf-8")
+            control = td / "control.json"
+            control.write_text('{"action":"job_status","priority":"lowest","created_at":"2026-09-29T10:05:00Z"}', encoding="utf-8")
+            self.assertEqual(sorted([regular, control], key=worker.queue_order_key)[0].name, "control.json")
+        finally:
+            shutil.rmtree(td, ignore_errors=True)
+
+    def test_priority_queue_ages_low_priority_work(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        base = Path.home() / "HeavenBridge" / "test-sandbox"
+        base.mkdir(parents=True, exist_ok=True)
+        td = Path(tempfile.mkdtemp(dir=base))
+        try:
+            old_low = td / "old-low.json"
+            old_low.write_text(
+                '{"action":"proc_run","priority":"low","created_at":"2026-09-29T09:40:00+00:00"}',
+                encoding="utf-8",
+            )
+            fresh_high = td / "fresh-high.json"
+            fresh_high.write_text(
+                '{"action":"proc_run","priority":"highest","created_at":"2026-09-29T09:59:59+00:00"}',
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [fresh_high, old_low],
+                key=lambda path: worker.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "old-low.json")
+        finally:
+            shutil.rmtree(td, ignore_errors=True)
+
+    def test_priority_queue_accepts_numeric_priority(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        base = Path.home() / "HeavenBridge" / "test-sandbox"
+        base.mkdir(parents=True, exist_ok=True)
+        td = Path(tempfile.mkdtemp(dir=base))
+        try:
+            urgent = td / "urgent.json"
+            urgent.write_text(
+                '{"action":"proc_run","priority":95,"created_at":"2026-09-29T10:00:00+00:00"}',
+                encoding="utf-8",
+            )
+            background = td / "background.json"
+            background.write_text(
+                '{"action":"proc_run","priority":10,"created_at":"2026-09-29T10:00:00+00:00"}',
+                encoding="utf-8",
+            )
+            ordered = sorted(
+                [background, urgent],
+                key=lambda path: worker.queue_order_key(path, current=current),
+            )
+            self.assertEqual(ordered[0].name, "urgent.json")
+        finally:
+            shutil.rmtree(td, ignore_errors=True)
 
     def test_expired_job_rejected(self):
         job = self.make_job("health", job_id="expired-job")
