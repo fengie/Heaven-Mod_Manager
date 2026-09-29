@@ -1,3 +1,4 @@
+// Security closure checkpoint: this file is touched intentionally so the full post-merge Agent Control PR gate reruns against current canonical source.
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
