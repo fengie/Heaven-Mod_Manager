@@ -50,6 +50,7 @@ MAX_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_MAX_TTL", "86400"))
 FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_FUTURE_SKEW", "300"))
 HEARTBEAT_SECONDS = max(120, int(os.environ.get("HEAVEN_BRIDGE_HEARTBEAT_SECONDS", "300")))
 RATE_LIMIT_PER_MINUTE = max(10, int(os.environ.get("HEAVEN_BRIDGE_RATE_PER_MINUTE", "60")))
+QUEUE_PRIORITY_AGING_SECONDS = max(30, int(os.environ.get("HEAVEN_BRIDGE_PRIORITY_AGING_SECONDS", "300")))
 DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
 DEFAULT_SESSION_MAX = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX", "14400"))
 SESSION_METADATA_VERSION = 1
@@ -2211,33 +2212,55 @@ def restore_cached_result(job_id, row):
         return False
 
 
-def queue_order_key(path):
-    """Order control jobs first, then declared priority, then FIFO created_at.
+def queue_priority_rank(value):
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        numeric = max(0.0, min(float(value), 100.0))
+        if numeric >= 75:
+            return 0
+        if numeric >= 50:
+            return 1
+        if numeric >= 25:
+            return 2
+        return 3
+    labels = {
+        "highest": 0, "critical": 0, "urgent": 0,
+        "high": 1,
+        "normal": 2, "default": 2,
+        "low": 3,
+        "lowest": 4,
+    }
+    return labels.get(str(value or "normal").strip().lower(), 2)
 
-    Malformed jobs stay processable so the normal validation path can publish a
-    structured failure instead of letting one bad queue file break a sweep.
+
+def queue_order_key(path, current=None):
+    """Order control jobs first, then effective priority, then FIFO created_at.
+
+    Ordinary jobs age toward the highest priority so sustained high-priority
+    traffic cannot starve older low-priority work. Malformed jobs stay
+    processable so normal validation can publish a structured failure.
     """
+    current = current or utcnow()
     try:
         job = json.loads(path.read_text(encoding="utf-8-sig"))
     except Exception:
-        return (1, JOB_PRIORITY_RANK["normal"], 0.0, path.name)
+        return (1, 2, 0.0, path.name)
 
     action = str(job.get("action") or job.get("kind") or "codex").lower()
-    control_rank = 0 if action in CONTROL_ACTIONS else 1
-    priority = JOB_PRIORITY_RANK.get(str(job.get("priority") or "normal").strip().lower(), JOB_PRIORITY_RANK["normal"])
     try:
-        created_rank = parse_time(job.get("created_at")).timestamp()
+        created = parse_time(job.get("created_at"))
+        created_rank = created.timestamp()
     except Exception:
+        created = current
         created_rank = 0.0
-    return (control_rank, priority, created_rank, path.name)
 
+    if action in CONTROL_ACTIONS:
+        return (0, 0, created_rank, path.name)
 
-def queue_priority_rank(value):
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return -float(value)
-    labels = {"highest": 0.0, "urgent": 0.0, "high": 1.0, "normal": 2.0, "default": 2.0, "low": 3.0}
-    return labels.get(str(value or "normal").strip().lower(), 2.0)
-
+    base = queue_priority_rank(job.get("priority"))
+    age_seconds = max(0.0, (current - created).total_seconds())
+    promotions = int(age_seconds // QUEUE_PRIORITY_AGING_SECONDS)
+    effective = max(0, base - promotions)
+    return (1, effective, created_rank, path.name)
 
 def queue_sort_key(path):
     try:
