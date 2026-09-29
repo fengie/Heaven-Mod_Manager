@@ -200,7 +200,7 @@ try {
         package_size_mb = [math]::Round($packageBytes / 1MB, 1)
         cold = [ordered]@{}
         warm = [ordered]@{}
-        runs = @($runs)
+        runs = $runs.ToArray()
         note = 'cold-state resets manager state/database but does not claim a flushed Windows filesystem cache; warm-state reuses the same indexed manager state.'
     }
     foreach ($metric in $metricNames) {
