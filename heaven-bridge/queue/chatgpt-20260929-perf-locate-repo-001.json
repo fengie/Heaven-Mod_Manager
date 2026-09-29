@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-perf-locate-repo-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$candidates=@(\n  (Join-Path $HOME 'mhw-mods'),\n  (Join-Path $HOME 'source\\repos\\mhw-mods'),\n  (Join-Path $HOME 'Documents\\GitHub\\mhw-mods'),\n  (Join-Path $HOME 'Desktop\\mhw-mods'),\n  'C:\\HeavenServices\\mhw-mods'\n)\n$found=@()\nforeach($p in $candidates){if(Test-Path -LiteralPath (Join-Path $p '.git')){$found+=$p}}\nif(-not $found){\n  $found=Get-ChildItem -LiteralPath $HOME -Directory -Recurse -Depth 4 -ErrorAction SilentlyContinue |\n    Where-Object {$_.Name -eq 'mhw-mods' -and (Test-Path -LiteralPath (Join-Path $_.FullName '.git'))} |\n    Select-Object -ExpandProperty FullName\n}\n$found | Sort-Object -Unique | ForEach-Object { $_ }",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:16:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
