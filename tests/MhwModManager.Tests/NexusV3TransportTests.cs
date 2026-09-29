@@ -198,6 +198,41 @@ public sealed class NexusV3TransportTests
     }
 
     [Fact]
+    public async Task Mod_file_versions_endpoint_is_bounded_to_v3_path()
+    {
+        var handler = new RecordingHandler((request, _) =>
+        {
+            Assert.Equal(
+                "https://api.nexusmods.com/v3/mod-files/file%2Fchain/versions",
+                request.RequestUri?.AbsoluteUri);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, "{\"data\":{\"versions\":[]}}"));
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new NexusV3Transport(client);
+        using var result = await transport.GetModFileVersionsAsync(
+            "file/chain",
+            NexusV3Credential.ApiKey("fixture-key"));
+
+        Assert.Empty(result.Document!.RootElement.GetProperty("data").GetProperty("versions").EnumerateArray());
+    }
+
+    [Fact]
+    public void Nexus_compliance_record_is_current_and_disallows_html_and_direct_download_by_default()
+    {
+        var compliance = NexusV3CatalogPolicy.Compliance;
+        var errors = CatalogProviderComplianceValidator.Validate(
+            compliance,
+            new DateOnly(2026, 9, 29));
+
+        Assert.Empty(errors);
+        Assert.Equal(CatalogSourceKind.OfficialApi, compliance.SourceKind);
+        Assert.True(compliance.AllowsCatalogDiscovery);
+        Assert.False(compliance.AllowsHtmlParsing);
+        Assert.False(compliance.AllowsDirectDownload);
+    }
+
+    [Fact]
     public void Non_https_base_uri_is_rejected()
     {
         using var client = new HttpClient(new RecordingHandler((_, _) =>
