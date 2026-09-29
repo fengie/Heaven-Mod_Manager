@@ -61,7 +61,9 @@ function Get-GitHubAccessToken {
     return $password
 }
 
-$script:GitHubAccessToken = Get-GitHubAccessToken
+$script:GitHubAccessToken = $null
+$script:InstallerMutex = $null
+$script:InstallerMutexAcquired = $false
 
 function Invoke-GitHubApi {
     param(
@@ -185,6 +187,42 @@ function Get-RunnerListener {
         Select-Object -First 1
 }
 
+function Get-RunnerWorker {
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -eq 'Runner.Worker.exe' -and
+            $_.ExecutablePath -and
+            $_.ExecutablePath.StartsWith($RunnerDirectory, [System.StringComparison]::OrdinalIgnoreCase)
+        } |
+        Select-Object -First 1
+}
+
+function Stop-OwnedRunnerListener {
+    if (Get-RunnerWorker) {
+        throw "Runner '$RunnerName' is executing a job; refusing to stop its listener."
+    }
+
+    $listeners = @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -eq 'Runner.Listener.exe' -and
+                $_.ExecutablePath -and
+                $_.ExecutablePath.StartsWith($RunnerDirectory, [System.StringComparison]::OrdinalIgnoreCase)
+            }
+    )
+    foreach ($listener in $listeners) {
+        Stop-Process -Id ([int]$listener.ProcessId) -Force -ErrorAction Stop
+    }
+    if ($listeners.Count -gt 0) { Start-Sleep -Seconds 1 }
+}
+
+function Get-RunnerStartupFallback {
+    $startup = [Environment]::GetFolderPath('Startup')
+    $safeRunnerName = ($RunnerName -replace '[^A-Za-z0-9._-]', '-')
+    $startupFile = if ($RunnerName -eq 'heaven') { 'HeavenGitHubActionsRunner.vbs' } else { "HeavenGitHubActionsRunner-$safeRunnerName.vbs" }
+    return Join-Path $startup $startupFile
+}
+
 function Ensure-RunnerLaunch {
     $taskName = "GitHub Actions Runner - $RunnerName"
     $runCmd = Join-Path $RunnerDirectory 'run.cmd'
@@ -214,6 +252,7 @@ function Ensure-RunnerLaunch {
             throw "Runner task registered with unexpected RunLevel '$($registered.Principal.RunLevel)'."
         }
         Start-ScheduledTask -TaskName $taskName
+        Remove-Item -LiteralPath (Get-RunnerStartupFallback) -Force -ErrorAction SilentlyContinue
         return [ordered]@{
             mode = 'scheduled-task'
             scheduled_task = $taskName
@@ -226,10 +265,7 @@ function Ensure-RunnerLaunch {
         # Startup folder instead of turning that policy into a CI blocker.
         Write-Warning "Scheduled task unavailable; using per-user Startup fallback. $($_.Exception.Message)"
 
-        $startup = [Environment]::GetFolderPath('Startup')
-        $safeRunnerName = ($RunnerName -replace '[^A-Za-z0-9._-]', '-')
-        $startupFile = if ($RunnerName -eq 'heaven') { 'HeavenGitHubActionsRunner.vbs' } else { "HeavenGitHubActionsRunner-$safeRunnerName.vbs" }
-        $startupVbs = Join-Path $startup $startupFile
+        $startupVbs = Get-RunnerStartupFallback
         $escapedCmd = $cmdExe.Replace('"', '""')
         $escapedRun = $runCmd.Replace('"', '""')
         $escapedCwd = $RunnerDirectory.Replace('"', '""')
@@ -254,6 +290,18 @@ sh.Run """$escapedCmd"" /d /c """"$escapedRun""""", 0, False
 }
 
 try {
+    $mutexSafeName = ($RunnerName -replace '[^A-Za-z0-9._-]', '-')
+    $script:InstallerMutex = [System.Threading.Mutex]::new($false, "Local\HeavenGitHubRunnerInstaller-$mutexSafeName")
+    try {
+        $script:InstallerMutexAcquired = $script:InstallerMutex.WaitOne([TimeSpan]::FromMinutes(2))
+    } catch [System.Threading.AbandonedMutexException] {
+        $script:InstallerMutexAcquired = $true
+    }
+    if (-not $script:InstallerMutexAcquired) {
+        throw "Timed out waiting for another installer invocation for runner '$RunnerName'."
+    }
+
+    $script:GitHubAccessToken = Get-GitHubAccessToken
     Install-RunnerFiles
 
     $taskName = "GitHub Actions Runner - $RunnerName"
@@ -277,13 +325,33 @@ try {
 
     $needsReconfigure = [bool]($ForceReconfigure -or ($configured -and $missingLabels.Count -gt 0))
     if ($needsReconfigure -and $configured) {
+        if ($recordBefore -and [bool]$recordBefore.busy) {
+            throw "Runner '$RunnerName' is busy; refusing to reconfigure an active job."
+        }
         Stop-RunnerTask -TaskName $taskName
+        Stop-OwnedRunnerListener
         Remove-ExistingConfiguration
         $configured = $false
     }
-    if (-not $configured) { Configure-Runner }
+    if (-not $configured) {
+        Configure-Runner
+        $configured = $true
+    }
 
-    $launch = Ensure-RunnerLaunch
+    # A healthy listener is already the singleton execution endpoint for this
+    # registration. Re-running the installer must not launch another listener,
+    # which causes GitHub's "A session for this runner already exists" conflict.
+    $existingListener = Get-RunnerListener
+    if ($existingListener) {
+        $launch = [ordered]@{
+            mode = 'existing-listener'
+            scheduled_task = $null
+            scheduled_task_run_level = $null
+            startup_fallback = if (Test-Path (Get-RunnerStartupFallback)) { Get-RunnerStartupFallback } else { $null }
+        }
+    } else {
+        $launch = Ensure-RunnerLaunch
+    }
 
     $deadline = (Get-Date).AddMinutes(2)
     $record = $null
@@ -313,4 +381,8 @@ try {
     } | ConvertTo-Json -Depth 5
 } finally {
     $script:GitHubAccessToken = $null
+    if ($script:InstallerMutexAcquired -and $script:InstallerMutex) {
+        try { $script:InstallerMutex.ReleaseMutex() } catch {}
+    }
+    if ($script:InstallerMutex) { $script:InstallerMutex.Dispose() }
 }
