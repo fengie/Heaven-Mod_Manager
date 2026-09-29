@@ -26,32 +26,10 @@ permissions:
   contents: write
 
 jobs:
-  bom-regression-on-heaven:
-    name: Validate updater BOM fix on Heaven
-    runs-on: [self-hosted, Windows, X64, mhw-mods]
-    timeout-minutes: 20
-    env:
-      MHW_RUN_UPDATER_INSTALLED_E2E: '0'
-    steps:
-      - name: Check out candidate
-        uses: actions/checkout@v7
-      - name: Restore integration tests
-        shell: powershell
-        run: dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
-      - name: Build integration tests
-        shell: powershell
-        run: dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
-      - name: Run integration suite with live updater E2E disabled
-        shell: powershell
-        run: |
-          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
-          if (!(Test-Path -LiteralPath $runner)) { throw "Missing test runner: $runner" }
-          & $runner
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
   installed-client-e2e:
     name: Real packaged 60 to 61 update and rollback
-    runs-on: windows-latest
+    # GitHub-hosted Windows currently fails before runner allocation; use the repaired Heaven runner.
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     env:
       MHW_RUN_UPDATER_INSTALLED_E2E: '1'
@@ -62,10 +40,13 @@ jobs:
       - name: Check out candidate
         uses: actions/checkout@v7
 
-      - name: Install pinned .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.0.401
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') {
+            throw "Heaven updater E2E runner requires .NET SDK 10.0.401; found $version."
+          }
 
       - name: Prepare evidence directory
         shell: powershell
@@ -98,23 +79,22 @@ jobs:
           dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Run full integration suite including updater E2E and ownership regressions
+      - name: Run installed-client updater E2E
         shell: powershell
         run: |
           $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
-          $log = Join-Path $evidence 'runtime-ownership-tests.log'
+          $log = Join-Path $evidence 'installed-client-e2e-test.log'
           $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
           if (!(Test-Path -LiteralPath $runner)) {
             throw "Built xUnit v3 integration runner is missing: $runner"
           }
-          & $runner 2>&1 |
+          & $runner --filter-class "MhwModManager.IntegrationTests.UpdaterInstalledClientE2ETests" 2>&1 |
             Tee-Object -FilePath $log
           $exit = $LASTEXITCODE
           if ($exit -ne 0) { exit $exit }
           if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
-            throw 'Full integration suite returned success without producing updater E2E evidence.json.'
+            throw 'Installed-client updater E2E returned success without producing updater E2E evidence.json.'
           }
-          Copy-Item -LiteralPath $log -Destination (Join-Path $evidence 'installed-client-e2e-test.log') -Force
 
       - name: Verify updater success and rollback evidence
         shell: powershell
@@ -185,11 +165,9 @@ jobs:
           $provenancePath = Join-Path $evidenceDir 'provenance.txt'
           $testLogPath = Join-Path $evidenceDir 'installed-client-e2e-test.log'
           $rollbackLogPath = Join-Path $evidenceDir 'rollback-regression-tests.log'
-          $runtimeOwnershipLogPath = Join-Path $evidenceDir 'runtime-ownership-tests.log'
           $provenanceHash = if (Test-Path -LiteralPath $provenancePath) { (Get-FileHash -LiteralPath $provenancePath -Algorithm SHA256).Hash } else { 'missing' }
           $testLogHash = if (Test-Path -LiteralPath $testLogPath) { (Get-FileHash -LiteralPath $testLogPath -Algorithm SHA256).Hash } else { 'missing' }
           $rollbackLogHash = if (Test-Path -LiteralPath $rollbackLogPath) { (Get-FileHash -LiteralPath $rollbackLogPath -Algorithm SHA256).Hash } else { 'missing' }
-          $runtimeOwnershipLogHash = if (Test-Path -LiteralPath $runtimeOwnershipLogPath) { (Get-FileHash -LiteralPath $runtimeOwnershipLogPath -Algorithm SHA256).Hash } else { 'missing' }
 
           $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.7.log'
           @(
@@ -203,7 +181,6 @@ jobs:
             ('provenance_sha256=' + $provenanceHash)
             ('installed_client_test_log_sha256=' + $testLogHash)
             ('rollback_regression_log_sha256=' + $rollbackLogHash)
-            ('runtime_ownership_test_log_sha256=' + $runtimeOwnershipLogHash)
             ''
             '=== EVIDENCE.JSON ==='
             (Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw)

@@ -36,7 +36,8 @@ concurrency:
 jobs:
   windows-release:
     name: Verify and publish on Windows
-    runs-on: windows-latest
+    # GitHub-hosted Windows is currently failing before runner allocation; publish from the repaired Heaven runner.
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
 
     steps:
@@ -45,10 +46,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pinned .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.0.401
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') {
+            throw "Heaven release runner requires .NET SDK 10.0.401; found $version."
+          }
 
       - name: Record runner provenance
         shell: powershell
