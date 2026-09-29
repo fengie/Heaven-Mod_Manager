@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-hcp-processes-verify-20260929-1210-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:10:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:10:24.899263+00:00",
+  "finished_at": "2026-09-29T12:10:28.788995+00:00",
+  "stdout": "VERIFIED_PROCESSES_SHA=3551c01404fa1852a07d333486c2d33fb12703aa\r\n",
+  "stderr": "test_normalize_process_list_enforces_requested_limit (test_processes.ProcessContractsTests.test_normalize_process_list_enforces_requested_limit) ... ok\r\ntest_normalize_process_list_handles_singleton_json_object (test_processes.ProcessContractsTests.test_normalize_process_list_handles_singleton_json_object) ... ok\r\ntest_normalize_process_list_rejects_bad_json_and_nonzero_exit (test_processes.ProcessContractsTests.test_normalize_process_list_rejects_bad_json_and_nonzero_exit) ... ok\r\ntest_process_list_params_are_bounded (test_processes.ProcessContractsTests.test_process_list_params_are_bounded) ... ok\r\ntest_process_wait_plan_is_bounded_and_structured (test_processes.ProcessContractsTests.test_process_wait_plan_is_bounded_and_structured) ... ok\r\ntest_process_wait_plan_rejects_invalid_inputs (test_processes.ProcessContractsTests.test_process_wait_plan_rejects_invalid_inputs) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 6 tests in 0.001s\r\n\r\nOK\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-processes-verify-20260929-1210-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-processes-verify-20260929-1210-a1.stderr.log",
+    "stdout_bytes": 65,
+    "stderr_bytes": 995,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "87ed7c02cddab2b89108cc268806dcd29c4bd2fccdafcb023e96b34f013bdb74"
+}
