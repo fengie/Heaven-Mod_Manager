@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-103730-safe-branch-cleanup-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:37:30Z",
+  "ttl_seconds": 7200,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nSet-Location $repo\ngit fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\n$main=(git rev-parse origin/main | Out-String).Trim()\n$active=@()\n$wtLines=@(git worktree list --porcelain)\nforeach($line in $wtLines){ if($line -like 'branch refs/heads/*'){ $active += $line.Substring(18) } }\n$deleted=@(); $preserved=@()\n$refs=@(git for-each-ref --format='%(refname:short)' refs/remotes/origin)\nforeach($ref in $refs){\n if((-not $ref.StartsWith('origin/')) -or $ref -in @('origin/main','origin/HEAD','origin/heaven-bridge')){continue}\n $branch=$ref.Substring(7)\n if($branch -in $active){ $preserved += [ordered]@{branch=$branch;reason='active-worktree'}; continue }\n git merge-base --is-ancestor $ref origin/main 2>$null\n if($LASTEXITCODE -eq 0){\n   git push origin --delete $branch\n   if($LASTEXITCODE -eq 0){$deleted += [ordered]@{branch=$branch;proof='ancestor-of-main'}} else {$preserved += [ordered]@{branch=$branch;reason='delete-failed'}}\n   continue\n }\n $ch=@(git cherry origin/main $ref 2>$null)\n $plus=@($ch | Where-Object { $_.StartsWith('+') })\n if($plus.Count -eq 0){\n   git push origin --delete $branch\n   if($LASTEXITCODE -eq 0){$deleted += [ordered]@{branch=$branch;proof='patch-equivalent-to-main'}} else {$preserved += [ordered]@{branch=$branch;reason='delete-failed'}}\n } else {\n   $preserved += [ordered]@{branch=$branch;reason='unique-patches';unique=$plus.Count}\n }\n}\ngit fetch origin --prune | Out-Null\n[ordered]@{main=$main;deleted=$deleted;preserved=$preserved;active_worktrees=$active} | ConvertTo-Json -Depth 5",
+  "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+  "timeout_seconds": 1800,
+  "priority": "highest"
+}
