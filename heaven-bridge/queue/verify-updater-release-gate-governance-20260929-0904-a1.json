@@ -1,0 +1,14 @@
+{
+  "id": "verify-updater-release-gate-governance-20260929-0904-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:04:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 1200,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$wt='C:\\Users\\Xxkan\\agent-worktrees\\verify-updater-release-gate-governance'\n$expected='6f54623190e3af6dd0e111778ec60e38db1ee48a'\ngit -C $repo fetch origin --prune\n$actual=(git -C $repo rev-parse origin/fix/updater-release-gate-governance-20260929).Trim()\nif($actual -ne $expected){throw \"Branch head mismatch expected=$expected actual=$actual\"}\nif(Test-Path $wt){ git -C $repo worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }\ngit -C $repo worktree add --detach $wt $expected\ntry {\n  powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$wt\\scripts\\Test-AgentHandoff.ps1\" -Root $wt\n  if($LASTEXITCODE -ne 0){throw 'Test-AgentHandoff failed'}\n  powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$wt\\scripts\\Verify-Release.ps1\"\n  if($LASTEXITCODE -ne 0){throw 'Verify-Release failed'}\n  Write-Output \"VERIFIED_SHA=$expected\"\n  Write-Output 'TEST_AGENT_HANDOFF=PASS'\n  Write-Output 'VERIFY_RELEASE=PASS'\n} finally { git -C $repo worktree remove --force $wt 2>$null }"
+  },
+  "priority": "highest"
+}
