@@ -45,3 +45,9 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
+
+
+### PowerShell startup/recovery scripts need syntax-class gates
+- Validate changed PowerShell startup, installer, watchdog, recovery, and generated scripts with the native PowerShell parser before registering or executing them.
+- Do not rely only on structural/string tests: PowerShell has lexical traps such as `$name:` inside double-quoted strings, where punctuation can be parsed as part of a scoped-variable token. Use `${name}:` or explicit formatting.
+- When one such defect escapes, add a source-level regression for the entire syntax class so non-Windows CI can still prevent recurrence.
