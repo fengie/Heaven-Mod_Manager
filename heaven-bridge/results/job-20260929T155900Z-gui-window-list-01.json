@@ -1,0 +1,287 @@
+{
+  "id": "job-20260929T155900Z-gui-window-list-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:59:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:58:44.018336+00:00",
+  "finished_at": "2026-09-29T15:58:44.019855+00:00",
+  "host": "heaven",
+  "action": "window_list",
+  "data": [
+    {
+      "hwnd": 6031540,
+      "pid": 9076,
+      "title": "Cursor Hider",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 479,
+        "y": 689,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "hwnd": 34082630,
+      "pid": 81716,
+      "title": "New Tab - Brave",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8,
+        "y": -8,
+        "width": 1936,
+        "height": 1048
+      }
+    },
+    {
+      "hwnd": 21234618,
+      "pid": 81716,
+      "title": "127.0.0.1:59756/?code=d6260ab455b260e307fb&iss=https%3A%2F%2Fgithub.com%2Flogin%2Foauth&state=a34dab3d1e044981b53612d8810b51eb - Brave",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8,
+        "y": -8,
+        "width": 1936,
+        "height": 1048
+      }
+    },
+    {
+      "hwnd": 25233694,
+      "pid": 81716,
+      "title": "127.0.0.1:64467/?code=929309172a3e30317e9f&iss=https%3A%2F%2Fgithub.com%2Flogin%2Foauth&state=1f34ce5b5c8d465facdcef7eb171a744 - Brave",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8,
+        "y": -8,
+        "width": 1936,
+        "height": 1048
+      }
+    },
+    {
+      "hwnd": 39521106,
+      "pid": 72972,
+      "title": "Windows PowerShell",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 2556060,
+      "pid": 91796,
+      "title": "G-Helper — ROG Strix G713PI",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 1492,
+        "y": 387,
+        "width": 418,
+        "height": 635
+      }
+    },
+    {
+      "hwnd": 10551530,
+      "pid": 57688,
+      "title": "Ollama",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 13633224,
+      "pid": 72972,
+      "title": "Windows PowerShell 5.1",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 329504,
+      "pid": 116504,
+      "title": "the escalator | The Mimherians - Discord",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 65678,
+      "pid": 7680,
+      "title": "AsHotplugCtrl",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "hwnd": 1772226,
+      "pid": 18912,
+      "title": "Bluetooth Audio Receiver",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 66754,
+      "pid": 11396,
+      "title": "Input Director",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 329830,
+      "pid": 4484,
+      "title": "Task Manager",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 395980,
+      "pid": 19848,
+      "title": "AudioRelay",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 14224264,
+      "pid": 81716,
+      "title": "New Tab - Brave",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -32000,
+        "y": -32000,
+        "width": 160,
+        "height": 28
+      }
+    },
+    {
+      "hwnd": 35917612,
+      "pid": 108668,
+      "title": "Select a game executable",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 690,
+        "y": 402,
+        "width": 960,
+        "height": 540
+      }
+    },
+    {
+      "hwnd": 58265112,
+      "pid": 108668,
+      "title": "Universal Mod Manager",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 690,
+        "y": 402,
+        "width": 540,
+        "height": 228
+      }
+    },
+    {
+      "hwnd": 84150336,
+      "pid": 96228,
+      "title": "Settings",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 8,
+        "width": 1920,
+        "height": 1032
+      }
+    },
+    {
+      "hwnd": 21170644,
+      "pid": 18912,
+      "title": "Settings",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8,
+        "y": -8,
+        "width": 1936,
+        "height": 1048
+      }
+    },
+    {
+      "hwnd": 197540,
+      "pid": 18760,
+      "title": "Windows Input Experience",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      }
+    },
+    {
+      "hwnd": 65904,
+      "pid": 12204,
+      "title": "Program Manager",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      }
+    }
+  ],
+  "job_hash": "201f1413c5b86f85608744d5fc248da8c253f155d603543223dbc484712f8048"
+}
