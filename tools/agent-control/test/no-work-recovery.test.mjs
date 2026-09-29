@@ -5,7 +5,8 @@ import {
   hasSubstantiveWorkEvidence,
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
-  recoveryBackoffMs
+  recoveryBackoffMs,
+  recoveryMachineTarget
 } from "../lib/no-work-recovery.mjs";
 
 test("recognizes execution-assignment opener without treating ordinary final output as an opener", () => {
@@ -41,13 +42,29 @@ test("commit or changed-file evidence prevents no-work retry", () => {
   assert.equal(result.reason, "substantive-work-evidence");
 });
 
-test("tool-call evidence from a federated provider prevents false no-work classification", () => {
+test("read-only tool calls do not count as substantive execution work", () => {
   const result = noWorkTerminationDecision({
     state: "failed",
     last_action_summary: "I’m treating this as an execution assignment.",
     source_metadata: { execution_assignment: true, tool_call_count: 4 }
   });
+  assert.equal(result.noWork, true);
+});
+
+test("write or verification evidence prevents a no-work retry", () => {
+  const result = noWorkTerminationDecision({
+    state: "failed",
+    last_action_summary: "I’m treating this as an execution assignment.",
+    source_metadata: { execution_assignment: true, write_count: 1 }
+  });
   assert.equal(result.noWork, false);
+});
+
+test("recovery routes only to registered machines", () => {
+  const policies = { heaven: {}, heaven2: {} };
+  assert.equal(recoveryMachineTarget("cloud", policies), "auto");
+  assert.equal(recoveryMachineTarget("heaven", policies), "heaven");
+  assert.equal(recoveryMachineTarget("", policies), "auto");
 });
 
 test("ordinary terminal summary is not retried merely because no commit exists", () => {
