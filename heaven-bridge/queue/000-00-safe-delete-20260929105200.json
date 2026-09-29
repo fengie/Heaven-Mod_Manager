@@ -1,0 +1,13 @@
+{
+  "id": "000-00-safe-delete-20260929105200",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:52:00.734Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$tmp=Join-Path $env:USERPROFILE 'mhw-safe-branch-delete'\nif (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }\n$url=(git -C $relay remote get-url origin).Trim()\ngit clone --no-local $relay $tmp | Out-Null\ngit -C $tmp remote set-url origin $url\ngit -C $tmp fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune\n$deleted=@(); $kept=@(); $failed=@()\n$branches=git -C $tmp for-each-ref --format='%(refname:short)' refs/remotes/origin | Where-Object { $_ -ne 'origin/HEAD' }\nforeach($rb in $branches){\n  $b=$rb -replace '^origin/',''\n  if($b -in @('main','heaven-bridge')) { continue }\n  $branchOnly=[int](git -C $tmp rev-list --right-only --count \"origin/main...origin/$b\")\n  if($branchOnly -eq 0){\n    $out = git -C $tmp push origin --delete $b 2>&1\n    if($LASTEXITCODE -eq 0){ $deleted += $b } else { $failed += [pscustomobject]@{branch=$b;error=[string]$out} }\n  } else {\n    $kept += [pscustomobject]@{branch=$b;unique_commits=$branchOnly}\n  }\n}\ngit -C $tmp fetch origin --prune | Out-Null\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;kept=$kept;kept_count=$kept.Count;failed=$failed;failed_count=$failed.Count} | ConvertTo-Json -Depth 6 -Compress",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
