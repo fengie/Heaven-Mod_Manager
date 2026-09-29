@@ -1,0 +1,46 @@
+name: Product PR Gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'MhwModManager.sln'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - '.github/workflows/product-pr-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-pr-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-windows:
+    name: Verify product changes on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v7
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $required = '10.0.401'
+          $actual = (& dotnet --version).Trim()
+          if ($actual -ne $required) { throw "Expected .NET SDK $required, got $actual" }
+      - name: Restore
+        shell: powershell
+        run: dotnet restore .\MhwModManager.sln
+      - name: Build
+        shell: powershell
+        run: dotnet build .\MhwModManager.sln -c Release --no-restore
+      - name: Test
+        shell: powershell
+        run: dotnet test .\MhwModManager.sln -c Release --no-build --no-restore
+      - name: Diff check
+        shell: powershell
+        run: git diff --check
