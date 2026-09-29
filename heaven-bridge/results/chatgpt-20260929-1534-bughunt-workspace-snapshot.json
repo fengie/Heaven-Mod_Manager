@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1534-bughunt-workspace-snapshot",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:34:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:34:25.254979+00:00",
+  "finished_at": "2026-09-29T15:34:27.487278+00:00",
+  "stdout": "REPO=C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods\r\nHEAD=28deaa7a0f85eec317735aef4c00a6ecaf1d5f65\r\nBRANCH=\r\nORIGIN_MAIN=499f4fd3e3f53c97569f94b439168a39097f53c0\r\n?? heaven-bridge/__pycache__/\n?? heaven-bridge/tests/__pycache__/\n?? plugins/heaven-control-plane/heaven_control_plane/__pycache__/\n?? plugins/heaven-control-plane/heaven_control_plane/adapters/__pycache__/\n?? plugins/heaven-control-plane/tests/__pycache__/\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\n   77dd75b5..499f4fd3  main       -> origin/main\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1534-bughunt-workspace-snapshot.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1534-bughunt-workspace-snapshot.stderr.log",
+    "stdout_bytes": 418,
+    "stderr_bytes": 137,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e297d2194d56d37cff62c2a11961ef9af048d87dc595806ac5affc9a0d9f99bf"
+}
