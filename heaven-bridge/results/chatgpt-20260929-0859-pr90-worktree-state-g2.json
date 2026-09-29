@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0859-pr90-worktree-state-g2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:59:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:56:30.675714+00:00",
+  "finished_at": "2026-09-29T08:56:31.092213+00:00",
+  "stdout": "HEAD=023156ea4223a4697be19b9f48f10ebd80813184\r\nBRANCH=integration/pr90-reconcile-20260929\r\nSTATUS_BEGIN\r\n## integration/pr90-reconcile-20260929...origin/agent/game-profile-id-containment-v8.8.5-reconcile [ahead 11]\nSTATUS_END\r\nLOG_BEGIN\r\n023156ea4223a4697be19b9f48f10ebd80813184|e25b68da3685585fafa8809eedb452a04ea99c82 1583300aea9ac3ae20750d1ad0af6592f6993acc|Reconcile v8.8.5 profile containment onto current main\n1583300aea9ac3ae20750d1ad0af6592f6993acc|34e462efe3e23668d048c48ceddb771318a5f663|Record post-updater support branch dispositions [skip ci]\n34e462efe3e23668d048c48ceddb771318a5f663|9b8464fbbaa4f072ebbc1d3578afa02f15192b3c|Record updater swarm ownership checkpoint [skip ci]\n9b8464fbbaa4f072ebbc1d3578afa02f15192b3c|2ac7e877e1ed363ad08f92cdd04fd38544cc2e91|Record updater hosted publication closure [skip ci]\n2ac7e877e1ed363ad08f92cdd04fd38544cc2e91|da9d0f2f44781075aabfb422c4545dc3e8663c2e|Set updater E2E as current critical path [skip ci]\nLOG_END\r\nMERGE_HEAD=\r\nREVISION_TOP_BEGIN\r\n{\r\n  \"formatVersion\": 1,\r\n  \"project\": \"MHW Manual Mod Manager\",\r\n  \"canonicalRepository\": \"fengie/mhw-mods\",\r\n  \"canonicalBranch\": \"main\",\r\n  \"workingBranch\": \"agent/game-profile-id-containment-v8.8.5-reconcile\",\r\n  \"currentVersion\": \"8.8.5\",\r\n  \"companyTrainingRoot\": \"_AGENT_TRAINING\",\r\n  \"companyTrainingStatus\": \"active-living-system\",\r\n  \"nextMilestone\": \"Verify the current-main-reconciled v8.8.5 game-profile ID containment candidate with scripts/Verify-Release.ps1, then obtain focused path-containment review and hosted Windows evidence before integration.\",\r\n  \"originalBaselineVersion\": \"8.7.0\",\r\n  \"immediateParentRevision\": \"v8.8.3 archive streaming cleanup hardening\",\r\n  \"status\": \"v8.8.5-current-main-reconciled-verification-pending\",\r\n  \"verificationAppliesToCommit\": \"5abe40304dfcb48f96e750bd7da3d0075315625b\",\r\n  \"lastClosedVerificationCommit\": \"5abe40304dfcb48f96e750bd7da3d0075315625b\",\r\n  \"lastClosedVerificationRun\": \"hosted-github-actions-36541891969\",\r\n  \"candidateSourceCommit\": \"e25b68da3685585fafa8809eedb452a04ea99c82\",\r\n  \"verificationScopeNote\": \"Canonical v8.8.4 updater/publication evidence from current main is preserved: source 5abe40304dfcb48f96e750bd7da3d0075315625b passed hosted Windows Release Gate 36541891969 (25/25), functions 748/748, updater build 61, immutable updater-main-61. PR #90 game-profile containment previously passed local Verify-Release 25/25 on its older base, but that evidence is stale after current-main reconciliation. Exact reconciled-candidate verification is pending and must be recorded before promotion.\",\r\n  \"lastClosedVerification\": {\r\n    \"functionInventoryTotal\": 748,\r\n    \"functionsVerified\": 748,\r\n    \"functionsPending\": 0,\r\nREVISION_TOP_END\r\nCONFLICTS_BEGIN\r\nCONFLICTS_END\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0859-pr90-worktree-state-g2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0859-pr90-worktree-state-g2.stderr.log",
+    "stdout_bytes": 2751,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "713643bcc9e2832f71da3ff4f84003cff295745027a4442d7648817891a093fc"
+}
