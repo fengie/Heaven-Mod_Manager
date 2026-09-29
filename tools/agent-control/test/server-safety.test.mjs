@@ -449,3 +449,9 @@ test("workflow execution preflights the full plan before launching its first wor
   assert.ok(deployAt > leaseAt);
   assert.match(block, /No workers were launched/);
 });
+
+test("local Codex launch uses approval-never workspace-write contract", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /const args = \[\s*"-a", "never",\s*"-s", "workspace-write",\s*"exec",\s*"--json",\s*"--skip-git-repo-check"/);
+  assert.doesNotMatch(source, /--approve-for-me|danger-full-access|dangerously-bypass-approvals-and-sandbox/);
+});
