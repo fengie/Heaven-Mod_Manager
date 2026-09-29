@@ -180,7 +180,9 @@ function Ensure-RunnerScheduledTask {
 
     Stop-RunnerTask -TaskName $taskName
     $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-    $action = New-ScheduledTaskAction -Execute $env:ComSpec -Argument ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory
+    $cmdExe = Join-Path ([Environment]::SystemDirectory) 'cmd.exe'
+    if (-not (Test-Path -LiteralPath $cmdExe)) { throw "Windows command processor missing: $cmdExe" }
+    $action = New-ScheduledTaskAction -Execute $cmdExe -Argument ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $settings = New-ScheduledTaskSettingsSet `
         -AllowStartIfOnBatteries `
