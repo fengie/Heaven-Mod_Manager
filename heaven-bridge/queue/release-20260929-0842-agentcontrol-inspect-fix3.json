@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0842-agentcontrol-inspect-fix3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-provider-fix3",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop';\nWrite-Output ('HEAD='+(git rev-parse HEAD));\nWrite-Output '===STATUS==='; git status --short --branch;\nWrite-Output '===SERVER-HEAD==='; Get-Content 'tools\\agent-control\\server.mjs' -TotalCount 140;\nWrite-Output '===PLACEMENT-DEPLOY==='; $x=Get-Content 'tools\\agent-control\\server.mjs'; $x[540..970];\nWrite-Output '===TOP-IMPORTS-CONSTANTS==='; $x[0..180];\nWrite-Output '===CONTROL-CORE-POLICY==='; Select-String -Path 'tools\\agent-control\\lib\\control-core.mjs' -Pattern 'canUseMachineForRepositoryWrite|integrationEligibility|isIntegration|machinePolicies' -Context 8,18;\nWrite-Output '===AUTOPILOT-STEPS==='; Select-String -Path 'tools\\agent-control\\lib\\autopilot-core.mjs' -Pattern 'machine|implementation|verification|review|repair' -Context 5,10;\nWrite-Output '===TEST-SAFETY-TAIL==='; Get-Content 'tools\\agent-control\\test\\server-safety.test.mjs' -Tail 260;\nWrite-Output '===PACKAGE==='; Get-Content 'tools\\agent-control\\package.json';\nWrite-Output '===README-PROVIDER-HITS==='; Select-String -Path 'tools\\agent-control\\README.md','tools\\agent-control\\CONTROL_PLANE.md' -Pattern 'worker|heaven|machine|provider|Codex' -Context 2,3 | Select-Object -First 120;"
+  },
+  "created_at": "2026-09-29T08:42:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "purpose": "Read-only inspection of reconciled Agent Control fix3 worktree for manual bridge-driven implementation after Codex quota exhaustion."
+}
