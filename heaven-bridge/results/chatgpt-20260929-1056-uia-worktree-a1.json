@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1056-uia-worktree-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:56:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:42:55.805485+00:00",
+  "finished_at": "2026-09-29T11:42:58.435642+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   5fe74bb1..5b7d20e8  main          -> origin/main\n + 5e9dca6b...02ee4285 agent/hcp-hardening-review-20260929-1137-a1 -> origin/agent/hcp-hardening-review-20260929-1137-a1  (forced update)\n   00744de0..c8b1e347  agent/hcp-phase0-hardening-20260929-1138 -> origin/agent/hcp-phase0-hardening-20260929-1138\n   ad2d979a..cdd2e9af  heaven-bridge -> origin/heaven-bridge\ngit : error: branch 'agent/chatgpt-bridge-uia-local-20260929' not found\r\nAt line:1 char:310\r\n+ ... t 2>$null}; git -C $repo branch -D agent/chatgpt-bridge-uia-local-202 ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (error: branch '...0929' not found:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1056-uia-worktree-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1056-uia-worktree-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 818,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b42d8a91709df537684f4af33a5969967f5b77c03debd146ee983adfef4c132d"
+}
