@@ -1,0 +1,9 @@
+{
+  "id": "--------a-branch-inventory-20260929-1105",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T11:05:00Z",
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Continue'\n$r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\n& git -C $r fetch origin --prune '+refs/heads/*:refs/remotes/origin/*' 2>$null | Out-Null\n$rows=@()\nforeach($ref in @(& git -C $r for-each-ref --format='%(refname)' refs/remotes/origin/)){\n if($ref -notmatch '^refs/remotes/origin/(.+)$'){continue}\n $b=$Matches[1]\n if(!$b -or $b -in @('HEAD','main','heaven-bridge')){continue}\n $mb=(& git -C $r merge-base origin/main \"origin/$b\" 2>$null).Trim()\n if(!$mb){continue}\n $files=@(& git -C $r diff --name-only \"$mb..origin/$b\" --)\n $commits=@(& git -C $r log --format='%h|%s' --no-merges \"origin/main..origin/$b\")\n $code=@($files|Where-Object{$_ -match '^(src|tests|tools|scripts|heaven-bridge|\\.github)/'}).Count\n $context=@($files|Where-Object{$_ -match '^(_AGENT_CONTEXT|\\.verification|NEXT-AGENT-START-HERE\\.md|README\\.md$|CHANGELOG\\.md$|VERSION\\.txt$|Directory\\.Build\\.props$)'}).Count\n $rows += [pscustomobject]@{branch=$b; commits=$commits.Count; files=$files.Count; code_files=$code; context_files=$context; file_list=($files -join ','); messages=(($commits|Select-Object -First 8)-join ' || ')}\n}\n$rows | ConvertTo-Json -Depth 4 -Compress",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 600
+}
