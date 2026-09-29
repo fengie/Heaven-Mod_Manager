@@ -100,6 +100,31 @@ test("provider capacity holds the loop instead of respawning the same blocked la
   assert.equal(decision.sourceAgentId, "quota-agent");
 });
 
+test("capacity recovery clears a stale provider wait immediately", () => {
+  const decision = perpetualSwarmDecision(state({
+    perpetualSwarm: {
+      lastReason: "provider-capacity",
+      nextActionAt: "2026-09-29T20:00:00.000Z"
+    }
+  }), { now: NOW, providerCapacity: { blocked: false } });
+  assert.equal(decision.kind, "launch-wave");
+});
+
+test("a stopped lane with pending replacement is retried before a generic new wave", () => {
+  const decision = perpetualSwarmDecision(state({
+    agents: [{
+      id: "stopped-needs-replacement",
+      status: "stopped",
+      perpetualReplacementPending: true,
+      takeoverPath: "takeover.json"
+    }]
+  }), { now: NOW, providerCapacity: { blocked: false } });
+  assert.equal(decision.kind, "replace-stuck");
+  assert.equal(decision.reason, "replacement-retry");
+  assert.equal(decision.agentId, "stopped-needs-replacement");
+  assert.equal(decision.alreadyStopped, true);
+});
+
 test("restart intensity backs off instead of storming", () => {
   const decision = perpetualSwarmDecision(state({
     perpetualSwarm: {
