@@ -123,7 +123,14 @@ export function defaultControlState({ sessionId, hostname }) {
       readOnly: false,
       emergencyStop: false,
       machinePolicies: structuredClone(DEFAULT_MACHINE_POLICIES),
-      routingManifest: null
+      routingManifest: null,
+      noWorkRecovery: {
+        enabled: true,
+        maxRetries: 2,
+        maxDispatchFailures: 5,
+        retryBackoffMs: 15_000,
+        maxBackoffMs: 300_000
+      }
     },
     autopilot: defaultAutopilotState(),
     federation: defaultFederationState(),
@@ -149,7 +156,8 @@ export function migrateControlState(parsed, context) {
     settings: {
       ...base.settings,
       ...(parsed.settings || {}),
-      machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) }
+      machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) },
+      noWorkRecovery: { ...base.settings.noWorkRecovery, ...(parsed.settings?.noWorkRecovery || {}) }
     },
     autopilot: normalizeAutopilotState(parsed.autopilot),
     federation: migrateFederationState(parsed.federation),
