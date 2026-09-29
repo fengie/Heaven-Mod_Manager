@@ -74,4 +74,8 @@ test("dashboard has unique DOM ids and required federated operator surfaces", ()
   assert.match(html, /last_action_summary/);
   assert.match(html, /lease_id/);
   assert.match(html, /last_error/);
+  assert.match(html, /PARTIAL COVERAGE/);
+  assert.match(html, /coverageWarning/);
+  assert.match(html, /federatedCount/);
+  assert.match(html, /coverage\\.authoritative/);
 });
