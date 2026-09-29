@@ -1,0 +1,21 @@
+{
+  "id": "----------------runner-install-current-main-20260929-110615",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:06:15Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:11:12.029944+00:00",
+  "finished_at": "2026-09-29T11:13:06.057009+00:00",
+  "stdout": "\r\n--------------------------------------------------------------------------------\r\n|        ____ _ _   _   _       _          _        _   _                      |\r\n|       / ___(_) |_| | | |_   _| |__      / \\   ___| |_(_) ___  _ __  ___      |\r\n|      | |  _| | __| |_| | | | | '_ \\    / _ \\ / __| __| |/ _ \\| '_ \\/ __|     |\r\n|      | |_| | | |_|  _  | |_| | |_) |  / ___ \\ (__| |_| | (_) | | | \\__ \\     |\r\n|       \\____|_|\\__|_| |_|\\__,_|_.__/  /_/   \\_\\___|\\__|_|\\___/|_| |_|___/     |\r\n|                                                                              |\r\n|                       Self-hosted runner registration                        |\r\n|                                                                              |\r\n--------------------------------------------------------------------------------\r\n\r\n# Authentication\r\n\r\n\r\n� Connected to GitHub\r\n\r\n# Runner Registration\r\n\r\n\r\n\r\n\r\n� Runner successfully added\r\n\r\n# Runner settings\r\n\r\n\r\n� Settings Saved.\r\n\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\nNew-ScheduledTaskAction : Cannot validate argument on parameter 'Execute'. The argument is null or empty. Provide an \r\nargument that is not null or empty, and then try the command again.\r\nAt C:\\Users\\Xxkan\\AppData\\Local\\Temp\\install-github-runner-current-main.ps1:181 char:48\r\n+     $action = New-ScheduledTaskAction -Execute $env:ComSpec -Argument ...\r\n+                                                ~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidData: (:) [New-ScheduledTaskAction], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : ParameterArgumentValidationError,New-ScheduledTaskAction\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------runner-install-current-main-20260929-110615.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------runner-install-current-main-20260929-110615.stderr.log",
+    "stdout_bytes": 977,
+    "stderr_bytes": 704,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "c7c4848a1f00c7c909db8499b93076553d7eae77c3a2da0dcc92f0cf526eba0d"
+}
