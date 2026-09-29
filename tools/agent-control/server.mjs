@@ -3223,7 +3223,10 @@ async function executeWorkflow(workflowId, body = {}) {
 
     const created = [];
     const blocked = [];
-    for (const [stepIndex, work] of plan.steps.entries()) {
+    let stepIndex = 0;
+    for (const work of plan.steps) {
+      const currentStepIndex = stepIndex;
+      stepIndex += 1;
       try {
         const agent = await deployOne({
           role: work.role,
@@ -3250,7 +3253,7 @@ async function executeWorkflow(workflowId, body = {}) {
             workflowId,
             waveId: workflowWaveId,
             mission: plan.mission || body.objective || work.task,
-            stepIndex,
+            stepIndex: currentStepIndex,
             totalSteps: plan.steps.length,
             source: "one-click-workflow"
           }
