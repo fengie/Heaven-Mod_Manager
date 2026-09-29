@@ -2,6 +2,16 @@ name: Updater Installed Client E2E
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/updater-installed-client-e2e.yml'
+      - 'tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs'
+      - 'tests/MhwModManager.IntegrationTests/UpdateInstallerTests.cs'
+      - 'src/MhwModManager.Updater/**'
+      - 'src/MhwModManager.Updater.Helper/**'
+      - 'src/MhwModManager.App/App.xaml.cs'
   pull_request:
     paths:
       - '.github/workflows/updater-installed-client-e2e.yml'
@@ -22,7 +32,7 @@ jobs:
     env:
       MHW_RUN_UPDATER_INSTALLED_E2E: '1'
       MHW_MOD_MANAGER_GITHUB_TOKEN: ${{ github.token }}
-      MHW_E2E_EVIDENCE_PATH: ${{ runner.temp }}\updater-installed-e2e\evidence.json
+      MHW_E2E_EVIDENCE_PATH: ${{ github.workspace }}\BuildLogs\updater-installed-e2e\evidence.json
 
     steps:
       - name: Check out candidate
@@ -105,4 +115,4 @@ jobs:
           if-no-files-found: error
           retention-days: 30
           path: |
-            ${{ runner.temp }}\updater-installed-e2e\**
+            ${{ github.workspace }}\BuildLogs\updater-installed-e2e\**
