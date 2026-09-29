@@ -34,13 +34,13 @@ jobs:
           if ($actual -ne $required) { throw "Expected .NET SDK $required, got $actual" }
       - name: Restore
         shell: powershell
-        run: dotnet restore .\MhwModManager.sln
+        run: dotnet restore .\MhwModManager.sln -m:1 -nr:false
       - name: Build
         shell: powershell
-        run: dotnet build .\MhwModManager.sln -c Release --no-restore
+        run: dotnet build .\MhwModManager.sln -c Release --no-restore -m:1 -nr:false
       - name: Test
         shell: powershell
-        run: dotnet test .\MhwModManager.sln -c Release --no-build --no-restore
+        run: dotnet test .\MhwModManager.sln -c Release --no-build --no-restore -m:1 -nr:false
       - name: Diff check
         shell: powershell
         run: git diff --check
