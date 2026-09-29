@@ -1,0 +1,14 @@
+{
+  "id": "swarm-20260929-161730-read-fingerprint-failure",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_read",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\BuildLogs\\verify-20260929-121348.log",
+    "offset": 68,
+    "limit": 28
+  },
+  "created_at": "2026-09-29T16:17:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
