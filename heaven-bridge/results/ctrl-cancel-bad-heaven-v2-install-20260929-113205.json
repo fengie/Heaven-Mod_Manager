@@ -1,0 +1,17 @@
+{
+  "id": "ctrl-cancel-bad-heaven-v2-install-20260929-113205",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:05Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:48:37.950717+00:00",
+  "finished_at": "2026-09-29T11:48:37.950717+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "4484c558b0528b489e16843c608b6a813ea06d51508648713781a7d4390275a0"
+}
