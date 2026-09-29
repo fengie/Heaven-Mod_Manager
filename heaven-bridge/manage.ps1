@@ -57,7 +57,7 @@ function Get-TaskRunLevel {
 
 function Get-HeartbeatState {
     if (-not (Test-Path $Heartbeat)) {
-        return [ordered]@{ exists = $false; updated_at = $null; worker_version = $null; protocol = $null; age_seconds = $null }
+        return [ordered]@{ exists = $false; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null }
     }
 
     try {
@@ -69,10 +69,11 @@ function Get-HeartbeatState {
             updated_at = [string]$row.updated_at
             worker_version = $row.worker_version
             protocol = [string]$row.protocol
+            elevated = if ($null -eq $row.elevated) { $null } else { [bool]$row.elevated }
             age_seconds = $age
         }
     } catch {
-        return [ordered]@{ exists = $true; updated_at = $null; worker_version = $null; protocol = $null; age_seconds = $null; parse_error = $_.Exception.Message }
+        return [ordered]@{ exists = $true; updated_at = $null; worker_version = $null; protocol = $null; elevated = $null; age_seconds = $null; parse_error = $_.Exception.Message }
     }
 }
 
@@ -99,14 +100,17 @@ function Show-Status {
     }
 
     $heartbeat = Get-HeartbeatState
+    $canonicalRunLevel = Get-TaskRunLevel 'Heaven Local Bridge'
     $healthy = (
         $canonical.Count -eq 1 -and
         $legacy.Count -eq 0 -and
         $branch -eq 'heaven-bridge' -and
         $sourceHash -and
         $sourceHash -eq $runtimeHash -and
+        $canonicalRunLevel -eq 'Highest' -and
         $heartbeat.exists -and
         $heartbeat.protocol -eq 'chatgpt-heaven-bridge-v2' -and
+        $heartbeat.elevated -eq $true -and
         $heartbeat.age_seconds -ne $null -and
         $heartbeat.age_seconds -le 900
     )
@@ -124,7 +128,7 @@ function Show-Status {
         heartbeat = $heartbeat
         scheduled_task = @{
             canonical = Get-TaskState 'Heaven Local Bridge'
-            canonical_run_level = Get-TaskRunLevel 'Heaven Local Bridge'
+            canonical_run_level = $canonicalRunLevel
             legacy = Get-TaskState 'HeavenLocalBridge'
             legacy_run_level = Get-TaskRunLevel 'HeavenLocalBridge'
         }
