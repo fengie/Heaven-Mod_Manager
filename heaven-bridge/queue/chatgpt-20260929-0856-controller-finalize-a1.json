@@ -1,0 +1,112 @@
+{
+  "id": "chatgpt-20260929-0856-controller-finalize-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:55:30Z",
+  "ttl_seconds": 3600,
+  "action": "controller_checkpoint",
+  "params": {
+    "expected_previous_cycle_id": "2026-09-29T04:52-04:00-release-stabilization-a1",
+    "state": {
+      "schema": "permanent-dev-controller-v1",
+      "cycle_id": "2026-09-29T04:56-04:00-release-stabilization-a2",
+      "updated_at": "2026-09-29T08:56:00Z",
+      "selected_task": {
+        "priority": "P0/P1",
+        "target": "Complete non-overlapping Heaven Local Bridge release proof and preserve exact remaining ship blockers",
+        "reason": "Bridge lifecycle truth and durable state can be proven independently while Agent Control #59 and interrupted-session recovery remain owned elsewhere."
+      },
+      "actions": [
+        "Refreshed canonical GitHub, live swarm board #60, and PR #59 ownership before all mutations.",
+        "Reconciled the stale prior controller record: yesterday's controller-20260928-1726-agentcontrol-reconcile-v2 was actually completed exit 0, not pending.",
+        "Verified Heaven Local Bridge worker v3 on heaven using protocol chatgpt-heaven-bridge-v2 and private-repo ACL.",
+        "Ran bridge TEST on heaven: primary 18/18 and compatibility 7/7 passed.",
+        "Ran bridge health and operator STATUS through the real relay; both passed and STATUS reported healthy=true with one canonical worker, zero legacy workers, source/runtime hash match, and startup fallback present.",
+        "Ran a real intentional failure smoke; exit 17 converged to status=failed.",
+        "Ran a real live cancellation smoke; cancel request returned cancel_requested=true and the running target converged to status=cancelled exit 130 before its success sentinel.",
+        "Ran a real timeout smoke; the target converged to status=timeout exit 124 before its success sentinel.",
+        "Submitted an intentionally expired queue item; it was rejected as JOB_EXPIRED and did not execute.",
+        "Persisted and read back the prior guarded controller checkpoint successfully.",
+        "Did not restart/stop the shared worker because other release owners are actively using it, and did not duplicate their implementation lanes."
+      ],
+      "affected_files_systems": [
+        "heaven-bridge/controller/state.json",
+        "heaven-bridge/queue/results/status release-smoke records",
+        "Heaven Local Bridge runtime on heaven",
+        "Issue #60 / PR #59 tracked as coordination truth"
+      ],
+      "tests_checks": [
+        "Bridge TEST: PASS; 18/18 primary + 7/7 compatibility.",
+        "Bridge health: PASS; host=heaven, worker_version=3, protocol=chatgpt-heaven-bridge-v2.",
+        "Bridge STATUS: PASS; healthy=true, canonical_worker_count=1, legacy_worker_count=0, source_matches_runtime=true.",
+        "End-to-end success path: PASS; queue -> heaven execution -> authoritative result.",
+        "Intentional failure: PASS; status=failed, exit=17.",
+        "Cancellation: PASS; cancel_requested=true; target status=cancelled, exit=130; post-sleep sentinel absent.",
+        "Timeout: PASS; status=timeout, exit=124; post-sleep sentinel absent.",
+        "Stale queue item: PASS; status=error with JOB_EXPIRED; no execution.",
+        "Guarded controller persistence: PASS; controller_checkpoint persisted=true and state read back from GitHub."
+      ],
+      "commits_prs_issues_jobs": [
+        "Issue #60 live swarm coordination is authoritative.",
+        "PR #59 remains the canonical Agent Control lane with an active owner for heaven2->heaven provider placement and Codex invocation repair.",
+        "chatgpt-20260929-0846-bridge-test-gate: completed exit 0.",
+        "chatgpt-20260929-0847-runtime-health-a1: completed exit 0.",
+        "chatgpt-20260929-0847-runtime-status-a1: completed exit 0.",
+        "chatgpt-20260929-0851-runtime-failure-a1: failed exit 17 as intended.",
+        "chatgpt-20260929-0851-runtime-cancel-target-a1: cancelled exit 130.",
+        "chatgpt-20260929-0852-runtime-cancel-request-a1: completed with cancel_requested=true.",
+        "chatgpt-20260929-0854-runtime-timeout-a1: timeout exit 124.",
+        "chatgpt-20260929-0854-runtime-expired-a1: rejected JOB_EXPIRED.",
+        "chatgpt-20260929-0852-controller-reconcile-a1: persisted=true."
+      ],
+      "blockers": [
+        "PR #59 has not yet landed/reviewed exact-head authenticated heaven2 control -> heaven heavy-worker placement.",
+        "PR #59 still must remove the invalid local Codex --approve-for-me launch path and prove the validated invocation contract.",
+        "Bridge interrupted-session recovery across worker restart is a separately claimed P0 boundary and is not yet integrated/validated.",
+        "Live Agent Control evidence shows prior false-completion semantics and a still-active bad Codex invocation chain; the already-owned lifecycle/completion repair must close this.",
+        "Final restart/persistence/recovery validation must wait until active bridge/session and Agent Control P0 owners land so the shared worker is not disrupted.",
+        "The full Heaven Development Runtime must not be called shipped until exact-head Agent Control tests/review/live placement and final restart-style release validation pass."
+      ],
+      "active_work": [
+        {
+          "owner": "existing PR #59 release-stabilization agent",
+          "boundary": "Agent Control heavy-worker placement + Codex invocation P0 repair",
+          "status": "active"
+        },
+        {
+          "owner": "existing bridge recovery agent",
+          "boundary": "durable interrupted-session recovery across worker restart",
+          "status": "active"
+        },
+        {
+          "owner": "existing lifecycle/completion repair lane",
+          "boundary": "prevent false completion without execution proof",
+          "status": "active"
+        },
+        {
+          "owner": "this release-proof cycle",
+          "boundary": "non-disruptive bridge lifecycle validation + controller truth",
+          "status": "complete"
+        }
+      ],
+      "unfinished_work": [
+        "Consume and independently verify the PR #59 repaired exact head after its owner pushes.",
+        "Consume and verify the interrupted-session recovery exact revision after its owner lands it.",
+        "Verify the lifecycle/completion repair against the known false-success fixture.",
+        "Run final documented START/STATUS/TEST/STOP/RECOVER restart/persistence validation only after active owners are clear and no jobs would be disrupted.",
+        "Then run a fresh end-to-end Agent Control -> heaven execution smoke, record the exact tested revisions, and only then declare the runtime shipped."
+      ],
+      "likely_next_priorities": [
+        "Wait only on owned P0 implementation results; do not duplicate them.",
+        "Independently verify exact heads immediately when they appear.",
+        "Perform final integrated restart/persistence/recovery and heaven-placement release gate."
+      ],
+      "next_cycle_start": [
+        "Read this controller state first.",
+        "Refresh issue #60, PR #59, and heaven-bridge head/ownership before mutation.",
+        "Consume owner-produced P0 revisions before creating new implementation work.",
+        "Do not restart the shared bridge while owned work is active."
+      ]
+    }
+  },
+  "priority": "highest"
+}
