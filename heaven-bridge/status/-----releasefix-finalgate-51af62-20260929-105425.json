@@ -1,0 +1,9 @@
+{
+  "id": "-----releasefix-finalgate-51af62-20260929-105425",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:54:57.940287+00:00"
+}
