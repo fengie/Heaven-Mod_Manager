@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0849-sync-canonical-main-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:49:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:49:28.798365+00:00",
+  "finished_at": "2026-09-29T08:49:30.620458+00:00",
+  "stdout": "Already up to date.\nHEAD=1583300aea9ac3ae20750d1ad0af6592f6993acc\r\nVERSION=8.8.4\r\n\r\nLOG_BEGIN\r\n1583300 (HEAD -> main, origin/main, origin/HEAD) Record post-updater support branch dispositions [skip ci]\n34e462e Record updater swarm ownership checkpoint [skip ci]\n9b8464f Record updater hosted publication closure [skip ci]\n2ac7e87 Set updater E2E as current critical path [skip ci]\nda9d0f2 Refresh updater closure revision state [skip ci]\n5edcf84 Refresh updater closure continuity [skip ci]\n4f0e240 Persist hosted Windows verification evidence [skip ci]\n5abe403 (tag: updater-main-61) Merge PR #91: reconcile immutable updater retry tag verification\nb340889 (origin/agent/updater-existing-release-rest-ref-main-reconcile-20260929) Add updater retry propagation regression\n7cb5004 Fix immutable updater retry tag verification\nfd2866e Persist hosted Windows verification evidence [skip ci]\nffd218b (tag: updater-main-60) Finalize v8.8.4 integration handoff\nLOG_END\r\nSTATUS_BEGIN\r\n## main...origin/main\nSTATUS_END\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   9b831ef..8b665d2  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0849-sync-canonical-main-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0849-sync-canonical-main-a1.stderr.log",
+    "stdout_bytes": 1012,
+    "stderr_bytes": 99,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a9fac896df9c7d33467e185646aa315a82896c7fcb285bf0d91c89dd75cc01fa"
+}
