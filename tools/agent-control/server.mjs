@@ -631,32 +631,40 @@ function failReservedDeployment({ taskId, leaseId, error, reason, worktree = nul
 
 async function resolveWorkerPlacement(state, machine, { repositoryWriteAuthorized = false } = {}) {
   const hostname = os.hostname().toLowerCase();
+  const requested = String(machine || "auto").trim().toLowerCase();
+  const autoTarget = hostname === "heaven2" ? "heaven" : hostname;
   let decision = placementTransportDecision(state, machine, {
     controllerHostname: hostname,
     heavenTransportHealthy: false
   });
+
+  if (["", "auto"].includes(requested) && decision.target !== autoTarget) {
+    throw new Error(`Machine policy target mismatch: expected ${autoTarget}, resolved ${decision.target}.`);
+  }
 
   const permission = canUseMachineForRepositoryWrite(state, decision.target, repositoryWriteAuthorized);
   if (!permission.allowed) {
     throw new Error(`Repository-writing task blocked by machine policy on ${decision.target}: ${permission.reason}`);
   }
 
-  let health = null;
   if (decision.controller === "heaven2" && decision.target === "heaven") {
-    health = await inspectHeavenBridge({ sync: true });
+    const health = await inspectHeavenBridge({ sync: true });
     decision = placementTransportDecision(state, machine, {
       controllerHostname: hostname,
       heavenTransportHealthy: Boolean(health?.healthy),
       heavenTransportReason: health?.reason || null
     });
+    if (!decision.allowed) {
+      throw new Error(decision.reason || "Authenticated Heaven Local Bridge is unavailable; refusing to silently execute heavy work on heaven2.");
+    }
+    return { machine: "heaven", provider: "heaven-bridge", remote: true, health };
   }
 
   if (!decision.allowed) throw new Error(decision.reason);
   return {
     machine: decision.target === hostname ? os.hostname() : decision.target,
     provider: decision.provider,
-    remote: decision.remote,
-    ...(health ? { health } : {})
+    remote: decision.remote
   };
 }
 
