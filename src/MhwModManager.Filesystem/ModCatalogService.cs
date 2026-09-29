@@ -336,6 +336,19 @@ public sealed class CatalogDownloadManager
         return new(destination, sha, length);
     }
 
+    public async Task<CatalogDownloadArtifact> AcceptLocalArchiveAsync(string archivePath, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"file={Path.GetFileName(archivePath)}");
+        if (string.IsNullOrWhiteSpace(archivePath)) throw new ArgumentException("Archive path is required.", nameof(archivePath));
+        var fullPath = Path.GetFullPath(archivePath);
+        var info = new FileInfo(fullPath);
+        if (!info.Exists) throw new FileNotFoundException("The provider download could not be found.", fullPath);
+        if (info.Length <= 0) throw new InvalidDataException("The provider download is empty.");
+        if (info.Length > maxBytes) throw new InvalidDataException("The provider download exceeds the configured safety limit.");
+        var sha = await ComputeSha256Async(fullPath, ct);
+        return new(fullPath, sha, info.Length);
+    }
+
     private static async Task<string> ComputeSha256Async(string path, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"file={Path.GetFileName(path)}");
