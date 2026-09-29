@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-101000-fabric-assertions",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'\n& wsl.exe -d Ubuntu -- docker exec heaven-worker-01 sh -lc 'echo worker01 > /workspace/isolation-proof'\nif($LASTEXITCODE -ne 0){throw 'worker01 write failed'}\n& wsl.exe -d Ubuntu -- docker exec heaven-worker-02 sh -lc 'test ! -e /workspace/isolation-proof'\nif($LASTEXITCODE -ne 0){throw 'workspace isolation failed'}\nWrite-Output 'ISOLATION_OK'\n& wsl.exe -d Ubuntu -- docker exec heaven-worker-03 sh -lc 'echo SHARED_OK > /shared/shared-proof'\nif($LASTEXITCODE -ne 0){throw 'shared write failed'}\n$shared=(& wsl.exe -d Ubuntu -- docker exec heaven-worker-04 sh -lc 'cat /shared/shared-proof' | Out-String).Trim()\nif($shared -ne 'SHARED_OK'){throw \"shared exchange failed: $shared\"}\nWrite-Output 'SHARED_OK'\n$base=(& wsl.exe -d Ubuntu -- docker inspect heaven-worker-01 --format '{{.HostConfig.NanoCpus}}|{{.HostConfig.Memory}}|{{.HostConfig.PidsLimit}}' | Out-String).Trim()\n$burst=(& wsl.exe -d Ubuntu -- docker inspect heaven-worker-05 --format '{{.HostConfig.NanoCpus}}|{{.HostConfig.Memory}}|{{.HostConfig.PidsLimit}}|{{.State.Status}}' | Out-String).Trim()\nWrite-Output \"BASE_LIMITS=$base\"\nWrite-Output \"BURST_LIMITS=$burst\"\n$ports=(& wsl.exe -d Ubuntu -- docker port heaven-worker-01 2>&1 | Out-String).Trim()\nif($ports){throw \"published ports found: $ports\"}\nWrite-Output 'NO_PUBLISHED_PORTS'\n$mounts=(& wsl.exe -d Ubuntu -- docker inspect heaven-worker-01 --format '{{range .Mounts}}{{.Type}}:{{.Destination}}:{{.RW}};{{end}}' | Out-String).Trim()\nWrite-Output \"MOUNTS=$mounts\"\n& wsl.exe -d Ubuntu -- docker stats --no-stream --format '{{.Name}}|{{.MemUsage}}|{{.PIDs}}' heaven-worker-01 heaven-worker-02 heaven-worker-03 heaven-worker-04\nexit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T10:10:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
