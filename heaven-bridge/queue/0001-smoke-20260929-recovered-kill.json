@@ -1,0 +1,12 @@
+{
+  "id": "0001-smoke-20260929-recovered-kill",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_kill",
+  "params": {
+    "session_id": "52a0a247627d416d",
+    "force": true
+  },
+  "created_at": "2026-09-29T09:05:16.369043+00:00",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
