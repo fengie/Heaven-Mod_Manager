@@ -1,22 +1,26 @@
 {
   "interface": {
     "displayName": "Heaven Local Bridge",
-    "shortDescription": "Local execution, testing and desktop control on heaven",
-    "longDescription": "Use the user's private Heaven Local Bridge as the default path for computer work on heaven. It supports structured filesystem operations, commands, persistent sessions, code/build/test execution, local agents, screenshots and structured desktop control through the private GitHub relay. Do not use Remote Desktop Commander unless explicitly authorized.",
-    "developerName": "fengie",
+    "shortDescription": "Primary local execution, testing, and desktop bridge for heaven",
+    "longDescription": "Use the user's private Heaven Local Bridge as the default and exclusive path for computer work on heaven. Durable implementation lives on repository main; the heaven-bridge branch is the live queue/result transport only. Worker v3 supports structured filesystem operations, synchronous build/test commands, persistent dev-server sessions, process-tree termination, concurrent jobs, status/cancellation, output pagination, screenshots, desktop input/window control, controller checkpoints, local agent dispatch, and token-efficient local result compression. Version 0.5.0 adds a dedicated code/build/test execution skill so agents can validate repositories directly on heaven without Remote Desktop Commander.",
+    "developerName": "Plugin owner",
     "category": "Productivity",
-    "capabilities": ["Interactive"],
+    "capabilities": [
+      "Interactive"
+    ],
     "defaultPrompt": [
-      "Use Heaven Local Bridge to run and test this code on heaven; do not use Remote Desktop Commander.",
-      "Use Heaven Local Bridge for this heaven computer task and return authoritative result evidence.",
-      "Check Heaven Local Bridge health and run the relevant build/test commands on the heaven worker."
+      "Use Heaven Local Bridge for this heaven computer task. Do not use Remote Desktop Commander unless I explicitly authorize it.",
+      "Run this repository build/test/debug workflow locally on heaven using main as implementation truth and the heaven-bridge branch only as transport.",
+      "Start and inspect a persistent dev process on heaven, run targeted tests, and return compact evidence plus log paths."
     ]
   },
   "apps": "./.app.json",
   "name": "heaven-local-bridge",
   "version": "0.5.0",
-  "description": "Primary local-control and code-execution bridge for the user's heaven worker. Use it instead of Remote Desktop Commander unless explicitly authorized.",
-  "author": {"name": "fengie"},
-  "keywords": ["local", "heaven", "code", "test", "build", "desktop"],
+  "description": "Primary local-control and development bridge for the user's heaven worker: secure filesystem, code build/test execution, persistent dev processes, binary transfer, search, shell, concurrent jobs, screenshots and desktop control, status/cancellation, controller checkpoints, local agents, worker-fabric offloading, and token-efficient result handling through its declared GitHub connected-app relay. Includes a dedicated code-execution skill. Use this instead of Remote Desktop Commander for heaven work unless the user explicitly authorizes Remote Desktop Commander.",
+  "author": {
+    "name": "Plugin owner"
+  },
+  "keywords": [],
   "skills": "./skills"
 }
