@@ -149,7 +149,8 @@ public sealed class CatalogTests : IDisposable
         await database.UpsertCatalogOriginAsync(origin, TestToken);
 
         var all = await database.GetCatalogOriginsAsync(TestToken);
-        var stored = Assert.Contains(mod.Id, all);
+        Assert.True(all.TryGetValue(mod.Id, out var stored));
+        Assert.NotNull(stored);
 
         Assert.Equal("nexus", stored.ProviderId);
         Assert.Equal("1234", stored.ProviderModId);
