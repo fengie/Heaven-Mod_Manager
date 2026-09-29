@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0859-security-tunnel-inspect-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p=Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match 'localtunnel' -and $_.CommandLine -match '--port\\s+7443' -and $_.CommandLine -match '--local-host\\s+127\\.0\\.0\\.1' } | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine; $l=Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -in 7331,7443 } | Select-Object LocalAddress,LocalPort,OwningProcess,State; [ordered]@{tunnel=$p; listeners=$l} | ConvertTo-Json -Depth 6",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-29T08:59:10Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
