@@ -77,7 +77,6 @@ UIA_ACTIONS = {
 SECRET_ENVELOPE_SCHEMA = "heaven-secret-envelope-v1"
 SECRET_PURPOSE = "gui_type_secret"
 SECRET_INBOX_ENV = "HEAVEN_BRIDGE_SECRET_INBOX"
-SECRET_INBOX_ENCRYPTED_ENV = "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED"
 SECRET_MAX_TTL_SECONDS = max(30, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_TTL", "300")), 900))
 SECRET_MAX_FILE_BYTES = max(1024, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_FILE_BYTES", "65536")), 262144))
 SECRET_MAX_CHARACTERS = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_SECRET_MAX_CHARACTERS", "10000")), 100000))
@@ -1685,15 +1684,72 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def _secret_unc_parts(raw):
+    value = str(raw or "").strip()
+    match = re.fullmatch(r"\\\\([^\\]+)\\([^\\]+)(?:\\.*)?", value)
+    if not match:
+        return None
+    return match.group(1), match.group(2)
+
+
+def verify_secret_inbox_transport(raw=None):
+    if os.name != "nt":
+        return False
+    value = str(raw if raw is not None else os.environ.get(SECRET_INBOX_ENV) or "").strip()
+    parts = _secret_unc_parts(value)
+    if not parts:
+        return False
+    server, share = parts
+    try:
+        inbox = Path(os.path.expandvars(os.path.expanduser(value)))
+        if not inbox.is_dir():
+            return False
+    except OSError:
+        return False
+
+    env = os.environ.copy()
+    env["HEAVEN_SECRET_VERIFY_SERVER"] = server
+    env["HEAVEN_SECRET_VERIFY_SHARE"] = share
+    command = (
+        "$c = Get-SmbConnection -ServerName $env:HEAVEN_SECRET_VERIFY_SERVER -ErrorAction Stop | "
+        "Where-Object { $_.ShareName -eq $env:HEAVEN_SECRET_VERIFY_SHARE } | "
+        "Select-Object -First 1 -Property ServerName,ShareName,Encrypted; "
+        "if ($null -eq $c) { exit 3 }; "
+        "$c | ConvertTo-Json -Compress"
+    )
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+            env=env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    if proc.returncode != 0:
+        return False
+    lines = [line.strip() for line in (proc.stdout or "").splitlines() if line.strip()]
+    if not lines:
+        return False
+    try:
+        row = json.loads(lines[-1])
+    except json.JSONDecodeError:
+        return False
+    return bool(
+        isinstance(row, dict)
+        and str(row.get("ServerName") or "").casefold() == server.casefold()
+        and str(row.get("ShareName") or "").casefold() == share.casefold()
+        and row.get("Encrypted") is True
+    )
+
+
 def secret_channel_status():
     raw = str(os.environ.get(SECRET_INBOX_ENV) or "").strip()
-    encrypted = str(os.environ.get(SECRET_INBOX_ENCRYPTED_ENV) or "").strip() == "1"
-    available = False
-    if raw and encrypted:
-        try:
-            available = Path(os.path.expandvars(os.path.expanduser(raw))).is_dir()
-        except OSError:
-            available = False
+    available = bool(raw and verify_secret_inbox_transport(raw))
     return {
         "available": available,
         "transport": "encrypted-smb-inbox-v1" if available else "not_configured",
@@ -1701,6 +1757,7 @@ def secret_channel_status():
         "single_use": True,
         "destination_bound": True,
         "target_bound": True,
+        "transport_verified": available,
     }
 
 
