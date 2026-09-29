@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0845-release-smoke-fail",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:45:00.991719+00:00"
+  "updated_at": "2026-09-29T08:45:18.254849+00:00",
+  "exit_code": 7
 }
