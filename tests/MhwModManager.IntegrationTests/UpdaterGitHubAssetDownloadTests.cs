@@ -134,8 +134,8 @@ public sealed class UpdaterGitHubAssetDownloadTests : IDisposable
         await new GitHubUpdateSource(http).DownloadArtifactAsync(
             candidate,
             token: null,
-            destination,
-            TestToken);
+            destination: destination,
+            ct: TestToken);
 
         Assert.True(sawBinaryAccept);
         Assert.False(sawAuthorization);
