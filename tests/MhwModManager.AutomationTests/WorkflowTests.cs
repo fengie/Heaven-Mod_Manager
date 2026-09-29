@@ -374,6 +374,7 @@ public sealed class WorkflowTests : IDisposable
         var importer = new CollectionRecipeService(target); await importer.ImportAsync(recipe, "family profile", Token);
         Assert.All(await target.GetModsAsync(Token), m => Assert.Null(m.FamilyId));
         Assert.Equal(1, await importer.RestoreFamiliesAsync(recipe, Token));
+        Assert.Equal(0, await importer.RestoreFamiliesAsync(recipe, Token));
         var mods = await target.GetModsAsync(Token); Assert.Single(mods.Select(m => m.FamilyId).Distinct());
         Assert.Equal("Optional", mods.Single(m => m.Id == "local-b").FamilyRole);
         Assert.All(mods, m => Assert.False(m.Enabled));
