@@ -1,0 +1,9 @@
+{
+  "id": "-----branch-cleanup-20260929-1054-a1",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:54:00Z",
+  "action": "powershell",
+  "payload": "$root=$env:HEAVEN_BRIDGE_REPO; if([string]::IsNullOrWhiteSpace($root)){$root=Join-Path $env:USERPROFILE 'HeavenBridgeRepo'}; $src=Join-Path $root 'heaven-bridge\\queue\\job-20260929T104700Z-branch-cleanup-ps.json'; if(!(Test-Path $src)){throw ('source cleanup job not found: '+$src)}; $j=Get-Content -LiteralPath $src -Raw | ConvertFrom-Json; $p=[string]$j.payload; $p=$p.Replace('$ErrorActionPreference=''Stop''','$ErrorActionPreference=''Continue''; $PSNativeCommandUseErrorActionPreference=$false'); $p=$p.Replace('$r=RepoPath','$r=''C:\\Users\\Xxkan\\mhw-mods-work-canonical'''); Invoke-Expression $p",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 7200
+}
