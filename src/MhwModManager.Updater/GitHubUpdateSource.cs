@@ -29,7 +29,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
             $"{ApiBase}/repos/{releaseRepository}/releases?per_page=100",
             token);
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
+        await EnsureSuccessAsync(response, authenticated: !string.IsNullOrWhiteSpace(token), ct);
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         var releases = await JsonSerializer.DeserializeAsync<List<GitHubReleaseDto>>(stream, UpdateProtocol.Json, ct) ?? [];
         var release = releases
@@ -71,7 +71,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         request.Headers.Accept.Clear();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
+        await EnsureSuccessAsync(response, authenticated: !string.IsNullOrWhiteSpace(token), ct);
         if (response.Content.Headers.ContentLength is long declared && declared != manifest.ArtifactSize)
             throw new InvalidDataException($"Download content length {declared} does not match expected {manifest.ArtifactSize}.");
 
@@ -172,7 +172,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         request.Headers.Accept.Clear();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
+        await EnsureSuccessAsync(response, authenticated: !string.IsNullOrWhiteSpace(token), ct);
         if (response.Content.Headers.ContentLength is long length && length > maxBytes)
             throw new InvalidDataException($"Update metadata exceeded {maxBytes} bytes.");
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -190,8 +190,8 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
 
     private static async Task EnsureSuccessAsync(
         HttpResponseMessage response,
-        CancellationToken ct,
-        bool authenticated)
+        bool authenticated,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"status={(int)response.StatusCode}");
         if (response.IsSuccessStatusCode) return;
