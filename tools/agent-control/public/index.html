@@ -190,15 +190,6 @@
 
         <section class="card section">
           <div class="section-title">
-            <h2>Federated swarm</h2>
-            <span class="pill" id="federationSummary">0 live</span>
-          </div>
-          <div class="tiny" id="providerSummary">Providers loading…</div>
-          <div class="agent-list" id="federatedAgents" style="margin-top:12px"></div>
-        </section>
-
-        <section class="card section">
-          <div class="section-title">
             <h2>Managed agents</h2>
             <span class="pill" id="agentSummary">0</span>
           </div>
@@ -298,44 +289,6 @@
           </div>
           <div class="progress"><span style="width:${pct}%"></span></div>
         </div>`;
-      }).join("");
-    }
-
-    function renderFederatedAgents(snapshot) {
-      const federation = snapshot.federation || {};
-      const counts = federation.counts || {};
-      const agents = snapshot.federatedAgents || [];
-      const providers = federation.providers || [];
-      $("federationSummary").textContent = `${counts.live ?? 0} live · ${counts.stale ?? 0} stale · ${counts.disconnected ?? 0} disconnected`;
-      $("providerSummary").textContent = providers.map(provider =>
-        `${provider.label || provider.id}: ${provider.status || "unknown"} [discover=${provider.discovery || "unknown"}, register=${provider.registration || "unknown"}]`
-      ).join(" · ") || "No providers registered.";
-
-      if (!agents.length) {
-        $("federatedAgents").innerHTML = '<div class="empty">No normalized agents observed yet. Local workers appear automatically; external sessions can register through the federation API/CLI.</div>';
-        return;
-      }
-
-      $("federatedAgents").innerHTML = agents.map(a => {
-        const providersText = (a.providers || [a.provider]).filter(Boolean).join(", ");
-        const stateText = a.effective_state || a.state || "unknown";
-        const freshness = a.freshness || "unknown";
-        const branch = a.branch ? ` · ${escapeHtml(a.branch)}` : "";
-        const pr = a.pr_number ? ` · PR #${escapeHtml(a.pr_number)}` : "";
-        return `
-          <article class="agent">
-            <div class="agent-top">
-              <div>
-                <div class="agent-name"><span class="dot ${statusClass(stateText)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(stateText)} · ${escapeHtml(freshness)}</span></div>
-                <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml(providersText || "unknown provider")} · ${escapeHtml(a.machine || "—")}</div>
-              </div>
-              <span class="tag">heartbeat ${age(a.heartbeat_age_ms)}</span>
-            </div>
-            <div class="task">${escapeHtml(a.task || a.last_action_summary || "No task summary")}</div>
-            <div class="meta">${escapeHtml(a.task_id || "no task id")}${branch}${pr}</div>
-            ${a.last_action_summary ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last action:</strong> ${escapeHtml(a.last_action_summary)}</div>` : ""}
-          </article>
-        `;
       }).join("");
     }
 
@@ -494,7 +447,6 @@
       if (!$("autopilotObjective").value && autopilot.objective) $("autopilotObjective").value = autopilot.objective;
 
       renderWorkers(snapshot);
-      renderFederatedAgents(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
       renderLeases(snapshot);
