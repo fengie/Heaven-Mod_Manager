@@ -458,5 +458,44 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             self.assertTrue(wrote.is_set())
 
 
+    def test_queue_order_prioritizes_control_plane(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        control = {
+            "id": "control",
+            "action": "cancel",
+            "priority": "low",
+            "created_at": (current - timedelta(seconds=1)).isoformat(),
+        }
+        ordinary = {
+            "id": "ordinary",
+            "action": "proc_run",
+            "priority": "highest",
+            "created_at": (current - timedelta(minutes=30)).isoformat(),
+        }
+        self.assertLess(hb.queue_order_key(control, current=current), hb.queue_order_key(ordinary, current=current))
+
+    def test_queue_order_ages_low_priority_work(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        old_low = {
+            "id": "old-low",
+            "action": "proc_run",
+            "priority": "low",
+            "created_at": (current - timedelta(minutes=20)).isoformat(),
+        }
+        fresh_high = {
+            "id": "fresh-high",
+            "action": "proc_run",
+            "priority": "highest",
+            "created_at": (current - timedelta(seconds=1)).isoformat(),
+        }
+        self.assertLess(hb.queue_order_key(old_low, current=current), hb.queue_order_key(fresh_high, current=current))
+
+    def test_queue_order_accepts_numeric_priority(self):
+        current = datetime(2026, 9, 29, 10, 0, tzinfo=timezone.utc)
+        urgent = {"id": "urgent", "action": "proc_run", "priority": 95, "created_at": current.isoformat()}
+        background = {"id": "background", "action": "proc_run", "priority": 10, "created_at": current.isoformat()}
+        self.assertLess(hb.queue_order_key(urgent, current=current), hb.queue_order_key(background, current=current))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
