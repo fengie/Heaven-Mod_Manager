@@ -8,17 +8,24 @@ $ErrorActionPreference = 'Stop'
 
 $BridgeDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $BridgeDir
+$RelayRepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'
+$RelayBridgeDir = Join-Path $RelayRepoRoot 'heaven-bridge'
 $Bootstrap = Join-Path $BridgeDir 'bootstrap.ps1'
+$GitStateHelper = Join-Path $BridgeDir 'git-state.ps1'
 $WorkerSource = Join-Path $BridgeDir 'worker.py'
+$RelayWorkerSource = Join-Path $RelayBridgeDir 'worker.py'
 $PrimaryTests = Join-Path $BridgeDir 'test_worker.py'
 $CompatibilityTests = Join-Path $BridgeDir 'tests\test_worker.py'
+$GitStateTests = Join-Path $BridgeDir 'tests\Test-GitState.ps1'
 $SecretEnvelopeIoTests = Join-Path $BridgeDir 'tests\Test-SecretEnvelopeIo.ps1'
 $SecretEnvelopeHelper = Join-Path $BridgeDir 'New-HeavenSecretEnvelope.ps1'
 $SecretEnvelopeIo = Join-Path $BridgeDir 'secret-envelope-io.ps1'
 $RuntimeWorker = Join-Path $env:USERPROFILE '.mhw-local-tools\heaven-desktop-worker.py'
 $HostId = if ($env:HEAVEN_BRIDGE_HOST) { $env:HEAVEN_BRIDGE_HOST.Trim().ToLowerInvariant() } elseif ($env:COMPUTERNAME) { $env:COMPUTERNAME.Trim().ToLowerInvariant() } else { 'heaven' }
-$ScopedHeartbeat = Join-Path $BridgeDir ("status\hosts\{0}\heartbeat.json" -f $HostId)
-$LegacyHeartbeat = Join-Path $BridgeDir 'status\heartbeat.json'
+$ScopedHeartbeat = Join-Path $RelayBridgeDir ("status\hosts\{0}\heartbeat.json" -f $HostId)
+$LegacyHeartbeat = Join-Path $RelayBridgeDir 'status\heartbeat.json'
+
+. $GitStateHelper
 
 function Get-CanonicalWorkers {
     @(
@@ -93,17 +100,16 @@ function Show-Status {
 
     $branch = $null
     $gitStatus = @()
-    if (Test-Path (Join-Path $RepoRoot '.git')) {
-        $branch = (& git -C $RepoRoot branch --show-current).Trim()
-        if ($LASTEXITCODE -ne 0) { throw 'Unable to read Heaven Bridge relay branch.' }
-        $gitStatus = @(& git -C $RepoRoot status --short)
+    if (Test-Path (Join-Path $RelayRepoRoot '.git')) {
+        $branch = Get-HeavenBridgeGitCurrentBranch -Repository $RelayRepoRoot
+        $gitStatus = @(& git -C $RelayRepoRoot status --short)
         if ($LASTEXITCODE -ne 0) { throw 'Unable to read Heaven Bridge relay status.' }
     }
 
     $sourceHash = $null
     $runtimeHash = $null
-    if (Test-Path $WorkerSource) {
-        $sourceHash = (Get-FileHash $WorkerSource -Algorithm SHA256).Hash
+    if (Test-Path $RelayWorkerSource) {
+        $sourceHash = (Get-FileHash $RelayWorkerSource -Algorithm SHA256).Hash
     }
     if (Test-Path $RuntimeWorker) {
         $runtimeHash = (Get-FileHash $RuntimeWorker -Algorithm SHA256).Hash
@@ -129,7 +135,7 @@ function Show-Status {
     $report = [ordered]@{
         healthy = [bool]$healthy
         host = $HostId
-        repo = $RepoRoot
+        repo = $RelayRepoRoot
         branch = $branch
         tracked_or_untracked_changes = $gitStatus
         canonical_worker_count = $canonical.Count
@@ -163,10 +169,13 @@ function Invoke-Tests {
     & $python -m unittest -v $CompatibilityTests
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+    & $GitStateTests
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
     & $SecretEnvelopeIoTests
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    foreach ($path in @($Bootstrap, $PSCommandPath, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
+    foreach ($path in @($Bootstrap, $PSCommandPath, $GitStateHelper, $GitStateTests, $SecretEnvelopeHelper, $SecretEnvelopeIo, $SecretEnvelopeIoTests)) {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile(
