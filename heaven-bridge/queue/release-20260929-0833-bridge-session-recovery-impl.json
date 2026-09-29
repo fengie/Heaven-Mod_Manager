@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0833-bridge-session-recovery-impl",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-bridge-session-recovery-wt",
+    "timeout_seconds": 3600,
+    "command": "$ErrorActionPreference='Continue'; $prompt=Get-Content 'C:\\Users\\Xxkan\\HeavenBridge\\prompts\\bridge-session-recovery.txt' -Raw; $prompt | codex -a never -s workspace-write exec --skip-git-repo-check -C 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-bridge-session-recovery-wt' -; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T08:33:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
