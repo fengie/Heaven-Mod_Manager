@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165051-reconcile-catalog208",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'; $src='C:\\Users\\fengc\\HeavenBridgeSource'; $branch='agent/unified-mod-catalog-20260929'; $expected='1c6013cf14c73efb155bd08f0c66177fce1ec9e4'; $wt='C:\\Users\\fengc\\agent-worktrees\\finish-catalog208'; $remote=((& git -C $src ls-remote origin ('refs/heads/'+$branch)) -split '\\s+')[0]; Write-Output ('REMOTE_HEAD='+$remote); if($remote -ne $expected){ Write-Output 'REMOTE_MOVED_ABORT'; exit 3 }; if(Test-Path $wt){ git -C $src worktree remove --force $wt 2>$null; if(Test-Path $wt){Remove-Item -LiteralPath $wt -Recurse -Force} }; git -C $src worktree prune; git -C $src fetch origin $branch main; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $src worktree add -B ('work/finish-'+($branch -replace '[^A-Za-z0-9._-]','-')) $wt $expected; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $wt merge --no-edit origin/main; $code=$LASTEXITCODE; Write-Output ('MERGE_EXIT='+$code); git -C $wt status --short; if($code -ne 0){ Write-Output 'CONFLICTS:'; git -C $wt diff --name-only --diff-filter=U; exit 4 }; git -C $wt rev-parse HEAD; git -C $wt diff --check origin/main...HEAD; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; git -C $wt push origin ('HEAD:refs/heads/'+$branch); exit $LASTEXITCODE",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 240
+  },
+  "created_at": "2026-09-29T16:50:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
