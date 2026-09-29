@@ -1,9 +1,10 @@
 {
   "id": "----validate-main-priority-20260929-1058-a2",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:58:04.083178+00:00"
+  "updated_at": "2026-09-29T10:58:51.811401+00:00",
+  "exit_code": 1
 }
