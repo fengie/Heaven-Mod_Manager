@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-heaven2-verify-self-heal-20260929-1649",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:49:02.812183+00:00"
+  "updated_at": "2026-09-29T16:49:12.381102+00:00",
+  "exit_code": 0
 }
