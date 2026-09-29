@@ -3810,7 +3810,8 @@ function schedulePerpetualRetry(reason, {
 
   const previousLevel = Math.max(0, Number(state.autopilot.recoveryCooldownLevel || 0));
   const storm = history.length >= PERPETUAL_MAX_RECOVERIES_PER_WINDOW;
-  const nextLevel = Math.min(12, storm ? previousLevel + 1 : previousLevel);
+  const baselineLevel = history.length <= 1 ? 0 : previousLevel;
+  const nextLevel = Math.min(12, storm ? baselineLevel + 1 : baselineLevel);
   const automaticDelay = Math.min(
     PERPETUAL_RETRY_MAX_MS,
     PERPETUAL_RETRY_BASE_MS * Math.pow(2, Math.min(8, nextLevel))
@@ -3905,10 +3906,6 @@ function perpetualRecoverableGatePatch(state, reason) {
       ...(ref?.field ? { [ref.field]: null } : {})
     };
   }
-  if (/reconciliation-required-(stopped|interrupted)$/.test(String(reason))) {
-    const ref = perpetualPhaseWorkerRef(autopilot);
-    return ref?.field ? { [ref.field]: null } : {};
-  }
   return null;
 }
 
@@ -3969,7 +3966,15 @@ async function reconcilePerpetualReplacement(state) {
   if (!state.autopilot?.perpetual || !state.autopilot?.enabled) return null;
   const capacity = providerCapacityCircuit(state);
   if (capacity.blocked) {
-    schedulePerpetualRetry("provider-capacity", { retryAt: capacity.blockedUntil });
+    const existingRetry = Date.parse(String(state.autopilot.nextRetryAt || ""));
+    const blockedUntil = Date.parse(String(capacity.blockedUntil || ""));
+    if (
+      state.autopilot.lastRecoveryReason !== "provider-capacity"
+      || !Number.isFinite(existingRetry)
+      || (Number.isFinite(blockedUntil) && existingRetry < blockedUntil)
+    ) {
+      schedulePerpetualRetry("provider-capacity", { retryAt: capacity.blockedUntil });
+    }
     return { kind: "wait", reason: "provider-capacity", retryAt: capacity.blockedUntil };
   }
 
