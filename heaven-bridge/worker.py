@@ -13,7 +13,7 @@ import threading
 import time
 import uuid
 from ctypes import wintypes
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 WORKER_VERSION = 4
