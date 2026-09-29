@@ -5,14 +5,8 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": true,
-  "updated_at": "2026-09-29T17:01:19.344203+00:00",
-  "running": [
-    {
-      "id": "chatgpt-20260929-170200-build-ui255-heaven2",
-      "action": "proc_run",
-      "started_at": "2026-09-29T17:01:11.202476+00:00"
-    }
-  ],
+  "updated_at": "2026-09-29T17:06:20.010692+00:00",
+  "running": [],
   "capabilities": [
     "app_launch",
     "cancel",
