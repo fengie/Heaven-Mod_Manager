@@ -19,7 +19,8 @@ export const DEFAULT_WORK_HANDOFF_SIGNATURES = Object.freeze({
   version: 1,
   declineLabels: ["stay in chat"],
   acceptLabels: ["continue in work", "continue in chatgpt work"],
-  learned: []
+  learned: [],
+  driftObservations: []
 });
 
 function unique(values) {
@@ -28,6 +29,7 @@ function unique(values) {
 
 export function normalizeWorkHandoffRegistry(value = {}) {
   const learned = Array.isArray(value?.learned) ? value.learned.filter(item => item && typeof item === "object").slice(-100) : [];
+  const driftObservations = Array.isArray(value?.driftObservations) ? value.driftObservations.filter(item => item && typeof item === "object").slice(-100) : [];
   return {
     schema: DEFAULT_WORK_HANDOFF_SIGNATURES.schema,
     version: Math.max(1, Number(value?.version) || 1),
@@ -40,7 +42,8 @@ export function normalizeWorkHandoffRegistry(value = {}) {
       ...DEFAULT_WORK_HANDOFF_SIGNATURES.acceptLabels,
       ...(Array.isArray(value?.acceptLabels) ? value.acceptLabels : [])
     ]),
-    learned
+    learned,
+    driftObservations
   };
 }
 
@@ -157,5 +160,47 @@ export function learnWorkHandoffSignature(registryValue, detection, {
     declineLabels: unique([...registry.declineLabels, declineLabel]),
     acceptLabels: unique([...registry.acceptLabels, acceptLabel]),
     learned
+  };
+}
+
+
+export function recordWorkHandoffDrift(registryValue, detection, tree, {
+  observedAt = new Date().toISOString()
+} = {}) {
+  const registry = normalizeWorkHandoffRegistry(registryValue);
+  const items = Array.isArray(tree?.items) ? tree.items : [];
+  const visibleButtons = items
+    .filter(isButton)
+    .map(item => normalizeHandoffLabel(item.name))
+    .filter(Boolean)
+    .slice(0, 40);
+  const workLabels = items
+    .map(item => normalizeHandoffLabel(item?.name))
+    .filter(label => label && hasWork(label))
+    .slice(0, 40);
+  const observation = {
+    observedAt,
+    reason: detection?.reason || "unknown-ui-drift",
+    evidence: detection?.evidence || null,
+    visibleButtons,
+    workLabels
+  };
+  const fingerprint = JSON.stringify({
+    reason: observation.reason,
+    visibleButtons,
+    workLabels
+  });
+  const duplicate = registry.driftObservations.some(item => JSON.stringify({
+    reason: item.reason,
+    visibleButtons: item.visibleButtons,
+    workLabels: item.workLabels
+  }) === fingerprint);
+  return {
+    ...registry,
+    version: duplicate ? registry.version : registry.version + 1,
+    updatedAt: observedAt,
+    driftObservations: duplicate
+      ? registry.driftObservations
+      : [...registry.driftObservations, observation].slice(-100)
   };
 }
