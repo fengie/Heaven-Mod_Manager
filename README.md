@@ -1,4 +1,8 @@
-# v8.8.15 Universal Mod Manager
+# v8.8.16 Universal Mod Manager
+
+## v8.8.16 — larger mod library workspace
+
+The Mods page now gives the library substantially more vertical room on normal desktop widths. Filters and bulk actions share one responsive toolbar row when space allows, the pending-change controls sit beside their summary instead of consuming another full row, and the surrounding vertical margins are tighter. Narrow windows can still wrap the toolbar naturally, while the mod rows and existing commands keep their current behavior.
 
 ## v8.8.15 — true visual overhaul
 
