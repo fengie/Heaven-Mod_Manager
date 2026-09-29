@@ -41,14 +41,37 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Shared_ui_motion_is_lightweight_and_respects_windows_animation_settings()
+    {
+        var root=FindRepositoryRoot();
+        var app=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","App.xaml"));
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+        var code=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml.cs"));
+        var motion=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","UiMotion.cs"));
+
+        Assert.Contains("local:UiMotion.EnableHoverFeedback",app);
+        Assert.Contains("x:Name=\"MainTabs\"",xaml);
+        Assert.Contains("SelectionChanged=\"OnMainTabSelectionChanged\"",xaml);
+        Assert.Contains("IsVisibleChanged=\"OnBusyOverlayIsVisibleChanged\"",xaml);
+        Assert.Contains("SystemParameters.ClientAreaAnimation",motion);
+        Assert.Contains("SystemParameters.ClientAreaAnimation",code);
+        Assert.Contains("TranslateTransform",code);
+        Assert.DoesNotContain("ThicknessAnimation",code);
+        Assert.DoesNotContain("HeightProperty",code);
+        Assert.DoesNotContain("WidthProperty",code);
+    }
+
+    [Fact]
     public void Mods_page_prioritizes_library_height_on_wide_layouts()
     {
         var root=FindRepositoryRoot();
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
 
-        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\" Grid.Row=\"1\"",xaml);
+        Assert.Contains("<Grid Margin=\"8,6,8,6\">",xaml);
+        Assert.Contains("<ScrollViewer x:Name=\"ModLibraryToolbar\"",xaml);
+        Assert.Contains("HorizontalScrollBarVisibility=\"Auto\"",xaml);
         Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
-        Assert.Contains("<WrapPanel Grid.Column=\"1\" Margin=\"20,0,0,0\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+        Assert.DoesNotContain("<WrapPanel x:Name=\"ModLibraryToolbar\"",xaml);
     }
 
     [Fact]
