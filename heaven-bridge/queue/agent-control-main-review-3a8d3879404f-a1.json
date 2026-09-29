@@ -1,0 +1,14 @@
+{
+  "id": "agent-control-main-review-3a8d3879404f-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference = 'Stop'; $repo = Join-Path $HOME 'local-ai-workspaces\\mhw-mods'; $wt = Join-Path $env:TEMP 'agent-control-main-review-3a8d3879404f'; $last = Join-Path $env:TEMP 'agent-control-main-review-3a8d3879404f.txt'; if (Test-Path $wt) { git -C $repo worktree remove --force $wt 2>$null; if (Test-Path $wt) { Remove-Item -Recurse -Force $wt } }; git -C $repo fetch origin --prune; if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }; git -C $repo worktree add --detach $wt 3a8d3879404f7dc049593362089b8239c39f5254; if ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }; $prompt = @'\nYou are the independent release-blocking reviewer for Agent Manager / Agent Control Plane 0.5.0. Review exact commit 3a8d3879404f7dc049593362089b8239c39f5254 in fengie/mhw-mods. Do not edit any file. Focus on tools/agent-control and its integration/continuity changes. Verify the previously blocking contracts: normalized federated registry and heartbeat semantics; historical/stale agents excluded from live counts; stable identity/correlation; honest ChatGPT bridge/manual registration; heaven2 control/credential authority; authenticated heaven heavy-worker placement through Heaven Local Bridge; fail-closed transport; safe approval-never workspace-write Codex invocation; remote patch/evidence return to heaven2; owned-process/cancellation semantics; autonomy authorization; routing duplicate prevention; autopilot structured evidence/review; dashboard/provider-health accuracy; docs/version consistency. Inspect actual code and diff, not prose claims. Report only concrete release-blocking findings with file/line references. End with exactly RELEASE_REVIEW=APPROVED if there are no release blockers, otherwise RELEASE_REVIEW=CHANGES_REQUESTED. Do not modify, commit, push, or publish anything.\n'@; $codex=(Get-Command codex.cmd -ErrorAction SilentlyContinue).Source; if (-not $codex) { $codex=(Get-Command codex -ErrorAction SilentlyContinue).Source }; if (-not $codex) { throw 'Codex CLI not found' }; $prompt | & $codex -a never -s workspace-write exec --json --skip-git-repo-check -C $wt -o $last -; $exit=$LASTEXITCODE; if ($exit -ne 0) { throw ('review Codex failed with ' + $exit) }; $dirty = git -C $wt status --porcelain; if ($dirty) { throw ('review modified worktree: ' + ($dirty -join ',')) }; Get-Content -Raw -LiteralPath $last; git -C $repo worktree remove --force $wt; Write-Output 'REVIEWED_MAIN_SHA=3a8d3879404f7dc049593362089b8239c39f5254'"
+  },
+  "created_at": "2026-09-29T09:27:01Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
