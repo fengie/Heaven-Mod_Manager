@@ -65,7 +65,7 @@ jobs:
       - name: Restore integration test project
         shell: powershell
         run: |
-          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj --source .\data -p:NuGetAudit=false --ignore-failed-sources
+          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build integration test project
