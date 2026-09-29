@@ -1,0 +1,9 @@
+{
+  "id": "000-00-01-bridge-exact-main-gate-20260929",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:07:28.150143+00:00"
+}
