@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T102100Z-branch-cleanup-powershell",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:21:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:17:25.246281+00:00",
+  "finished_at": "2026-09-29T10:17:39.291474+00:00",
+  "stdout": "",
+  "stderr": "Missing governance files: GLOBAL_GIT_DIRECTIVE.md\r\nAt line:60 char:32\r\n+ ... nt -gt 0) { throw \"Missing governance files: $($missingGov -join ', ' ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Missing governa...IT_DIRECTIVE.md:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Missing governance files: GLOBAL_GIT_DIRECTIVE.md\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T102100Z-branch-cleanup-powershell.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T102100Z-branch-cleanup-powershell.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 426,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "217a936e757b8e4173dcbb6a3a71cd60e1e6f8d19803b0c7901e32165f34e1ef"
+}
