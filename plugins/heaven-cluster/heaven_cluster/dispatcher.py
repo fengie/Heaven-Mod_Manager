@@ -34,7 +34,13 @@ Transport = Callable[[dict[str, Any], Mapping[str, Any]], Any]
 class QueueClusterDispatcher:
     """Bridge TaskQueue leases to capability-aware ClusterScheduler workers."""
 
-    def __init__(self, queue: QueueLike, cluster: ClusterLike, *, dispatcher_id: str = "cluster-dispatcher"):
+    def __init__(
+        self,
+        queue: QueueLike,
+        cluster: ClusterLike,
+        *,
+        dispatcher_id: str = "cluster-dispatcher",
+    ):
         dispatcher_id = str(dispatcher_id or "").strip()
         if not dispatcher_id or len(dispatcher_id) > 128:
             raise ValueError("dispatcher_id must be 1..128 characters")
@@ -63,13 +69,24 @@ class QueueClusterDispatcher:
             raise ValueError(f"{field} exceeds {limit} entries")
         return items
 
-    def _requirements(self, task: Mapping[str, Any]) -> tuple[list[str], list[str], list[str]]:
+    def _requirements(
+        self,
+        task: Mapping[str, Any],
+    ) -> tuple[list[str], list[str], list[str]]:
         payload = task.get("payload") or {}
         if not isinstance(payload, Mapping):
             raise ValueError("task payload must be an object")
-        required = self._string_list(payload.get("required_capabilities"), "required_capabilities")
-        preferred = self._string_list(payload.get("preferred_labels"), "preferred_labels")
-        resources = sorted(self._string_list(payload.get("resources"), "resources"))
+        required = self._string_list(
+            payload.get("required_capabilities"),
+            "required_capabilities",
+        )
+        preferred = self._string_list(
+            payload.get("preferred_labels"),
+            "preferred_labels",
+        )
+        resources = sorted(
+            self._string_list(payload.get("resources"), "resources")
+        )
         return required, preferred, resources
 
     def _reserve_compatible_worker(
@@ -112,7 +129,22 @@ class QueueClusterDispatcher:
         if not isinstance(worker_max_age_seconds, int) or worker_max_age_seconds < 0:
             raise ValueError("worker_max_age_seconds must be >=0")
 
-        task = self.queue.claim_task(self.dispatcher_id, lease_seconds=lease_seconds)
+        interval = lease_renew_interval
+        if interval is None:
+            interval = max(1.0, min(30.0, lease_seconds / 3.0))
+        if (
+            not isinstance(interval, (int, float))
+            or interval <= 0
+            or interval >= lease_seconds
+        ):
+            raise ValueError(
+                "lease_renew_interval must be >0 and less than lease_seconds"
+            )
+
+        task = self.queue.claim_task(
+            self.dispatcher_id,
+            lease_seconds=lease_seconds,
+        )
         if task is None:
             return {"status": "idle"}
 
@@ -134,10 +166,18 @@ class QueueClusterDispatcher:
                     f"invalid dispatch metadata: {exc}",
                     retry=False,
                 )
-                return {"status": "failed", "task": failed, "error": str(exc)}
+                return {
+                    "status": "failed",
+                    "task": failed,
+                    "error": str(exc),
+                }
 
             for resource in resources:
-                if not self.queue.acquire_resource(resource, owner, lease_seconds=lease_seconds):
+                if not self.queue.acquire_resource(
+                    resource,
+                    owner,
+                    lease_seconds=lease_seconds,
+                ):
                     for held in reversed(acquired):
                         self.queue.release_resource(held, owner)
                     acquired.clear()
@@ -147,7 +187,11 @@ class QueueClusterDispatcher:
                         f"resource unavailable: {resource}",
                         retry=True,
                     )
-                    return {"status": "deferred", "task": retried, "resource": resource}
+                    return {
+                        "status": "deferred",
+                        "task": retried,
+                        "resource": resource,
+                    }
                 acquired.append(resource)
 
             try:
@@ -163,13 +207,11 @@ class QueueClusterDispatcher:
                     f"worker unavailable: {exc}",
                     retry=True,
                 )
-                return {"status": "deferred", "task": retried, "error": str(exc)}
-
-            interval = lease_renew_interval
-            if interval is None:
-                interval = max(1.0, min(30.0, lease_seconds / 3.0))
-            if not isinstance(interval, (int, float)) or interval <= 0 or interval >= lease_seconds:
-                raise ValueError("lease_renew_interval must be >0 and less than lease_seconds")
+                return {
+                    "status": "deferred",
+                    "task": retried,
+                    "error": str(exc),
+                }
 
             def renew_loop() -> None:
                 while not stop_renew.wait(float(interval)):
@@ -194,36 +236,94 @@ class QueueClusterDispatcher:
                 result = transport(worker, task)
             except Exception as exc:
                 current = self.queue.get_task(task_id)
-                if current.get("state") != "running" or current.get("lease_owner") != self.dispatcher_id:
-                    return {"status": current.get("state", "lease_lost"), "task": current}
-                failure = self.queue.handle_agent_failure(
-                    task_id,
-                    self.dispatcher_id,
-                    str(exc),
-                    retry=True,
-                )
+                if (
+                    current.get("state") != "running"
+                    or current.get("lease_owner") != self.dispatcher_id
+                ):
+                    return {
+                        "status": current.get("state", "lease_lost"),
+                        "task": current,
+                    }
+                try:
+                    failure = self.queue.handle_agent_failure(
+                        task_id,
+                        self.dispatcher_id,
+                        str(exc),
+                        retry=True,
+                    )
+                except Exception as classify_exc:
+                    failed = self.queue.fail_task(
+                        task_id,
+                        self.dispatcher_id,
+                        f"transport failed: {exc}; classification failed: {classify_exc}",
+                        retry=False,
+                    )
+                    return {
+                        "status": "failed",
+                        "task": failed,
+                        "worker": worker["id"],
+                        "error": str(exc)[:4096],
+                    }
                 return {
-                    "status": "capacity_blocked" if failure.get("hard_usage_limit") else failure["task"]["state"],
+                    "status": (
+                        "capacity_blocked"
+                        if failure.get("hard_usage_limit")
+                        else failure["task"]["state"]
+                    ),
                     "task": failure["task"],
                     "worker": worker["id"],
                     "error": str(exc)[:4096],
-                    "terminate_agent": bool(failure.get("terminate_agent")),
+                    "terminate_agent": bool(
+                        failure.get("terminate_agent")
+                    ),
                 }
 
             current = self.queue.get_task(task_id)
-            if lost_lease.is_set() or current.get("state") != "running" or current.get("lease_owner") != self.dispatcher_id:
+            if (
+                lost_lease.is_set()
+                or current.get("state") != "running"
+                or current.get("lease_owner") != self.dispatcher_id
+            ):
                 return {
                     "status": current.get("state", "lease_lost"),
                     "task": current,
                     "worker": worker["id"],
                 }
 
-            receipt = {"worker": worker["id"], "result": result}
-            completed = self.queue.complete_task(
-                task_id,
-                self.dispatcher_id,
-                receipt,
-            )
+            receipt = {
+                "worker": worker["id"],
+                "result": result,
+            }
+            try:
+                completed = self.queue.complete_task(
+                    task_id,
+                    self.dispatcher_id,
+                    receipt,
+                )
+            except Exception as exc:
+                current = self.queue.get_task(task_id)
+                if (
+                    current.get("state") == "running"
+                    and current.get("lease_owner") == self.dispatcher_id
+                ):
+                    failed = self.queue.fail_task(
+                        task_id,
+                        self.dispatcher_id,
+                        f"receipt persistence failed: {exc}",
+                        retry=False,
+                    )
+                    return {
+                        "status": "failed",
+                        "task": failed,
+                        "worker": worker["id"],
+                        "error": str(exc)[:4096],
+                    }
+                return {
+                    "status": current.get("state", "lease_lost"),
+                    "task": current,
+                    "worker": worker["id"],
+                }
+
             return {
                 "status": "completed",
                 "task": completed,
