@@ -16,7 +16,7 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 3
+WORKER_VERSION = 4
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
@@ -50,6 +50,7 @@ MAX_JOB_TTL = int(os.environ.get("HEAVEN_BRIDGE_MAX_TTL", "86400"))
 FUTURE_SKEW_SECONDS = int(os.environ.get("HEAVEN_BRIDGE_FUTURE_SKEW", "300"))
 HEARTBEAT_SECONDS = max(120, int(os.environ.get("HEAVEN_BRIDGE_HEARTBEAT_SECONDS", "300")))
 RATE_LIMIT_PER_MINUTE = max(10, int(os.environ.get("HEAVEN_BRIDGE_RATE_PER_MINUTE", "60")))
+QUEUE_PRIORITY_AGING_SECONDS = max(30, int(os.environ.get("HEAVEN_BRIDGE_PRIORITY_AGING_SECONDS", "300")))
 DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
 DEFAULT_SESSION_MAX = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX", "14400"))
 SESSION_METADATA_VERSION = 1
@@ -65,6 +66,13 @@ LAST_HEARTBEAT = 0.0
 
 SENSITIVE_ENV_RE = re.compile(r"(PASS|PASSWORD|TOKEN|SECRET|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH)", re.I)
 CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
+UIA_MAX_NODES = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_NODES", "250")), 1000))
+UIA_MAX_DEPTH = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_DEPTH", "6")), 12))
+UIA_MAX_WAIT_MS = max(0, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_WAIT_MS", "10000")), 30000))
+UIA_ACTIONS = {
+    "uia_tree", "uia_find", "uia_focus", "uia_invoke", "uia_set_value",
+    "uia_toggle", "uia_select", "uia_expand", "uia_collapse",
+}
 
 DIRECT_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "job_output_read", "controller_checkpoint",
@@ -76,12 +84,24 @@ DIRECT_ACTIONS = {
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
     "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+    *UIA_ACTIONS,
     "powershell", "cmd", "python", "codex",
 }
 CONTROL_ACTIONS = {
     "health", "system_info", "job_status", "cancel", "controller_checkpoint",
     "proc_read", "proc_input", "proc_kill", "proc_list_sessions",
 }
+JOB_PRIORITY_RANK = {
+    "highest": 0,
+    "critical": 0,
+    "urgent": 0,
+    "high": 1,
+    "normal": 2,
+    "default": 2,
+    "low": 3,
+    "lowest": 4,
+}
+
 RAW_ACTIONS = {"powershell", "cmd", "python", "codex"}
 
 
@@ -105,6 +125,15 @@ def now():
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+
+def is_process_elevated():
+    if os.name != "nt":
+        return False
+    try:
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
 
 
 def parse_time(value):
@@ -1533,6 +1562,101 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def _validate_uia_request(p, operation):
+    if not isinstance(p, dict):
+        raise BridgeError("INVALID_UIA_REQUEST", "UI Automation params must be an object")
+    selector = p.get("selector")
+    if selector is not None and not isinstance(selector, dict):
+        raise BridgeError("INVALID_UIA_SELECTOR", "selector must be an object")
+    allowed_selector = {
+        "automation_id", "name", "name_contains", "control_type",
+        "class_name", "process_id", "enabled", "offscreen",
+    }
+    if isinstance(selector, dict):
+        unknown = sorted(set(selector) - allowed_selector)
+        if unknown:
+            raise BridgeError("INVALID_UIA_SELECTOR", "selector contains unsupported fields", {"fields": unknown})
+        for key in ("automation_id", "name", "name_contains", "control_type", "class_name"):
+            if key in selector and len(str(selector[key])) > 512:
+                raise BridgeError("INVALID_UIA_SELECTOR", f"selector.{key} is too long")
+    if operation not in ("uia_tree", "uia_find") and not selector:
+        raise BridgeError("UIA_SELECTOR_REQUIRED", "semantic UI actions require params.selector")
+    scope = str(p.get("scope") or "descendants").lower()
+    if scope not in ("children", "descendants"):
+        raise BridgeError("INVALID_UIA_SCOPE", "scope must be children or descendants")
+    if operation == "uia_set_value":
+        if p.get("value") is None:
+            raise BridgeError("UIA_VALUE_REQUIRED", "uia_set_value requires params.value")
+        if len(str(p.get("value"))) > 10000:
+            raise BridgeError("TEXT_TOO_LARGE", "uia_set_value is limited to 10000 characters")
+    return {
+        **p,
+        "operation": operation,
+        "scope": scope,
+        "max_nodes": max(10, min(int(p.get("max_nodes") or UIA_MAX_NODES), UIA_MAX_NODES)),
+        "max_depth": max(1, min(int(p.get("max_depth") or UIA_MAX_DEPTH), UIA_MAX_DEPTH)),
+        "wait_ms": max(0, min(int(p.get("wait_ms") or 0), UIA_MAX_WAIT_MS)),
+    }
+
+
+def _run_uia_once(request):
+    script = ROOT / "heaven-bridge" / "uia.ps1"
+    if not script.is_file():
+        raise BridgeError("UIA_BACKEND_UNAVAILABLE", "UI Automation backend script is missing")
+    env = os.environ.copy()
+    raw = json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    env["HEAVEN_UIA_REQUEST"] = base64.b64encode(raw).decode("ascii")
+    timeout_seconds = max(5, min(30, 6 + int(request.get("wait_ms") or 0) // 1000))
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_seconds,
+            env=env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise BridgeError("UIA_TIMEOUT", "Windows UI Automation backend exceeded its bounded timeout") from exc
+    if proc.returncode != 0:
+        raise BridgeError("UIA_BACKEND_FAILED", "Windows UI Automation backend failed", {"exit_code": proc.returncode})
+    lines = [line.strip() for line in (proc.stdout or "").splitlines() if line.strip()]
+    if not lines:
+        raise BridgeError("UIA_BACKEND_INVALID", "Windows UI Automation backend returned no structured result")
+    try:
+        result = json.loads(lines[-1])
+    except json.JSONDecodeError as exc:
+        raise BridgeError("UIA_BACKEND_INVALID", "Windows UI Automation backend returned invalid JSON") from exc
+    if not result.get("ok"):
+        raise BridgeError(
+            str(result.get("code") or "UIA_FAILED"),
+            str(result.get("message") or "UI Automation operation failed"),
+            result.get("details"),
+        )
+    return result.get("data")
+
+
+def desktop_uia(p, operation):
+    _require_windows_desktop()
+    request = _validate_uia_request(p, operation)
+    wait_ms = int(request.get("wait_ms") or 0)
+    deadline = time.monotonic() + wait_ms / 1000.0
+    while True:
+        try:
+            data = _run_uia_once(request)
+            if operation == "uia_find" and wait_ms and not (data or {}).get("count") and time.monotonic() < deadline:
+                time.sleep(0.15)
+                continue
+            return data
+        except BridgeError as exc:
+            if wait_ms and exc.code == "UIA_NOT_FOUND" and time.monotonic() < deadline:
+                time.sleep(0.15)
+                continue
+            raise
+
+
 def _open_clipboard(user32, attempts=20):
     for _ in range(attempts):
         if user32.OpenClipboard(None):
@@ -1693,6 +1817,7 @@ def run_job(job_id, job, cancel_event):
         data = {
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": sorted(DIRECT_ACTIONS),
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
+            "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
             "capabilities": {
                 "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": True,
@@ -1704,7 +1829,23 @@ def run_job(job_id, job, cancel_event):
                 "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
+                "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
+                "uia_password_set_value_blocked": True,
                 "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
+            },
+            "capability_schema": 2,
+            "features": {
+                "desktop": {"version": 2, "coordinate_fallback": True},
+                "uia": {
+                    "version": 1, "available": os.name == "nt", "backend": "windows-uia-powershell",
+                    "actions": sorted(UIA_ACTIONS), "max_nodes": UIA_MAX_NODES, "max_depth": UIA_MAX_DEPTH,
+                    "max_wait_ms": UIA_MAX_WAIT_MS, "password_values_exposed": False,
+                    "password_set_value_allowed": False,
+                },
+                "secret_input": {
+                    "version": 1, "available": False, "transport": "not_configured",
+                    "relay_secret_values_allowed": False,
+                },
             },
         }
         return make_result(job, action, data=data, started_at=started)
@@ -1715,6 +1856,7 @@ def run_job(job_id, job, cancel_event):
             "home": str(Path.home()), "platform": os.name, "python": os.sys.version, "cwd": os.getcwd(),
             "drives": [f"{c}:\\" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if Path(f"{c}:\\").exists()],
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL,
+            "elevated": is_process_elevated(),
         }
         return make_result(job, action, data=data, started_at=started)
 
@@ -1996,6 +2138,9 @@ def run_job(job_id, job, cancel_event):
     if action == "gui_type":
         return make_result(job, action, data=desktop_type_text(p), started_at=started)
 
+    if action in UIA_ACTIONS:
+        return make_result(job, action, data=desktop_uia(p, action), started_at=started)
+
     if action == "proc_list":
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
@@ -2177,7 +2322,7 @@ def heartbeat(force=False):
         running = [{"id": jid, "action": info["action"], "started_at": info["started_at"]} for jid, info in RUNNING.items()]
     body = {
         "host": os.environ.get("COMPUTERNAME", "heaven"), "pid": os.getpid(), "worker_version": WORKER_VERSION,
-        "protocol": PROTOCOL, "auth_mode": auth_mode(), "updated_at": now(), "running": running,
+        "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
         "capabilities": sorted(DIRECT_ACTIONS),
     }
     try:
@@ -2200,13 +2345,64 @@ def restore_cached_result(job_id, row):
         return False
 
 
+def queue_priority_rank(value):
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        numeric = max(0.0, min(float(value), 100.0))
+        if numeric >= 75:
+            return 0
+        if numeric >= 50:
+            return 1
+        if numeric >= 25:
+            return 2
+        return 3
+    labels = {
+        "highest": 0, "critical": 0, "urgent": 0,
+        "high": 1,
+        "normal": 2, "default": 2,
+        "low": 3,
+        "lowest": 4,
+    }
+    return labels.get(str(value or "normal").strip().lower(), 2)
+
+
+def queue_order_key(path, current=None):
+    """Order control jobs first, then effective priority, then FIFO created_at.
+
+    Ordinary jobs age toward the highest priority so sustained high-priority
+    traffic cannot starve older low-priority work. Malformed jobs stay
+    processable so normal validation can publish a structured failure.
+    """
+    current = current or utcnow()
+    try:
+        job = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return (1, 2, 0.0, path.name)
+
+    action = str(job.get("action") or job.get("kind") or "codex").lower()
+    try:
+        created = parse_time(job.get("created_at"))
+        created_rank = created.timestamp()
+    except Exception:
+        created = current
+        created_rank = 0.0
+
+    if action in CONTROL_ACTIONS:
+        return (0, 0, created_rank, path.name)
+
+    base = queue_priority_rank(job.get("priority"))
+    age_seconds = max(0.0, (current - created).total_seconds())
+    promotions = int(age_seconds // QUEUE_PRIORITY_AGING_SECONDS)
+    effective = max(0, base - promotions)
+    return (1, effective, created_rank, path.name)
+
+
 def process_queue(executor):
     git_sync()
     QUEUE.mkdir(parents=True, exist_ok=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
 
-    files = sorted(QUEUE.glob("*.json"))
+    files = sorted(QUEUE.glob("*.json"), key=queue_order_key)
     for path in files:
         job_id = path.stem
         if not safe_id(job_id):
@@ -2241,11 +2437,15 @@ def process_queue(executor):
                 restore_cached_result(job_id, previous)
             continue
 
-        if not rate_limit_ok():
-            log("rate limit reached; deferring new jobs")
-            break
-
         action = str(job.get("action") or job.get("kind") or "codex").lower()
+        with STATE_LOCK:
+            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
+        if action not in CONTROL_ACTIONS and active_noncontrol >= MAX_WORKERS:
+            continue
+        if action not in CONTROL_ACTIONS and not rate_limit_ok():
+            log("rate limit reached; deferring non-control jobs")
+            continue
+
         if not claim(job_id):
             continue
         cancel_event = threading.Event()
@@ -2259,10 +2459,6 @@ def process_queue(executor):
             future = executor.submit(execute_job, job_id, job, digest, cancel_event)
             info["future"] = future
 
-        with STATE_LOCK:
-            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
-        if active_noncontrol >= MAX_WORKERS:
-            break
 
 
 def clean_stale_locks():
