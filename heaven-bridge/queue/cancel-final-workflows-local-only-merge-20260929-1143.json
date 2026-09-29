@@ -1,0 +1,11 @@
+{
+  "id": "cancel-final-workflows-local-only-merge-20260929-1143",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:47:00Z",
+  "ttl_seconds": 21600,
+  "action": "cancel",
+  "params": {
+    "job_id": "final-workflows-local-only-merge-20260929-1143"
+  },
+  "priority": "highest"
+}
