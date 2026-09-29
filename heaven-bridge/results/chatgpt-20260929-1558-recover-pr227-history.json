@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1558-recover-pr227-history",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:57:28.820524+00:00",
+  "finished_at": "2026-09-29T15:57:31.248912+00:00",
+  "stdout": "---REMOTE REFLOG---\r\nccbb5af2 refs/remotes/origin/fix/inbox-rollback-fail-closed-20260929@{2026-09-29 11:57:30 -0400}: fetch origin --prune: storing head\n---ALL GREP---\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)                -> origin/agent/fomod-staging-cleanup-20260929\n - [deleted]           (none)                -> origin/agent/heaven-bridge-recover-20260929\n - [deleted]           (none)                -> origin/fix-mod-retirement-lifecycle-20260929\n - [deleted]           (none)                -> origin/fix/smartpack-ca1861-20260929\n - [deleted]           (none)                -> origin/release-8.8.11-verification-fix\n - [deleted]           (none)                -> origin/release-8.8.12-verification-fix\n   99521ca4..2fe9ff1b  main                  -> origin/main\n * [new branch]        fix/active-training-handoff-validator-20260929 -> origin/fix/active-training-handoff-validator-20260929\n * [new branch]        fix/inbox-rollback-fail-closed-20260929 -> origin/fix/inbox-rollback-fail-closed-20260929\n + 3ef3f861...81c06773 fix/legacy-migration-corrupt-cas-20260929 -> origin/fix/legacy-migration-corrupt-cas-20260929  (forced update)\n * [new branch]        fix/release-8.8.13-verification-repair-20260929 -> origin/fix/release-8.8.13-verification-repair-20260929\n + b57349b2...d0c78c85 fix/support-bundle-version-identity-20260929 -> origin/fix/support-bundle-version-identity-20260929  (forced update)\n   bb6bac58..432f8ea5  heaven-bridge         -> origin/heaven-bridge\n   b533bbfd..0110ea2e  perf-startup-20260929 -> origin/perf-startup-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1558-recover-pr227-history.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1558-recover-pr227-history.stderr.log",
+    "stdout_bytes": 170,
+    "stderr_bytes": 1425,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d4f34b9787e522f6918b0f954890be379f6d72efd3fe535b50d5db591daa0c2f"
+}
