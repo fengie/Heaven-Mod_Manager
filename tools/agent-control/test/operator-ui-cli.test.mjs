@@ -56,6 +56,14 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
     "autonomyLevel",
     "routingManifest",
     "deploySwarm",
+    "quickContinue",
+    "quickSwarm",
+    "quickFix",
+    "quickPlan",
+    "quickVerify",
+    "quickBacklog",
+    "quickRelease",
+    "quickAutopilot",
     "eventSummary",
     "events"
   ]) {
@@ -83,6 +91,20 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   assert.match(html, /\/api\/control\/routing-manifest/);
   assert.match(html, /\/api\/workflows\/usual-swarm\/execute/);
   assert.match(html, /Deploy Usual Swarm/);
+  assert.match(html, /One-click launch/);
+  assert.match(html, /Continue Project/);
+  assert.match(html, /Fix Bugs/);
+  assert.match(html, /Implement Planned/);
+  assert.match(html, /Verify & Repair/);
+  assert.match(html, /Clean Backlog/);
+  assert.match(html, /Release Ready/);
+  assert.match(html, /Start Autopilot/);
+  assert.match(html, /const presetObjectives = \{/);
+  assert.match(html, /presetObjectives\.continue/);
+  assert.match(html, /async function runPreset\(key\)/);
+  assert.match(html, /async function deploySwarm\(objectiveOverride=""\)/);
+  assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| presetObjectives\.continue/);
+  assert.match(html, /quick-action\[data-preset\]/);
   assert.match(html, /repositoryWriteAuthorized:true/);
   assert.match(html, /server-side authorization remains authoritative/i);
 
