@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-102630-local-cleanup-v2",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:29:20.566531+00:00"
+  "updated_at": "2026-09-29T10:29:44.144129+00:00",
+  "exit_code": 0
 }
