@@ -1,0 +1,9 @@
+{
+  "id": "---0-manager-20260929-1101-bridge-main-gate",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:01:02.861681+00:00"
+}
