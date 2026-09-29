@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-114210-cancel-probe-1",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:49:00.043185+00:00"
+}
