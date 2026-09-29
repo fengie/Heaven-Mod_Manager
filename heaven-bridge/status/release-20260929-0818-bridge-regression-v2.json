@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0818-bridge-regression-v2",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:18:25.650705+00:00"
+}
