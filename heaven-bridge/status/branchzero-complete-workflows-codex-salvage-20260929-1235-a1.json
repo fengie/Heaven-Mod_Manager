@@ -1,0 +1,9 @@
+{
+  "id": "branchzero-complete-workflows-codex-salvage-20260929-1235-a1",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T12:37:37.090110+00:00"
+}
