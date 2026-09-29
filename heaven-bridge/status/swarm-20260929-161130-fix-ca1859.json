@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-161130-fix-ca1859",
-  "state": "running",
+  "state": "completed",
   "action": "fs_edit",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:11:45.059246+00:00"
+  "updated_at": "2026-09-29T16:11:55.156365+00:00",
+  "exit_code": 0
 }
