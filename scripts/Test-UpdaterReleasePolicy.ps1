@@ -227,12 +227,17 @@ catch {
 Assert-Equal 1 $script:UpdaterRefreshCleanupCount 'ambiguous final main refresh cleanup'
 Assert-Equal $true ($multiRefreshError -like 'Final updater publication main refresh returned *') 'ambiguous final main refresh rejection'
 
-# Regression for the retry-path propagation race: both the immediate
-# post-publication verification and an already-immutable release retry must use
-# the authoritative Git REST ref. The one remaining local current-build tag
-# check is deliberately the pre-publication orphan-tag refusal.
+# Regression for Heaven publication transport and retry-path propagation:
+# publication must not require the gh executable, while both the immediate
+# post-publication verification and an already-immutable retry verify the tag
+# through GitHub's authoritative REST ref. The one local current-build tag
+# check remains the deliberate pre-publication orphan-tag refusal.
 $publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
-$restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
+$ghCliCalls=[regex]::Matches($publishSource,'(?m)^\s*&\s+gh\b').Count
+Assert-Equal 0 $ghCliCalls 'publication has no gh CLI execution dependency'
+$ghCommandChecks=[regex]::Matches($publishSource,'Get-Command\s+gh').Count
+Assert-Equal 0 $ghCommandChecks 'publication has no gh CLI presence guard'
+$restCurrentTagChecks=[regex]::Matches($publishSource,'Get-GitHubTagRef -Tag \$tag').Count
 Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
