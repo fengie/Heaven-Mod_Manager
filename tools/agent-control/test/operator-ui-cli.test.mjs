@@ -62,6 +62,7 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   }
 
   assert.match(html, /Auto \/ heaven/);
+  assert.match(html, /presence-unknown/);
   assert.match(html, /counts\.working/);
   assert.match(html, /counts\.tool_wait/);
   assert.match(html, /counts\.blocked/);
@@ -81,6 +82,9 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   assert.match(html, /\/api\/control\/routing-manifest/);
   assert.match(html, /repositoryWriteAuthorized:true/);
   assert.match(html, /server-side authorization remains authoritative/i);
+
+  const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
+  assert.match(server, /bridgeMachineStatus\(heavenBridge\)/);
 });
 
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
