@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0850-agent-control-snapshot-now",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control",
+    "timeout_seconds": 180,
+    "command": "node .\\agentctl.mjs snapshot"
+  },
+  "created_at": "2026-09-29T08:50:40Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
