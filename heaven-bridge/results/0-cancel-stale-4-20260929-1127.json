@@ -1,0 +1,17 @@
+{
+  "id": "0-cancel-stale-4-20260929-1127",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:27:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:29:24.913106+00:00",
+  "finished_at": "2026-09-29T11:29:24.913106+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "chatgpt-20260929-1048-read-cycle-state-a1",
+    "cancel_requested": false,
+    "reason": "not_running"
+  },
+  "job_hash": "09e27584bf0ab5b1b6f911a3ac8012fd1808550e8dc311b985ccb74994c90d56"
+}
