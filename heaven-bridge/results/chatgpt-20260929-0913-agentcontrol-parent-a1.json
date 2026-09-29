@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0913-agentcontrol-parent-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:13:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T09:14:51.249869+00:00",
+  "finished_at": "2026-09-29T09:14:52.075743+00:00",
+  "stdout": "[\r\n    {\r\n        \"ProcessId\":  44916,\r\n        \"ParentProcessId\":  57564,\r\n        \"Name\":  \"node.exe\",\r\n        \"CreationDate\":  \"\\/Date(1790617011854)\\/\",\r\n        \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" \\\"C:\\\\Users\\\\Xxkan\\\\.mhw-local-tools\\\\heaven-agent-control-proxy.mjs\\\" \"\r\n    },\r\n    {\r\n        \"ProcessId\":  99936,\r\n        \"ParentProcessId\":  67500,\r\n        \"Name\":  \"powershell.exe\",\r\n        \"CreationDate\":  \"\\/Date(1790611392715)\\/\",\r\n        \"ExecutablePath\":  \"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\r\n        \"CommandLine\":  \"powershell -Command \\\"Set-Location \\u0027C:\\\\Users\\\\Xxkan\\\\agent-control-panel\\\\tools\\\\agent-control\\u0027; node .\\\\server.mjs\\\"\"\r\n    },\r\n    {\r\n        \"ProcessId\":  117120,\r\n        \"ParentProcessId\":  99936,\r\n        \"Name\":  \"node.exe\",\r\n        \"CreationDate\":  \"\\/Date(1790611392858)\\/\",\r\n        \"ExecutablePath\":  \"C:\\\\Program Files\\\\nodejs\\\\node.exe\",\r\n        \"CommandLine\":  \"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" .\\\\server.mjs\"\r\n    }\r\n]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0913-agentcontrol-parent-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0913-agentcontrol-parent-a1.stderr.log",
+    "stdout_bytes": 1108,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "277e4588168f3be602a90c2d14d189b81ff1a344fcb69500ca15f60a453a14c9"
+}
