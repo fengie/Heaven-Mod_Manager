@@ -1,0 +1,21 @@
+{
+  "id": "000a-local-agents-20260929-1048-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:48:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:49:59.939188+00:00",
+  "finished_at": "2026-09-29T10:50:00.564396+00:00",
+  "stdout": "\r\nName   Source                                                            Version       \r\n----   ------                                                            -------       \r\npython C:\\Users\\Xxkan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe 3.11.5150.1013\r\ngit    C:\\Program Files\\Git\\cmd\\git.exe                                  2.47.1.2      \r\n[\r\n    {\r\n        \"Name\":  \"apps\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\apps\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"backups\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\backups\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"benchmarks\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\benchmarks\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"compose\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\compose\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"config\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\config\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"data\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\data\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"docs\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\docs\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"logs\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\logs\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"models\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\models\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"scripts\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\scripts\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"Sync\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\Sync\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"venvs\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\venvs\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"worker-fabric\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\worker-fabric\",\r\n        \"Mode\":  \"d-----\"\r\n    },\r\n    {\r\n        \"Name\":  \"services.json\",\r\n        \"FullName\":  \"C:\\\\HeavenServices\\\\services.json\",\r\n        \"Mode\":  \"-a----\"\r\n    }\r\n]\r\n\r\n\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000a-local-agents-20260929-1048-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000a-local-agents-20260929-1048-a1.stderr.log",
+    "stdout_bytes": 2095,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "9cabf75e069d22a2495de2ab1c118af136ca69a048a85177d5e79ea61a9a8730"
+}
