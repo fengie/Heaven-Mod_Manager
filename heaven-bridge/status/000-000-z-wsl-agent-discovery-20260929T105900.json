@@ -1,0 +1,9 @@
+{
+  "id": "000-000-z-wsl-agent-discovery-20260929T105900",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:13:53.906667+00:00"
+}
