@@ -40,7 +40,12 @@ function Get-CanonicalWorkers {
 function Get-WorkerAgeSeconds {
     param($Worker)
     try {
-        $created = [System.Management.ManagementDateTimeConverter]::ToDateTime([string]$Worker.CreationDate)
+        $raw = $Worker.CreationDate
+        $created = if ($raw -is [DateTime]) {
+            [DateTime]$raw
+        } else {
+            [System.Management.ManagementDateTimeConverter]::ToDateTime([string]$raw)
+        }
         return [Math]::Max(0, [int]((Get-Date) - $created).TotalSeconds)
     } catch {
         return $null
