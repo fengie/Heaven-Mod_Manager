@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1215-pr152-bom-verify-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:15:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:23:16.879267+00:00",
+  "finished_at": "2026-09-29T12:23:19.137826+00:00",
+  "stdout": "",
+  "stderr": "fatal: ambiguous argument 'origin/fix/updater-bom-e2e-20260929': unknown revision or path not in the working tree.\nUse '--' to separate paths from revisions, like this:\n'git <command> [<revision>...] -- [<file>...]'\nfatal: invalid reference: origin/fix/updater-bom-e2e-20260929\nPush-Location : Cannot find path 'C:\\Users\\Xxkan\\mhw-pr152-verify-origin\\fix' because it does not exist.\r\nAt line:1 char:497\r\n+ ...  worktree add --detach $wt $sha | Out-Null; Push-Location $wt; try {; ...\r\n+                                                 ~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\Xxkan\\...rify-origin\\fix:String) [Push-Location], ItemNotFound \r\n   Exception\r\n    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.PushLocationCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1215-pr152-bom-verify-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1215-pr152-bom-verify-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 786,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a54931215e0b52f6d426155f896227692f3122264d6f6d910c8017f6717bfd36"
+}
