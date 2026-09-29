@@ -40,6 +40,7 @@ CACHE_DIR = STATE / "result-cache"
 PROCESSED_LOG = STATE / "processed.jsonl"
 WORKER_LOCK_PATH = LOCKS_DIR / "worker-instance.lock"
 LOCAL_HEARTBEAT = STATE / "worker-local-heartbeat.json"
+LOCAL_PROGRESS = STATE / "worker-loop-progress.json"
 CONTROLLER_STATE_PATH = "heaven-bridge/controller/state.json"
 
 MAX_TIMEOUT = int(os.environ.get("HEAVEN_BRIDGE_MAX_TIMEOUT", "7200"))
@@ -2865,6 +2866,17 @@ def local_heartbeat_loop(stop_event):
         stop_event.wait(LOCAL_HEARTBEAT_SECONDS)
 
 
+def write_loop_progress():
+    body = {
+        "host": current_host(),
+        "pid": os.getpid(),
+        "worker_version": WORKER_VERSION,
+        "protocol": PROTOCOL,
+        "updated_at": now(),
+    }
+    atomic_write_text(LOCAL_PROGRESS, json.dumps(body, indent=2, ensure_ascii=False))
+
+
 def restore_cached_result(job_id, row):
     cache_path = Path(row.get("cache_path") or "")
     if not cache_path.exists():
@@ -3036,6 +3048,7 @@ def main():
         try:
             while True:
                 try:
+                    write_loop_progress()
                     cleanup_sessions()
                     heartbeat()
                     process_queue(executor)
@@ -3054,10 +3067,11 @@ def main():
             local_heartbeat_stop.set()
             local_heartbeat_thread.join(timeout=2)
             try:
-                if LOCAL_HEARTBEAT.exists():
-                    row = json.loads(LOCAL_HEARTBEAT.read_text(encoding="utf-8"))
-                    if int(row.get("pid") or 0) == os.getpid():
-                        LOCAL_HEARTBEAT.unlink(missing_ok=True)
+                for local_path in (LOCAL_HEARTBEAT, LOCAL_PROGRESS):
+                    if local_path.exists():
+                        row = json.loads(local_path.read_text(encoding="utf-8"))
+                        if int(row.get("pid") or 0) == os.getpid():
+                            local_path.unlink(missing_ok=True)
             except Exception as e:
                 log(f"local heartbeat cleanup failed: {e}")
             audit("worker_stop", pid=os.getpid())
