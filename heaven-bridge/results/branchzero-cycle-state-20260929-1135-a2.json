@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-cycle-state-20260929-1135-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:35:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:37:48.010474+00:00",
+  "finished_at": "2026-09-29T11:37:48.432503+00:00",
+  "stdout": "{\n  \"id\": \"cycle-20260929113159-gekqi\",\n  \"status\": \"running\",\n  \"stage\": \"waiting-capacity:initial\",\n  \"createdAt\": \"2026-09-29T11:31:59.370Z\",\n  \"startedAt\": \"2026-09-29T11:32:27.658Z\",\n  \"updatedAt\": \"2026-09-29T11:32:27.662Z\",\n  \"objectivePreview\": \"Reconcile fengie/mhw-mods to canonical origin/main. Execute branch cleanup: fetch/prune, inspect active worktrees/agent ownership, remove only non-active branches whose useful work is already on main or provably superseded, and use support \",\n  \"baseBranch\": \"main\",\n  \"supervisorPid\": 97100,\n  \"waves\": [],\n  \"agents\": {},\n  \"result\": null,\n  \"error\": null\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cycle-state-20260929-1135-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cycle-state-20260929-1135-a2.stderr.log",
+    "stdout_bytes": 615,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e56e6f17cbb8aab20f15cb68a2c611a71e7843ae6d74cdbeb601c9999f6d3ab1"
+}
