@@ -136,7 +136,9 @@ This queue is intentionally not an automatic merger. It is the input to reviewer
 
 The live dashboard is derived from the normalized federation registry rather than raw process count. A provider observation supplies a stable `provider + source_id`, normalized lifecycle state, heartbeat, role, machine, task, branch/PR metadata, and optional strong correlation keys.
 
-Reconciliation is idempotent. Multiple observations from the same provider identity update one logical agent. Cross-provider observations merge only through explicit stable correlation evidence; similar chat titles never merge sessions. Fresh `working`, `tool_wait`, `blocked`, and `idle` states are live. Stale/disconnected heartbeats remain visible but are excluded from live capacity/availability counts. `done` and `failed` are historical.
+Federation schema v2 reconciles idempotently. Multiple observations from the same provider/source identity update one logical agent. Cross-provider observations merge only through explicit namespaced strong correlation evidence; task IDs, PRs, branches, titles, roles, and machine labels are never identity evidence. Ambiguous correlations fail closed, and an older observation cannot regress a newer provider/source heartbeat or aggregate lifecycle. Fresh `working`, `tool_wait`, `blocked`, and `idle` states are live. Stale/disconnected heartbeats remain visible but are excluded from live capacity/availability counts. `done` and `failed` are historical.
+
+The registry exposes an AgentSource-style adapter contract for provider capability, normalization, ingestion/reconciliation, provider heartbeat, and discovery when the provider actually supports it. Persisted v1 registry state migrates to v2 without destructive reset. Unknown legacy providers are retained as `unsupported` for inspection but cannot ingest fresh observations until an adapter is installed.
 
 Provider capability is explicit:
 - local-control: automated discovery/registration;
