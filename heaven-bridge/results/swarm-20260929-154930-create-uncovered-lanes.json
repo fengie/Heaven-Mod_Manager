@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-154930-create-uncovered-lanes",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:49:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:52:04.728997+00:00",
+  "finished_at": "2026-09-29T15:52:05.379346+00:00",
+  "stdout": "",
+  "stderr": "fatal: not a git repository (or any of the parent directories): .git\nfatal: not a git repository (or any of the parent directories): .git\nYou cannot call a method on a null-valued expression.\r\nAt line:1 char:107\r\n+ ... origin main --prune; $base=(git rev-parse origin/main).Trim(); $lanes ...\r\n+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : InvokeMethodOnNull\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-154930-create-uncovered-lanes.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-154930-create-uncovered-lanes.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 508,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "57585fa9583035cfa13813cb6f3c520d1456eafcc71538889d6cb0c81e884ce3"
+}
