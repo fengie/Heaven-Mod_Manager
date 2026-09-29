@@ -151,7 +151,6 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("MarkExceptionObserved(ex)", text, StringComparison.Ordinal);
     }
 
-
     [Fact]
     public void StartupDiagnosticsBatchJsonWritesButForceFailuresAndCompletion()
     {
