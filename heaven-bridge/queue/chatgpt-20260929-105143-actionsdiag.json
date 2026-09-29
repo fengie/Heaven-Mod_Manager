@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-105143-actionsdiag",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:51:43Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Continue'; gh --version; Write-Output '--- auth ---'; gh auth status -h github.com; Write-Output '--- repo actions permissions ---'; gh api -H 'X-GitHub-Api-Version: 2026-03-10' repos/fengie/mhw-mods/actions/permissions; Write-Output '--- repo workflow permissions ---'; gh api -H 'X-GitHub-Api-Version: 2026-03-10' repos/fengie/mhw-mods/actions/permissions/workflow; Write-Output '--- failed job payload ---'; gh api -H 'X-GitHub-Api-Version: 2026-03-10' repos/fengie/mhw-mods/actions/jobs/109371259398; Write-Output '--- user Actions billing usage Sep 2026 ---'; gh api -H 'X-GitHub-Api-Version: 2026-03-10' 'users/fengie/settings/billing/usage?year=2026&month=9&product=Actions&repository=fengie/mhw-mods'; Write-Output '--- user billing summary 2026 ---'; gh api -H 'X-GitHub-Api-Version: 2026-03-10' 'users/fengie/settings/billing/usage/summary?year=2026'"
+  },
+  "priority": "highest"
+}
