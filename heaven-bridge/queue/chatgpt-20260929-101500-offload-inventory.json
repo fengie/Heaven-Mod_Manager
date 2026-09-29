@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-101500-offload-inventory",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\HeavenServices",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Continue'\nWrite-Output '===WORKER-FABRIC==='\nGet-Content 'C:\\HeavenServices\\worker-fabric\\fabric.json' -Raw\nWrite-Output '===MANAGER==='\nGet-Content 'C:\\HeavenServices\\scripts\\heaven-workers.ps1' -Raw\nWrite-Output '===SERVICES==='\nGet-Content 'C:\\HeavenServices\\services.json' -Raw\nWrite-Output '===OLLAMA==='\ntry { Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 5 | ConvertTo-Json -Depth 6 -Compress } catch { $_.Exception.Message }\nWrite-Output '===AGENTCONTROL-ROOT==='\ntry { Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:7331/' -TimeoutSec 5 | Select-Object StatusCode,Content | ConvertTo-Json -Depth 4 -Compress } catch { $_.Exception.Message }\nWrite-Output '===SCRIPTS==='\nGet-ChildItem 'C:\\HeavenServices\\scripts' -File | Select-Object Name,Length,LastWriteTime | ConvertTo-Json -Compress\nWrite-Output '===HOST==='\nGet-CimInstance Win32_OperatingSystem | Select-Object @{n='FreeGB';e={[math]::Round($_.FreePhysicalMemory/1MB,2)}},@{n='TotalGB';e={[math]::Round($_.TotalVisibleMemorySize/1MB,2)}} | ConvertTo-Json -Compress\n"
+  },
+  "created_at": "2026-09-29T10:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
