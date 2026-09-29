@@ -5,122 +5,186 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/one-shot-superseded-branch-cleanup.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: read
 
+concurrency:
+  group: branch-reconciliation-cleanup
+  cancel-in-progress: false
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete audited integrated or superseded branches
+      - name: Delete only branches already integrated into main
         uses: actions/github-script@v7
         with:
           script: |
-            const candidates = new Map([
-              ["agent/liveness-scheduler-machine-policy-20260929", { sha: "61c7714822d56084f11b7b4b7838b827648b408e", reason: "merged PR #96" }],
-              ["agent/verification-reliability-20260929", { sha: "3beffad3598de49cf767d387d05a3af534512a1e", reason: "merged PR #99 / no unique tip" }],
-              ["agent/security-authorization-20260929", { sha: "620e40a4d3f8ebc340330ab867268c6d79199ad6", reason: "PR #104 superseded by merged PR #106" }],
-              ["agent/security-authorization-reconcile-20260929", { sha: "9a051815882345c3b25f4eae8681002ff3a70f52", reason: "merged PR #106" }],
-              ["agent/security-authorization-closure-20260929", { sha: "f99eea75e8bc6f0ed93d0d58591e908c35ce5157", reason: "merged PR #110" }],
-              ["agent/federation-registry-20260929", { sha: "787dfca3a25fc9b9a485c69a5b31c4746205069e", reason: "merged PR #101" }],
-              ["agent/operator-ui-cli-20260929", { sha: "8dc990d4ea455addefac8629a0cd024220188a6c", reason: "PR #103 superseded by PR #105" }],
-              ["agent/updater-cross-session-ownership-20260929", { sha: "fcc30786b5230eac81094aa0d42c7efc0fa2214e", reason: "integrated on canonical main per CURRENT_REVISION" }],
-
-              ["agent/replacefilew-failure-characterization-20260927", { sha: "78fc8939331fc6a5d9bad23dbf1c38708530785e", reason: "historical implementation already integrated/verified" }],
-              ["agent/replacefilew-failure-characterization-v2", { sha: "a5731ebcf1a0c5a4a92d1adbce5899766d6c5e8b", reason: "historical implementation already integrated/verified" }],
-              ["agent/replacefilew-journal-assertions-20260927", { sha: "d35c6a346e7372c95b0eee9657722119a78d492f", reason: "historical implementation already integrated/verified" }],
-              ["agent/windows-live-containment-hardening", { sha: "02cbd35f5c941f0f0dd912398bc856593e2583ce", reason: "historical implementation already integrated/verified" }],
-              ["agent/windows-live-containment-hardening-v2", { sha: "6b4e57004d16aec99064ecf475bcb3c4ef566f32", reason: "historical implementation already integrated/verified" }],
-
-              ["agent/support-bundle-share-safety-20260928", { sha: "ef4c2e72339b85c1d152abd76648360143a4266f", reason: "ledger: superseded/redundant" }],
-              ["agent/support-continuity-drift-reconciliation-20260928", { sha: "93dd7db71941ae4a11c6d59502d0f6d6954c293b", reason: "ledger: stale snapshot" }],
-              ["agent/support-continuity-drift-repair-20260928", { sha: "ae8190b8b0b9a47b5dca1b1343775017e6bdae88", reason: "ledger: stale snapshot" }],
-              ["agent/support-pr-disposition-ledger-20260928", { sha: "d193cd7b3b1be769c2becfb8c0924ed76ae9077f", reason: "ledger: stale snapshot" }],
-
-              ["agent/support-updater-c10-manager-review-20260928", { sha: "5d1dda9c20e475a80cd90c9bd405d6c9337ddc4f", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-lr003-native-replace-20260928", { sha: "6b0a0fe9c8a660ade2c57e2d3ee84ef4f885c9a6", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-lr003-native-replacement-20260928", { sha: "109e4f63e50f96365091931dd44613865b643d8d", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-lr003-restart-audit-20260928", { sha: "882f5a916c201802b87f67dbd8577074839c67d5", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-lr003-resume-20260928", { sha: "bf4bbf1cabefa965a1c291989a6000f9be43801d", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-packaging-audit-20260928", { sha: "473109ff076a5c0e9da493c50cece4ba6529b0e8", reason: "ledger: superseded updater audit" }],
-              ["agent/support-updater-wpf-integration-audit-20260928", { sha: "d37b348c18d303c5644ac141661ff1b48291e41f", reason: "ledger: superseded updater audit" }],
-
-              ["agent/updater-existing-release-rest-ref-20260928", { sha: "04a985054cf2ea3fdbb1b50eaf3c16c00e3392a4", reason: "PR #81 repair superseded by canonical PR #91 closure" }],
-              ["agent/updater-existing-release-rest-ref-gate-20260928", { sha: "febda8bdfd8af52bf432c3f80bcadc6de527bae1", reason: "PR #86 temporary verification mirror" }],
-              ["agent/updater-existing-release-rest-ref-gate2-20260928", { sha: "d7a57c4d3d91c7df74f34c15059e11ec8702ca49", reason: "PR #87 temporary verification mirror" }]
-            ]);
-
             const { owner, repo } = context.repo;
+
             const info = await github.rest.repos.get({ owner, repo });
             if (info.data.default_branch !== "main") {
-              core.setFailed("Default branch changed; refusing cleanup");
+              core.setFailed(`Default branch is ${info.data.default_branch}; refusing cleanup`);
               return;
             }
 
-            const start = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
-            const baseline = start.data.object.sha;
-            core.info(`CLEANUP_BASELINE_MAIN=${baseline}`);
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner, repo, per_page: 100
+            });
 
             const deleted = [];
-            const skipped = [];
-            for (const [branch, meta] of candidates) {
-              const now = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
-              if (now.data.object.sha !== baseline) {
-                core.setFailed(`main moved from ${baseline} to ${now.data.object.sha}; stopping`);
-                break;
-              }
+            const preserved = [];
+
+            for (const branchInfo of branches) {
+              const branch = branchInfo.name;
+              if (branch === "main") continue;
 
               let ref;
               try {
                 ref = await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
               } catch (e) {
                 if (e.status === 404) {
-                  skipped.push({ branch, reason: "already absent" });
+                  preserved.push({ branch, reason: "already absent" });
                   continue;
                 }
                 throw e;
               }
 
-              if (ref.data.object.sha !== meta.sha) {
-                skipped.push({ branch, reason: `tip changed: ${ref.data.object.sha}` });
-                continue;
-              }
-
+              const branchSha = ref.data.object.sha;
               const detail = await github.rest.repos.getBranch({ owner, repo, branch });
               if (detail.data.protected) {
-                skipped.push({ branch, reason: "protected" });
+                preserved.push({ branch, sha: branchSha, reason: "protected" });
                 continue;
               }
 
               const open = await github.rest.pulls.list({
-                owner, repo, state: "open", head: `${owner}:${branch}`, per_page: 1
+                owner,
+                repo,
+                state: "open",
+                head: `${owner}:${branch}`,
+                per_page: 100
               });
               if (open.data.length) {
-                skipped.push({ branch, reason: `open PR #${open.data[0].number}` });
+                preserved.push({
+                  branch,
+                  sha: branchSha,
+                  reason: `open-pr-${open.data[0].number}`
+                });
                 continue;
               }
 
-              const cmp = await github.rest.repos.compareCommitsWithBasehead({
-                owner, repo, basehead: `${baseline}...${ref.data.object.sha}`
-              });
-              core.info(`DELETE ${branch}: ahead=${cmp.data.ahead_by}, behind=${cmp.data.behind_by}; ${meta.reason}`);
+              const mainRef = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
+              const mainSha = mainRef.data.object.sha;
 
-              await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
+              let safe = false;
+              let reason = "";
+
+              // Exact commit ancestry is the strongest proof: the branch tip itself
+              // is already reachable from the current canonical main.
+              const ancestry = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${branchSha}...${mainSha}`
+              });
+              if (ancestry.data.behind_by === 0) {
+                safe = true;
+                reason = "tip-ancestor-of-main";
+              }
+
+              // Squash/rebase merges can leave the original branch commits outside
+              // main's ancestry. Accept those only when the *current branch tip*
+              // exactly matches a PR head that GitHub records as merged to main,
+              // and that PR's merge commit is itself still reachable from main.
+              if (!safe) {
+                const closed = await github.paginate(github.rest.pulls.list, {
+                  owner,
+                  repo,
+                  state: "closed",
+                  base: "main",
+                  head: `${owner}:${branch}`,
+                  per_page: 100
+                });
+
+                for (const pr of closed) {
+                  if (!pr.merged_at || !pr.merge_commit_sha || pr.head?.sha !== branchSha) {
+                    continue;
+                  }
+
+                  const latestMain = await github.rest.git.getRef({
+                    owner, repo, ref: "heads/main"
+                  });
+                  const mergeReachability =
+                    await github.rest.repos.compareCommitsWithBasehead({
+                      owner,
+                      repo,
+                      basehead: `${pr.merge_commit_sha}...${latestMain.data.object.sha}`
+                    });
+
+                  if (mergeReachability.data.behind_by === 0) {
+                    safe = true;
+                    reason = `merged-pr-${pr.number}`;
+                    break;
+                  }
+                }
+              }
+
+              if (!safe) {
+                preserved.push({
+                  branch,
+                  sha: branchSha,
+                  reason: "unique-or-unproven"
+                });
+                continue;
+              }
+
+              // Race guard: never delete a branch that moved after it was audited.
+              const latest = await github.rest.git.getRef({
+                owner, repo, ref: `heads/${branch}`
+              });
+              if (latest.data.object.sha !== branchSha) {
+                preserved.push({
+                  branch,
+                  sha: latest.data.object.sha,
+                  reason: "moved-during-audit"
+                });
+                continue;
+              }
+
+              await github.rest.git.deleteRef({
+                owner,
+                repo,
+                ref: `heads/${branch}`
+              });
+
               try {
-                await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
-                core.setFailed(`Deletion verification failed: ${branch}`);
-                break;
+                await github.rest.git.getRef({
+                  owner, repo, ref: `heads/${branch}`
+                });
+                core.setFailed(`Deletion verification failed for ${branch}`);
+                return;
               } catch (e) {
                 if (e.status !== 404) throw e;
               }
-              deleted.push({ branch, reason: meta.reason, ahead: cmp.data.ahead_by });
+
+              deleted.push({ branch, sha: branchSha, reason });
             }
 
+            const finalBranches = await github.paginate(github.rest.repos.listBranches, {
+              owner, repo, per_page: 100
+            });
+
             core.info(`DELETED_JSON=${JSON.stringify(deleted)}`);
-            core.info(`SKIPPED_JSON=${JSON.stringify(skipped)}`);
+            core.info(`PRESERVED_JSON=${JSON.stringify(preserved)}`);
+            core.info(`FINAL_BRANCH_COUNT=${finalBranches.length}`);
+
             await core.summary
-              .addHeading("Superseded branch cleanup")
-              .addCodeBlock(JSON.stringify({ baselineMainSha: baseline, deleted, skipped }, null, 2), "json")
+              .addHeading("Branch reconciliation cleanup")
+              .addCodeBlock(JSON.stringify({
+                deleted,
+                preserved,
+                finalBranchCount: finalBranches.length
+              }, null, 2), "json")
               .write();
