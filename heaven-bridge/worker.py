@@ -1,6 +1,7 @@
 import base64
 import collections
 import concurrent.futures
+import ctypes
 import hashlib
 import hmac
 import json
@@ -11,6 +12,7 @@ import subprocess
 import threading
 import time
 import uuid
+from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -50,6 +52,8 @@ HEARTBEAT_SECONDS = max(120, int(os.environ.get("HEAVEN_BRIDGE_HEARTBEAT_SECONDS
 RATE_LIMIT_PER_MINUTE = max(10, int(os.environ.get("HEAVEN_BRIDGE_RATE_PER_MINUTE", "60")))
 DEFAULT_SESSION_IDLE = int(os.environ.get("HEAVEN_BRIDGE_SESSION_IDLE", "1800"))
 DEFAULT_SESSION_MAX = int(os.environ.get("HEAVEN_BRIDGE_SESSION_MAX", "14400"))
+SESSION_METADATA_VERSION = 1
+SESSION_RETENTION_SECONDS = max(3600, int(os.environ.get("HEAVEN_BRIDGE_SESSION_RETENTION", "86400")))
 
 GIT_LOCK = threading.RLock()
 STATE_LOCK = threading.RLock()
@@ -749,16 +753,357 @@ def read_output_chunk(job_id, stream="stdout", offset=0, length=200000):
     }
 
 
+def _session_time(value, code="INVALID_SESSION_METADATA"):
+    if not value:
+        raise BridgeError(code, "session timestamp is required")
+    text = str(value).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        value = datetime.fromisoformat(text)
+    except ValueError as e:
+        raise BridgeError(code, "session timestamp must be ISO-8601") from e
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _wall_elapsed(value):
+    try:
+        return max(0.0, (utcnow() - _session_time(value)).total_seconds())
+    except BridgeError:
+        return float("inf")
+
+
+def session_metadata_path(sid):
+    if not safe_id(sid):
+        raise BridgeError("INVALID_SESSION_ID", "invalid session_id")
+    return SESSIONS_DIR / f"{sid}.json"
+
+
+def process_identity(pid):
+    pid = int(pid)
+    if pid <= 0:
+        return None
+    if os.name == "nt":
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        open_process = kernel32.OpenProcess
+        open_process.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        open_process.restype = wintypes.HANDLE
+        get_process_times = kernel32.GetProcessTimes
+        get_process_times.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+        ]
+        get_process_times.restype = wintypes.BOOL
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [wintypes.HANDLE]
+        close_handle.restype = wintypes.BOOL
+
+        handle = open_process(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            err = ctypes.get_last_error()
+            if err in (87, 1168):  # invalid parameter / not found: process is gone
+                return None
+            raise BridgeError(
+                "SESSION_IDENTITY_UNAVAILABLE",
+                "unable to query session process identity",
+                {"pid": pid, "winerror": err},
+            )
+        try:
+            creation = wintypes.FILETIME()
+            exit_time = wintypes.FILETIME()
+            kernel = wintypes.FILETIME()
+            user = wintypes.FILETIME()
+            if not get_process_times(handle, creation, exit_time, kernel, user):
+                err = ctypes.get_last_error()
+                if err in (6, 87, 1168):
+                    return None
+                raise BridgeError(
+                    "SESSION_IDENTITY_UNAVAILABLE",
+                    "unable to query session process creation time",
+                    {"pid": pid, "winerror": err},
+                )
+            token = (int(creation.dwHighDateTime) << 32) | int(creation.dwLowDateTime)
+            return {"pid": pid, "creation_token": f"win-filetime:{token}"}
+        finally:
+            close_handle(handle)
+
+    stat_path = Path(f"/proc/{pid}/stat")
+    try:
+        raw = stat_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+    except OSError as e:
+        raise BridgeError(
+            "SESSION_IDENTITY_UNAVAILABLE",
+            "unable to query session process identity",
+            {"pid": pid, "error": str(e)},
+        ) from e
+    end_comm = raw.rfind(")")
+    fields = raw[end_comm + 2:].split() if end_comm >= 0 else []
+    if len(fields) <= 19:
+        raise BridgeError("SESSION_IDENTITY_UNAVAILABLE", "process identity record is malformed", {"pid": pid})
+    return {"pid": pid, "creation_token": f"procfs-starttime:{fields[19]}"}
+
+
+def process_identity_matches(expected, current):
+    if not isinstance(expected, dict) or not isinstance(current, dict):
+        return False
+    return (
+        int(expected.get("pid") or -1) == int(current.get("pid") or -2)
+        and str(expected.get("creation_token") or "") != ""
+        and str(expected.get("creation_token")) == str(current.get("creation_token"))
+    )
+
+
+def session_process_state(s):
+    proc = s.get("proc")
+    if proc is not None:
+        code = proc.poll()
+        return {
+            "running": code is None,
+            "exit_code": code,
+            "recovery_state": "local-live" if code is None else "exited",
+        }
+
+    pid = int(s.get("pid") or 0)
+    expected = s.get("process_identity")
+    if not expected:
+        return {
+            "running": False,
+            "exit_code": s.get("exit_code"),
+            "recovery_state": "identity-unavailable",
+        }
+    try:
+        current = process_identity(pid)
+    except BridgeError as e:
+        return {
+            "running": False,
+            "exit_code": s.get("exit_code"),
+            "recovery_state": "identity-unproven",
+            "identity_error": e.code,
+        }
+    if current is None:
+        return {"running": False, "exit_code": s.get("exit_code"), "recovery_state": "exited"}
+    if not process_identity_matches(expected, current):
+        return {
+            "running": False,
+            "exit_code": s.get("exit_code"),
+            "recovery_state": "identity-mismatch",
+        }
+    return {"running": True, "exit_code": None, "recovery_state": "recovered-live"}
+
+
+def _session_idle_seconds(s):
+    if s.get("last_activity_mono") is not None:
+        return max(0.0, time.monotonic() - s["last_activity_mono"])
+    return _wall_elapsed(s.get("last_activity_at"))
+
+
+def _session_runtime_seconds(s):
+    if s.get("started_mono") is not None:
+        return max(0.0, time.monotonic() - s["started_mono"])
+    return _wall_elapsed(s.get("started_at"))
+
+
 def session_snapshot(sid, s):
-    proc = s["proc"]
-    now_mono = time.monotonic()
-    return {
-        "session_id": sid, "pid": proc.pid, "running": proc.poll() is None, "exit_code": proc.poll(),
-        "shell": s["shell"], "command": s["command"], "cwd": s["cwd"], "started_at": s["started_at"],
-        "last_activity_at": s["last_activity_at"], "idle_seconds": int(max(0, now_mono - s["last_activity_mono"])),
-        "idle_timeout_seconds": s["idle_timeout_seconds"], "max_runtime_seconds": s["max_runtime_seconds"],
-        "stdout_path": str(s["stdout_path"]), "stderr_path": str(s["stderr_path"]),
+    state = session_process_state(s)
+    data = {
+        "session_id": sid,
+        "pid": int(s.get("pid") or (s.get("proc").pid if s.get("proc") is not None else 0)),
+        "running": bool(state["running"]),
+        "exit_code": state.get("exit_code"),
+        "shell": s.get("shell"),
+        "command": s.get("command") if not s.get("recovered") else None,
+        "cwd": s.get("cwd"),
+        "started_at": s.get("started_at"),
+        "last_activity_at": s.get("last_activity_at"),
+        "idle_seconds": int(_session_idle_seconds(s)),
+        "idle_timeout_seconds": s.get("idle_timeout_seconds"),
+        "max_runtime_seconds": s.get("max_runtime_seconds"),
+        "stdout_path": str(s.get("stdout_path")),
+        "stderr_path": str(s.get("stderr_path")),
+        "recovered": bool(s.get("recovered", False)),
+        "stdin_available": bool(s.get("stdin_available", not s.get("recovered", False))),
+        "recovery_state": state.get("recovery_state"),
     }
+    if state.get("identity_error"):
+        data["identity_error"] = state["identity_error"]
+    return data
+
+
+def persist_session_metadata(sid, s):
+    state = session_process_state(s)
+    body = {
+        "schema": "heaven-bridge-session-v1",
+        "version": SESSION_METADATA_VERSION,
+        "session_id": sid,
+        "pid": int(s.get("pid") or (s.get("proc").pid if s.get("proc") is not None else 0)),
+        "process_identity": s.get("process_identity"),
+        "shell": s.get("shell"),
+        "cwd": s.get("cwd"),
+        "started_at": s.get("started_at"),
+        "last_activity_at": s.get("last_activity_at"),
+        "idle_timeout_seconds": int(s.get("idle_timeout_seconds") or DEFAULT_SESSION_IDLE),
+        "max_runtime_seconds": int(s.get("max_runtime_seconds") or DEFAULT_SESSION_MAX),
+        "stdout_file": f"{sid}.out.log",
+        "stderr_file": f"{sid}.err.log",
+        "exit_code": state.get("exit_code"),
+        "recovery_state": state.get("recovery_state"),
+    }
+    atomic_write_text(session_metadata_path(sid), json.dumps(body, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+
+def touch_session_activity(sid, s):
+    s["last_activity_at"] = now()
+    if s.get("last_activity_mono") is not None:
+        s["last_activity_mono"] = time.monotonic()
+    persist_session_metadata(sid, s)
+
+
+def recover_sessions():
+    SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    loaded = 0
+    live = 0
+    blocked = 0
+    for metadata_path in sorted(SESSIONS_DIR.glob("*.json")):
+        sid = metadata_path.stem
+        if not safe_id(sid):
+            audit("session_recovery_skip", path=str(metadata_path), reason="invalid_session_id")
+            continue
+        try:
+            row = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if row.get("schema") != "heaven-bridge-session-v1" or int(row.get("version") or 0) != SESSION_METADATA_VERSION:
+                raise BridgeError("INVALID_SESSION_METADATA", "unsupported session metadata version")
+            if str(row.get("session_id") or "") != sid:
+                raise BridgeError("INVALID_SESSION_METADATA", "session metadata id does not match filename")
+            pid = int(row.get("pid") or 0)
+            if pid <= 0:
+                raise BridgeError("INVALID_SESSION_METADATA", "session pid is invalid")
+            _session_time(row.get("started_at"))
+            _session_time(row.get("last_activity_at"))
+            entry = {
+                "proc": None,
+                "out_f": None,
+                "err_f": None,
+                "pid": pid,
+                "process_identity": row.get("process_identity"),
+                "stdout_path": SESSIONS_DIR / f"{sid}.out.log",
+                "stderr_path": SESSIONS_DIR / f"{sid}.err.log",
+                "shell": str(row.get("shell") or ""),
+                "command": None,
+                "cwd": str(row.get("cwd") or ""),
+                "started_at": str(row.get("started_at")),
+                "started_mono": None,
+                "last_activity_mono": None,
+                "last_activity_at": str(row.get("last_activity_at")),
+                "idle_timeout_seconds": max(60, min(int(row.get("idle_timeout_seconds") or DEFAULT_SESSION_IDLE), 86400)),
+                "max_runtime_seconds": max(300, min(int(row.get("max_runtime_seconds") or DEFAULT_SESSION_MAX), 172800)),
+                "exit_code": row.get("exit_code"),
+                "recovered": True,
+                "stdin_available": False,
+            }
+            state = session_process_state(entry)
+            entry["recovery_state"] = state.get("recovery_state")
+            with STATE_LOCK:
+                SESSIONS[sid] = entry
+            loaded += 1
+            if state["running"]:
+                live += 1
+            elif state.get("recovery_state") in ("identity-unavailable", "identity-unproven", "identity-mismatch"):
+                blocked += 1
+            audit(
+                "session_recovered",
+                session_id=sid,
+                pid=pid,
+                running=bool(state["running"]),
+                recovery_state=state.get("recovery_state"),
+            )
+        except Exception as e:
+            blocked += 1
+            audit("session_recovery_skip", path=str(metadata_path), reason=error_dict(e).get("code"), message=str(e)[:500])
+    return {"loaded": loaded, "live": live, "blocked": blocked}
+
+
+def _close_session_handles(s):
+    for key in ("out_f", "err_f"):
+        handle = s.get(key)
+        if handle is not None:
+            try:
+                handle.flush()
+                handle.close()
+            except Exception:
+                pass
+            s[key] = None
+
+
+def _remove_session_artifacts(sid):
+    if not safe_id(sid):
+        return
+    for path in (
+        SESSIONS_DIR / f"{sid}.json",
+        SESSIONS_DIR / f"{sid}.out.log",
+        SESSIONS_DIR / f"{sid}.err.log",
+    ):
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def kill_recovered_session(sid, s, force=True):
+    pid = int(s.get("pid") or 0)
+    expected = s.get("process_identity")
+    if not expected:
+        raise BridgeError(
+            "SESSION_IDENTITY_UNAVAILABLE",
+            "recovered session has no strong process identity; refusing to kill by PID alone",
+            {"session_id": sid, "pid": pid},
+        )
+    try:
+        current = process_identity(pid)
+    except BridgeError as e:
+        raise BridgeError(
+            "SESSION_IDENTITY_UNPROVEN",
+            "cannot prove recovered session process ownership; refusing to kill",
+            {"session_id": sid, "pid": pid, "cause": e.code},
+        ) from e
+    if current is None:
+        s["recovery_state"] = "exited"
+        persist_session_metadata(sid, s)
+        return
+    if not process_identity_matches(expected, current):
+        raise BridgeError(
+            "SESSION_IDENTITY_MISMATCH",
+            "PID identity no longer matches the recovered session; refusing to kill",
+            {"session_id": sid, "pid": pid},
+        )
+
+    kill_process_tree(pid, force)
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            current = process_identity(pid)
+        except BridgeError as e:
+            raise BridgeError(
+                "SESSION_KILL_UNVERIFIED",
+                "session termination was requested but process identity can no longer be verified",
+                {"session_id": sid, "pid": pid, "cause": e.code},
+            ) from e
+        if current is None or not process_identity_matches(expected, current):
+            s["recovery_state"] = "terminated"
+            persist_session_metadata(sid, s)
+            return
+        time.sleep(0.1)
+    raise BridgeError(
+        "SESSION_KILL_UNVERIFIED",
+        "recovered session process remained alive after termination request",
+        {"session_id": sid, "pid": pid},
+    )
 
 
 def start_session(p):
@@ -788,37 +1133,99 @@ def start_session(p):
         argv, cwd=str(cwd), stdin=subprocess.PIPE, stdout=out_f, stderr=err_f,
         text=True, bufsize=1, env=build_env(p), creationflags=flags,
     )
+
+    identity = None
+    identity_error = None
+    for _ in range(5):
+        try:
+            identity = process_identity(proc.pid)
+            identity_error = None
+        except BridgeError as e:
+            identity_error = e
+        if identity is not None or proc.poll() is not None:
+            break
+        time.sleep(0.02)
+    if proc.poll() is None and identity is None:
+        kill_process_tree(proc.pid, True)
+        try:
+            proc.wait(timeout=10)
+        except Exception:
+            pass
+        out_f.close()
+        err_f.close()
+        if identity_error is not None:
+            raise identity_error
+        raise BridgeError(
+            "SESSION_IDENTITY_UNAVAILABLE",
+            "unable to establish strong session process identity; process was terminated",
+            {"pid": proc.pid},
+        )
+
     t = time.monotonic()
+    started_at = now()
     entry = {
-        "proc": proc, "out_f": out_f, "err_f": err_f, "stdout_path": stdout_path, "stderr_path": stderr_path,
-        "shell": shell, "command": command, "cwd": str(cwd), "started_at": now(),
-        "started_mono": t, "last_activity_mono": t, "last_activity_at": now(),
+        "proc": proc,
+        "out_f": out_f,
+        "err_f": err_f,
+        "pid": proc.pid,
+        "process_identity": identity,
+        "stdout_path": stdout_path,
+        "stderr_path": stderr_path,
+        "shell": shell,
+        "command": command,
+        "cwd": str(cwd),
+        "started_at": started_at,
+        "started_mono": t,
+        "last_activity_mono": t,
+        "last_activity_at": started_at,
         "idle_timeout_seconds": max(60, min(int(p.get("idle_timeout_seconds") or DEFAULT_SESSION_IDLE), 86400)),
         "max_runtime_seconds": max(300, min(int(p.get("max_runtime_seconds") or DEFAULT_SESSION_MAX), 172800)),
+        "exit_code": proc.poll(),
+        "recovered": False,
+        "stdin_available": proc.stdin is not None,
     }
     with STATE_LOCK:
         SESSIONS[sid] = entry
+    persist_session_metadata(sid, entry)
     return session_snapshot(sid, entry)
 
 
 def cleanup_sessions():
     with STATE_LOCK:
         items = list(SESSIONS.items())
-    t = time.monotonic()
     for sid, s in items:
-        proc = s["proc"]
-        if proc.poll() is None:
-            expired = (t - s["started_mono"]) > s["max_runtime_seconds"]
-            idle = (t - s["last_activity_mono"]) > s["idle_timeout_seconds"]
+        state = session_process_state(s)
+        if state["running"]:
+            expired = _session_runtime_seconds(s) > s["max_runtime_seconds"]
+            idle = _session_idle_seconds(s) > s["idle_timeout_seconds"]
             if expired or idle:
-                kill_process_tree(proc.pid, True)
-                audit("session_cleanup", session_id=sid, pid=proc.pid, reason="max_runtime" if expired else "idle_timeout")
-        if proc.poll() is not None:
-            try:
-                s["out_f"].flush()
-                s["err_f"].flush()
-            except Exception:
-                pass
+                reason = "max_runtime" if expired else "idle_timeout"
+                try:
+                    if s.get("recovered"):
+                        kill_recovered_session(sid, s, True)
+                    else:
+                        kill_process_tree(int(s["pid"]), True)
+                    audit("session_cleanup", session_id=sid, pid=int(s["pid"]), reason=reason)
+                except BridgeError as e:
+                    audit(
+                        "session_cleanup_blocked",
+                        session_id=sid,
+                        pid=int(s["pid"]),
+                        reason=reason,
+                        error_code=e.code,
+                    )
+                state = session_process_state(s)
+
+        if not state["running"]:
+            _close_session_handles(s)
+            if s.get("exit_code") != state.get("exit_code"):
+                s["exit_code"] = state.get("exit_code")
+                persist_session_metadata(sid, s)
+            if _wall_elapsed(s.get("last_activity_at")) > SESSION_RETENTION_SECONDS:
+                with STATE_LOCK:
+                    SESSIONS.pop(sid, None)
+                _remove_session_artifacts(sid)
+                audit("session_pruned", session_id=sid, pid=int(s.get("pid") or 0))
 
 
 def make_result(job, action, status="completed", exit_code=0, data=None, stdout=None, stderr=None, started_at=None):
@@ -850,7 +1257,8 @@ def run_job(job_id, job, cancel_event):
             "capabilities": {
                 "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": True,
                 "binary_files": True, "file_delete": True, "file_copy": True, "output_pagination": True,
-                "process_tree_kill": True, "session_timeouts": True, "heartbeat": True, "audit_log": True,
+                "process_tree_kill": True, "session_timeouts": True, "session_restart_recovery": True,
+                "heartbeat": True, "audit_log": True,
                 "screenshot": True, "clipboard_read": False, "public_raw_shell": False,
             },
         }
@@ -1027,12 +1435,13 @@ def run_job(job_id, job, cancel_event):
         if not s:
             raise BridgeError("UNKNOWN_SESSION", "unknown session_id")
         try:
-            s["out_f"].flush()
-            s["err_f"].flush()
+            if s.get("out_f") is not None:
+                s["out_f"].flush()
+            if s.get("err_f") is not None:
+                s["err_f"].flush()
         except Exception:
             pass
-        s["last_activity_mono"] = time.monotonic()
-        s["last_activity_at"] = now()
+        touch_session_activity(sid, s)
         data = session_snapshot(sid, s)
         max_chars = max(1000, min(int(p.get("max_chars") or MAX_OUTPUT_TAIL), 500000))
         data["stdout"] = read_tail(s["stdout_path"], max_chars)
@@ -1045,13 +1454,18 @@ def run_job(job_id, job, cancel_event):
             s = SESSIONS.get(sid)
         if not s:
             raise BridgeError("UNKNOWN_SESSION", "unknown session_id")
+        if s.get("recovered"):
+            raise BridgeError(
+                "SESSION_INPUT_UNAVAILABLE",
+                "stdin cannot be reattached after worker restart; recovered session is read/kill only",
+                {"session_id": sid, "pid": int(s.get("pid") or 0)},
+            )
         if s["proc"].poll() is not None:
             raise BridgeError("SESSION_EXITED", "session process already exited")
         value = str(p.get("input") if p.get("input") is not None else "")
         s["proc"].stdin.write(value + ("\n" if bool(p.get("newline", True)) else ""))
         s["proc"].stdin.flush()
-        s["last_activity_mono"] = time.monotonic()
-        s["last_activity_at"] = now()
+        touch_session_activity(sid, s)
         return make_result(job, action, data=session_snapshot(sid, s), started_at=started)
 
     if action == "proc_kill":
@@ -1060,12 +1474,17 @@ def run_job(job_id, job, cancel_event):
             s = SESSIONS.get(sid)
         if not s:
             raise BridgeError("UNKNOWN_SESSION", "unknown session_id")
-        if s["proc"].poll() is None:
+        if s.get("recovered"):
+            kill_recovered_session(sid, s, bool(p.get("force", True)))
+        elif s["proc"].poll() is None:
             kill_process_tree(s["proc"].pid, bool(p.get("force", True)))
             try:
                 s["proc"].wait(timeout=10)
             except subprocess.TimeoutExpired:
                 kill_process_tree(s["proc"].pid, True)
+        if not s.get("recovered"):
+            s["exit_code"] = s["proc"].poll()
+            persist_session_metadata(sid, s)
         return make_result(job, action, data=session_snapshot(sid, s), started_at=started)
 
     if action == "proc_list_sessions":
@@ -1343,7 +1762,12 @@ def main():
             d.mkdir(parents=True, exist_ok=True)
         load_processed()
         clean_stale_locks()
-        log(f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} auth={auth_mode()}")
+        recovery = recover_sessions()
+        log(
+            f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
+            f"auth={auth_mode()} sessions_loaded={recovery['loaded']} sessions_live={recovery['live']} "
+            f"sessions_blocked={recovery['blocked']}"
+        )
         audit("worker_start", pid=os.getpid(), version=WORKER_VERSION, protocol=PROTOCOL, auth_mode=auth_mode())
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix="heaven-job")
         try:
