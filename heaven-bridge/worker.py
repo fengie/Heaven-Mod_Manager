@@ -20,6 +20,9 @@ WORKER_VERSION = 6
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
+LEGACY_DEFAULT_HOST = "heaven"
+CONTROL_HOST = "heaven2"
+HOST_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
 ROOT = Path(os.environ.get("HEAVEN_BRIDGE_REPO", str(Path.home() / "HeavenBridgeRepo"))).resolve()
 QUEUE = ROOT / "heaven-bridge" / "queue"
@@ -111,6 +114,28 @@ JOB_PRIORITY_RANK = {
 }
 
 RAW_ACTIONS = {"powershell", "cmd", "python", "codex"}
+
+
+def current_host():
+    raw = os.environ.get("HEAVEN_BRIDGE_HOST") or os.environ.get("COMPUTERNAME") or LEGACY_DEFAULT_HOST
+    host = str(raw).strip().casefold()
+    if not host or not HOST_RE.fullmatch(host):
+        raise BridgeError("INVALID_WORKER_HOST", "worker host identity is invalid", {"host": str(raw)})
+    return host
+
+
+def job_target_host(job):
+    raw = job.get("target_host") if isinstance(job, dict) else None
+    if raw is None or not str(raw).strip():
+        return LEGACY_DEFAULT_HOST
+    host = str(raw).strip().casefold()
+    if not HOST_RE.fullmatch(host):
+        raise BridgeError("INVALID_TARGET_HOST", "target_host must be a simple machine name", {"target_host": str(raw)})
+    return host
+
+
+def job_targets_this_worker(job):
+    return job_target_host(job) == current_host()
 
 
 class BridgeError(Exception):
@@ -2267,7 +2292,7 @@ def desktop_display_list(job_id, cancel_event):
 def make_result(job, action, status="completed", exit_code=0, data=None, stdout=None, stderr=None, started_at=None):
     out = {
         "status": status, "exit_code": exit_code, "started_at": started_at or now(), "finished_at": now(),
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "action": action,
+        "host": current_host(), "action": action,
     }
     if data is not None:
         out["data"] = data
@@ -2289,6 +2314,7 @@ def run_job(job_id, job, cancel_event):
         secret_status = secret_channel_status()
         data = {
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "actions": advertised_actions(),
+            "host": current_host(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
             "auth_mode": auth_mode(), "max_workers": MAX_WORKERS, "rate_limit_per_minute": RATE_LIMIT_PER_MINUTE,
             "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
@@ -2323,7 +2349,7 @@ def run_job(job_id, job, cancel_event):
 
     if action == "system_info":
         data = {
-            "host": os.environ.get("COMPUTERNAME", "heaven"), "user": os.environ.get("USERNAME"),
+            "host": current_host(), "user": os.environ.get("USERNAME"),
             "home": str(Path.home()), "platform": os.name, "python": os.sys.version, "cwd": os.getcwd(),
             "drives": [f"{c}:\\" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if Path(f"{c}:\\").exists()],
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL,
@@ -2480,7 +2506,7 @@ def run_job(job_id, job, cancel_event):
         timeout = max(1, min(int(p.get("timeout_seconds") or 1800), MAX_TIMEOUT))
         result = run_capture(job_id, shell_argv(p.get("shell"), command), expand_path(p.get("cwd")), timeout,
                              cancel_event=cancel_event, env=build_env(p))
-        result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+        result.update({"host": current_host(), "action": action})
         return result
 
     if action == "proc_start":
@@ -2625,7 +2651,7 @@ def run_job(job_id, job, cancel_event):
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
         result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
-        result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+        result.update({"host": current_host(), "action": action})
         return result
 
     if action == "screenshot":
@@ -2684,7 +2710,7 @@ def run_job(job_id, job, cancel_event):
             argv = [codex, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"]
         stdin = payload
     result = run_capture(job_id, argv, cwd, timeout, stdin=stdin, cancel_event=cancel_event, env=os.environ.copy())
-    result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
+    result.update({"host": current_host(), "action": action})
     return result
 
 
@@ -2706,13 +2732,14 @@ def failure_result(job_id, job, exc, digest=None):
     err = error_dict(exc)
     result = {
         "status": "error", "exit_code": 1, "started_at": now(), "finished_at": now(),
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "action": action,
+        "host": current_host(), "action": action,
         "error": err, "stderr": err["message"], "stdout": "",
     }
     return result_envelope(job_id, job, result, digest)
 
 
 def validate_job(job_id, job):
+    job_target_host(job)
     if not safe_id(job_id):
         raise BridgeError("INVALID_JOB_ID", "invalid queue filename/job id")
     if str(job.get("id") or "") != job_id:
@@ -2737,7 +2764,7 @@ def publish_result(job_id, job, body):
 
 
 def publish_status(job_id, state, action=None, **extra):
-    body = {"id": job_id, "state": state, "action": action, "host": os.environ.get("COMPUTERNAME", "heaven"),
+    body = {"id": job_id, "state": state, "action": action, "host": current_host(),
             "worker_version": WORKER_VERSION, "protocol": PROTOCOL, "updated_at": now(), **extra}
     try:
         publish_json(f"heaven-bridge/status/{job_id}.json", body, f"heaven bridge status {job_id} {state}", max_attempts=3)
@@ -2800,13 +2827,16 @@ def heartbeat(force=False):
         return
     with STATE_LOCK:
         running = [{"id": jid, "action": info["action"], "started_at": info["started_at"]} for jid, info in RUNNING.items()]
+    host = current_host()
     body = {
-        "host": os.environ.get("COMPUTERNAME", "heaven"), "pid": os.getpid(), "worker_version": WORKER_VERSION,
+        "host": host, "pid": os.getpid(), "worker_version": WORKER_VERSION,
         "protocol": PROTOCOL, "auth_mode": auth_mode(), "elevated": is_process_elevated(), "updated_at": now(), "running": running,
-        "capabilities": advertised_actions(),
+        "capabilities": advertised_actions(), "control_host": CONTROL_HOST, "legacy_default_host": LEGACY_DEFAULT_HOST,
     }
     try:
-        publish_json("heaven-bridge/status/heartbeat.json", body, "heaven bridge heartbeat", max_attempts=3)
+        publish_json(f"heaven-bridge/status/hosts/{host}/heartbeat.json", body, f"heaven bridge heartbeat {host}", max_attempts=3)
+        if host == LEGACY_DEFAULT_HOST:
+            publish_json("heaven-bridge/status/heartbeat.json", body, "heaven bridge heartbeat legacy", max_attempts=3)
         LAST_HEARTBEAT = t
     except Exception as e:
         log(f"heartbeat publish failed: {e}")
@@ -2894,6 +2924,8 @@ def process_queue(executor):
                 continue
         try:
             job = json.loads(path.read_text(encoding="utf-8-sig"))
+            if not job_targets_this_worker(job):
+                continue
             digest = validate_job(job_id, job)
         except Exception as e:
             dummy = {}
@@ -2963,7 +2995,7 @@ def main():
         clean_stale_locks()
         recovery = recover_sessions()
         log(
-            f"worker starting version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
+            f"worker starting host={current_host()} version={WORKER_VERSION} protocol={PROTOCOL} max_workers={MAX_WORKERS} "
             f"auth={auth_mode()} sessions_loaded={recovery['loaded']} sessions_live={recovery['live']} "
             f"sessions_blocked={recovery['blocked']}"
         )
