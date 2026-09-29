@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0845-release-smoke-proc",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:45:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:44:59.076187+00:00",
+  "finished_at": "2026-09-29T08:44:59.494353+00:00",
+  "stdout": "v22.13.1\r\ngit version 2.47.1.windows.2\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0845-release-smoke-proc.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0845-release-smoke-proc.stderr.log",
+    "stdout_bytes": 39,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f6438c65eb83659071737f1c10edb229aa26fa9d1baaf920b9b92b9298d49734"
+}
