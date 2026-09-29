@@ -47,6 +47,8 @@ $created = [DateTimeOffset]::UtcNow
 $expires = $created.AddSeconds($TtlSeconds)
 $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
 $plain = $null
+$temp = $null
+$published = $false
 try {
   $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
   $envelope = [ordered]@{
@@ -64,10 +66,15 @@ try {
   $final = Join-Path $resolvedInbox ("$handle.json")
   [IO.File]::WriteAllText($temp, $json, [Text.UTF8Encoding]::new($false))
   Move-Item -LiteralPath $temp -Destination $final -ErrorAction Stop
+  $published = $true
 } finally {
+  if (-not $published -and $temp -and (Test-Path -LiteralPath $temp)) {
+    Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue
+  }
   if ($bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
   $plain = $null
   $json = $null
+  $secret = $null
 }
 
 # Output only non-secret relay metadata.
