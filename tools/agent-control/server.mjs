@@ -1585,7 +1585,11 @@ function swarmTailRecoveryConfig(state) {
   return {
     enabled: raw.enabled !== false,
     maxWorkers: Math.max(1, Math.min(MAX_ACTIVE_AGENTS, Math.floor(Number(raw.maxWorkers) || 4))),
-    maxAttemptsPerRoot: Math.max(1, Math.floor(Number(raw.maxAttemptsPerRoot) || 2))
+    maxAttemptsPerRoot: Math.max(1, Math.floor(Number(raw.maxAttemptsPerRoot) || 2)),
+    armedAt: raw.armedAt || null,
+    armedWorkflowId: raw.armedWorkflowId || null,
+    armedMission: raw.armedMission || null,
+    waveId: raw.waveId || null
   };
 }
 
@@ -2082,14 +2086,68 @@ async function reconcileSwarmTailRecoveries() {
   try {
     const state = refreshState();
     const config = swarmTailRecoveryConfig(state);
-    if (!config.enabled || state.settings?.dispatchPaused || state.settings?.emergencyStop || state.settings?.readOnly) return;
+    if (!config.enabled || !config.armedAt || state.settings?.dispatchPaused || state.settings?.emergencyStop || state.settings?.readOnly) return;
+    const armedMs = Date.parse(String(config.armedAt));
+    if (!Number.isFinite(armedMs)) return;
+    const scopedAgents = state.agents.filter(agent => {
+      const startedMs = Date.parse(String(agent?.startedAt || ""));
+      return Number.isFinite(startedMs) && startedMs >= armedMs;
+    });
+    if (scopedAgents.some(agent => coreIsActiveStatus(agent.status))) return;
+
     const batch = planSwarmTailRecoveryBatch(state, {
       maxWorkers: config.maxWorkers,
-      maxAttemptsPerRoot: config.maxAttemptsPerRoot
+      maxAttemptsPerRoot: config.maxAttemptsPerRoot,
+      since: config.armedAt
     });
-    for (const item of batch) {
-      await recoverSwarmTailAgent(item.agent.id, item.rootId, item.attempt);
+    if (batch.length) {
+      for (const item of batch) {
+        await recoverSwarmTailAgent(item.agent.id, item.rootId, item.attempt);
+      }
+      return;
     }
+
+    const rootIds = new Set(scopedAgents
+      .filter(agent => ["failed", "interrupted"].includes(String(agent.status || "")))
+      .map(agent => String(agent.swarmTailRecoveryRootAgentId || agent.recoveryRootAgentId || agent.id || "").trim())
+      .filter(Boolean));
+    const unresolvedRoots = [...rootIds].filter(rootId => !scopedAgents.some(agent =>
+      String(agent.swarmTailRecoveryRootAgentId || agent.recoveryRootAgentId || agent.id || "").trim() === rootId
+      && String(agent.status || "") === "done"
+    ));
+
+    const completed = loadState();
+    const previous = completed.settings.swarmTailRecovery || {};
+    completed.settings.swarmTailRecovery = {
+      ...previous,
+      armedAt: null,
+      armedWorkflowId: null,
+      armedMission: null,
+      waveId: null,
+      lastCompletedAt: isoNow(),
+      lastUnresolvedRoots: unresolvedRoots
+    };
+    addEvent(completed, unresolvedRoots.length ? "swarm.tail-recovery-exhausted" : "swarm.tail-recovery-complete",
+      unresolvedRoots.length
+        ? `Cleanup wave ended with ${unresolvedRoots.length} unresolved recovery root(s)`
+        : "Cleanup wave completed with no unresolved crashed-agent work", {
+        reason: unresolvedRoots.length ? "recovery-attempts-exhausted" : "swarm-clean",
+        evidence: {
+          workflowId: config.armedWorkflowId,
+          waveId: config.waveId,
+          unresolvedRoots
+        }
+      });
+    if (unresolvedRoots.length) {
+      addNotification(completed, {
+        severity: "warning",
+        title: "Cleanup wave needs attention",
+        message: `${unresolvedRoots.length} crashed-agent work item(s) remain after automatic recovery attempts.`,
+        action: { type: "inspect-workers", ids: unresolvedRoots },
+        dedupeKey: `swarm-tail-unresolved:${config.waveId || config.armedAt}`
+      });
+    }
+    saveState(completed);
   } finally {
     swarmTailRecoveryTickRunning = false;
   }
@@ -2714,6 +2772,7 @@ async function previewWorkflow(workflowId, body = {}) {
 
 async function executeWorkflow(workflowId, body = {}) {
   return withDeployLock(async () => {
+    const workflowStartedAt = isoNow();
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
     assertWorkflowAutonomy(state, workflowId);
@@ -2777,6 +2836,30 @@ async function executeWorkflow(workflowId, body = {}) {
         blocked.push({ work, error: error.message || String(error) });
         break;
       }
+    }
+    const shouldArmTailRecovery = created.length > 0 && (workflowId === "usual-swarm" || plan.steps.length > 1);
+    if (shouldArmTailRecovery) {
+      const linked = loadState();
+      linked.settings.swarmTailRecovery = {
+        ...(linked.settings.swarmTailRecovery || {}),
+        enabled: linked.settings.swarmTailRecovery?.enabled !== false,
+        maxWorkers: linked.settings.swarmTailRecovery?.maxWorkers || 4,
+        maxAttemptsPerRoot: linked.settings.swarmTailRecovery?.maxAttemptsPerRoot || 2,
+        armedAt: workflowStartedAt,
+        armedWorkflowId: workflowId,
+        armedMission: plan.mission || body.objective || null,
+        waveId: randomUUID()
+      };
+      addEvent(linked, "swarm.tail-recovery-armed", `Cleanup wave armed for ${workflowId}`, {
+        reason: "swarm-workflow-started",
+        evidence: {
+          workflowId,
+          waveId: linked.settings.swarmTailRecovery.waveId,
+          armedAt: workflowStartedAt,
+          createdAgentIds: created.map(agent => agent.id)
+        }
+      });
+      saveState(linked);
     }
     return { plan, created, blocked };
   });
