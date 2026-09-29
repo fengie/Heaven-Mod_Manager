@@ -1,0 +1,21 @@
+{
+  "id": "recycle-actions-runner-20260929-1125",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:25:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:53:28.900535+00:00",
+  "finished_at": "2026-09-29T11:53:40.957759+00:00",
+  "stdout": "BEFORE_LISTENERS=1\r\nKILL_TREE_PID=96124\r\nSUCCESS: The process with PID 75936 (child process of PID 111676) has been terminated.\r\nSUCCESS: The process with PID 111676 (child process of PID 25856) has been terminated.\r\nSUCCESS: The process with PID 25856 (child process of PID 109480) has been terminated.\r\nSUCCESS: The process with PID 75884 (child process of PID 54380) has been terminated.\r\nSUCCESS: The process with PID 109480 (child process of PID 54380) has been terminated.\r\nSUCCESS: The process with PID 54380 (child process of PID 96124) has been terminated.\r\nSUCCESS: The process with PID 96124 (child process of PID 65688) has been terminated.\r\nAFTER_LISTENERS=1\r\n{\r\n    \"ProcessId\":  52236,\r\n    \"Name\":  \"Runner.Listener.exe\",\r\n    \"ExecutablePath\":  \"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Listener.exe\",\r\n    \"CommandLine\":  \"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\\\\\bin\\\\Runner.Listener.exe\\\"  run \"\r\n}\r\nACTIONS_RUNNER_RECYCLED\r\n",
+  "stderr": "ERROR: The process with PID 115140 (child process of PID 49160) could not be terminated.\r\nReason: The operation attempted is not supported.\r\r\nERROR: The process with PID 49160 (child process of PID 98020) could not be terminated.\r\nReason: The operation attempted is not supported.\r\r\nERROR: The process with PID 56396 (child process of PID 98020) could not be terminated.\r\nReason: The operation attempted is not supported.\r\r\nERROR: The process with PID 98020 (child process of PID 75936) could not be terminated.\r\nReason: The operation attempted is not supported.\r\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\recycle-actions-runner-20260929-1125.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\recycle-actions-runner-20260929-1125.stderr.log",
+    "stdout_bytes": 961,
+    "stderr_bytes": 565,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e0c60a599589455a8aee3c055e3262c5a5811c724414adfbd175b034d489186e"
+}
