@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1253-issue132-port-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$root='C:\\Users\\Xxkan\\HeavenWork\\issue132'\nif (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path -Parent $root) | Out-Null\ngh repo clone fengie/mhw-mods $root -- --filter=blob:none\nif ($LASTEXITCODE -ne 0) { throw 'clone failed' }\nSet-Location $root\ngit fetch origin recovery/complete-mod-workflows-20260929\nif ($LASTEXITCODE -ne 0) { throw 'fetch recovery branch failed' }\ngit checkout -b fix/issue-132-workflows-20260929 origin/main\nif ($LASTEXITCODE -ne 0) { throw 'checkout branch failed' }\n$legacy='origin/recovery/complete-mod-workflows-20260929'\n$paths=@(\n'docs/GAME-ADAPTER-SDK.md',\n'docs/WORKFLOWS.md',\n'src/MhwModManager.App/FomodInstallerWindow.cs',\n'src/MhwModManager.App/ViewModels/MainWindowViewModel.Workflows.cs',\n'src/MhwModManager.App/WorkflowWindow.xaml',\n'src/MhwModManager.App/WorkflowWindow.xaml.cs',\n'src/MhwModManager.Automation/FomodInstallerService.cs',\n'src/MhwModManager.Automation/RulesEditorService.cs',\n'src/MhwModManager.Automation/UpdateMigrationService.cs',\n'src/MhwModManager.Core/GameAdapters.cs',\n'src/MhwModManager.Core/WorkflowAnalysis.cs',\n'src/MhwModManager.Storage/DeploymentMetadata.cs',\n'tests/MhwModManager.AutomationTests/WorkflowTests.cs'\n)\nforeach($p in $paths){ git checkout $legacy -- $p; if($LASTEXITCODE -ne 0){ throw \"legacy checkout failed: $p\" } }\nWrite-Host '=== PORTED FILES ==='\ngit status --short\nWrite-Host '=== BUILD ==='\ndotnet build .\\MhwModManager.sln -c Release -p:NuGetAudit=false --nologo\n$build=$LASTEXITCODE\nWrite-Host \"BUILD_EXIT=$build\"\nexit $build",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T12:53:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
