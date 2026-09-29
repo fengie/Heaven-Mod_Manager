@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T102430Z-inspect-cleanup-progress",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:25:44.061894+00:00"
+}
