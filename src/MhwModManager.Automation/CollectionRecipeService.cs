@@ -114,8 +114,20 @@ public sealed class CollectionRecipeService(ManagerDatabase db, GameProfile? gam
         foreach (var group in groups)
         {
             var existing = group.Select(m => mods[m.LocalModId!].FamilyId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            if (existing.Length > 1 || (existing.Length == 1 && existing[0] is not null && group.Any(m => mods[m.LocalModId!].FamilyId != m.Entry.FamilyId)))
-                throw new InvalidDataException("A matched group already has local family membership. Review it in Rules before restoring recipe families.");
+            if (existing.Length > 1)
+                throw new InvalidDataException("A matched group already has mixed local family membership. Review it in Rules before restoring recipe families.");
+            if (existing is [string familyId])
+            {
+                if (!familyId.StartsWith("imported:", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("A matched group already has local family membership. Review it in Rules before restoring recipe families.");
+                var matchedIds = group.Select(m => m.LocalModId!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var localIds = mods.Values.Where(m => StringComparer.OrdinalIgnoreCase.Equals(m.FamilyId, familyId))
+                    .Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                if (!localIds.SetEquals(matchedIds) || group.Any(m => !StringComparer.OrdinalIgnoreCase.Equals(
+                        mods[m.LocalModId!].FamilyRole,
+                        m.Entry.FamilyRole is "Main" or "Optional" or "Update" ? m.Entry.FamilyRole : "Main")))
+                    throw new InvalidDataException("A matched group already has different local family membership. Review it in Rules before restoring recipe families.");
+            }
         }
         return await db.InTransactionAsync(async (c, tx, token) =>
         {
