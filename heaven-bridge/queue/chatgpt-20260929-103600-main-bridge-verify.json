@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-103600-main-bridge-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; Set-Location (Join-Path $env:USERPROFILE 'HeavenBridgeRepo'); git fetch origin main; $d=Join-Path $env:USERPROFILE 'HeavenBridgeMainVerify'; if(Test-Path $d){ git worktree remove --force $d 2>$null; if(Test-Path $d){Remove-Item -Recurse -Force $d} }; git worktree add --detach $d origin/main; try { python -m py_compile (Join-Path $d 'heaven-bridge\\worker.py') (Join-Path $d 'heaven-bridge\\test_worker.py') (Join-Path $d 'heaven-bridge\\tests\\test_worker.py'); python (Join-Path $d 'heaven-bridge\\test_worker.py'); if($LASTEXITCODE -ne 0){throw \"primary tests failed: $LASTEXITCODE\"}; python -m unittest -q (Join-Path $d 'heaven-bridge\\tests\\test_worker.py'); if($LASTEXITCODE -ne 0){throw \"compat tests failed: $LASTEXITCODE\"}; foreach($p in @('bootstrap.ps1','manage.ps1')){ $tokens=$null; $errors=$null; [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $d ('heaven-bridge\\'+$p)),[ref]$tokens,[ref]$errors); if($errors.Count){ throw ($errors | Out-String) } }; Write-Output 'MAIN_BRIDGE_VERIFY_OK'; git -C $d rev-parse HEAD } finally { Set-Location (Join-Path $env:USERPROFILE 'HeavenBridgeRepo'); git worktree remove --force $d 2>$null }",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T10:36:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
