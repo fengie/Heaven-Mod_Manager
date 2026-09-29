@@ -79,6 +79,7 @@ public partial class MainWindow:Window
 
     private static void AnimateElement(FrameworkElement element,double fromOpacity,double fromX,double fromY,int durationMs)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var translate=element.RenderTransform as TranslateTransform;
         if(translate is null)
         {
@@ -106,6 +107,7 @@ public partial class MainWindow:Window
 
     private void ResetBusyMotion()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         BusyOverlay.BeginAnimation(UIElement.OpacityProperty,null);
         BusyOverlay.Opacity=1;
         if(BusyOverlay.RenderTransform is TranslateTransform translate)
