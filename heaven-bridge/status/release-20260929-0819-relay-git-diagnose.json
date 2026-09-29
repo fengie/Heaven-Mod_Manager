@@ -1,0 +1,9 @@
+{
+  "id": "release-20260929-0819-relay-git-diagnose",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:19:08.771402+00:00"
+}
