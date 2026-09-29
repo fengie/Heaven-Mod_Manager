@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-154530-heaven2-fast-remote-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; function T($p){$c=New-Object Net.Sockets.TcpClient;try{$a=$c.BeginConnect('heaven2',$p,$null,$null);$ok=$a.AsyncWaitHandle.WaitOne(1500);if($ok){$c.EndConnect($a)|Out-Null;return $true}else{return $false}}catch{return $false}finally{$c.Close()}}; [pscustomobject]@{ssh=(T 22);winrm_http=(T 5985);winrm_https=(T 5986);rpc=(T 135)}|ConvertTo-Json -Compress",
+    "cwd": "C:\\Users",
+    "timeout_seconds": 15
+  },
+  "created_at": "2026-09-29T15:45:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
