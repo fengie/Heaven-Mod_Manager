@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.10",
+  "currentVersion": "8.8.11",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.9 updater manifest compatibility and installed-client closure",
   "canonicalRepository": "fengie/mhw-mods",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.10 after workflow-feature closure. GitHub-hosted runner allocation is non-critical: current repository workflows route through the verified Heaven self-hosted runner. Treat Codex capacity/quota as a routing signal and use direct Heaven Bridge proc_run/build/test/filesystem/process/computer-control during cooldown. The immediate closure boundary is an exact-current-main Windows Release Gate followed by the installed-client build-60 update to the newly published immutable BOM-free release and deterministic rollback/sentinel proof. Preserve the permanent continuity constitution and active Learned Rules, and recursively propagate them.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs before selecting work. Current release identity is v8.8.11 after the first-time-user UX overhaul. Preserve the plain-language/progressive-disclosure UX contract while keeping expert diagnostics available. Treat exact-main Windows Release Gate evidence as SHA-scoped, preserve continuity and verification instrumentation, and recursively propagate these rules to the next agent.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
