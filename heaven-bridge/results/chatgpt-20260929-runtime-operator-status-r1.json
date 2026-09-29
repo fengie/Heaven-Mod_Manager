@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-runtime-operator-status-r1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:43:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:48:10.807272+00:00",
+  "finished_at": "2026-09-29T08:48:12.828724+00:00",
+  "stdout": "{\r\n    \"healthy\":  true,\r\n    \"repo\":  \"C:\\\\Users\\\\Xxkan\\\\HeavenBridgeRepo\",\r\n    \"branch\":  \"heaven-bridge\",\r\n    \"tracked_or_untracked_changes\":  [\r\n                                         \"?? heaven-bridge/__pycache__/\",\r\n                                         \"?? heaven-bridge/tests/__pycache__/\"\r\n                                     ],\r\n    \"canonical_worker_count\":  1,\r\n    \"canonical_worker_pids\":  [\r\n                                  116892\r\n                              ],\r\n    \"legacy_worker_count\":  0,\r\n    \"legacy_worker_pids\":  [\r\n\r\n                           ],\r\n    \"source_matches_runtime\":  true,\r\n    \"heartbeat\":  {\r\n                      \"exists\":  true,\r\n                      \"updated_at\":  \"2026-09-29T08:46:13.143738+00:00\",\r\n                      \"worker_version\":  3,\r\n                      \"protocol\":  \"chatgpt-heaven-bridge-v2\",\r\n                      \"age_seconds\":  119\r\n                  },\r\n    \"scheduled_task\":  {\r\n                           \"canonical\":  \"missing\",\r\n                           \"legacy\":  \"missing\"\r\n                       },\r\n    \"startup_fallback\":  true\r\n}\r\nSTATUS_EXIT=0\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-runtime-operator-status-r1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-runtime-operator-status-r1.stderr.log",
+    "stdout_bytes": 1137,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "e440b6f0b9e2bdcffca2fccc1fcc5a25d814176e6a0c973deec376456d997c6b"
+}
