@@ -1,0 +1,14 @@
+{
+  "id": "shipit-20260929-0915-agentcontrol-verify-2382b8e4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$dest = Join-Path $env:TEMP 'shipit-20260929-0915-agentcontrol-verify-2382b8e4'\nif (Test-Path $dest) { Remove-Item -Recurse -Force $dest }\ngit clone --no-checkout https://github.com/fengie/mhw-mods.git $dest\ngit -C $dest fetch origin 2382b8e40b72326b199cd962a47acea87af99356\ngit -C $dest checkout --detach 2382b8e40b72326b199cd962a47acea87af99356\n$actual = (git -C $dest rev-parse HEAD).Trim()\nif ($actual -ne '2382b8e40b72326b199cd962a47acea87af99356') { throw \"HEAD mismatch: $actual\" }\nPush-Location (Join-Path $dest 'tools\\agent-control')\ntry {\n  node --version\n  npm run check\n  npm test\n} finally { Pop-Location }\nWrite-Output \"VERIFIED_HEAD=$actual\"\ngit -C $dest status --short",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T09:15:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
