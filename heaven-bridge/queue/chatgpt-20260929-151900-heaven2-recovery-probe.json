@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-151900-heaven2-recovery-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'\n$ws=$false; try { Test-WSMan -ComputerName heaven2 -ErrorAction Stop | Out-Null; $ws=$true } catch {}\n$ping = Test-Connection -ComputerName heaven2 -Count 1 -Quiet -ErrorAction SilentlyContinue\n$admin = Test-Path '\\\\heaven2\\c$'\n$users = Test-Path '\\\\heaven2\\Users'\n[pscustomobject]@{host=$env:COMPUTERNAME; ping=$ping; winrm=$ws; admin_share=$admin; users_share=$users} | ConvertTo-Json -Compress",
+    "cwd": "C:\\",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T15:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
