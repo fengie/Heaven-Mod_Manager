@@ -5,6 +5,7 @@ import { renderAgentPrompt } from "../lib/prompt-templates.mjs";
 import { reconcileObservation } from "../lib/federated-registry.mjs";
 import {
   applyPreLaunchFailure,
+  agentExecutionModeDecision,
   autonomyPermissionDecision,
   defaultControlState,
   deploymentBatchCapacity,
@@ -56,14 +57,36 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 5);
+  assert.equal(migrated.version, 6);
   assert.equal(migrated.autopilot.phase, "waiting-for-direction");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
   assert.equal(migrated.controller.sessionId, "new-session");
   assert.equal(migrated.settings.autonomyLevel, "assist");
+  assert.equal(migrated.settings.defaultAgentExecutionMode, "chat");
+  assert.equal(migrated.settings.requireExplicitCodexOptIn, true);
   assert.ok(migrated.federation);
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
+});
+
+test("agent execution defaults to normal Chat and requires explicit Codex opt-in", () => {
+  const implicit = agentExecutionModeDecision();
+  assert.equal(implicit.allowed, false);
+  assert.equal(implicit.mode, "chat");
+  assert.equal(implicit.code, "CHAT_SESSION_REQUIRED");
+  assert.match(implicit.reason, /will not silently fall back to Codex/i);
+
+  const chat = agentExecutionModeDecision("chat");
+  assert.equal(chat.allowed, false);
+  assert.equal(chat.mode, "chat");
+
+  const codex = agentExecutionModeDecision("codex");
+  assert.equal(codex.allowed, true);
+  assert.equal(codex.mode, "codex");
+
+  const work = agentExecutionModeDecision("work");
+  assert.equal(work.allowed, false);
+  assert.equal(work.code, "WORK_MODE_EXTERNAL");
 });
 
 test("usual swarm fills only missing roles and distinct support lanes", () => {

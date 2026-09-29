@@ -47,7 +47,13 @@ The snapshot combines managed local workers with the normalized federated regist
 
 Automatic enumeration of arbitrary ChatGPT project conversations is unavailable. When a stable ChatGPT session identity is available through the bridge, register/heartbeat it rather than inventing telemetry.
 
-## Deploy an agent
+## Execution mode
+
+Normal Chat is the default. Do not deploy a local Codex worker unless the user explicitly requested Codex for the current task. ChatGPT Work is a separate product mode and must also be explicitly requested; never translate a Work request into Codex.
+
+Agent Control cannot auto-create arbitrary normal ChatGPT conversations. If no normal-Chat session is already available/registered, report that routing limitation and keep the task in Chat instead of silently falling back to Codex. A Codex quota/capacity failure must not trigger reviewer, takeover, replacement, or recovery spawns on the same blocked provider.
+
+## Deploy a Codex agent only after explicit opt-in
 
 Prefer a temporary task file instead of shell-embedding the user's prompt.
 
@@ -55,7 +61,7 @@ Prefer a temporary task file instead of shell-embedding the user's prompt.
 2. Run:
 
 ```powershell
-node <agentctl-path> deploy --role <role> --task-file <temp-file> --base <branch> --priority <0-100>
+node <agentctl-path> deploy --role <role> --task-file <temp-file> --base <branch> --priority <0-100> --execution-mode codex
 ```
 
 Optional:
@@ -91,7 +97,7 @@ Never deploy a new implementation owner onto a named boundary that the snapshot 
 To deploy a reviewer against a managed agent's branch:
 
 ```powershell
-node <agentctl-path> review <agent-id>
+node <agentctl-path> review <agent-id> --execution-mode codex
 ```
 
 Use this when the user asks to review, audit, validate, or support a completed managed branch.

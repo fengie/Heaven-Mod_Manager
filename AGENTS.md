@@ -49,6 +49,17 @@ Unless the user explicitly says **read only**, **review only**, **summarize only
 - Preserve safety, ownership, verification, and repository policy while executing.
 - If a genuine external gate prevents completion, report PARTIAL/BLOCKED with the exact attempted operation and evidence.
 
+## Mandatory Chat-first execution mode
+
+Normal Chat is the default execution mode for agent work.
+
+- Do not select, invoke, or silently fall back to ChatGPT Work, Codex, or another quota-metered agent execution surface unless the user explicitly requests that mode for the current task.
+- Work and Codex are distinct execution surfaces. Permission to use one does not imply permission to use the other.
+- Task complexity, prior historical use, available quota, autonomy level, swarm preset, reviewer/takeover status, or an agent failure never counts as implicit permission to escalate from normal Chat.
+- Agent Control cannot automatically create arbitrary normal ChatGPT conversations. When no normal-Chat session is already available/registered, fail closed and surface that routing limitation; never substitute a Codex worker.
+- A Codex usage-limit/quota error is a routing signal. Preserve unfinished work and wait for an explicit future Codex request; do not create recursive reviewer, takeover, replacement, or recovery workers that consume the same blocked provider.
+- Managers, reviewers, recovery agents, plugins, and successors must preserve this rule recursively.
+
 ## Heaven Local Bridge execution policy
 
 For computer work on the device named `heaven`, use the repository-backed **Heaven Local Bridge** as the default execution path.
