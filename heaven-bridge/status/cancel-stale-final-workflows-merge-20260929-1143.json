@@ -1,0 +1,9 @@
+{
+  "id": "cancel-stale-final-workflows-merge-20260929-1143",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:38:43.462109+00:00"
+}
