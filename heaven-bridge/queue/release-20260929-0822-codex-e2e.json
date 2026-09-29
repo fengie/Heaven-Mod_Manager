@@ -1,0 +1,11 @@
+{
+  "id": "release-20260929-0822-codex-e2e",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "codex",
+  "payload": "Return exactly this text and nothing else: HEAVEN_CODEX_E2E_OK",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 180,
+  "created_at": "2026-09-29T08:22:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
