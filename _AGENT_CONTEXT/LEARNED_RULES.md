@@ -406,3 +406,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+## LR-025 — structural UI regressions must move with intentional layout changes
+
+- **Rule ID:** LR-025
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** WPF/XAML layout changes, structural UI regression tests, release verification
+- **Rule:** When an intentional UI layout change replaces the structure a regression test asserts, update that regression in the same change to assert the new invariant rather than leaving a known-stale structural expectation on canonical main.
+- **Trigger / evidence:** The v8.8.18 Mods workspace intentionally replaced the wrapping `ModLibraryToolbar` with a horizontally scrolling `ScrollViewer`, but the existing v8.8.16 structural UX test still required the removed `WrapPanel`. The stale assertion escaped onto main and was caught only when the v8.8.19/v8.8.20 exact release-gate work ran the full integration suite.
+- **Rationale:** A regression test that contradicts an intentional shipped structure creates false red release gates and obscures real failures. Structural tests are useful only when they track the intended user-facing invariant, not obsolete implementation markup.
+- **Enforcement:** Any XAML/layout refactor must inspect and update structural UI assertions atomically; the author must run the full relevant integration suite (not only a hand-picked focused test) before merge. Prefer assertions on durable behavior/layout invariants—compact margins, non-wrapping overflow, star-sized primary surfaces—over incidental container types when possible.
+- **Related rules:** LR-021 defect-class closure; LR-022 primary data surfaces; LR-023 collision-safe rule IDs.
+- **Integration numbering note:** Originally drafted as LR-024, then renumbered to LR-025 after current main assigned LR-024 to the strict JSON wire-contract incident.
+- **Supersedes:** none
+- **Superseded by:** none
+

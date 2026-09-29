@@ -30,3 +30,4 @@ The generic trainer now explicitly covers active project lessons LR-010 through 
 ## 2026-09-29 follow-up promotions
 - Dense desktop data surfaces should retain first claim on constrained window space; auxiliary controls should avoid vertical wrapping that starves the primary workspace. Project evidence: LR-022.
 - Concurrent append-only sequential identifiers require collision-safe allocation and an integration uniqueness check. Project evidence: LR-023, created after two concurrent rules collided on LR-021.
+- Intentional structural UI changes must update their structural regression assertions atomically and run the full relevant suite before merge. Project evidence: LR-025, discovered when exact UI-release verification exposed a stale v8.8.16 assertion after the v8.8.18 toolbar redesign.
