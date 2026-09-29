@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0857-agent-control-live-status-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:57:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:57:10.347961+00:00",
+  "finished_at": "2026-09-29T08:57:20.795818+00:00",
+  "stdout": "",
+  "stderr": "Invoke-RestMethod : The operation has timed out.\r\nAt line:1 char:4\r\n+ $r=Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -Method  ...\r\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebExc \r\n   eption\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0857-agent-control-live-status-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0857-agent-control-live-status-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 468,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "87ceabc897c094b0b1f1727eafb863e31a0932d02f86eacf590b791cefcb8db5"
+}
