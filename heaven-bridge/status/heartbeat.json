@@ -5,8 +5,19 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T12:23:44.797438+00:00",
-  "running": [],
+  "updated_at": "2026-09-29T12:28:48.739850+00:00",
+  "running": [
+    {
+      "id": "branchzero-prune-superseded-20260929-1224-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T12:27:11.970016+00:00"
+    },
+    {
+      "id": "branchzero-complete-workflows-reconcile-20260929-1228-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T12:27:11.975239+00:00"
+    }
+  ],
   "capabilities": [
     "app_launch",
     "cancel",
