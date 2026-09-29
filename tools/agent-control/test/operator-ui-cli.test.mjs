@@ -64,6 +64,7 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
     "quickBacklog",
     "quickRelease",
     "quickAutopilot",
+    "autopilotPerpetual",
     "eventSummary",
     "events"
   ]) {
@@ -98,7 +99,9 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   assert.match(html, /Verify & Repair/);
   assert.match(html, /Clean Backlog/);
   assert.match(html, /Release Ready/);
-  assert.match(html, /Start Autopilot/);
+  assert.match(html, /Perpetual Cycle/);
+  assert.match(html, /presetObjectives\.perpetual/);
+  assert.match(html, /perpetualOverride/);
   assert.match(html, /const presetObjectives = \{/);
   assert.match(html, /presetObjectives\.continue/);
   assert.match(html, /async function runPreset\(key\)/);
