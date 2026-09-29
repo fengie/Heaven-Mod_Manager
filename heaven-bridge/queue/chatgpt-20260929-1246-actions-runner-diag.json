@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1246-actions-runner-diag",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $dir=Join-Path $env:USERPROFILE 'actions-runner-heaven'; $listener=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Runner.Listener.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir,[System.StringComparison]::OrdinalIgnoreCase) }); $worker=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Runner.Worker.exe' -and $_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir,[System.StringComparison]::OrdinalIgnoreCase) }); Write-Output ('LISTENER_COUNT='+$listener.Count); Write-Output ('WORKER_COUNT='+$worker.Count); $listener | Select-Object ProcessId,CreationDate,ExecutablePath,CommandLine | Format-List | Out-String | Write-Output; $worker | Select-Object ProcessId,CreationDate,ExecutablePath,CommandLine | Format-List | Out-String | Write-Output; $diag=Join-Path $dir '_diag'; if(Test-Path $diag){ $latest=Get-ChildItem -LiteralPath $diag -Filter 'Runner_*.log' -File | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1; if($latest){ Write-Output ('LATEST_RUNNER_LOG='+$latest.FullName); Get-Content -LiteralPath $latest.FullName -Tail 120 } }; try { $health=Invoke-WebRequest -UseBasicParsing -Uri 'https://broker.actions.githubusercontent.com/health' -TimeoutSec 20; Write-Output ('BROKER_HEALTH='+[int]$health.StatusCode) } catch { Write-Output ('BROKER_HEALTH_ERROR='+$_.Exception.Message) }"
+  },
+  "created_at": "2026-09-29T12:46:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
