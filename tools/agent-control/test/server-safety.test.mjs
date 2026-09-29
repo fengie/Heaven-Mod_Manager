@@ -217,9 +217,9 @@ test("pre-launch setup is completed before worker spawn and has convergence clea
   const deploy = source.slice(start, end);
   const findCodexAt = deploy.indexOf("codex = findCodex()");
   const promptWriteAt = deploy.indexOf("fs.writeFileSync(promptPath");
-  const spawnAt = deploy.indexOf("child = spawn(codex");
+  const spawnAt = deploy.indexOf("child = spawn(executable");
   assert.ok(findCodexAt >= 0 && promptWriteAt > findCodexAt);
-  assert.ok(spawnAt > promptWriteAt, "fallible prompt/Codex setup must finish before spawning a worker");
+  assert.ok(spawnAt > promptWriteAt, "fallible prompt/provider setup must finish before spawning the owned worker process");
   assert.match(deploy, /reason: "pre-launch-setup-failed"/);
   assert.match(source, /applyPreLaunchFailure\(failed,/);
 });
@@ -454,4 +454,29 @@ test("local Codex launch uses approval-never workspace-write contract", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   assert.match(source, /const args = \[\s*"-a", "never",\s*"-s", "workspace-write",\s*"exec",\s*"--json",\s*"--skip-git-repo-check"/);
   assert.doesNotMatch(source, /--approve-for-me|danger-full-access|dangerously-bypass-approvals-and-sandbox/);
+});
+
+
+test("heaven2 auto placement uses authenticated Heaven Local Bridge and fails closed", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function resolveWorkerPlacement");
+  const end = source.indexOf("function buildPrompt", start);
+  assert.ok(start >= 0 && end > start);
+  const placement = source.slice(start, end);
+  assert.match(placement, /hostname === "heaven2" \? "heaven"/);
+  assert.match(placement, /await inspectHeavenBridge\(\{ sync: true \}\)/);
+  assert.match(placement, /refusing to silently execute heavy work on heaven2/i);
+  assert.match(placement, /provider: "heaven-bridge"/);
+});
+
+test("remote Heaven execution keeps an owned local runner and authoritative cancellation path", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function deployOne({");
+  const end = source.indexOf('child.on("exit"', start);
+  const deploy = source.slice(start, end);
+  assert.match(deploy, /HEAVEN_BRIDGE_RUNNER/);
+  assert.match(deploy, /executionProvider: placement\.provider/);
+  assert.match(deploy, /remoteJobId/);
+  assert.match(source, /cancelHeavenBridgeJob\(agent\.remoteJobId/);
+  assert.match(source, /bridgeResultSucceeded\(cancellation\)/);
 });
