@@ -207,7 +207,11 @@ internal static class Program
                 attemptId: null),
             process => StopProcessAsync(process, logPath),
             message => Log(logPath, message),
-            progress?.ReportRestartStage);
+            stage =>
+            {
+                if (progress is not null)
+                    progress.ReportRestartStage(stage);
+            });
     }
 
     private static Process StartApplication(

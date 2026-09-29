@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Windows.Forms;
+using MhwModManager.Core;
 using MhwModManager.Updater;
 
 namespace MhwModManager.Updater.Helper;
@@ -16,6 +17,7 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     public UpdaterProgressHost(string targetVersion)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"version={targetVersion}");
         uiThread = new Thread(() => RunUi(targetVersion))
         {
             Name = "MHW Mod Manager updater progress UI",
@@ -34,11 +36,13 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     public void ReportStep(int step, string title, string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"step={step}; title={title}");
         Post(window => window.ReportStep(step, title, detail));
     }
 
     public void ReportRestartStage(UpdateRestartStage stage)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"stage={stage}");
         switch (stage)
         {
             case UpdateRestartStage.LaunchingUpdatedApplication:
@@ -78,12 +82,14 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     public void Succeed(string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         terminalSignaled = true;
         Post(window => window.ShowSuccess(detail));
     }
 
     public void Fail(string title, string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"title={title}");
         terminalSignaled = true;
         failureSignaled = true;
         Post(window => window.ShowFailure(title, detail));
@@ -91,6 +97,7 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     private void RunUi(string targetVersion)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"version={targetVersion}");
         try
         {
             ApplicationConfiguration.Initialize();
@@ -113,6 +120,7 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     private void Post(Action<UpdaterProgressForm> action)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var window = Volatile.Read(ref form);
         if (window is null || window.IsDisposed) return;
 
@@ -130,6 +138,7 @@ internal sealed class UpdaterProgressHost : IDisposable
 
     public void Dispose()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (disposed) return;
         disposed = true;
 
@@ -163,6 +172,7 @@ internal sealed class UpdaterProgressForm : Form
 
     public UpdaterProgressForm(string targetVersion)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"version={targetVersion}");
         Text = "MHW Mod Manager Updater";
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -251,6 +261,7 @@ internal sealed class UpdaterProgressForm : Form
 
     public void ReportStep(int step, string title, string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"step={step}; title={title}");
         var boundedStep = Math.Clamp(step, 1, TotalSteps);
         titleLabel.Text = title;
         detailLabel.Text = detail;
@@ -262,6 +273,7 @@ internal sealed class UpdaterProgressForm : Form
 
     public void ShowSuccess(string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         titleLabel.Text = "Update complete";
         detailLabel.Text = detail;
         stepLabel.Text = $"Step {TotalSteps} of {TotalSteps}";
@@ -275,6 +287,7 @@ internal sealed class UpdaterProgressForm : Form
 
     public void ShowFailure(string title, string detail)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"title={title}");
         titleLabel.Text = title;
         detailLabel.Text = detail;
         stepLabel.Text = "Update stopped";
@@ -290,12 +303,14 @@ internal sealed class UpdaterProgressForm : Form
 
     public void CloseFromHost()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         allowClose = true;
         Close();
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"reason={e.CloseReason}");
         if (!allowClose && e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
@@ -307,6 +322,7 @@ internal sealed class UpdaterProgressForm : Form
 
     protected override void Dispose(bool disposing)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"disposing={disposing}");
         if (disposing)
             terminalCloseTimer.Dispose();
 
