@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-095600-branch-cleanup-main-9c2e",
-  "state": "running",
+  "state": "failed",
   "action": "codex",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:56:14.461304+00:00"
+  "updated_at": "2026-09-29T09:56:24.344576+00:00",
+  "exit_code": 1
 }
