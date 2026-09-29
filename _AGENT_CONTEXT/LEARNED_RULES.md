@@ -261,3 +261,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant implementation:** PR #198 / main commit `4bf431aa4e911095a0f83b2d4e568f989118c2d4`; Heaven Local Bridge v0.7.0.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-016 — task review and current-runtime plugin activation precede routing
+
+- **Rule ID:** LR-016
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** all agents, managers, reviewers, sub-agents, task routing, plugin/toolbox discovery, session-specific tool availability
+- **Rule:** After mandatory repository training and before any task-facing plan, answer, dispatch, or task-specific action, the agent must re-read the complete assigned task, discover the actual plugin/connector/skill/toolbox surface available in the current runtime, load/read the current instructions for every materially relevant capability, and select/activate the narrowest applicable purpose-built route. A user-named plugin is a routing requirement unless current-runtime evidence proves it unavailable, unsafe, or insufficient.
+- **Trigger / evidence:** During the 2026-09-29 live reliability campaign, an agent reported that the dedicated Heaven Local Bridge connector was not exposed on its chat surface and fell back to repository/GitHub coordination. The standing plugin-first policy existed, but it did not require positive current-runtime discovery, skill activation evidence, or manager rejection of unsupported “plugin unavailable” claims.
+- **Rationale:** Plugin availability is session-specific and can differ across ChatGPT, local workers, managers, and spawned agents. Remembered tool lists, stale chat context, or a single failed lookup are not reliable capability discovery. Purpose-built plugins carry machine-routing, safety, authorization, and verification semantics that broad fallbacks can bypass.
+- **Enforcement:** Every agent preserves a `PLUGIN-PREFLIGHT` record with the task reviewed, capabilities considered, plugins/skills loaded or activated, chosen route, unavailable/inapplicable capabilities with current-runtime evidence, and fallback reason. Managers embed the gate in dispatched prompts and reject/redispatch workers that skip it. Reviewers treat missing or false preflight evidence as a process defect when it could affect routing, safety, machine choice, or verification. Plugin activation must never bypass OAuth, user consent, repository protection, or other permission boundaries.
+- **Related policy:** `AGENTS.md` mandatory task-review/plugin activation gate; `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`; `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt`; LR-015.
+- **Supersedes:** none
+- **Superseded by:** none
+
