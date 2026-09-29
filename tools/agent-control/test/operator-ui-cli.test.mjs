@@ -40,7 +40,7 @@ test("federation snapshot separates live lifecycle and freshness counts", () => 
   assert.equal(counts.disconnected, 1);
 });
 
-test("dashboard exposes truthful operator visibility and server-backed controls", () => {
+test("dashboard makes Start Swarm the single normal startup action while keeping advanced controls available", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 
@@ -52,23 +52,37 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
     "idle",
     "stale",
     "disconnected",
+    "startSwarm",
+    "startSwarmStatus",
     "controlSummary",
     "autonomyLevel",
     "routingManifest",
-    "deploySwarm",
-    "quickContinue",
-    "quickSwarm",
-    "quickFix",
-    "quickPlan",
-    "quickVerify",
-    "quickBacklog",
-    "quickRelease",
-    "quickAutopilot",
     "eventSummary",
     "events"
   ]) {
     assert.ok(ids.includes(id), `missing operator surface #${id}`);
   }
+
+  const composerStart = html.indexOf('<aside class="card composer start-card">');
+  const composerEnd = html.indexOf("</aside>", composerStart);
+  const composer = html.slice(composerStart, composerEnd);
+  const advancedAt = composer.indexOf('<details class="advanced">');
+  assert.ok(composerStart >= 0 && composerEnd > composerStart && advancedAt > 0);
+  const primaryLaunch = composer.slice(0, advancedAt);
+  assert.match(primaryLaunch, /START SWARM/);
+  assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
+  assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role/i);
+
+  const diagnosticsAt = html.indexOf('<details class="card diagnostics">');
+  const routingAt = html.indexOf('id="routingManifest"');
+  const readOnlyAt = html.indexOf('id="controlReadOnly"');
+  assert.ok(diagnosticsAt >= 0 && routingAt > diagnosticsAt && readOnlyAt > diagnosticsAt);
+  assert.match(html, /Advanced \/ diagnostics/);
+  assert.match(html, /\/api\/swarm\/start/);
+  assert.doesNotMatch(primaryLaunch, /Deploy Usual Swarm/);
+  assert.match(html, /const defaultSwarmObjective = /);
+  assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
+  assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
 
   assert.match(html, /Auto \/ heaven/);
   assert.match(html, /presence-unknown/);
@@ -89,27 +103,14 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   assert.match(html, /\/api\/control\/drain/);
   assert.match(html, /\/api\/control\/emergency-stop/);
   assert.match(html, /\/api\/control\/routing-manifest/);
-  assert.match(html, /\/api\/workflows\/usual-swarm\/execute/);
-  assert.match(html, /Deploy Usual Swarm/);
-  assert.match(html, /One-click launch/);
-  assert.match(html, /Continue Project/);
-  assert.match(html, /Fix Bugs/);
-  assert.match(html, /Implement Planned/);
-  assert.match(html, /Verify & Repair/);
-  assert.match(html, /Clean Backlog/);
-  assert.match(html, /Release Ready/);
-  assert.match(html, /Start Autopilot/);
-  assert.match(html, /const presetObjectives = \{/);
-  assert.match(html, /presetObjectives\.continue/);
-  assert.match(html, /async function runPreset\(key\)/);
-  assert.match(html, /async function deploySwarm\(objectiveOverride=""\)/);
-  assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| presetObjectives\.continue/);
-  assert.match(html, /quick-action\[data-preset\]/);
   assert.match(html, /repositoryWriteAuthorized:true/);
   assert.match(html, /server-side authorization remains authoritative/i);
 
   const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
   assert.match(server, /bridgeMachineStatus\(heavenBridge\)/);
+  assert.match(server, /pathname === "\/api\/swarm\/start"/);
+  assert.match(server, /reason: "operator-start-swarm"/);
+  assert.match(server, /operatorInitiated: true/);
 });
 
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
