@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-cancel-obsolete-pr-runs-20260929-1237-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:37:00Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'\n$ids=@(36568275774,36568557555,36568584953)\nforeach($id in $ids){\n  gh run cancel $id --repo fengie/mhw-mods\n  if($LASTEXITCODE -ne 0){ Write-Host \"cancel-nonzero:$id:$LASTEXITCODE\" }\n}\ngh run list --repo fengie/mhw-mods --limit 20"
+  },
+  "priority": "highest"
+}
