@@ -238,20 +238,37 @@
                                 </StackPanel>
                                 <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here."/>
                                 <Border Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource StatusBadge}">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleModCount,Mode=OneWay}"/><Run Text=" shown · "/><Run Text="{Binding ModViewMode,Mode=OneWay}"/></TextBlock>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleModCount,Mode=OneWay}"/><Run Text=" shown · "/></TextBlock>
+                                        <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="All mods"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Enabled"><Setter Property="Text" Value="Enabled"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Staged"><Setter Property="Text" Value="Pending changes"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Updates"><Setter Property="Text" Value="Updates"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Issues"><Setter Property="Text" Value="Problems"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Revalidate"><Setter Property="Text" Value="Needs check"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Superseded"><Setter Property="Text" Value="Not currently used"/></DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
                                 </Border>
                             </Grid>
                             <Grid Grid.Row="1" Margin="0,12,0,0">
                                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="SMART VIEWS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
+                                    <TextBlock Text="FILTERS" Style="{StaticResource Eyebrow}" Margin="4,0,0,5"/>
                                     <WrapPanel>
                                             <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" ToolTip="Show every mod in this library."/>
                                             <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" ToolTip="Show mods that are enabled in the pending setup."/>
                                             <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" ToolTip="Show only unapplied changes."/>
                                             <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" ToolTip="Show mods with detected Nexus updates."/>
-                                            <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" ToolTip="Show persisted crash/GPU suspects."/>
-                                            <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" ToolTip="Show version-sensitive mods that need revalidation after a game update."/>
+                                            <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" ToolTip="Show mods with saved crash or graphics-problem evidence."/>
+                                            <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" ToolTip="Show mods that should be checked again after a game update."/>
                                             <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" ToolTip="Show enabled mods whose files are completely replaced by other enabled mods."/>
                                     </WrapPanel>
                                 </StackPanel>
@@ -509,9 +526,9 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="ARMOR" Binding="{Binding Armor}" Width="1.8*"/>
                             <DataGridTextColumn Header="MODEL" Binding="{Binding ModelId}" Width="110"/>
-                            <DataGridTextColumn Header="MODS" Binding="{Binding Available}" Width="90"/>
+                            <DataGridTextColumn Header="OPTIONS" Binding="{Binding Available}" Width="90"/>
                             <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="2*"/>
-                            <DataGridTextColumn Header="WINNING PIECES" Binding="{Binding WinningPieces}" Width="1.4*"/>
+                            <DataGridTextColumn Header="USED PIECES" Binding="{Binding WinningPieces}" Width="1.4*"/>
                             <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -527,21 +544,21 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Needs attention" Style="{StaticResource PageTitle}"/>
                                 <Border Margin="12,5,0,0" Padding="8,3" CornerRadius="11" Background="#2B2114" BorderBrush="#59401F" BorderThickness="1" VerticalAlignment="Top">
-                                    <TextBlock Foreground="{StaticResource Warn}" FontSize="11" FontWeight="Bold"><Run Text="{Binding BlockerCount,Mode=OneWay}"/><Run Text=" conflicts • "/><Run Text="{Binding IssueCount,Mode=OneWay}"/><Run Text=" suspects"/></TextBlock>
+                                    <TextBlock Foreground="{StaticResource Warn}" FontSize="11" FontWeight="Bold"><Run Text="{Binding BlockerCount,Mode=OneWay}"/><Run Text=" conflicts • "/><Run Text="{Binding IssueCount,Mode=OneWay}"/><Run Text=" problem clues"/></TextBlock>
                                 </Border>
                             </StackPanel>
-                            <TextBlock Text="Conflict choices and launch/crash suspects live here. Suspect marks never disable or delete a mod; they are evidence to help you find the culprit." Style="{StaticResource PageSubtitle}"/>
+                            <TextBlock Text="Review mod conflicts and clues from recent crashes. Problem marks never disable or delete a mod; they only help you narrow down what to check." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Report game crash" Command="{Binding ReportGameCrashCommand}" ToolTip="Rank mods from the last modded launch against the previous successful launch."/>
-                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource AttentionButton}" ToolTip="Use after ERR12 / graphics-device / renderer failure. Texture-heavy newly changed mods receive additional suspicion weight."/>
+                            <Button Content="Report game crash" Command="{Binding ReportGameCrashCommand}" ToolTip="Record that the game crashed so the manager can compare recently changed mods with the last successful launch."/>
+                            <Button Content="Report GPU/graphics crash" Command="{Binding ReportGpuGraphicsCrashCommand}" Style="{StaticResource AttentionButton}" ToolTip="Record a graphics-related crash so recently changed graphics and texture mods can be checked first."/>
                         </StackPanel>
                     </Grid>
 
                     <Border Grid.Row="1" Margin="0,18,0,12" Style="{StaticResource Card}" Padding="12">
                         <StackPanel>
                             <TextBlock Text="Suspected problem mods" FontWeight="SemiBold"/>
-                            <TextBlock Margin="0,3,0,8" Foreground="{StaticResource Muted}" FontSize="11" Text="Automatically populated after an observed startup failure, or when you report a later game/GPU crash. Higher scores mean stronger evidence, not certainty." TextWrapping="Wrap"/>
+                            <TextBlock Margin="0,3,0,8" Foreground="{StaticResource Muted}" FontSize="11" Text="Added after a failed startup or a crash you report. Stronger evidence means a mod is worth checking first, but it does not prove the mod caused the crash." TextWrapping="Wrap"/>
                             <ItemsControl ItemsSource="{Binding IssueSuspects}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -555,13 +572,13 @@
                                                 <TextBlock Grid.Column="1" Text="{Binding ConfidenceLabel}" Foreground="{StaticResource Warn}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                                 <StackPanel Grid.Column="2" VerticalAlignment="Center"><TextBlock Text="{Binding FailureLabel}"/><TextBlock Text="{Binding LastSeen}" Foreground="{StaticResource Muted}" FontSize="10"/></StackPanel>
                                                 <TextBlock Grid.Column="3" Text="{Binding Reason}" TextWrapping="Wrap" Foreground="#D0D5DB" FontSize="10" VerticalAlignment="Center" Margin="8,0"/>
-                                                <Button Grid.Column="4" Content="Clear mark" Command="{Binding DataContext.ClearIssueSuspectCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding ModId}" Style="{StaticResource QuietButton}" VerticalAlignment="Center" ToolTip="Dismiss this suspect mark only; no mod state or files are changed."/>
+                                                <Button Grid.Column="4" Content="Clear mark" Command="{Binding DataContext.ClearIssueSuspectCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding ModId}" Style="{StaticResource QuietButton}" VerticalAlignment="Center" ToolTip="Remove this problem clue. The mod and game files are not changed."/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Good}" FontSize="11" Text="No suspect mods are currently flagged.">
+                            <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Good}" FontSize="11" Text="No mods are currently flagged for investigation.">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -580,7 +597,7 @@
                             <DataGridTextColumn Header="FILES" Binding="{Binding FileCountLabel}" Width="70"/>
                             <DataGridTextColumn Header="AFFECTED CONTENT" Binding="{Binding Scope}" Width="2.2*"/>
                             <DataGridTextColumn Header="WHAT'S HAPPENING" Binding="{Binding Explanation}" Width="3*"/>
-                            <DataGridTextColumn Header="AUTOMATION CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
+                            <DataGridTextColumn Header="CONFIDENCE" Binding="{Binding ConfidenceLabel}" Width="135"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <Border>
@@ -605,7 +622,9 @@
                         <StackPanel>
                             <TextBlock Text="Choose which mod should win" FontWeight="SemiBold"/>
                             <TextBlock Text="Use a single winner when these mods are alternatives. If one is the main mod and the others are add-ons, tell the manager that relationship instead so they can work together." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding SelectedConflict.Evidence}" Foreground="{StaticResource Muted}" FontSize="10" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                            <Expander Header="Technical details" Margin="0,0,0,10" Foreground="{StaticResource Muted}">
+                                <TextBlock Margin="0,8,0,0" Text="{Binding SelectedConflict.Evidence}" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap"/>
+                            </Expander>
                             <ItemsControl ItemsSource="{Binding SelectedConflict.Options}">
                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -618,7 +637,7 @@
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="205"/>
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
                                                 <Button Content="Use This Mod" Margin="0,0,0,6" Command="{Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" Style="{StaticResource PrimaryButton}"/>
-                                                <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Persist this as the family main and attach the other conflicting packages as optional/component children."/>
+                                                <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Remember that this is the main mod and the other packages are add-ons that belong with it."/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
@@ -634,15 +653,15 @@
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <StackPanel>
                         <TextBlock Text="Profiles" Style="{StaticResource PageTitle}"/>
-                        <TextBlock Text="Save complete loadouts and stage them later without losing your current setup." Style="{StaticResource PageSubtitle}"/>
+                        <TextBlock Text="Save a complete mod setup and switch back to it later without rebuilding it by hand." Style="{StaticResource PageSubtitle}"/>
                     </StackPanel>
                     <Border Grid.Row="1" Margin="0,20,0,12" Style="{StaticResource Card}" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding NewProfileName}" AutomationProperties.Name="New profile name" ToolTip="Name for the loadout you are about to save."/>
-                            <Button Grid.Column="1" Margin="8,0,0,0" Content="Save current" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
+                            <TextBox Text="{Binding NewProfileName}" AutomationProperties.Name="New profile name" ToolTip="Name for the mod setup you are about to save."/>
+                            <Button Grid.Column="1" Margin="8,0,0,0" Content="Save Current Setup" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                <Button Content="Stage selected" Command="{Binding StageProfileCommand}"/>
+                                <Button Content="Use Selected Profile" Command="{Binding StageProfileCommand}"/>
                                 <Button Content="Refresh" Command="{Binding RefreshProfilesCommand}" Style="{StaticResource QuietButton}"/>
                             </StackPanel>
                         </Grid>
@@ -664,7 +683,7 @@
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="No saved profiles yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Name the current loadout above, then choose Save current."/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Name your current mod setup above, then choose Save Current Setup."/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -692,7 +711,7 @@
                                 <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding State}" Width="120"/>
                                 <DataGridTextColumn Header="ACTION" Binding="{Binding Description}" Width="2.5*"/>
-                                <DataGridTextColumn Header="TECHNICAL ID" Binding="{Binding Id}" Width="250"/>
+                                <DataGridTextColumn Header="SUPPORT ID" Binding="{Binding Id}" Width="250"/>
                             </DataGrid.Columns>
                         </DataGrid>
                         <Border>
@@ -704,11 +723,11 @@
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="No activity recorded yet" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Transactions, recovery operations, and diagnostics will appear here."/>
+                                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="Applied changes, restores, and support actions will appear here."/>
                             </StackPanel>
                         </Border>
                     </Grid>
-                    <TextBlock Grid.Row="2" Foreground="{StaticResource Muted}" FontSize="11" Text="Support bundles contain logs, state summaries, and diagnostics—not your mod blobs or large game assets."/>
+                    <TextBlock Grid.Row="2" Foreground="{StaticResource Muted}" FontSize="11" Text="Support bundles contain logs and troubleshooting details, not your mod files or large game files."/>
                 </Grid>
             </TabItem>
 
