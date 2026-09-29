@@ -1,0 +1,14 @@
+{
+  "id": "000-000-chatgpt-20260929-1055-actions-api-diag-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "\n$ErrorActionPreference='Stop'\n$credText = (\"protocol=https\" + [Environment]::NewLine + \"host=github.com\" + [Environment]::NewLine + [Environment]::NewLine) | git credential fill\n$tokenLine = $credText | Where-Object { $_ -like 'password=*' } | Select-Object -First 1\nif (-not $tokenLine) { throw 'Git credential manager did not return a GitHub credential.' }\n$token = $tokenLine.Substring(9)\n$headers = @{ Authorization = \"Bearer $token\"; Accept = \"application/vnd.github+json\"; \"X-GitHub-Api-Version\" = \"2026-03-10\" }\nfunction Get-Api([string]$Label,[string]$Uri) {\n  Write-Output (\"=== \" + $Label + \" ===\")\n  try { (Invoke-RestMethod -Method Get -Headers $headers -Uri $Uri) | ConvertTo-Json -Depth 12 -Compress }\n  catch { Write-Output (\"HTTP_ERROR=\" + $_.Exception.Response.StatusCode.value__ + \" \" + $_.Exception.Message) }\n}\nGet-Api 'ACTIONS_PERMISSIONS' 'https://api.github.com/repos/fengie/mhw-mods/actions/permissions'\nGet-Api 'WORKFLOW_PERMISSIONS' 'https://api.github.com/repos/fengie/mhw-mods/actions/permissions/workflow'\nGet-Api 'BILLING_USAGE' 'https://api.github.com/users/fengie/settings/billing/usage?year=2026&month=9'\nGet-Api 'RUN_JOBS' 'https://api.github.com/repos/fengie/mhw-mods/actions/runs/36555405939/jobs'\n",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T10:55:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
