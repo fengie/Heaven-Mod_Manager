@@ -24,17 +24,23 @@ public sealed partial class MainWindowViewModel
             if(hasFomod)
             {
                 var preparation=await s.Importer.PrepareFomodAsync(dlg.FileName,ct);
-                var chooser=new FomodInstallerWindow(preparation.Installer,s.Paths.Game)
+                try
                 {
-                    Owner=Application.Current.MainWindow
-                };
-                if(chooser.ShowDialog()!=true)
+                    var chooser=new FomodInstallerWindow(preparation.Installer,s.Paths.Game)
+                    {
+                        Owner=Application.Current.MainWindow
+                    };
+                    if(chooser.ShowDialog()!=true)
+                    {
+                        StatusText="FOMOD import canceled; the source archive was left untouched.";
+                        return;
+                    }
+                    imported=await s.Importer.CommitFomodAsync(preparation,chooser.SelectedOptions,s.Paths.Game,ct);
+                }
+                finally
                 {
                     await s.Importer.CancelFomodAsync(preparation);
-                    StatusText="FOMOD import canceled; the source archive was left untouched.";
-                    return;
                 }
-                imported=await s.Importer.CommitFomodAsync(preparation,chooser.SelectedOptions,s.Paths.Game,ct);
             }
             else imported=await s.Importer.ImportAsync(dlg.FileName,ct);
 
