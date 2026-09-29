@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-cycle-state-20260929-1135-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:35:00Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control",
+    "timeout_seconds": 120,
+    "command": "$p='C:\\\\Users\\\\Xxkan\\\\agent-control-panel\\\\tools\\\\agent-control\\\\data\\\\cycles\\\\cycle-20260929113159-gekqi.json'; if(Test-Path $p){Get-Content -LiteralPath $p -Raw}else{throw 'cycle state missing'}"
+  },
+  "priority": "highest"
+}
