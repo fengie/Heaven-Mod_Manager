@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104900-canonicalized-branch-cleanup-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:49:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:33:49.366922+00:00",
+  "finished_at": "2026-09-29T11:33:56.620048+00:00",
+  "stdout": "{\r\n    \"main\":  \"4577cd5f9c28b7e1a0720652cb6959708ad7df25\",\r\n    \"deleted\":  [\r\n\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"active_worktrees\":  [\r\n                             \"main\",\r\n                             \"agent/security-authorization-20260929\",\r\n                             \"audit/complete-workflows-current-main-20260929\",\r\n                             \"reconcile/smart-pack-current-main-20260929\",\r\n                             \"agent/federation-registry-20260929\",\r\n                             \"integration/final-main-reconcile-20260929\",\r\n                             \"converge/final-v886-20260929b\",\r\n                             \"integration/release-lead-20260929-0543\",\r\n                             \"converge/main-20260929\",\r\n                             \"integration/pr90-reconcile-20260929\",\r\n                             \"agent/auto-updater-publication-fix-20260928\",\r\n                             \"integration/pr90-reconcile-local-20260929\",\r\n                             \"release/v8.8.5-20260929\",\r\n                             \"fix/v8.8.5-installed-label-trace\",\r\n                             \"agent/verification-reliability-20260929\"\r\n                         ],\r\n    \"remaining\":  [\r\n                      \"origin\",\r\n                      \"origin/codex/complete-mod-workflows\",\r\n                      \"origin/heaven-bridge\",\r\n                      \"origin/integration/complete-mod-workflows-final-20260929\",\r\n                      \"origin/main\"\r\n                  ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   fc8ac424..4577cd5f  main          -> origin/main\n   d6b0c704..7145d1f9  heaven-bridge -> origin/heaven-bridge\nFrom https://github.com/fengie/mhw-mods\n   7145d1f9..d8f497d2  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104900-canonicalized-branch-cleanup-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104900-canonicalized-branch-cleanup-a1.stderr.log",
+    "stdout_bytes": 1522,
+    "stderr_bytes": 254,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "02cabbd2d8825d884b87565eb5b3272f7d100a50b156b5c079d3763354ac9195"
+}
