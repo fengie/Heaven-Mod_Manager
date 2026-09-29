@@ -79,7 +79,8 @@ function Get-UpdaterBuildFromTag {
 function Test-UpdaterReleaseRelevantPath {
   param([Parameter(Mandatory=$true)][string]$Path)
   $normalized=$Path.Replace('\','/').TrimStart('/')
-  foreach($prefix in @('src/','tests/','data/','docs/','scripts/','.github/workflows/','legacy-v7/')){
+  if([string]::Equals($normalized,'.github/workflows/windows-release-gate.yml',[StringComparison]::OrdinalIgnoreCase)){return $true}
+  foreach($prefix in @('src/','tests/','data/','docs/','scripts/','legacy-v7/')){
     if($normalized.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){return $true}
   }
 
