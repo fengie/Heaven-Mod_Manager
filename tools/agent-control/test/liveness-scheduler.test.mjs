@@ -40,6 +40,16 @@ test("fresh managed heartbeat is live and tool_wait remains live", () => {
   assert.equal(waiting.effectiveState, "tool_wait");
 });
 
+test("managed records without heartbeat evidence fail closed as disconnected", () => {
+  const missing = managedAgentLiveness({
+    status: "running"
+  }, { now: T, staleAfterMs: 60_000, disconnectedAfterMs: 180_000 });
+  assert.equal(missing.freshness, "disconnected");
+  assert.equal(missing.effectiveState, "disconnected");
+  assert.equal(missing.heartbeatAgeMs, null);
+  assert.equal(missing.live, false);
+});
+
 test("stale and disconnected thresholds exclude managed agents from live counts", () => {
   const stale = managedAgentLiveness({
     status: "running",
@@ -65,6 +75,18 @@ test("done and failed managed records are historical and never live", () => {
     assert.equal(result.historical, true);
     assert.equal(result.live, false);
   }
+});
+
+test("capacity does not count a managed record without heartbeat evidence", () => {
+  const current = state();
+  current.agents.push({ id: "missing-heartbeat", status: "running" });
+  assert.deepEqual(deploymentBatchCapacity(current, 1, 1, { now: T }), {
+    count: 1,
+    active: 0,
+    maximum: 1,
+    available: 1,
+    allowed: true
+  });
 });
 
 test("capacity counts only presently live managed agents", () => {
