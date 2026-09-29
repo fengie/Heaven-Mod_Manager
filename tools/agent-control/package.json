@@ -1,7 +1,7 @@
 {
   "name": "heaven-agent-control",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "description": "Federated engineering control plane for the MHW coding-agent swarm.",
   "scripts": {
