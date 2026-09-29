@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-perf-benchmark-progress-002",
-  "state": "running",
+  "state": "completed",
   "action": "job_output_read",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:22:56.500412+00:00"
+  "updated_at": "2026-09-29T16:23:09.495791+00:00",
+  "exit_code": 0
 }
