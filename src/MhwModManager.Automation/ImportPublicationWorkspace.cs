@@ -32,32 +32,53 @@ internal static class ImportPublicationWorkspace
         return Path.Combine(RootFor(modsRoot), $"{kind}-{Guid.NewGuid():N}");
     }
 
-    public static void Publish(string staging, string destination)
+    public static void Publish(string modsRoot, string staging, string destination)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var stagingFull = Path.GetFullPath(staging);
-        var destinationFull = Path.GetFullPath(destination);
+        var fullModsRoot = Path.GetFullPath(modsRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var workspaceRoot = Path.GetFullPath(RootFor(modsRoot)).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var stagingFull = Path.GetFullPath(staging).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var destinationFull = Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(stagingFull), workspaceRoot))
+            throw new InvalidDataException("Import staging path is not a direct child of the manager-owned import workspace.");
+        if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(destinationFull), fullModsRoot))
+            throw new InvalidDataException("Import destination is not a direct child of ModsRoot.");
         if (!Directory.Exists(stagingFull))
             throw new DirectoryNotFoundException($"Import staging directory is missing: {stagingFull}");
+        if ((File.GetAttributes(stagingFull) & FileAttributes.ReparsePoint) != 0)
+            throw new InvalidDataException($"Import staging directory cannot be a symbolic link or reparse point: {stagingFull}");
         if (Directory.Exists(destinationFull) || File.Exists(destinationFull))
             throw new IOException($"Import destination already exists: {destinationFull}");
         if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetPathRoot(stagingFull), Path.GetPathRoot(destinationFull)))
             throw new IOException("Import staging and destination must be on the same volume.");
 
-        Directory.CreateDirectory(Path.GetDirectoryName(destinationFull)!);
+        Directory.CreateDirectory(fullModsRoot);
         Directory.Move(stagingFull, destinationFull);
     }
 
-    public static void Cleanup(string? staging)
+    public static void Cleanup(string modsRoot, string? staging)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (string.IsNullOrWhiteSpace(staging) || !Directory.Exists(staging)) return;
+        if (string.IsNullOrWhiteSpace(staging)) return;
         try
         {
-            var attributes = File.GetAttributes(staging);
-            Directory.Delete(staging, (attributes & FileAttributes.ReparsePoint) == 0);
+            var workspaceRoot = Path.GetFullPath(RootFor(modsRoot)).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var candidate = Path.GetFullPath(staging).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(candidate), workspaceRoot))
+            {
+                MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing to delete non-workspace import path: {candidate}");
+                return;
+            }
+            if (!Directory.Exists(candidate)) return;
+            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
+            {
+                MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing recursive cleanup of reparse import workspace: {candidate}");
+                return;
+            }
+            Directory.Delete(candidate, true);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex)
         {
             MasterDebugLog.Write(
                 "IMPORT-CLEANUP",
