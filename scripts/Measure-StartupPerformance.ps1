@@ -3,7 +3,7 @@ param(
     [int]$WarmIterations = 3,
     [int]$ModCount = 80,
     [int]$FilesPerMod = 25,
-    [int]$TimeoutSeconds = 120,
+    [int]$TimeoutSeconds = 300,
     [string]$RepositoryRoot = '',
     [string]$OutputPath = ''
 )
@@ -73,7 +73,34 @@ function Wait-StartupReport([string]$ToolRoot, [Diagnostics.Process]$Process, [i
         }
         Start-Sleep -Milliseconds 200
     }
-    throw "Timed out after $Timeout seconds waiting for a completed startup diagnostic report."
+    $context = 'no startup diagnostic report was created'
+    $logRoot = Join-Path $ToolRoot 'StartupLogs'
+    if (Test-Path -LiteralPath $logRoot) {
+        $latest = Get-ChildItem -LiteralPath $logRoot -Filter 'startup-*.json' -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+        if ($latest) {
+            try {
+                $json = Get-Content -LiteralPath $latest.FullName -Raw | ConvertFrom-Json
+                $last = @($json.entries | Select-Object -Last 1)
+                if ($last.Count -gt 0) {
+                    $context = "overall=$($json.overall); lastEntry=$($last[0].name); lastStatus=$($last[0].status); lastMs=$($last[0].milliseconds)"
+                } else {
+                    $context = "overall=$($json.overall); entries=0"
+                }
+            } catch {
+                $context = "latest report could not be parsed: $($latest.FullName)"
+            }
+        }
+        $textLog = Get-ChildItem -LiteralPath $logRoot -Filter 'startup-*.log' -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+        if ($textLog) {
+            $tail = (Get-Content -LiteralPath $textLog.FullName -Tail 8 -ErrorAction SilentlyContinue) -join ' | '
+            if ($tail) { $context += "; textTail=$tail" }
+        }
+    }
+    throw "Timed out after $Timeout seconds waiting for a completed startup diagnostic report. $context"
 }
 
 function Get-StageMs($Report, [string]$Name) {
@@ -174,7 +201,14 @@ $appExe = Get-AppExe
 $appDir = Split-Path -Parent $appExe
 $packageBytes = (Get-ChildItem -LiteralPath $appDir -File -Recurse | Measure-Object -Property Length -Sum).Sum
 
-$fixtureRoot = Join-Path $env:RUNNER_TEMP ('mhw-startup-perf-' + [Guid]::NewGuid().ToString('N'))
+$tempRoot = if (-not [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
+    $env:RUNNER_TEMP
+} elseif (-not [string]::IsNullOrWhiteSpace($env:TEMP)) {
+    $env:TEMP
+} else {
+    [IO.Path]::GetTempPath()
+}
+$fixtureRoot = Join-Path $tempRoot ('mhw-startup-perf-' + [Guid]::NewGuid().ToString('N'))
 $gameRoot = Join-Path $fixtureRoot 'game'
 $sourceMods = Join-Path $fixtureRoot 'fixture-mods'
 New-Item -ItemType Directory -Force -Path $fixtureRoot | Out-Null
