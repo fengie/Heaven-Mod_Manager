@@ -11,8 +11,10 @@ export const HEAVEN_BRIDGE_HOST = "heaven";
 export const HEAVEN2_BRIDGE_HOST = "heaven2";
 export const DEFAULT_CONTROL_HOST = HEAVEN2_BRIDGE_HOST;
 export const DEFAULT_HEARTBEAT_MAX_AGE_MS = 10 * 60_000;
+export const DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS = 30_000;
 export const DEFAULT_RESULT_TIMEOUT_MS = 2 * 60 * 60_000;
 const DEFAULT_RELAY_REPOSITORY = "fengie/mhw-mods";
+const heartbeatRefreshAttempts = new Map();
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -201,7 +203,8 @@ function heartbeatAssessment(heartbeat, {
 
 async function syncUnlocked(relayDir, {
   expectedRepository = DEFAULT_RELAY_REPOSITORY,
-  pull = true
+  pull = true,
+  requireClean = pull
 } = {}) {
   if (!relayDir || !fs.existsSync(relayDir)) {
     throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is not configured to an existing dedicated relay checkout.");
@@ -214,9 +217,11 @@ async function syncUnlocked(relayDir, {
   if (!remoteMatchesExpected(remote, expectedRepository)) {
     throw new Error("Dedicated Heaven relay checkout origin is not the expected private repository.");
   }
-  const dirty = await git(relayDir, ["status", "--porcelain"]);
-  if (dirty) {
-    throw new Error("Dedicated Heaven relay checkout is dirty; refusing to mix unrelated changes into relay traffic.");
+  if (requireClean) {
+    const dirty = await git(relayDir, ["status", "--porcelain"]);
+    if (dirty) {
+      throw new Error("Dedicated Heaven relay checkout is dirty; refusing to mix unrelated changes into relay traffic.");
+    }
   }
   if (pull) {
     await git(relayDir, ["fetch", "origin", HEAVEN_BRIDGE_BRANCH]);
@@ -224,11 +229,49 @@ async function syncUnlocked(relayDir, {
   }
 }
 
+export function bridgeMachineStatus(health) {
+  if (health?.healthy) return "online";
+  if (health?.configured === false) return "not-configured";
+  return "presence-unknown";
+}
+
+export function shouldRefreshHeartbeat(assessment, {
+  sync = false,
+  now = Date.now(),
+  lastAttemptAt = 0,
+  cooldownMs = DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS
+} = {}) {
+  if (sync || assessment?.healthy) return false;
+  if (!["heartbeat-missing", "heartbeat-stale"].includes(String(assessment?.reason || ""))) return false;
+  const current = Number(now);
+  const previous = Number(lastAttemptAt) || 0;
+  const cooldown = Math.max(1_000, Number(cooldownMs) || DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS);
+  return Number.isFinite(current) && current - previous >= cooldown;
+}
+
+function heartbeatRepoPaths(host = HEAVEN_BRIDGE_HOST) {
+  const normalized = normalizeBridgeHost(host);
+  const paths = [`heaven-bridge/status/hosts/${normalized}/heartbeat.json`];
+  if (normalized === HEAVEN_BRIDGE_HOST) paths.push("heaven-bridge/status/heartbeat.json");
+  return paths;
+}
+
+async function readHeartbeatFromRef(relayDir, host, ref = `origin/${HEAVEN_BRIDGE_BRANCH}`) {
+  for (const repoPath of heartbeatRepoPaths(host)) {
+    try {
+      const raw = await git(relayDir, ["show", `${ref}:${repoPath}`]);
+      return JSON.parse(raw);
+    } catch {}
+  }
+  return null;
+}
+
 export async function inspectHeavenBridge({
   host = HEAVEN_BRIDGE_HOST,
   relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY,
   maxAgeMs = Number(process.env.AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS || DEFAULT_HEARTBEAT_MAX_AGE_MS),
+  refreshCooldownMs = Number(process.env.AGENT_CONTROL_HEAVEN_HEALTH_REFRESH_COOLDOWN_MS || DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS),
   now = Date.now(),
   sync = true
 } = {}) {
@@ -238,19 +281,56 @@ export async function inspectHeavenBridge({
   }
   try {
     return await withRelayLock(relayDir, async () => {
-      await syncUnlocked(relayDir, { expectedRepository, pull: sync });
-      const file = resolveHeartbeatPath(relayDir, targetHost);
-      if (!fs.existsSync(file)) {
-        return { configured: true, healthy: false, reason: "heartbeat-missing", machine: targetHost };
+      await syncUnlocked(relayDir, { expectedRepository, pull: sync, requireClean: sync });
+
+      const assessLocal = () => {
+        const file = resolveHeartbeatPath(relayDir, targetHost);
+        if (!fs.existsSync(file)) {
+          return { healthy: false, reason: "heartbeat-missing", heartbeat: null };
+        }
+        return heartbeatAssessment(readJson(file), { now, maxAgeMs, expectedHost: targetHost });
+      };
+
+      let assessment = assessLocal();
+      let evidence = "local-checkout";
+      let refreshAttempted = false;
+      let refreshError = null;
+
+      const refreshKey = `${path.resolve(relayDir)}\0${targetHost}`;
+      const lastAttemptAt = heartbeatRefreshAttempts.get(refreshKey) || 0;
+      if (shouldRefreshHeartbeat(assessment, {
+        sync,
+        now,
+        lastAttemptAt,
+        cooldownMs: refreshCooldownMs
+      })) {
+        refreshAttempted = true;
+        heartbeatRefreshAttempts.set(refreshKey, Number(now));
+        try {
+          await git(relayDir, ["fetch", "origin", HEAVEN_BRIDGE_BRANCH]);
+          const remoteHeartbeat = await readHeartbeatFromRef(relayDir, targetHost);
+          if (remoteHeartbeat) {
+            assessment = heartbeatAssessment(remoteHeartbeat, { now, maxAgeMs, expectedHost: targetHost });
+            evidence = "remote-tracking-ref";
+          } else {
+            assessment = { healthy: false, reason: "heartbeat-missing", heartbeat: null };
+            evidence = "remote-tracking-ref";
+          }
+        } catch (error) {
+          refreshError = error?.message || String(error);
+        }
       }
-      const assessment = heartbeatAssessment(readJson(file), { now, maxAgeMs, expectedHost: targetHost });
+
       return {
         configured: true,
         healthy: assessment.healthy,
         reason: assessment.reason,
         machine: targetHost,
         protocol: HEAVEN_BRIDGE_PROTOCOL,
-        heartbeat: assessment.heartbeat
+        heartbeat: assessment.heartbeat,
+        evidence,
+        refresh_attempted: refreshAttempted,
+        refresh_error: refreshError
       };
     });
   } catch (error) {
@@ -259,7 +339,8 @@ export async function inspectHeavenBridge({
       healthy: false,
       reason: error?.message || String(error),
       machine: targetHost,
-      protocol: HEAVEN_BRIDGE_PROTOCOL
+      protocol: HEAVEN_BRIDGE_PROTOCOL,
+      evidence: "inspection-error"
     };
   }
 }
