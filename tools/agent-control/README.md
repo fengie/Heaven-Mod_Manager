@@ -28,6 +28,7 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
   - observed `agent/*`, `support/*`, `feature/*`, `ui/*`, and `integration/*` branches
 - Tracks PID, machine, role, task, priority, branch, base branch, lease, timestamps, JSONL output, and final Codex output.
 - Enforces local worker capacity from fresh managed liveness only; stale, disconnected, done, and failed records do not consume live slots.
+- Keeps a continuously armed multi-worker recovery pool (4 slots by default) during swarm execution. Failed, interrupted, or orphaned lanes are claimed immediately while healthy workers continue; each failed lineage has a single active recovery owner, replacement workers inherit the preserved branch/worktree/task evidence, and the pool remains bounded by configured recovery capacity and retry limits.
 - Lets you stop a managed worker.
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
