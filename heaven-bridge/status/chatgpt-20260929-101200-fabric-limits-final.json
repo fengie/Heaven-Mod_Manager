@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-101200-fabric-limits-final",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:10:27.069949+00:00"
+  "updated_at": "2026-09-29T10:10:35.225964+00:00",
+  "exit_code": 0
 }
