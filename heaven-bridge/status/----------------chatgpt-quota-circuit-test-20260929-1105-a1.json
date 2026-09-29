@@ -1,9 +1,10 @@
 {
   "id": "----------------chatgpt-quota-circuit-test-20260929-1105-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:10:23.276854+00:00"
+  "updated_at": "2026-09-29T11:10:51.133634+00:00",
+  "exit_code": 1
 }
