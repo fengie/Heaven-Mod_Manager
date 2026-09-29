@@ -1,0 +1,28 @@
+{
+  "id": "release-20260929-0822-bridge-bootstrap-session",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:22:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:21:51.810251+00:00",
+  "finished_at": "2026-09-29T08:21:51.819977+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "data": {
+    "session_id": "0952f8c655fd4614",
+    "pid": 93744,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "& 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T08:21:51.819977+00:00",
+    "last_activity_at": "2026-09-29T08:21:51.819977+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 600,
+    "max_runtime_seconds": 1200,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\0952f8c655fd4614.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\0952f8c655fd4614.err.log"
+  },
+  "job_hash": "ccf6d2ef1ee24cb9eb55efd962eba4903c80b9011dca1cec45aad31c0a47f4b5"
+}
