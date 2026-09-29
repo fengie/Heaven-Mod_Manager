@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-perf-diagnose-timeout-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$roots=@()\nif($env:RUNNER_TEMP -and (Test-Path -LiteralPath $env:RUNNER_TEMP)){\n  $roots += Get-ChildItem -LiteralPath $env:RUNNER_TEMP -Directory -Filter 'mhw-startup-perf-*' -ErrorAction SilentlyContinue\n}\n$roots += Get-ChildItem -LiteralPath $env:TEMP -Directory -Filter 'mhw-startup-perf-*' -ErrorAction SilentlyContinue\n$root=$roots | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1\nif(-not $root){throw 'No startup performance fixture root found'}\nWrite-Output (\"FIXTURE_ROOT=\"+$root.FullName)\nGet-ChildItem -LiteralPath $root.FullName -Directory | Sort-Object Name | ForEach-Object {\n  Write-Output (\"DIR=\"+$_.FullName)\n  $sl=Join-Path $_.FullName 'StartupLogs'\n  if(Test-Path -LiteralPath $sl){\n    Get-ChildItem -LiteralPath $sl -File | Sort-Object LastWriteTimeUtc | ForEach-Object {\n      Write-Output (\"STARTUP_FILE=\"+$_.FullName+\" SIZE=\"+$_.Length)\n      if($_.Extension -in '.log','.json'){\n        Write-Output '---TAIL---'\n        Get-Content -LiteralPath $_.FullName -Tail 80 -ErrorAction SilentlyContinue\n      }\n    }\n  }\n  $ml=Join-Path $_.FullName 'MHW-DEBUG-ALL.log'\n  if(Test-Path -LiteralPath $ml){\n    Write-Output (\"MASTER_LOG=\"+$ml)\n    Get-Content -LiteralPath $ml -Tail 120\n  }\n}",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:24:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
