@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T155945Z-gui-screenshot-01",
+  "state": "running",
+  "action": "screenshot",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:59:24.746365+00:00"
+}
