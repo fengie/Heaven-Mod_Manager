@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-1413-shortcut-health",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "health",
+  "params": {},
+  "created_at": "2026-09-29T14:13:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
