@@ -217,6 +217,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     public async Task InitializeAsync()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("startup.ui","Loading library","Reading indexed state and conflict graph…",false,async ct=>
         {
             await ReloadMods(ct);
@@ -228,11 +229,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     partial void OnSelectedTabChanged(int value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
         if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
     }
 
     private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={tab}");
         try
         {
             await deferredPageGate.WaitAsync(ct);
