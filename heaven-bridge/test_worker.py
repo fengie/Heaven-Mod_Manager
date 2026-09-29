@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import tempfile
 import threading
@@ -221,7 +222,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 4)
+        self.assertEqual(result["data"]["worker_version"], 5)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
@@ -242,6 +243,131 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertFalse(result["data"]["features"]["secret_input"]["relay_secret_values_allowed"])
         self.assertTrue(result["data"]["features"]["uia"]["set_value_requires_relay_opt_in"])
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
+
+    def test_secret_channel_is_not_advertised_without_encrypted_inbox(self):
+        with tempfile.TemporaryDirectory() as td:
+            with patch.dict(
+                os.environ,
+                {
+                    "HEAVEN_BRIDGE_SECRET_INBOX": td,
+                    "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "0",
+                    "COMPUTERNAME": "heaven",
+                },
+            ):
+                result = hb.run_job(
+                    "health-secret-off",
+                    {"action": "health", "params": {}},
+                    threading.Event(),
+                )
+        self.assertFalse(result["data"]["features"]["secret_input"]["available"])
+        self.assertNotIn("gui_type_secret", result["data"]["actions"])
+
+    def test_secret_type_consumes_once_without_relaying_canary(self):
+        canary = "CANARY-secret-never-persist-7f2b"
+        handle = "a" * 48
+        hwnd = 4242
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            consumed = root / "consumed"
+            inbox.mkdir()
+            now_utc = datetime.now(timezone.utc)
+            envelope = {
+                "schema": hb.SECRET_ENVELOPE_SCHEMA,
+                "handle": handle,
+                "destination": "heaven",
+                "purpose": hb.SECRET_PURPOSE,
+                "created_at": now_utc.isoformat(),
+                "expires_at": (now_utc + timedelta(seconds=120)).isoformat(),
+                "target_binding": hb.secret_target_binding(hwnd, "heaven"),
+                "value": canary,
+            }
+            (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+            relay_job = {
+                "id": "secret-canary-job",
+                "source": hb.PROTOCOL,
+                "action": "gui_type_secret",
+                "params": {"handle": handle, "hwnd": hwnd},
+                "created_at": now_utc.isoformat(),
+            }
+            self.assertNotIn(canary, hb.canonical_job(relay_job).decode("utf-8"))
+
+            env = {
+                "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+                "COMPUTERNAME": "heaven",
+            }
+            typed = {}
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed),                     patch.object(hb, "desktop_focus_window", return_value={"focused": True}),                     patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
+                health = hb.run_job("health-secret-on", {"action": "health", "params": {}}, threading.Event())
+                self.assertTrue(health["data"]["features"]["secret_input"]["available"])
+                self.assertIn("gui_type_secret", health["data"]["actions"])
+                result = hb.run_job("secret-canary-job", relay_job, threading.Event())
+
+                self.assertEqual(result["data"], {"consumed": True, "typed": True})
+                self.assertEqual(typed["value"], canary)
+                self.assertNotIn(canary, json.dumps(result))
+                self.assertFalse((inbox / f"{handle}.json").exists())
+                self.assertTrue((consumed / f"{handle}.used").exists())
+
+                # Re-creating the same handle cannot replay it after the local guard exists.
+                (inbox / f"{handle}.json").write_text(json.dumps(envelope), encoding="utf-8")
+                with self.assertRaises(hb.BridgeError) as replay:
+                    hb.run_job("secret-replay-job", {**relay_job, "id": "secret-replay-job"}, threading.Event())
+                self.assertEqual(replay.exception.code, "SECRET_REPLAYED")
+
+    def test_secret_envelope_ttl_destination_and_binding_fail_closed(self):
+        hwnd = 9191
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inbox = root / "inbox"
+            consumed = root / "consumed"
+            inbox.mkdir()
+            env = {
+                "HEAVEN_BRIDGE_SECRET_INBOX": str(inbox),
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+                "COMPUTERNAME": "heaven",
+            }
+
+            def write_envelope(handle, *, destination="heaven", binding=None, created=None, expires=None):
+                created = created or datetime.now(timezone.utc)
+                expires = expires or (created + timedelta(seconds=120))
+                doc = {
+                    "schema": hb.SECRET_ENVELOPE_SCHEMA,
+                    "handle": handle,
+                    "destination": destination,
+                    "purpose": hb.SECRET_PURPOSE,
+                    "created_at": created.isoformat(),
+                    "expires_at": expires.isoformat(),
+                    "target_binding": binding or hb.secret_target_binding(hwnd, destination),
+                    "value": "hidden-value",
+                }
+                (inbox / f"{handle}.json").write_text(json.dumps(doc), encoding="utf-8")
+
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed):
+                expired_handle = "b" * 48
+                created = datetime.now(timezone.utc) - timedelta(minutes=3)
+                write_envelope(expired_handle, created=created, expires=created + timedelta(seconds=60))
+                with self.assertRaises(hb.BridgeError) as expired:
+                    hb.consume_secret_envelope(expired_handle, hwnd)
+                self.assertEqual(expired.exception.code, "SECRET_EXPIRED")
+
+                destination_handle = "c" * 48
+                write_envelope(destination_handle, destination="heaven2")
+                with self.assertRaises(hb.BridgeError) as wrong_destination:
+                    hb.consume_secret_envelope(destination_handle, hwnd)
+                self.assertEqual(wrong_destination.exception.code, "SECRET_DESTINATION_MISMATCH")
+
+                binding_handle = "d" * 48
+                write_envelope(binding_handle, binding="0" * 64)
+                with self.assertRaises(hb.BridgeError) as wrong_binding:
+                    hb.consume_secret_envelope(binding_handle, hwnd)
+                self.assertEqual(wrong_binding.exception.code, "SECRET_TARGET_MISMATCH")
+
+    def test_secret_type_rejects_secret_values_in_relay_params(self):
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.desktop_type_secret({"handle": "e" * 48, "hwnd": 123, "value": "must-not-cross-github"})
+        self.assertEqual(ctx.exception.code, "SECRET_RELAY_VALUE_BLOCKED")
 
     def test_queue_order_prefers_control_then_priority_then_fifo(self):
         current = datetime(2026, 9, 29, 10, 4, tzinfo=timezone.utc)
