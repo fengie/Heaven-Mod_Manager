@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-updater-artifact-acquire-build60-61-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference='Stop'\n$root = Join-Path $env:TEMP 'mhw-updater-e2e-artifacts-60-61'\nif(Test-Path $root){Remove-Item -Recurse -Force $root}\nNew-Item -ItemType Directory -Path (Join-Path $root '60'),(Join-Path $root '61') | Out-Null\n$expected60='EF9A9352C64C71C1D17947D17129F9CE2835BA14F63110047750CFFDDBB87F2B'\n$expected61='C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420'\nfunction Get-ReleaseAsset([string]$tag,[string]$dest){\n  $gh=Get-Command gh -ErrorAction SilentlyContinue\n  if($gh){\n    & gh release download $tag --repo fengie/mhw-mods --pattern 'MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip' --dir $dest --clobber\n    if($LASTEXITCODE -eq 0){ return 'gh' }\n  }\n  $input = @\"\nprotocol=https\nhost=github.com\n\n\"@\n  $lines = $input | git credential fill\n  if($LASTEXITCODE -ne 0){ throw \"git credential fill failed for $tag\" }\n  $kv=@{}\n  foreach($line in $lines){ if($line -match '^([^=]+)=(.*)$'){ $kv[$matches[1]]=$matches[2] } }\n  if(-not $kv.ContainsKey('password') -or [string]::IsNullOrWhiteSpace($kv['password'])){ throw \"no opaque GitHub credential available for $tag\" }\n  $headers=@{ Authorization=\"Bearer $($kv['password'])\"; Accept='application/vnd.github+json'; 'X-GitHub-Api-Version'='2022-11-28' }\n  $rel=Invoke-RestMethod -Headers $headers -Uri \"https://api.github.com/repos/fengie/mhw-mods/releases/tags/$tag\"\n  $asset=$rel.assets | Where-Object name -eq 'MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip' | Select-Object -First 1\n  if(-not $asset){ throw \"release asset missing for $tag\" }\n  $downloadHeaders=@{ Authorization=\"Bearer $($kv['password'])\"; Accept='application/octet-stream'; 'X-GitHub-Api-Version'='2022-11-28' }\n  Invoke-WebRequest -Headers $downloadHeaders -Uri $asset.url -OutFile (Join-Path $dest $asset.name)\n  $kv.Clear()\n  return 'git-credential-api'\n}\n$m60=Get-ReleaseAsset 'updater-main-60' (Join-Path $root '60')\n$m61=Get-ReleaseAsset 'updater-main-61' (Join-Path $root '61')\n$f60=Join-Path $root '60\\MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip'\n$f61=Join-Path $root '61\\MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip'\n$h60=(Get-FileHash $f60 -Algorithm SHA256).Hash\n$h61=(Get-FileHash $f61 -Algorithm SHA256).Hash\nif($h60 -ne $expected60){throw \"build60 hash mismatch: $h60\"}\nif($h61 -ne $expected61){throw \"build61 hash mismatch: $h61\"}\nWrite-Output \"ACQUIRE60=PASS METHOD=$m60 SHA256=$h60 PATH=$f60\"\nWrite-Output \"ACQUIRE61=PASS METHOD=$m61 SHA256=$h61 PATH=$f61\"\nWrite-Output \"ROOT=$root\"\n"
+  },
+  "created_at": "2026-09-29T08:36:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
