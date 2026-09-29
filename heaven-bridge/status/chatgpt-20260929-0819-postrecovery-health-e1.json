@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0819-postrecovery-health-e1",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:18:40.971066+00:00"
+  "updated_at": "2026-09-29T08:18:55.606283+00:00",
+  "exit_code": 0
 }
