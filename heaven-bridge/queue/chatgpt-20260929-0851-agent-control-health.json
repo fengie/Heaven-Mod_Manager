@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0851-agent-control-health",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$rows=@(); try{$tcp=@(Get-NetTCPConnection -LocalPort 7331 -State Listen -ErrorAction Stop)}catch{$tcp=@()}; $procs=@(Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'node|codex|heaven-codex-router' -or ($_.CommandLine -and $_.CommandLine -match 'agent-control') } | Select-Object ProcessId,Name,CommandLine); $paths=@('C:\\HeavenServices','C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods','C:\\Users\\Xxkan\\HeavenBridgeRepo'); [pscustomobject]@{host=$env:COMPUTERNAME;port7331_listeners=@($tcp|Select-Object LocalAddress,LocalPort,OwningProcess);processes=$procs;paths=@($paths|ForEach-Object{[pscustomobject]@{path=$_;exists=(Test-Path $_)}});node=(node --version);git=(git --version)} | ConvertTo-Json -Depth 6"
+  },
+  "created_at": "2026-09-29T08:50:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
