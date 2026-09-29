@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0821-agentcontrol-gate",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; if ((git rev-parse HEAD).Trim() -ne 'b9685d2f2e32af99596dc90d46278a129106d8e2'){ throw 'Unexpected reconciliation HEAD' }; if((git status --porcelain).Length -ne 0){ git status --short; throw 'Reconciled worktree is not clean' }; Set-Location 'tools\\agent-control'; & npm.cmd run check; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; & npm.cmd test; exit $LASTEXITCODE"
+  },
+  "created_at": "2026-09-29T08:21:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest",
+  "purpose": "Formal exact-head Agent Control gate on the reconciled PR #59 worktree using the reliable Windows npm.cmd shim."
+}
