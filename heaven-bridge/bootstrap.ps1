@@ -9,7 +9,9 @@ $RuntimeDir = Join-Path $env:USERPROFILE '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
 $RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
+$BackupWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1.bak'
 $RuntimeSentinel = Join-Path $RuntimeDir 'heaven-bridge-sentinel.ps1'
+$BackupSentinel = Join-Path $RuntimeDir 'heaven-bridge-sentinel.ps1.bak'
 $SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\worker.py'
 $SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\watchdog.ps1'
 $SourceSentinel = Join-Path $SourceRepoRoot 'heaven-bridge\sentinel.ps1'
@@ -268,6 +270,12 @@ try {
 # Publish the validated runtime only after the full regression suite passes.
 if (Test-Path $RuntimeWorker) {
     Copy-Item $RuntimeWorker $BackupWorker -Force
+}
+if (Test-Path $RuntimeWatchdog) {
+    Copy-Item $RuntimeWatchdog $BackupWatchdog -Force
+}
+if (Test-Path $RuntimeSentinel) {
+    Copy-Item $RuntimeSentinel $BackupSentinel -Force
 }
 Move-Item $staged $RuntimeWorker -Force
 Copy-Item $SourceWatchdog $RuntimeWatchdog -Force
