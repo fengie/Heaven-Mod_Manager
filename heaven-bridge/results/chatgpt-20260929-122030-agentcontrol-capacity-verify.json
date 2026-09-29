@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-122030-agentcontrol-capacity-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:20:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:26:24.226652+00:00",
+  "finished_at": "2026-09-29T12:26:29.659280+00:00",
+  "stdout": "\n> heaven-agent-control@0.5.2 check\n> node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/liveness-scheduler.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs\n\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-122030-agentcontrol-capacity-verify.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-122030-agentcontrol-capacity-verify.stderr.log",
+    "stdout_bytes": 387,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8bacf7a4f450317eda0290ea8807a084b1f1143d346f9138d6e735c8fc4bfd1a"
+}
