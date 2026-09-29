@@ -27,7 +27,7 @@ Relay paths:
 - Heartbeat: `heaven-bridge/status/heartbeat.json`
 - Protocol: `chatgpt-heaven-bridge-v2`
 
-Remote Desktop Commander is bootstrap/recovery only.
+Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
 ## Worker v3
 
