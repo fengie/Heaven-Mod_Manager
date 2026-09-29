@@ -44,6 +44,7 @@ import {
   inspectHeavenBridge
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
+import { chooseBranchPlan } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -353,6 +354,36 @@ async function git(args, cwd = REPO, options = {}) {
     maxBuffer: options.maxBuffer || 4 * 1024 * 1024
   });
   return `${stdout || ""}${stderr || ""}`.trim();
+}
+
+async function listBranchInventory() {
+  await git(["fetch", "origin", "--prune"]);
+  const local = await git(["for-each-ref", "--format=%(refname:strip=2)", "refs/heads"]);
+  const remote = await git(["for-each-ref", "--format=%(refname:strip=3)", "refs/remotes/origin"]);
+  const inventory = new Map();
+
+  for (const name of local.split(/\r?\n/).map(value => value.trim()).filter(Boolean)) {
+    const row = inventory.get(name) || { name, local: false, remote: false };
+    row.local = true;
+    inventory.set(name, row);
+  }
+  for (const name of remote.split(/\r?\n/).map(value => value.trim()).filter(Boolean)) {
+    if (name === "HEAD") continue;
+    const row = inventory.get(name) || { name, local: false, remote: false };
+    row.remote = true;
+    inventory.set(name, row);
+  }
+
+  return [...inventory.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function listCheckedOutBranches() {
+  const output = await git(["worktree", "list", "--porcelain"]);
+  return output
+    .split(/\r?\n/)
+    .filter(line => line.startsWith("branch refs/heads/"))
+    .map(line => line.slice("branch refs/heads/".length).trim())
+    .filter(Boolean);
 }
 
 async function resolveBaseRef(baseBranch) {
@@ -776,7 +807,23 @@ async function deployOne({
   const suffix = Math.random().toString(36).slice(2, 7);
   const id = `${role}-${stamp}-${suffix}`;
   const taskId = `task-${stamp}-${suffix}`;
-  const branchName = `agent/control-${role}-${slugify(task)}-${stamp}-${suffix}`;
+  const generatedBranchName = `agent/control-${role}-${slugify(task)}-${stamp}-${suffix}`;
+  const branchInventory = await listBranchInventory();
+  const checkedOutBranches = await listCheckedOutBranches();
+  const branchPlan = chooseBranchPlan({
+    task: task.trim(),
+    boundary: (boundary || "").trim(),
+    lane,
+    baseBranch: base,
+    branches: branchInventory,
+    leases: state.leases,
+    tasks: state.tasks,
+    agents: state.agents,
+    checkedOutBranches
+  });
+  const branchName = branchPlan.mode === "reused" && branchPlan.branchName
+    ? branchPlan.branchName
+    : generatedBranchName;
   const mutableBoundary = (boundary || "").trim() || `isolated:${branchName}`;
   const normalizedPriority = normalizePriority(priority);
   const taskCapability = createTaskCapability();
@@ -814,6 +861,12 @@ async function deployOne({
     baseBranch: base,
     baseSha,
     branchName,
+    branchPlan: {
+      mode: branchPlan.mode,
+      reason: branchPlan.reason,
+      reused: branchPlan.mode === "reused",
+      candidates: branchPlan.candidates
+    },
     dependencies: Array.isArray(dependencies) ? dependencies.filter(Boolean) : [],
     acceptanceCriteria: Array.isArray(acceptanceCriteria) ? acceptanceCriteria.filter(Boolean) : [],
     verification: Array.isArray(verification) ? verification.filter(Boolean) : [],
@@ -830,7 +883,19 @@ async function deployOne({
   saveState(currentState);
 
   try {
-    await git(["worktree", "add", "-b", branchName, worktree, baseRef]);
+    if (branchPlan.mode === "reused") {
+      const existing = branchInventory.find(item => item.name === branchName);
+      if (!existing) throw new Error(`Reusable branch disappeared before worktree creation: ${branchName}`);
+      if (existing.local) {
+        await git(["worktree", "add", worktree, branchName]);
+      } else if (existing.remote) {
+        await git(["worktree", "add", "--track", "-b", branchName, worktree, `origin/${branchName}`]);
+      } else {
+        throw new Error(`Reusable branch has no local or remote ref: ${branchName}`);
+      }
+    } else {
+      await git(["worktree", "add", "-b", branchName, worktree, baseRef]);
+    }
   } catch (error) {
     failReservedDeployment({
       taskId,
@@ -863,7 +928,12 @@ async function deployOne({
       repositoryWriteAuthorized,
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
-      additionalConstraints
+      additionalConstraints: [
+        ...additionalConstraints,
+        branchPlan.mode === "reused"
+          ? `Continue the existing compatible branch ${branchName}; do not create a replacement branch for this scope.`
+          : `No safe compatible branch was found; use the assigned branch ${branchName} and delete it after verified integration.`
+      ]
     });
     fs.writeFileSync(promptPath, prompt.rendered, "utf8");
     logFd = fs.openSync(logPath, "a");
