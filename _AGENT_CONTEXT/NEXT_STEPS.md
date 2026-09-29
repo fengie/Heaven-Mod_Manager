@@ -1,12 +1,12 @@
 # 2026-09-29 v8.8.6 reconciliation — CURRENT CRITICAL PATH
 
-1. Treat canonical `main` from reconciliation base `dd1411693e2da467ea5e1dfb5191b9793213ebdf` as repository truth and re-fetch before every integration because main is moving concurrently.
-2. Run/inspect exact-current-main Windows release verification and persist evidence for the exact SHA checked. Do not extend hosted run `36541891969` beyond source `5abe40304dfcb48f96e750bd7da3d0075315625b`.
-3. Execute the integrated installed-client updater E2E for packaged 60→61 success and injected rollback; require exact restart/health identity and unchanged seeded `Mods`, `State`, and unknown-file hashes.
-4. PR #95 is **CLOSED/SUPERSEDED**. Do not merge either v8.8.6 release-convergence branch wholesale.
-5. PR #98 is currently diverged/non-mergeable and must be reconciled by its updater/security owner before any integration.
-6. For Agent Control, reconcile the shared registry contract before dependent dashboard/operator/test lanes: PR #101 owns federation-registry hardening; PR #100 and #103 both overlap registry/package/UI surfaces; PR #99 should verify the reconciled registry behavior; PR #96 owns the separate liveness/server/control-core lane but still must re-check main immediately before delivery.
-7. Preserve exact-SHA continuity evidence and recursively pass the continuity constitution to the successor.
+1. Re-fetch canonical `main` before every integration; the latest audited source is `38772a9bcf8547402de7f98ada0740d7a6aa070f`, not the older release branches.
+2. Run/inspect exact-current-main Windows release verification and persist evidence for the exact SHA checked. Hosted run `36541891969` remains scoped only to `5abe40304dfcb48f96e750bd7da3d0075315625b`.
+3. Execute the integrated updater installed-client E2E for packaged 60→61 success and injected rollback, proving exact restart/health identity and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+4. PR #95 is closed/superseded. Updater cross-session ownership is already on main through `ef1dd35c` / `dd141169` / `dfc02ee1`; treat still-open PR #98 as a stale/diverged cleanup item unless a fresh semantic diff proves unique needed work.
+5. For Agent Control, settle federation registry semantics (#101) before dependent dashboard/operator/reliability lanes (#100/#105/#99); reconcile security/authorization (#104) against the now-integrated liveness/server state before delivery.
+6. Each product owner remains responsible for current-main sync, conflict resolution, verification, main integration, push, and remote-main confirmation. Reconciliation must not become a blind branch merger.
+7. Preserve exact-SHA continuity evidence and recursively pass the continuity constitution to successors.
 
 ---
 
