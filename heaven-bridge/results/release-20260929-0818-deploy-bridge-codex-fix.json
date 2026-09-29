@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0818-deploy-bridge-codex-fix",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:18:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:16:31.056844+00:00",
+  "finished_at": "2026-09-29T08:16:36.285073+00:00",
+  "stdout": "WARNING: Preserved non-clean relay checkout as heaven-bridge-recovery-20260929-041632 before recovery.\nHEAD is now at d7ac7fb heaven bridge status release-20260929-0818-health-post-bootstrap running\nbranch 'heaven-bridge' set up to track 'origin/heaven-bridge'.\nYour branch is up to date with 'origin/heaven-bridge'.\nHEAD is now at 1d32239 heaven bridge status release-20260929-0818-deploy-bridge-codex-fix running\nWARNING: Scheduled Task install failed; Startup VBS remains configured. Access is denied.\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\nReset branch 'heaven-bridge'\nReplacement Heaven Local Bridge worker failed before handoff; existing worker(s) were left untouched.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1:156 char:5\r\n+     throw 'Replacement Heaven Local Bridge worker failed before hando ...\r\n+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Replacement Hea...left untouched.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Replacement Heaven Local Bridge worker failed before handoff; existing worker(s) were le \r\n   ft untouched.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0818-deploy-bridge-codex-fix.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0818-deploy-bridge-codex-fix.stderr.log",
+    "stdout_bytes": 506,
+    "stderr_bytes": 701,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "d7719faac9b4acd44870301f10e8ecd1fcd15b5298057641e9b23fcd635c36b1"
+}
