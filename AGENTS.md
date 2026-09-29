@@ -194,3 +194,13 @@ Every agent must preserve this rule system and require its successor to preserve
 If context, execution time, tool access, or usage allowance becomes dangerously low, stop expanding scope and enter the preservation mode defined in the continuity protocol.
 
 **Do not break the chain.**
+
+
+## Control-path diagnosis rule
+
+A missing bridge heartbeat, missing result, unavailable plugin surface, queued self-hosted job, `runner_id=0`, or failed remote-control action proves only that the **control path is unavailable or unhealthy**. It does **not** prove that the target computer is powered off, disconnected, or otherwise offline.
+
+- Never report `heaven2` or `heaven` itself as offline solely from bridge/runner evidence.
+- If the user is actively interacting from the target machine, treat host presence as established and diagnose the bridge, watchdog, runner, relay, or plugin surface separately.
+- Use precise wording such as `heaven2 control path unavailable`, `bridge worker not publishing`, or `self-hosted runner unallocated` until host-level reachability is independently proven.
+- Recovery work must continue against the failed control component; do not convert a control-channel failure into a host-availability conclusion.
