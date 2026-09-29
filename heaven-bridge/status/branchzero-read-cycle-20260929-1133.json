@@ -1,9 +1,10 @@
 {
   "id": "branchzero-read-cycle-20260929-1133",
-  "state": "running",
+  "state": "completed",
   "action": "fs_read",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:36:17.738086+00:00"
+  "updated_at": "2026-09-29T11:36:48.987580+00:00",
+  "exit_code": 0
 }
