@@ -1,0 +1,9 @@
+{
+  "id": "ctrl-jobstatus-agentctl-inspect-20260929-112000",
+  "state": "running",
+  "action": "job_status",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:47:59.564323+00:00"
+}
