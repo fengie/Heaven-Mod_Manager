@@ -1,0 +1,9 @@
+{
+  "id": "000-000-safe-delete2-20260929105358",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:55:37.079557+00:00"
+}
