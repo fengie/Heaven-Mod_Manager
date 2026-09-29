@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-100700-verify-worker-fabric",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:07:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:07:25.835446+00:00",
+  "finished_at": "2026-09-29T10:07:44.688804+00:00",
+  "stdout": "--- MANAGER VERIFY ---\r\n===worker01===\nheaven-worker-01\nv22.23.3\nPython 3.11.2\ngit version 2.39.5\nripgrep 13.0.0\n===worker02===\nheaven-worker-02\nv22.23.3\nPython 3.11.2\ngit version 2.39.5\nripgrep 13.0.0\n===worker03===\nheaven-worker-03\nv22.23.3\nPython 3.11.2\ngit version 2.39.5\nripgrep 13.0.0\n===worker04===\nheaven-worker-04\nv22.23.3\nPython 3.11.2\ngit version 2.39.5\nripgrep 13.0.0\n--- ISOLATION + SHARED EXCHANGE ---\r\n--- BURST TIER TEST ---\r\nheaven-worker-05\nv22.23.3\nPython 3.11.2\nheaven-worker-06\nv22.23.3\nPython 3.11.2\nheaven-worker-07\nv22.23.3\nPython 3.11.2\nheaven-worker-08\nv22.23.3\nPython 3.11.2\n--- FINAL HOST HEADROOM ---\r\nWSL_MEMORY\n               total        used        free      shared  buff/cache   available\nMem:            15Gi       3.4Gi        10Gi       100Mi       1.3Gi        11Gi\nSwap:          4.0Gi          0B       4.0Gi\nGPU\nNVIDIA GeForce RTX 4070 Laptop GPU, 8188, 1145, 6804, 0\r\n",
+  "stderr": " Volume heaven-worker-fabric_worker06 Creating \n Volume heaven-worker-fabric_worker08 Creating \n Volume heaven-worker-fabric_worker07 Creating \n Volume heaven-worker-fabric_worker08 Creating \n Volume heaven-worker-fabric_worker07 Creating \n Volume heaven-worker-fabric_worker05 Creating \n Volume heaven-worker-fabric_worker06 Creating \n Volume heaven-worker-fabric_worker05 Creating \n Volume heaven-worker-fabric_worker07 Created \n Volume heaven-worker-fabric_worker07 Created \n Container heaven-worker-07 Creating \n Volume heaven-worker-fabric_worker06 Created \n Volume heaven-worker-fabric_worker06 Created \n Container heaven-worker-06 Creating \n Volume heaven-worker-fabric_worker05 Created \n Volume heaven-worker-fabric_worker05 Created \n Container heaven-worker-05 Creating \n Volume heaven-worker-fabric_worker08 Created \n Volume heaven-worker-fabric_worker08 Created \n Container heaven-worker-08 Creating \n Container heaven-worker-05 Created \n Container heaven-worker-08 Created \n Container heaven-worker-06 Created \n Container heaven-worker-07 Created \n Container heaven-worker-06 Starting \n Container heaven-worker-08 Starting \n Container heaven-worker-07 Starting \n Container heaven-worker-05 Starting \n Container heaven-worker-06 Started \n Container heaven-worker-08 Started \n Container heaven-worker-07 Started \n Container heaven-worker-05 Started \n Container heaven-worker-06 Stopping \n Container heaven-worker-08 Stopping \n Container heaven-worker-07 Stopping \n Container heaven-worker-05 Stopping \n Container heaven-worker-06 Stopped \n Container heaven-worker-05 Stopped \n Container heaven-worker-07 Stopped \n Container heaven-worker-08 Stopped \n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100700-verify-worker-fabric.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-100700-verify-worker-fabric.stderr.log",
+    "stdout_bytes": 910,
+    "stderr_bytes": 1660,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "02b57f9522fbde0a62a340d1a468bf962fedd1b3a7ef37a597bdefed6e0fcb8b"
+}
