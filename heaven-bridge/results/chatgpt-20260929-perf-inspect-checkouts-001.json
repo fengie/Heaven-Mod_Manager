@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-perf-inspect-checkouts-001",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:19:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:20:06.351186+00:00",
+  "finished_at": "2026-09-29T16:20:07.381237+00:00",
+  "stdout": "=== C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods ===\r\norigin\thttps://github.com/fengie/mhw-mods (fetch)\norigin\thttps://github.com/fengie/mhw-mods (push)\nbranch=\r\nhead=3f46c1172f6c27145b8cf6781f8a7ac619b34d8f\r\nstatus:\r\n M .verification/function-status.json\n M .verification/stage-status.json\n M MHW-DEBUG-ALL.log\n?? BuildLogs/\n?? baseline/\n?? candidate/\n\r\n=== C:\\Users\\Xxkan\\actions-runner-heaven-v2\\_work\\mhw-mods\\mhw-mods ===\r\norigin\thttps://github.com/fengie/mhw-mods (fetch)\norigin\thttps://github.com/fengie/mhw-mods (push)\nbranch=main\r\nhead=fe422eb7911b503a00adf7015281372c0b867aac\r\nstatus:\r\n M .verification/function-status.json\n M .verification/stage-status.json\n M MHW-DEBUG-ALL.log\n?? BuildLogs/\n\r\n=== C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods ===\r\norigin\thttps://github.com/fengie/mhw-mods.git (fetch)\norigin\thttps://github.com/fengie/mhw-mods.git (push)\nbranch=\r\nhead=28deaa7a0f85eec317735aef4c00a6ecaf1d5f65\r\nstatus:\r\n?? heaven-bridge/__pycache__/\n?? heaven-bridge/tests/__pycache__/\n?? plugins/heaven-control-plane/heaven_control_plane/__pycache__/\n?? plugins/heaven-control-plane/heaven_control_plane/adapters/__pycache__/\n?? plugins/heaven-control-plane/tests/__pycache__/\n\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-perf-inspect-checkouts-001.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-perf-inspect-checkouts-001.stderr.log",
+    "stdout_bytes": 1207,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "9ad1295fcf69317a21dde0f882c33fff33606d7c259994547350238a733f278c"
+}
