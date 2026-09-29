@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,7 +10,7 @@ using MhwModManager.Core;
 
 namespace MhwModManager.App;
 
-public partial class CatalogWindow : Window
+public partial class CatalogWindow : Window, IDisposable
 {
     private readonly AppServices services;
     private readonly List<CatalogFileChoice> fileChoices = [];
@@ -35,9 +36,16 @@ public partial class CatalogWindow : Window
     private void CatalogWindowClosed(object? sender, EventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         requestCts?.Cancel();
         requestCts?.Dispose();
         requestCts = null;
+        GC.SuppressFinalize(this);
     }
 
     private async void RefreshClick(object sender, RoutedEventArgs e)
