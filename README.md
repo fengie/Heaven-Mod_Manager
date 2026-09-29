@@ -1,4 +1,14 @@
-# v8.8.17 Universal Mod Manager
+# v8.8.19 Universal Mod Manager
+
+## v8.8.19 — smoother UI transitions
+
+Navigation between major pages now eases in with a short opacity/translation transition, the blocking-operation overlay enters more smoothly, and shared buttons/navigation controls use subtle hover/press motion instead of abrupt state changes. The motion layer is deliberately transform/opacity-only so large mod lists do not pay for layout animation.
+
+The app respects the Windows client-area animation preference: when system animations are disabled, these transitions resolve immediately. Existing commands, deployment behavior, virtualization, and keyboard navigation are unchanged.
+
+## v8.8.18 — maximum windowed Mods workspace
+
+The Mods page now uses nearly all available client area in windowed mode: compact outer padding, a consolidated header, a single compact filter/bulk-action strip, and a one-line pending-change footer preserve substantially more height for the library itself.
 
 ## v8.8.17 — reliable first-launch mod discovery
 
