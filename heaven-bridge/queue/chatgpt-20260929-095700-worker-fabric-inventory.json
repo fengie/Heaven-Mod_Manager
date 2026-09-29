@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-095700-worker-fabric-inventory",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='SilentlyContinue'\n$cpu=Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors\n$os=Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,@{n='FreePhysicalMemoryGB';e={[math]::Round($_.FreePhysicalMemory/1MB,2)}},@{n='TotalVisibleMemoryGB';e={[math]::Round($_.TotalVisibleMemorySize/1MB,2)}}\n$disks=Get-CimInstance Win32_LogicalDisk -Filter \"DriveType=3\" | Select-Object DeviceID,@{n='FreeGB';e={[math]::Round($_.FreeSpace/1GB,1)}},@{n='SizeGB';e={[math]::Round($_.Size/1GB,1)}}\n$features=@{}\nforeach($f in 'Microsoft-Windows-Subsystem-Linux','VirtualMachinePlatform','Microsoft-Hyper-V-All','Containers'){\n  $x=Get-WindowsOptionalFeature -Online -FeatureName $f\n  $features[$f]=if($x){$x.State.ToString()}else{'Unavailable'}\n}\n$wsl = (& wsl.exe -l -v 2>&1 | Out-String).Trim()\n$dockerVersion = (& docker version --format '{{json .}}' 2>&1 | Out-String).Trim()\n$dockerInfo = (& docker info --format '{{json .}}' 2>&1 | Out-String).Trim()\n$dockerPs = (& docker ps -a --format '{{json .}}' 2>&1 | Out-String).Trim()\n$compose = (& docker compose version 2>&1 | Out-String).Trim()\n$services = if(Test-Path 'C:\\HeavenServices'){Get-ChildItem 'C:\\HeavenServices' -Force | Select-Object Name,Mode,LastWriteTime}else{@()}\n$agentControl = try{Invoke-RestMethod -Uri 'http://127.0.0.1:7331/health' -TimeoutSec 5}catch{$_|Out-String}\n[pscustomobject]@{computer=$env:COMPUTERNAME;cpu=$cpu;os=$os;disks=$disks;features=$features;wsl=$wsl;dockerVersion=$dockerVersion;dockerInfo=$dockerInfo;dockerPs=$dockerPs;compose=$compose;heavenServices=$services;agentControl=$agentControl} | ConvertTo-Json -Depth 7 -Compress"
+  },
+  "created_at": "2026-09-29T09:57:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
