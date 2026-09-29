@@ -59,6 +59,7 @@ Expected current capability families include:
 - desktop: `screenshot`, `display_list`, `app_launch`, `window_list`, `window_focus`, `window_move`, `window_state`, `window_close`, `gui_cursor_get`, `gui_mouse_move`, `gui_mouse_click`, `gui_mouse_button`, `gui_mouse_scroll`, `gui_key`, `gui_type`, `gui_type_secret` (opaque handle + exact HWND only; credential bytes stay in the encrypted out-of-band inbox)
 - semantic UIA: `uia_tree`, `uia_find`, `uia_focus`, `uia_invoke`, `uia_set_value`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`; mutation searches fail closed on ambiguity/truncation, password values are never exposed, and `uia_set_value` requires explicit non-secret relay opt-in
 - clipboard: `clipboard_read`, `clipboard_write` (relay reads require explicit opt-in)
+- desktop shortcuts: `desktop_shortcut_create` for structured `.lnk` creation on the target user's Desktop
 - controller/agents: `controller_checkpoint`, `codex`
 
 ## Development and test workflow
