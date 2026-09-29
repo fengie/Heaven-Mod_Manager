@@ -1,0 +1,18 @@
+{
+  "id": "chatgpt-20260929-141700-manage-bots-status",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T14:17:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:27:17.818095+00:00",
+  "finished_at": "2026-09-29T15:27:17.818095+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "[WinError 267] The directory name is invalid"
+  },
+  "stderr": "[WinError 267] The directory name is invalid",
+  "stdout": "",
+  "job_hash": "b24a25192e76a34e8fb543d909b651d1773d28294a0bbd3bd7c57ccef01edc73"
+}
