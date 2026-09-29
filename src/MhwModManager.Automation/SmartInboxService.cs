@@ -12,6 +12,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("smart-inbox");
         Directory.CreateDirectory(inboxRoot); Directory.CreateDirectory(modsRoot);
+        var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
         var entries = Directory.EnumerateFileSystemEntries(inboxRoot).Where(x => !StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x), "Processed")).Order(StringComparer.OrdinalIgnoreCase).ToArray();
         startupDiagnostics?.Info("startup.automation.inbox.entries", $"InboxRoot={inboxRoot}; Entries={entries.Length}");
         UnifiedDebugLog.Write("INBOX", $"Scan InboxRoot={inboxRoot}; Entries={entries.Length}");
@@ -19,29 +20,37 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         foreach (var entry in entries)
         {
             ct.ThrowIfCancellationRequested();
+            string? staging = null;
             try
             {
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
                 UnifiedDebugLog.Write("INBOX", $"BEGIN item={entry}");
                 var name = Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry);
                 var destination = Unique(Path.Combine(modsRoot, name));
-                if (Directory.Exists(entry)) await CopyDirectoryAsync(entry, destination, ct);
+                if (Directory.Exists(entry))
+                {
+                    staging = ImportPublicationWorkspace.Allocate(modsRoot, "inbox");
+                    await CopyDirectoryAsync(entry, staging, ct);
+                }
                 else
                 {
                     var ext = Path.GetExtension(entry).ToLowerInvariant();
                     if (ext is not ".zip" and not ".7z" and not ".rar") { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
                     var info = await archive.InspectAsync(entry, ct);
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
-                    await archive.ExtractSafelyAsync(entry, destination, modsRoot, ct); NormalizeWrapper(destination);
+                    staging = ImportPublicationWorkspace.Allocate(modsRoot, "inbox");
+                    await archive.ExtractSafelyAsync(entry, staging, workspaceRoot, ct);
+                    NormalizeWrapper(staging);
                 }
-                if (FomodInstallerService.HasInstaller(destination))
+                if (FomodInstallerService.HasInstaller(staging))
                 {
-                    Directory.Delete(destination, true);
                     results.Add(new(entry, null, false, AutomationCategory.Unknown,
                         "Installer choices required. Use Import archive and select this Inbox archive; source left untouched."));
                     continue;
                 }
-                var category = categories.Classify(SafeRecursiveTraversal.Snapshot(destination, ct).Files.Select(x => Path.GetRelativePath(destination, x)));
+                var category = categories.Classify(SafeRecursiveTraversal.Snapshot(staging, ct).Files.Select(x => Path.GetRelativePath(staging, x)));
+                ImportPublicationWorkspace.Publish(staging, destination);
+                staging = null;
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");
                 UnifiedDebugLog.Write("INBOX", $"IMPORTED Source={entry}; Destination={destination}; Category={category}");
@@ -53,6 +62,10 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
                 results.Add(new(entry, null, false, AutomationCategory.Unknown, ex.Message));
+            }
+            finally
+            {
+                ImportPublicationWorkspace.Cleanup(staging);
             }
         }
         if (results.Any(x => x.Imported))
