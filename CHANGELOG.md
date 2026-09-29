@@ -1,8 +1,9 @@
-# v8.8.14 — Accurate runtime diagnostic version identity
+# v8.8.14 — Fail-closed Smart Inbox rollback
 
-- Derive support-bundle release identity from the running diagnostics assembly instead of the stale hard-coded `v8.3.0` label.
-- Derive startup trace/bootstrap and structured-log `app` identity from the executing assemblies instead of stale `v8.8.6` literals.
-- Add regressions that verify generated support bundles and structured logs identify the build that actually produced them, and keep focused PR-gate coverage on this diagnostic surface.
+- Make published-package rollback report failure instead of swallowing cleanup errors after source archival fails.
+- Stop Smart Inbox processing when both source archival and published rollback fail, preserving both failures instead of recording a clean skipped item.
+- Preserve cancellation semantics while surfacing rollback residue as part of the cancellation failure.
+- Add a deterministic Windows regression that makes the published file undeletable and proves the run fails closed.
 
 # v8.8.13 — Repeatable recipe family restore
 
