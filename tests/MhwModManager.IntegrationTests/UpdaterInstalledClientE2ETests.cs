@@ -75,7 +75,7 @@ public sealed class UpdaterInstalledClientE2ETests
                 http, token!, OldTag, OldBuild, OldSource, downloads, TestToken);
 
             ExtractPackage(oldRelease.ArchivePath, successInstall);
-            var successOldManifest = await VerifyPublishedInstallAsync(
+            await VerifyPublishedInstallAsync(
                 successInstall, oldRelease.Manifest, OldBuild, OldSource, TestToken);
             SeedSentinels(successInstall);
             var successSentinelsBefore = await SnapshotSentinelsAsync(successInstall, TestToken);
@@ -159,7 +159,6 @@ public sealed class UpdaterInstalledClientE2ETests
             var oldOwnedBefore = await SnapshotOwnedAsync(
                 rollbackInstall, rollbackOldManifest, TestToken);
 
-            var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
             UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
             var rollbackRoot = Path.Combine(
                 updaterRoot, "e2e-rollback-" + Guid.NewGuid().ToString("N"));
