@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1218-pr152-bom-verify-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:24:17.352524+00:00",
+  "finished_at": "2026-09-29T12:24:19.187028+00:00",
+  "stdout": "='21fb39abf87964bb8bf51c25f529761d58ff833d'\r\n",
+  "stderr": "You cannot call a method on a null-valued expression.\r\nAt line:1 char:209\r\n+ ... 58ff833d'\"; $wt=Join-Path $HOME ('mhw-pr152-verify-'+$sha.Substring(0 ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : InvokeMethodOnNull\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1218-pr152-bom-verify-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1218-pr152-bom-verify-a2.stderr.log",
+    "stdout_bytes": 45,
+    "stderr_bytes": 378,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b916031aeb7efd004f04efc6a482e0b0688e9ad7b32dcf5f8651aae6fba457ac"
+}
