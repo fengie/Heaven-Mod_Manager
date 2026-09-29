@@ -124,8 +124,8 @@
       <aside class="card composer start-card">
         <div class="section-title"><h2>Start the swarm</h2><span class="pill" id="repoPill">ready</span></div>
         <div class="start-hero">
-          <button class="primary start-swarm" id="startSwarm">▶ START SWARM</button>
-          <div class="start-status" id="startSwarmStatus">One click fills the useful Manager, Primary Programmer, and support lanes. Internal modes and routing are handled for you.</div>
+          <button class="primary start-swarm" id="startSwarm">♾ START PERPETUAL SWARM</button>
+          <div class="start-status" id="startSwarmStatus">One click starts the swarm and keeps cycling: stabilize → verify/review/repair → integrate → clean repo state → expand → repeat.</div>
         </div>
 
         <details class="advanced">
@@ -240,14 +240,19 @@
             <span class="pill" id="autopilotStatus">waiting-for-direction</span>
           </div>
           <label for="autopilotObjective">Big direction</label>
-          <textarea id="autopilotObjective" style="min-height:82px" placeholder="Set the high-level direction; routine implement → verify → review → repair cycles will advance until a governed gate."></textarea>
+          <textarea id="autopilotObjective" style="min-height:82px" placeholder="Set the standing direction; perpetual mode stabilizes → verifies/reviews/repairs → integrates → cleans repo state → expands → repeats."></textarea>
+          <label style="display:flex;align-items:center;gap:8px;margin:10px 0 2px;cursor:pointer;font-weight:700">
+            <input id="autopilotPerpetual" type="checkbox" checked style="width:auto;margin:0" />
+            Repeat perpetual engineering cycle
+          </label>
+          <div class="tiny">When enabled, 0 max cycles means unlimited. Genuine safety/degraded-state gates still fail closed.</div>
           <div class="role-grid">
             <button class="primary" id="autopilotStart">Start</button>
             <button id="autopilotPause">Pause</button>
             <button id="autopilotResume">Resume</button>
             <button class="danger" id="autopilotStop">Stop</button>
           </div>
-          <div class="tiny" id="autopilotMeta">Autopilot never auto-merges or publishes. Stale routing, missing structured evidence, exhausted repair budget, and safety boundaries stop the loop.</div>
+          <div class="tiny" id="autopilotMeta">Perpetual mode integrates only independently reviewed work, proves the exact candidate reached remote main, then runs evidence-backed PR/branch/issue hygiene before the next cycle.</div>
         </section>
 
 
@@ -312,7 +317,7 @@
   <script>
     const $ = id => document.getElementById(id);
     const state = { snapshot:null, busy:false };
-    const defaultSwarmObjective = "Continue the highest-value unfinished project work. Inspect current state first, coordinate with existing agents, implement useful changes, verify them, integrate completed work into canonical main, clean temporary branches, and keep going until a real governed blocker.";
+    const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
     const age = ms => {
@@ -594,13 +599,17 @@
       const autopilot = snapshot.autopilot || {};
       $("autopilotStatus").textContent = autopilot.paused ? `${autopilot.phase || "unknown"} · paused` : (autopilot.phase || "waiting-for-direction");
       $("autopilotMeta").textContent = [
-        autopilot.enabled ? "enabled" : "stopped",
-        `iteration ${autopilot.iteration ?? 0}/${autopilot.maxIterations ?? "—"}`,
+        autopilot.enabled ? (autopilot.perpetual ? "perpetual" : "enabled") : "stopped",
+        autopilot.perpetual ? `cycle ${(autopilot.cycleNumber ?? 0) + 1}${autopilot.maxCycles > 0 ? `/${autopilot.maxCycles}` : "/∞"}` : null,
+        `phase ${autopilot.phase || "waiting-for-direction"}`,
+        `transitions ${autopilot.iteration ?? 0}/${autopilot.perpetual ? "∞" : (autopilot.maxIterations ?? "—")}`,
         `repairs ${autopilot.repairLoops ?? 0}/${autopilot.maxRepairLoops ?? "—"}`,
+        autopilot.perpetual ? `phase retries ${autopilot.phaseRetries ?? 0}/${autopilot.maxPhaseRetries ?? "—"}` : null,
         autopilot.stopReason ? `gate: ${autopilot.stopReason}` : null,
         autopilot.lastCanonicalMainSha ? `main ${autopilot.lastCanonicalMainSha.slice(0,12)}` : null
       ].filter(Boolean).join(" · ");
       if (!$("autopilotObjective").value && autopilot.objective) $("autopilotObjective").value = autopilot.objective;
+      if (autopilot.enabled || autopilot.objective) $("autopilotPerpetual").checked = Boolean(autopilot.perpetual);
 
       renderControl(snapshot);
       renderWorkers(snapshot);
@@ -624,15 +633,18 @@
       }
     }
 
-    async function autopilotAction(action, objectiveOverride="") {
+    async function autopilotAction(action, objectiveOverride="", perpetualOverride=null) {
       try {
         const body = action === "start"
-          ? { objective: (objectiveOverride || $("autopilotObjective").value.trim()).trim() }
+          ? {
+              objective: (objectiveOverride || $("autopilotObjective").value.trim()).trim(),
+              perpetual: perpetualOverride == null ? $("autopilotPerpetual").checked : Boolean(perpetualOverride)
+            }
           : { reason: `ui-${action}` };
         if (action === "start" && !body.objective) return toast("Set a big direction first.");
         if (action === "start") $("autopilotObjective").value = body.objective;
         await api(`/api/autopilot/${action}`, { method:"POST", body:JSON.stringify(body) });
-        toast(`Autopilot ${action} requested.`);
+        toast(action === "start" && body.perpetual ? "Perpetual engineering cycle started." : `Autopilot ${action} requested.`);
         await refresh();
       } catch (error) { toast(error.message); }
     }
@@ -709,17 +721,18 @@
           method:"POST",
           body:JSON.stringify({
             objective,
+            perpetual:true,
+            maxCycles:0,
             baseBranch:$("baseBranch").value.trim() || "main",
             model:$("model").value.trim(),
             machine:$("machine").value,
             repositoryWriteAuthorized:true
           })
         });
-        const created = result.created || [];
-        const blocked = (result.blocked || []).map(item => item?.error || item).filter(Boolean);
-        if (!created.length && blocked.length) throw new Error(blocked.join(" "));
-        const message = created.length ? `Started ${created.length} missing swarm lane${created.length === 1 ? "" : "s"}.` : "Swarm is already covered; no missing lanes to start.";
-        $("startSwarmStatus").textContent = blocked.length ? `${message} ${blocked.join(" ")}` : message;
+        const message = result.alreadyRunning
+          ? "Perpetual swarm is already running."
+          : "Perpetual swarm started. It will keep cycling until a genuine governed safety boundary.";
+        $("startSwarmStatus").textContent = message;
         toast(message);
         await refresh();
       } catch (error) {

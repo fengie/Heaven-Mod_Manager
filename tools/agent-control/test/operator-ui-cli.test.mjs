@@ -54,6 +54,7 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
     "disconnected",
     "startSwarm",
     "startSwarmStatus",
+    "autopilotPerpetual",
     "controlSummary",
     "autonomyLevel",
     "routingManifest",
@@ -69,7 +70,7 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   const advancedAt = composer.indexOf('<details class="advanced">');
   assert.ok(composerStart >= 0 && composerEnd > composerStart && advancedAt > 0);
   const primaryLaunch = composer.slice(0, advancedAt);
-  assert.match(primaryLaunch, /START SWARM/);
+  assert.match(primaryLaunch, /START PERPETUAL SWARM/);
   assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
   assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role/i);
 
@@ -83,6 +84,9 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   assert.match(html, /const defaultSwarmObjective = /);
   assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
   assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
+  assert.match(html, /perpetual:true/);
+  assert.match(html, /maxCycles:0/);
+  assert.match(html, /perpetualOverride/);
 
   assert.match(html, /Auto \/ heaven/);
   assert.match(html, /presence-unknown/);
