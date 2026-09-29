@@ -9,16 +9,31 @@ permissions:
   contents: read
 
 jobs:
-  recover:
-    name: Recover Heaven Local Bridge
+  diagnose:
+    name: Diagnose Heaven Local Bridge recovery
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Recover bridge worker
+      - name: Inspect bridge state
         shell: powershell
         run: |
-          .\heaven-bridge\manage.ps1 RECOVER
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Write-Host "Identity: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
+          $principal = New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
+          Write-Host "Elevated: $($principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))"
+          Get-ScheduledTask -TaskName 'Heaven Local Bridge' -ErrorAction SilentlyContinue | Select-Object TaskName,State,@{n='RunLevel';e={$_.Principal.RunLevel}},@{n='UserId';e={$_.Principal.UserId}} | Format-List
+          Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*heaven-desktop-worker.py*' } | Select-Object ProcessId,ParentProcessId,CommandLine | Format-List
           .\heaven-bridge\manage.ps1 STATUS
-          exit $LASTEXITCODE
+          Write-Host "STATUS exit: $LASTEXITCODE"
+      - name: Capture recovery exception location
+        if: always()
+        shell: powershell
+        run: |
+          try {
+            .\heaven-bridge\bootstrap.ps1
+          } catch {
+            Write-Host "TYPE=$($_.Exception.GetType().FullName)"
+            Write-Host "MESSAGE=$($_.Exception.Message)"
+            Write-Host "STACK=$($_.ScriptStackTrace)"
+            throw
+          }
