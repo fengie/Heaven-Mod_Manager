@@ -369,14 +369,14 @@ public sealed class CatalogDownloadManager
     private static string UniqueDestination(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!File.Exists(path) && !File.Exists(path + ".part")) return path;
+        if (!File.Exists(path)) return path;
         var directory = Path.GetDirectoryName(path)!;
         var name = Path.GetFileNameWithoutExtension(path);
         var extension = Path.GetExtension(path);
         for (var index = 2; ; index++)
         {
             var candidate = Path.Combine(directory, $"{name} ({index}){extension}");
-            if (!File.Exists(candidate) && !File.Exists(candidate + ".part")) return candidate;
+            if (!File.Exists(candidate)) return candidate;
         }
     }
 }
