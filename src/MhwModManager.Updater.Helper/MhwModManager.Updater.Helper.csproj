@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <AssemblyName>MHW Mod Manager Updater</AssemblyName>
     <RootNamespace>MhwModManager.Updater.Helper</RootNamespace>

@@ -409,6 +409,50 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Restart_coordinator_reports_user_visible_stages_in_order()
+    {
+        var fixture = await CreateFixtureAsync();
+        var installer = new UpdateInstaller();
+        await installer.ApplyAsync(fixture.Request, TestToken);
+        var stages = new List<UpdateRestartStage>();
+
+        var coordinator = new UpdateRestartCoordinator(
+            attemptId =>
+            {
+                File.WriteAllText(
+                    fixture.Request.HealthFile,
+                    JsonSerializer.Serialize(
+                        new UpdateStartupHealth(
+                            fixture.Request.HealthToken,
+                            attemptId,
+                            Environment.ProcessId,
+                            fixture.Request.Manifest.BuildNumber,
+                            fixture.Request.Manifest.SourceSha,
+                            DateTimeOffset.UtcNow),
+                        UpdateProtocol.Json));
+                return Process.GetCurrentProcess();
+            },
+            _ => throw new InvalidOperationException(
+                "Previous app must not restart after successful health."),
+            _ => Task.FromResult(true),
+            reportStage: stages.Add);
+
+        Assert.Equal(
+            0,
+            await coordinator.RunAsync(
+                installer,
+                fixture.Request,
+                TimeSpan.FromMilliseconds(250)));
+        Assert.Equal(
+            [
+                UpdateRestartStage.LaunchingUpdatedApplication,
+                UpdateRestartStage.VerifyingUpdatedApplication,
+                UpdateRestartStage.ConfirmingUpdate
+            ],
+            stages);
+    }
+
+    [Fact]
     public async Task Rollback_restart_uses_restored_previous_executable_when_target_name_changed()
     {
         var fixture = await CreateFixtureAsync("old-manager.exe", "new-manager.exe");
