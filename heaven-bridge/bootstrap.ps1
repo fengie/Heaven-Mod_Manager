@@ -1,14 +1,17 @@
 $ErrorActionPreference = 'Stop'
 
 $RepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'
+$SourceRepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeSource'
 $RepoUrl = 'https://github.com/fengie/mhw-mods.git'
 $Branch = 'heaven-bridge'
+$SourceBranch = 'main'
 $RuntimeDir = Join-Path $env:USERPROFILE '.mhw-local-tools'
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $BackupWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py.bak'
 $RuntimeWatchdog = Join-Path $RuntimeDir 'heaven-bridge-watchdog.ps1'
-$SourceWorker = Join-Path $RepoRoot 'heaven-bridge\worker.py'
-$SourceWatchdog = Join-Path $RepoRoot 'heaven-bridge\watchdog.ps1'
+$SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\worker.py'
+$SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\watchdog.ps1'
+$SourceTestWorker = Join-Path $SourceRepoRoot 'heaven-bridge\test_worker.py'
 $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $StartupWatchdogVbs = Join-Path $Startup 'HeavenBridgeWatchdog.vbs'
@@ -48,6 +51,14 @@ function Invoke-GitChecked {
     & git -C $RepoRoot @GitArgs
     if ($LASTEXITCODE -ne 0) {
         throw ('git {0} failed with exit code {1}' -f ($GitArgs -join ' '), $LASTEXITCODE)
+    }
+}
+
+function Invoke-SourceGitChecked {
+    param([Parameter(Mandatory = $true)][string[]]$GitArgs)
+    & git -C $SourceRepoRoot @GitArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw ('source git {0} failed with exit code {1}' -f ($GitArgs -join ' '), $LASTEXITCODE)
     }
 }
 
@@ -115,12 +126,58 @@ if (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
     }
 }
 
+# Keep runtime source independent from the operational relay checkout. The relay
+# branch is queue/status/results transport and may intentionally diverge from
+# canonical development history. Runtime binaries always come from a disposable
+# main-branch source mirror when GitHub is reachable; if refresh is temporarily
+# unavailable, bootstrap may use the last-known-good mirror already on disk.
+$sourceRefreshSucceeded = $false
+if (-not (Test-Path (Join-Path $SourceRepoRoot '.git'))) {
+    git clone --branch $SourceBranch --single-branch $RepoUrl $SourceRepoRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "canonical source clone failed with exit code $LASTEXITCODE"
+    }
+    $sourceRefreshSucceeded = $true
+} else {
+    $sourceCurrentBranch = Get-HeavenBridgeGitCurrentBranch -Repository $SourceRepoRoot
+    $sourceTrackedDirty = @(& git -C $SourceRepoRoot status --porcelain --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect canonical source mirror.' }
+    $sourceFallbackEligible = (
+        $sourceCurrentBranch -eq $SourceBranch -and
+        $sourceTrackedDirty.Count -eq 0
+    )
+
+    try {
+        Invoke-SourceGitChecked @('fetch', 'origin', $SourceBranch)
+        Invoke-SourceGitChecked @('checkout', '-B', $SourceBranch, "origin/$SourceBranch")
+        Invoke-SourceGitChecked @('reset', '--hard', "origin/$SourceBranch")
+        # This checkout is explicitly disposable. Remove stale untracked bridge
+        # source/test files so they cannot shadow canonical tracked content.
+        Invoke-SourceGitChecked @('clean', '-fd', '--', 'heaven-bridge')
+        $sourceRefreshSucceeded = $true
+    } catch {
+        if (-not $sourceFallbackEligible) {
+            throw ("Canonical main source refresh failed and the local source mirror is not a clean main checkout. {0}" -f $_.Exception.Message)
+        }
+        Write-Warning ("Canonical main source refresh failed; using clean last-known-good main source mirror. {0}" -f $_.Exception.Message)
+    }
+}
+
 if (-not (Test-Path $SourceWorker)) {
-    throw "Bridge worker source missing: $SourceWorker"
+    throw "Bridge worker source missing from canonical source mirror: $SourceWorker"
 }
 if (-not (Test-Path $SourceWatchdog)) {
-    throw "Bridge watchdog source missing: $SourceWatchdog"
+    throw "Bridge watchdog source missing from canonical source mirror: $SourceWatchdog"
 }
+if (-not (Test-Path $SourceTestWorker)) {
+    throw "Bridge regression suite missing from canonical source mirror: $SourceTestWorker"
+}
+
+$SourceRevision = (& git -C $SourceRepoRoot rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($SourceRevision)) {
+    throw 'Unable to resolve canonical bridge source revision.'
+}
+Write-Output ("HEAVEN_BRIDGE_SOURCE revision={0} refreshed={1} branch={2}" -f $SourceRevision, $sourceRefreshSucceeded, $SourceBranch)
 
 $python = (Get-Command python.exe -ErrorAction Stop).Source
 $pythonw = (Get-Command pythonw.exe -ErrorAction Stop).Source
@@ -150,17 +207,14 @@ if ($LASTEXITCODE -ne 0) {
 # Validate the exact repository source before any running worker is stopped.
 # This is intentionally stronger than syntax-only validation: bootstrap must not
 # trade a working control path for an untested replacement.
-$TestWorker = Join-Path $RepoRoot 'heaven-bridge\test_worker.py'
-if (Test-Path $TestWorker) {
-    Push-Location $RepoRoot
-    try {
-        & $python -m unittest -q 'heaven-bridge\test_worker.py'
-        if ($LASTEXITCODE -ne 0) {
-            throw "Worker regression suite failed with exit code $LASTEXITCODE."
-        }
-    } finally {
-        Pop-Location
+Push-Location $SourceRepoRoot
+try {
+    & $python -m unittest -q 'heaven-bridge\test_worker.py'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Worker regression suite failed with exit code $LASTEXITCODE."
     }
+} finally {
+    Pop-Location
 }
 
 # Publish the validated runtime only after the full regression suite passes.
