@@ -1,0 +1,14 @@
+{
+  "id": "----selfhosted-runner-inspect-20260929-105650",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:56:50Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Continue'; Write-Output '=== runner processes ==='; Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'Runner\\.(Listener|Worker)' -or $_.CommandLine -match 'actions-runner|Runner.Listener|Runner.Worker' } | Select-Object ProcessId,Name,ExecutablePath,CommandLine | Format-List; Write-Output '=== likely runner dirs ==='; $roots=@('C:\\HeavenServices','C:\\Users\\Xxkan','C:\\actions-runner','C:\\github-runner'); foreach($root in $roots){ if(Test-Path $root){ Get-ChildItem -LiteralPath $root -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'runner|actions|github' } | Select-Object FullName,Name,LastWriteTimeUtc } }; Write-Output '=== exact runner files under bounded roots ==='; foreach($root in @('C:\\HeavenServices','C:\\Users\\Xxkan')){ if(Test-Path $root){ Get-ChildItem -LiteralPath $root -Recurse -File -Filter 'Runner.Listener.exe' -ErrorAction SilentlyContinue | Select-Object -First 20 FullName,Length,LastWriteTimeUtc } }; Write-Output '=== services ==='; Get-CimInstance Win32_Service | Where-Object { $_.Name -match 'actions|runner|github' -or $_.DisplayName -match 'actions|runner|github' -or $_.PathName -match 'Runner.Listener|actions-runner' } | Select-Object Name,DisplayName,State,StartMode,PathName | Format-List; Write-Output '=== scheduled tasks ==='; Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match 'actions|runner|github' -or $_.TaskPath -match 'actions|runner|github' } | Select-Object TaskName,TaskPath,State | Format-Table -AutoSize"
+  },
+  "priority": "highest"
+}
