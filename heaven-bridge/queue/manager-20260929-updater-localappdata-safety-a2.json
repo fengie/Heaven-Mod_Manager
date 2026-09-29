@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-updater-localappdata-safety-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60,
+    "command": "$p=Join-Path $env:LOCALAPPDATA 'MhwModManager'; if(Test-Path $p){Write-Output ('ROOT='+$p); Get-ChildItem $p -Force | Select-Object Name,FullName,Attributes,LastWriteTimeUtc | ConvertTo-Json -Depth 3}else{Write-Output ('ABSENT='+$p)}; Get-Process | Where-Object {$_.ProcessName -like '*MHW*Mod*Manager*' -or $_.ProcessName -like '*MhwModManager*'} | Select-Object Id,ProcessName,Path | ConvertTo-Json -Depth 3"
+  },
+  "created_at": "2026-09-29T08:41:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
