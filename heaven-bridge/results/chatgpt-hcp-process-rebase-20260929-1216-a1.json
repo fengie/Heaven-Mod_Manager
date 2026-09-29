@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-hcp-process-rebase-20260929-1216-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:16:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:21:13.058942+00:00",
+  "finished_at": "2026-09-29T12:21:21.300534+00:00",
+  "stdout": "BEFORE=3551c01404fa1852a07d333486c2d33fb12703aa\r\nBASE=9f45477fd487c4219a53544cd97ec8c247d34381\r\nREBASED_SHA=9f45477fd487c4219a53544cd97ec8c247d34381\r\n",
+  "stderr": "Rebasing (1/2)\rdropping 14c428e9c97eadeb65816d3a26e88acdac9877a0 plugin: add structured process contracts -- patch contents already upstream\nRebasing (2/2)\rdropping 3551c01404fa1852a07d333486c2d33fb12703aa plugin: test structured process contracts -- patch contents already upstream\nSuccessfully rebased and updated refs/heads/agent/hcp-processes-20260929-0804.\nTo https://github.com/fengie/mhw-mods.git\n + 3551c01...9f45477 HEAD -> agent/hcp-processes-20260929-0804 (forced update)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-process-rebase-20260929-1216-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-hcp-process-rebase-20260929-1216-a1.stderr.log",
+    "stdout_bytes": 150,
+    "stderr_bytes": 483,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "df65de1dba1678c885676222a39722a8dadb7203df3d753583af840eed461b54"
+}
