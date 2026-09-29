@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-111830-elevate-recover",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:18:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "& 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\manage.ps1' RECOVER",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
