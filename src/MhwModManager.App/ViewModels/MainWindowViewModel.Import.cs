@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using MhwModManager.Automation;
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 
 namespace MhwModManager.App.ViewModels;
 
