@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.7",
+  "currentVersion": "8.8.9",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.6 profile containment and responsive UI integration",
   "canonicalRepository": "fengie/mhw-mods",
