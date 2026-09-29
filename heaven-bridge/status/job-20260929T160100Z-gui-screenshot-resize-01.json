@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T160100Z-gui-screenshot-resize-01",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:00:55.460575+00:00"
+}
