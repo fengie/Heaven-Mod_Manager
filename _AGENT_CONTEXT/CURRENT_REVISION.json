@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.15",
+  "currentVersion": "8.8.16",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run fresh exact-head Windows verification for the integrated v8.8.15 visual overhaul + diagnostic identity repair, then immediately publish and verify the private/public updater release",
+  "nextMilestone": "verify and integrate the v8.8.16 startup mod-discovery/updater-relaunch repair, then immediately publish and verify the private/public updater release",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.13 repeatable recipe family restore",
-  "status": "v8.8.15-leftover-integration-verification",
+  "immediateParentRevision": "v8.8.15 true visual overhaul and diagnostic identity",
+  "status": "v8.8.16-startup-mod-discovery-candidate",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": "a9a9bfe46b73046e649c94cafe514754786abb45",
-  "verificationScopeNote": "v8.8.15 integrates the true visual overhaul and assembly-derived diagnostic identity plus Agent Control no-work recovery. Existing v8.8.14 verification remains historical exact-SHA evidence only; fresh exact-head Windows verification is required before release.",
+  "verificationScopeNote": "v8.8.16 changes startup manager-home resolution and updater restart identity so the populated canonical Mods/State tree is used on the first post-update launch. Existing verification remains historical exact-SHA evidence only; fresh exact-head Windows verification is required before release.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 v8.8.16 candidate: startup recovers canonical manager-home identity from explicit configuration or the known release layout; updater handoff serializes/restores ManagerHomeRoot so updated and rollback launches target the populated Mods/State tree without requiring a reopen.",
     "2026-09-29 v8.8.15 integration: real hero-first visual redesign from PR #237, preserving existing backend commands/bindings; its stale-head gate already proved strict build 0 warnings/errors plus Core 104/104, Automation 66/66, Integration 214/214, with only continuity version metadata failing.",
     "2026-09-29 v8.8.15 integration: runtime support bundle/startup/logging identity derives from the executing assembly, recovering verified PR #225 without its stale release metadata.",
     "2026-09-29 engineering tooling: Agent Control bounded no-work session recovery from verified PR #232 is transplanted onto current main lineage with retry lineage, deduplication/backoff, and focused tests.",
@@ -140,7 +141,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run the exact v8.8.14 repository verification on Heaven, merge only if green on the exact current-main-based head, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
+  "nextRequiredAction": "Run exact v8.8.16 repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
