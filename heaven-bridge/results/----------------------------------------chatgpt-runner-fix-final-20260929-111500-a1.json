@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------chatgpt-runner-fix-final-20260929-111500-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:15:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:16:58.271461+00:00",
+  "finished_at": "2026-09-29T11:17:05.922256+00:00",
+  "stdout": "WARNING: Scheduled task unavailable; using per-user Startup fallback. Access is denied.\r\n{\r\n    \"repository\":  \"fengie/mhw-mods\",\r\n    \"runner_name\":  \"heaven\",\r\n    \"runner_id\":  21,\r\n    \"status\":  \"online\",\r\n    \"busy\":  true,\r\n    \"labels\":  [\r\n                   \"self-hosted\",\r\n                   \"Windows\",\r\n                   \"X64\",\r\n                   \"heaven\",\r\n                   \"local-bridge\",\r\n                   \"mhw-mods\"\r\n               ],\r\n    \"runner_directory\":  \"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\",\r\n    \"launch_mode\":  \"startup-fallback\",\r\n    \"scheduled_task\":  null,\r\n    \"scheduled_task_run_level\":  null,\r\n    \"startup_fallback\":  \"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\HeavenGitHubActionsRunner.vbs\",\r\n    \"elevated\":  false,\r\n    \"auth_source\":  \"local-git-credential\"\r\n}\r\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-fix-final'...\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-runner-fix-final-20260929-111500-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-runner-fix-final-20260929-111500-a1.stderr.log",
+    "stdout_bytes": 856,
+    "stderr_bytes": 73,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2cba54aab7fde74393f1d94358edb0bb431747fe77ac4b58e3815a97fdff54a0"
+}
