@@ -1,0 +1,14 @@
+{
+  "id": "---------------verify-current-main-quota-bridge-20260929-110700",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:07:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'; git -C $repo fetch origin main | Out-Null; $sha=(git -C $repo rev-parse origin/main).Trim(); $wt=Join-Path $env:TEMP ('mhw-current-main-'+$sha.Substring(0,12)); if(Test-Path -LiteralPath $wt){ git -C $repo worktree remove --force $wt 2>$null; Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }; git -C $repo worktree add --detach $wt $sha | Out-Null; try {;   Write-Output ('REMOTE_MAIN_SHA='+$sha);   Set-Location $wt;   python heaven-bridge/test_worker.py;   if($LASTEXITCODE -ne 0){ throw 'bridge test_worker failed' };   python heaven-bridge/tests/test_worker.py;   if($LASTEXITCODE -ne 0){ throw 'bridge compatibility tests failed' };   Set-Location (Join-Path $wt 'tools\\agent-control');   npm.cmd run check;   if($LASTEXITCODE -ne 0){ throw 'agent-control check failed' };   npm.cmd test;   if($LASTEXITCODE -ne 0){ throw 'agent-control tests failed' };   Write-Output 'CURRENT_MAIN_BRIDGE_AND_QUOTA_TESTS_OK'; } finally { Set-Location $env:USERPROFILE; git -C $repo worktree remove --force $wt 2>$null; git -C $repo worktree prune }"
+  },
+  "priority": "highest"
+}
