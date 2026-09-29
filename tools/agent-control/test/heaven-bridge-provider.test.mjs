@@ -9,10 +9,12 @@ import {
   HEAVEN2_BRIDGE_HOST,
   HEAVEN_BRIDGE_PROTOCOL,
   assessRelayLock,
+  bridgeMachineStatus,
   bridgeResultSucceeded,
   buildBridgeJob,
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
+  shouldRefreshHeartbeat,
   validateBridgeResult
 } from "../lib/heaven-bridge-provider.mjs";
 
@@ -60,6 +62,44 @@ test("bridge jobs can explicitly target heaven2 while preserving heaven legacy d
     action: control.action,
     requireHost: HEAVEN2_BRIDGE_HOST
   }), result);
+});
+
+test("stale or missing local bridge heartbeat triggers a bounded authoritative refresh", () => {
+  const stale = { healthy: false, reason: "heartbeat-stale" };
+  const missing = { healthy: false, reason: "heartbeat-missing" };
+  const healthy = { healthy: true, reason: null };
+  const malformed = { healthy: false, reason: "heartbeat-protocol-mismatch" };
+
+  assert.equal(shouldRefreshHeartbeat(stale, {
+    sync: false,
+    now: 120_000,
+    lastAttemptAt: 0,
+    cooldownMs: 30_000
+  }), true);
+  assert.equal(shouldRefreshHeartbeat(missing, {
+    sync: false,
+    now: 120_000,
+    lastAttemptAt: 100_000,
+    cooldownMs: 30_000
+  }), false);
+  assert.equal(shouldRefreshHeartbeat(healthy, { sync: false, now: 120_000 }), false);
+  assert.equal(shouldRefreshHeartbeat(malformed, { sync: false, now: 120_000 }), false);
+  assert.equal(shouldRefreshHeartbeat(stale, { sync: true, now: 120_000 }), false);
+});
+
+test("transport failure never becomes a false host-offline status", () => {
+  assert.equal(bridgeMachineStatus({ configured: true, healthy: true }), "online");
+  assert.equal(bridgeMachineStatus({
+    configured: true,
+    healthy: false,
+    reason: "heartbeat-stale"
+  }), "presence-unknown");
+  assert.equal(bridgeMachineStatus({
+    configured: true,
+    healthy: false,
+    reason: "Dedicated Heaven relay checkout is dirty"
+  }), "presence-unknown");
+  assert.equal(bridgeMachineStatus({ configured: false, healthy: false }), "not-configured");
 });
 
 test("bridge results require exact job, action, protocol, host and terminal state", () => {
