@@ -130,6 +130,15 @@ internal static class Program
             UseShellExecute = false,
             WorkingDirectory = request.InstallRoot
         };
+        if (!string.IsNullOrWhiteSpace(request.ManagerHomeRoot))
+        {
+            var managerHome = Path.GetFullPath(request.ManagerHomeRoot);
+            if (!Directory.Exists(managerHome))
+                throw new DirectoryNotFoundException(
+                    $"Updater restart manager home is missing: {managerHome}");
+            start.Environment["MOD_MANAGER_HOME"] = managerHome;
+            start.Environment["MHW_MANAGER_HOME"] = managerHome;
+        }
         foreach (var argument in request.RestartArguments)
             start.ArgumentList.Add(argument);
         if (includeHealthArguments)
