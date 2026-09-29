@@ -227,13 +227,16 @@ catch {
 Assert-Equal 1 $script:UpdaterRefreshCleanupCount 'ambiguous final main refresh cleanup'
 Assert-Equal $true ($multiRefreshError -like 'Final updater publication main refresh returned *') 'ambiguous final main refresh rejection'
 
-# Regression for the retry-path propagation race: both the immediate
-# post-publication verification and an already-immutable release retry must use
-# the authoritative Git REST ref. The one remaining local current-build tag
-# check is deliberately the pre-publication orphan-tag refusal.
+# Regression for the retry-path propagation race and Heaven runner portability:
+# publication must use authenticated GitHub REST and must not require the optional
+# GitHub CLI to be installed on the self-hosted runner.
 $publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
-$restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
-Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
+Assert-Equal $false ($publishSource -match 'Get-Command\s+gh') 'publisher does not require GitHub CLI'
+Assert-Equal 0 ([regex]::Matches($publishSource,'(?m)^\s*&\s*gh\b').Count) 'publisher has no gh CLI invocations'
+Assert-Equal $true ($publishSource.Contains('function Invoke-GitHubReleaseApi')) 'publisher has REST JSON transport'
+Assert-Equal $true ($publishSource.Contains('https://uploads.github.com/repos/$Repository/releases/$ReleaseId/assets')) 'publisher uses release-assets REST upload endpoint'
+Assert-Equal $true ($publishSource.Contains('function Get-GitHubUpdaterTagRef')) 'publisher verifies updater tags through REST'
+Assert-Equal $true ($publishSource.Contains('Get-GitHubUpdaterTagRef -Tag $tag')) 'current updater tag verification uses REST'
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
