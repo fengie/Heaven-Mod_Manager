@@ -1,0 +1,9 @@
+{
+  "id": "controller-20260929-0823-agentcontrol-topology-main-a1",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:24:00.653100+00:00"
+}
