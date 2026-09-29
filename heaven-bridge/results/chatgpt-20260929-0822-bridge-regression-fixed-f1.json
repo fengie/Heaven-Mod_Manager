@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0822-bridge-regression-fixed-f1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:22:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T08:21:01.993051+00:00",
+  "finished_at": "2026-09-29T08:21:02.411749+00:00",
+  "stdout": "TEST_FILE_COMMIT=3984c0a2f78fb20b6f35991a1bca6330545918b3\r\n",
+  "stderr": "Unexpected test revision: 3984c0a2f78fb20b6f35991a1bca6330545918b3\r\nAt line:1 char:230\r\n+ ... 4bff75ce9f'){throw ('Unexpected test revision: '+$testCommit)}; pytho ...\r\n+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unexpected test...bca6330545918b3:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unexpected test revision: 3984c0a2f78fb20b6f35991a1bca6330545918b3\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0822-bridge-regression-fixed-f1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0822-bridge-regression-fixed-f1.stderr.log",
+    "stdout_bytes": 59,
+    "stderr_bytes": 452,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "86aa27fbe0b6f3d6375c43ee9635c7b3cf8afc2a3b8f5e17aa811b1c25ce74f2"
+}
