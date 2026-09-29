@@ -11,7 +11,7 @@ public sealed class UpdatePackageStager(GitHubUpdateSource source, Action<string
     private readonly GitHubUpdateSource updateSource = source;
     private readonly Action<string> writeLog = log ?? (_ => { });
 
-    public async Task<StagedUpdate> StageAsync(UpdateCandidate candidate, string token, CancellationToken ct)
+    public async Task<StagedUpdate> StageAsync(UpdateCandidate candidate, string? token, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={candidate.Manifest.BuildNumber}");
         candidate.Manifest.Validate();
