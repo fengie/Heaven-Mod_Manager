@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-heaven2-integrate-pr249-20260929-1653",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:54:06.600120+00:00"
+  "updated_at": "2026-09-29T16:54:16.812001+00:00",
+  "exit_code": 0
 }
