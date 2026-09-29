@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-delete-final-safe-pair-20260929-1134",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:34:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:31:00.456779+00:00",
+  "finished_at": "2026-09-29T11:31:08.296984+00:00",
+  "stdout": "{\r\n    \"skipped\":  [\r\n                    {\r\n                        \"reason\":  \"already-absent\",\r\n                        \"branch\":  \"fix/heaven-gate-concurrency-20260929\"\r\n                    }\r\n                ],\r\n    \"deleted\":  [\r\n                    \"integration/complete-mod-workflows-main-20260929\"\r\n                ],\r\n    \"remaining\":  [\r\n                      \"origin\",\r\n                      \"origin/codex/complete-mod-workflows\",\r\n                      \"origin/heaven-bridge\",\r\n                      \"origin/main\"\r\n                  ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   6ca89e74..0102285d  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           integration/complete-mod-workflows-main-20260929\nFrom https://github.com/fengie/mhw-mods\n   0102285d..695f7fe8  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-final-safe-pair-20260929-1134.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-delete-final-safe-pair-20260929-1134.stderr.log",
+    "stdout_bytes": 552,
+    "stderr_bytes": 316,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "15f2d49b0c912d8b9fb7228c02d35081ac37917821ff1b5c779a80f1eccd87a7"
+}
