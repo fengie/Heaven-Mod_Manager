@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-1251-release-stale-actions-worker-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:51:57.439278+00:00"
+  "updated_at": "2026-09-29T12:52:10.239921+00:00",
+  "exit_code": 0
 }
