@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-104000-agentcontrol-snapshot",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:38:38.099289+00:00"
+  "updated_at": "2026-09-29T10:39:27.478156+00:00",
+  "exit_code": 0
 }
