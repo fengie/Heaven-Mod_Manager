@@ -41,7 +41,7 @@ public sealed class UpdateRuntimeTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
         var install = Path.Combine(Path.GetTempPath(), "mhwmm-global-" + Guid.NewGuid().ToString("N"));
-        using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
+        using var owner = StartExternalMutexOwner(GetGlobalMutexName(install));
         try
         {
             Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken).AsTask().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
@@ -66,7 +66,7 @@ public sealed class UpdateRuntimeTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
         var install = Path.Combine(Path.GetTempPath(), "mhwmm-crash-" + Guid.NewGuid().ToString("N"));
-        using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
+        using var owner = StartExternalMutexOwner(GetGlobalMutexName(install));
         Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken).AsTask().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
 
         owner.Kill(entireProcessTree: true);
@@ -91,7 +91,7 @@ public sealed class UpdateRuntimeTests : IDisposable
         if (!OperatingSystem.IsWindows()) return;
         var install = Path.Combine(Path.GetTempPath(), "mhwmm-collision-" + Guid.NewGuid().ToString("N"));
         using var collision = new EventWaitHandle(
-            false, EventResetMode.ManualReset, GetGlobalSemaphoreName(install));
+            false, EventResetMode.ManualReset, GetGlobalMutexName(install));
 
         var error = Record.Exception(
             () => { using var lease = UpdateMutexLease.Acquire(install, TimeSpan.Zero); });
@@ -263,7 +263,7 @@ public sealed class UpdateRuntimeTests : IDisposable
         Assert.Equal(request.CurrentProcessId, loaded.CurrentProcessId);
         Assert.Equal(request.RestartArguments, loaded.RestartArguments);
     }
-    private static string GetGlobalSemaphoreName(string installRoot)
+    private static string GetGlobalMutexName(string installRoot)
     {
         var normalized = Path.GetFullPath(installRoot)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -272,12 +272,14 @@ public sealed class UpdateRuntimeTests : IDisposable
         return $"Global\\MHWMM.Update.{hash[..24]}";
     }
 
-    private static Process StartExternalSemaphoreOwner(string name)
+    private static Process StartExternalMutexOwner(string name)
     {
         var escapedName = name.Replace("'", "''", StringComparison.Ordinal);
         var script =
-            "$s=[System.Threading.Semaphore]::new(1,1,'" + escapedName + "');" +
-            "if(-not $s.WaitOne(0)){ exit 3 };" +
+            "$m=[System.Threading.Mutex]::new($false,'" + escapedName + "');" +
+            "$owned=$false;" +
+            "try{$owned=$m.WaitOne(0)}catch [System.Threading.AbandonedMutexException]{$owned=$true};" +
+            "if(-not $owned){ exit 3 };" +
             "[Console]::Out.WriteLine('READY');[Console]::Out.Flush();" +
             "Start-Sleep -Seconds 30";
         var start = new ProcessStartInfo("powershell.exe")
@@ -291,7 +293,7 @@ public sealed class UpdateRuntimeTests : IDisposable
         start.ArgumentList.Add("-Command");
         start.ArgumentList.Add(script);
         return Process.Start(start)
-            ?? throw new InvalidOperationException("Could not start semaphore owner fixture.");
+            ?? throw new InvalidOperationException("Could not start mutex owner fixture.");
     }
 
 }
