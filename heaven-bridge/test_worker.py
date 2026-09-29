@@ -728,13 +728,18 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertNotIn("$SourceWorker = Join-Path $RepoRoot", bootstrap)
         self.assertNotIn("$SourceWatchdog = Join-Path $RepoRoot", bootstrap)
 
-    def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
+    def test_bootstrap_installs_three_layer_persistence(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")
+        sentinel = MODULE_PATH.with_name("sentinel.ps1").read_text(encoding="utf-8")
         manage = MODULE_PATH.with_name("manage.ps1").read_text(encoding="utf-8")
         self.assertIn("-RestartCount 255", bootstrap)
         self.assertIn("-ExecutionTimeLimit ([TimeSpan]::Zero)", bootstrap)
         self.assertIn("$WatchdogTaskName = 'Heaven Local Bridge Watchdog'", bootstrap)
+        self.assertIn("$SentinelTaskName = 'Heaven Local Bridge Sentinel'", bootstrap)
+        self.assertIn("$SourceSentinel = Join-Path $SourceRepoRoot 'heaven-bridge\\sentinel.ps1'", bootstrap)
+        self.assertIn("-UserId 'SYSTEM'", bootstrap)
+        self.assertIn("-LogonType ServiceAccount", bootstrap)
         self.assertIn("Register-ScheduledTask", bootstrap)
         self.assertIn("HeavenBridgeWatchdog.vbs", bootstrap)
         self.assertIn("-StartupFallback", bootstrap)
@@ -746,7 +751,13 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIn("worker-loop-progress.json", watchdog)
         self.assertIn('Global\\MHW.HeavenBridgeWatchdog', watchdog)
         self.assertNotIn("git -C", watchdog)
-        self.assertIn("@('Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
+        self.assertIn("Global\\MHW.HeavenBridgeSentinel", sentinel)
+        self.assertIn("HeavenBridgeWatchdog.vbs", sentinel)
+        self.assertIn("Heaven Agent Control.lnk", sentinel)
+        self.assertIn("Ensure-SentinelTask", sentinel)
+        self.assertIn("Start-ScheduledTask -TaskName $WatchdogTaskName", sentinel)
+        self.assertNotIn("git -C", sentinel)
+        self.assertIn("@('Heaven Local Bridge Sentinel', 'Heaven Local Bridge Watchdog', 'Heaven Local Bridge')", manage)
 
     def test_bootstrap_static_verification_precedes_singleton_handoff(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
