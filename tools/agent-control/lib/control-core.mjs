@@ -88,6 +88,7 @@ export const DEFAULT_MACHINE_POLICIES = Object.freeze({
     label: "heaven2",
     role: "control-authority",
     repositoryWriteAllowed: true,
+    credentialAuthority: true,
     foregroundUiAllowed: true,
     preserveResponsiveness: true,
     credentialAuthority: true,
