@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-hcp-verify-20260929-1124",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "priority": "urgent",
+  "created_at": "2026-09-29T11:24:00Z",
+  "ttl_seconds": 21600,
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'; $candidates = Get-ChildItem -Path $HOME -Directory -Recurse -Depth 4 -ErrorAction SilentlyContinue | Where-Object { Test-Path (Join-Path $_.FullName '.git') }; $repo = $candidates | Where-Object { (git -C $_.FullName remote get-url origin 2>$null) -match 'fengie/mhw-mods' } | Select-Object -First 1; if (-not $repo) { throw 'mhw-mods checkout not found' }; Write-Output ('REPO=' + $repo.FullName); git -C $repo.FullName fetch origin main; git -C $repo.FullName switch main; git -C $repo.FullName pull --ff-only origin main; Write-Output ('HEAD=' + (git -C $repo.FullName rev-parse HEAD)); python (Join-Path $repo.FullName 'plugins/heaven-control-plane/verify.py'); if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git -C $repo.FullName diff --check"
+  }
+}
