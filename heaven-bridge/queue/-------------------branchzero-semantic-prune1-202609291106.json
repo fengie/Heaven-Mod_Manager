@@ -1,0 +1,14 @@
+{
+  "id": "-------------------branchzero-semantic-prune1-202609291106",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-safe-branch-delete2'\ngit -C $repo fetch origin --prune | Out-Host\n$targets=@('agent/agent-control-federation-heartbeat-20260929','agent/archive-streaming-budget-20260928','agent/heaven-hosted-runner-diagnose-20260929','agent/liveness-scheduler-machine-policy-20260929','agent/smart-pack-planner-core','agent/updater-cross-session-ownership-20260929','agent/updater-existing-release-rest-ref-20260928','agent/updater-existing-release-rest-ref-gate-20260928','agent/updater-existing-release-rest-ref-gate2-20260928','agent/windows-live-containment-hardening','agent/windows-live-containment-hardening-v2','feature/agent-control-plane-v2-20260928','integration/smart-pack-planner-main-20260929')\n$deleted=@();$missing=@();$failed=@()\nforeach($b in $targets){\n  git -C $repo show-ref --verify --quiet (\"refs/remotes/origin/\"+$b)\n  if($LASTEXITCODE -ne 0){$missing+=$b;continue}\n  & git -C $repo push origin --delete $b 2>&1 | Out-Host\n  if($LASTEXITCODE -eq 0){$deleted+=$b}else{$failed+=$b}\n}\ngit -C $repo fetch origin --prune | Out-Null\n[pscustomobject]@{deleted=$deleted;deleted_count=$deleted.Count;missing=$missing;failed=$failed;main=(git -C $repo rev-parse origin/main).Trim()} | ConvertTo-Json -Depth 4",
+    "cwd": "C:\\Users\\Xxkan\\mhw-safe-branch-delete2",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T11:06:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
