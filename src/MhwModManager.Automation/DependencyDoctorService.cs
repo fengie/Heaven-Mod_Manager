@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MhwModManager.Core;
 using MhwModManager.Storage;
 
@@ -10,60 +9,93 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mods = await db.GetModsAsync(ct);
+        var enabled = mods.Where(x => x.Enabled && !x.IsSuperseded).Select(x => x.Id).ToHashSet(PathRules.Comparer);
+        return await ScanStageAsync(enabled, ct);
+    }
+
+    /// <summary>
+    /// Validates a prospective enabled set without touching the live game or persisted mod state.
+    /// Auto Populate uses this to prove that dependencies/resources remain satisfied before apply.
+    /// </summary>
+    public async Task<IReadOnlyList<DependencyStatus>> ScanStageAsync(IReadOnlySet<string> enabledModIds, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(enabledModIds);
+
+        var mods = await db.GetModsAsync(ct);
+        var modsById = mods.ToDictionary(x => x.Id, PathRules.Comparer);
+        var files = await db.GetModFilesAsync(ct);
+        var filesByMod = files
+            .GroupBy(x => x.ModId, PathRules.Comparer)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<ModFileDescriptor>)g.ToArray(), PathRules.Comparer);
+
+        var selected = enabledModIds
+            .Where(id => modsById.TryGetValue(id, out var mod) && !mod.IsSuperseded)
+            .ToHashSet(PathRules.Comparer);
         var results = new List<DependencyStatus>();
-        foreach (var mod in mods.Where(x => x.Enabled && !x.IsSuperseded))
+
+        foreach (var id in selected.Order(StringComparer.OrdinalIgnoreCase))
         {
             ct.ThrowIfCancellationRequested();
-            var missing = new List<string>();
-            var evidence = new List<string>();
-            var files = await PathsForAsync(mod.Id, ct);
-            var hasNativePlugin = files.Any(p => p.Contains("nativepc\\plugins\\", StringComparison.OrdinalIgnoreCase) || p.EndsWith(".dll", StringComparison.OrdinalIgnoreCase));
-            if (hasNativePlugin && (game is null || game.IsMonsterHunterWorld))
+            if (!modsById.TryGetValue(id, out var mod))
+                continue;
+
+            var spec = await ModRequirementReader.ReadAsync(
+                mod,
+                filesByMod.GetValueOrDefault(id) ?? [],
+                game is null || game.IsMonsterHunterWorld,
+                ct);
+            var missing = new List<string>(spec.Errors);
+            var evidence = new List<string>(spec.Evidence);
+
+            if (spec.RequiresNativeLoader && !HasLoader() && !SelectedProvidesLoader(selected, filesByMod))
+                missing.Add("Stracker/native plugin loader (no dinput8.dll or loader.dll is enabled or present in the game root)");
+
+            foreach (var token in spec.RequiredModTokens)
             {
-                evidence.Add("Contains an MHW native plugin/DLL.");
-                if (!HasLoader()) missing.Add("Stracker/native plugin loader (no dinput8.dll or loader.dll detected in the game root)");
-            }
-            var sidecar = Path.Combine(mod.SourcePath, "mod-manager.requirements.json");
-            if(!File.Exists(sidecar))sidecar = Path.Combine(mod.SourcePath, "mhw-manager.requirements.json");
-            if (File.Exists(sidecar))
-            {
-                try
+                var installed = mods.Where(candidate => !candidate.IsSuperseded && ModRequirementReader.MatchesToken(candidate, token)).ToArray();
+                if (installed.Length == 0)
                 {
-                    using var doc = JsonDocument.Parse(await File.ReadAllTextAsync(sidecar, ct));
-                    if (doc.RootElement.TryGetProperty("files", out var required) && required.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var item in required.EnumerateArray())
-                        {
-                            var rel = item.GetString();
-                            if (string.IsNullOrWhiteSpace(rel)) continue;
-                            evidence.Add("Explicit sidecar requirement: " + rel);
-                            if (!File.Exists(Path.Combine(gameRoot, rel))) missing.Add(rel);
-                        }
-                    }
+                    missing.Add($"Required mod '{token}' is not installed.");
+                    continue;
                 }
-                catch (JsonException ex) { missing.Add("Invalid requirements sidecar: " + ex.Message); }
+
+                if (!installed.Any(candidate => selected.Contains(candidate.Id)))
+                    missing.Add($"Required mod '{token}' is installed but not enabled.");
             }
-            if (missing.Count > 0 || evidence.Count > 0) results.Add(new(mod.Id, mod.DisplayName, missing.Count == 0, missing, evidence));
+
+            foreach (var requiredPath in spec.RequiredPaths.Concat(spec.RequiredTexturePaths).Distinct(PathRules.Comparer))
+            {
+                if (SelectedProvidesPath(requiredPath, selected, filesByMod))
+                    continue;
+                if (File.Exists(ModRequirementReader.LivePath(gameRoot, requiredPath)))
+                    continue;
+                missing.Add(requiredPath);
+            }
+
+            if (missing.Count > 0 || evidence.Count > 0)
+                results.Add(new(mod.Id, mod.DisplayName, missing.Count == 0, missing, evidence));
         }
+
         return results;
     }
 
-    private bool HasLoader()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) || File.Exists(Path.Combine(gameRoot, "loader.dll"));
-    }
+    private bool HasLoader() =>
+        File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
+        File.Exists(Path.Combine(gameRoot, "loader.dll"));
 
-    private async Task<List<string>> PathsForAsync(string modId, CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var paths = new List<string>();
-        await using var c = await db.OpenAsync(ct);
-        await using var cmd = c.CreateCommand();
-        cmd.CommandText = "SELECT path FROM mod_files WHERE mod_id=$m";
-        cmd.Parameters.AddWithValue("$m", modId);
-        await using var r = await cmd.ExecuteReaderAsync(ct);
-        while (await r.ReadAsync(ct)) paths.Add(r.GetString(0));
-        return paths;
-    }
+    private static bool SelectedProvidesLoader(
+        IReadOnlySet<string> selected,
+        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
+        selected.Any(id =>
+            filesByMod.TryGetValue(id, out var files) &&
+            files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)));
+
+    private static bool SelectedProvidesPath(
+        string path,
+        IReadOnlySet<string> selected,
+        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
+        selected.Any(id =>
+            filesByMod.TryGetValue(id, out var files) &&
+            files.Any(f => PathRules.Comparer.Equals(f.Path, path)));
 }
