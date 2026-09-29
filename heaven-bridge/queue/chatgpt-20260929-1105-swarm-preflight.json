@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1105-swarm-preflight",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$candidates=@((Join-Path $env:USERPROFILE 'local-ai-workspaces\\mhw-mods'),(Join-Path $env:USERPROFILE 'agent-control-panel')); foreach($p in $candidates){ if(Test-Path (Join-Path $p '.git')){ Write-Output ('REPO='+$p); Set-Location $p; git fetch --prune origin; Write-Output ('HEAD='+(git rev-parse HEAD)); Write-Output ('BRANCH='+(git branch --show-current)); Write-Output ('ORIGIN_MAIN='+(git rev-parse origin/main)); Write-Output 'STATUS:'; git status --short; Write-Output 'WORKTREES:'; git worktree list --porcelain; break } }",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T15:05:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
