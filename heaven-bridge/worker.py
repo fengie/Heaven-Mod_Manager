@@ -16,7 +16,7 @@ from ctypes import wintypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_VERSION = 5
+WORKER_VERSION = 6
 PROTOCOL = "chatgpt-heaven-bridge-v2"
 LEGACY_PROTOCOL = "chatgpt-heaven-bridge-v1"
 BRANCH = "heaven-bridge"
@@ -89,7 +89,7 @@ DIRECT_ACTIONS = {
     "fs_read_binary", "fs_write_binary",
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
     "proc_list_sessions", "proc_list", "wait_for", "screenshot", "display_list",
-    "clipboard_read", "clipboard_write", "app_launch",
+    "clipboard_read", "clipboard_write", "app_launch", "desktop_shortcut_create",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
     "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type", "gui_type_secret",
     *UIA_ACTIONS,
@@ -2112,6 +2112,106 @@ def desktop_clipboard_write(value):
     return {"characters": len(text), "format": "unicode_text"}
 
 
+
+def desktop_create_shortcut(job_id, p, cancel_event):
+    if os.name != "nt":
+        raise BridgeError("DESKTOP_UNSUPPORTED", "desktop_shortcut_create is only available on Windows")
+
+    name = str(p.get("name") or "").strip()
+    if name.lower().endswith(".lnk"):
+        name = name[:-4].rstrip()
+    if not name:
+        raise BridgeError("SHORTCUT_NAME_REQUIRED", "params.name is required")
+    if len(name) > 180 or any(ch in name for ch in '<>:"/\\|?*'):
+        raise BridgeError("INVALID_SHORTCUT_NAME", "params.name contains invalid Windows filename characters")
+
+    target = str(p.get("target") or p.get("path") or "").strip()
+    if not target:
+        raise BridgeError("SHORTCUT_TARGET_REQUIRED", "params.target or params.path is required")
+
+    raw_args = p.get("args") or []
+    if isinstance(raw_args, list):
+        if any(not isinstance(x, str) for x in raw_args):
+            raise BridgeError("INVALID_SHORTCUT_ARGS", "params.args list must contain only strings")
+        arguments = subprocess.list2cmdline(raw_args)
+    elif isinstance(raw_args, str):
+        arguments = raw_args
+    else:
+        raise BridgeError("INVALID_SHORTCUT_ARGS", "params.args must be a string or list of strings")
+
+    working_directory = str(p.get("working_directory") or p.get("cwd") or "").strip()
+    description = str(p.get("description") or "").strip()
+    if len(description) > 1024:
+        raise BridgeError("SHORTCUT_DESCRIPTION_TOO_LONG", "params.description is limited to 1024 characters")
+
+    icon_path = str(p.get("icon_path") or "").strip()
+    try:
+        icon_index = int(p.get("icon_index") or 0)
+    except (TypeError, ValueError) as exc:
+        raise BridgeError("INVALID_ICON_INDEX", "params.icon_index must be an integer") from exc
+
+    location = str(p.get("location") or "desktop").strip().lower()
+    if location != "desktop":
+        raise BridgeError("INVALID_SHORTCUT_LOCATION", "only location=desktop is currently supported")
+
+    env = os.environ.copy()
+    env.update({
+        "HLB_SHORTCUT_NAME": name,
+        "HLB_SHORTCUT_TARGET": target,
+        "HLB_SHORTCUT_ARGUMENTS": arguments,
+        "HLB_SHORTCUT_WORKDIR": working_directory,
+        "HLB_SHORTCUT_DESCRIPTION": description,
+        "HLB_SHORTCUT_ICON": icon_path,
+        "HLB_SHORTCUT_ICON_INDEX": str(icon_index),
+        "HLB_SHORTCUT_OVERWRITE": "1" if bool(p.get("overwrite", False)) else "0",
+    })
+    script = r"""
+$ErrorActionPreference = 'Stop'
+$desktop = [Environment]::GetFolderPath('Desktop')
+if (-not $desktop) { throw 'Desktop folder could not be resolved' }
+$shortcutPath = Join-Path $desktop ($env:HLB_SHORTCUT_NAME + '.lnk')
+if ((Test-Path -LiteralPath $shortcutPath) -and $env:HLB_SHORTCUT_OVERWRITE -ne '1') {
+    throw 'SHORTCUT_EXISTS'
+}
+$wsh = New-Object -ComObject WScript.Shell
+$shortcut = $wsh.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = $env:HLB_SHORTCUT_TARGET
+$shortcut.Arguments = $env:HLB_SHORTCUT_ARGUMENTS
+if ($env:HLB_SHORTCUT_WORKDIR) { $shortcut.WorkingDirectory = $env:HLB_SHORTCUT_WORKDIR }
+if ($env:HLB_SHORTCUT_DESCRIPTION) { $shortcut.Description = $env:HLB_SHORTCUT_DESCRIPTION }
+if ($env:HLB_SHORTCUT_ICON) {
+    $shortcut.IconLocation = $env:HLB_SHORTCUT_ICON + ',' + $env:HLB_SHORTCUT_ICON_INDEX
+}
+$shortcut.Save()
+$verify = $wsh.CreateShortcut($shortcutPath)
+[pscustomobject]@{
+    path = $shortcutPath
+    target = $verify.TargetPath
+    arguments = $verify.Arguments
+    working_directory = $verify.WorkingDirectory
+    icon_location = $verify.IconLocation
+} | ConvertTo-Json -Compress
+"""
+    result = run_capture(
+        job_id,
+        shell_argv("powershell", script),
+        Path.home(),
+        30,
+        cancel_event=cancel_event,
+        env=env,
+    )
+    if result.get("exit_code") != 0:
+        message = (result.get("stderr") or result.get("stdout") or "shortcut creation failed")[-4000:]
+        code = "SHORTCUT_EXISTS" if "SHORTCUT_EXISTS" in message else "SHORTCUT_CREATE_FAILED"
+        raise BridgeError(code, message)
+    raw = (result.get("stdout") or "").strip()
+    try:
+        data = json.loads(raw.splitlines()[-1]) if raw else {}
+    except json.JSONDecodeError as exc:
+        raise BridgeError("SHORTCUT_CREATE_FAILED", "shortcut verification returned invalid JSON") from exc
+    data["created"] = True
+    return data
+
 def desktop_launch_app(p):
     if os.name != "nt":
         raise BridgeError("DESKTOP_UNSUPPORTED", "app_launch is only available on Windows")
@@ -2201,6 +2301,7 @@ def run_job(job_id, job, cancel_event):
                 "desktop_control": os.name == "nt", "mouse_control": os.name == "nt",
                 "keyboard_control": os.name == "nt", "window_control": os.name == "nt",
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
+                "desktop_shortcut_create": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
                 "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
@@ -2208,7 +2309,7 @@ def run_job(job_id, job, cancel_event):
             },
             "capability_schema": 2,
             "features": {
-                "desktop": {"version": 2, "coordinate_fallback": True},
+                "desktop": {"version": 3, "coordinate_fallback": True, "shortcut_create": os.name == "nt"},
                 "uia": {
                     "version": 1, "available": os.name == "nt", "backend": "windows-uia-powershell",
                     "actions": sorted(UIA_ACTIONS), "max_nodes": UIA_MAX_NODES, "max_depth": UIA_MAX_DEPTH,
@@ -2469,6 +2570,9 @@ def run_job(job_id, job, cancel_event):
 
     if action == "app_launch":
         return make_result(job, action, data=desktop_launch_app(p), started_at=started)
+
+    if action == "desktop_shortcut_create":
+        return make_result(job, action, data=desktop_create_shortcut(job_id, p, cancel_event), started_at=started)
 
     if action == "window_list":
         return make_result(
