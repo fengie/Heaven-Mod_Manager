@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-opencode-config-sanitized-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; $out=& $oc debug config 2>&1; $out | Where-Object {$_ -notmatch '(?i)(api.?key|token|secret|password|credential)'} | Select-String -Pattern '(?i)(model|provider|ollama|config|agent)' | Select-Object -First 260"
+  },
+  "created_at": "2026-09-29T08:50:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
