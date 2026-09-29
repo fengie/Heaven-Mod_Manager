@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1049-safe-merged-branch-prune",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:49:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:33:20.046609+00:00",
+  "finished_at": "2026-09-29T11:33:22.285003+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   fb0308d0..d6b0c704  heaven-bridge -> origin/heaven-bridge\n * [new branch]        integration/complete-mod-workflows-final-20260929 -> origin/integration/complete-mod-workflows-final-20260929\nException calling \"Substring\" with \"1\" argument(s): \"startIndex cannot be larger than length of string.\r\nParameter name: startIndex\"\r\nAt line:1 char:360\r\n+ ...  'origin/heaven-bridge'){ continue }; $name=$ref.Substring(7); git -C ...\r\n+                                           ~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : ArgumentOutOfRangeException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1049-safe-merged-branch-prune.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1049-safe-merged-branch-prune.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 688,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3fe354ea58b13c9b516ce1d9446e651e82855c62d89095d5976ff226e1f3ab10"
+}
