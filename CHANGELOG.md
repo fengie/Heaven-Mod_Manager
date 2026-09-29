@@ -1,3 +1,10 @@
+# v8.8.8 — Atomic launch-observation persistence
+
+- Persist each observed launch-history row and all enabled-mod trust deltas in one SQLite transaction so partial trust/history evidence cannot escape a failed write.
+- Capture one immutable pre-launch mod/build snapshot for both persisted history and trust updates; exact launch-ID replay is idempotent and conflicting replay fails closed.
+- Preserve authoritative persistence once the external startup outcome is known, even if the initiating user cancellation token is canceled afterward.
+- Add deterministic SQLite fault regressions for first/later trust-write failure, replay, snapshot identity, and exact failed-launch diagnosis linkage.
+
 # v8.8.7 — Cross-session updater ownership
 
 - Move the installation-scoped updater semaphore from the Windows `Local\\` namespace to `Global\\`, preventing separate interactive sessions from concurrently mutating the same writable installation.

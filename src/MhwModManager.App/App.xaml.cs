@@ -113,7 +113,7 @@ public sealed partial class App:Application, IDisposable
             var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
             var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
-            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
+            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
             var installRoot=startup.Run("services.updater-install-root",UpdateClientService.GetInstallRoot);
             var buildIdentity=startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
