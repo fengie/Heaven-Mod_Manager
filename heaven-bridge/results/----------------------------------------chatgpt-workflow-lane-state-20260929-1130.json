@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------chatgpt-workflow-lane-state-20260929-1130",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:30:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:30:56.299435+00:00",
+  "finished_at": "2026-09-29T11:30:58.735329+00:00",
+  "stdout": "{\r\n    \"worktrees\":  [\r\n\r\n                  ],\r\n    \"remote_integration\":  \"febcf269db162f8d82030bf7c0c5e2b16d05751f\",\r\n    \"remote_source\":  \"cae2407e5245ab27339967f2b5522a37c1e60152\"\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   631c45cd..6ca89e74  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-workflow-lane-state-20260929-1130.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-workflow-lane-state-20260929-1130.stderr.log",
+    "stdout_bytes": 189,
+    "stderr_bytes": 101,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "3ed68b56660d8cee0f43b8c07adb905e883912eab65d5cd296896d05e3f24893"
+}
