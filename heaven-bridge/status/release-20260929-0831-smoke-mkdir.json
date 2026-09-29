@@ -1,9 +1,10 @@
 {
   "id": "release-20260929-0831-smoke-mkdir",
-  "state": "running",
+  "state": "completed",
   "action": "fs_mkdir",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:31:06.582054+00:00"
+  "updated_at": "2026-09-29T08:31:18.361599+00:00",
+  "exit_code": 0
 }
