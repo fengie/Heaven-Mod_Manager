@@ -1055,7 +1055,7 @@ def run_job(job_id, job, cancel_event):
     else:
         codex = find_codex()
         if codex.lower().endswith((".cmd", ".bat")):
-            argv = ["cmd.exe", "/d", "/s", "/c", f'"{codex}" exec --skip-git-repo-check -']
+            argv = ["cmd.exe", "/d", "/s", "/c", "call", codex, "exec", "--skip-git-repo-check", "-"]
         else:
             argv = [codex, "exec", "--skip-git-repo-check", "-"]
         stdin = payload
