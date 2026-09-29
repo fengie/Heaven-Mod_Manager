@@ -1,0 +1,24 @@
+name: Temporary Heaven Bridge Recovery
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/heaven-bridge-recover.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    name: Recover Heaven Local Bridge
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover bridge worker
+        shell: powershell
+        run: |
+          .\heaven-bridge\manage.ps1 RECOVER
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\heaven-bridge\manage.ps1 STATUS
+          exit $LASTEXITCODE
