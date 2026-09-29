@@ -4,7 +4,7 @@
   "action": "powershell",
   "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
   "timeout_seconds": 1200,
-  "priority": "highest",
+  "priority": 100,
   "created_at": "2026-09-29T11:28:00Z",
   "ttl_seconds": 3600,
   "payload": "$ErrorActionPreference='Stop'; git fetch origin --prune; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $branch=(git branch --show-current).Trim(); $dirty=@(git status --porcelain); if ($branch -ne 'main') { throw \"expected main, got $branch\" }; if ($dirty.Count -gt 0) { [pscustomobject]@{stage='preflight';branch=$branch;dirty=$dirty} | ConvertTo-Json -Compress; exit 42 }; git pull --ff-only origin main; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $tested=(git rev-parse HEAD).Trim(); python plugins/heaven-control-plane/verify.py; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; .\\heaven-bridge\\manage.ps1 TEST; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git diff --check; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git fetch origin main --quiet; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $local=(git rev-parse HEAD).Trim(); $remote=(git rev-parse origin/main).Trim(); $dirtyAfter=@(git status --porcelain); $exact=($local -eq $remote -and $dirtyAfter.Count -eq 0); [pscustomobject]@{stage='complete';tested_sha=$tested;local_head=$local;remote_main=$remote;exact=$exact;dirty_count=$dirtyAfter.Count} | ConvertTo-Json -Compress; if (-not $exact) { exit 43 }"
