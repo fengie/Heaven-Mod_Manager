@@ -1,0 +1,18 @@
+{
+  "id": "chatgpt-heaven2-chaos-kill-worker-20260929-1657",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:57:45Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:57:54.995829+00:00",
+  "finished_at": "2026-09-29T16:57:55.006938+00:00",
+  "host": "heaven2",
+  "action": "app_launch",
+  "data": {
+    "target": "powershell.exe",
+    "resolved": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "pid": 43676,
+    "started": true
+  },
+  "job_hash": "a8d981be42575edb025f2024ab2b73ddb17acae8a62f63ce86b42a4c01c5b473"
+}
