@@ -49,6 +49,9 @@ public sealed class CrashBisectorEngine
             }
         }
 
-        var isolated = remaining.Count == 1;\n        return new(isolated, remaining, probes, isolated\n            ? "Isolated a single reproducible suspect after validating the control and full-suspect probes."\n            : "Reduced the failure to a 1-minimal interacting suspect set; no individual culprit reproduces it alone.");
+        var isolated = remaining.Count == 1;
+        return new(isolated, remaining, probes, isolated
+            ? "Isolated a single reproducible suspect after validating the control and full-suspect probes."
+            : "Reduced the failure to a 1-minimal interacting suspect set; no individual culprit reproduces it alone.");
     }
 }
