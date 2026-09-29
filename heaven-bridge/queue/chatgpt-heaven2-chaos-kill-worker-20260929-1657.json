@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-heaven2-chaos-kill-worker-20260929-1657",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "app_launch",
+  "params": {
+    "path": "powershell.exe",
+    "args": [
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "Start-Sleep -Seconds 3; $p=Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -like '*\\.mhw-local-tools\\heaven-desktop-worker.py*' } | Sort-Object CreationDate -Descending | Select-Object -First 1; if(-not $p){exit 2}; Stop-Process -Id ([int]$p.ProcessId) -Force"
+    ],
+    "detached": true
+  },
+  "created_at": "2026-09-29T16:57:45Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
