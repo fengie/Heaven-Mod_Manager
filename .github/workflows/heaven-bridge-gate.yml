@@ -1,4 +1,5 @@
 name: Heaven Local Bridge Gate
+# 2026-09-29 dispatcher diagnostic: harmless workflow-path change to force a clean PR run.
 
 on:
   push:
