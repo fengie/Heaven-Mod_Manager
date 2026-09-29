@@ -205,6 +205,16 @@
           <div class="agent-list" id="agents"></div>
         </section>
 
+        <section class="card section">
+          <div class="section-title">
+            <h2>Federated agent registry</h2>
+            <span class="pill" id="federationSummary">0 live</span>
+          </div>
+          <div id="providers"></div>
+          <div class="agent-list" id="federatedAgents"></div>
+          <div class="tiny">Local workers are synchronized automatically. ChatGPT, GitHub/CI, and heaven2 observations use stable bridge identities and explicit heartbeats; unavailable providers are shown honestly rather than fabricated.</div>
+        </section>
+
         <div class="split">
           <section class="card section">
             <div class="section-title"><h2>Mutable-boundary leases</h2><span class="pill" id="leaseSummary">0 active</span></div>
@@ -359,6 +369,40 @@
       `).join("");
     }
 
+    function renderFederation(snapshot) {
+      const federation = snapshot.federation || {};
+      const counts = federation.counts || {};
+      const agents = federation.agents || [];
+      const providers = federation.providers || [];
+      $("federationSummary").textContent = `${counts.live || 0} live · ${counts.stale || 0} stale · ${counts.disconnected || 0} disconnected`;
+
+      $("providers").innerHTML = providers.length ? providers.map(p => `
+        <div class="worker">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot ${p.status === "online" ? "running" : ""}"></span>${escapeHtml(p.label || p.id)} <span class="meta">· ${escapeHtml(p.status || "unknown")}</span></div>
+              <div class="meta">${escapeHtml(p.kind || "provider")} · discovery ${escapeHtml(p.discovery || "unavailable")} · registration ${escapeHtml(p.registration || "unavailable")} · heartbeat ${fmt(p.last_heartbeat_at)}</div>
+            </div>
+            <span class="tag">${escapeHtml(p.id)}</span>
+          </div>
+        </div>
+      `).join("") : '<div class="empty">No providers registered.</div>';
+
+      $("federatedAgents").innerHTML = agents.length ? agents.map(a => `
+        <article class="agent">
+          <div class="agent-top">
+            <div>
+              <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}</span></div>
+              <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml((a.providers || [a.provider]).join(", "))} · ${escapeHtml(a.machine || "—")} · heartbeat ${fmt(a.heartbeat_at)}</div>
+            </div>
+            <span class="tag">${a.live ? "LIVE" : escapeHtml(a.freshness || "unknown")}</span>
+          </div>
+          <div class="task">${escapeHtml(a.task || a.last_action_summary || "No current task summary")}</div>
+          <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
+        </article>
+      `).join("") : '<div class="empty">No federated agent observations yet.</div>';
+    }
+
     function renderLeases(snapshot) {
       const leases = snapshot.leases || [];
       const active = leases.filter(l => l.status === "active");
@@ -452,6 +496,7 @@
       renderWorkers(snapshot);
       renderFederatedAgents(snapshot);
       renderAgents(snapshot);
+      renderFederation(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);
