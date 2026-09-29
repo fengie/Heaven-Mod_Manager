@@ -65,7 +65,7 @@ public sealed class RestoredWorkflowTests : IDisposable
         var rules = new RulesEditorService(db);
         await rules.SaveAsync(new("ab", RuleKind.Overlay, RuleScope.ModPair, "a", "b", "b", null, "b overlays a", true, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
         var ex = await Assert.ThrowsAsync<InvalidDataException>(() =>
-            rules.SaveAsync(new("ba", RuleKind.Overlay, RuleScope.ModPair, "b", "a", "a", null, "cycle", true, DateTimeOffset.UtcNow)));
+            rules.SaveAsync(new("ba", RuleKind.Overlay, RuleScope.ModPair, "b", "a", "a", null, "cycle", true, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken));
         Assert.Contains("cycle", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
