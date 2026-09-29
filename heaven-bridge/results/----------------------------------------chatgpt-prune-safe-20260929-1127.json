@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------chatgpt-prune-safe-20260929-1127",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:27:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:27:42.765732+00:00",
+  "finished_at": "2026-09-29T11:27:57.215589+00:00",
+  "stdout": "{\r\n    \"deleted\":  [\r\n                    \"agent/bridge-uia-native-20260929\",\r\n                    \"agent-bridge\",\r\n                    \"integration/launch-observation-atomicity-main-20260929\"\r\n                ],\r\n    \"missing\":  [\r\n                    \"agent/launch-observation-atomicity-20260928\"\r\n                ],\r\n    \"skipped\":  [\r\n                    {\r\n                        \"branch\":  \"agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\",\r\n                        \"reason\":  \"active-local-worktree\"\r\n                    }\r\n                ],\r\n    \"remaining\":  [\r\n                      \"codex/complete-mod-workflows\",\r\n                      \"fix/heaven-gate-concurrency-20260929\",\r\n                      \"integration/complete-mod-workflows-main-20260929\"\r\n                  ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/agent/launch-observation-atomicity-20260928\n - [deleted]           (none)        -> origin/agent/swarm-contract-v3-20260929-0540\n   88980a09..febcf269  main          -> origin/main\n   5f9afba7..355217a7  heaven-bridge -> origin/heaven-bridge\n * [new branch]        integration/complete-mod-workflows-main-20260929 -> origin/integration/complete-mod-workflows-main-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           agent/bridge-uia-native-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           agent-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           integration/launch-observation-atomicity-main-20260929\nFrom https://github.com/fengie/mhw-mods\n   cdf7e3fd..7a954a67  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-prune-safe-20260929-1127.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-prune-safe-20260929-1127.stderr.log",
+    "stdout_bytes": 814,
+    "stderr_bytes": 857,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2f074cd40f097b2949efeb266d9891c04207b84bc8e122d917247f008e6aae75"
+}
