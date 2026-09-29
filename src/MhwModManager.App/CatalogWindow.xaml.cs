@@ -310,7 +310,7 @@ public partial class CatalogWindow : Window
                 StatusText.Text = $"Installed {installed} selected catalog file(s). They are OFF until you stage/apply them.";
             }
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or UnauthorizedAccessException)
         {
             MasterDebugLog.Write("CATALOG-INSTALL", "Catalog installation failed.", ex);
             MessageBox.Show(this, ex.Message, "Catalog install stopped safely", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -351,7 +351,8 @@ public partial class CatalogWindow : Window
     private static void OpenUri(Uri uri)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"host={uri.Host}");
-        if (uri.Scheme is not ("https" or "http")) return;
+        if (!uri.Scheme.Equals(Uri.UriSchemeHttps,StringComparison.OrdinalIgnoreCase) &&
+            !uri.Scheme.Equals(Uri.UriSchemeHttp,StringComparison.OrdinalIgnoreCase)) return;
         Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
     }
 
