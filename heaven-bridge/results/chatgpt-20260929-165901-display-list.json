@@ -1,0 +1,27 @@
+{
+  "id": "chatgpt-20260929-165901-display-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:58:31Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:58:47.545884+00:00",
+  "finished_at": "2026-09-29T16:58:47.968648+00:00",
+  "host": "heaven2",
+  "action": "display_list",
+  "data": [
+    {
+      "index": 0,
+      "device": "\\\\.\\DISPLAY1",
+      "primary": true,
+      "x": 0,
+      "y": 0,
+      "width": 1536,
+      "height": 960,
+      "work_x": 0,
+      "work_y": 0,
+      "work_width": 1536,
+      "work_height": 912
+    }
+  ],
+  "job_hash": "c94085d8c87cb8bca0ce71c45dce1327663675a22879ca5a0bafd8815ce41081"
+}
