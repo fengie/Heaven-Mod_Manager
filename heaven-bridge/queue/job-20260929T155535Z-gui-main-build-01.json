@@ -1,0 +1,10 @@
+{
+  "id": "job-20260929T155535Z-gui-main-build-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:55:35Z",
+  "target_host": "heaven",
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$src='C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods'\n$sha='d080d746356f6e3725f5f6d1ed5eba5c204cb69f'\ngit -C $src fetch origin $sha\nif($LASTEXITCODE -ne 0){ throw 'exact SHA fetch failed' }\n$wt=\"C:\\Users\\Xxkan\\HeavenBridge\\work\\gui-main-$($sha.Substring(0,8))\"\nif(Test-Path $wt){ git -C $src worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }\ngit -C $src worktree add --detach $wt $sha\nif($LASTEXITCODE -ne 0){ throw 'worktree add failed' }\nPush-Location $wt\n$env:DOTNET_NOLOGO='1'; $env:DOTNET_CLI_TELEMETRY_OPTOUT='1'\ndotnet restore .\\src\\MhwModManager.App\\MhwModManager.App.csproj -p:NuGetAudit=false\nif($LASTEXITCODE -ne 0){ throw 'restore failed' }\ndotnet build .\\src\\MhwModManager.App\\MhwModManager.App.csproj -c Release --no-restore -warnaserror -p:NuGetAudit=false\nif($LASTEXITCODE -ne 0){ throw 'app build failed' }\n$bin=Join-Path $wt 'src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0'\nGet-ChildItem $bin | Select-Object Name,Length,FullName | Format-Table -AutoSize\nWrite-Output \"GUI_WORKTREE=$wt\"\nWrite-Output \"GUI_BIN=$bin\"\nWrite-Output \"GUI_SHA=$sha\"\nPop-Location",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 900
+}
