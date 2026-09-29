@@ -10,6 +10,8 @@ on:
       - 'heaven-bridge/manage.ps1'
       - 'heaven-bridge/install-github-runner.ps1'
       - 'heaven-bridge/uia.ps1'
+      - 'heaven-bridge/New-HeavenSecretEnvelope.ps1'
+      - 'heaven-bridge/secret-envelope-io.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
@@ -22,6 +24,8 @@ on:
       - 'heaven-bridge/manage.ps1'
       - 'heaven-bridge/install-github-runner.ps1'
       - 'heaven-bridge/uia.ps1'
+      - 'heaven-bridge/New-HeavenSecretEnvelope.ps1'
+      - 'heaven-bridge/secret-envelope-io.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
@@ -62,6 +66,11 @@ jobs:
           python heaven-bridge/test_worker.py
           python heaven-bridge/tests/test_worker.py
 
+      - name: Run secret envelope failure-cleanup regression
+        shell: powershell
+        run: |
+          .\heaven-bridge\tests\Test-SecretEnvelopeIo.ps1
+
       - name: Run Heaven control-plane vertical slice tests
         shell: powershell
         run: |
@@ -70,7 +79,7 @@ jobs:
       - name: Parse operator PowerShell
         shell: powershell
         run: |
-          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/install-github-runner.ps1', 'heaven-bridge/uia.ps1')) {
+          foreach ($path in @('heaven-bridge/bootstrap.ps1', 'heaven-bridge/manage.ps1', 'heaven-bridge/install-github-runner.ps1', 'heaven-bridge/uia.ps1', 'heaven-bridge/New-HeavenSecretEnvelope.ps1', 'heaven-bridge/secret-envelope-io.ps1', 'heaven-bridge/tests/Test-SecretEnvelopeIo.ps1')) {
             $tokens = $null
             $errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(
