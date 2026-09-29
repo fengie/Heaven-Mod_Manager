@@ -1,0 +1,17 @@
+{
+  "id": "branchzero-jobstatus-2-20260929-1122-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:22:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:24:51.167898+00:00",
+  "finished_at": "2026-09-29T11:24:51.167898+00:00",
+  "host": "heaven",
+  "action": "job_status",
+  "data": {
+    "job_id": "branchzero-agent-status-20260929-1120-a1",
+    "state": "done",
+    "finished_at": "2026-09-29T11:24:18.872620+00:00"
+  },
+  "job_hash": "7ca226b72df1d68e098f2b36c96a92e4ed6fb8834ae2ba5f47574f943c3ed15d"
+}
