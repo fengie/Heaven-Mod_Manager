@@ -63,34 +63,24 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.5.0 registers the controller host as one local worker with:
+v0.5.0 models `heaven2` as the control/credential authority and `heaven` as the preferred heavy execution worker.
 
-- hostname
-- platform/architecture
-- CPU count
-- free/total RAM
-- configured capacity
-- active slots
-- heartbeat timestamp
+The controller host is always exposed as a local worker with hostname, platform/architecture, CPU/memory, configured capacity, active slots, and heartbeat timestamp. When the controller runs on `heaven2`, `auto` placement prefers `heaven`.
 
-Placement currently accepts only `auto`, `local`, or the controller hostname. A request for another machine fails instead of pretending the task was deployed.
+Remote `heaven` execution is implemented through the authenticated **Heaven Local Bridge** relay provider:
 
-### Next worker layer
+1. the controller verifies the dedicated relay checkout, expected private repository, protocol, host identity, and fresh worker heartbeat;
+2. it creates the ordinary local task/lease/worktree and renders the governed prompt;
+3. a controller-owned local runner submits a uniquely identified bridge job;
+4. `heaven` prepares an isolated workspace, runs Codex under the requested sandbox, and returns an authoritative terminal result;
+5. the runner transfers a binary Git patch back and commits it only in the controller-owned isolated worktree;
+6. the normal review/integration pipeline consumes that local branch.
 
-Add a small worker daemon on Heaven/Heaven2 that registers with the controller and periodically heartbeats:
+A bridge heartbeat proves provider health, **not** process authority by itself. Dispatch proceeds only when the configured transport passes its health checks. If the bridge is missing, stale, on the wrong host/protocol/repository, dirty, or otherwise unhealthy, remote placement fails closed rather than silently running heavy work on `heaven2`.
 
-```text
-worker_id
-machine
-capabilities
-models
-active_slots
-cpu
-memory
-last_heartbeat
-```
+Stop semantics remain ownership-safe: the controller cancels the exact recorded bridge job and requires authoritative cancellation success before terminating its proven-owned local runner. Unknown remote processes are never killed.
 
-Then the scheduler can choose machines by capacity and policy.
+The remote worker intentionally does not push, publish, move credentials, or commit directly to canonical repository history. Git remains reconciled on the control side.
 
 ## Autonomy authorization
 
@@ -103,7 +93,7 @@ The declared profiles map to concrete permissions:
 - `coordinate` — adds `dispatch-support`, `replace-stale`, `request-review`, and `run-tests`;
 - `engineering-autopilot` — adds `prepare-integration` and `maintain-continuity`.
 
-Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; evidence/persisted-takeover mutation requires `maintain-continuity`; integration verdict mutation and self-improvement execution require `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
+Workflow execution has an explicit permission requirement. Direct deployment requires `dispatch-support`; review dispatch requires `request-review`; structured verification evidence may be recorded under `run-tests` (or `maintain-continuity`); other evidence/persisted-takeover mutation requires `maintain-continuity`; review verdict recording is allowed to `request-review` or `prepare-integration`, while self-improvement/integration preparation remains gated by `prepare-integration`. Unknown autonomy levels and unmapped workflows fail closed.
 
 The default is `assist`, so a fresh controller can inspect, recommend, and preview without launching agents. The operator must explicitly raise autonomy before dispatch. Safety controls remain outside this restriction so pause/drain/emergency-stop/owned-worker stop and autonomy changes cannot be blocked by the current profile.
 

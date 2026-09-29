@@ -243,14 +243,16 @@ test("autonomy profiles enforce declared permissions and workflow requirements",
   assert.equal(workflowPermission("unknown-workflow"), null);
 });
 
-test("heaven repository writes fail closed without per-task authorization", () => {
+test("heaven is the preferred heavy worker but repository credentials remain explicitly scoped", () => {
   const current = state();
-  const denied = canUseMachineForRepositoryWrite(current, "heaven", false);
-  const authorized = canUseMachineForRepositoryWrite(current, "heaven", true);
+  const heavenDefault = canUseMachineForRepositoryWrite(current, "heaven", false);
+  const heavenAuthorized = canUseMachineForRepositoryWrite(current, "heaven", true);
   const heaven2 = canUseMachineForRepositoryWrite(current, "heaven2", false);
-  assert.equal(denied.allowed, false);
-  assert.equal(authorized.allowed, true);
+  const unknown = canUseMachineForRepositoryWrite(current, "unknown-worker", false);
+  assert.equal(heavenDefault.allowed, false);
+  assert.equal(heavenAuthorized.allowed, true);
   assert.equal(heaven2.allowed, true);
+  assert.equal(unknown.allowed, false);
 });
 
 test("integration eligibility requires authoritative successful exit", () => {

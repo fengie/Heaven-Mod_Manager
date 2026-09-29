@@ -24,6 +24,14 @@ export const DEFAULT_PROVIDER_DEFINITIONS = Object.freeze([
     description: "Workers launched and owned by this Agent Control process."
   },
   {
+    id: "heaven-bridge",
+    label: "Heaven Local Bridge",
+    kind: "remote-worker",
+    discovery: "automated",
+    registration: "automated",
+    description: "Authenticated relay-backed execution transport for the heaven worker when configured and healthy."
+  },
+  {
     id: "chatgpt",
     label: "ChatGPT sessions",
     kind: "chatgpt-session",
@@ -294,8 +302,9 @@ export function syncManagedAgents(federation, managedAgents = [], {
   let changed = 0;
   for (const managed of managedAgents) {
     if (!managed?.id) continue;
+    const provider = String(managed.executionProvider || managed.runtimeProvider || managed.provider || "local-control").trim().toLowerCase() || "local-control";
     reconcileObservation(federation, {
-      provider: "local-control",
+      provider,
       source_id: String(managed.id),
       agent_id: String(managed.id),
       role: managed.role || null,
@@ -317,16 +326,19 @@ export function syncManagedAgents(federation, managedAgents = [], {
         managed_agent_id: String(managed.id),
         pid: managed.pid || null,
         lease_id: managed.leaseId || null,
-        boundary: managed.boundary || null
+        boundary: managed.boundary || null,
+        lane: managed.lane || null,
+        execution_provider: provider
       }
     }, { now });
     changed += 1;
   }
 
+  const localManaged = managedAgents.filter(managed => !managed?.executionProvider || managed.executionProvider === "local-control").length;
   recordProviderHeartbeat(federation, "local-control", {
     status: "online",
     at: now,
-    metadata: { hostname, managed_agents: managedAgents.length }
+    metadata: { hostname, managed_agents: localManaged }
   });
   return changed;
 }

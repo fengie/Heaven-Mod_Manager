@@ -4,7 +4,7 @@ This directory is the source package for the private **Heaven Agent Control** pl
 
 The plugin is intentionally skills-only. It does not point ChatGPT at `127.0.0.1`, because ChatGPT cloud cannot directly reach the user's local Heaven loopback interface.
 
-Instead, its skill uses the already-authorized Remote Desktop Commander connection to:
+Instead, its skill prefers the user's authorized Heaven Local Bridge to:
 
 1. locate `agentctl.mjs` on `heaven`;
 2. start the local control-plane service when necessary;
@@ -16,4 +16,4 @@ Instead, its skill uses the already-authorized Remote Desktop Commander connecti
 8. stop explicitly selected managed workers;
 9. synchronize Git branch state.
 
-Once the controller has an intentionally exposed authenticated Streamable HTTP MCP endpoint, this package can add a portable `mcp.json` and remove the Remote Desktop bridge.
+External ChatGPT/GitHub/control-machine observations may also be registered through `agentctl.mjs federation-register` / `federation-heartbeat`. Automatic ChatGPT-session enumeration is not claimed. Once the controller has an intentionally exposed authenticated Streamable HTTP MCP endpoint, this package can add a portable `mcp.json` without changing the normalized provider contract.

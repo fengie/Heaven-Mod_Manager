@@ -151,6 +151,10 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
 - `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
+- `AGENT_CONTROL_HEAVEN_RELAY_DIR` — dedicated local checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch
+- `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
+- `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
+- `AGENT_CONTROL_HEAVEN_REPO_URL` — optional repository URL used by remote Heaven workspace preparation
 - `CODEX_EXE` — optional explicit path to `codex.exe`; otherwise the newest ChatGPT Codex install is discovered automatically.
 
 ## Safety / isolation
@@ -169,6 +173,9 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - An authoritative routing manifest fills only manager-declared open slots; claimed external ownership counts as occupied, while stale/superseded claims do not block a lane forever.
 - Autonomy permissions are checked server-side before workflow execution, direct deployment, review dispatch, persisted takeover/evidence mutation, integration verdict mutation, and self-improvement execution.
 - Engineering autopilot is control-authority-bound to `heaven2`; it rechecks remote `main` with `git ls-remote` and requires a current routing manifest before advancing.
+- On `heaven2`, `auto` placement prefers `heaven`. Dispatch fails closed if the dedicated relay checkout or authenticated worker heartbeat cannot be proven healthy; it does not silently fall back to heavy execution on `heaven2`.
+- Governed engineering-autopilot dispatch explicitly authorizes only the scoped remote repository work it creates. The Heaven runner does not push or publish: it executes Codex in an isolated remote checkout, transfers a binary patch back, and commits only in the controller-owned local worktree.
+- Stopping a bridge-backed worker first requires an authoritative cancellation result for the owned remote job before terminating the local runner process or releasing its lease.
 - Autopilot stops at stale ownership, missing structured verification/review evidence, worker-capacity or lease preflight failure, exhausted repair budget, degraded/read-only/emergency state, and the final integration approval boundary.
 - The controller does not merge, release, or publish branches automatically.
 - Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
@@ -179,4 +186,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
-See `CONTROL_PLANE.md` for the current v0.5.0 architecture, engineering-autopilot state machine, and remaining remote-worker transport work.
+See `CONTROL_PLANE.md` for the current v0.5.0 federation architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
