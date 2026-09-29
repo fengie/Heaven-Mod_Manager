@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-095830-explicit-allrefs-audit-5b12",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:01:43.540202+00:00"
+}
