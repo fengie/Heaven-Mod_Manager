@@ -4,12 +4,27 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T08:46:13.143738+00:00",
+  "updated_at": "2026-09-29T08:51:36.909453+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-0846-bridge-test-gate",
+      "id": "chatgpt-20260929-0851-pr90-merge-probe-a1",
       "action": "proc_run",
-      "started_at": "2026-09-29T08:46:11.633001+00:00"
+      "started_at": "2026-09-29T08:51:08.712804+00:00"
+    },
+    {
+      "id": "chatgpt-20260929-0852-agent-control-snapshot",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:51:08.719367+00:00"
+    },
+    {
+      "id": "manager-20260929-find-apppaths-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:51:08.735693+00:00"
+    },
+    {
+      "id": "chatgpt-20260929-0850-agent-control-snapshot-now",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:51:35.408420+00:00"
     }
   ],
   "capabilities": [
