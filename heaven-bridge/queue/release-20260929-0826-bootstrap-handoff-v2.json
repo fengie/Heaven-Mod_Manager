@@ -1,0 +1,15 @@
+{
+  "id": "release-20260929-0826-bootstrap-handoff-v2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_start",
+  "params": {
+    "shell": "powershell",
+    "command": "& 'C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\bootstrap.ps1'",
+    "cwd": "C:\\Users\\Xxkan",
+    "idle_timeout_seconds": 600,
+    "max_runtime_seconds": 1200
+  },
+  "created_at": "2026-09-29T08:25:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
