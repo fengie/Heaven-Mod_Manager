@@ -75,3 +75,79 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Acceptance tests:** deterministic ID/schema validation; duplicate candidate detection; refusal to overwrite an existing ID; generated entry contains every required field; repository verification fails malformed backlog entries.
 - **Owner / branch / PR:** unclaimed.
 - **Completion evidence:** pending.
+
+
+## PG-003 — secure secret handles and permission broker
+
+- **Status:** PLANNED
+- **Priority:** High
+- **Triggering use case:** System, release, SSH, package, browser, and API workflows increasingly need credentials, but the toolbox intentionally refuses to persist secrets in task payloads, state checkpoints, logs, or plugin metadata.
+- **Why reusable:** Nearly every privileged workflow needs the same safe pattern for referencing a secret without copying its plaintext into durable state or agent-visible logs.
+- **Existing capability audit:** Current plugins document “do not persist secrets” and use environment variables where possible, but there is no shared opaque secret-handle contract or capability-level permission broker.
+- **Proposed owner/plugin boundary:** Add a shared security module under `plugins/_shared/` plus control-plane integration. Do not build a credential vault; adapt existing OS/user-authorized secret stores and connector-provided handles.
+- **Capability/API contract:** `resolve_secret(handle, purpose, ttl)` returns only an ephemeral execution binding, never plaintext in serialized results; `authorize(capability, resource, mutation)` returns allow/deny plus reason; capabilities declare required permission classes in manifests.
+- **Security / permission boundary:** No plaintext secret values in SQLite, logs, checkpoints, manifests, test fixtures, exceptions, or Git. Mutation authorization must fail closed. Secret handles are scoped, expiring where the backing store supports it, and non-exportable through normal plugin APIs.
+- **Dependencies / reuse:** Reuse plugin manifests, Heaven Control Plane execution environment injection, OS credential facilities where available, and ChatGPT connector authorization when the action is connector-native.
+- **Acceptance tests:** secret values never appear in serialized outputs/log capture; expired/unknown handles fail closed; capability permission declarations are validated; denied mutations do not reach transport; tests use fake handles only.
+- **Owner / branch / PR:** unclaimed.
+- **Completion evidence:** pending.
+
+## PG-004 — distributed task queue and cluster integration
+
+- **Status:** PLANNED
+- **Priority:** High
+- **Triggering use case:** `heaven-task-queue` can lease work and `heaven-cluster` can select machines, but they are currently independent building blocks.
+- **Why reusable:** Every multi-machine agent/build/index/test workflow needs one consistent path from queued task -> compatible worker -> lease/capacity reservation -> execution receipt -> retry/release.
+- **Existing capability audit:** Task dependencies, leases, retries, resource locks, worker heartbeat, capability-aware cluster selection, and atomic capacity reservation already exist separately.
+- **Proposed owner/plugin boundary:** Extend `heaven-workflows` or add a thin orchestration module under `heaven-cluster`; do not duplicate queue or scheduler storage.
+- **Capability/API contract:** a dispatcher loop claims one runnable task, derives required capabilities/labels/resources, atomically reserves a healthy worker, invokes a caller-supplied transport, records result/error/receipt, renews leases during long work, and always releases capacity/resources.
+- **Security / permission boundary:** Queue payloads continue to forbid secrets. Dispatcher may use opaque secret handles only after PG-003. Worker endpoint/capability data is not itself authority to execute a privileged action.
+- **Dependencies / reuse:** `heaven-task-queue`, `heaven-cluster`, `heaven-state-store`, and existing bridge/control-plane transports.
+- **Acceptance tests:** race between two dispatchers never double-claims a task or over-reserves a worker; stale workers are skipped; lease expiry/retry works; cancellation releases reservations; execution receipts are durable and bounded.
+- **Owner / branch / PR:** unclaimed.
+- **Completion evidence:** pending.
+
+## PG-005 — CI and release orchestrator
+
+- **Status:** PLANNED
+- **Priority:** High
+- **Triggering use case:** Agents repeatedly need to identify the exact candidate commit, run the correct release gates, wait for self-hosted/hosted checks, publish artifacts, verify release identity, and clean superseded runs/branches.
+- **Why reusable:** This is a recurring repository workflow with high consequences when commit identity, artifact provenance, or release ordering is wrong.
+- **Existing capability audit:** Git integration, workflow verification, state/artifact storage, process execution, and repository-specific release workflows exist, but there is no reusable release state machine.
+- **Proposed owner/plugin boundary:** New specialized `heaven-release` plugin only if the contract remains repository-agnostic; otherwise extend `heaven-workflows` with a release module and repository adapters.
+- **Capability/API contract:** plan release -> pin exact commit -> run named gates -> verify required statuses belong to that commit -> build/publish artifacts -> verify hashes/version/channel -> record receipt -> optionally cancel superseded runs. Every destructive/publishing step requires explicit confirmation.
+- **Security / permission boundary:** Never embeds tokens; uses PG-003 secret handles/authorized connectors. Cannot bypass branch protection, workflow permissions, signing policy, or platform quotas.
+- **Dependencies / reuse:** `heaven-git-ops`, `heaven-workflows`, `heaven-state-store`, GitHub connector/actions, updater/release repository conventions.
+- **Acceptance tests:** rejects status from wrong commit; refuses publish without confirmed candidate; artifact hash/version mismatch blocks completion; idempotent rerun recognizes already-published identical release; receipt records exact commit and artifact hashes.
+- **Owner / branch / PR:** unclaimed.
+- **Completion evidence:** pending.
+
+## PG-006 — deep browser automation adapter
+
+- **Status:** PLANNED
+- **Priority:** Medium
+- **Triggering use case:** `heaven-browser` can launch/navigate via desktop/UIA, but DOM selectors, downloads, console/network inspection, multi-tab control, and deterministic page-state waits are still missing.
+- **Why reusable:** Browser-heavy workflows are safer and more reliable when semantic DOM/browser protocols replace coordinate/UIA fallbacks.
+- **Existing capability audit:** Desktop/browser UIA automation and screenshots are implemented; ChatGPT also has external browser automation plugins for supported environments. No local Heaven CDP/Playwright adapter exists yet.
+- **Proposed owner/plugin boundary:** Extend `heaven-browser`; do not create a second browser package. Prefer Playwright or CDP with an explicit browser-session ownership model.
+- **Capability/API contract:** create/attach session, navigate, query DOM, click/fill non-secret fields, wait for selector/network-idle, manage tabs, download to an allowed root, capture console/network summaries, screenshot, and close owned sessions.
+- **Security / permission boundary:** Restrict URL schemes and download roots; secret field fill requires PG-003 handles; do not bypass authentication, anti-bot systems, CAPTCHAs, or site permissions; clearly distinguish owned browser sessions from arbitrary user windows.
+- **Dependencies / reuse:** `heaven-browser`, `heaven-desktop`, process/services, file ops, visual preprocessing, optional Playwright/CDP runtime.
+- **Acceptance tests:** deterministic local fixture page exercises navigation/selectors/forms/tabs/downloads; path traversal rejected; owned-session cleanup verified; sensitive values absent from logs/screenshots where redaction is requested.
+- **Owner / branch / PR:** unclaimed.
+- **Completion evidence:** pending.
+
+## PG-007 — rollback, restore, and scheduled maintenance workflows
+
+- **Status:** PLANNED
+- **Priority:** Medium
+- **Triggering use case:** Long-running autonomous development and machine administration need safe checkpoints before mutations plus recurring cleanup/health/recovery actions.
+- **Why reusable:** Git changes, service changes, package installs, updater operations, and distributed workers all benefit from a standard rollback receipt and bounded scheduler.
+- **Existing capability audit:** State checkpoints/artifacts, Git integration, service/process control, package/system ops, and health history now exist independently. There is no cross-plugin rollback contract or local scheduled-job owner.
+- **Proposed owner/plugin boundary:** Extend `heaven-workflows` for rollback plans and add a narrowly scoped scheduler module only if existing OS/task scheduling cannot be wrapped cleanly by process/services.
+- **Capability/API contract:** `prepare_change()` records preconditions/checkpoint; `commit_change()` records final receipt; `rollback_change()` invokes only declared reversible steps. Scheduler supports bounded named recurring jobs, enable/disable/list/run-now, missed-run policy, and exact ownership.
+- **Security / permission boundary:** Rollback never invents inverse commands; only explicitly declared reversible actions are eligible. Scheduled privileged jobs require the same permission checks as interactive execution and may reference only opaque secret handles.
+- **Dependencies / reuse:** `heaven-state-store`, `heaven-workflows`, `heaven-process-services`, `heaven-git-ops`, `heaven-system-ops`.
+- **Acceptance tests:** failed multi-step mutation triggers only registered rollback steps in reverse order; idempotent rollback; scheduler cannot create duplicate ownership for same job; disabled jobs never execute; receipts include exact pre/post state identifiers.
+- **Owner / branch / PR:** unclaimed.
+- **Completion evidence:** pending.
