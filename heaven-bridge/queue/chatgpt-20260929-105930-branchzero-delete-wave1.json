@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-105930-branchzero-delete-wave1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; git fetch --prune origin; $protected=@('main','heaven-bridge'); $branches=@('fix/release-classifier-workflow-scope-20260929','feature/agent-control-plane-v2-20260928','agent/liveness-scheduler-machine-policy-20260929','agent/agent-control-federation-heartbeat-20260929','feature/agent-control-panel-20260928','agent/game-profile-id-containment-v8.8.5-reconcile','ui/frontend-responsive-polish-20260928','release/v8.8.5-20260929','agent/smart-pack-planner-core','integration/smart-pack-planner-main-20260929','integration/smart-pack-planner-main-r2-20260929','support/updater-publication-input-scope-20260928','agent/archive-streaming-budget-20260928','agent/support-bundle-share-safety-20260928','agent/support-auto-updater-release-security-audit-20260928','agent/replacefilew-failure-characterization-20260927','agent/replacefilew-failure-characterization-v2','agent/windows-live-containment-hardening','agent/windows-live-containment-hardening-v2','agent/support-updater-binary-asset-accept-20260928'); $deleted=@(); $missing=@(); foreach($b in $branches){ if($protected -contains $b){ throw \"PROTECTED_BRANCH_IN_DELETE_SET:$b\" }; $hit=git ls-remote --heads origin \"refs/heads/$b\"; if($LASTEXITCODE -ne 0){ throw \"LSREMOTE_FAILED:$b\" }; if([string]::IsNullOrWhiteSpace(($hit -join ''))){ $missing += $b; continue }; git push origin --delete $b; if($LASTEXITCODE -ne 0){ throw \"DELETE_FAILED:$b\" }; $deleted += $b }; Write-Output (\"DELETED=\"+($deleted -join ',')); Write-Output (\"ALREADY_MISSING=\"+($missing -join ',')); $remaining=(git ls-remote --heads origin | ForEach-Object { ($_ -split '\\s+')[1] -replace '^refs/heads/','' } | Sort-Object); Write-Output (\"REMAINING_COUNT=\"+$remaining.Count); $remaining | ForEach-Object { Write-Output (\"BRANCH=\"+$_) }",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T10:59:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
