@@ -1,9 +1,10 @@
 {
   "id": "000-actionsdiag-20260929-105428",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:56:31.817166+00:00"
+  "updated_at": "2026-09-29T10:57:21.407068+00:00",
+  "exit_code": 1
 }
