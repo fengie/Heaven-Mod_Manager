@@ -74,7 +74,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string HeaderSummary=>$"{EnabledCount} enabled • {FullyEffectiveCount} fully effective • {ComposedCount} composed • {BlockerCount} choice(s) • {IssueCount} suspect(s) • {RevalidationCount} revalidate";
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public int InstalledCount=>Mods.Count;
-    public string InstalledCountLabel=>$"{InstalledCount} logical {(InstalledCount==1?"mod":"mods")}";
+    public string InstalledCountLabel\n    {\n        get\n        {\n            using var __mhwTrace=MasterDebugLog.BeginMethod();\n            return $"{InstalledCount} logical {(InstalledCount==1?"mod":"mods")}";\n        }\n    }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
     public int EnabledCount=>Mods.Count(x=>x.StagedEnabled!=false);
     public int StagedCount=>Mods.Count(x=>x.HasStagedChanges);
