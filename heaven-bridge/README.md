@@ -71,6 +71,25 @@ Core capabilities:
 
 Clipboard reads require an explicit per-job `allow_relay: true` opt-in because clipboard contents are returned through the private GitHub relay. Never use clipboard or GUI text actions to transmit secrets through this relay.
 
+## Self-healing persistence
+
+The bridge must not depend on the bridge itself for recovery.
+
+Bootstrap installs two independent elevated interactive tasks on every bridge host:
+
+- `Heaven Local Bridge` — the canonical worker.
+- `Heaven Local Bridge Watchdog` — a Git/network-independent local watchdog.
+
+Both task definitions are refreshed on every bootstrap, use `MultipleInstances IgnoreNew`, restart once per minute with the maximum Task Scheduler restart count, and explicitly set an infinite execution time limit. This avoids both finite restart-budget exhaustion and Windows Task Scheduler's default 72-hour execution limit.
+
+The worker writes `%USERPROFILE%\HeavenBridge\worker-local-heartbeat.json` every 15 seconds from a dedicated local thread. The watchdog checks the exact canonical worker process plus this heartbeat every 30 seconds. A missing worker is restarted immediately; a live worker with a stale/mismatched heartbeat is recycled after the startup grace window. The watchdog never needs GitHub, relay state, or a healthy worker to make that decision.
+
+Task Scheduler is not the sole persistence path. Bootstrap also installs Startup-folder fallbacks for both worker and watchdog, and the worker's singleton lock plus the watchdog's singleton mutex prevent duplicate live owners.
+
+`manage.ps1 STATUS` is healthy only when the worker, watchdog, current runtime copies, scheduled-task run levels, local heartbeat, and remote relay heartbeat all agree. `STOP` deliberately stops the watchdog before the worker so an intentional shutdown is not auto-repaired.
+
+Install/repair this persistence on **both `heaven2` and `heaven`**. A host is not considered bridge-ready merely because a worker process happens to exist.
+
 ## Operator quickstart
 
 Run these from the repository root on each machine where bridge control is required. For the intended topology, install/run the worker on both `heaven2` and `heaven`; the worker derives its host identity from `HEAVEN_BRIDGE_HOST` or `COMPUTERNAME`:
@@ -83,13 +102,13 @@ Run these from the repository root on each machine where bridge control is requi
 .\heaven-bridge\manage.ps1 RECOVER
 ```
 
-- `START` uses the hardened bootstrap when the canonical v4 worker is not already running, then performs the same health checks as `STATUS`.
-- `STATUS` verifies there is exactly one canonical v4 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current, the canonical task is configured at `Highest`, and the live heartbeat reports `elevated: true`. It exits nonzero when any of those invariants are false.
+- `START` uses the hardened bootstrap when the canonical v6 worker is not already running, then performs the same health checks as `STATUS`.
+- `STATUS` verifies there is exactly one canonical v6 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current, the canonical task is configured at `Highest`, and the live heartbeat reports `elevated: true`. It exits nonzero when any of those invariants are false.
 - `TEST` compiles the worker and both committed test suites, runs both suites, and parses the PowerShell bootstrap/operator scripts.
-- `STOP` stops only the canonical v4 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
+- `STOP` stops only the canonical v6 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
 - `RECOVER` runs the hardened bootstrap and then requires `STATUS` to become healthy. Bootstrap preserves a dirty/diverged relay HEAD and tracked diff under `%USERPROFILE%\HeavenBridge\bootstrap-recovery` before realigning the disposable relay checkout.
 
-If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v4 heartbeat is healthy.
+If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v6 heartbeat is healthy.
 
 ## Job schema
 
