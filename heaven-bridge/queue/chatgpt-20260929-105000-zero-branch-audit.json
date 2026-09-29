@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-105000-zero-branch-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:50:00Z",
+  "ttl_seconds": 3600,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Continue'\n$repo='C:\\Users\\Xxkan\\mhw-mods-work-canonical'\nSet-Location $repo\ngit fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\n$active=@()\nforeach($line in @(git worktree list --porcelain)){ if($line -like 'branch refs/heads/*'){ $active += $line.Substring(18) } }\n$remote=@(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object { $_ -and $_ -ne 'HEAD' -and $_ -ne 'main' -and $_ -ne 'heaven-bridge' })\n$deleted=@(); $preserved=@()\nforeach($b in $remote){\n  if($b -in $active){ $preserved += [ordered]@{branch=$b;reason='active-worktree'}; continue }\n  git merge-base --is-ancestor \"origin/$b\" origin/main\n  if($LASTEXITCODE -eq 0){\n    git push origin --delete $b\n    if($LASTEXITCODE -eq 0){$deleted += [ordered]@{branch=$b;proof='ancestor-of-main'}} else {$preserved += [ordered]@{branch=$b;reason='delete-failed'}}\n    continue\n  }\n  $cherry=@(git cherry origin/main \"origin/$b\" 2>$null)\n  $plus=@($cherry | Where-Object { $_ -like '+ *' })\n  if($plus.Count -eq 0){\n    git push origin --delete $b\n    if($LASTEXITCODE -eq 0){$deleted += [ordered]@{branch=$b;proof='patch-equivalent-to-main'}} else {$preserved += [ordered]@{branch=$b;reason='delete-failed'}}\n  } else {\n    $preserved += [ordered]@{branch=$b;reason='unique-patches';unique=$plus.Count}\n  }\n}\ngit fetch origin --prune | Out-Null\n$remaining=@(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | Where-Object { $_ -and $_ -ne 'HEAD' -and $_ -ne 'main' })\n[ordered]@{main=(git rev-parse origin/main);deleted=$deleted;preserved=$preserved;active_worktrees=$active;remaining_remote_count=$remaining.Count;remaining_remote=$remaining} | ConvertTo-Json -Depth 6",
+  "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+  "timeout_seconds": 900,
+  "priority": "highest"
+}
