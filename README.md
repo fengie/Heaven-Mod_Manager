@@ -1,4 +1,9 @@
-# v8.8.12 Universal Mod Manager
+# v8.8.13 Universal Mod Manager
+
+## v8.8.13 — repeatable recipe family restore
+
+Restoring family relationships from the same portable recipe is now idempotent. After the first explicit restore creates the manager-owned local family, repeating that same restore recognizes the complete role-consistent imported family and returns a no-op instead of incorrectly reporting a conflicting local family. Mixed, manual, partial, or role-mismatched local families still fail closed for review.
+
 
 ## v8.8.12 — import publication isolation
 
