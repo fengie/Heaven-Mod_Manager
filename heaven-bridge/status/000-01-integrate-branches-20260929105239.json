@@ -1,0 +1,9 @@
+{
+  "id": "000-01-integrate-branches-20260929105239",
+  "state": "running",
+  "action": "codex",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:53:27.041227+00:00"
+}
