@@ -64,6 +64,12 @@ A live private-relay acceptance on product head `085781aa57bc3bec3d07004cb72c7a5
 
 These are checkpoint facts, not permission to reuse stale evidence. If `main` or the PR head advances, reconcile and rerun affected exact-head gates before integration.
 
+## Core liveness hardening checkpoint
+
+Canonical `main` commit `486b909d9a92c1dc120fb28a37ce49d989bd1c59` closes a managed-worker liveness gap: a non-terminal local record with no heartbeat/update/start/create timestamp now fails closed as `disconnected` and cannot consume live capacity or ownership. Regression coverage explicitly proves both the missing-heartbeat state and capacity behavior, and existing tests that model active local workers now provide fresh heartbeat evidence.
+
+Focused verification on the exact patched liveness module used Node 22 syntax checking plus deterministic missing/fresh/stale/capacity assertions and passed. Hosted Agent Control PR Gate run `36555647454` did **not** execute source verification: both `ubuntu-latest` and `windows-latest` jobs received no runner (`runner_id: 0`), executed zero steps, produced no logs, and failed before checkout. Do not misreport that run as a source/test failure or as passing evidence.
+
 ## Current known limitation
 
 The intended clean limitation is provider discovery, not fake support: automatic enumeration of external ChatGPT sessions is unavailable. The normalized provider/registration contract exists so supported bridge observations can be registered and reconciled honestly.
