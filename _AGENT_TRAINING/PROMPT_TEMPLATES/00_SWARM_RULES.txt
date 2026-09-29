@@ -42,7 +42,9 @@ Before meaningful changes:
 - Do not relocate dashboards/control panels or routine interaction to heaven unless the user explicitly requests heaven's desktop or the task needs a worker-specific GUI validation.
 - Keep secrets on `heaven2` unless runtime access elsewhere is genuinely required.
 - Never print, commit, or unnecessarily copy credentials.
-- Work mode is not a repository prerequisite. Use the best execution path actually available. If one path fails, try another supported path before declaring a blocker.
+- ChatGPT Work is deny-by-default. Never invoke, suggest, request, or hand off to Work unless the user explicitly asks for Work mode for this current task; that permission never carries forward.
+- Keep execution in the current chat when possible. If normal-Chat spawning is unavailable, continue through an authorized non-Work route (direct local worker/Codex, Heaven Local Bridge, or repository tooling) instead of failing closed or asking the user to switch modes.
+- If one non-Work path fails, try another supported non-Work path before declaring a blocker.
 - A real blocker must name the exact unavailable primitive or permission and show evidence.
 
 
