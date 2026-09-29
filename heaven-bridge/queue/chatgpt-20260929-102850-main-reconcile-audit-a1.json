@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-102850-main-reconcile-audit-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:28:50Z",
+  "ttl_seconds": 3600,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$configs=Get-ChildItem -Path 'C:\\Users\\Xxkan' -Filter config -File -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Directory.Name -eq '.git' -and (Select-String -Path $_.FullName -Pattern 'fengie/mhw-mods' -Quiet -ErrorAction SilentlyContinue) }\n$repos=@()\nforeach($cfg in $configs){$repo=$cfg.Directory.Parent.FullName; Push-Location $repo; try{$repos += [ordered]@{repo=$repo;current=((& git branch --show-current)|Out-String).Trim();head=((& git rev-parse HEAD)|Out-String).Trim();dirty=(((& git status --porcelain=v1)|Out-String).Trim().Length -gt 0);worktrees=((& git worktree list --porcelain)|Out-String).Trim()}}finally{Pop-Location}}\n$base=($repos|Where-Object{$_.current -eq 'main'}|Select-Object -First 1).repo\nif(-not $base){$base=($repos|Select-Object -First 1).repo}\nPush-Location $base\ntry{git fetch origin --prune | Out-Null; $rows=@(); $refs=git for-each-ref --format='%(refname:short)|%(committerdate:iso8601)|%(subject)' refs/remotes/origin/ | Where-Object{$_ -notmatch '^origin/HEAD\\|'}; foreach($line in $refs){$p=$line -split '\\|',3; $ref=$p[0]; if($ref -eq 'origin/main'){continue}; $counts=git rev-list --left-right --count origin/main...$ref; $cp=($counts -split '\\s+'); $behind=[int]$cp[0]; $ahead=[int]$cp[1]; git merge-base --is-ancestor $ref origin/main 2>$null; $merged=($LASTEXITCODE -eq 0); $rows += [ordered]@{branch=$ref.Substring(7);ahead=$ahead;behind=$behind;merged_into_main=$merged;date=$p[1];subject=$p[2]}}; [ordered]@{base_repo=$base;repos=$repos;branches=$rows|Sort-Object -Property @{Expression='ahead';Descending=$true},branch}|ConvertTo-Json -Depth 6}finally{Pop-Location}",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 300,
+  "priority": "highest"
+}
