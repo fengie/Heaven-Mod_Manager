@@ -107,17 +107,23 @@ export function hasVerifiedCompletionEvidence(agent) {
   ) || verificationArrayPassed(agent?.verificationResults)
     || verificationArrayPassed(metadata.verification_results);
 
-  const acceptanceComplete = explicitTrue(
-    agent?.acceptanceCriteriaComplete,
-    metadata.acceptance_criteria_complete
+  const releaseRequired = explicitTrue(
+    agent?.releaseRequired,
+    metadata.release_required
+  );
+  const releaseVerified = explicitTrue(
+    agent?.releaseVerified,
+    metadata.release_verified,
+    metadata.release_published_and_verified
   );
 
-  return integrated && (verificationPassed || acceptanceComplete);
+  return integrated && verificationPassed && (!releaseRequired || releaseVerified);
 }
 
 export function terminationReconciliationDecision(agent, {
   expectsRepositoryWork = true,
   streamLost = false,
+  durableEvidenceChecked = false,
   maxOpeningMessageChars = 1800
 } = {}) {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
@@ -166,7 +172,7 @@ export function terminationReconciliationDecision(agent, {
     expectsRepositoryWork,
     maxOpeningMessageChars
   });
-  if (noWork.noWork || transportLost) {
+  if ((noWork.noWork || transportLost) && durableEvidenceChecked) {
     return {
       reconcile: true,
       recoveryStatus: "no-durable-work-detected-retry",
@@ -181,7 +187,9 @@ export function terminationReconciliationDecision(agent, {
     recoveryStatus: "work-unverified",
     retry: false,
     action: "inspect",
-    reason: noWork.reason || "terminal-output-without-durable-proof"
+    reason: durableEvidenceChecked
+      ? (noWork.reason || "terminal-output-without-durable-proof")
+      : "durable-evidence-scan-incomplete"
   };
 }
 
