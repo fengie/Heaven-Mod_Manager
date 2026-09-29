@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-103600-main-bridge-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:36:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:35:42.429138+00:00",
+  "finished_at": "2026-09-29T10:35:44.257256+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\ngit : fatal: 'C:\\Users\\Xxkan\\HeavenBridgeMainVerify' is not a working tree\r\nAt line:1 char:191\r\n+ ... fy'; if(Test-Path $d){ git worktree remove --force $d 2>$null; if(Tes ...\r\n+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: 'C:\\User... a working tree:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-103600-main-bridge-verify.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-103600-main-bridge-verify.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 493,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "0ce6f2c6753f0796370fd3046d452af0ebf5a4e3b1c273ff1d527d269f0a202b"
+}
