@@ -1,0 +1,14 @@
+{
+  "id": "------------------------------------------------------------------------------------------g1108",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:08:10Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'\n$tmp = Join-Path $env:USERPROFILE 'HeavenBridge\\verify-main-g1108'\ngit -C $repo fetch origin +refs/heads/main:refs/remotes/origin/main\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n$sha = (git -C $repo rev-parse refs/remotes/origin/main).Trim()\nWrite-Output \"REMOTE_MAIN_SHA=$sha\"\nif (Test-Path -LiteralPath $tmp) {\n  git -C $repo worktree remove --force $tmp 2>$null\n  if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force }\n}\ngit -C $repo worktree add --detach $tmp $sha\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\ntry {\n  $paths = @(\n    (Join-Path $tmp 'heaven-bridge\\worker.py'),\n    (Join-Path $tmp 'heaven-bridge\\test_worker.py'),\n    (Join-Path $tmp 'heaven-bridge\\tests\\test_worker.py'),\n    (Join-Path $tmp 'heaven-bridge\\bootstrap.ps1'),\n    (Join-Path $tmp 'heaven-bridge\\manage.ps1'),\n    (Join-Path $tmp 'heaven-bridge\\uia.ps1')\n  )\n  foreach ($p in $paths) { if (-not (Test-Path -LiteralPath $p)) { throw \"missing expected path: $p\" } }\n  python -m py_compile $paths[0] $paths[1] $paths[2]\n  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n  python $paths[1]\n  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n  python $paths[2]\n  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n  foreach ($ps in @($paths[3],$paths[4],$paths[5])) {\n    $tokens=$null; $errors=$null\n    [void][System.Management.Automation.Language.Parser]::ParseFile($ps,[ref]$tokens,[ref]$errors)\n    if ($errors.Count -gt 0) { $errors | Out-String | Write-Error; exit 1 }\n  }\n  $plugin = Get-Content -Raw -LiteralPath (Join-Path $tmp 'heaven-bridge\\plugin\\plugin.json') | ConvertFrom-Json\n  $codex = Get-Content -Raw -LiteralPath (Join-Path $tmp 'heaven-bridge\\plugin\\.codex-plugin\\plugin.json') | ConvertFrom-Json\n  if ($plugin.version -ne $codex.version) { throw \"plugin manifest version mismatch\" }\n  git -C $tmp diff --check\n  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n  Write-Output \"PLUGIN_VERSION=$($plugin.version)\"\n  Write-Output 'EXACT_MAIN_GATE_OK'\n} finally {\n  git -C $repo worktree remove --force $tmp 2>$null\n}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800
+  }
+}
