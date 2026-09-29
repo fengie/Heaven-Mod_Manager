@@ -189,6 +189,70 @@ export function isProviderCapacityErrorMessage(value) {
   ].some(pattern => pattern.test(text));
 }
 
+
+function providerCapacityEventAt(agent) {
+  for (const value of [agent?.finishedAt, agent?.updatedAt, agent?.heartbeatAt, agent?.startedAt]) {
+    const parsed = Date.parse(String(value || ""));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function providerCapacityResetAt(value) {
+  const text = String(value || "");
+  const match = text.match(/try\s+again\s+at\s+([A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?,\s+\d{4}\s+\d{1,2}:\d{2}\s+(?:AM|PM))/i);
+  if (!match) return null;
+  const normalized = match[1].replace(/(\d{1,2})(?:st|nd|rd|th)/i, "$1");
+  const parsed = Date.parse(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function providerCapacityCircuit(state, {
+  now = Date.now(),
+  fallbackCooldownMs = 15 * 60_000
+} = {}) {
+  const agents = Array.isArray(state?.agents) ? state.agents : [];
+  const failures = agents
+    .filter(agent => ["capacity-blocked", "failed"].includes(String(agent?.status || "")))
+    .filter(agent => isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error))
+    .map(agent => ({ agent, at: providerCapacityEventAt(agent) }))
+    .filter(item => Number.isFinite(item.at))
+    .sort((a, b) => b.at - a.at);
+
+  const latest = failures[0];
+  if (!latest) {
+    return { blocked: false, reason: null, blockedUntil: null, sourceAgentId: null, remainingMs: 0 };
+  }
+
+  const recovered = agents.some(agent => {
+    if (agent?.status !== "done" || Number(agent?.exitCode) !== 0) return false;
+    const at = providerCapacityEventAt(agent);
+    return Number.isFinite(at) && at > latest.at;
+  });
+  if (recovered) {
+    return {
+      blocked: false,
+      reason: "provider-recovered-after-capacity-event",
+      blockedUntil: null,
+      sourceAgentId: latest.agent?.id || null,
+      remainingMs: 0
+    };
+  }
+
+  const explicitReset = providerCapacityResetAt(latest.agent?.lastMessage || latest.agent?.error);
+  const fallback = latest.at + Math.max(60_000, Number(fallbackCooldownMs) || 15 * 60_000);
+  const until = explicitReset ?? fallback;
+  const blocked = until > Number(now);
+
+  return {
+    blocked,
+    reason: blocked ? "provider-capacity" : "provider-capacity-window-expired",
+    blockedUntil: new Date(until).toISOString(),
+    sourceAgentId: latest.agent?.id || null,
+    remainingMs: blocked ? Math.max(0, until - Number(now)) : 0
+  };
+}
+
 export function classifyAuthoritativeExit(agent, exitCode) {
   if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
     return "stopped";
@@ -608,12 +672,14 @@ export function recommendNextActions({ state, integrationQueue = [], repositoryC
   if (uncertain.length) push(95, "recovery", `${uncertain.length} worker${uncertain.length === 1 ? "" : "s"} need reconciliation`, "Their exact process ownership or completion could not be proven. Preserve state before replacement.", { type: "inspect-workers", ids: uncertain.map(agent => agent.id) });
   const reviewable = integrationQueue.filter(item => item.state === "candidate" && item.reviewState !== "approved");
   if (reviewable.length) push(85, "review", `${reviewable.length} integration candidate${reviewable.length === 1 ? "" : "s"} need independent review`, "Completed branches should enter review before integration.", { type: "workflow", workflowId: "review" });
-  const failed = state.agents.filter(agent => agent.status === "failed");
-  const quota = failed.filter(agent => /usage limit|credits|quota/i.test(agent.lastMessage || agent.error || ""));
-  if (quota.length) push(80, "runtime", `${quota.length} worker${quota.length === 1 ? "" : "s"} were blocked by runtime quota`, "Retrying immediately is unlikely to add engineering value until runtime capacity is available.", null);
+  const capacity = providerCapacityCircuit(state);
+  if (capacity.blocked) {
+    const until = capacity.blockedUntil ? ` until ${capacity.blockedUntil}` : "";
+    push(90, "runtime", "Codex provider capacity is blocked", `Agent dispatch is paused${until}. Continue deterministic builds/tests/computer-control through Heaven Bridge proc_run instead of retrying doomed Codex workers.`, null);
+  }
   const activeMain = activeAgents(state, "main");
   const federatedMain = federationSnapshot(migrateFederationState(state.federation)).agents.some(agent => agent.live && agent.role === "main");
-  if (!activeMain.length && !federatedMain && !reviewable.length && !state.settings?.dispatchPaused && !state.settings?.emergencyStop) push(60, "dispatch", "No active Primary Programmer is registered", deriveMission(state, repositoryContext), { type: "workflow", workflowId: "usual-swarm" });
+  if (!capacity.blocked && !activeMain.length && !federatedMain && !reviewable.length && !state.settings?.dispatchPaused && !state.settings?.emergencyStop) push(60, "dispatch", "No active Primary Programmer is registered", deriveMission(state, repositoryContext), { type: "workflow", workflowId: "usual-swarm" });
   if (!items.length) push(40, "status", "No urgent control-plane action", "Current registered work has no detected blocker requiring operator intervention.", null);
   return items.sort((a, b) => b.priority - a.priority).slice(0, 5);
 }

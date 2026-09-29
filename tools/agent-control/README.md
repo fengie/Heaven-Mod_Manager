@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.1 does
+## What v0.5.2 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -34,6 +34,7 @@ This is the execution layer that sits above the repository's existing agent doct
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 - Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
 - Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
+- Classifies Codex usage/quota exhaustion as `capacity-blocked`, preserves the unfinished task/branch as blocked work, and opens a dispatch circuit until the provider reset window expires (or a later successful worker proves recovery). Direct Heaven Bridge `proc_run` build/test/filesystem/process/computer-control work remains available during the cooldown.
 
 ## Federated registry and heartbeat semantics
 

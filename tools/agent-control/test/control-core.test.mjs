@@ -10,6 +10,7 @@ import {
   deploymentBatchCapacity,
   migrateControlState,
   planWorkflow,
+  providerCapacityCircuit,
   interpretCommand,
   supportLanesFor,
   canUseMachineForRepositoryWrite,
@@ -287,6 +288,70 @@ test("operator stop intent dominates an authoritative zero exit", () => {
     exitCode: 0,
     completionEvidence: "verified-operator-stop"
   }), false);
+});
+
+
+test("provider capacity circuit honors explicit reset and closes after a later successful worker", () => {
+  const current = state();
+  current.agents.push({
+    id: "quota-1",
+    status: "capacity-blocked",
+    exitCode: 1,
+    finishedAt: "2026-09-29T10:54:06.000Z",
+    lastMessage: "You've hit your usage limit. Try again at Oct 4th, 2026 8:18 AM."
+  });
+
+  const blocked = providerCapacityCircuit(current, { now: Date.parse("2026-09-29T11:00:00.000Z") });
+  assert.equal(blocked.blocked, true);
+  assert.equal(blocked.reason, "provider-capacity");
+  assert.equal(blocked.sourceAgentId, "quota-1");
+  assert.match(blocked.blockedUntil, /^2026-10-04T/);
+
+  current.agents.push({
+    id: "recovered-1",
+    status: "done",
+    exitCode: 0,
+    finishedAt: "2026-10-01T12:00:00.000Z"
+  });
+  const recovered = providerCapacityCircuit(current, { now: Date.parse("2026-10-01T12:01:00.000Z") });
+  assert.equal(recovered.blocked, false);
+  assert.equal(recovered.reason, "provider-recovered-after-capacity-event");
+});
+
+test("provider capacity circuit uses a bounded cooldown when no reset time is supplied", () => {
+  const current = state();
+  current.agents.push({
+    id: "quota-2",
+    status: "failed",
+    exitCode: 1,
+    finishedAt: "2026-09-29T11:00:00.000Z",
+    lastMessage: "429 insufficient_quota"
+  });
+
+  assert.equal(providerCapacityCircuit(current, {
+    now: Date.parse("2026-09-29T11:05:00.000Z"),
+    fallbackCooldownMs: 10 * 60_000
+  }).blocked, true);
+
+  assert.equal(providerCapacityCircuit(current, {
+    now: Date.parse("2026-09-29T11:11:00.000Z"),
+    fallbackCooldownMs: 10 * 60_000
+  }).blocked, false);
+});
+
+test("recommendations do not propose another swarm while provider capacity is blocked", () => {
+  const current = state();
+  current.agents.push({
+    id: "quota-3",
+    status: "capacity-blocked",
+    exitCode: 1,
+    finishedAt: "2026-09-29T11:00:00.000Z",
+    lastMessage: "Usage quota exceeded. Try again at Oct 4th, 2026 8:18 AM."
+  });
+  const actions = recommendNextActions({ state: current, integrationQueue: [] });
+  assert.equal(actions[0].kind, "runtime");
+  assert.match(actions[0].title, /provider capacity/i);
+  assert.equal(actions.some(item => item.kind === "dispatch"), false);
 });
 
 test("counted deployment is rejected before partial launch when capacity is insufficient", () => {
