@@ -3343,6 +3343,46 @@ async function startUsualSwarm(body = {}) {
   }, { operatorInitiated: true });
 }
 
+async function startPerpetualSwarm(body = {}) {
+  updateControlSettings({
+    autonomyLevel: "engineering-autopilot",
+    dispatchPaused: false,
+    readOnly: false,
+    draining: false,
+    clearEmergencyStop: true,
+    reason: "operator-start-perpetual-swarm"
+  });
+
+  const objective = String(body.objective || "").trim();
+  if (!objective) throw new Error("Perpetual swarm objective is required.");
+
+  const before = refreshState();
+  if (before.autopilot?.enabled) {
+    return {
+      perpetual: true,
+      alreadyRunning: true,
+      autopilot: before.autopilot
+    };
+  }
+
+  startAutopilot({
+    ...body,
+    objective,
+    perpetual: true
+  });
+
+  // Advance through sync-plan immediately so a one-click launch does useful work
+  // without waiting for two background scheduler ticks.
+  await autopilotStep();
+  await autopilotStep();
+
+  return {
+    perpetual: true,
+    alreadyRunning: false,
+    autopilot: refreshState().autopilot
+  };
+}
+
 function buildTakeoverForAgent(id, { persist = false, safetyControl = false } = {}) {
   const state = refreshState();
   if (persist && !safetyControl) {
@@ -3673,6 +3713,32 @@ function autopilotRoutingCurrent(state, now = Date.now()) {
     && observedAt <= now && expiresAt > now;
 }
 
+function refreshPerpetualRoutingLease(state, now = Date.now()) {
+  if (!state.autopilot?.perpetual || autopilotRoutingCurrent(state, now)) return state;
+  const observedAt = new Date(now);
+  const expiresAt = new Date(now + 10 * 60_000);
+  const updated = loadState();
+  updated.settings.routingManifest = {
+    source: "perpetual-controller-reconciliation",
+    mode: "overlay",
+    observedAt: observedAt.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    assignments: []
+  };
+  addEvent(updated, "routing.manifest-autorenewed", "Perpetual cycle renewed reconciled ownership freshness", {
+    reason: "perpetual-one-click-continuity",
+    evidence: {
+      source: updated.settings.routingManifest.source,
+      mode: "overlay",
+      observedAt: updated.settings.routingManifest.observedAt,
+      expiresAt: updated.settings.routingManifest.expiresAt,
+      registeredActiveAgents: updated.agents.filter(agent => coreIsActiveStatus(agent.status)).length
+    }
+  });
+  saveState(updated);
+  return refreshState();
+}
+
 function persistAutopilotPhase(phase, reason, patch = {}) {
   const state = loadState();
   state.autopilot = transitionAutopilot(state.autopilot, phase, { reason, patch });
@@ -3743,6 +3809,14 @@ function startAutopilot(body = {}) {
     repairLoops: 0,
     maxRepairLoops: body.maxRepairLoops === undefined ? 3 : Number(body.maxRepairLoops),
     maxIterations: body.maxIterations === undefined ? 40 : Number(body.maxIterations),
+    perpetual: Boolean(body.perpetual),
+    cycleNumber: 0,
+    maxCycles: body.maxCycles === undefined ? 0 : Number(body.maxCycles),
+    phaseRetries: 0,
+    maxPhaseRetries: body.maxPhaseRetries === undefined ? 2 : Number(body.maxPhaseRetries),
+    integrationAgentId: null,
+    hygieneAgentId: null,
+    expansionAgentId: null,
     runId: randomUUID(),
     baseBranch: String(body.baseBranch || "main").trim() || "main",
     startedAt: now,
@@ -3753,9 +3827,14 @@ function startAutopilot(body = {}) {
     lastCanonicalMainSha: null,
     lastTruthAt: null
   });
-  addEvent(state, "autopilot.started", "Engineering autopilot started", {
+  addEvent(state, "autopilot.started", state.autopilot.perpetual ? "Perpetual engineering cycle started" : "Engineering autopilot started", {
     reason: "operator-direction",
-    evidence: { runId: state.autopilot.runId, objective }
+    evidence: {
+      runId: state.autopilot.runId,
+      objective,
+      perpetual: state.autopilot.perpetual,
+      cycleNumber: state.autopilot.cycleNumber
+    }
   });
   saveState(state);
   return state.autopilot;
@@ -3813,7 +3892,8 @@ async function reconcileAutopilotTruth() {
   if (!canonicalMainSha || !/^[0-9a-f]{40}$/i.test(canonicalMainSha)) {
     throw new Error("Could not establish canonical origin/main SHA.");
   }
-  const state = refreshState();
+  let state = refreshState();
+  state = refreshPerpetualRoutingLease(state);
   const routingCurrent = autopilotRoutingCurrent(state);
   const updated = loadState();
   updated.autopilot = normalizeAutopilotState({
@@ -3829,10 +3909,23 @@ function autopilotCandidate(state) {
   return state.agents.find(agent => agent.id === state.autopilot?.candidateAgentId) || null;
 }
 
+function autopilotImplementationObjective(state) {
+  if (!state.autopilot?.perpetual) return state.autopilot?.objective || "";
+  const cycle = Number(state.autopilot?.cycleNumber || 0) + 1;
+  return [
+    `Perpetual engineering cycle #${cycle}.`,
+    "Stabilize before expanding: inspect current canonical main and active ownership, then fix the highest-impact reproducible bug/regression or reliability weakness first.",
+    "If no actionable bug remains, implement the highest-value bounded planned improvement instead.",
+    "Do the work rather than only audit it; add prevention/regression coverage; keep the repository releasable and leave exact evidence for verification/review.",
+    `Standing direction: ${state.autopilot?.objective || "Continuously improve the project."}`
+  ].join(" ");
+}
+
 async function dispatchAutopilotImplementation(state) {
   assertAutonomyPermission(state, "dispatch-support", "autopilot implementation dispatch");
+  const objective = autopilotImplementationObjective(state);
   const result = await executeWorkflow("usual-swarm", {
-    objective: state.autopilot.objective,
+    objective,
     baseBranch: state.autopilot.baseBranch || "main",
     requireReconciledOwnership: true,
     repositoryWriteAuthorized: true
@@ -3843,12 +3936,16 @@ async function dispatchAutopilotImplementation(state) {
 
   const refreshed = refreshState();
   const createdMain = result.created.find(agent => agent.role === "main") || null;
-  const activeMain = refreshed.agents.find(agent =>
+  const matchingMain = refreshed.agents.find(agent =>
     agent.role === "main"
     && coreIsActiveStatus(agent.status)
-    && agent.task === state.autopilot.objective
+    && agent.task === objective
   ) || null;
-  const programmer = createdMain || activeMain;
+  const occupiedMain = refreshed.agents.find(agent =>
+    agent.role === "main"
+    && coreIsActiveStatus(agent.status)
+  ) || null;
+  const programmer = createdMain || matchingMain || occupiedMain;
   if (!programmer) {
     throw new Error("Routing ownership did not provide a managed primary programmer. Refusing to duplicate an externally owned main lane.");
   }
@@ -3917,6 +4014,91 @@ async function dispatchAutopilotRepair(state) {
   }));
 }
 
+async function dispatchAutopilotIntegration(state) {
+  assertAutonomyPermission(state, "prepare-integration", "autopilot reviewed integration");
+  const candidate = autopilotCandidate(state);
+  if (!candidate) throw new Error("Autopilot candidate is missing before integration.");
+  if (candidate.reviewVerdict !== "approved") throw new Error("Autopilot refuses integration without an approved review verdict.");
+  const candidateSha = String(candidate.currentSha || "").trim();
+  return withDeployLock(() => deployOne({
+    role: "integration",
+    task: [
+      `Integrate ONLY approved candidate ${candidate.id} from branch ${candidate.branchName} into canonical origin/main.`,
+      candidateSha ? `Expected candidate tip: ${candidateSha}.` : "Resolve and record the exact candidate tip before integration.",
+      "Fetch/prune immediately, refresh origin/main, inspect the candidate diff and approval evidence, and preserve newer canonical behavior.",
+      "Reconcile conflicts deliberately inside this candidate's scope, rerun the strongest affected checks, then merge/fast-forward the verified candidate into main and push main.",
+      "Do not squash away the candidate identity: remote main must contain the verified candidate tip as an ancestor so Agent Control can prove integration.",
+      "After push, fetch origin/main again and prove the candidate tip is contained. Delete local/remote temporary branches only when that containment proof makes deletion safe.",
+      "Close a directly tied PR only after remote-main proof. Do not merge unrelated branches or publish a release unless the repository's standing release rules independently require it.",
+      "If anything prevents safe integration, stop with exact branch/SHA/error evidence rather than forcing history."
+    ].join("\n"),
+    baseBranch: "main",
+    boundary: `autopilot:integrate:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
+    priority: 99,
+    machine: "auto",
+    targetAgentId: candidate.id,
+    repositoryWriteAuthorized: true,
+    verification: [
+      "Remote origin/main contains the approved candidate tip as an ancestor.",
+      "Affected verification was rerun after reconciliation.",
+      "No unrelated unreviewed work was merged."
+    ]
+  }));
+}
+
+async function dispatchAutopilotHygiene(state) {
+  assertAutonomyPermission(state, "dispatch-support", "autopilot repository hygiene");
+  return withDeployLock(() => deployOne({
+    role: "cleanup",
+    task: [
+      `Perpetual engineering cycle #${Number(state.autopilot?.cycleNumber || 0) + 1} repository hygiene.`,
+      "Refresh canonical main, open PRs/issues, observed temporary branches, task/agent state, and continuity files.",
+      "Finish or close evidence-backed completed work; delete only branches whose unique work is proven integrated; preserve anything unique, ambiguous, active, or newer than canonical behavior.",
+      "Resolve stale PR/branch/issue bookkeeping, update durable continuity and bug-prevention lessons when applicable, and leave main/repository state easy for a fresh agent to understand.",
+      "Do not create cleanup toil merely to make counts reach zero, and do not touch another active owner's mutable boundary."
+    ].join("\n"),
+    baseBranch: "main",
+    boundary: `autopilot:hygiene:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
+    priority: 88,
+    machine: "auto",
+    repositoryWriteAuthorized: true,
+    verification: [
+      "Every deleted branch has integration proof.",
+      "Every closed issue/PR has completion or obsolescence evidence.",
+      "Continuity remains truthful to current origin/main."
+    ]
+  }));
+}
+
+async function dispatchAutopilotExpansion(state) {
+  assertAutonomyPermission(state, "dispatch-support", "autopilot next-cycle expansion");
+  return withDeployLock(() => deployOne({
+    role: "research",
+    task: [
+      `Prepare the next bounded work unit after perpetual engineering cycle #${Number(state.autopilot?.cycleNumber || 0) + 1}.`,
+      "Inspect current origin/main, open plans/issues, recent failures, verification gaps, user-facing friction, performance/reliability debt, and relevant external/current technical information when it materially improves the decision.",
+      "Choose the highest-value unblocked next unit using this priority: correctness/data-loss/security risks; integration/release blockers; user-facing bugs; planned capability; toil/performance/polish.",
+      "Update durable project planning/continuity with a concise next action, acceptance criteria, likely ownership boundary, and required verification. Do not implement product code in this expansion phase.",
+      `Keep the standing direction in scope: ${state.autopilot?.objective || "Continuously improve the project."}`
+    ].join("\n"),
+    baseBranch: "main",
+    boundary: `autopilot:expand:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
+    priority: 72,
+    machine: "auto",
+    lane: "perpetual-next-cycle",
+    repositoryWriteAuthorized: true,
+    verification: ["Durable next-step context names one bounded high-value action and its verification contract."]
+  }));
+}
+
+async function autopilotIntegrationVerified(state) {
+  if (state.autopilot?.phase !== "integrate") return false;
+  const candidate = autopilotCandidate(state);
+  if (!candidate?.currentSha) return false;
+  await git(["fetch", "origin", "--prune"]);
+  return branchTipOnMain(candidate.currentSha);
+}
+
 async function autopilotStep() {
   if (autopilotTickRunning) return null;
   autopilotTickRunning = true;
@@ -3927,9 +4109,11 @@ async function autopilotStep() {
     const truth = await reconcileAutopilotTruth();
     state = refreshState();
     const capacityAvailable = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length < MAX_ACTIVE_AGENTS;
+    const integrationVerified = await autopilotIntegrationVerified(state);
     const decision = decideAutopilotAction(state, {
       routingCurrent: truth.routingCurrent,
-      capacityAvailable
+      capacityAvailable,
+      integrationVerified
     });
 
     if (decision.kind === "idle" || decision.kind === "wait") return { autopilot: state.autopilot, decision };
@@ -3951,6 +4135,9 @@ async function autopilotStep() {
     else if (decision.kind === "dispatch-verification") agent = await dispatchAutopilotVerification(state);
     else if (decision.kind === "dispatch-review") agent = await dispatchAutopilotReview(state);
     else if (decision.kind === "dispatch-repair") agent = await dispatchAutopilotRepair(state);
+    else if (decision.kind === "dispatch-integration") agent = await dispatchAutopilotIntegration(state);
+    else if (decision.kind === "dispatch-hygiene") agent = await dispatchAutopilotHygiene(state);
+    else if (decision.kind === "dispatch-expansion") agent = await dispatchAutopilotExpansion(state);
     else return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
 
     const patch = {};
@@ -3958,6 +4145,9 @@ async function autopilotStep() {
     if (decision.kind === "dispatch-verification") patch.verificationAgentId = agent.id;
     if (decision.kind === "dispatch-review") patch.reviewAgentId = agent.id;
     if (decision.kind === "dispatch-repair") patch.repairAgentId = agent.id;
+    if (decision.kind === "dispatch-integration") patch.integrationAgentId = agent.id;
+    if (decision.kind === "dispatch-hygiene") patch.hygieneAgentId = agent.id;
+    if (decision.kind === "dispatch-expansion") patch.expansionAgentId = agent.id;
     return { autopilot: patchAutopilot(patch), decision, agentId: agent.id };
   } catch (error) {
     try {
@@ -4150,7 +4340,9 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && pathname === "/api/swarm/start") {
       const body = await readJson(req);
-      return sendJson(res, 201, await startUsualSwarm(body));
+      return sendJson(res, 201, body.perpetual === true
+        ? await startPerpetualSwarm(body)
+        : await startUsualSwarm(body));
     }
 
     const workflowMatch = pathname.match(/^\/api\/workflows\/([^/]+)\/(preview|execute)$/);
