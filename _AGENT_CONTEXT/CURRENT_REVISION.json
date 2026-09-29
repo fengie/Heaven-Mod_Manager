@@ -7,15 +7,15 @@
   "currentVersion": "8.8.14",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "close the exact-head Windows verification gate for the v8.8.14 Smart Inbox rollback fail-closed candidate, then publish immediately if all required release gates are green",
+  "nextMilestone": "close the v8.8.14 exact-main Windows release gate for fail-closed Smart Inbox rollback, then verify immediate immutable private-to-public updater publication from the exact verified source",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.13 repeatable recipe-family restore and Smart Inbox source-archive rollback",
-  "status": "v8.8.14-inbox-rollback-fail-closed-candidate",
+  "immediateParentRevision": "v8.8.13 repeatable recipe family restore",
+  "status": "v8.8.14-inbox-rollback-verification",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": "106052f079f6ec23bda7679cb6973d63bdc89052",
-  "verificationScopeNote": "v8.8.14 candidate makes Smart Inbox rollback cleanup failure observable and fail-closed after source archival failure or cancellation. Prior verification evidence remains exact-SHA evidence only; this candidate requires a fresh exact-head Windows gate before merge/release.",
+  "verificationScopeNote": "v8.8.14 adds fail-closed Smart Inbox rollback when source archival and published-package cleanup both fail. Earlier verification evidence remains exact-SHA evidence only; a fresh exact-input Windows release gate is required before publication.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-29 v8.8.14 release candidate: Smart Inbox now surfaces published-package rollback failure instead of reporting a clean skip when source archival also fails; deterministic Windows regression coverage verifies fail-closed behavior.",
     "2026-09-29 v8.8.14 candidate: Smart Inbox rollback failures are surfaced instead of being reported as recoverable skips, with a deterministic Windows regression for the publish/archive/rollback failure cluster.",
     "2026-09-29 v8.8.13 release candidate: current main includes the v8.8.11-v8.8.13 user-facing fixes plus Smart Inbox rollback hardening; release verification is pending a fresh exact-input Windows gate after continuity identity and LR-001 tracing repair.",
     "2026-09-29 reconciliation: release identity advanced to v8.8.7; canonical source audited at fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f; stale release PR #95 and conflicted reconciliation PRs #107/#109 were retired rather than forced; concurrent Agent Control liveness/reliability/security and updater cross-session ownership integrations were preserved; exact verification remains SHA-scoped.",
@@ -136,7 +137,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run the exact v8.8.13 repository verification on Heaven, publish the immutable updater release immediately if green, mirror it to the public updater feed, verify matching tags/assets/digests/source provenance, and do not report SHIPPED until publication is verified.",
+  "nextRequiredAction": "Run the exact v8.8.14 repository verification on Heaven, merge only if green on the exact current-main-based head, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
