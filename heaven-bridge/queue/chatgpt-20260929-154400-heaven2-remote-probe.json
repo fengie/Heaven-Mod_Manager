@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-154400-heaven2-remote-probe",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ports=22,5985,5986; $r=@{}; foreach($p in $ports){$r[\"p$p\"]=(Test-NetConnection -ComputerName heaven2 -Port $p -InformationLevel Quiet -WarningAction SilentlyContinue)}; $ws=$false; try{Test-WSMan heaven2 -ErrorAction Stop|Out-Null;$ws=$true}catch{}; [pscustomobject]@{ssh=$r.p22;winrm_http=$r.p5985;winrm_https=$r.p5986;wsman=$ws}|ConvertTo-Json -Compress",
+    "cwd": "C:\\Users",
+    "timeout_seconds": 45
+  },
+  "created_at": "2026-09-29T15:44:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
