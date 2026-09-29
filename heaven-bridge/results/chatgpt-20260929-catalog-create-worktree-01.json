@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-catalog-create-worktree-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:42:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:41:54.724639+00:00",
+  "finished_at": "2026-09-29T15:41:58.159241+00:00",
+  "stdout": "branch 'agent/unified-mod-catalog-20260929' set up to track 'origin/agent/unified-mod-catalog-20260929'.\nHEAD is now at 1ffe7cb8 Catalog: label entry point for first-time users\n## agent/unified-mod-catalog-20260929...origin/agent/unified-mod-catalog-20260929\n---HEAD---\r\n1ffe7cb8f98dd487e147872460109922c7db3f32\n---ORIGIN MAIN---\r\nb76983b1257a3e428dc2efe95d85a193bd5ad78d\n---MERGE BASE---\r\neff4288b5bcaf03415b481f642869b6c378b859d\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)                -> origin/agent/heaven-file-ops-20260929\n - [deleted]           (none)                -> origin/agent/import-publication-isolation-20260929\n - [deleted]           (none)                -> origin/agent/mod-retirement-20260929\n   a4656b59..5e3bd24e  agent/bug-hunt-swarm-20260929 -> origin/agent/bug-hunt-swarm-20260929\n * [new branch]        agent/bughunt-inbox-source-move-rollback-20260929 -> origin/agent/bughunt-inbox-source-move-rollback-20260929\n + b05f5028...aabfc6fd agent/bughunt-recipe-family-idempotence-20260929 -> origin/agent/bughunt-recipe-family-idempotence-20260929  (forced update)\n   9c4dcc59..59ce506d  fix/legacy-migration-corrupt-cas-20260929 -> origin/fix/legacy-migration-corrupt-cas-20260929\n   feb315a0..5c61dc57  heaven-bridge         -> origin/heaven-bridge\n * [new branch]        perf-startup-20260929 -> origin/perf-startup-20260929\n   e4a75cce..d965e6d6  release-8.8.11-verification-fix -> origin/release-8.8.11-verification-fix\n * [new branch]        release-8.8.12-verification-fix -> origin/release-8.8.12-verification-fix\nPreparing worktree (new branch 'agent/unified-mod-catalog-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-catalog-create-worktree-01.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-catalog-create-worktree-01.stderr.log",
+    "stdout_bytes": 431,
+    "stderr_bytes": 1210,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "acfae61ad0ab960b5871e9b067b84c7716e0bb837956d55ee94625fd62c891a4"
+}
