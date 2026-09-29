@@ -27,6 +27,13 @@
 - A real escaped bug should normally become: bug fix + regression test + reusable lesson review.
 - When a platform-specific boundary matters, run the authoritative platform check or clearly leave it unverified.
 
+## Availability and liveness evidence
+- Separate **resource presence** from **control-channel health**. A failed transport, adapter, runner, heartbeat relay, or cached observation does not by itself prove the underlying resource is offline.
+- Negative availability claims require current authoritative evidence. When a local/cached liveness record is missing or stale, refresh the authoritative source when safe and bounded before degrading status.
+- If transport health is known-bad but resource presence is not independently known, use an explicit unknown/degraded state rather than `offline`.
+- Keep read-only presence checks distinct from mutation/write-readiness checks; local dirtiness, lock state, or replica divergence may block writes without invalidating remote presence.
+- Add regression tests for both evidence refresh and state mapping whenever a false offline/online classification escapes.
+
 ## Git and persistence
 - Make coherent commits that can be reviewed and reverted independently.
 - Push recoverable progress before expensive work can be lost.
