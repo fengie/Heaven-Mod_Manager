@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-154030-heaven-probe-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; $ping=Test-Connection -ComputerName heaven2 -Count 1 -Quiet; $cshare=Test-Path '\\\\heaven2\\c$'; $users=if($cshare){Get-ChildItem '\\\\heaven2\\c$\\Users' -Directory | Select-Object -ExpandProperty Name}else{@()}; [pscustomobject]@{ping=$ping;cshare=$cshare;users=@($users)} | ConvertTo-Json -Compress",
+    "cwd": "C:\\Users",
+    "timeout_seconds": 30
+  },
+  "created_at": "2026-09-29T15:40:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
