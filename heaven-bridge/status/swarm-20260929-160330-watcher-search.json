@@ -1,9 +1,10 @@
 {
   "id": "swarm-20260929-160330-watcher-search",
-  "state": "running",
+  "state": "completed",
   "action": "fs_search",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:03:35.965027+00:00"
+  "updated_at": "2026-09-29T16:03:47.206449+00:00",
+  "exit_code": 0
 }
