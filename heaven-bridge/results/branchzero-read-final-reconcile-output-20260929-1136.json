@@ -1,0 +1,22 @@
+{
+  "id": "branchzero-read-final-reconcile-output-20260929-1136",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:18Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:38:07.679241+00:00",
+  "finished_at": "2026-09-29T11:38:07.680763+00:00",
+  "host": "heaven",
+  "action": "job_output_read",
+  "data": {
+    "job_id": "branchzero-complete-workflows-final-reconcile-20260929-1136-a1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 0,
+    "total_bytes": 0,
+    "next_offset": 0,
+    "eof": true,
+    "content": ""
+  },
+  "job_hash": "b1ac84b45cdbfc6164b4ae1e1faf7c8a0d6792ebc7222752b51353ebc459e2ec"
+}
