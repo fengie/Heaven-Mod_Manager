@@ -80,7 +80,7 @@ DIRECT_ACTIONS = {
     "fs_list", "fs_move", "fs_copy", "fs_delete", "fs_info", "fs_search",
     "fs_read_binary", "fs_write_binary",
     "proc_run", "proc_start", "proc_read", "proc_input", "proc_kill",
-    "proc_list_sessions", "proc_list", "screenshot", "display_list",
+    "proc_list_sessions", "proc_list", "wait_for", "screenshot", "display_list",
     "clipboard_read", "clipboard_write", "app_launch",
     "window_list", "window_focus", "window_move", "window_state", "window_close",
     "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
@@ -1342,6 +1342,120 @@ def _resolve_window(p):
     return int(matches[0]["hwnd"])
 
 
+def wait_for_condition(p, cancel_event=None):
+    condition = str(p.get("condition") or "").strip().lower()
+    supported = {
+        "file_exists", "file_missing",
+        "process_exists", "process_missing",
+        "session_running", "session_stopped",
+        "window_exists", "window_missing",
+    }
+    if condition not in supported:
+        raise BridgeError(
+            "INVALID_WAIT_CONDITION",
+            "condition must be one of: " + ", ".join(sorted(supported)),
+        )
+
+    timeout_seconds = max(0.05, min(float(p.get("timeout_seconds") or 30), 300.0))
+    interval_ms = max(50, min(int(p.get("interval_ms") or 250), 5000))
+    soft_timeout = bool(p.get("soft_timeout", False))
+    started_mono = time.monotonic()
+    deadline = started_mono + timeout_seconds
+    observed = None
+
+    def inspect():
+        if condition in ("file_exists", "file_missing"):
+            path = expand_path(p.get("path"), True)
+            exists = path.exists()
+            return (exists if condition == "file_exists" else not exists), {
+                "path": str(path), "exists": bool(exists)
+            }
+
+        if condition in ("process_exists", "process_missing"):
+            pid = int(p.get("pid") or 0)
+            if pid <= 0:
+                raise BridgeError("WAIT_PID_REQUIRED", "pid must be a positive integer for process waits")
+            identity = process_identity(pid)
+            exists = identity is not None
+            return (exists if condition == "process_exists" else not exists), {
+                "pid": pid, "exists": bool(exists),
+                "creation_token": identity.get("creation_token") if identity else None,
+            }
+
+        if condition in ("session_running", "session_stopped"):
+            sid = str(p.get("session_id") or "").strip()
+            if not sid:
+                raise BridgeError("WAIT_SESSION_REQUIRED", "session_id is required for session waits")
+            with STATE_LOCK:
+                session = SESSIONS.get(sid)
+                snapshot = session_snapshot(sid, session) if session is not None else None
+            running = bool(snapshot and snapshot.get("running"))
+            satisfied = running if condition == "session_running" else not running
+            return satisfied, {
+                "session_id": sid,
+                "known": snapshot is not None,
+                "running": running,
+                "exit_code": snapshot.get("exit_code") if snapshot else None,
+            }
+
+        selector = {
+            key: p.get(key)
+            for key in ("hwnd", "pid", "title", "visible_only", "first_match")
+            if p.get(key) is not None
+        }
+        try:
+            hwnd = _resolve_window(selector)
+            exists = True
+            row = next((r for r in _desktop_window_rows(1000, bool(selector.get("visible_only", True)))
+                        if int(r.get("hwnd") or 0) == int(hwnd)), None)
+            observed_window = row or {"hwnd": int(hwnd)}
+        except BridgeError as exc:
+            if exc.code == "WINDOW_NOT_FOUND":
+                exists = False
+                observed_window = None
+            elif condition == "window_missing" and exc.code == "WINDOW_AMBIGUOUS":
+                exists = True
+                observed_window = {"ambiguous": True, "matches": exc.details.get("matches", [])[:10]}
+            else:
+                raise
+        return (exists if condition == "window_exists" else not exists), {
+            "exists": bool(exists), "window": observed_window
+        }
+
+    while True:
+        if cancel_event is not None and cancel_event.is_set():
+            raise BridgeError(
+                "WAIT_CANCELLED",
+                "wait was cancelled",
+                {"condition": condition, "waited_ms": int((time.monotonic() - started_mono) * 1000)},
+            )
+
+        satisfied, observed = inspect()
+        waited_ms = int((time.monotonic() - started_mono) * 1000)
+        if satisfied:
+            return {
+                "condition": condition,
+                "satisfied": True,
+                "timed_out": False,
+                "waited_ms": waited_ms,
+                "observed": observed,
+            }
+
+        if time.monotonic() >= deadline:
+            data = {
+                "condition": condition,
+                "satisfied": False,
+                "timed_out": True,
+                "waited_ms": waited_ms,
+                "observed": observed,
+            }
+            if soft_timeout:
+                return data
+            raise BridgeError("WAIT_TIMEOUT", "wait condition was not satisfied before timeout", data)
+
+        time.sleep(min(interval_ms / 1000.0, max(0.0, deadline - time.monotonic())))
+
+
 def desktop_focus_window(p):
     user32 = _require_windows_desktop()
     hwnd = _resolve_window(p)
@@ -2084,6 +2198,9 @@ def run_job(job_id, job, cancel_event):
         with STATE_LOCK:
             data = [session_snapshot(sid, s) for sid, s in SESSIONS.items()]
         return make_result(job, action, data=data, started_at=started)
+
+    if action == "wait_for":
+        return make_result(job, action, data=wait_for_condition(p, cancel_event), started_at=started)
 
     if action == "display_list":
         return make_result(job, action, data=desktop_display_list(job_id, cancel_event), started_at=started)
