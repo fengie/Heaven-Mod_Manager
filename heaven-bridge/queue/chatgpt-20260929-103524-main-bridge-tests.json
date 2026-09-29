@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-103524-main-bridge-tests",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:35:24.747Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $dir='C:\\Users\\Xxkan\\HeavenBridgeMainVerify'; if (!(Test-Path $dir)) { git clone https://github.com/fengie/mhw-mods.git $dir | Out-Host }; git -C $dir fetch origin --prune; git -C $dir checkout main; git -C $dir reset --hard origin/main; Write-Output ('HEAD=' + (git -C $dir rev-parse HEAD)); python -m py_compile \"$dir\\heaven-bridge\\worker.py\"; python \"$dir\\heaven-bridge\\test_worker.py\"; python -m unittest discover -s \"$dir\\heaven-bridge\\tests\" -p 'test*.py' -v",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
