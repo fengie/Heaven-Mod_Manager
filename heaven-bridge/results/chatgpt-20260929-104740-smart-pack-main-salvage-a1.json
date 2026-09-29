@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104740-smart-pack-main-salvage-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:40Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:26:29.500325+00:00",
+  "finished_at": "2026-09-29T11:26:32.133368+00:00",
+  "stdout": "branch 'reconcile/smart-pack-current-main-20260929' set up to track 'origin/main'.\nHEAD is now at 50ded0b6 plugin: bump Heaven Local Bridge to v0.6.1\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   0da5f680..c035bcc3  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (new branch 'reconcile/smart-pack-current-main-20260929')\nfatal: invalid reference: origin/agent/smart-pack-planner-core\nfailed to salvage src/MhwModManager.Core/SmartPackPlanner.cs\r\nAt line:21 char:28\r\n+   if($LASTEXITCODE -ne 0){ throw \"failed to salvage $f\" }\r\n+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (failed to salva...tPackPlanner.cs:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : failed to salvage src/MhwModManager.Core/SmartPackPlanner.cs\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104740-smart-pack-main-salvage-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104740-smart-pack-main-salvage-a1.stderr.log",
+    "stdout_bytes": 150,
+    "stderr_bytes": 651,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "b1ed2ba91664cf87df8cff26c6599bbcd28576d26d88bcee98db361b50356375"
+}
