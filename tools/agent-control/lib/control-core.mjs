@@ -185,7 +185,8 @@ export function defaultControlState({ sessionId, hostname }) {
         browser: "brave",
         staleAfterMs: 45_000,
         cooldownMs: 60_000,
-        maxPerSweep: 2
+        maxPerSweep: 2,
+        adaptiveSignatures: true
       },
       swarmTailRecovery: {
         enabled: true,
