@@ -1,0 +1,14 @@
+{
+  "id": "------------------------------------------hcp-pr140-exact-test-20260929-1139",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:30Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "%USERPROFILE%\\HeavenBridge",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'\n$root=(Resolve-Path \"$env:USERPROFILE\\HeavenBridge\").Path\n$wt=Join-Path $env:USERPROFILE 'HeavenWorktrees\\hcp-pr140-exact'\nif (Test-Path $wt) { git -C $root worktree remove --force $wt 2>$null; Remove-Item -Recurse -Force $wt -ErrorAction SilentlyContinue }\ngit -C $root fetch --quiet origin refs/heads/agent/hcp-phase0-hardening-20260929-1138\ngit -C $root worktree add --detach $wt 00744de03f562b3c592988a161680057aa79c015\n$code=0\ntry {\n  Push-Location $wt\n  python plugins/heaven-control-plane/verify.py\n  if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE }\n  if ($code -eq 0) { git diff --check; if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE } }\n  if ($code -eq 0) { python -m py_compile plugins/heaven-control-plane/heaven_control_plane/*.py plugins/heaven-control-plane/heaven_control_plane/adapters/*.py plugins/heaven-control-plane/tests/test_vertical_slice.py; if ($LASTEXITCODE -ne 0) { $code=$LASTEXITCODE } }\n  Pop-Location\n} finally {\n  try { Pop-Location } catch {}\n  git -C $root worktree remove --force $wt 2>$null\n}\nif ($code -ne 0) { exit $code }\nWrite-Output 'HCP_PR140_VERIFY_OK'\nWrite-Output 'HEAD=00744de03f562b3c592988a161680057aa79c015'"
+  },
+  "priority": "highest"
+}
