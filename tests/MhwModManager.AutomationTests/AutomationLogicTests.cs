@@ -46,7 +46,9 @@ public sealed class AutomationLogicTests
     {
         var engine=new CrashBisectorEngine();
         var result=await engine.RunAsync(["a","b"],(enabled,_)=>Task.FromResult(enabled.Contains("a")&&enabled.Contains("b")),TestContext.Current.CancellationToken);
-        Assert.False(result.Isolated); Assert.Equal(2,result.Suspects.Count);
+        Assert.True(result.Isolated);
+        Assert.Equal(2,result.Suspects.Count);
+        Assert.Contains("1-minimal", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
