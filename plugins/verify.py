@@ -19,6 +19,7 @@ TARGETS = [
     "heaven-database",
     "heaven-visual",
     "heaven-system-ops",
+    "heaven-cluster",
 ]
 
 failed = []
