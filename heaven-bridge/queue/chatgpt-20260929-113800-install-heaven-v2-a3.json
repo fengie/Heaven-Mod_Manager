@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-113800-install-heaven-v2-a3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:38:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900,
+    "command": "$ErrorActionPreference='Stop'; $dest=Join-Path $env:TEMP 'mhw-v2-runner-1138'; git clone --depth 1 --branch main https://github.com/fengie/mhw-mods.git $dest; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output ('MAIN_SHA=' + (git -C $dest rev-parse HEAD).Trim()); & (Join-Path $dest 'heaven-bridge\\install-github-runner.ps1') -RunnerName 'heaven-v2' -RunnerDirectory (Join-Path $env:USERPROFILE 'actions-runner-heaven-v2') -Labels @('heaven-v2','local-bridge','mhw-mods'); exit $LASTEXITCODE"
+  },
+  "priority": "highest"
+}
