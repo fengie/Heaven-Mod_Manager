@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0819-relay-git-diagnose",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "git status -sb; git rev-parse HEAD; git rev-parse origin/heaven-bridge; git branch -vv; git config --get-all branch.heaven-bridge.merge; git config --get-all remote.origin.fetch; git status --porcelain=v1",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T08:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
