@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0851-runtime-cancel-target-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:51:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output 'cancel-target-started'; Start-Sleep -Seconds 120; Write-Output 'SHOULD_NOT_REACH'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 180
+  },
+  "priority": "highest"
+}
