@@ -5,8 +5,6 @@ on:
     types: [closed]
   push:
     branches: [main]
-    paths:
-      - ".github/workflows/one-shot-superseded-branch-cleanup.yml"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -17,7 +15,7 @@ permissions:
 
 concurrency:
   group: branch-reconciliation-cleanup
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   cleanup:
@@ -33,6 +31,23 @@ jobs:
             if (info.data.default_branch !== "main") {
               core.setFailed(`Default branch is ${info.data.default_branch}; refusing cleanup`);
               return;
+            }
+
+            let deleteBranchOnMerge = Boolean(info.data.delete_branch_on_merge);
+            let settingEnforcement = deleteBranchOnMerge ? "already-enabled" : "not-enabled";
+            if (!deleteBranchOnMerge) {
+              try {
+                const updated = await github.rest.repos.update({
+                  owner,
+                  repo,
+                  delete_branch_on_merge: true
+                });
+                deleteBranchOnMerge = Boolean(updated.data.delete_branch_on_merge);
+                settingEnforcement = deleteBranchOnMerge ? "enabled-by-workflow" : "update-returned-false";
+              } catch (error) {
+                settingEnforcement = `permission-denied-or-unsupported:${error.status || "unknown"}`;
+                core.warning("Native auto-delete could not be enabled with GITHUB_TOKEN; the lifecycle sweep remains authoritative.");
+              }
             }
 
             const branches = await github.paginate(github.rest.repos.listBranches, {
@@ -285,6 +300,8 @@ jobs:
             await core.summary
               .addHeading("Branch reconciliation cleanup")
               .addCodeBlock(JSON.stringify({
+                deleteBranchOnMerge,
+                settingEnforcement,
                 deleted,
                 preserved,
                 finalBranchCount: finalBranches.length
