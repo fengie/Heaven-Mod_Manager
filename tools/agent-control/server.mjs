@@ -37,6 +37,11 @@ import {
   recordProviderHeartbeat,
   syncManagedAgents
 } from "./lib/federated-registry.mjs";
+import {
+  bridgeResultSucceeded,
+  cancelHeavenBridgeJob,
+  inspectHeavenBridge
+} from "./lib/heaven-bridge-provider.mjs";
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -56,6 +61,7 @@ const EVENT_LIMIT = 1000;
 const NOTIFICATION_LIMIT = 250;
 const LEASE_TTL_MS = Number(process.env.AGENT_CONTROL_LEASE_TTL_MS || 120000);
 const STALE_PROGRESS_MS = Number(process.env.AGENT_CONTROL_STALE_PROGRESS_MS || 900000);
+const HEAVEN_BRIDGE_RUNNER = path.join(HERE, "lib", "heaven-bridge-runner.mjs");
 const SESSION_ID = randomUUID();
 const children = new Map();
 let degradedReason = null;
@@ -479,27 +485,33 @@ function refreshState() {
   return state;
 }
 
-function workerSnapshot(state = refreshState()) {
+async function workerSnapshot(state = refreshState()) {
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   const hostname = os.hostname();
   const currentId = hostname.toLowerCase();
   const policies = state.settings?.machinePolicies || {};
   const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
   configured.add(currentId);
+  const heavenBridge = currentId === "heaven2" && configured.has("heaven")
+    ? await inspectHeavenBridge({ sync: false })
+    : null;
 
   return [...configured].map(id => {
     const policy = policies[id] || null;
     if (id !== currentId) {
+      const bridgeBacked = id === "heaven" && currentId === "heaven2";
       return {
         id,
         name: policy?.label || id,
-        kind: "configured",
-        status: "not-connected",
+        kind: bridgeBacked ? "remote-provider" : "configured",
+        provider: bridgeBacked ? "heaven-bridge" : null,
+        status: bridgeBacked && heavenBridge?.healthy ? "online" : "not-connected",
         controller: false,
-        lastHeartbeat: null,
-        running: null,
+        lastHeartbeat: bridgeBacked ? heavenBridge?.heartbeat?.updatedAt || null : null,
+        running: bridgeBacked ? heavenBridge?.heartbeat?.running ?? null : null,
         capacity: null,
         availableSlots: null,
+        providerHealth: bridgeBacked ? heavenBridge : null,
         policy
       };
     }
@@ -507,6 +519,7 @@ function workerSnapshot(state = refreshState()) {
       id,
       name: hostname,
       kind: "local",
+      provider: "local-control",
       status: "online",
       controller: true,
       lastHeartbeat: isoNow(),
@@ -583,20 +596,31 @@ function failReservedDeployment({ taskId, leaseId, error, reason, worktree = nul
   saveState(failed);
 }
 
-function assertWorkerPlacement(state, machine, { repositoryWriteAuthorized = false } = {}) {
+async function resolveWorkerPlacement(state, machine, { repositoryWriteAuthorized = false } = {}) {
   const requested = String(machine || "auto").trim().toLowerCase();
   const hostname = os.hostname().toLowerCase();
   const target = ["", "auto"].includes(requested)
     ? (hostname === "heaven2" ? "heaven" : hostname)
     : (requested === "local" ? hostname : requested);
-  if (target !== hostname) {
-    throw new Error(`Worker "${target}" is configured but no authenticated remote worker provider is connected. Refusing to fake remote execution.`);
-  }
+
   const permission = canUseMachineForRepositoryWrite(state, target, repositoryWriteAuthorized);
   if (!permission.allowed) {
     throw new Error(`Repository-writing task blocked by machine policy on ${target}: ${permission.reason}`);
   }
-  return os.hostname();
+
+  if (target === hostname) {
+    return { machine: os.hostname(), provider: "local-control", remote: false };
+  }
+
+  if (hostname === "heaven2" && target === "heaven") {
+    const health = await inspectHeavenBridge({ sync: true });
+    if (!health.healthy) {
+      throw new Error(`Authenticated Heaven Local Bridge is unavailable (${health.reason || "unknown"}); refusing to silently execute heavy work on heaven2.`);
+    }
+    return { machine: "heaven", provider: "heaven-bridge", remote: true, health };
+  }
+
+  throw new Error(`Worker "${target}" is not reachable through an authenticated configured provider from controller "${hostname}".`);
 }
 
 function buildPrompt({
@@ -654,7 +678,8 @@ async function deployOne({
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   if (running >= MAX_ACTIVE_AGENTS) throw new Error(`Worker capacity reached (${running}/${MAX_ACTIVE_AGENTS}).`);
 
-  const assignedMachine = assertWorkerPlacement(state, machine, { repositoryWriteAuthorized });
+  const placement = await resolveWorkerPlacement(state, machine, { repositoryWriteAuthorized });
+  const assignedMachine = placement.machine;
   const base = (baseBranch || "main").trim();
   const baseRef = await resolveBaseRef(base);
   const baseSha = await git(["rev-parse", baseRef]);
@@ -727,11 +752,12 @@ async function deployOne({
     throw error;
   }
 
-  let codex;
+  let codex = null;
   let prompt;
   let logFd = null;
+  const remoteExecution = placement.provider === "heaven-bridge";
   try {
-    codex = findCodex();
+    if (!remoteExecution) codex = findCodex();
     prompt = buildPrompt({
       role,
       task,
@@ -798,9 +824,34 @@ async function deployOne({
   if (model && model.trim()) args.push("-m", model.trim());
   args.push("-");
 
+  const remoteJobId = remoteExecution ? `agent-control-${id}-execute`.toLowerCase() : null;
+  const runnerSpecPath = remoteExecution ? path.join(DATA_DIR, `${id}.heaven-runner.json`) : null;
+  let executable = codex;
+  if (remoteExecution) {
+    executable = process.execPath;
+    args.length = 0;
+    args.push(HEAVEN_BRIDGE_RUNNER, runnerSpecPath);
+    fs.writeFileSync(runnerSpecPath, JSON.stringify({
+      agentId: id,
+      taskId,
+      role,
+      task: task.trim(),
+      targetAgentId,
+      baseSha,
+      branchName,
+      localWorktree: worktree,
+      promptPath,
+      lastMessagePath,
+      model: model?.trim() || null,
+      repositoryWriteAuthorized: true,
+      controlPort: PORT,
+      remoteJobId
+    }, null, 2), "utf8");
+  }
+
   let child;
   try {
-    child = spawn(codex, args, {
+    child = spawn(executable, args, {
       cwd: worktree,
       stdio: ["pipe", logFd, logFd],
       windowsHide: true,
@@ -822,7 +873,8 @@ async function deployOne({
     throw error;
   }
 
-  child.stdin.end(prompt.rendered);
+  if (remoteExecution) child.stdin.end();
+  else child.stdin.end(prompt.rendered);
   fs.closeSync(logFd);
 
   const startedAt = isoNow();
@@ -837,8 +889,11 @@ async function deployOne({
     status: "running",
     pid: child.pid,
     ownerSessionId: SESSION_ID,
-    processExecutable: codex,
+    processExecutable: executable,
     processStartedAt: startedAt,
+    executionProvider: placement.provider,
+    remoteJobId,
+    runnerSpecPath,
     completionEvidence: null,
     heartbeatAt: startedAt,
     lastProgressAt: startedAt,
@@ -901,8 +956,14 @@ async function deployOne({
       addEvent(current, "agent.exited", `${id} exited with ${code ?? "unknown"}`, {
         agentId: id,
         taskId,
-        reason: "authoritative-child-exit-event",
-        evidence: { exitCode: code, signal: signal || null, currentSha: item.currentSha || null }
+        reason: remoteExecution ? "authoritative-heaven-bridge-runner-exit" : "authoritative-child-exit-event",
+        evidence: {
+          exitCode: code,
+          signal: signal || null,
+          currentSha: item.currentSha || null,
+          executionProvider: item.executionProvider || "local-control",
+          remoteJobId: item.remoteJobId || null
+        }
       });
       if (item.status === "stopped") {
         addNotification(current, {
@@ -1025,6 +1086,12 @@ async function stopAgent(id) {
   saveState(state);
 
   try {
+    if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
+      const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "operator-stop" });
+      if (!bridgeResultSucceeded(cancellation)) {
+        throw new Error(`Heaven Bridge cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
+      }
+    }
     await killProcessTree(agent.pid);
     const exited = await waitForPidExit(agent.pid);
     if (!exited) throw new Error(`PID ${agent.pid} remained alive after the bounded termination wait.`);
@@ -1365,7 +1432,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     observedBranches(state),
     repositorySnapshot()
   ]);
-  const workers = workerSnapshot(state);
+  const workers = await workerSnapshot(state);
   const federation = federationSnapshot(state.federation, { now: Date.now() });
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
@@ -2268,7 +2335,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && pathname === "/api/workers") {
-      return sendJson(res, 200, workerSnapshot());
+      return sendJson(res, 200, await workerSnapshot());
     }
 
     if (req.method === "GET" && pathname === "/api/integration") {
