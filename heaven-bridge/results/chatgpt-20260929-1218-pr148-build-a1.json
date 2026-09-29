@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-20260929-1218-pr148-build-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:11:48.348997+00:00",
+  "finished_at": "2026-09-29T12:11:48.348997+00:00",
+  "host": "heaven",
+  "action": "proc_run",
+  "error": {
+    "code": "JOB_FROM_FUTURE",
+    "message": "job created_at is too far in the future",
+    "details": {
+      "skew_seconds": 371
+    }
+  },
+  "stderr": "job created_at is too far in the future",
+  "stdout": ""
+}
