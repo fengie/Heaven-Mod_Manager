@@ -36,6 +36,7 @@ function launch({ root, host = "127.0.0.1", port }) {
     env: {
       ...process.env,
       AGENT_CONTROL_HOST: host,
+      AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST: "1",
       AGENT_CONTROL_PORT: String(port),
       AGENT_CONTROL_DATA_DIR: dataDir,
       AGENT_CONTROL_REPO: repoDir,

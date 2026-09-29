@@ -76,7 +76,7 @@ public partial class WorkflowWindow : Window
         var adapter = GameAdapters.Resolve(services.Paths.Game); var game = services.Paths.Game;
         AdapterDetails.Text = $"{adapter.DisplayName} ({adapter.Id})\n\nExecutable: {adapter.Executable(game)}\nMod roots: {string.Join(", ", adapter.ModRoots(game))}\nNexus domain: {adapter.NexusDomain(game) ?? "none"}\nSave paths: {string.Join(", ", adapter.SavePaths(game))}\nMHW conflict semantics: {adapter.SupportsMhwConflictSemantics}\n\n" + string.Join("\n", adapter.Validate(game).Select(v => $"{v.Code}: {v.Message}"));
         reviewedUpdate = null; UpgradeButton.IsEnabled = false;
-        Status.Text = $"{assets.Count} staged file paths. Rule edits affect future plans; live files change only through Apply or Upgrade safely.";
+        Status.Text = $"{assets.Count} game file(s) are in the pending setup. Rule changes affect future plans; live game files change only when you apply mod changes or an update.";
     }
     private async void RefreshClick(object sender, RoutedEventArgs e)
     {
@@ -98,7 +98,7 @@ public partial class WorkflowWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Folders.Items.Clear(); folderPrefix = "";
-        var all = new TreeViewItem { Header = "All effective files", Tag = "", IsExpanded = true }; Folders.Items.Add(all);
+        var all = new TreeViewItem { Header = "All files in pending setup", Tag = "", IsExpanded = true }; Folders.Items.Add(all);
         var folders = new Dictionary<string, TreeViewItem>(StringComparer.OrdinalIgnoreCase) { [""] = all };
         foreach (var asset in assets)
         {
@@ -125,27 +125,27 @@ public partial class WorkflowWindow : Window
     private async void OpenRecipe(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dialog = new OpenFileDialog { Filter = "Loadout recipes|*.ummpack;*.mhwrecipe;*.json" };
+        var dialog = new OpenFileDialog { Filter = "Portable mod lists|*.ummpack;*.mhwrecipe;*.json" };
         if (dialog.ShowDialog(this) != true) return;
         await RunAsync(async () => { recipePath = null; var preview = await services.Recipe.PreviewAsync(dialog.FileName); RecipeRows.ItemsSource = preview.Matches; recipePath = dialog.FileName; Status.Text = $"{preview.Matches.Count(m => m.CanRestore)}/{preview.Matches.Count} entries can be restored. Inspect unresolved entries before saving."; });
     }
     private async void ExportRecipe(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dialog = new SaveFileDialog { Filter = "Portable loadout|*.mhwrecipe|UMM recipe|*.ummpack", FileName = "loadout.mhwrecipe" };
+        var dialog = new SaveFileDialog { Filter = "Portable mod list|*.mhwrecipe|Universal Mod Manager list|*.ummpack", FileName = "mod-list.mhwrecipe" };
         if (dialog.ShowDialog(this) != true) return;
-        await RunAsync(async () => { await services.Recipe.ExportAsync(dialog.FileName); Status.Text = "Exported applied state and captured hashes: " + dialog.FileName; });
+        await RunAsync(async () => { await services.Recipe.ExportAsync(dialog.FileName); Status.Text = "Exported the current mod list: " + dialog.FileName; });
     }
     private async void ImportRecipe(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunAsync(async () =>
         {
-            if (recipePath is null) throw new InvalidOperationException("Open a recipe first.");
+            if (recipePath is null) throw new InvalidOperationException("Open a mod list first.");
             await EnsureNewProfileNameAsync(RecipeName.Text);
             var id = await services.Recipe.ImportAsync(recipePath, RecipeName.Text);
             await RefreshAsync(); ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource).First(p => p.Id == id);
-            Status.Text = "Saved matched entries as a profile. Missing, mismatched, and ambiguous entries are OFF. Use Profiles & diff to stage it.";
+            Status.Text = "Saved the matched mods as a profile. Missing or uncertain matches stay disabled. Use Profiles & Compare when you are ready to load it.";
         });
     }
     private async void RestoreRecipeFamilies(object sender, RoutedEventArgs e)
@@ -153,9 +153,9 @@ public partial class WorkflowWindow : Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunAsync(async () =>
         {
-            if (recipePath is null) throw new InvalidOperationException("Open and review a recipe first.");
+            if (recipePath is null) throw new InvalidOperationException("Open and review a mod list first.");
             var count = await services.Recipe.RestoreFamiliesAsync(recipePath); await RefreshAsync();
-            Status.Text = $"Restored {count} matched family groups. Local rules were preserved; review effective files before Apply.";
+            Status.Text = $"Restored {count} known mod relationship(s). Existing local rules were kept; review File Decisions before applying changes.";
         });
     }
     private async Task EnsureNewProfileNameAsync(string name)
@@ -172,7 +172,7 @@ public partial class WorkflowWindow : Window
     private async void SaveProfile(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { await EnsureNewProfileNameAsync(ProfileName.Text); await services.Profiles.SaveAsync(ProfileName.Text, stage, (ParentProfile.SelectedItem as ProfileSummary)?.Id); await RefreshAsync(); Status.Text = "Saved staged setup. A child stores only differences from its parent."; });
+        await RunAsync(async () => { await EnsureNewProfileNameAsync(ProfileName.Text); await services.Profiles.SaveAsync(ProfileName.Text, stage, (ParentProfile.SelectedItem as ProfileSummary)?.Id); await RefreshAsync(); Status.Text = "Saved the pending setup. A child profile stores only what differs from its parent."; });
     }
     private async void CompareProfiles(object sender, RoutedEventArgs e)
     {
@@ -183,14 +183,14 @@ public partial class WorkflowWindow : Window
             var left = await services.Profiles.LoadAsync(a.Id); var right = await services.Profiles.LoadAsync(b.Id);
             var current = await services.Database.LoadPlannerSnapshotAsync();
             var diff = await Task.Run(() => WorkflowAnalysis.Compare(current, services.Planner, left, right));
-            ProfileDiff.Text = $"{a.Name} → {b.Name}\n{diff.Mods.Count(m => !m.BeforeEnabled && m.AfterEnabled)} enabled · {diff.Mods.Count(m => m.BeforeEnabled && !m.AfterEnabled)} disabled · {diff.Mods.Count(m => m.BeforePriority != m.AfterPriority)} priority changes\n{diff.ProviderChanges.Count} effective providers change · {diff.IntroducedConflicts.Count} conflicts introduced · {diff.ResolvedConflicts.Count} resolved · {diff.ChangedArmorComponents.Count} armor components change\n\n" + string.Join("\n", diff.Mods.Select(m => $"{m.Name}: {(m.BeforeEnabled ? "ON" : "OFF")} → {(m.AfterEnabled ? "ON" : "OFF")}; priority {m.BeforePriority} → {m.AfterPriority}")) + "\n\nIntroduced conflicts:\n" + string.Join("\n", diff.IntroducedConflicts) + "\n\nProvider changes:\n" + string.Join("\n", diff.ProviderChanges);
+            ProfileDiff.Text = $"{a.Name} → {b.Name}\n{diff.Mods.Count(m => !m.BeforeEnabled && m.AfterEnabled)} enabled · {diff.Mods.Count(m => m.BeforeEnabled && !m.AfterEnabled)} disabled · {diff.Mods.Count(m => m.BeforePriority != m.AfterPriority)} load-order changes\n{diff.ProviderChanges.Count} file choices change · {diff.IntroducedConflicts.Count} conflicts introduced · {diff.ResolvedConflicts.Count} resolved · {diff.ChangedArmorComponents.Count} armor components change\n\n" + string.Join("\n", diff.Mods.Select(m => $"{m.Name}: {(m.BeforeEnabled ? "Enabled" : "Disabled")} → {(m.AfterEnabled ? "Enabled" : "Disabled")}; load order {m.BeforePriority} → {m.AfterPriority}")) + "\n\nNew conflicts:\n" + string.Join("\n", diff.IntroducedConflicts) + "\n\nChanged file choices:\n" + string.Join("\n", diff.ProviderChanges);
             Status.Text = "Comparison uses current captured files and current global rules.";
         });
     }
     private async void StageProfile(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Profile staged. Close this window, review the plan, then Apply."; });
+        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Profile loaded as pending changes. Close this window, review the changes, then choose Apply Mod Changes."; });
     }
     private void RuleSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -228,7 +228,7 @@ public partial class WorkflowWindow : Window
                     var kind = RuleKindBox.SelectedIndex == 1 ? RuleKind.Incompatible : RuleKindBox.SelectedIndex == 2 ? RuleKind.ExactWinner : RuleKind.Overlay;
                     await editor.SaveAsync(new(editingRule ?? Guid.NewGuid().ToString("N"), kind, kind == RuleKind.ExactWinner ? RuleScope.ExactPath : RuleScope.ModPair, left?.Id, right.Id, kind == RuleKind.Incompatible ? null : right.Id, kind == RuleKind.ExactWinner ? RulePath.Text : null, RuleReason.Text, true, DateTimeOffset.UtcNow)); break;
             }
-            editingRule = null; await RefreshAsync(); Status.Text = "Saved. Review the effective files before applying.";
+            editingRule = null; await RefreshAsync(); Status.Text = "Saved. Review File Decisions before applying changes.";
         });
     }
     private async void DeleteRule(object sender, RoutedEventArgs e)
@@ -296,7 +296,7 @@ public partial class WorkflowWindow : Window
             var preview = await new UpdateMigrationService(services.Database, services.Planner, services.Executor).PreviewAsync(old.Id, newer.Id);
             var d = preview.Diff;
             UpdateDetails.Text = $"{old.DisplayName} → {newer.DisplayName}\n\n{d.Unchanged} unchanged · {d.Changed} modified · {d.Removed} removed · {d.Added} added\n{d.StructuralChanged} structural changes · {d.TextureChanged} texture changes\nPriority: preserve {old.Priority}\nRules transferable: {preview.TransferableRules}/{preview.TotalRules}\n\n" + string.Join("\n", preview.Warnings) + "\n\n" + string.Join("\n", preview.Plan.Conflicts.Where(c => c.Blocking).Select(c => c.Explanation)) + "\n\nUpgrade deploys the preview through the existing transaction journal. Family/rule transfer and supersession commit with the files; Undo restores both.";
-            reviewedUpdate = (old.Id, newer.Id); UpgradeButton.IsEnabled = !preview.Plan.IsBlocked; Status.Text = preview.Plan.IsBlocked ? "Resolve blocking conflicts before upgrading." : "Preview ready. Upgrade changes the applied setup; unsaved staged edits must be applied or discarded first.";
+            reviewedUpdate = (old.Id, newer.Id); UpgradeButton.IsEnabled = !preview.Plan.IsBlocked; Status.Text = preview.Plan.IsBlocked ? "Resolve the conflicts before applying this update." : "Update preview ready. The update changes installed files; apply or discard any other pending changes first.";
         });
     }
     private async void Upgrade(object sender, RoutedEventArgs e)
@@ -306,7 +306,7 @@ public partial class WorkflowWindow : Window
         {
             if (reviewedUpdate is not { } reviewed || OldMod.SelectedItem is not ModDescriptor old || NewMod.SelectedItem is not ModDescriptor newer || old.Id != reviewed.older || newer.Id != reviewed.newer) throw new InvalidOperationException("Preview this pair first.");
             var current = await services.Database.GetModsAsync();
-            if (current.Any(m => stage.TryGetValue(m.Id, out var value) && value != (m.Enabled, m.Priority))) throw new InvalidOperationException("Apply or discard staged changes before upgrading.");
+            if (current.Any(m => stage.TryGetValue(m.Id, out var value) && value != (m.Enabled, m.Priority))) throw new InvalidOperationException("Apply or discard your pending mod changes before updating.");
             var processes = System.Diagnostics.Process.GetProcessesByName(services.Paths.Game.ProcessName);
             try { if (processes.Length > 0) throw new InvalidOperationException("Close the game before upgrading."); }
             finally { foreach (var process in processes) process.Dispose(); }
@@ -314,7 +314,7 @@ public partial class WorkflowWindow : Window
             if (!result.Success) throw result.Exception ?? new InvalidOperationException(result.Message);
             AppliedMigration = true; RequestedStage = null;
             stage = (await services.Database.GetModsAsync()).ToDictionary(m => m.Id, m => (m.Enabled, m.Priority), StringComparer.OrdinalIgnoreCase);
-            await RefreshAsync(); Status.Text = result.Message + " Old package superseded; its source files remain available for Undo.";
+            await RefreshAsync(); Status.Text = result.Message + " The older package was replaced, but its source files remain available for Undo.";
         });
     }
 }

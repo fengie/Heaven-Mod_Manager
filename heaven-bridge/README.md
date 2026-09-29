@@ -1,30 +1,32 @@
 # Heaven Local Bridge
 
-Private, local-first desktop-control bridge for the `heaven` worker PC. Routine filesystem, terminal, process, build/test, and local-agent work runs on `heaven` without consuming Remote Desktop Commander Remote MCP quota.
+Private, local-first multi-host computer-control bridge for `heaven2` and `heaven`. `heaven2` is the operator/control-plane desktop; `heaven` is delegated compute. Routine filesystem, terminal, process, build/test, local-agent, and structured desktop work can be targeted explicitly without consuming Remote Desktop Commander Remote MCP quota.
 
 ## Architecture
 
 ```text
 ChatGPT
   -> private GitHub relay (fengie/mhw-mods, transport branch heaven-bridge)
-  -> heaven local worker
-  -> Windows/files/processes/local Codex
+  -> host-targeted worker on heaven2 or heaven
+  -> Windows/files/processes/local Codex/UI
   -> result/status back through GitHub
 ```
 
 Machine roles:
 
-- `heaven`: worker/execution machine.
-- `heaven2`: main/control machine and credential authority.
+- `heaven2`: operator/control-plane machine, dashboard/control-panel host, browser/UI automation target, routine desktop-interaction target, and credential authority.
+- `heaven`: worker/resource machine for builds, tests, scans, indexing, agents, worker-fabric tasks, and other delegated execution.
+- The user-facing surface stays on `heaven2`; do not move dashboards/control panels or routine interaction to `heaven`.
 - Secrets remain on `heaven2` unless a runtime task explicitly requires them.
-- Heavy builds, tests, scans, indexing, agents, and automation run on `heaven`.
+- New jobs set top-level `target_host` explicitly. Interactive/control work uses `heaven2`; heavy delegated work uses `heaven`. Omission is legacy compatibility and defaults to `heaven`.
 
 Relay paths:
 
 - Queue: `heaven-bridge/queue/<job-id>.json`
 - Results: `heaven-bridge/results/<job-id>.json`
 - Status: `heaven-bridge/status/<job-id>.json`
-- Heartbeat: `heaven-bridge/status/heartbeat.json`
+- Per-host heartbeat: `heaven-bridge/status/hosts/<host>/heartbeat.json`
+- Legacy heaven-only heartbeat mirror: `heaven-bridge/status/heartbeat.json`
 - Protocol: `chatgpt-heaven-bridge-v2`
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
@@ -71,7 +73,7 @@ Clipboard reads require an explicit per-job `allow_relay: true` opt-in because c
 
 ## Operator quickstart
 
-Run these from the repository root on `heaven`:
+Run these from the repository root on each machine where bridge control is required. For the intended topology, install/run the worker on both `heaven2` and `heaven`; the worker derives its host identity from `HEAVEN_BRIDGE_HOST` or `COMPUTERNAME`:
 
 ```powershell
 .\heaven-bridge\manage.ps1 START
@@ -95,6 +97,7 @@ If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a s
 {
   "id": "chatgpt-YYYYMMDD-HHMMSS-suffix",
   "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
   "action": "health",
   "params": {},
   "created_at": "2026-09-28T19:30:00Z",
@@ -103,7 +106,7 @@ If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a s
 }
 ```
 
-`job.id` must match the queue filename. Jobs outside their TTL, too far in the future, or replayed under the same ID with different content are rejected with structured errors.
+`job.id` must match the queue filename. `target_host` must name the intended worker. New callers must provide it; missing values retain the legacy `heaven` default only so old jobs continue working. Each worker ignores jobs addressed to the other host. Jobs outside their TTL, too far in the future, or replayed under the same ID with different content are rejected with structured errors.
 
 ## Authentication and integrity
 
@@ -217,13 +220,13 @@ The action fails closed when the existing cycle no longer matches `expected_prev
 - Control-plane jobs such as `health`, `job_status`, `cancel`, and checkpoints are serviced ahead of ordinary execution jobs so a saturated worker can still be observed or stopped.
 - Queue scheduling honors named `priority` values (`highest`/`critical`/`urgent`, `high`, `normal`/`default`, `low`, `lowest`) and numeric priorities from 0-100. Ordinary jobs age upward over time so older lower-priority work cannot starve behind a continuous high-priority stream; control-plane actions remain ahead of ordinary work and bypass its start-rate/capacity gating.
 - per-job status files are published under `heaven-bridge/status/`.
-- `heartbeat.json` periodically publishes worker version, protocol, capabilities, and running job IDs.
+- `status/hosts/<host>/heartbeat.json` periodically publishes that worker's version, protocol, capabilities, and running job IDs. `heaven` also mirrors the legacy `status/heartbeat.json` path for compatibility.
 
 Heartbeat commits are deliberately infrequent to avoid relay commit spam.
 
 ## Local desktop control
 
-The bridge now exposes structured Win32 desktop primitives so routine interactive control no longer depends on a Remote Desktop MCP.
+The bridge exposes structured Win32 desktop primitives so routine interactive control no longer depends on a Remote Desktop MCP. **Default all human-facing desktop actions to `target_host: heaven2`.** Target `heaven` interactively only when the user explicitly asks for the worker desktop or a worker-specific GUI validation genuinely requires it.
 
 Observation actions:
 

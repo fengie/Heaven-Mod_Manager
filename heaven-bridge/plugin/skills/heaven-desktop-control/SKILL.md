@@ -1,6 +1,6 @@
 ---
 name: heaven-desktop-control
-description: Structured local Windows desktop control for the user's `heaven` worker through Heaven Local Bridge. Use for screenshots, displays, windows, cursor/mouse, keyboard/text, app launch, and explicit clipboard operations. Prefer these actions over Remote Desktop Commander or raw shell GUI automation.
+description: Structured Windows desktop control through Heaven Local Bridge. Human-facing desktop interaction targets `heaven2` by default; `heaven` is a worker/resource machine and is targeted interactively only when explicitly requested or when a worker-specific GUI check is necessary. Use for screenshots, displays, windows, cursor/mouse, keyboard/text, app launch, and explicit clipboard operations.
 ---
 
 # Heaven Local Desktop Control
@@ -9,10 +9,12 @@ Use the existing Heaven Local Bridge relay and worker. This skill extends, rathe
 
 ## Required routing
 
-- Target machine: `heaven`.
-- `heaven2` remains the control/credential authority.
+- Default interactive target: `heaven2`.
+- Treat `heaven2` as the user's operator desktop, control-plane host, dashboard/control-panel host, browser/UI automation host, and credential authority.
+- Treat `heaven` as a worker/resource machine. Do not open control panels, dashboards, user-facing apps, or routine mouse/keyboard interaction on `heaven` unless the user explicitly asks to interact with that worker desktop or a worker-specific GUI validation genuinely requires it.
+- Every new bridge desktop job must set top-level `"target_host": "heaven2"` unless the exception above applies. Do not rely on the legacy omitted-target behavior, which defaults to `heaven` only for backward compatibility.
 - Do not use Remote Desktop Commander unless the user explicitly authorizes it for the current request.
-- Start with `health` when current capability state matters. Only use desktop actions advertised by the live worker.
+- Start with a host-targeted `health` when current capability state matters. Only use desktop actions advertised by that target worker.
 - Prefer structured desktop actions to PowerShell, CMD, Python GUI scripts, or ad-hoc automation.
 
 ## Observation actions
@@ -55,7 +57,7 @@ Mutation actions fail closed on ambiguous matches and on truncated searches unle
 
 ## Safety and privacy invariants
 
-The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state. For credential entry, use `New-HeavenSecretEnvelope.ps1` on `heaven2` and relay only the returned opaque handle plus exact HWND to `gui_type_secret`. The out-of-band SMB inbox must be encrypted and access-restricted. The worker itself requires a UNC inbox and verifies the live Heaven-side SMB connection reports `Encrypted=True`; never treat an environment flag as proof of encryption.
+The GitHub queue/result transport is private but persisted. Host routing is also persisted: use `target_host: heaven2` for normal interactive work. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state. For credential entry, use `New-HeavenSecretEnvelope.ps1` on `heaven2` and relay only the returned opaque handle plus exact HWND to `gui_type_secret`. The out-of-band SMB inbox must be encrypted and access-restricted. The worker itself requires a UNC inbox and verifies the live Heaven-side SMB connection reports `Encrypted=True`; never treat an environment flag as proof of encryption.
 
 `clipboard_read` is privacy-sensitive because its returned text traverses the private relay. Do not use it speculatively. Require an explicit clipboard-read intent and set `allow_relay:true` only for that operation.
 

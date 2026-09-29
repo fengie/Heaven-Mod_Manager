@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import threading
 import unittest
+import unittest.mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import importlib.util
@@ -95,6 +96,16 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             self.assertEqual(ordered[0].name, "urgent.json")
         finally:
             shutil.rmtree(td, ignore_errors=True)
+
+    def test_multihost_targeting_defaults_to_heaven_and_can_select_heaven2(self):
+        self.assertEqual(worker.job_target_host({}), "heaven")
+        self.assertEqual(worker.job_target_host({"target_host": "HEAVEN2"}), "heaven2")
+        with unittest.mock.patch.dict("os.environ", {"HEAVEN_BRIDGE_HOST": "heaven2"}, clear=False):
+            self.assertTrue(worker.job_targets_this_worker({"target_host": "heaven2"}))
+            self.assertFalse(worker.job_targets_this_worker({"target_host": "heaven"}))
+        with self.assertRaises(worker.BridgeError) as ctx:
+            worker.job_target_host({"target_host": "../other"})
+        self.assertEqual(ctx.exception.code, "INVALID_TARGET_HOST")
 
     def test_expired_job_rejected(self):
         job = self.make_job("health", job_id="expired-job")

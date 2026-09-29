@@ -1,0 +1,25 @@
+{
+  "interface": {
+    "displayName": "Heaven Agent Control",
+    "shortDescription": "Operate MHW Agent Control on heaven2",
+    "longDescription": "Operate the MHW agent swarm from heaven2, the operator/control-plane machine. Use Heaven Local Bridge with target_host=heaven2 for controller startup, CLI/status, dashboards, control interactions, and other human-facing operations. Delegate heavy builds, tests, scans, indexing, and worker agents to heaven without relocating the control plane.",
+    "developerName": "fengie",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Show me the current MHW agent swarm from Agent Control on heaven2.",
+      "Deploy one support agent from heaven2 and let Agent Control route heavy execution to heaven when appropriate.",
+      "Keep all control panels and interaction on heaven2 while using heaven only as a worker resource."
+    ]
+  },
+  "name": "heaven-agent-control",
+  "version": "0.6.0",
+  "description": "Operate the user's heaven2-hosted MHW programming-agent control plane from ChatGPT while delegating heavy execution to heaven.",
+  "author": {
+    "name": "fengie"
+  },
+  "keywords": [],
+  "skills": "./skills"
+}

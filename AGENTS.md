@@ -2,6 +2,24 @@
 
 This repository is the canonical working state for MHW Manual Mod Manager.
 
+## Mandatory pre-response repository training gate
+
+Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, automation, and successor that handles this repository must complete repository training **before answering the task prompt or taking task-specific action**. This is a hard startup gate, not advisory guidance.
+
+Before the first task-facing response or action, the agent must:
+
+1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
+2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
+3. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` before responding or dispatching work.
+4. Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming an answer or plan.
+5. Treat the repository itself as the source of truth. Stale chat context, old SHAs, filenames, summaries, or prior-agent prose do not satisfy this gate.
+
+Do not output a task analysis, plan, status answer, implementation claim, or recommendation before the gate is complete. If mandatory training material cannot be read or canonical state cannot be established, report `TRAINING-BLOCKED` with exact evidence instead of answering from partial context.
+
+Agent Control must enforce this mechanically for spawned workers: required training sources must exist and be non-empty before worker launch, their exact hashes must be included in the generated training manifest, and the training-gate section must appear before the user/manager task in the generated prompt.
+
+Every successor and sub-agent inherits this same gate. **No untrained agent gets to answer first and “catch up” afterward.**
+
 
 ## Default execution semantics
 
@@ -22,6 +40,9 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Do not silently fall back to Remote Desktop Commander. Use Remote Desktop Commander for `heaven` only when the user explicitly authorizes it in the current request.
 - Treat a bridge failure as a bridge repair/recovery problem first.
 - `heaven` is the worker/execution machine; `heaven2` is the main/control and credential-authority machine.
+- **Operator-surface invariant:** the user interacts with `heaven2`. Dashboards, control panels, Agent Control, browser/UI automation, screenshots intended for operator interaction, app/window/mouse/keyboard work, and other human-facing desktop operations default to `heaven2`.
+- Treat `heaven` as a delegated resource/worker by default. Do not move control panels or routine user interaction there merely because builds/tests/agents execute there. Interactive control of `heaven` requires an explicit worker-desktop request or a genuinely worker-specific GUI validation.
+- New Heaven Bridge jobs must set top-level `target_host` explicitly: `heaven2` for control/interactive work, `heaven` for delegated heavy execution. Missing `target_host` is legacy compatibility behavior only and defaults to `heaven`.
 - Never put credentials, tokens, passwords, cookies, private keys, or recovery codes into bridge queue/result/status payloads.
 - The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below.
 - For build/test/code execution details, the canonical plugin source is `heaven-bridge/plugin/`, including the `heaven-code-execution` skill.

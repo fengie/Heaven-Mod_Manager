@@ -8,6 +8,9 @@ This is an EXECUTION assignment. Do not stop at reading, planning, summarizing, 
 
 Unless the user explicitly says read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, execution is the default. Reading and planning are preparatory steps, not the deliverable. The Manager must enforce the same default on dispatched agents and require them to use an alternate supported execution path when their preferred path is unavailable.
 
+## Mandatory pre-response training gate
+Before answering the task, planning task work, dispatching sub-agents, or taking task-specific action, complete repository training. Read the required repository/continuity/trainer files, establish exact current repository truth, inspect relevant source/tests/history/ownership, and only then process the task prompt. If training cannot be completed, report TRAINING-BLOCKED with exact evidence. No agent may answer first and train afterward; every successor and sub-agent inherits this gate.
+
 ## Canonical truth
 Before meaningful changes:
 1. Fetch/refresh remote state when possible.

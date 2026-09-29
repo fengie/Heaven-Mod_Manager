@@ -6,10 +6,11 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.2 does
+## What v0.5.3 does
 
-- Runs locally on `127.0.0.1:7331` by default.
+- Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
+- Enforces a mandatory pre-response repository-training gate: every spawned worker must have all required training/continuity sources present and non-empty, receives their exact hashes in a training manifest, and is instructed to read them plus task-relevant source/tests before it may process the task prompt.
 - Gives every deployed agent its own Git worktree; it reuses a safe compatible unowned branch when available and creates a new `agent/control-*` branch only when no strong safe match exists.
 - Maintains a local process/task registry plus a normalized federated agent registry of:
   - managed local agents
@@ -47,6 +48,8 @@ Identity reconciliation uses stable provider/source identities plus explicit, na
 Federation schema v2 adds an AgentSource-style adapter boundary for normalize / ingest / reconcile / heartbeat / supported discovery, preserves runtime/session/conversation identity plus opaque source metadata, rejects unknown or unsupported providers at ingestion, rejects ambiguous multi-agent correlation, and ignores late observations that would regress a newer provider/source heartbeat. Persisted v1 registry data migrates non-destructively; legacy providers without an installed adapter remain inspectable as `unsupported` but cannot emit new observations.
 
 External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes. Exact task IDs are rejected when already owned by a live local or federated agent, while local execution capacity is calculated only from fresh controller-owned workers.
+
+Operator topology is strict: Agent Control, its browser dashboard, CLI interaction, autonomy controls, and other human-facing control surfaces live on `heaven2`. `heaven` remains delegated compute. The multi-host bridge uses explicit `target_host` routing; controller/plugin calls target `heaven2`, while heavy execution placement can target `heaven`.
 
 Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration. Scheduler `auto` placement on `heaven2` prefers `heaven` for heavy work and fails closed when the authenticated Heaven Local Bridge is unavailable rather than silently falling back to `heaven2`.
 
@@ -159,6 +162,8 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 - `AGENT_CONTROL_PORT` — default `7331`
 - `AGENT_CONTROL_HOST` — default `127.0.0.1`
+- `AGENT_CONTROL_CONTROLLER_HOST` — default `heaven2`; normal controller startup requires this hostname
+- `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST` — default unset; set to `1` only for isolated tests or an explicit recovery override
 - `AGENT_CONTROL_REPO` — default `%USERPROFILE%\local-ai-workspaces\mhw-mods`
 - `AGENT_WORKTREE_ROOT` — default `%USERPROFILE%\agent-worktrees`
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
@@ -201,4 +206,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
-See `CONTROL_PLANE.md` for the current v0.5.1 federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
+See `CONTROL_PLANE.md` for the federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.

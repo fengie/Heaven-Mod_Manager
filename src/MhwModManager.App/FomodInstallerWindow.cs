@@ -18,11 +18,12 @@ public sealed class FomodInstallerWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         this.installer = installer; this.game = game;
-        Title = "Installer — " + installer.Name; Width = 820; Height = 720; MinWidth = 600; MinHeight = 450; WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Title = "Install Mod — " + installer.Name; Width = 820; Height = 720; MinWidth = 600; MinHeight = 450; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         if (saved is not null) SelectedOptions.UnionWith(saved);
         var root = new DockPanel { Margin = new Thickness(20) };
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
-        var install = new Button { Content = "Install selected options", Margin = new Thickness(6) };
+        var install = new Button { Content = "Install Mod", Margin = new Thickness(6), IsDefault = true };
+        install.SetResourceReference(Button.StyleProperty, "PrimaryButton");
         install.Click += InstallClicked;
         var cancel = new Button { Content = "Cancel", IsCancel = true, Margin = new Thickness(6) };
         buttons.Children.Add(install); buttons.Children.Add(cancel);
@@ -41,10 +42,24 @@ public sealed class FomodInstallerWindow : Window
             choices.Children.Add(new TextBlock { Text = step.Name, FontSize = 23, Margin = new Thickness(0, 12, 0, 8) });
             foreach (var group in step.Groups)
             {
-                choices.Children.Add(new TextBlock { Text = group.Name + " · " + group.Type, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 4) });
+                var groupRule = group.Type switch
+                {
+                    "SelectExactlyOne" => "Choose one",
+                    "SelectAtMostOne" => "Choose up to one",
+                    "SelectAll" => "Included together",
+                    _ => group.Type
+                };
+                choices.Children.Add(new TextBlock { Text = group.Name + " · " + groupRule, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 4) });
                 foreach (var option in group.Options)
                 {
-                    var check = new CheckBox { Content = option.Name + " (" + option.Type + ")", IsChecked = option.Selected, IsEnabled = option.Type is not ("Required" or "NotUsable") && group.Type != "SelectAll", Margin = new Thickness(8), ToolTip = option.Description };
+                    var optionState = option.Type switch
+                    {
+                        "Required" => "Required",
+                        "NotUsable" => "Unavailable",
+                        _ => string.Empty
+                    };
+                    var optionLabel = string.IsNullOrWhiteSpace(optionState) ? option.Name : option.Name + " · " + optionState;
+                    var check = new CheckBox { Content = optionLabel, IsChecked = option.Selected, IsEnabled = option.Type is not ("Required" or "NotUsable") && group.Type != "SelectAll", Margin = new Thickness(8), ToolTip = option.Description };
                     check.Click += (_, _) =>
                     {
                         if (check.IsChecked == true)
@@ -53,19 +68,19 @@ public sealed class FomodInstallerWindow : Window
                             SelectedOptions.Add(option.Id);
                         }
                         else SelectedOptions.Remove(option.Id);
-                        try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = ex.Message; }
+                        try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = "This installer needs a different choice: " + ex.Message; }
                     };
                     choices.Children.Add(check);
                     if (!string.IsNullOrWhiteSpace(option.Description)) choices.Children.Add(new TextBlock { Text = option.Description, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(30, 0, 8, 6), Opacity = 0.75 });
                 }
             }
         }
-        status.Text = "Choose options for every visible group. Required choices are included automatically.";
+        status.Text = "Choose the features you want. Required items are already included for you.";
     }
     private void InstallClicked(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        try { var files = installer.Plan(SelectedOptions, game); status.Text = $"{files.Count} files selected."; DialogResult = true; }
-        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { status.Text = ex.Message; }
+        try { var files = installer.Plan(SelectedOptions, game); status.Text = $"Ready to install {files.Count} file(s)."; DialogResult = true; }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { status.Text = "The mod cannot be installed with these choices: " + ex.Message; }
     }
 }

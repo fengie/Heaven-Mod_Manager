@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
-import { renderAgentPrompt } from "./lib/prompt-templates.mjs";
+import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
   STATE_VERSION,
@@ -56,6 +56,8 @@ const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
+const CONTROLLER_HOST = String(process.env.AGENT_CONTROL_CONTROLLER_HOST || "heaven2").trim().toLowerCase();
+const ALLOW_NON_CONTROLLER_HOST = process.env.AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST === "1";
 const REPO = process.env.AGENT_CONTROL_REPO || path.join(os.homedir(), "local-ai-workspaces", "mhw-mods");
 const WORKTREE_ROOT = process.env.AGENT_WORKTREE_ROOT || path.join(os.homedir(), "agent-worktrees");
 const MAX_DEPLOY_COUNT = Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 8);
@@ -99,6 +101,28 @@ function taskCapabilityMatches(expectedHash, token) {
 
 function requestTaskCapability(req) {
   return String(req?.headers?.["x-agent-control-task-token"] || "").trim();
+}
+
+function repositoryTrainingPathsFor(role) {
+  const paths = [...REQUIRED_REPOSITORY_TRAINING_PATHS];
+  if (role === "manager") paths.push("_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt");
+  return paths;
+}
+
+function buildRepositoryTrainingManifest(worktree, role) {
+  const manifest = [];
+  for (const relativePath of repositoryTrainingPathsFor(role)) {
+    const absolutePath = path.join(worktree, relativePath);
+    if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
+      throw new Error(`Repository training gate failed: mandatory training source is missing: ${relativePath}`);
+    }
+    const content = fs.readFileSync(absolutePath);
+    if (!content.length) {
+      throw new Error(`Repository training gate failed: mandatory training source is empty: ${relativePath}`);
+    }
+    manifest.push(`${relativePath} — sha256:${createHash("sha256").update(content).digest("hex")} — ${content.length} bytes`);
+  }
+  return manifest;
 }
 
 function authorizationError(message) {
@@ -923,7 +947,8 @@ function buildPrompt({
   repositoryWriteAuthorized = false,
   acceptanceCriteria = [],
   verification = [],
-  additionalConstraints = []
+  additionalConstraints = [],
+  repositoryTrainingManifest = []
 }) {
   return renderAgentPrompt({
     role,
@@ -935,6 +960,7 @@ function buildPrompt({
     acceptanceCriteria,
     verification,
     additionalConstraints,
+    repositoryTrainingManifest,
     assignment: { taskId, priority, boundary, baseBranch, baseSha, branchName }
   });
 }
@@ -1091,6 +1117,7 @@ async function deployOne({
   let logFd = null;
   const remoteExecution = placement.provider === "heaven-bridge";
   try {
+    const repositoryTrainingManifest = buildRepositoryTrainingManifest(worktree, role);
     if (!remoteExecution) codex = findCodex();
     prompt = buildPrompt({
       role,
@@ -1107,6 +1134,7 @@ async function deployOne({
       repositoryWriteAuthorized,
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
+      repositoryTrainingManifest,
       additionalConstraints: [
         ...additionalConstraints,
         branchPlan.mode === "reused"
@@ -3038,6 +3066,11 @@ const server = http.createServer(async (req, res) => {
     });
   }
 });
+
+const RUNTIME_HOSTNAME = os.hostname().trim().toLowerCase();
+if (!ALLOW_NON_CONTROLLER_HOST && RUNTIME_HOSTNAME !== CONTROLLER_HOST) {
+  throw new Error(`Agent Control must run on ${CONTROLLER_HOST}; observed ${RUNTIME_HOSTNAME || "unknown"}. Set AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1 only for isolated tests or an explicit recovery override.`);
+}
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 if (!LOOPBACK_HOSTS.has(String(HOST).trim().toLowerCase())) {

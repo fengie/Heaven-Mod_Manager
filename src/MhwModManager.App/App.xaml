@@ -42,7 +42,7 @@
             <Setter Property="Background" Value="{StaticResource Bg}"/>
             <Setter Property="Foreground" Value="{StaticResource Text}"/>
             <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Icon" Value="pack://application:,,,/Assets/MHWModManager.ico"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
             <Setter Property="UseLayoutRounding" Value="True"/>
@@ -56,7 +56,7 @@
         </Style>
         <Style x:Key="PageSubtitle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,5,0,0"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource Muted}"/>
         </Style>
         <Style x:Key="SectionTitle" TargetType="TextBlock">
@@ -118,7 +118,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="13,8"/>
             <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="MinHeight" Value="40"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="ToolTipService.InitialShowDelay" Value="350"/>
@@ -216,7 +216,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="MinHeight" Value="40"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
@@ -248,7 +248,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
                                                 <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
-                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply staged"/>
+                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply changes"/>
                                                 <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
                                             </StackPanel>
                                         </Border>
@@ -309,7 +309,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="GridLinesVisibility" Value="None"/>
-            <Setter Property="RowHeight" Value="44"/>
+            <Setter Property="RowHeight" Value="48"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="CanUserAddRows" Value="False"/>
             <Setter Property="CanUserDeleteRows" Value="False"/>

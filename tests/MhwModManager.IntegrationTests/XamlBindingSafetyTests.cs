@@ -25,9 +25,9 @@ public sealed partial class XamlBindingSafetyTests
     {
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
-        Assert.Contains("Make main + chain others", xaml);
+        Assert.Contains("Treat as Main Mod + Add-ons", xaml);
         Assert.Contains("ChainConflictFamilyCommand", xaml);
-        Assert.Contains("Choose only", xaml);
+        Assert.Contains("Use This Mod", xaml);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed partial class XamlBindingSafetyTests
     {
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
-        Assert.Contains("Explain Why", xaml);
+        Assert.Contains("Why this file uses this mod", xaml);
         Assert.Contains("ExplainSelectedOverlapCommand", xaml);
         Assert.Contains("SelectedExplanation.RuleSource", xaml);
         Assert.Contains("SelectedExplanation.Evidence", xaml);

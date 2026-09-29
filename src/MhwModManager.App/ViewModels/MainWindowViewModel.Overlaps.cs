@@ -17,8 +17,8 @@ public sealed partial class MainWindowViewModel
             var providers=string.Join("  •  ",item.Providers);
             var resolution=blocking?"Needs choice":"Resolved overlay";
             var detail=blocking
-                ?"Independent providers still require a decision."
-                :"Informational overlap. Priority, family composition, identical bytes, or a shared-resource rule already determines the effective file provider.";
+                ?"These unrelated mods still need you to choose which one wins."
+                :"This shared file is already handled automatically by load order, a known mod relationship, identical content, or a saved choice.";
             var primaryPath=item.Paths is { Count: > 0 } ? item.Paths[0] : item.AssetKey;
             return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail,primaryPath);
         }).OrderByDescending(x=>StringComparer.OrdinalIgnoreCase.Equals(x.Resolution,"Needs choice"))
@@ -47,21 +47,21 @@ public sealed partial class MainWindowViewModel
         var selected=SelectedOverlap;
         if(selected is null)
         {
-            ExplainWhyStatus="Select an overlap first.";
+            ExplainWhyStatus="Select a shared file first.";
             return;
         }
 
-        await RunBusy("analysis.explain-why","Explaining effective file","Replaying the deterministic planner against the indexed state and collecting its evidence…",true,async ct=>
+        await RunBusy("analysis.explain-why","Explaining File Choice","Checking the current mod setup and collecting the reason for this file choice…",true,async ct=>
         {
             var explanation=await s.Inspector.ExplainWhyAsync(selected.PrimaryPath,ct);
             SelectedExplanation=explanation;
             ExplainWhyStatus=explanation is null
-                ?"No enabled provider currently supplies that path."
+                ?"No enabled mod currently supplies this file."
                 :explanation.Blocking
-                    ?"The resolver intentionally stopped without selecting a provider."
+                    ?"The manager stopped because this file needs your choice."
                     :explanation.AppliedMatchesPlan
-                        ?"The applied provider matches the current deterministic plan."
-                        :"The current plan differs from the applied manifest; Apply safely would reconcile it.";
+                        ?"The game is already using the mod selected by the current plan."
+                        :"Your pending setup differs from the files currently installed. Apply Mod Changes to make them match.";
         });
     }
 }

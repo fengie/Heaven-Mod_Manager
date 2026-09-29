@@ -80,8 +80,18 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
     public string StateLabel=>HasStagedChanges
-        ? StagedEnabledMembers switch{0=>"Staged • OFF",var n when n==MemberCount=>"Staged • ON",_=>$"Staged • {StagedEnabledMembers}/{MemberCount}"}
-        : StagedEnabledMembers switch{0=>"OFF",var n when n==MemberCount=>"ON",_=>$"PARTIAL • {StagedEnabledMembers}/{MemberCount}"};
+        ? StagedEnabledMembers switch
+        {
+            0=>"Will disable",
+            var n when n==MemberCount=>"Will enable",
+            _=>$"Will enable {StagedEnabledMembers}/{MemberCount} parts"
+        }
+        : StagedEnabledMembers switch
+        {
+            0=>"Disabled",
+            var n when n==MemberCount=>"Enabled",
+            _=>$"Partially enabled {StagedEnabledMembers}/{MemberCount}"
+        };
 
     [ObservableProperty]private bool? stagedEnabled;
     [ObservableProperty]private EffectiveModState effectiveState=EffectiveModState.Disabled;
@@ -98,11 +108,11 @@ public partial class ModRowViewModel:ObservableObject
     public bool HasIssue=>!string.IsNullOrWhiteSpace(IssueBadge);
     public string EffectLabel=>EffectiveState switch
     {
-        EffectiveModState.FullyEffective=>"Effective",
-        EffectiveModState.PartiallyOverridden=>$"Composed • {ShadowedFiles} overridden",
-        EffectiveModState.FullySuperseded=>"Superseded",
-        EffectiveModState.NeedsChoice=>"Pick one",
-        EffectiveModState.NeedsRevalidation=>"Revalidate",
+        EffectiveModState.FullyEffective=>"Working",
+        EffectiveModState.PartiallyOverridden=>$"Partly overridden • {ShadowedFiles} file(s)",
+        EffectiveModState.FullySuperseded=>"Not currently used",
+        EffectiveModState.NeedsChoice=>"Needs your choice",
+        EffectiveModState.NeedsRevalidation=>"Needs a check",
         _=>"Disabled"
     };
 
@@ -237,9 +247,9 @@ public sealed record ConflictRow(
     IReadOnlyList<ConflictOptionRow> Options)
 {
     public string Providers=>string.Join("  ↔  ",Options.Select(x=>x.DisplayName));
-    public string Scope=>FileCount<=1?Path:$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
+    public string Scope=>FileCount<=1?AssetBundles.DisplayNameForPath(Path):$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
     public string FileCountLabel=>FileCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    public string ConfidenceLabel=>$"{ResolverScore}% • {Confidence}";
+    public string ConfidenceLabel=>$"{Confidence} confidence";
 }
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
@@ -247,7 +257,7 @@ public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int Prov
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)
 {
-    public string ConfidenceLabel=>Confirmed?"ISOLATED":$"{Score}% suspect";
+    public string ConfidenceLabel=>Confirmed?"Confirmed by test":$"Evidence {Score}%";
     public string FailureLabel=>FailureCount==1?"1 report":$"{FailureCount} reports";
 }
 

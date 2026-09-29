@@ -32,7 +32,7 @@ public sealed class StartupWindow:Window
 
         detail=new TextBlock
         {
-            Text="Initializing safe state…",
+            Text="Getting everything ready…",
             Foreground=muted,
             Margin=new Thickness(0,8,0,20),
             TextWrapping=TextWrapping.Wrap,
@@ -53,7 +53,7 @@ public sealed class StartupWindow:Window
         brand.Children.Add(mark);
         var titleStack=new StackPanel{Margin=new Thickness(11,0,0,0),VerticalAlignment=VerticalAlignment.Center};
         titleStack.Children.Add(new TextBlock{Text="Universal Mod Manager",Foreground=text,FontSize=20,FontWeight=FontWeights.SemiBold});
-        titleStack.Children.Add(new TextBlock{Text="Preparing your managed mod state",Foreground=muted,FontSize=11,Margin=new Thickness(0,2,0,0)});
+        titleStack.Children.Add(new TextBlock{Text="Loading your games and mods",Foreground=muted,FontSize=11,Margin=new Thickness(0,2,0,0)});
         Grid.SetColumn(titleStack,1);
         brand.Children.Add(titleStack);
 
