@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-20260929-0855-release-cancel-request-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:55:25Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:55:41.645409+00:00",
+  "finished_at": "2026-09-29T08:55:41.645409+00:00",
+  "host": "heaven",
+  "action": "cancel",
+  "data": {
+    "job_id": "chatgpt-20260929-0855-release-cancel-target-a1",
+    "cancel_requested": true
+  },
+  "job_hash": "19b105ec50f9a49e0397b96321f6e12f0f155bd79d813c8cec3a81b9c8f97321"
+}
