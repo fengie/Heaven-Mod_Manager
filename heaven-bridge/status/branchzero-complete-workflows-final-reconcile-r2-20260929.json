@@ -1,0 +1,9 @@
+{
+  "id": "branchzero-complete-workflows-final-reconcile-r2-20260929",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:38:10.398427+00:00"
+}
