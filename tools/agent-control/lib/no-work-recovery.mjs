@@ -9,7 +9,8 @@ export const NO_WORK_TERMINAL_STATUSES = new Set([
 
 export const SWARM_TAIL_UNFINISHED_STATUSES = new Set([
   "failed",
-  "interrupted"
+  "interrupted",
+  "orphaned"
 ]);
 
 export function swarmTailRecoveryRootId(agent) {
@@ -40,11 +41,15 @@ export function planSwarmTailRecoveryBatch(state, {
     const startedMs = Date.parse(String(agent?.startedAt || agent?.source_metadata?.started_at || ""));
     return Number.isFinite(startedMs) && startedMs >= sinceMs;
   };
-  if (agents.some(agent => inScope(agent) && ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(agent?.status || "")))) {
-    return [];
-  }
   const tasksById = new Map((Array.isArray(state?.tasks) ? state.tasks : []).map(task => [task.id, task]));
   const limit = Math.max(1, Math.floor(Number(maxWorkers) || 4));
+  const activeRecoveryWorkers = agents.filter(agent =>
+    inScope(agent)
+    && agent?.swarmTailRecovery === true
+    && ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(agent?.status || ""))
+  ).length;
+  const availableRecoverySlots = Math.max(0, limit - activeRecoveryWorkers);
+  if (availableRecoverySlots === 0) return [];
   const maxAttempts = Math.max(1, Math.floor(Number(maxAttemptsPerRoot) || 2));
   const selected = [];
   const seenRoots = new Set();
@@ -64,7 +69,7 @@ export function planSwarmTailRecoveryBatch(state, {
 
     seenRoots.add(rootId);
     selected.push({ agent, task, rootId, attempt: attempts + 1 });
-    if (selected.length >= limit) break;
+    if (selected.length >= availableRecoverySlots) break;
   }
   return selected;
 }
