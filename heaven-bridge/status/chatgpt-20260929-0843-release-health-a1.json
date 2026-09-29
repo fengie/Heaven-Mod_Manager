@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0843-release-health-a1",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:45:54.924617+00:00"
+  "updated_at": "2026-09-29T08:46:05.371707+00:00",
+  "exit_code": 0
 }
