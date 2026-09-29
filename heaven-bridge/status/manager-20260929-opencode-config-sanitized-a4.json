@@ -1,9 +1,10 @@
 {
   "id": "manager-20260929-opencode-config-sanitized-a4",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:45:28.802499+00:00"
+  "updated_at": "2026-09-29T08:45:36.957331+00:00",
+  "exit_code": 0
 }
