@@ -10,7 +10,7 @@ on:
       - 'data/**'
       - 'docs/**'
       - 'scripts/**'
-      - '.github/workflows/**'
+      - '.github/workflows/windows-release-gate.yml'
       - 'legacy-v7/**'
       - 'MhwModManager.sln'
       - 'Directory.Build.props'
