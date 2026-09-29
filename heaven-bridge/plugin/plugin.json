@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "heaven-local-bridge",
-  "version": "0.7.0",
-  "description": "Primary local-control and development bridge for the user's heaven worker: secure filesystem, code build/test execution, persistent dev processes, binary transfer, search, shell, concurrent jobs, screenshots, desktop control, structured desktop shortcuts, status/cancellation, controller checkpoints, local agents, worker-fabric offloading, and token-efficient result handling through its declared GitHub connected-app relay. Includes dedicated code-execution, desktop-control, and local-agent orchestration skills with semantic Windows UI Automation and credential-safe one-time GUI secret input. Use this instead of Remote Desktop Commander for heaven work unless the user explicitly authorizes Remote Desktop Commander.",
+  "version": "0.8.0",
+  "description": "Multi-host local-control and development bridge for the user's heaven2 operator machine and heaven worker: explicit host-targeted filesystem, code build/test execution, persistent processes, screenshots, desktop/UI control, local agents, worker-fabric offloading, and control-plane operations. Human-facing interaction defaults to heaven2; heaven is delegated compute.",
   "author": {
     "name": "Plugin owner"
   },
@@ -10,17 +10,17 @@
     "com.openai": {
       "interface": {
         "displayName": "Heaven Local Bridge",
-        "shortDescription": "Primary local execution, testing, desktop, and agent bridge for heaven",
-        "longDescription": "Use the user's private Heaven Local Bridge as the default and exclusive path for computer work on heaven. Durable implementation lives on repository main; the heaven-bridge branch is the live queue/result transport only. Worker v6 adds credential-safe `gui_type_secret` using one-time encrypted-SMB handles with TTL, destination/HWND binding, replay protection, and payload-free results, while retaining bounded semantic Windows UI Automation on top of structured filesystem/process execution, screenshots, coordinate desktop input, window control, structured desktop shortcut creation, controller checkpoints, local-agent dispatch, and token-efficient result handling. Version 0.7.0 supports UIA tree/find/focus/invoke/value/toggle/select/expand/collapse, priority-aware scheduling, effective elevation reporting, and bounded `wait_for` synchronization across files, processes, sessions, and windows; UIA mutation searches fail closed on ambiguity/truncation, password ValuePattern writes are blocked, and non-secret UIA text requires explicit relay opt-in. Agent Control/local worker fabric remains the preferred parallel-work path when Codex quota is unavailable.",
+        "shortDescription": "Control heaven2; delegate heavy work to heaven",
+        "longDescription": "Use the private Heaven Local Bridge as the multi-host computer-control path. heaven2 is the operator/control-plane desktop, dashboard host, browser/UI automation target, and credential authority; heaven is a delegated worker/resource machine for builds, tests, scans, agents, indexing, and worker-fabric jobs. Every new bridge job must set target_host explicitly. Interactive/control work targets heaven2; heavy delegated execution targets heaven. Omitted target_host remains a backward-compatibility default for heaven only. Structured filesystem/process, screenshots, UI Automation, coordinate input, windows, app launch, shortcuts, controller checkpoints, and credential-safe GUI secret input remain available according to each host's advertised health/capabilities.",
         "developerName": "Plugin owner",
         "category": "Productivity",
         "capabilities": [
           "Interactive"
         ],
         "defaultPrompt": [
-          "Use Heaven Local Bridge for this heaven computer task. Do not use Remote Desktop Commander unless I explicitly authorize it.",
-          "Run this repository build/test/debug workflow locally on heaven using main as implementation truth and the heaven-bridge branch only as transport.",
-          "Coordinate parallel local work on heaven through Agent Control/worker fabric when useful; if Codex quota is unavailable, continue with structured bridge actions and local workers instead of stopping."
+          "Use Heaven Local Bridge with target_host=heaven2 for this computer, desktop, dashboard, control-panel, browser, or UI interaction.",
+          "Use target_host=heaven for heavy builds, tests, scans, indexing, worker agents, or other delegated compute unless I explicitly ask to interact with heaven's desktop.",
+          "Keep Agent Control and all human-facing control surfaces on heaven2; treat heaven as a resource worker."
         ]
       },
       "apps": "./.app.json"
