@@ -7,11 +7,25 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any, Callable, Iterable, Iterator, Mapping
 
 
-VALID_STATES = {"queued", "running", "blocked", "completed", "failed", "cancelled"}
+VALID_STATES = {"queued", "running", "blocked", "capacity_blocked", "completed", "failed", "cancelled"}
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+DEFAULT_CAPACITY_NOTICE = "Usage limit reached · agent stopped"
+_HARD_USAGE_LIMIT_PATTERNS = (
+    re.compile(r"you(?:'|’)ve\s+hit\s+your\s+usage\s+limit", re.IGNORECASE),
+    re.compile(r"usage\s+limit.{0,240}(?:upgrade|purchase\s+more\s+credits|try\s+again\s+at)", re.IGNORECASE | re.DOTALL),
+    re.compile(r"(?:credits?\s+(?:are\s+)?exhausted|no\s+credits?\s+remaining)", re.IGNORECASE),
+    re.compile(r"insufficient[_\s-]*quota", re.IGNORECASE),
+    re.compile(r"quota\s+exceeded.{0,160}(?:billing|credits?)", re.IGNORECASE | re.DOTALL),
+)
+
+
+def is_hard_usage_limit(value: Any) -> bool:
+    """Return True only for hard provider quota/credit exhaustion, not ordinary transient rate limiting."""
+    text = str(value or "")
+    return any(pattern.search(text) for pattern in _HARD_USAGE_LIMIT_PATTERNS)
 
 
 class TaskQueue:
@@ -50,6 +64,7 @@ class TaskQueue:
                     priority INTEGER NOT NULL DEFAULT 0,
                     attempts INTEGER NOT NULL DEFAULT 0,
                     max_attempts INTEGER NOT NULL DEFAULT 3,
+                    capacity_scope TEXT,
                     lease_owner TEXT,
                     lease_expires_at REAL,
                     result_json TEXT,
@@ -72,10 +87,21 @@ class TaskQueue:
                     owner TEXT NOT NULL,
                     expires_at REAL NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS capacity_blocks (
+                    scope TEXT PRIMARY KEY,
+                    reason TEXT NOT NULL,
+                    notice TEXT NOT NULL,
+                    retry_after REAL,
+                    created_at REAL NOT NULL,
+                    updated_at REAL NOT NULL
+                );
                 CREATE INDEX IF NOT EXISTS idx_tasks_ready
                     ON tasks(state, priority DESC, created_at ASC);
                 """
             )
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(tasks)").fetchall()}
+            if "capacity_scope" not in columns:
+                conn.execute("ALTER TABLE tasks ADD COLUMN capacity_scope TEXT")
 
     @staticmethod
     def _identifier(value: Any, field: str) -> str:
@@ -101,6 +127,7 @@ class TaskQueue:
             "priority": row["priority"],
             "attempts": row["attempts"],
             "max_attempts": row["max_attempts"],
+            "capacity_scope": row["capacity_scope"],
             "lease_owner": row["lease_owner"],
             "lease_expires_at": row["lease_expires_at"],
             "result": json.loads(row["result_json"]) if row["result_json"] else None,
@@ -118,6 +145,7 @@ class TaskQueue:
         priority: int = 0,
         max_attempts: int = 3,
         task_id: str | None = None,
+        capacity_scope: str | None = None,
     ) -> dict[str, Any]:
         kind = str(kind).strip()
         if not kind or len(kind) > 128:
@@ -132,6 +160,7 @@ class TaskQueue:
         if len(dep_ids) > 128:
             raise ValueError("too many dependencies")
         tid = self._identifier(task_id or uuid.uuid4().hex, "task_id")
+        scope = None if capacity_scope is None else self._identifier(capacity_scope, "capacity_scope")
         now = time.time()
         payload_json = self._json(dict(payload or {}))
         with self._connection() as conn:
@@ -142,9 +171,9 @@ class TaskQueue:
                 if conn.execute("SELECT 1 FROM tasks WHERE id=?", (dep,)).fetchone() is None:
                     raise ValueError(f"unknown dependency: {dep}")
             conn.execute(
-                """INSERT INTO tasks(id,kind,payload_json,state,priority,max_attempts,created_at,updated_at)
-                   VALUES(?,?,?,?,?,?,?,?)""",
-                (tid, kind, payload_json, "queued", priority, max_attempts, now, now),
+                """INSERT INTO tasks(id,kind,payload_json,state,priority,max_attempts,capacity_scope,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,?,?,?)""",
+                (tid, kind, payload_json, "queued", priority, max_attempts, scope, now, now),
             )
             conn.executemany(
                 "INSERT INTO dependencies(task_id,depends_on) VALUES(?,?)",
@@ -189,6 +218,10 @@ class TaskQueue:
             (now, now),
         )
         conn.execute("DELETE FROM resource_locks WHERE expires_at < ?", (now,))
+        conn.execute(
+            "DELETE FROM capacity_blocks WHERE retry_after IS NOT NULL AND retry_after <= ?",
+            (now,),
+        )
 
     def claim_task(self, worker_id: str, *, lease_seconds: int = 300) -> dict[str, Any] | None:
         if not isinstance(lease_seconds, int) or not 5 <= lease_seconds <= 86_400:
@@ -203,6 +236,11 @@ class TaskQueue:
                 FROM tasks t
                 WHERE t.state='queued'
                   AND t.attempts < t.max_attempts
+                  AND (
+                    t.capacity_scope IS NULL OR NOT EXISTS (
+                      SELECT 1 FROM capacity_blocks c WHERE c.scope=t.capacity_scope
+                    )
+                  )
                   AND NOT EXISTS (
                     SELECT 1
                     FROM dependencies d
@@ -277,12 +315,158 @@ class TaskQueue:
             conn.commit()
         return self.get_task(task_id)
 
+    def capacity_block_task(
+        self,
+        task_id: str,
+        worker_id: str,
+        reason: str,
+        *,
+        capacity_scope: str | None = None,
+        notice: str = DEFAULT_CAPACITY_NOTICE,
+        retry_after: float | None = None,
+    ) -> dict[str, Any]:
+        """Mark a hard-capacity failure terminal and suppress new work for the same execution scope."""
+        task_id = self._identifier(task_id, "task_id")
+        worker_id = self._identifier(worker_id, "worker_id")
+        reason = str(reason)[:4096]
+        notice = str(notice or DEFAULT_CAPACITY_NOTICE).strip()[:512] or DEFAULT_CAPACITY_NOTICE
+        now = time.time()
+        if retry_after is not None:
+            if not isinstance(retry_after, (int, float)) or retry_after <= now:
+                raise ValueError("retry_after must be a future unix timestamp")
+            retry_after = float(retry_after)
+
+        with self._connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                """SELECT capacity_scope FROM tasks
+                   WHERE id=? AND state='running' AND lease_owner=?""",
+                (task_id, worker_id),
+            ).fetchone()
+            if row is None:
+                conn.rollback()
+                raise ValueError("task is not leased by worker")
+            scope_value = capacity_scope if capacity_scope is not None else row["capacity_scope"]
+            scope = self._identifier(scope_value, "capacity_scope")
+            result_json = self._json(
+                {
+                    "notice": notice,
+                    "capacity_scope": scope,
+                    "retry_after": retry_after,
+                    "terminal_reason": "hard_usage_limit",
+                },
+                max_bytes=32_000,
+            )
+            conn.execute(
+                """INSERT INTO capacity_blocks(scope,reason,notice,retry_after,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?)
+                   ON CONFLICT(scope) DO UPDATE SET
+                     reason=excluded.reason,
+                     notice=excluded.notice,
+                     retry_after=excluded.retry_after,
+                     updated_at=excluded.updated_at""",
+                (scope, reason, notice, retry_after, now, now),
+            )
+            conn.execute(
+                """UPDATE tasks SET state='capacity_blocked', error=?, result_json=?,
+                   lease_owner=NULL, lease_expires_at=NULL, updated_at=? WHERE id=?""",
+                (reason, result_json, now, task_id),
+            )
+            conn.execute("DELETE FROM resource_locks WHERE owner=?", (f"{worker_id}:{task_id}",))
+            conn.commit()
+        return self.get_task(task_id)
+
+    def handle_agent_failure(
+        self,
+        task_id: str,
+        worker_id: str,
+        output: Any,
+        *,
+        capacity_scope: str | None = None,
+        retry: bool = True,
+        retry_after: float | None = None,
+        notice: str = DEFAULT_CAPACITY_NOTICE,
+        terminate: Callable[[], Any] | None = None,
+    ) -> dict[str, Any]:
+        """Classify an agent failure and make hard quota exhaustion terminal.
+
+        Hard usage limits release the task lease and resource locks, suppress the same execution
+        scope, and request immediate process termination. Callers may pass their owned-process
+        terminator directly or use the returned terminate_agent flag to kill it themselves.
+        """
+        error_text = str(output or "")
+        if not is_hard_usage_limit(error_text):
+            task = self.fail_task(task_id, worker_id, error_text, retry=retry)
+            return {
+                "task": task,
+                "hard_usage_limit": False,
+                "terminate_agent": False,
+                "notice": None,
+                "terminated": False,
+                "termination_error": None,
+            }
+
+        task = self.capacity_block_task(
+            task_id,
+            worker_id,
+            error_text,
+            capacity_scope=capacity_scope,
+            notice=notice,
+            retry_after=retry_after,
+        )
+        terminated = False
+        termination_error = None
+        if terminate is not None:
+            try:
+                terminate()
+                terminated = True
+            except Exception as exc:
+                termination_error = f"{type(exc).__name__}: {exc}"[:1024]
+        return {
+            "task": task,
+            "hard_usage_limit": True,
+            "terminate_agent": True,
+            "notice": notice,
+            "terminated": terminated,
+            "termination_error": termination_error,
+        }
+
+    def capacity_status(self, scope: str) -> dict[str, Any] | None:
+        scope = self._identifier(scope, "capacity_scope")
+        now = time.time()
+        with self._connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            self._reap_expired(conn, now)
+            row = conn.execute("SELECT * FROM capacity_blocks WHERE scope=?", (scope,)).fetchone()
+            conn.commit()
+        return None if row is None else dict(row)
+
+    def list_capacity_blocks(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        if not isinstance(limit, int) or not 1 <= limit <= 1000:
+            raise ValueError("limit must be between 1 and 1000")
+        now = time.time()
+        with self._connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            self._reap_expired(conn, now)
+            rows = conn.execute(
+                "SELECT * FROM capacity_blocks ORDER BY updated_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+            conn.commit()
+        return [dict(row) for row in rows]
+
+    def clear_capacity(self, scope: str) -> bool:
+        """Re-enable future tasks for a scope without resurrecting the killed historical run."""
+        scope = self._identifier(scope, "capacity_scope")
+        with self._connection() as conn:
+            return bool(conn.execute("DELETE FROM capacity_blocks WHERE scope=?", (scope,)).rowcount)
+
     def block_task(self, task_id: str, reason: str) -> dict[str, Any]:
         now = time.time()
         with self._connection() as conn:
             changed = conn.execute(
                 """UPDATE tasks SET state='blocked', error=?, lease_owner=NULL,
-                   lease_expires_at=NULL, updated_at=? WHERE id=? AND state NOT IN ('completed','failed','cancelled')""",
+                   lease_expires_at=NULL, updated_at=? WHERE id=? AND state NOT IN ('completed','failed','cancelled','capacity_blocked')""",
                 (str(reason)[:4096], now, task_id),
             ).rowcount
         if not changed:
@@ -295,7 +479,7 @@ class TaskQueue:
         with self._connection() as conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
-                "SELECT lease_owner FROM tasks WHERE id=? AND state NOT IN ('completed','failed','cancelled')",
+                "SELECT lease_owner FROM tasks WHERE id=? AND state NOT IN ('completed','failed','cancelled','capacity_blocked')",
                 (task_id,),
             ).fetchone()
             if row is None:
