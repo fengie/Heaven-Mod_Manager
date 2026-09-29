@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 import {
   defaultFederationState,
   federationSnapshot,
-  reconcileObservation
+  reconcileObservation,
+  syncManagedAgents
 } from "../lib/federated-registry.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,26 @@ test("federation snapshot exposes active, waiting, blocked, idle, stale, and dis
   assert.equal(counts.idle, 1);
   assert.equal(counts.stale, 1);
   assert.equal(counts.disconnected, 1);
+});
+
+test("quota-blocked managed agents are historical failures, not healthy live agents", () => {
+  const federation = defaultFederationState();
+  syncManagedAgents(federation, [{
+    id: "quota-agent",
+    role: "support",
+    status: "capacity-blocked",
+    lastMessage: "You've hit your usage limit.",
+    heartbeatAt: new Date(T0).toISOString(),
+    finishedAt: new Date(T0).toISOString()
+  }], { hostname: "heaven2", now: T0 });
+
+  const snapshot = federationSnapshot(federation, { now: T0 });
+  const quotaAgent = snapshot.agents.find(agent => agent.agent_id === "quota-agent");
+  assert.equal(quotaAgent.effective_state, "failed");
+  assert.equal(quotaAgent.live, false);
+  assert.equal(quotaAgent.historical, true);
+  assert.equal(snapshot.counts.failed, 1);
+  assert.equal(snapshot.counts.live, 0);
 });
 
 test("dashboard has unique DOM ids and required federated operator surfaces", () => {
