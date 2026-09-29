@@ -40,6 +40,17 @@ Use the existing Heaven Local Bridge relay and worker. This skill extends, rathe
 
 Windows can be selected by `hwnd`, `pid`, or title substring. Prefer HWND after `window_list`. Ambiguous selectors fail closed unless `first_match:true` is explicitly appropriate.
 
+## Semantic UI Automation
+
+Prefer semantic UIA actions over coordinates when controls expose accessibility metadata:
+
+- `uia_tree`: bounded accessibility-tree inspection.
+- `uia_find`: find controls by `automation_id`, `name`, `name_contains`, `control_type`, `class_name`, `process_id`, `enabled`, or `offscreen`.
+- `uia_focus`, `uia_invoke`, `uia_toggle`, `uia_select`, `uia_expand`, `uia_collapse`: act on one semantic match.
+- `uia_set_value`: set ordinary, non-secret text through ValuePattern. It requires `allow_relay_text=true` because the value is present in the persisted private relay.
+
+Mutation actions fail closed on ambiguous matches and on truncated searches unless `first_match=true` is explicitly chosen. Password ValuePattern writes are blocked and element descriptors never return ValuePattern text. Use coordinate input only when UIA is unavailable or the target application does not expose the needed pattern.
+
 ## Safety and privacy invariants
 
 The GitHub queue/result transport is private but persisted. Never put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `gui_type`, `clipboard_write`, queue params, results, logs, or controller state.
