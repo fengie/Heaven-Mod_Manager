@@ -9,7 +9,9 @@
     "plaintext_secrets_in_relay": false,
     "inline_secret_environment_values": false,
     "host_secret_handles": true,
-    "filesystem_path_traversal_segments": false
+    "filesystem_path_traversal_segments": false,
+    "capability_permissions_enforced": true,
+    "artifact_secret_canary_scan": true
   },
   "capabilities": [
     "control.discovery",
