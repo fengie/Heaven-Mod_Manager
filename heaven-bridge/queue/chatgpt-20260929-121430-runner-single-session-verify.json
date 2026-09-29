@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-121430-runner-single-session-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:14:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $HOME 'HeavenBridgeRepo'\n$origin=(git -C $relay remote get-url origin).Trim()\n$tmp=Join-Path $env:TEMP ('runner-single-session-'+[guid]::NewGuid().ToString('N'))\ngit clone --quiet --branch fix/heaven-runner-single-session-20260929 --single-branch $origin $tmp\nif($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\ntry {\n  $sha=(git -C $tmp rev-parse HEAD).Trim()\n  $script=Join-Path $tmp 'heaven-bridge\\install-github-runner.ps1'\n  $tokens=$null; $errors=$null\n  [System.Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors) | Out-Null\n  if($errors.Count -gt 0){ $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }\n  Set-Location $tmp\n  python .\\heaven-bridge\\test_worker.py\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  python .\\heaven-bridge\\tests\\test_worker.py\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  git diff --check\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  Write-Output ('VERIFIED_SHA='+$sha)\n} finally {\n  Set-Location $HOME\n  Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue\n}",
+    "timeout_seconds": 600,
+    "cwd": "C:\\Users\\Xxkan"
+  },
+  "priority": "highest"
+}
