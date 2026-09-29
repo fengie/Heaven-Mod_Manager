@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-agent-control-613714f4",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven2",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:49:23.700226+00:00"
+}
