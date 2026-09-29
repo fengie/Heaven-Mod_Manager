@@ -1,0 +1,20 @@
+{
+  "id": "chatgpt-20260929-catalog-canonical-info-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:40:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:38:47.037708+00:00",
+  "finished_at": "2026-09-29T15:38:47.040261+00:00",
+  "host": "heaven",
+  "action": "fs_info",
+  "data": {
+    "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical\\.git",
+    "exists": true,
+    "is_file": false,
+    "is_dir": true,
+    "size": 4096,
+    "modified": "2026-09-29T15:38:11.762363+00:00"
+  },
+  "job_hash": "ffaf1536d1e9d07389760dbe96a0414f4ce1290099e45162b004059d3582e448"
+}
