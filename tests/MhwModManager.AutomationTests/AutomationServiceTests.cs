@@ -182,6 +182,8 @@ public sealed class AutomationServiceTests : IDisposable
             INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at)
             VALUES('stale-rule','Overlay','ModPair','a','b','a',NULL,'retirement regression',1,$t);
             INSERT INTO resource_providers(namespace,mod_id) VALUES('retirement:test','a');
+            INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at)
+            VALUES('nativePC\\manifest-only.tex','b','manifest-hash','manifest-hash','stale-rule',$t);
             INSERT INTO settings(key,value) VALUES('preview:a','preview');
             INSERT INTO settings(key,value) VALUES('visuals:a','[]');
             INSERT INTO settings(key,value) VALUES('update:a','2026-09-29T00:00:00Z');
@@ -212,6 +214,15 @@ public sealed class AutomationServiceTests : IDisposable
                 await using var cmd=c.CreateCommand();
                 cmd.CommandText=sql;
                 Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+            }
+
+            await using var manifest=c.CreateCommand();
+            manifest.CommandText="SELECT provider_mod_id,rule_id FROM deployment_manifest WHERE path='nativePC\\manifest-only.tex'";
+            await using(var reader=await manifest.ExecuteReaderAsync(TestContext.Current.CancellationToken))
+            {
+                Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
+                Assert.Equal("b",reader.GetString(0));
+                Assert.True(reader.IsDBNull(1));
             }
 
             await using var history=c.CreateCommand();
