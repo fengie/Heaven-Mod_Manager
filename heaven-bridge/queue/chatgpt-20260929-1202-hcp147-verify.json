@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1202-hcp147-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop';\n$repo = Get-ChildItem -Path $HOME -Directory -Recurse -Depth 4 -ErrorAction SilentlyContinue | Where-Object { (Test-Path (Join-Path $_.FullName '.git')) -and ($_.Name -eq 'mhw-mods') } | Select-Object -First 1 -ExpandProperty FullName;\nif (-not $repo) { throw 'mhw-mods checkout not found under home' }\nSet-Location $repo;\ngit fetch origin main integration/hcp-0.2.0-main-20260929;\nif ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }\n$wt = Join-Path $env:TEMP 'mhw-hcp147-verify-4dd9e397';\nif (Test-Path $wt) { git worktree remove --force $wt 2>$null; if (Test-Path $wt) { Remove-Item -LiteralPath $wt -Recurse -Force } }\ngit worktree add --detach $wt 4dd9e3971916ea161d1fb18b2aea7c537cf01114;\nif ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }\ntry {\n  Set-Location $wt;\n  python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'py_compile failed' }\n  python heaven-bridge/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'primary bridge tests failed' }\n  python heaven-bridge/tests/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'compat bridge tests failed' }\n  python plugins/heaven-control-plane/verify.py;\n  if ($LASTEXITCODE -ne 0) { throw 'control-plane verify failed' }\n  git diff --check origin/main...HEAD;\n  if ($LASTEXITCODE -ne 0) { throw 'git diff --check failed' }\n  [pscustomobject]@{\n    repo=$repo;\n    verified_head=(git rev-parse HEAD);\n    origin_main=(git rev-parse origin/main);\n    branch_compare=((git rev-list --left-right --count origin/main...HEAD) -join ' ');\n    status=((git status --short) -join \"\\n\");\n    result='PASS'\n  } | ConvertTo-Json -Compress\n}\nfinally {\n  Set-Location $repo;\n  git worktree remove --force $wt 2>$null\n}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T12:02:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
