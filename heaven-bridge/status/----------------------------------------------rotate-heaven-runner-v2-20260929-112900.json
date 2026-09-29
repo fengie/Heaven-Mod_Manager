@@ -1,9 +1,10 @@
 {
   "id": "----------------------------------------------rotate-heaven-runner-v2-20260929-112900",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:30:10.843125+00:00"
+  "updated_at": "2026-09-29T11:30:51.861161+00:00",
+  "exit_code": 1
 }
