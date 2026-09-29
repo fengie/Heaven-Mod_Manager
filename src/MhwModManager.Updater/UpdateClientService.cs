@@ -116,7 +116,8 @@ public sealed class UpdateClientService : IDisposable
         string installRoot,
         IReadOnlyList<string> currentArguments,
         int currentProcessId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? managerHomeRoot = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"build={staged.Manifest.BuildNumber}; install={installRoot}");
@@ -125,6 +126,12 @@ public sealed class UpdateClientService : IDisposable
 
         var fullInstallRoot = Path.GetFullPath(installRoot)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fullManagerHomeRoot = string.IsNullOrWhiteSpace(managerHomeRoot)
+            ? null
+            : Path.GetFullPath(managerHomeRoot);
+        if (fullManagerHomeRoot is not null && !Directory.Exists(fullManagerHomeRoot))
+            throw new DirectoryNotFoundException(
+                $"Manager home does not exist before updater handoff: {fullManagerHomeRoot}");
         if (!CanSelfUpdate(fullInstallRoot))
             throw new InvalidOperationException(
                 "This application layout is not an updater-managed packaged installation.");
@@ -278,7 +285,8 @@ public sealed class UpdateClientService : IDisposable
             healthToken,
             currentProcessId,
             UpdateArgumentSanitizer.RemoveHealthArguments(
-                currentArguments));
+                currentArguments),
+            fullManagerHomeRoot);
 
         await UpdateRequestStore.WriteAsync(
             requestPath,
