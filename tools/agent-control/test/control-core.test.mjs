@@ -11,6 +11,7 @@ import {
   deploymentBatchCapacity,
   migrateControlState,
   planWorkflow,
+  providerCapacityActiveTerminationDecision,
   providerCapacityCircuit,
   interpretCommand,
   supportLanesFor,
@@ -329,6 +330,29 @@ test("operator stop intent dominates an authoritative zero exit", () => {
   }), false);
 });
 
+
+test("live hard-quota output is an immediate terminal termination decision", () => {
+  assert.deepEqual(providerCapacityActiveTerminationDecision({
+    status: "running",
+    lastMessage: "You've hit your usage limit. Upgrade to Pro or try again at Oct 4th, 2026 8:18 AM."
+  }), {
+    terminate: true,
+    status: "capacity-blocked",
+    failureClass: "provider-capacity",
+    completionEvidence: "provider-capacity",
+    reason: "provider-capacity-message-detected"
+  });
+
+  assert.equal(providerCapacityActiveTerminationDecision({
+    status: "running",
+    lastMessage: "Still working through the regression suite."
+  }).terminate, false);
+
+  assert.equal(providerCapacityActiveTerminationDecision({
+    status: "done",
+    lastMessage: "You've hit your usage limit."
+  }).terminate, false);
+});
 
 test("provider capacity circuit honors explicit reset and closes after a later successful worker", () => {
   const current = state();
