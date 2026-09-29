@@ -13,13 +13,23 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
     private readonly HttpClient http = httpClient;
     private readonly Action<string> writeLog = log ?? (_ => { });
 
-    public async Task<UpdateCandidate?> FindLatestAsync(UpdateBuildIdentity current, string token, CancellationToken ct)
+    public async Task<UpdateCandidate?> FindLatestAsync(
+        UpdateBuildIdentity current,
+        string? token,
+        CancellationToken ct,
+        string? repository = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"current={current.BuildNumber}");
-        if (string.IsNullOrWhiteSpace(token)) throw new UnauthorizedAccessException("GitHub updater credential is not configured.");
-        using var request = CreateRequest(HttpMethod.Get, $"{ApiBase}/repos/{UpdateProtocol.Repository}/releases?per_page=100", token);
+        var releaseRepository = string.IsNullOrWhiteSpace(repository)
+            ? UpdateProtocol.Repository
+            : repository.Trim();
+        ValidateRepository(releaseRepository);
+        using var request = CreateRequest(
+            HttpMethod.Get,
+            $"{ApiBase}/repos/{releaseRepository}/releases?per_page=100",
+            token);
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct);
+        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         var releases = await JsonSerializer.DeserializeAsync<List<GitHubReleaseDto>>(stream, UpdateProtocol.Json, ct) ?? [];
         var release = releases
@@ -50,7 +60,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         return new UpdateCandidate(manifest, new Uri(artifact.ApiUrl), new Uri(manifestAsset.ApiUrl));
     }
 
-    public async Task DownloadArtifactAsync(UpdateCandidate candidate, string token, string destination, CancellationToken ct)
+    public async Task DownloadArtifactAsync(UpdateCandidate candidate, string? token, string destination, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"build={candidate.Manifest.BuildNumber}");
         var manifest = candidate.Manifest;
@@ -61,7 +71,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         request.Headers.Accept.Clear();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct);
+        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
         if (response.Content.Headers.ContentLength is long declared && declared != manifest.ArtifactSize)
             throw new InvalidDataException($"Download content length {declared} does not match expected {manifest.ArtifactSize}.");
 
@@ -119,21 +129,22 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
                ?? throw new InvalidDataException("Update manifest is empty.");
     }
 
-    private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string token)
+    private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string? token)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"method={method}");
         if (!Uri.TryCreate(uri, UriKind.Absolute, out var requestUri))
             throw new InvalidDataException("GitHub updater API URI is not absolute.");
-        ValidateAuthenticatedApiUri(requestUri);
+        ValidateApiUri(requestUri);
         var request = new HttpRequestMessage(method, requestUri);
         request.Headers.UserAgent.ParseAdd("MHW-Manual-Mod-Manager-Updater/1");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (!string.IsNullOrWhiteSpace(token))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
         return request;
     }
 
-    private static void ValidateAuthenticatedApiUri(Uri uri)
+    private static void ValidateApiUri(Uri uri)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"host={uri.Host}");
         if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
@@ -141,17 +152,27 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
             || !uri.IsDefaultPort
             || !string.IsNullOrEmpty(uri.UserInfo))
             throw new InvalidDataException(
-                "Authenticated updater requests are restricted to https://api.github.com.");
+                "Updater API requests are restricted to https://api.github.com.");
     }
 
-    private async Task<byte[]> DownloadBytesAsync(Uri uri, string token, int maxBytes, CancellationToken ct)
+    private static void ValidateRepository(string repository)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"repository={repository}");
+        var parts = repository.Split('/', StringSplitOptions.TrimEntries);
+        if (parts.Length != 2
+            || parts.Any(part => string.IsNullOrWhiteSpace(part)
+                || part.Any(c => !(char.IsLetterOrDigit(c) || c is '-' or '_' or '.'))))
+            throw new InvalidDataException($"Updater repository '{repository}' is malformed.");
+    }
+
+    private async Task<byte[]> DownloadBytesAsync(Uri uri, string? token, int maxBytes, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"maxBytes={maxBytes}");
         using var request = CreateRequest(HttpMethod.Get, uri.ToString(), token);
         request.Headers.Accept.Clear();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        await EnsureSuccessAsync(response, ct);
+        await EnsureSuccessAsync(response, ct, authenticated: !string.IsNullOrWhiteSpace(token));
         if (response.Content.Headers.ContentLength is long length && length > maxBytes)
             throw new InvalidDataException($"Update metadata exceeded {maxBytes} bytes.");
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -167,15 +188,19 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
         return memory.ToArray();
     }
 
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
+    private static async Task EnsureSuccessAsync(
+        HttpResponseMessage response,
+        CancellationToken ct,
+        bool authenticated)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"status={(int)response.StatusCode}");
         if (response.IsSuccessStatusCode) return;
-        var detail = response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden
+        var authFailure = response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+        var detail = authFailure && authenticated
             ? "GitHub updater authentication failed."
             : $"GitHub updater request failed with HTTP {(int)response.StatusCode}.";
         _ = await response.Content.ReadAsStringAsync(ct);
-        throw response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
+        throw authFailure && authenticated
             ? new UnauthorizedAccessException(detail)
             : new HttpRequestException(detail, null, response.StatusCode);
     }
