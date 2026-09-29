@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0850-session-recovery-worktree-r2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:50:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:52:06.316708+00:00",
+  "finished_at": "2026-09-29T08:52:08.137494+00:00",
+  "stdout": "branch 'agent/heaven-bridge-session-recovery-20260929' set up to track 'origin/heaven-bridge'.\nHEAD is now at 4c1d7b2 heaven bridge status chatgpt-20260929-0850-session-recovery-worktree-r2 running\n4c1d7b2f150bec312af8b86cd3febd29e2bc0f01\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            heaven-bridge -> FETCH_HEAD\nPreparing worktree (new branch 'agent/heaven-bridge-session-recovery-20260929')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-session-recovery-worktree-r2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0850-session-recovery-worktree-r2.stderr.log",
+    "stdout_bytes": 239,
+    "stderr_bytes": 169,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "39bc1ee844b5d8d9bfb2c9a5adde6be166184f6dc28481387ae5bc22f59a99ab"
+}
