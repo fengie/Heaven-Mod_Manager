@@ -1,0 +1,9 @@
+{
+  "id": "--------selfhosted-runner-install-20260929-1101",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:03:28.366735+00:00"
+}
