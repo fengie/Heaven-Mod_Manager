@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1708-ui-verify-v8815-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:08:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:06:46.958968+00:00",
+  "finished_at": "2026-09-29T17:07:10.617030+00:00",
+  "stdout": "Your branch is behind 'origin/main' by 39 commits, and can be fast-forwarded.\n  (use \"git pull\" to update your local branch)\nHEAD is now at 0c601e8 Bridge: test sentinel self-restore and SYSTEM ownership\nSOURCE_SHA=0c601e8bf489832870a8ba9261670ea5ce83263b\r\nVERSION=8.8.15\r\n  Determining projects to restore...\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Core\\MhwModManager.Core.csproj (in 71 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Storage\\MhwModManager.Storage.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Automation\\MhwModManager.Automation.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Mhw\\MhwModManager.Mhw.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Updater\\MhwModManager.Updater.csproj (in 124 ms).\r\n  Restored C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.App\\MhwModManager.App.csproj (in 125 ms).\r\n  MhwModManager.Core -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Core\\bin\\Release\\net10.0\\MhwModManager.Core.dll\r\n  MhwModManager.Storage -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Storage\\bin\\Release\\net10.0\\MhwModManager.Storage.dll\r\n  MhwModManager.Mhw -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Mhw\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Mhw.dll\r\n  MhwModManager.Filesystem -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Filesystem\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Filesystem.dll\r\n  MhwModManager.Diagnostics -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Diagnostics\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Diagnostics.dll\r\n  MhwModManager.Updater -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Updater\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Updater.dll\r\n  MhwModManager.Automation -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.Automation\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Automation.dll\r\n  MhwModManager.App -> C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:16.14\r\nEXE=C:\\Users\\fengc\\HeavenBridgeSource\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.exe\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            main       -> FETCH_HEAD\n   96fd12e..0c601e8  main       -> origin/main\nAlready on 'main'\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1708-ui-verify-v8815-a1.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-1708-ui-verify-v8815-a1.stderr.log",
+    "stdout_bytes": 2610,
+    "stderr_bytes": 151,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "f240928882ca7c6db38142f1f349014411b738091b5c4cf08da6a3b2faf9c1a3"
+}
