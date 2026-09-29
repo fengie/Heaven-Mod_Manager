@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0816-agentcontrol-syntax-isolate-c1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:16:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt\\tools\\agent-control",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Continue'; Write-Output 'CHECK server.mjs'; node --check 'server.mjs'; $ec=$LASTEXITCODE; Write-Output ('EXIT server.mjs=' + $ec); if($ec -ne 0){exit 10}; Write-Output 'CHECK agentctl.mjs'; node --check 'agentctl.mjs'; $ec=$LASTEXITCODE; Write-Output ('EXIT agentctl.mjs=' + $ec); if($ec -ne 0){exit 11}; Write-Output 'CHECK lib\\control-core.mjs'; node --check 'lib\\control-core.mjs'; $ec=$LASTEXITCODE; Write-Output ('EXIT lib\\control-core.mjs=' + $ec); if($ec -ne 0){exit 12}; Write-Output 'CHECK lib\\autopilot-core.mjs'; node --check 'lib\\autopilot-core.mjs'; $ec=$LASTEXITCODE; Write-Output ('EXIT lib\\autopilot-core.mjs=' + $ec); if($ec -ne 0){exit 13}; Write-Output 'CHECK lib\\prompt-templates.mjs'; node --check 'lib\\prompt-templates.mjs'; $ec=$LASTEXITCODE; Write-Output ('EXIT lib\\prompt-templates.mjs=' + $ec); if($ec -ne 0){exit 14}; Write-Output 'ALL_SYNTAX_PASS'; exit 0"
+  },
+  "priority": "highest"
+}
