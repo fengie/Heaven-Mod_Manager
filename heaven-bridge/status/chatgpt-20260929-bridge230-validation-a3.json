@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-bridge230-validation-a3",
-  "state": "running",
+  "state": "done",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:19:19.293069+00:00"
+  "updated_at": "2026-09-29T16:19:48.786017+00:00",
+  "exit_code": 0
 }
