@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-101900-repair-services-registry",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:19:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:14:39.830385+00:00",
+  "finished_at": "2026-09-29T10:14:40.248436+00:00",
+  "stdout": "",
+  "stderr": "Expected 21 registry entries; got 1\r\nAt line:43 char:29\r\n+ ... unt -ne 21){throw \"Expected 21 registry entries; got $(@($verify).Cou ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Expected 21 registry entries; got 1:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Expected 21 registry entries; got 1\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-101900-repair-services-registry.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-101900-repair-services-registry.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 400,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "7e3033c58a9f860344c46fd3df57d072ac5bbff1fd1862ec058154a9aefe7fa8"
+}
