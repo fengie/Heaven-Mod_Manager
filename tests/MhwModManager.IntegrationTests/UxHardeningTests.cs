@@ -46,9 +46,9 @@ public sealed class UxHardeningTests
         var root=FindRepositoryRoot();
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
 
-        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\" Grid.Row=\"1\"",xaml);
+        Assert.Contains("<ScrollViewer x:Name=\"ModLibraryToolbar\"",xaml);
         Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
-        Assert.Contains("<WrapPanel Grid.Column=\"1\" Margin=\"20,0,0,0\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+        Assert.Contains("<StackPanel Grid.Column=\"2\" Orientation=\"Horizontal\" VerticalAlignment=\"Center\" HorizontalAlignment=\"Right\">",xaml);
     }
 
     [Fact]
@@ -79,9 +79,13 @@ public sealed class UxHardeningTests
         var root=FindRepositoryRoot();
         var nexus=File.ReadAllText(Path.Combine(root,"src","MhwModManager.Filesystem","NexusMetadataService.cs"));
         Assert.Contains("pictureUrl",nexus);
-        Assert.Contains("TryRefreshPublicNexusVisualAsync",nexus);
-        Assert.Contains("og:image",nexus);
-        Assert.Contains("API key is optional for basic artwork",File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs")));
+        Assert.Contains("Nexus catalog/metadata network access is API-only",nexus);
+        Assert.DoesNotContain("TryRefreshPublicNexusVisualAsync",nexus);
+        Assert.DoesNotContain("og:image",nexus);
+        Assert.DoesNotContain("NEXUS_API_KEY",nexus);
+        Assert.DoesNotContain("nexus-api-key.txt",nexus);
+        Assert.Contains("new CatalogCredentialStore(nextStateRoot).ReadSecret(\"nexus\")",nexus);
+        Assert.Contains("Local and Vortex/sidecar artwork remain available without Nexus credentials",File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs")));
     }
 
     private static string FindRepositoryRoot()
