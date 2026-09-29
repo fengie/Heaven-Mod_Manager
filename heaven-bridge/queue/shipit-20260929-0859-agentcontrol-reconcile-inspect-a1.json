@@ -1,0 +1,14 @@
+{
+  "id": "shipit-20260929-0859-agentcontrol-reconcile-inspect-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$dest = Join-Path $env:TEMP 'mhw-agentcontrol-shipit-a1'\nif (Test-Path $dest) { Remove-Item -Recurse -Force $dest }\ngit clone https://github.com/fengie/mhw-mods.git $dest\ngit -C $dest fetch origin main feature/agent-control-plane-v2-20260928\ngit -C $dest checkout -B feature/agent-control-plane-v2-20260928 origin/feature/agent-control-plane-v2-20260928\ngit -C $dest merge --no-edit origin/main\nWrite-Output '===HEAD==='\ngit -C $dest rev-parse HEAD\nWrite-Output '===MAIN==='\ngit -C $dest rev-parse origin/main\nWrite-Output '===STATUS==='\ngit -C $dest status --short\nWrite-Output '===SERVER MATCHES==='\nSelect-String -Path (Join-Path $dest 'tools\\agent-control\\server.mjs') -Pattern 'assertWorkerPlacement|approve-for-me|deployOne|findCodex|repositoryWriteAuthorized' -Context 10,24 | Out-String -Width 240\nWrite-Output '===CORE MACHINE POLICY==='\nSelect-String -Path (Join-Path $dest 'tools\\agent-control\\lib\\control-core.mjs') -Pattern 'DEFAULT_MACHINE_POLICIES|canUseMachineForRepositoryWrite|heaven2|heaven' -Context 8,28 | Out-String -Width 240",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600
+  },
+  "created_at": "2026-09-29T08:59:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
