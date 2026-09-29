@@ -1,0 +1,15 @@
+{
+  "id": "job-20260929T160020Z-gui-uia-tree-pidroot-02",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:00:20Z",
+  "target_host": "heaven",
+  "action": "uia_tree",
+  "params": {
+    "pid": 108668,
+    "scope": "descendants",
+    "max_nodes": 220,
+    "max_depth": 6,
+    "wait_ms": 5000
+  },
+  "priority": "high"
+}
