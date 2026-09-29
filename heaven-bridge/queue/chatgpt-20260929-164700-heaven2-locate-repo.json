@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-164700-heaven2-locate-repo",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; Write-Output ('USERPROFILE=' + $env:USERPROFILE); Get-ChildItem -LiteralPath $env:USERPROFILE -Directory | Select-Object Name,FullName | ConvertTo-Json -Depth 3",
+    "cwd": "C:\\",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T16:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
