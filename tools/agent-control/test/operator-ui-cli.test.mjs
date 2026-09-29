@@ -55,6 +55,7 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
     "controlSummary",
     "autonomyLevel",
     "routingManifest",
+    "deploySwarm",
     "eventSummary",
     "events"
   ]) {
@@ -80,6 +81,8 @@ test("dashboard exposes truthful operator visibility and server-backed controls"
   assert.match(html, /\/api\/control\/drain/);
   assert.match(html, /\/api\/control\/emergency-stop/);
   assert.match(html, /\/api\/control\/routing-manifest/);
+  assert.match(html, /\/api\/workflows\/usual-swarm\/execute/);
+  assert.match(html, /Deploy Usual Swarm/);
   assert.match(html, /repositoryWriteAuthorized:true/);
   assert.match(html, /server-side authorization remains authoritative/i);
 

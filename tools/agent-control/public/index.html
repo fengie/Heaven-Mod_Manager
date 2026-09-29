@@ -154,6 +154,10 @@
           <button class="deploy" data-role="recovery">Recovery</button>
           <button class="deploy" data-role="release">Release</button>
         </div>
+
+        <label>One-click swarm</label>
+        <button class="primary" id="deploySwarm" style="width:100%">Deploy Usual Swarm</button>
+        <div class="tiny">Uses the existing <span class="tag">usual-swarm</span> workflow to fill only missing useful Manager, Primary Programmer, and support lanes after ownership, capacity, and lease checks.</div>
         <div class="tiny">Controller capacity is enforced before launch. Remote placement is used only when a real worker transport/provider is connected; unsupported placement fails closed.</div>
       </aside>
 
@@ -645,12 +649,47 @@
       } catch (error) { toast(error.message); }
     }
 
+    function setDeployControlsDisabled(disabled) {
+      document.querySelectorAll(".deploy, #deploySwarm").forEach(button => button.disabled = disabled);
+    }
+
+    async function deploySwarm() {
+      const objective = $("task").value.trim();
+      if (!objective) return toast("Give the swarm an objective first.");
+      if (state.busy) return;
+      state.busy = true;
+      setDeployControlsDisabled(true);
+
+      try {
+        const result = await api("/api/workflows/usual-swarm/execute", {
+          method:"POST",
+          body:JSON.stringify({
+            objective,
+            baseBranch:$("baseBranch").value.trim() || "main",
+            model:$("model").value.trim(),
+            machine:$("machine").value,
+            repositoryWriteAuthorized:true
+          })
+        });
+        const created = result.created || [];
+        const blocked = (result.blocked || []).map(item => item?.error || item).filter(Boolean);
+        if (!created.length && blocked.length) throw new Error(blocked.join(" "));
+        toast(`Deployed swarm: ${created.length} new agent${created.length === 1 ? "" : "s"}${blocked.length ? ` · ${blocked.join(" ")}` : "."}`);
+        await refresh();
+      } catch (error) {
+        toast(error.message);
+      } finally {
+        state.busy = false;
+        setDeployControlsDisabled(false);
+      }
+    }
+
     async function deploy(role) {
       const task = $("task").value.trim();
       if (!task) return toast("Give the agent an objective first.");
       if (state.busy) return;
       state.busy = true;
-      document.querySelectorAll(".deploy").forEach(button => button.disabled = true);
+      setDeployControlsDisabled(true);
 
       try {
         const result = await api("/api/deploy", {
@@ -673,7 +712,7 @@
         toast(error.message);
       } finally {
         state.busy = false;
-        document.querySelectorAll(".deploy").forEach(button => button.disabled = false);
+        setDeployControlsDisabled(false);
       }
     }
 
@@ -710,6 +749,7 @@
     }
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
+    $("deploySwarm").addEventListener("click", deploySwarm);
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
     $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
