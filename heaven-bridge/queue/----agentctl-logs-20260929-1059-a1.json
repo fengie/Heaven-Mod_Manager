@@ -1,0 +1,14 @@
+{
+  "id": "----agentctl-logs-20260929-1059-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:59:00Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "priority": "highest",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output '===manager-20260929104713-ln9yh==='; node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs log manager-20260929104713-ln9yh; Write-Output '===main-20260929104715-d4eza==='; node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs log main-20260929104715-d4eza; Write-Output '===support-20260929104718-nqrmb==='; node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs log support-20260929104718-nqrmb; Write-Output '===support-20260929104724-nyxyj==='; node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs log support-20260929104724-nyxyj; Write-Output '===support-20260929104726-lae4b==='; node C:\\Users\\Xxkan\\agent-control-panel\\tools\\agent-control\\agentctl.mjs log support-20260929104726-lae4b",
+    "cwd": "C:\\Users\\Xxkan\\agent-control-panel",
+    "timeout_seconds": 60
+  }
+}
