@@ -1,9 +1,0 @@
-{
-  "id": "chatgpt-20260929-113950-health-control",
-  "source": "chatgpt-heaven-bridge-v2",
-  "action": "health",
-  "params": {},
-  "created_at": "2026-09-29T11:39:50Z",
-  "ttl_seconds": 3600,
-  "priority": "highest"
-}
