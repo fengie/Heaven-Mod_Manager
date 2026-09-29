@@ -48,17 +48,11 @@ jobs:
           for b in "${BRANCHES[@]}"; do
             reason=""
 
-            # Patch-equivalent history: no commit on the branch contributes a
-            # patch that main does not already contain.
             if ! git cherry origin/main "origin/$b" | grep -q '^+'; then
               reason="patch-equivalent-to-main"
             else
-              # Exact branch provenance: a PR whose head is this branch was
-              # actually merged. This remains safe for non-main PR bases too:
-              # the merged base retains the work, and any later deletion of
-              # that base is independently subject to the same proof.
               merged_count="$(
-                gh api -X GET --paginate "repos/$GITHUB_REPOSITORY/pulls"                   -f state=closed                   -f head="$OWNER:$b"                   -f per_page=100                   --jq '[.[] | select(.merged_at != null)] | length' |
+                gh api -X GET --paginate "repos/$GITHUB_REPOSITORY/pulls" -f state=closed -f head="$OWNER:$b" -f per_page=100 --jq '[.[] | select(.merged_at != null)] | length' |
                   awk '{s += $1} END {print s + 0}'
               )"
               if [ "$merged_count" -gt 0 ]; then
@@ -86,6 +80,7 @@ jobs:
               wc -l |
               tr -d ' '
           )"
+          export STARTING_COUNT ENDING_COUNT
 
           python - <<'PY'
           import json
@@ -118,9 +113,6 @@ jobs:
               json.dumps(report, indent=2) + "\n", encoding="utf-8"
           )
           PY
-        env:
-          STARTING_COUNT: ${{ env.STARTING_COUNT }}
-          ENDING_COUNT: ${{ env.ENDING_COUNT }}
 
       - name: Publish cleanup report to main
         shell: bash
