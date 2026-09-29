@@ -68,8 +68,8 @@ const CONTROLLER_HOST = String(process.env.AGENT_CONTROL_CONTROLLER_HOST || "hea
 const ALLOW_NON_CONTROLLER_HOST = process.env.AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST === "1";
 const REPO = process.env.AGENT_CONTROL_REPO || path.join(os.homedir(), "local-ai-workspaces", "mhw-mods");
 const WORKTREE_ROOT = process.env.AGENT_WORKTREE_ROOT || path.join(os.homedir(), "agent-worktrees");
-const MAX_DEPLOY_COUNT = Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 8);
-const MAX_ACTIVE_AGENTS = Number(process.env.AGENT_CONTROL_MAX_ACTIVE || 8);
+const MAX_DEPLOY_COUNT = Math.max(1, Math.min(48, Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 24) || 24));
+const MAX_ACTIVE_AGENTS = Math.max(1, Math.min(48, Number(process.env.AGENT_CONTROL_MAX_ACTIVE || 24) || 24));
 const EVENT_LIMIT = 1000;
 const NOTIFICATION_LIMIT = 250;
 const LEASE_TTL_MS = Number(process.env.AGENT_CONTROL_LEASE_TTL_MS || 120000);
