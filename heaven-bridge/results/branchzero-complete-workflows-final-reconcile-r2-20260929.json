@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-complete-workflows-final-reconcile-r2-20260929",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:45Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:38:26.810680+00:00",
+  "finished_at": "2026-09-29T11:40:13.465478+00:00",
+  "stdout": "branch 'local/complete-workflows-final-r2-20260929-chatgpt' set up to track 'origin/main'.\nHEAD is now at 94593567 ci: remove one-shot Heaven v2 bootstrap workflow\n{\"type\":\"step_start\",\"timestamp\":1790682001731,\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"part\":{\"id\":\"prt_0ecf6f1430019R4Wu06psiI0Am\",\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"messageID\":\"msg_0ecf6d6fb001jlaFjVT7yKVHf3\",\"type\":\"step-start\",\"snapshot\":\"2354bfd8f105bedb719ef9b0f68abfd45e61bfda\"}}\r\n{\"type\":\"text\",\"timestamp\":1790682011571,\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"part\":{\"id\":\"prt_0ecf6f14e001BGNXyr781cA3HE\",\"sessionID\":\"ses_f130a71e1ffek8L4tBwYUE8LEq\",\"messageID\":\"msg_0ecf6d6fb001jlaFjVT7yKVHf3\",\"type\":\"text\",\"text\":\"{\\n  \\\"name\\\": \\\"read\\\",\\n  \\\"arguments\\\": {\\n    \\\"path\\\": \\\"https://example.com\\\",\\n    \\\"limit\\\": 2000,\\n    \\\"offset\\\": 0\\n  }\\n}\",\"time\":{\"start\":1790682001742,\"end\":1790682011571}}}\r\n=== FINAL_STATUS ===\r\n945935671b7ede1122597fc607ed70f92ae5c97b\n94593567 ci: remove one-shot Heaven v2 bootstrap workflow\n3c2070b5 docs: close Heaven control-plane first-slice ownership\n5a937116 ci: remove hosted-runner rescue probe\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   5a937116..94593567  main          -> origin/main\n * [new branch]        agent/hcp-phase0-hardening-20260929-1138 -> origin/agent/hcp-phase0-hardening-20260929-1138\n * [new branch]        agent/hcp-sessions-search-20260929 -> origin/agent/hcp-sessions-search-20260929\n   51883fa7..6a63309f  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (new branch 'local/complete-workflows-final-r2-20260929-chatgpt')\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-r2-20260929.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-r2-20260929.stderr.log",
+    "stdout_bytes": 1134,
+    "stderr_bytes": 456,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2b9e5dc8cffdd9a867886870413be5f3cd8309e5c607f4c1a648375603d3d34f"
+}
