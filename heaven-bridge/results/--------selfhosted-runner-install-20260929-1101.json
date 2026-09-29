@@ -1,0 +1,21 @@
+{
+  "id": "--------selfhosted-runner-install-20260929-1101",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:01:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:04:03.959097+00:00",
+  "finished_at": "2026-09-29T11:04:04.573675+00:00",
+  "stdout": "",
+  "stderr": "This installer is intended for the Windows Heaven worker.\r\nAt C:\\Users\\Xxkan\\HeavenBridgeRepo\\heaven-bridge\\install-github-runner.ps1:9 char:33\r\n+ ... dows_NT') { throw 'This installer is intended for the Windows Heaven  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (This installer ... Heaven worker.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : This installer is intended for the Windows Heaven worker.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\--------selfhosted-runner-install-20260929-1101.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\--------selfhosted-runner-install-20260929-1101.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 508,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ce0ed33e5872d5ec584c190466d37f59984a75e5cef190d215309bb25c202aba"
+}
