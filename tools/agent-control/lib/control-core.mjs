@@ -1,3 +1,4 @@
+import { defaultFederationState, federationSnapshot, migrateFederationState } from "./federated-registry.mjs";
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { defaultFederationState, migrateFederationState } from "./federated-registry.mjs";
@@ -283,6 +284,8 @@ function currentRoutingAssignments(state, now = Date.now()) {
 
 function roleIsOccupied(state, role, now = Date.now()) {
   if (activeAgents(state, role).length) return true;
+  const federated = federationSnapshot(migrateFederationState(state.federation), { now });
+  if (federated.agents.some(agent => agent.live && agent.role === role)) return true;
   return currentRoutingAssignments(state, now).some(item => item.role === role && routingAssignmentOccupied(item));
 }
 
@@ -326,6 +329,12 @@ export function workflowLeasePreflight(state, steps = []) {
 
 function activeLaneSet(state, now = Date.now()) {
   const lanes = new Set(activeAgents(state).map(agent => agent.lane).filter(Boolean));
+  const federated = federationSnapshot(migrateFederationState(state.federation), { now });
+  for (const agent of federated.agents) {
+    if (!agent.live) continue;
+    const lane = agent.source_metadata?.lane || null;
+    if (lane) lanes.add(lane);
+  }
   for (const assignment of currentRoutingAssignments(state, now)) {
     if (assignment?.lane && routingAssignmentOccupied(assignment)) lanes.add(assignment.lane);
   }
@@ -333,10 +342,15 @@ function activeLaneSet(state, now = Date.now()) {
 }
 
 export function deriveMission(state, repositoryContext = {}) {
+  const federated = federationSnapshot(migrateFederationState(state.federation));
+  const externalPrimary = federated.agents.find(agent => agent.live && agent.role === "main");
+  const externalManager = federated.agents.find(agent => agent.live && agent.role === "manager");
   const primary = activeAgents(state, "main")[0];
   if (primary?.task) return primary.task;
+  if (externalPrimary?.task) return externalPrimary.task;
   const manager = activeAgents(state, "manager")[0];
   if (manager?.task) return manager.task;
+  if (externalManager?.task) return externalManager.task;
   const unfinished = state.tasks.find(task => !isTerminalStatus(task.status));
   if (unfinished?.objective) return unfinished.objective;
   if (repositoryContext.nextMilestone) return repositoryContext.nextMilestone;
@@ -533,7 +547,8 @@ export function recommendNextActions({ state, integrationQueue = [], repositoryC
   const quota = failed.filter(agent => /usage limit|credits|quota/i.test(agent.lastMessage || agent.error || ""));
   if (quota.length) push(80, "runtime", `${quota.length} worker${quota.length === 1 ? "" : "s"} were blocked by runtime quota`, "Retrying immediately is unlikely to add engineering value until runtime capacity is available.", null);
   const activeMain = activeAgents(state, "main");
-  if (!activeMain.length && !reviewable.length && !state.settings?.dispatchPaused && !state.settings?.emergencyStop) push(60, "dispatch", "No active Primary Programmer is registered", deriveMission(state, repositoryContext), { type: "workflow", workflowId: "usual-swarm" });
+  const federatedMain = federationSnapshot(migrateFederationState(state.federation)).agents.some(agent => agent.live && agent.role === "main");
+  if (!activeMain.length && !federatedMain && !reviewable.length && !state.settings?.dispatchPaused && !state.settings?.emergencyStop) push(60, "dispatch", "No active Primary Programmer is registered", deriveMission(state, repositoryContext), { type: "workflow", workflowId: "usual-swarm" });
   if (!items.length) push(40, "status", "No urgent control-plane action", "Current registered work has no detected blocker requiring operator intervention.", null);
   return items.sort((a, b) => b.priority - a.priority).slice(0, 5);
 }
