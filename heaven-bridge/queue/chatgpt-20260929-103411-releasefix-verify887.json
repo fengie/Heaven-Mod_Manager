@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-103411-releasefix-verify887",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:34:11Z",
+  "ttl_seconds": 10800,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods-releasefix-887-20260929-1032",
+    "command": "$ErrorActionPreference='Stop'; $env:CI='true'; $env:GITHUB_SHA='f924d42c68af06785286329a1e8ae92c7eff2d58'; $env:GITHUB_REF='refs/heads/main'; powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\\scripts\\Verify-Release.ps1'; $code=$LASTEXITCODE; Write-Output ('VERIFY_EXIT=' + $code); exit $code",
+    "timeout_seconds": 7200
+  },
+  "priority": "highest"
+}
