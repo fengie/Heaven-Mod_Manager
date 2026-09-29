@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1044-branch-sweep-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $r='C:\\Users\\Xxkan\\mhw-mods-work-canonical'; if (!(Test-Path $r)) { throw 'canonical repo missing' }; git -C $r fetch origin --prune; 'ORIGIN_MAIN='+(git -C $r rev-parse origin/main); 'STATUS'; git -C $r status --porcelain=v1 -b; 'WORKTREES'; git -C $r worktree list --porcelain; 'REMOTE_BRANCHES'; git -C $r for-each-ref --format='%(refname:short)|%(objectname)' refs/remotes/origin | Sort-Object; 'OPEN_LOCAL_BRANCHES'; git -C $r branch --format='%(refname:short)|%(objectname)'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T10:44:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
