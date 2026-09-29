@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0855-release-cancel-target-a1",
-  "state": "running",
+  "state": "cancelled",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:55:09.337538+00:00"
+  "updated_at": "2026-09-29T08:55:51.221399+00:00",
+  "exit_code": 130
 }
