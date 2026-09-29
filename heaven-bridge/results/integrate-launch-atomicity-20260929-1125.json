@@ -1,0 +1,21 @@
+{
+  "id": "integrate-launch-atomicity-20260929-1125",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:25:00Z",
+  "status": "failed",
+  "exit_code": 21,
+  "started_at": "2026-09-29T11:53:19.507024+00:00",
+  "finished_at": "2026-09-29T11:53:23.542001+00:00",
+  "stdout": "Auto-merging CHANGELOG.md\nCONFLICT (content): Merge conflict in CHANGELOG.md\nAuto-merging Directory.Build.props\nCONFLICT (content): Merge conflict in Directory.Build.props\nAuto-merging README.md\nCONFLICT (content): Merge conflict in README.md\nAuto-merging VERSION.txt\nCONFLICT (content): Merge conflict in VERSION.txt\nAuto-merging src/MhwModManager.App/App.xaml.cs\nAuto-merging src/MhwModManager.Automation/AutomationCoordinator.cs\nCONFLICT (content): Merge conflict in src/MhwModManager.Automation/AutomationCoordinator.cs\nAuto-merging src/MhwModManager.Automation/LaunchObservationRepository.cs\nCONFLICT (add/add): Merge conflict in src/MhwModManager.Automation/LaunchObservationRepository.cs\nAuto-merging src/MhwModManager.Automation/ModTrustService.cs\nAuto-merging tests/MhwModManager.AutomationTests/LaunchObservationRepositoryTests.cs\nCONFLICT (add/add): Merge conflict in tests/MhwModManager.AutomationTests/LaunchObservationRepositoryTests.cs\n{\"status\":\"conflict\",\"base\":\"30837bfb3e29667b7c5be806c9867635957fa161\",\"conflicts\":[\"CHANGELOG.md\",\"Directory.Build.props\",\"README.md\",\"VERSION.txt\",\"src/MhwModManager.Automation/AutomationCoordinator.cs\",\"src/MhwModManager.Automation/LaunchObservationRepository.cs\",\"tests/MhwModManager.AutomationTests/LaunchObservationRepositoryTests.cs\"]}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   3a991421..fcf69da6  agent/hcp-converge-0.2.0-20260929 -> origin/agent/hcp-converge-0.2.0-20260929\n * [new branch]        agent/hcp-indexing-20260929-0746 -> origin/agent/hcp-indexing-20260929-0746\n   a35439b5..7c0e482c  heaven-bridge -> origin/heaven-bridge\nPreparing worktree (detached HEAD 30837bfb)\nerror: could not apply 44f86d94... Make launch observation persistence atomic as v8.8.4\nhint: After resolving the conflicts, mark them with\nhint: \"git add/rm <pathspec>\", then run\nhint: \"git cherry-pick --continue\".\nhint: You can instead skip this commit with \"git cherry-pick --skip\".\nhint: To abort and get back to the state before \"git cherry-pick\",\nhint: run \"git cherry-pick --abort\".\nhint: Disable this message with \"git config advice.mergeConflict false\"\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-launch-atomicity-20260929-1125.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\integrate-launch-atomicity-20260929-1125.stderr.log",
+    "stdout_bytes": 1295,
+    "stderr_bytes": 807,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "2688d1815a15de471aebd43aad626df921e84268c75349f7338db285445c3895"
+}
