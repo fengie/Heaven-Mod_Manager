@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-104740-canonicalized-branch-cleanup-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:40Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:26:21.945577+00:00",
+  "finished_at": "2026-09-29T11:26:31.793443+00:00",
+  "stdout": "{\r\n    \"main\":  \"50ded0b66943922d9dc87cfa057568db41ab3c0d\",\r\n    \"deleted\":  [\r\n                    \"agent/launch-observation-atomicity-20260928\",\r\n                    \"agent/swarm-contract-v3-20260929-0540\"\r\n                ],\r\n    \"skipped\":  [\r\n\r\n                ],\r\n    \"remaining\":  [\r\n                      \"origin\",\r\n                      \"origin/agent-bridge\",\r\n                      \"origin/agent/bridge-uia-native-20260929\",\r\n                      \"origin/agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm\",\r\n                      \"origin/codex/complete-mod-workflows\",\r\n                      \"origin/fix/heaven-gate-concurrency-20260929\",\r\n                      \"origin/heaven-bridge\",\r\n                      \"origin/integration/complete-mod-workflows-main-20260929\",\r\n                      \"origin/integration/launch-observation-atomicity-main-20260929\",\r\n                      \"origin/main\"\r\n                  ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/fix/codex-quota-dispatch-circuit-20260929\n   b7d5f7c6..50ded0b6  main          -> origin/main\n * [new branch]        fix/heaven-gate-concurrency-20260929 -> origin/fix/heaven-gate-concurrency-20260929\n   500df228..c8456a09  heaven-bridge -> origin/heaven-bridge\n * [new branch]        integration/complete-mod-workflows-main-20260929 -> origin/integration/complete-mod-workflows-main-20260929\n * [new branch]        integration/launch-observation-atomicity-main-20260929 -> origin/integration/launch-observation-atomicity-main-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           agent/launch-observation-atomicity-20260928\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           agent/swarm-contract-v3-20260929-0540\nerror: cannot lock ref 'refs/remotes/origin/heaven-bridge': is at c035bcc3aa592a8b8b6e286dc7a23aae8e67f36c but expected 0da5f6808af3c9f3f08db4462844dd8c6ed0cbc2\nFrom https://github.com/fengie/mhw-mods\n ! 0da5f680..c035bcc3  heaven-bridge -> origin/heaven-bridge  (unable to update local ref)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104740-canonicalized-branch-cleanup-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-104740-canonicalized-branch-cleanup-a2.stderr.log",
+    "stdout_bytes": 952,
+    "stderr_bytes": 1127,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "abd99895c46809ecb9720a61035b4949b76ba26a0c54e1c891f7ba414ab60328"
+}
