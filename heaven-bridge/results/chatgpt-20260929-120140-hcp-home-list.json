@@ -1,0 +1,5650 @@
+{
+  "id": "chatgpt-20260929-120140-hcp-home-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:01:40Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:01:32.566531+00:00",
+  "finished_at": "2026-09-29T12:01:32.804133+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan",
+    "offset": 0,
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.aider"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.bun"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander-logs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.config"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.desktop-commander-device"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ipython"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.jupyter"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.local"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.matplotlib"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ms-ad"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.nuget"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ollama"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.redhat"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.skiko"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.sovereign"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.thumbnails"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode-shared"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.xdman"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\AI"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\AppData"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Apple"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Application Data"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Contacts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Cookies"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Desktop"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Documents"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Downloads"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Favorites"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridge"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeDevV3-1538"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeMainVerify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRepo.recovery-20260929-0808"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeRuntimeRepo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeV3Stage-1548"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeValidation"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenBridgeVerifyV3"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\HeavenWorktrees"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Links"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Local Settings"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Music"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\My Documents"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\NetHood"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\OneDrive"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Pictures"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\PrintHood"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Recent"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Saved Games"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Searches"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\SendTo"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Start Menu"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Templates"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\Videos"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-control-panel"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\ansel"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branch-zero-reconcile"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr127"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr128-gate"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\branchzero-pr128-gate2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\eclipse"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\eclipse-workspace"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-tools"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-worker-test"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\local-ai-workspaces"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-agent-control-release-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-federation-registry-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-final-reconcile-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-final-v886-b"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-integration-release-20260929-0543"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-main-converge-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-main-finalize-20260929-0540"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-auto-updater-agent"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-c11-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-pr90-integration"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-publication-fix"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-review-0731-a91"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-updater-support-20260928"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-mods-work-canonical"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-patcheq-clean"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-pr59-finalverify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-pr90-integration"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-release-885"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-safe-branch-delete"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-safe-branch-delete2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-support-harvest-verify-a66296b"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-swarm-contract-v3-verify"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-trace-fix-885"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-lr003-restart-audit"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-publication-race-review"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-updater-support-lr003"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\mhw-verification-reliability-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa01f25-alexandra-chamas-feng-cheng-li"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa02f25-alexandra-chamas-feng-cheng-li_2_"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\pa03s25-alexandra-chamas-feng-cheng-li_3_"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\sovereign-debug"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\-1.14-windows.xml",
+        "size": 6579,
+        "modified": "2024-04-10T20:24:07.934416+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.bash_history",
+        "size": 342,
+        "modified": "2025-02-11T00:25:42.082690+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.gitconfig",
+        "size": 206,
+        "modified": "2025-02-11T00:25:20.121787+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.lesshst",
+        "size": 20,
+        "modified": "2025-05-15T18:46:47.250648+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.node_repl_history",
+        "size": 41,
+        "modified": "2025-05-08T03:07:17.257241+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfo",
+        "size": 2073,
+        "modified": "2025-03-18T19:43:11.332636+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfo.tmp",
+        "size": 2382,
+        "modified": "2025-02-11T03:24:40.395888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.viminfz.tmp",
+        "size": 2376,
+        "modified": "2025-02-11T03:45:39.931277+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdm-global-lock",
+        "size": 0,
+        "modified": "2023-08-18T22:45:23.712554+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\AMDRM_Install.log",
+        "size": 3729,
+        "modified": "2023-08-14T20:28:58.411913+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\AMD_RyzenMaster.log",
+        "size": 3486144,
+        "modified": "2023-08-14T20:28:58.457913+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT",
+        "size": 30146560,
+        "modified": "2026-07-12T20:32:20.067764+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TM.blf",
+        "size": 73728,
+        "modified": "2026-07-05T19:16:54.330010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TM.blf.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.030409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000001.regtrans-ms",
+        "size": 561152,
+        "modified": "2026-07-05T19:16:54.350868+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000001.regtrans-ms.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.028895+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000002.regtrans-ms",
+        "size": 561152,
+        "modified": "2026-07-05T19:16:54.359614+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\NTUSER.DAT{2ad838bc-efea-11ee-a54d-000d3a94eaa1}.TMContainer00000000000000000002.regtrans-ms.cnpf",
+        "size": 4096,
+        "modified": "2026-07-12T20:32:20.030409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\_viminfo",
+        "size": 714,
+        "modified": "2024-10-01T19:19:50.296847+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-control-v2-payload.b64",
+        "size": 35480,
+        "modified": "2026-09-28T12:35:23.267652+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-control-v2-payload.zip",
+        "size": 26610,
+        "modified": "2026-09-28T12:36:14.119481+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\battery-report.html",
+        "size": 78944,
+        "modified": "2025-10-14T22:22:23.863933+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\dotnet-install.ps1",
+        "size": 76676,
+        "modified": "2026-09-28T11:44:15.405990+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.dat.LOG1",
+        "size": 7554048,
+        "modified": "2025-05-26T05:24:49.886243+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.dat.LOG2",
+        "size": 2621440,
+        "modified": "2025-05-26T05:24:49.886758+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\ntuser.ini",
+        "size": 20,
+        "modified": "2025-05-26T05:45:11.720336+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\patch_restart_args.py",
+        "size": 2405,
+        "modified": "2026-09-28T11:48:13.057536+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\patch_restart_args_tests.py",
+        "size": 2334,
+        "modified": "2026-09-28T11:48:35.787289+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\public class Main {.java",
+        "size": 121,
+        "modified": "2024-10-01T18:00:42.638818+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-7beb.patch",
+        "size": 11812,
+        "modified": "2026-09-28T12:43:23.825909+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-lr003-concurrent.patch",
+        "size": 5464,
+        "modified": "2026-09-28T11:42:20.608453+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\updater-lr003-review-context.txt",
+        "size": 54319,
+        "modified": "2026-09-28T11:37:29.057312+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.aider\\caches"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\analytics.json",
+        "size": 117,
+        "modified": "2026-09-28T17:58:54.733450+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\installs.json",
+        "size": 95,
+        "modified": "2026-09-28T17:58:55.270430+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\caches\\model_prices_and_context_window.json",
+        "size": 3034302,
+        "modified": "2026-09-28T17:59:00.087250+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.aider\\caches\\versioncheck",
+        "size": 0,
+        "modified": "2026-09-28T17:58:55.123737+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.bun\\install"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache\\codex-runtimes"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache\\huggingface"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache\\opencode"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache\\puppeteer"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.cache\\tooling"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.cache\\huggingface\\.agent_harnesses.json",
+        "size": 6007,
+        "modified": "2026-09-28T17:56:42.874791+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\claude_tool_call.log",
+        "size": 2320502,
+        "modified": "2026-09-29T09:50:46.481441+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\config.json",
+        "size": 1759,
+        "modified": "2026-09-29T10:54:05.156074+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\feature-flags.json",
+        "size": 516,
+        "modified": "2026-09-29T11:41:42.185689+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander\\tool-history.jsonl",
+        "size": 1375481,
+        "modified": "2026-09-29T10:36:47.049162+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.claude-server-commander-logs\\fuzzy-search.log",
+        "size": 22089,
+        "modified": "2026-09-29T09:28:21.629298+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-secrets"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\ambient-suggestions"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\cache"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\node_repl"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\pets"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\plugins"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\sessions"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\skills"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread-writer-locks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\tmp"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex\\vendor_imports"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json",
+        "size": 8575,
+        "modified": "2026-09-29T09:48:54.493699+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-global-state.json.bak",
+        "size": 8575,
+        "modified": "2026-09-29T09:48:54.497768+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.codex-provisioning-b7e2f259929ab66a.guard",
+        "size": 0,
+        "modified": "2026-09-27T09:31:31.763474+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox_migration",
+        "size": 3,
+        "modified": "2026-09-27T09:33:10.627891+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\auth.json",
+        "size": 3938,
+        "modified": "2026-09-27T09:31:41.943566+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\cap_sid",
+        "size": 2120,
+        "modified": "2026-09-29T08:34:11.941625+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\chrome-native-hosts-v2.json",
+        "size": 2059,
+        "modified": "2026-09-27T09:37:52.083570+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\config.toml",
+        "size": 3685,
+        "modified": "2026-09-29T09:47:44.129143+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite",
+        "size": 32768,
+        "modified": "2026-09-29T08:24:59.769291+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:50.164452+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\goals_1.sqlite-wal",
+        "size": 255472,
+        "modified": "2026-09-29T11:51:51.550973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\installation_id",
+        "size": 36,
+        "modified": "2026-09-27T09:31:30.715606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite",
+        "size": 1298432,
+        "modified": "2026-09-29T11:51:50.207639+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:47.793545+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\logs_2.sqlite-wal",
+        "size": 486192,
+        "modified": "2026-09-29T12:01:27.795238+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite",
+        "size": 45056,
+        "modified": "2026-09-29T08:33:35.134517+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:50.183505+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\memories_1.sqlite-wal",
+        "size": 103032,
+        "modified": "2026-09-29T11:51:50.185052+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\models_cache.json",
+        "size": 353668,
+        "modified": "2026-09-29T12:00:46.593612+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite",
+        "size": 4096,
+        "modified": "2026-09-27T09:31:30.702907+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-27T09:31:52.180647+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\queue_1.sqlite-wal",
+        "size": 519152,
+        "modified": "2026-09-29T11:51:58.335685+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\session_index.jsonl",
+        "size": 244,
+        "modified": "2026-09-28T19:12:27.730483+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite",
+        "size": 700416,
+        "modified": "2026-09-29T11:29:59.843562+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:29:59.865088+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\state_5.sqlite-wal",
+        "size": 1685112,
+        "modified": "2026-09-29T11:51:58.342493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite",
+        "size": 5398528,
+        "modified": "2026-09-29T08:32:38.572699+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:51.776886+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread_history_1.sqlite-wal",
+        "size": 4132392,
+        "modified": "2026-09-29T11:51:58.323948+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\deny_read_acl_state.json",
+        "size": 22,
+        "modified": "2026-09-29T08:34:11.758904+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox-d1a6cc441dee3701.log",
+        "size": 1750,
+        "modified": "2026-09-27T09:31:46.635628+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox.2026-09-27.log",
+        "size": 9314,
+        "modified": "2026-09-27T09:34:55.812832+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox.2026-09-28.log",
+        "size": 105334,
+        "modified": "2026-09-28T19:11:27.844543+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\sandbox.2026-09-29.log",
+        "size": 86279,
+        "modified": "2026-09-29T08:34:12.221116+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox\\setup_marker.json",
+        "size": 255,
+        "modified": "2026-09-29T08:24:21.527317+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex-command-runner-0.158.0-alpha.2.1.exe",
+        "size": 8201008,
+        "modified": "2026-09-28T13:34:08.346905+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex-command-runner-0.158.0.exe",
+        "size": 8205616,
+        "modified": "2026-09-28T18:59:21.714489+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-bin\\codex.exe",
+        "size": 324230960,
+        "modified": "2026-09-29T08:29:51.607689+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.sandbox-secrets\\sandbox_users.json",
+        "size": 828,
+        "modified": "2026-09-29T08:24:20.232395+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\plugins.sha",
+        "size": 41,
+        "modified": "2026-09-27T09:31:40.491492+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\plugins.sync.lock",
+        "size": 0,
+        "modified": "2026-09-27T09:31:30.781722+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\.tmp\\rollout-maintenance.lock",
+        "size": 0,
+        "modified": "2026-09-27T09:31:44.184250+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db",
+        "size": 4096,
+        "modified": "2026-09-27T09:31:30.890258+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db-shm",
+        "size": 32768,
+        "modified": "2026-09-27T09:31:30.901811+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\sqlite\\codex-dev.db-wal",
+        "size": 889952,
+        "modified": "2026-09-27T09:37:03.821556+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\thread-writer-locks\\.coordination.lock",
+        "size": 0,
+        "modified": "2026-09-28T12:11:42.800517+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex\\vendor_imports\\skills-curated-cache.json",
+        "size": 1267,
+        "modified": "2026-09-27T11:27:36.415874+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox-bin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox-secrets"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.tmp"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\sessions"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\skills"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\tmp"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox_migration",
+        "size": 3,
+        "modified": "2026-09-28T15:52:03.493016+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\cap_sid",
+        "size": 3368,
+        "modified": "2026-09-29T11:56:08.813837+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\config.toml",
+        "size": 426,
+        "modified": "2026-09-28T16:02:09.851648+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\goals_1.sqlite",
+        "size": 32768,
+        "modified": "2026-09-29T11:07:26.884692+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\goals_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:24.612105+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\goals_1.sqlite-wal",
+        "size": 65952,
+        "modified": "2026-09-29T11:51:42.821095+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\installation_id",
+        "size": 36,
+        "modified": "2026-09-28T15:52:03.387916+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\logs_2.sqlite",
+        "size": 49152,
+        "modified": "2026-09-29T11:51:42.239843+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\logs_2.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:24.598879+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\logs_2.sqlite-wal",
+        "size": 8272,
+        "modified": "2026-09-29T11:51:42.237824+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\memories_1.sqlite",
+        "size": 45056,
+        "modified": "2026-09-29T11:07:26.887455+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\memories_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T11:51:24.620073+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\memories_1.sqlite-wal",
+        "size": 24752,
+        "modified": "2026-09-29T11:51:42.210328+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\queue_1.sqlite",
+        "size": 40960,
+        "modified": "2026-09-28T18:31:58.837804+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\queue_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T10:47:14.372197+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\queue_1.sqlite-wal",
+        "size": 127752,
+        "modified": "2026-09-29T11:51:52.302619+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite",
+        "size": 614400,
+        "modified": "2026-09-29T11:59:05.703702+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T10:47:14.282973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\state_5.sqlite-wal",
+        "size": 4173592,
+        "modified": "2026-09-29T12:00:59.371686+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread_history_1.sqlite",
+        "size": 6139904,
+        "modified": "2026-09-29T11:51:30.521018+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread_history_1.sqlite-shm",
+        "size": 32768,
+        "modified": "2026-09-29T10:47:15.033411+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread_history_1.sqlite-wal",
+        "size": 4136512,
+        "modified": "2026-09-29T12:00:59.368985+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox\\deny_read_acl_state.json",
+        "size": 22,
+        "modified": "2026-09-29T12:00:58.295864+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox\\sandbox.2026-09-28.log",
+        "size": 260426,
+        "modified": "2026-09-28T18:38:21.795925+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox\\sandbox.2026-09-29.log",
+        "size": 136905,
+        "modified": "2026-09-29T12:00:58.879006+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox\\setup_marker.json",
+        "size": 255,
+        "modified": "2026-09-29T10:49:21.555368+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox-bin\\codex-command-runner-0.158.0-alpha.2.1.exe",
+        "size": 8201008,
+        "modified": "2026-09-28T16:02:31.063549+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.sandbox-secrets\\sandbox_users.json",
+        "size": 828,
+        "modified": "2026-09-29T10:49:19.938464+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.tmp\\plugins.sha",
+        "size": 41,
+        "modified": "2026-09-28T17:37:57.051478+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\.tmp\\plugins.sync.lock",
+        "size": 0,
+        "modified": "2026-09-28T15:52:03.465380+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\.coordination.lock",
+        "size": 0,
+        "modified": "2026-09-28T15:52:03.511887+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ecc6-a188-7003-9b61-23f26eb42789.lock",
+        "size": 0,
+        "modified": "2026-09-29T10:47:15.718742+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ecc6-cdd9-7863-a2f1-05b203cbe4c3.lock",
+        "size": 0,
+        "modified": "2026-09-29T10:47:27.055293+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-5d21-7570-8327-ea23550bad52.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:24.927139+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-7158-79f1-b294-3c31b775d047.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:30.120552+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-7ca9-7a30-94a7-5d4b32cfb365.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:32.956060+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-89b7-7041-9e5d-4c46cb719d2b.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:36.443918+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-9445-74e3-903b-a3b2148f8312.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:39.038841+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.codex-heaven-agent-control\\thread-writer-locks\\01a0ed01-a1c6-7370-8c64-c6c2a9c85580.lock",
+        "size": 0,
+        "modified": "2026-09-29T11:51:42.676696+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.config\\opencode"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.config\\simple-update-notifier"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.config\\opencode\\service.json",
+        "size": 64,
+        "modified": "2026-09-28T10:24:11.450956+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.config\\simple-update-notifier\\nodemon.json",
+        "size": 33,
+        "modified": "2025-05-08T03:08:43.007394+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.desktop-commander-device\\device.json",
+        "size": 1523,
+        "modified": "2026-09-29T11:42:05.069398+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\sdk-advertising"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingManifestSentinel10.0.400",
+        "size": 0,
+        "modified": "2026-09-28T11:37:25.938723+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingManifestSentinel7.0.400",
+        "size": 0,
+        "modified": "2026-09-28T11:36:59.047076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\.workloadAdvertisingUpdates7.0.400",
+        "size": 2,
+        "modified": "2026-09-28T11:36:59.047076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.aspNetCertificateSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.580086+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.dotnetFirstUseSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.471767+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401.toolpath.sentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:37:24.470249+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401_IsDockerContainer.dotnetUserLevelCache",
+        "size": 5,
+        "modified": "2026-09-28T11:37:25.145883+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\10.0.401_MachineId.dotnetUserLevelCache",
+        "size": 64,
+        "modified": "2026-09-28T11:37:25.843589+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\7.0.401.aspNetCertificateSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:36:58.034521+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\7.0.401.dotnetFirstUseSentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:36:57.858652+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\7.0.401.toolpath.sentinel",
+        "size": 0,
+        "modified": "2026-09-28T11:36:57.839264+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\7.0.401_IsDockerContainer.dotnetUserLevelCache",
+        "size": 5,
+        "modified": "2023-09-29T23:25:41.784899+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\7.0.401_MachineId.dotnetUserLevelCache",
+        "size": 64,
+        "modified": "2023-09-29T23:25:42.231030+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\MachineId.v1.dotnetUserLevelCache",
+        "size": 64,
+        "modified": "2023-09-29T23:25:42.806772+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\016e66c885084921a801447cae7a72cd",
+        "size": 988,
+        "modified": "2026-09-29T09:39:08.250961+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\05cc9d009903498f9ec6ac059dc34155",
+        "size": 1336,
+        "modified": "2026-09-28T19:33:56.709163+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\0934fcb7bf864bc29297d61f89b8271a",
+        "size": 1000,
+        "modified": "2026-09-28T12:18:20.533670+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\0a9fd094437042f9940ddfda6cbd2c3e",
+        "size": 1336,
+        "modified": "2026-09-29T09:42:16.022686+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\0c6b1516303b48d782d27cda7b9dfc36",
+        "size": 1360,
+        "modified": "2026-09-28T12:10:30.442955+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\0f721b4b3308481dbf9e9539565a21e9",
+        "size": 1336,
+        "modified": "2026-09-28T12:13:41.203040+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\10339d0203c84a25aeda04b6bcca2875",
+        "size": 1336,
+        "modified": "2026-09-29T10:35:07.023200+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\11995487647e4e96855f932f130f8961",
+        "size": 1336,
+        "modified": "2026-09-28T12:28:53.324637+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\16d484adc9124c3ab23e512b645ce56a",
+        "size": 1004,
+        "modified": "2026-09-28T11:47:02.989882+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\17cd80149ab94ceea8d96ca27aabedf3",
+        "size": 1336,
+        "modified": "2026-09-29T09:36:30.684566+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\18f32d1109eb48048a81b532013931bb",
+        "size": 1008,
+        "modified": "2026-09-28T11:59:35.620657+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\20260929114618_30accae0aaf64320801eb694e45721e4.trn",
+        "size": 1052,
+        "modified": "2026-09-29T11:46:18.533807+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\20260929114618_77f899f5e2164c24ab4b3988976cb338.trn",
+        "size": 1288,
+        "modified": "2026-09-29T11:46:18.428890+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\20260929114618_7e890ae156264cb68a17b054b73b289d.trn",
+        "size": 992,
+        "modified": "2026-09-29T11:46:18.539407+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\20260929114618_8a2e5eed73ff45ce8a62b1bc7b9019ec.trn",
+        "size": 1284,
+        "modified": "2026-09-29T11:46:18.364686+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\20260929114618_c72106deb5564f03a7fd08b964c84bfa.trn",
+        "size": 1284,
+        "modified": "2026-09-29T11:46:18.253599+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\267af21cc0824cd784386756ab8270d9",
+        "size": 1004,
+        "modified": "2026-09-28T11:41:18.673534+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\2695a52fadd24074a55cf57e7e9c4fc8",
+        "size": 1336,
+        "modified": "2026-09-29T09:33:11.299056+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\270a3cf32e7d47eb8aa6a5e4fcbc3a66",
+        "size": 1012,
+        "modified": "2026-09-28T12:08:31.184229+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\2a43207d131e4dc08bc2486a5db03177",
+        "size": 1564,
+        "modified": "2026-09-28T12:10:43.824107+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\3f5b061a63554683b8e1c38ec87a0a8b",
+        "size": 1336,
+        "modified": "2026-09-28T12:16:21.528106+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\4154b000ac964a2995117bf3a35e8cd9",
+        "size": 1004,
+        "modified": "2026-09-28T13:58:51.782261+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\417958bf9aec4340a603ca2da2c6eb38",
+        "size": 0,
+        "modified": "2026-09-29T09:01:18.922601+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\499e316b0781463d9a65f5bc1d5fb0f7",
+        "size": 0,
+        "modified": "2026-09-29T09:31:35.489188+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\511841b5f9cd4c3b9ff8a81fdb376949",
+        "size": 1008,
+        "modified": "2026-09-29T09:14:39.865611+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\566cdf16d4114832bf6b3c649b0d8778",
+        "size": 0,
+        "modified": "2026-09-28T16:24:34.981430+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\577d985ef1ef4aa9a6cbc140784790a9",
+        "size": 992,
+        "modified": "2026-09-28T11:41:35.417271+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\5907e3c4670e453f9613feaebe32298d",
+        "size": 1004,
+        "modified": "2026-09-29T09:40:43.437499+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\5a0a06505cb2440581db3dc83741277c",
+        "size": 1000,
+        "modified": "2026-09-28T11:55:04.037553+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\629c9d3b774e40148cf276621d79601b",
+        "size": 1008,
+        "modified": "2026-09-29T10:34:44.115361+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\64db0e18b1ac48ad95bab52cc53e4082",
+        "size": 1012,
+        "modified": "2026-09-28T14:04:19.000519+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\67cf3a0afa87452c9d0c80a121da0a6a",
+        "size": 1332,
+        "modified": "2026-09-28T12:47:15.793005+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\6ba75e08ab90493786e9f4e4acd1c9fb",
+        "size": 0,
+        "modified": "2026-09-29T09:37:37.742404+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\6ecb9af1aefe4ec6bb21e86e260fbd92",
+        "size": 0,
+        "modified": "2026-09-28T13:23:44.539609+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\70f4868b7d7d4ea0ab72ed78929adc1f",
+        "size": 1004,
+        "modified": "2026-09-29T10:58:17.687077+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\7337dc7cbc8c463a9cf53263603fe0a1",
+        "size": 1008,
+        "modified": "2026-09-28T11:53:20.724956+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\733ccaa9b7de4af8bc3e2a06b2cd78e0",
+        "size": 1336,
+        "modified": "2026-09-28T12:20:42.213855+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\7e6ec02e5ac742a4b890e6b41b9af2e6",
+        "size": 1052,
+        "modified": "2026-09-28T11:39:23.523795+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\82331aabc60c44d59f4871f1e155da64",
+        "size": 1004,
+        "modified": "2026-09-28T11:41:07.811208+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\88edf2daa3e541ccafa78fcd733a2547",
+        "size": 1336,
+        "modified": "2026-09-29T08:57:19.861752+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\90fd150b4ff64288bc5275cc8db36194",
+        "size": 1336,
+        "modified": "2026-09-29T09:39:17.734487+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\94c4baa2549c4233990d6ccf6f0aad48",
+        "size": 1004,
+        "modified": "2026-09-28T12:23:13.001097+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\9931c4b337c34077960491a92e7eca8d",
+        "size": 0,
+        "modified": "2026-09-29T09:37:10.136298+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\99cd1785315045bfbb7890bbb68d344a",
+        "size": 1336,
+        "modified": "2026-09-28T13:05:02.207113+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\9cce8fb2e2ef4c9ca427e5cd19d7628f",
+        "size": 1004,
+        "modified": "2026-09-29T09:50:35.487706+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\9da7929d2606433e92ab3265722148bd",
+        "size": 1336,
+        "modified": "2026-09-28T12:53:05.585041+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\9de75182561342318b32de9204707ba6",
+        "size": 1336,
+        "modified": "2026-09-28T12:17:43.817458+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\a1049b0b90c94a0c89626588adfcaacf",
+        "size": 1332,
+        "modified": "2026-09-29T09:31:37.749948+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\a22700dda15340f5aa93c88341729543",
+        "size": 1008,
+        "modified": "2026-09-28T11:40:52.050023+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\a2db06b57d5b4fbbb65e089e891272b0",
+        "size": 1008,
+        "modified": "2026-09-28T11:42:24.962044+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\a6204b9358d94c8497bb3fc8cab1cf29",
+        "size": 1336,
+        "modified": "2026-09-29T09:39:11.653984+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\ab919836e14b4574a65287a25e3c9546",
+        "size": 1008,
+        "modified": "2026-09-28T19:31:44.539897+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\b122e56fcb0d4f56abc06e8b79c0f41d",
+        "size": 0,
+        "modified": "2026-09-29T09:39:10.294607+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\b9bf739fd032424ba23aa389abc84023",
+        "size": 1008,
+        "modified": "2026-09-28T14:17:29.047497+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\bd2d31177dbe4d4f9f5471ba2a07dc35",
+        "size": 1336,
+        "modified": "2026-09-28T11:57:37.319012+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\c9fe66b0e93c4d5e80de2f5863716e6d",
+        "size": 1004,
+        "modified": "2026-09-28T12:16:56.716927+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\cb46fe61941d43ce8d064d09a382753f",
+        "size": 1008,
+        "modified": "2026-09-28T11:49:30.900869+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\cb92f4b4a72f4f669ea609d0dbd7a88b",
+        "size": 1004,
+        "modified": "2026-09-29T09:15:19.028529+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\cdcd8649553c4bc7b8f29a7652eacba7",
+        "size": 1340,
+        "modified": "2026-09-29T09:12:22.991204+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\d299f0eff46c4da5bd83df7d2602fdf7",
+        "size": 1008,
+        "modified": "2026-09-28T11:50:25.660484+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\d38a11635f6b4f28bc889e422782763b",
+        "size": 1004,
+        "modified": "2026-09-28T11:49:07.407419+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\d8a5d6d7275e4d65bb28d9c95548db58",
+        "size": 1332,
+        "modified": "2026-09-28T11:38:42.523228+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\dc46411b6496491fb7cab36748b121c6",
+        "size": 1004,
+        "modified": "2026-09-29T09:31:20.343081+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\dc8ab2e616b1451089fb43294f3d3b74",
+        "size": 1004,
+        "modified": "2026-09-28T11:52:55.232193+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\e22217cdfa9b4a4e94447283aee3ec82",
+        "size": 1336,
+        "modified": "2026-09-29T08:57:16.549934+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\e2662851fa0d4c2687d093cfd8120d0d",
+        "size": 1004,
+        "modified": "2026-09-29T10:39:57.080042+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\e4003dffb1b048919cfbefe288fe6eb0",
+        "size": 1336,
+        "modified": "2026-09-28T12:20:38.760610+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\e6e9a54e5e584142a6911ac5df31d644",
+        "size": 1340,
+        "modified": "2026-09-29T09:31:44.201387+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\ec13658a398044dbbc85909626bc1d1d",
+        "size": 1340,
+        "modified": "2026-09-28T12:48:45.525006+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\ecff42f76aaf44458754a5f7d34aff4d",
+        "size": 1004,
+        "modified": "2026-09-29T09:00:26.057100+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\f16e7127aac24b078c80c1fdc792c6e0",
+        "size": 1336,
+        "modified": "2026-09-28T12:20:39.711119+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\f2dc13b6043b4b4abfbad65e56ea5822",
+        "size": 0,
+        "modified": "2026-09-29T08:57:15.544630+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\f4c02b97e845424e9897829ee30b88b4",
+        "size": 1548,
+        "modified": "2026-09-29T09:37:12.707747+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet\\TelemetryStorageService\\f98b817a69134f62a94b776d8c5fa512",
+        "size": 1008,
+        "modified": "2026-09-28T12:04:39.313661+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\host"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\metadata"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\packs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\sdk"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\sdk-manifests"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\shared"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\templates"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\LICENSE.txt",
+        "size": 9519,
+        "modified": "2026-08-22T17:49:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\ThirdPartyNotices.txt",
+        "size": 78887,
+        "modified": "2026-08-22T17:49:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\dnx.cmd",
+        "size": 404,
+        "modified": "2026-08-24T08:21:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.dotnet10\\dotnet.exe",
+        "size": 167208,
+        "modified": "2026-08-22T19:07:58+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.p2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.setup"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.setup.installer"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.ui"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.tips.state"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.p2\\agents.info",
+        "size": 20,
+        "modified": "2024-01-23T19:10:46.263692+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.p2\\defaults.info",
+        "size": 206,
+        "modified": "2024-01-23T19:10:58.089836+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.p2\\encoding.info",
+        "size": 14,
+        "modified": "2024-01-23T19:10:46.225426+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.setup.installer\\installRoot.txt",
+        "size": 24,
+        "modified": "2024-01-23T19:10:59.594296+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.eclipse\\org.eclipse.oomph.ui\\dialog-help-shown.properties",
+        "size": 91,
+        "modified": "2024-10-01T19:40:00.127568+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ipython\\profile_default"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.ipython\\profile_default\\history.sqlite",
+        "size": 1089536,
+        "modified": "2026-04-02T23:05:32.185186+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.jupyter\\migrated",
+        "size": 32,
+        "modified": "2026-03-02T01:00:44.307223+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.local\\share"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.local\\state"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.matplotlib\\fontlist-v390.json",
+        "size": 117788,
+        "modified": "2026-02-04T09:50:17.796883+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\__pycache__"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\logs"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\README.txt",
+        "size": 997,
+        "modified": "2026-09-28T17:24:33.107076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\desktop-commander-local.cmd",
+        "size": 58,
+        "modified": "2026-09-28T17:22:23.796204+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\dispatch-local-agent.ps1",
+        "size": 1080,
+        "modified": "2026-09-28T17:24:32.740675+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\enable-heaven-local-control-firewall.ps1",
+        "size": 453,
+        "modified": "2026-09-28T17:40:16.802351+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\health-task.txt",
+        "size": 627,
+        "modified": "2026-09-28T18:59:00.410867+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-agent-control-proxy.mjs",
+        "size": 1787,
+        "modified": "2026-09-28T17:36:29.232416+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py",
+        "size": 112718,
+        "modified": "2026-09-29T11:27:12.400785+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py.bak",
+        "size": 98001,
+        "modified": "2026-09-29T10:26:00.421183+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py.pre-v4.bak",
+        "size": 98787,
+        "modified": "2026-09-29T10:29:10.125381+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\heaven-desktop-worker.py.v4.new",
+        "size": 112718,
+        "modified": "2026-09-29T11:27:12.400785+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\start-heaven-local-control.ps1",
+        "size": 1185,
+        "modified": "2026-09-28T17:36:40.818386+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\switch-heaven-worker.py",
+        "size": 850,
+        "modified": "2026-09-28T19:09:14.586822+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\logs\\agent-proxy.err.log",
+        "size": 0,
+        "modified": "2026-09-28T17:36:51.850975+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\logs\\agent-proxy.out.log",
+        "size": 72,
+        "modified": "2026-09-28T17:36:51.996061+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\__pycache__\\heaven-desktop-worker.cpython-311.pyc",
+        "size": 100661,
+        "modified": "2026-09-29T08:11:21.725488+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\__pycache__\\heaven-desktop-worker.py.cpython-311.pyc",
+        "size": 166282,
+        "modified": "2026-09-29T10:32:01.510017+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.mhw-local-tools\\__pycache__\\heaven-desktop-worker.py.v4.cpython-311.pyc",
+        "size": 186585,
+        "modified": "2026-09-29T11:47:35.151171+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.nuget\\packages"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ollama\\cache"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.ollama\\models"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.ollama\\id_ed25519",
+        "size": 387,
+        "modified": "2026-09-28T10:14:42.641935+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.ollama\\id_ed25519.pub",
+        "size": 81,
+        "modified": "2026-09-28T10:14:42.641935+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.ollama\\onboarding-v1.completed",
+        "size": 0,
+        "modified": "2026-09-28T10:15:06.286538+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.ollama\\cache\\model-recommendations.json",
+        "size": 1816,
+        "modified": "2026-09-29T09:54:15.438375+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2\\org.eclipse.equinox.p2.core"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2\\org.eclipse.equinox.p2.engine"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2\\org.eclipse.equinox.p2.repository"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.p2\\pool"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.p2\\pools.info",
+        "size": 25,
+        "modified": "2024-01-23T19:10:46.262697+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.p2\\profiles.info",
+        "size": 136,
+        "modified": "2024-01-23T19:10:59.625218+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.p2\\pool\\artifacts.xml",
+        "size": 717755,
+        "modified": "2024-10-01T19:29:47.240405+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.redhat\\anonymousId",
+        "size": 36,
+        "modified": "2024-03-20T06:30:29.159634+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.skiko\\e0348ecf8839ef2950719c0684864f24f0ae77170b168a4fcce3a3de9bb3d4de"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.skiko\\e0348ecf8839ef2950719c0684864f24f0ae77170b168a4fcce3a3de9bb3d4de\\icudtl.dat",
+        "size": 10185008,
+        "modified": "2024-05-17T21:03:58.977655+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.skiko\\e0348ecf8839ef2950719c0684864f24f0ae77170b168a4fcce3a3de9bb3d4de\\skiko-windows-x64.dll",
+        "size": 16768512,
+        "modified": "2024-05-17T21:03:58.832986+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\logs"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\session_history.json",
+        "size": 8966,
+        "modified": "2026-08-09T08:17:56.318374+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-ocr.log",
+        "size": 471773,
+        "modified": "2026-08-09T08:17:53.073068+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-perf.log",
+        "size": 3616645,
+        "modified": "2026-08-09T08:17:56.316853+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-perf.log.1",
+        "size": 5243826,
+        "modified": "2026-08-08T16:09:33.399076+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-startup.log",
+        "size": 3020,
+        "modified": "2026-08-09T08:06:37.633218+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-webhook.log",
+        "size": 1417540,
+        "modified": "2026-08-09T08:17:57.210277+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign-webhook.log.1",
+        "size": 5242907,
+        "modified": "2026-07-27T09:15:34.470372+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign.db",
+        "size": 1900544,
+        "modified": "2026-08-09T08:17:57.210277+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign.db-shm",
+        "size": 32768,
+        "modified": "2026-08-08T22:30:32.175206+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\sovereign.db-wal",
+        "size": 0,
+        "modified": "2026-08-09T08:17:57.211350+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-nomatch-1785279081692.png",
+        "size": 459671,
+        "modified": "2026-07-28T22:51:21.712062+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279080229.png",
+        "size": 563871,
+        "modified": "2026-07-28T22:51:20.279817+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279081936.png",
+        "size": 99170,
+        "modified": "2026-07-28T22:51:21.953608+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279082139.png",
+        "size": 66536,
+        "modified": "2026-07-28T22:51:22.150384+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279082374.png",
+        "size": 244186,
+        "modified": "2026-07-28T22:51:22.390210+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279082596.png",
+        "size": 278740,
+        "modified": "2026-07-28T22:51:22.613146+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279082849.png",
+        "size": 277044,
+        "modified": "2026-07-28T22:51:22.865961+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279083081.png",
+        "size": 277044,
+        "modified": "2026-07-28T22:51:23.098684+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279083329.png",
+        "size": 277453,
+        "modified": "2026-07-28T22:51:23.350877+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279083548.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:23.565282+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279083781.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:23.796489+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279084041.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:24.059256+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279084266.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:24.283714+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279084509.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:24.527124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279084746.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:24.766787+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279084982.png",
+        "size": 293183,
+        "modified": "2026-07-28T22:51:24.999857+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279085198.png",
+        "size": 468706,
+        "modified": "2026-07-28T22:51:25.222668+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279085390.png",
+        "size": 12221,
+        "modified": "2026-07-28T22:51:25.400402+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279085611.png",
+        "size": 12126,
+        "modified": "2026-07-28T22:51:25.625014+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279085981.png",
+        "size": 1881494,
+        "modified": "2026-07-28T22:51:26.047602+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279086390.png",
+        "size": 1833359,
+        "modified": "2026-07-28T22:51:26.439326+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279086935.png",
+        "size": 1826884,
+        "modified": "2026-07-28T22:51:26.995946+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279087304.png",
+        "size": 1792890,
+        "modified": "2026-07-28T22:51:27.358418+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279087662.png",
+        "size": 1794522,
+        "modified": "2026-07-28T22:51:27.720939+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279088097.png",
+        "size": 1806634,
+        "modified": "2026-07-28T22:51:28.150888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279088436.png",
+        "size": 1830400,
+        "modified": "2026-07-28T22:51:28.493250+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279088767.png",
+        "size": 1819508,
+        "modified": "2026-07-28T22:51:28.820779+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279089129.png",
+        "size": 1808353,
+        "modified": "2026-07-28T22:51:29.184712+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279089472.png",
+        "size": 1811515,
+        "modified": "2026-07-28T22:51:29.527676+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279089797.png",
+        "size": 1806917,
+        "modified": "2026-07-28T22:51:29.848258+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279090158.png",
+        "size": 1801640,
+        "modified": "2026-07-28T22:51:30.213973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279090535.png",
+        "size": 1798322,
+        "modified": "2026-07-28T22:51:30.592276+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279090860.png",
+        "size": 1799189,
+        "modified": "2026-07-28T22:51:30.920370+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279091232.png",
+        "size": 1799859,
+        "modified": "2026-07-28T22:51:31.291649+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279091599.png",
+        "size": 1800643,
+        "modified": "2026-07-28T22:51:31.665477+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279091931.png",
+        "size": 1800664,
+        "modified": "2026-07-28T22:51:31.999876+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279092287.png",
+        "size": 1869467,
+        "modified": "2026-07-28T22:51:32.347249+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279092656.png",
+        "size": 1870129,
+        "modified": "2026-07-28T22:51:32.716326+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279093018.png",
+        "size": 1870899,
+        "modified": "2026-07-28T22:51:33.083599+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279093378.png",
+        "size": 1871369,
+        "modified": "2026-07-28T22:51:33.430062+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279093729.png",
+        "size": 1893800,
+        "modified": "2026-07-28T22:51:33.788047+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279094037.png",
+        "size": 1295452,
+        "modified": "2026-07-28T22:51:34.083705+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279094237.png",
+        "size": 128767,
+        "modified": "2026-07-28T22:51:34.249817+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279094439.png",
+        "size": 14134,
+        "modified": "2026-07-28T22:51:34.449200+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279094636.png",
+        "size": 14134,
+        "modified": "2026-07-28T22:51:34.646499+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279094838.png",
+        "size": 14134,
+        "modified": "2026-07-28T22:51:34.847991+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279095033.png",
+        "size": 14197,
+        "modified": "2026-07-28T22:51:35.043644+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279095218.png",
+        "size": 14197,
+        "modified": "2026-07-28T22:51:35.229204+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279095413.png",
+        "size": 14197,
+        "modified": "2026-07-28T22:51:35.424146+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279095605.png",
+        "size": 14197,
+        "modified": "2026-07-28T22:51:35.616979+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279095805.png",
+        "size": 1654805,
+        "modified": "2026-07-28T22:51:35.858492+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279096002.png",
+        "size": 2369021,
+        "modified": "2026-07-28T22:51:36.069472+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279096262.png",
+        "size": 2570691,
+        "modified": "2026-07-28T22:51:36.344936+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279096785.png",
+        "size": 2556924,
+        "modified": "2026-07-28T22:51:36.862979+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279097196.png",
+        "size": 3000562,
+        "modified": "2026-07-28T22:51:37.266098+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279097624.png",
+        "size": 3096162,
+        "modified": "2026-07-28T22:51:37.692201+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279098181.png",
+        "size": 2973125,
+        "modified": "2026-07-28T22:51:38.259819+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279098816.png",
+        "size": 2846392,
+        "modified": "2026-07-28T22:51:38.920369+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279106127.png",
+        "size": 2416784,
+        "modified": "2026-07-28T22:51:46.205757+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279106860.png",
+        "size": 2419336,
+        "modified": "2026-07-28T22:51:46.934807+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279107672.png",
+        "size": 2255774,
+        "modified": "2026-07-28T22:51:47.759672+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279108501.png",
+        "size": 2039421,
+        "modified": "2026-07-28T22:51:48.558832+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279109114.png",
+        "size": 2029775,
+        "modified": "2026-07-28T22:51:49.180993+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279109747.png",
+        "size": 2029997,
+        "modified": "2026-07-28T22:51:49.808086+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279110331.png",
+        "size": 2026253,
+        "modified": "2026-07-28T22:51:50.400204+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279110960.png",
+        "size": 2010183,
+        "modified": "2026-07-28T22:51:51.022511+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279111566.png",
+        "size": 1995167,
+        "modified": "2026-07-28T22:51:51.630819+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279112164.png",
+        "size": 2037231,
+        "modified": "2026-07-28T22:51:52.229782+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279112827.png",
+        "size": 2038317,
+        "modified": "2026-07-28T22:51:52.894984+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279113649.png",
+        "size": 2052898,
+        "modified": "2026-07-28T22:51:53.713698+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279114522.png",
+        "size": 2042518,
+        "modified": "2026-07-28T22:51:54.599054+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279115362.png",
+        "size": 1921974,
+        "modified": "2026-07-28T22:51:55.433645+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279116138.png",
+        "size": 1921096,
+        "modified": "2026-07-28T22:51:56.196333+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279116978.png",
+        "size": 1917437,
+        "modified": "2026-07-28T22:51:57.042516+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279117852.png",
+        "size": 1913880,
+        "modified": "2026-07-28T22:51:57.916704+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279118739.png",
+        "size": 1913342,
+        "modified": "2026-07-28T22:51:58.808880+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279119589.png",
+        "size": 1906573,
+        "modified": "2026-07-28T22:51:59.653499+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279120429.png",
+        "size": 1897503,
+        "modified": "2026-07-28T22:52:00.495574+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279121347.png",
+        "size": 1888681,
+        "modified": "2026-07-28T22:52:01.412544+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279122226.png",
+        "size": 1879594,
+        "modified": "2026-07-28T22:52:02.291775+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279123192.png",
+        "size": 1874998,
+        "modified": "2026-07-28T22:52:03.267117+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279124113.png",
+        "size": 1867403,
+        "modified": "2026-07-28T22:52:04.182211+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279125024.png",
+        "size": 1865450,
+        "modified": "2026-07-28T22:52:05.103749+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279126015.png",
+        "size": 1873230,
+        "modified": "2026-07-28T22:52:06.082277+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279126980.png",
+        "size": 1870507,
+        "modified": "2026-07-28T22:52:07.045631+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279127926.png",
+        "size": 1867229,
+        "modified": "2026-07-28T22:52:07.997992+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279128949.png",
+        "size": 1863724,
+        "modified": "2026-07-28T22:52:09.017237+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279129877.png",
+        "size": 1843031,
+        "modified": "2026-07-28T22:52:09.945232+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279130943.png",
+        "size": 1823953,
+        "modified": "2026-07-28T22:52:11.015168+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279131983.png",
+        "size": 1805100,
+        "modified": "2026-07-28T22:52:12.053202+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279132939.png",
+        "size": 1774136,
+        "modified": "2026-07-28T22:52:13.005237+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279133862.png",
+        "size": 1769025,
+        "modified": "2026-07-28T22:52:13.931529+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279134818.png",
+        "size": 1742657,
+        "modified": "2026-07-28T22:52:14.886389+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279135772.png",
+        "size": 1712331,
+        "modified": "2026-07-28T22:52:15.842328+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279136767.png",
+        "size": 1693675,
+        "modified": "2026-07-28T22:52:16.840634+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279137660.png",
+        "size": 1678760,
+        "modified": "2026-07-28T22:52:17.729409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279138629.png",
+        "size": 1672566,
+        "modified": "2026-07-28T22:52:18.693703+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279139472.png",
+        "size": 1669874,
+        "modified": "2026-07-28T22:52:19.532333+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279140397.png",
+        "size": 1647289,
+        "modified": "2026-07-28T22:52:20.461084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279141229.png",
+        "size": 1619844,
+        "modified": "2026-07-28T22:52:21.294268+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279142091.png",
+        "size": 1605708,
+        "modified": "2026-07-28T22:52:22.145881+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279142925.png",
+        "size": 1590292,
+        "modified": "2026-07-28T22:52:22.985153+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279143789.png",
+        "size": 1576308,
+        "modified": "2026-07-28T22:52:23.847616+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279144590.png",
+        "size": 1570761,
+        "modified": "2026-07-28T22:52:24.645598+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279145474.png",
+        "size": 1576812,
+        "modified": "2026-07-28T22:52:25.547093+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279146322.png",
+        "size": 1545079,
+        "modified": "2026-07-28T22:52:26.389331+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279147148.png",
+        "size": 1544189,
+        "modified": "2026-07-28T22:52:27.206801+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279147976.png",
+        "size": 1553413,
+        "modified": "2026-07-28T22:52:28.032763+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279149447.png",
+        "size": 1542797,
+        "modified": "2026-07-28T22:52:29.500963+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279150950.png",
+        "size": 1536673,
+        "modified": "2026-07-28T22:52:31.005176+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279151776.png",
+        "size": 1510421,
+        "modified": "2026-07-28T22:52:31.829373+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279152593.png",
+        "size": 1473539,
+        "modified": "2026-07-28T22:52:32.647819+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279153403.png",
+        "size": 1484967,
+        "modified": "2026-07-28T22:52:33.453523+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279154183.png",
+        "size": 1399040,
+        "modified": "2026-07-28T22:52:34.229709+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279155482.png",
+        "size": 1347412,
+        "modified": "2026-07-28T22:52:35.528390+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279156306.png",
+        "size": 1339565,
+        "modified": "2026-07-28T22:52:36.359840+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279157675.png",
+        "size": 1344648,
+        "modified": "2026-07-28T22:52:37.722544+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279158538.png",
+        "size": 1344747,
+        "modified": "2026-07-28T22:52:38.585344+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279159371.png",
+        "size": 1360722,
+        "modified": "2026-07-28T22:52:39.413848+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279160813.png",
+        "size": 1341448,
+        "modified": "2026-07-28T22:52:40.865111+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279161701.png",
+        "size": 1332040,
+        "modified": "2026-07-28T22:52:41.757006+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279162708.png",
+        "size": 1431131,
+        "modified": "2026-07-28T22:52:42.765539+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279163782.png",
+        "size": 1473548,
+        "modified": "2026-07-28T22:52:43.842034+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279164656.png",
+        "size": 1470848,
+        "modified": "2026-07-28T22:52:44.705656+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279165459.png",
+        "size": 1420215,
+        "modified": "2026-07-28T22:52:45.503936+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279166912.png",
+        "size": 1405982,
+        "modified": "2026-07-28T22:52:46.955356+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279168465.png",
+        "size": 1410491,
+        "modified": "2026-07-28T22:52:48.525832+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279169907.png",
+        "size": 1400847,
+        "modified": "2026-07-28T22:52:49.962204+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279170775.png",
+        "size": 1411959,
+        "modified": "2026-07-28T22:52:50.838245+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279171696.png",
+        "size": 1469149,
+        "modified": "2026-07-28T22:52:51.748073+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279172622.png",
+        "size": 1365735,
+        "modified": "2026-07-28T22:52:52.671197+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279173555.png",
+        "size": 1436728,
+        "modified": "2026-07-28T22:52:53.610123+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279174552.png",
+        "size": 1423469,
+        "modified": "2026-07-28T22:52:54.610425+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-norows-1785279175260.png",
+        "size": 1420358,
+        "modified": "2026-07-28T22:52:55.317250+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279099023.png",
+        "size": 2475658,
+        "modified": "2026-07-28T22:51:39.120124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279099669.png",
+        "size": 2345919,
+        "modified": "2026-07-28T22:51:39.756055+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279100359.png",
+        "size": 2332488,
+        "modified": "2026-07-28T22:51:40.450748+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279100949.png",
+        "size": 2429432,
+        "modified": "2026-07-28T22:51:41.018407+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279101490.png",
+        "size": 2433756,
+        "modified": "2026-07-28T22:51:41.555418+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279102043.png",
+        "size": 2439181,
+        "modified": "2026-07-28T22:51:42.102102+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279102599.png",
+        "size": 2440071,
+        "modified": "2026-07-28T22:51:42.663817+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279103133.png",
+        "size": 2447316,
+        "modified": "2026-07-28T22:51:43.196271+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279103683.png",
+        "size": 2351768,
+        "modified": "2026-07-28T22:51:43.745219+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279104219.png",
+        "size": 2465636,
+        "modified": "2026-07-28T22:51:44.284029+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279104761.png",
+        "size": 2463547,
+        "modified": "2026-07-28T22:51:44.826735+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279148138.png",
+        "size": 1058617,
+        "modified": "2026-07-28T22:52:28.175559+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279149590.png",
+        "size": 1164143,
+        "modified": "2026-07-28T22:52:29.632543+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279154331.png",
+        "size": 896939,
+        "modified": "2026-07-28T22:52:34.363869+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279156467.png",
+        "size": 890185,
+        "modified": "2026-07-28T22:52:36.500875+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279159507.png",
+        "size": 1004335,
+        "modified": "2026-07-28T22:52:39.539575+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279165598.png",
+        "size": 994677,
+        "modified": "2026-07-28T22:52:45.636026+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279167051.png",
+        "size": 952576,
+        "modified": "2026-07-28T22:52:47.082082+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\joinserver-popup-1785279168623.png",
+        "size": 924946,
+        "modified": "2026-07-28T22:52:48.662208+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260718-191509-centre_menu_not_visible_or_low_confidence-bottomleft.png",
+        "size": 356083,
+        "modified": "2026-07-18T23:15:09.588056+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260718-191509-centre_menu_not_visible_or_low_confidence-full.png",
+        "size": 1879609,
+        "modified": "2026-07-18T23:15:09.573230+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260718-191509-centre_menu_not_visible_or_low_confidence-roi.png",
+        "size": 702728,
+        "modified": "2026-07-18T23:15:09.614210+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260722-141706-ocr_failed-bottomleft.png",
+        "size": 218827,
+        "modified": "2026-07-22T18:17:07.010670+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260722-141706-ocr_failed-full.png",
+        "size": 1124675,
+        "modified": "2026-07-22T18:17:07.001988+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260722-141706-ocr_failed-roi.png",
+        "size": 218674,
+        "modified": "2026-07-22T18:17:07.019401+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260727-204300-ocr_failed-bottomleft.png",
+        "size": 288254,
+        "modified": "2026-07-28T00:43:00.828566+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260727-204300-ocr_failed-full.png",
+        "size": 1339005,
+        "modified": "2026-07-28T00:43:00.817979+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260727-204300-ocr_failed-roi.png",
+        "size": 288218,
+        "modified": "2026-07-28T00:43:00.837365+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260728-155107-ocr_failed-bottomleft.png",
+        "size": 140967,
+        "modified": "2026-07-28T19:51:07.367026+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260728-155107-ocr_failed-full.png",
+        "size": 991214,
+        "modified": "2026-07-28T19:51:07.359895+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260728-155107-ocr_failed-roi.png",
+        "size": 141047,
+        "modified": "2026-07-28T19:51:07.373653+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260731-201404-ocr_failed-bottomleft.png",
+        "size": 334089,
+        "modified": "2026-08-01T00:14:04.222955+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260731-201404-ocr_failed-full.png",
+        "size": 1647442,
+        "modified": "2026-08-01T00:14:04.211975+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\debug\\menu-fail-20260731-201404-ocr_failed-roi.png",
+        "size": 334028,
+        "modified": "2026-08-01T00:14:04.237004+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.sovereign\\logs\\electron.log",
+        "size": 7518487,
+        "modified": "2026-08-09T08:17:57.352925+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.thumbnails\\fail"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.thumbnails\\large"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log",
+        "size": 78012,
+        "modified": "2026-03-30T03:57:01.405339+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.1",
+        "size": 17026,
+        "modified": "2026-03-19T03:26:45.221275+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.10",
+        "size": 65543,
+        "modified": "2025-11-14T11:43:46.083519+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.2",
+        "size": 13192,
+        "modified": "2026-03-18T19:59:39.394945+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.3",
+        "size": 30928,
+        "modified": "2026-03-17T20:22:16.334735+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.4",
+        "size": 73177,
+        "modified": "2026-03-08T23:06:37.426845+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.5",
+        "size": 171707,
+        "modified": "2026-02-16T06:03:11.628010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.6",
+        "size": 82442,
+        "modified": "2026-02-15T17:21:01.112744+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.7",
+        "size": 16876,
+        "modified": "2026-02-14T03:37:55.315069+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.8",
+        "size": 25443,
+        "modified": "2025-12-17T11:37:18.152972+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VBoxSVC.log.9",
+        "size": 49725,
+        "modified": "2025-11-14T21:43:24.968641+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VirtualBox-1.12-windows.xml",
+        "size": 2915,
+        "modified": "2025-09-19T15:50:38.038222+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VirtualBox.xml",
+        "size": 3320,
+        "modified": "2026-03-29T09:26:21.896563+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\VirtualBox.xml-prev",
+        "size": 3320,
+        "modified": "2026-03-29T09:26:21.894552+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log",
+        "size": 140,
+        "modified": "2026-03-30T03:56:56.413957+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.1",
+        "size": 1707,
+        "modified": "2026-03-30T03:56:55.491043+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.10",
+        "size": 1694,
+        "modified": "2026-02-16T06:03:01.810970+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.2",
+        "size": 1076,
+        "modified": "2026-03-30T00:28:12.391731+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.3",
+        "size": 1999,
+        "modified": "2026-03-30T00:08:28.583000+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.4",
+        "size": 295,
+        "modified": "2026-03-29T22:45:52.473899+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.5",
+        "size": 2029,
+        "modified": "2026-03-29T22:21:36.365179+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.6",
+        "size": 1440,
+        "modified": "2026-03-16T19:54:54.950040+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.7",
+        "size": 274,
+        "modified": "2026-03-08T23:06:32.428488+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.8",
+        "size": 4910,
+        "modified": "2026-03-08T23:03:46.279041+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.VirtualBox\\selectorwindow.log.9",
+        "size": 1958,
+        "modified": "2026-03-08T22:16:04.006579+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode\\cli"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode\\extensions"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.vscode\\argv.json",
+        "size": 798,
+        "modified": "2023-08-01T02:08:06.005823+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.vscode\\extensions\\.obsolete",
+        "size": 473,
+        "modified": "2026-06-28T16:18:40.108152+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.vscode\\extensions\\extensions.json",
+        "size": 19034,
+        "modified": "2026-05-18T21:08:58.900610+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.vscode-shared\\sharedStorage"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.vscode-shared\\sharedStorage\\state.vscdb",
+        "size": 94208,
+        "modified": "2026-06-28T16:18:42.148247+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.vscode-shared\\sharedStorage\\state.vscdb.backup",
+        "size": 94208,
+        "modified": "2026-06-28T16:18:42.148247+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.xdman\\metadata"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\.xdman\\temp"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\config.txt",
+        "size": 1250,
+        "modified": "2023-08-18T11:33:01.823661+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\downloads.txt",
+        "size": 257,
+        "modified": "2023-08-18T11:36:32.041147+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\queues.txt",
+        "size": 102,
+        "modified": "2023-08-18T11:35:46.489919+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\settings.json",
+        "size": 368,
+        "modified": "2023-08-18T22:45:23.707006+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\settings_updated",
+        "size": 0,
+        "modified": "2023-08-18T22:45:23.707006+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\xdm_chrome.native_host.json",
+        "size": 322,
+        "modified": "2023-08-18T11:32:56.298373+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\xdmff.native_host.json",
+        "size": 246,
+        "modified": "2023-08-18T11:32:56.297374+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\.xdman\\metadata\\1c2501bd-3f23-4da2-849f-cc56bd7626cf",
+        "size": 61,
+        "modified": "2023-08-18T11:35:46.489332+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_work"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\externals"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\.credentials",
+        "size": 275,
+        "modified": "2026-09-29T11:13:04.990727+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\.credentials_rsaparams",
+        "size": 1894,
+        "modified": "2026-09-29T11:13:04.740083+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\.runner",
+        "size": 388,
+        "modified": "2026-09-29T11:13:04.994811+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\config.cmd",
+        "size": 1225,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\run-helper.cmd",
+        "size": 1888,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\run-helper.cmd.template",
+        "size": 1888,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\run-helper.sh.template",
+        "size": 2947,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\run.cmd",
+        "size": 1297,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Azure.Core.dll",
+        "size": 880960,
+        "modified": "2026-05-06T21:42:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Azure.Storage.Blobs.dll",
+        "size": 1426744,
+        "modified": "2026-08-25T02:42:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Azure.Storage.Common.dll",
+        "size": 250168,
+        "modified": "2026-06-05T00:13:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.AspNetCore.WebUtilities.dll",
+        "size": 106296,
+        "modified": "2026-02-13T09:59:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Bcl.AsyncInterfaces.dll",
+        "size": 20280,
+        "modified": "2026-01-25T22:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Bcl.Cryptography.dll",
+        "size": 296232,
+        "modified": "2026-07-24T19:53:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.CSharp.dll",
+        "size": 1005392,
+        "modified": "2026-07-18T01:50:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DevTunnels.Connections.dll",
+        "size": 134968,
+        "modified": "2026-07-30T22:45:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DevTunnels.Contracts.dll",
+        "size": 65336,
+        "modified": "2026-07-30T22:42:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DevTunnels.Management.dll",
+        "size": 100192,
+        "modified": "2026-07-30T22:43:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DevTunnels.Ssh.Tcp.dll",
+        "size": 99128,
+        "modified": "2026-07-30T02:00:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DevTunnels.Ssh.dll",
+        "size": 349024,
+        "modified": "2026-07-30T01:58:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.DiaSymReader.Native.amd64.dll",
+        "size": 2195504,
+        "modified": "2024-11-27T09:18:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Configuration.Abstractions.dll",
+        "size": 27912,
+        "modified": "2026-01-25T22:29:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "size": 65288,
+        "modified": "2026-01-25T22:27:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Diagnostics.Abstractions.dll",
+        "size": 30472,
+        "modified": "2026-01-25T22:31:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "size": 22792,
+        "modified": "2026-01-25T22:28:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Hosting.Abstractions.dll",
+        "size": 53512,
+        "modified": "2026-01-25T22:32:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Logging.Abstractions.dll",
+        "size": 66312,
+        "modified": "2026-01-25T22:31:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Options.dll",
+        "size": 64824,
+        "modified": "2026-01-25T22:30:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Extensions.Primitives.dll",
+        "size": 44344,
+        "modified": "2026-01-25T22:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Identity.Client.Extensions.Msal.dll",
+        "size": 66592,
+        "modified": "2026-03-10T22:50:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Identity.Client.dll",
+        "size": 1168416,
+        "modified": "2026-03-10T22:41:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.IdentityModel.Abstractions.dll",
+        "size": 19528,
+        "modified": "2025-08-16T01:52:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Net.Http.Headers.dll",
+        "size": 84792,
+        "modified": "2026-02-13T09:59:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.VisualBasic.Core.dll",
+        "size": 1247056,
+        "modified": "2026-07-18T01:50:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.VisualBasic.dll",
+        "size": 17232,
+        "modified": "2026-07-18T01:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.VisualStudio.Validation.dll",
+        "size": 37392,
+        "modified": "2025-02-13T17:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Win32.Primitives.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:43:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Microsoft.Win32.Registry.dll",
+        "size": 120616,
+        "modified": "2026-07-18T01:50:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Minimatch.dll",
+        "size": 18432,
+        "modified": "2016-06-05T13:16:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Newtonsoft.Json.Bson.dll",
+        "size": 97720,
+        "modified": "2018-11-28T04:10:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Newtonsoft.Json.dll",
+        "size": 712464,
+        "modified": "2023-03-08T12:09:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Common.deps.json",
+        "size": 94427,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Common.dll",
+        "size": 220672,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Listener.deps.json",
+        "size": 122958,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Listener.dll",
+        "size": 297984,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Listener.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Listener.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.PluginHost.deps.json",
+        "size": 120421,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.PluginHost.dll",
+        "size": 7168,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.PluginHost.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.PluginHost.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Plugins.deps.json",
+        "size": 130768,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Plugins.dll",
+        "size": 112640,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Sdk.deps.json",
+        "size": 130350,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Sdk.dll",
+        "size": 58880,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Worker.deps.json",
+        "size": 129733,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Worker.dll",
+        "size": 632320,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Worker.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Runner.Worker.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\RunnerService.exe",
+        "size": 16384,
+        "modified": "2026-08-26T18:31:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\RunnerService.exe.config",
+        "size": 188,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Sdk.deps.json",
+        "size": 92002,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\Sdk.dll",
+        "size": 1529344,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.AppContext.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Buffers.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ClientModel.dll",
+        "size": 263528,
+        "modified": "2026-05-06T05:24:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Collections.Concurrent.dll",
+        "size": 276304,
+        "modified": "2026-07-18T01:50:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Collections.Immutable.dll",
+        "size": 837416,
+        "modified": "2026-07-18T01:50:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Collections.NonGeneric.dll",
+        "size": 104232,
+        "modified": "2026-07-18T01:50:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Collections.Specialized.dll",
+        "size": 104272,
+        "modified": "2026-07-18T01:50:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Collections.dll",
+        "size": 259880,
+        "modified": "2026-07-18T01:50:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.Annotations.dll",
+        "size": 198480,
+        "modified": "2026-07-18T01:50:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.DataAnnotations.dll",
+        "size": 16720,
+        "modified": "2026-07-18T01:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.EventBasedAsync.dll",
+        "size": 46928,
+        "modified": "2026-07-18T01:50:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.Primitives.dll",
+        "size": 79656,
+        "modified": "2026-07-18T01:50:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.TypeConverter.dll",
+        "size": 747304,
+        "modified": "2026-07-18T01:50:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ComponentModel.dll",
+        "size": 30504,
+        "modified": "2026-07-18T01:50:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Configuration.dll",
+        "size": 19240,
+        "modified": "2026-07-18T01:44:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Console.dll",
+        "size": 173864,
+        "modified": "2026-07-18T01:50:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Core.dll",
+        "size": 23336,
+        "modified": "2026-07-18T01:45:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Data.Common.dll",
+        "size": 2860840,
+        "modified": "2026-07-18T01:51:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Data.DataSetExtensions.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:45:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Data.dll",
+        "size": 24872,
+        "modified": "2026-07-18T01:45:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.Contracts.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:43:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.Debug.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.DiagnosticSource.dll",
+        "size": 192264,
+        "modified": "2026-01-25T22:27:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.EventLog.Messages.dll",
+        "size": 800592,
+        "modified": "2026-05-20T23:29:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.EventLog.dll",
+        "size": 175440,
+        "modified": "2026-05-20T23:34:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.FileVersionInfo.dll",
+        "size": 46928,
+        "modified": "2026-07-18T01:51:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.Process.dll",
+        "size": 337704,
+        "modified": "2026-07-18T01:51:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.StackTrace.dll",
+        "size": 46888,
+        "modified": "2026-07-18T01:51:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.TextWriterTraceListener.dll",
+        "size": 67408,
+        "modified": "2026-07-18T01:51:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.Tools.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.TraceSource.dll",
+        "size": 145232,
+        "modified": "2026-07-18T01:51:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Diagnostics.Tracing.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:43:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Drawing.Primitives.dll",
+        "size": 132904,
+        "modified": "2026-07-18T01:51:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Drawing.dll",
+        "size": 20264,
+        "modified": "2026-07-18T01:45:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Dynamic.Runtime.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:44:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Formats.Asn1.dll",
+        "size": 95568,
+        "modified": "2026-07-24T19:52:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Formats.Tar.dll",
+        "size": 276264,
+        "modified": "2026-07-18T01:51:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Globalization.Calendars.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:44:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Globalization.Extensions.dll",
+        "size": 15184,
+        "modified": "2026-07-18T01:44:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Globalization.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Compression.Brotli.dll",
+        "size": 83752,
+        "modified": "2026-07-18T01:51:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Compression.FileSystem.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Compression.Native.dll",
+        "size": 828752,
+        "modified": "2026-07-18T01:41:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Compression.ZipFile.dll",
+        "size": 55080,
+        "modified": "2026-07-18T01:51:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Compression.dll",
+        "size": 263976,
+        "modified": "2026-07-18T01:51:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.FileSystem.AccessControl.dll",
+        "size": 104232,
+        "modified": "2026-07-18T01:51:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.FileSystem.DriveInfo.dll",
+        "size": 55080,
+        "modified": "2026-07-18T01:51:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.FileSystem.Primitives.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.FileSystem.Watcher.dll",
+        "size": 87848,
+        "modified": "2026-07-18T01:51:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.FileSystem.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Hashing.dll",
+        "size": 56080,
+        "modified": "2026-01-25T22:27:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.IsolatedStorage.dll",
+        "size": 91984,
+        "modified": "2026-07-18T01:51:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.MemoryMappedFiles.dll",
+        "size": 83752,
+        "modified": "2026-07-18T01:51:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Pipelines.dll",
+        "size": 77584,
+        "modified": "2026-01-25T22:27:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Pipes.AccessControl.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:43:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.Pipes.dll",
+        "size": 165712,
+        "modified": "2026-07-18T01:51:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.UnmanagedMemoryStream.dll",
+        "size": 15184,
+        "modified": "2026-07-18T01:45:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.IO.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Linq.Expressions.dll",
+        "size": 3675984,
+        "modified": "2026-07-18T01:52:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Linq.Parallel.dll",
+        "size": 804648,
+        "modified": "2026-07-18T01:52:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Linq.Queryable.dll",
+        "size": 173864,
+        "modified": "2026-07-18T01:52:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Linq.dll",
+        "size": 542504,
+        "modified": "2026-07-18T01:51:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Memory.Data.dll",
+        "size": 32528,
+        "modified": "2026-01-25T22:32:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Memory.dll",
+        "size": 157480,
+        "modified": "2026-07-18T01:52:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Http.Formatting.dll",
+        "size": 189360,
+        "modified": "2023-10-21T00:33:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Http.Json.dll",
+        "size": 128808,
+        "modified": "2026-07-18T01:52:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Http.dll",
+        "size": 1734440,
+        "modified": "2026-07-18T01:52:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.HttpListener.dll",
+        "size": 550696,
+        "modified": "2026-07-18T01:52:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Mail.dll",
+        "size": 431952,
+        "modified": "2026-07-18T01:52:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.NameResolution.dll",
+        "size": 112424,
+        "modified": "2026-07-18T01:52:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.NetworkInformation.dll",
+        "size": 157520,
+        "modified": "2026-07-18T01:52:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Ping.dll",
+        "size": 96040,
+        "modified": "2026-07-18T01:52:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Primitives.dll",
+        "size": 231248,
+        "modified": "2026-07-18T01:52:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Quic.dll",
+        "size": 284496,
+        "modified": "2026-07-18T01:52:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Requests.dll",
+        "size": 345936,
+        "modified": "2026-07-18T01:52:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Security.dll",
+        "size": 669520,
+        "modified": "2026-07-18T01:52:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.ServicePoint.dll",
+        "size": 46888,
+        "modified": "2026-07-18T01:52:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.Sockets.dll",
+        "size": 546640,
+        "modified": "2026-07-18T01:52:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.WebClient.dll",
+        "size": 169808,
+        "modified": "2026-07-18T01:52:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.WebHeaderCollection.dll",
+        "size": 67368,
+        "modified": "2026-07-18T01:52:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.WebProxy.dll",
+        "size": 42832,
+        "modified": "2026-07-18T01:53:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.WebSockets.Client.dll",
+        "size": 100136,
+        "modified": "2026-07-18T01:53:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.WebSockets.dll",
+        "size": 190248,
+        "modified": "2026-07-18T01:53:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Net.dll",
+        "size": 17192,
+        "modified": "2026-07-18T01:45:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Numerics.Vectors.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Numerics.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ObjectModel.dll",
+        "size": 79656,
+        "modified": "2026-07-18T01:53:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Private.CoreLib.dll",
+        "size": 13174608,
+        "modified": "2026-07-18T01:38:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Private.DataContractSerialization.dll",
+        "size": 2082640,
+        "modified": "2026-07-18T01:53:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Private.Uri.dll",
+        "size": 259880,
+        "modified": "2026-07-18T01:53:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Private.Xml.Linq.dll",
+        "size": 403240,
+        "modified": "2026-07-18T01:53:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Private.Xml.dll",
+        "size": 7997264,
+        "modified": "2026-07-18T01:53:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.DispatchProxy.dll",
+        "size": 75560,
+        "modified": "2026-07-18T01:53:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Emit.ILGeneration.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Emit.Lightweight.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:43:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Emit.dll",
+        "size": 128808,
+        "modified": "2026-07-18T01:53:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Extensions.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Metadata.dll",
+        "size": 1115984,
+        "modified": "2026-07-18T01:53:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:43:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.TypeExtensions.dll",
+        "size": 42792,
+        "modified": "2026-07-18T01:53:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Reflection.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:44:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Resources.Reader.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Resources.ResourceManager.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Resources.Writer.dll",
+        "size": 51024,
+        "modified": "2026-07-18T01:53:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.CompilerServices.Unsafe.dll",
+        "size": 15184,
+        "modified": "2026-07-18T01:44:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.CompilerServices.VisualC.dll",
+        "size": 30504,
+        "modified": "2026-07-18T01:53:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Extensions.dll",
+        "size": 17704,
+        "modified": "2026-07-18T01:44:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Handles.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.InteropServices.JavaScript.dll",
+        "size": 50984,
+        "modified": "2026-07-18T01:53:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.InteropServices.RuntimeInformation.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.InteropServices.dll",
+        "size": 96080,
+        "modified": "2026-07-18T01:53:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Intrinsics.dll",
+        "size": 16720,
+        "modified": "2026-07-18T01:43:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Loader.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:45:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Numerics.dll",
+        "size": 329512,
+        "modified": "2026-07-18T01:53:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Serialization.Formatters.dll",
+        "size": 309032,
+        "modified": "2026-07-18T01:53:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Serialization.Json.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:44:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Serialization.Primitives.dll",
+        "size": 38696,
+        "modified": "2026-07-18T01:53:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Serialization.Xml.dll",
+        "size": 16680,
+        "modified": "2026-07-18T01:43:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.Serialization.dll",
+        "size": 16720,
+        "modified": "2026-07-18T01:44:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Runtime.dll",
+        "size": 43344,
+        "modified": "2026-07-18T01:43:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.AccessControl.dll",
+        "size": 231248,
+        "modified": "2026-07-18T01:54:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Claims.dll",
+        "size": 100136,
+        "modified": "2026-07-18T01:54:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Algorithms.dll",
+        "size": 17192,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Cng.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Csp.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Encoding.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.OpenSsl.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Pkcs.dll",
+        "size": 339792,
+        "modified": "2026-07-24T19:55:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.Primitives.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.ProtectedData.dll",
+        "size": 38696,
+        "modified": "2026-07-24T19:54:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.X509Certificates.dll",
+        "size": 16680,
+        "modified": "2026-07-18T01:44:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Cryptography.dll",
+        "size": 2049832,
+        "modified": "2026-07-18T01:54:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Principal.Windows.dll",
+        "size": 186192,
+        "modified": "2026-07-18T01:54:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.Principal.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.SecureString.dll",
+        "size": 15184,
+        "modified": "2026-07-18T01:45:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Security.dll",
+        "size": 18216,
+        "modified": "2026-07-18T01:44:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ServiceModel.Web.dll",
+        "size": 16680,
+        "modified": "2026-07-18T01:44:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ServiceProcess.ServiceController.dll",
+        "size": 90960,
+        "modified": "2026-05-20T23:34:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ServiceProcess.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.Encoding.CodePages.dll",
+        "size": 743248,
+        "modified": "2026-07-24T19:59:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.Encoding.Extensions.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.Encoding.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.Encodings.Web.dll",
+        "size": 66320,
+        "modified": "2026-01-25T22:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.Json.dll",
+        "size": 677128,
+        "modified": "2026-01-25T22:30:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Text.RegularExpressions.dll",
+        "size": 1021736,
+        "modified": "2026-07-18T01:54:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Channels.dll",
+        "size": 66384,
+        "modified": "2026-06-26T23:53:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Overlapped.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Tasks.Dataflow.dll",
+        "size": 489256,
+        "modified": "2026-07-18T01:54:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Tasks.Extensions.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Tasks.Parallel.dll",
+        "size": 132944,
+        "modified": "2026-07-18T01:54:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Tasks.dll",
+        "size": 16720,
+        "modified": "2026-07-18T01:44:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Thread.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:43:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.ThreadPool.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.Timer.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Threading.dll",
+        "size": 83792,
+        "modified": "2026-07-18T01:54:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Transactions.Local.dll",
+        "size": 661288,
+        "modified": "2026-07-18T01:54:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Transactions.dll",
+        "size": 16208,
+        "modified": "2026-07-18T01:44:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.ValueTuple.dll",
+        "size": 15184,
+        "modified": "2026-07-18T01:44:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Web.HttpUtility.dll",
+        "size": 59216,
+        "modified": "2026-07-18T01:54:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Web.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Windows.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:44:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.Linq.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.ReaderWriter.dll",
+        "size": 21800,
+        "modified": "2026-07-18T01:44:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.Serialization.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:44:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.XDocument.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.XPath.XDocument.dll",
+        "size": 30504,
+        "modified": "2026-07-18T01:54:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.XPath.dll",
+        "size": 15696,
+        "modified": "2026-07-18T01:44:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.XmlDocument.dll",
+        "size": 15656,
+        "modified": "2026-07-18T01:44:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.XmlSerializer.dll",
+        "size": 17744,
+        "modified": "2026-07-18T01:44:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.Xml.dll",
+        "size": 23336,
+        "modified": "2026-07-18T01:44:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\System.dll",
+        "size": 49960,
+        "modified": "2026-07-18T01:45:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\WindowsBase.dll",
+        "size": 16168,
+        "modified": "2026-07-18T01:44:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\YamlDotNet.dll",
+        "size": 184320,
+        "modified": "2018-12-05T21:07:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\actions.runner.plist.template",
+        "size": 971,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\actions.runner.service.template",
+        "size": 263,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\clretwrc.dll",
+        "size": 310608,
+        "modified": "2026-07-18T01:30:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\clrgc.dll",
+        "size": 667984,
+        "modified": "2026-07-18T01:28:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\clrjit.dll",
+        "size": 1778512,
+        "modified": "2026-07-18T01:27:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\coreclr.dll",
+        "size": 4995880,
+        "modified": "2026-07-18T01:24:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\createdump.exe",
+        "size": 71512,
+        "modified": "2026-07-18T01:30:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\darwin.svc.sh.template",
+        "size": 3681,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\hostfxr.dll",
+        "size": 366376,
+        "modified": "2026-07-18T01:40:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\hostpolicy.dll",
+        "size": 406824,
+        "modified": "2026-07-18T01:40:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\installdependencies.sh",
+        "size": 7434,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\macos-run-invoker.js",
+        "size": 444,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\mscordaccore.dll",
+        "size": 1348440,
+        "modified": "2026-07-18T01:33:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\mscordaccore_amd64_amd64_8.0.3026.36720.dll",
+        "size": 1348440,
+        "modified": "2026-07-18T01:33:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\mscordbi.dll",
+        "size": 1234272,
+        "modified": "2026-07-18T01:33:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\mscorlib.dll",
+        "size": 59216,
+        "modified": "2026-07-18T01:45:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\mscorrc.dll",
+        "size": 136488,
+        "modified": "2026-07-18T01:30:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\msquic.dll",
+        "size": 536376,
+        "modified": "2026-07-11T06:51:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\netstandard.dll",
+        "size": 100648,
+        "modified": "2026-07-18T01:45:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\runsvc.sh",
+        "size": 532,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\systemd.svc.sh.template",
+        "size": 5330,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\update.cmd.template",
+        "size": 6083,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\bin\\update.sh.template",
+        "size": 10022,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-111303-utc.log",
+        "size": 14331,
+        "modified": "2026-09-29T11:13:04.996324+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-111704-utc.log",
+        "size": 17238,
+        "modified": "2026-09-29T11:30:05.382921+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-113035-utc.log",
+        "size": 10026,
+        "modified": "2026-09-29T11:30:36.552702+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115054-utc.log",
+        "size": 148905,
+        "modified": "2026-09-29T11:53:20.176174+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Runner_20260929-115333-utc.log",
+        "size": 29826,
+        "modified": "2026-09-29T11:56:06.292837+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-111706-utc.log",
+        "size": 286227,
+        "modified": "2026-09-29T11:40:18.214216+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115057-utc.log",
+        "size": 170907,
+        "modified": "2026-09-29T11:51:14.562226+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115115-utc.log",
+        "size": 147264,
+        "modified": "2026-09-29T11:51:30.616460+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115131-utc.log",
+        "size": 212292,
+        "modified": "2026-09-29T11:51:49.877052+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115150-utc.log",
+        "size": 171214,
+        "modified": "2026-09-29T11:52:07.899345+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115209-utc.log",
+        "size": 235203,
+        "modified": "2026-09-29T11:52:24.108969+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115224-utc.log",
+        "size": 96458,
+        "modified": "2026-09-29T11:52:36.849489+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115237-utc.log",
+        "size": 206426,
+        "modified": "2026-09-29T11:52:50.110817+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115250-utc.log",
+        "size": 209638,
+        "modified": "2026-09-29T11:53:03.775392+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115304-utc.log",
+        "size": 183759,
+        "modified": "2026-09-29T11:53:19.176464+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven\\_diag\\Worker_20260929-115320-utc.log",
+        "size": 160936,
+        "modified": "2026-09-29T11:53:30.207158+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\_diag"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\externals"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\.credentials",
+        "size": 275,
+        "modified": "2026-09-29T11:35:29.942118+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\.credentials_rsaparams",
+        "size": 1894,
+        "modified": "2026-09-29T11:35:29.666199+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\.runner",
+        "size": 391,
+        "modified": "2026-09-29T11:35:29.946800+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.AspNetCore.WebUtilities.dll",
+        "size": 106296,
+        "modified": "2026-02-13T09:59:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Bcl.AsyncInterfaces.dll",
+        "size": 20280,
+        "modified": "2026-01-25T22:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Bcl.Cryptography.dll",
+        "size": 296232,
+        "modified": "2026-07-24T19:53:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.CSharp.dll",
+        "size": 1005392,
+        "modified": "2026-07-18T01:50:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DevTunnels.Connections.dll",
+        "size": 134968,
+        "modified": "2026-07-30T22:45:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DevTunnels.Contracts.dll",
+        "size": 65336,
+        "modified": "2026-07-30T22:42:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DevTunnels.Management.dll",
+        "size": 100192,
+        "modified": "2026-07-30T22:43:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DevTunnels.Ssh.Tcp.dll",
+        "size": 99128,
+        "modified": "2026-07-30T02:00:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DevTunnels.Ssh.dll",
+        "size": 349024,
+        "modified": "2026-07-30T01:58:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.DiaSymReader.Native.amd64.dll",
+        "size": 2195504,
+        "modified": "2024-11-27T09:18:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Configuration.Abstractions.dll",
+        "size": 27912,
+        "modified": "2026-01-25T22:29:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "size": 65288,
+        "modified": "2026-01-25T22:27:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Diagnostics.Abstractions.dll",
+        "size": 30472,
+        "modified": "2026-01-25T22:31:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "size": 22792,
+        "modified": "2026-01-25T22:28:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Hosting.Abstractions.dll",
+        "size": 53512,
+        "modified": "2026-01-25T22:32:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Logging.Abstractions.dll",
+        "size": 66312,
+        "modified": "2026-01-25T22:31:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Options.dll",
+        "size": 64824,
+        "modified": "2026-01-25T22:30:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Extensions.Primitives.dll",
+        "size": 44344,
+        "modified": "2026-01-25T22:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Identity.Client.Extensions.Msal.dll",
+        "size": 66592,
+        "modified": "2026-03-10T22:50:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Identity.Client.dll",
+        "size": 1168416,
+        "modified": "2026-03-10T22:41:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.IdentityModel.Abstractions.dll",
+        "size": 19528,
+        "modified": "2025-08-16T01:52:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Net.Http.Headers.dll",
+        "size": 84792,
+        "modified": "2026-02-13T09:59:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.VisualBasic.Core.dll",
+        "size": 1247056,
+        "modified": "2026-07-18T01:50:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.VisualBasic.dll",
+        "size": 17232,
+        "modified": "2026-07-18T01:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.VisualStudio.Validation.dll",
+        "size": 37392,
+        "modified": "2025-02-13T17:44:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Win32.Primitives.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:43:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Microsoft.Win32.Registry.dll",
+        "size": 120616,
+        "modified": "2026-07-18T01:50:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Minimatch.dll",
+        "size": 18432,
+        "modified": "2016-06-05T13:16:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Newtonsoft.Json.Bson.dll",
+        "size": 97720,
+        "modified": "2018-11-28T04:10:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Newtonsoft.Json.dll",
+        "size": 712464,
+        "modified": "2023-03-08T12:09:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Common.deps.json",
+        "size": 94427,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Common.dll",
+        "size": 220672,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Listener.deps.json",
+        "size": 122958,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Listener.dll",
+        "size": 297984,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Listener.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Listener.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:28+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.PluginHost.deps.json",
+        "size": 120421,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.PluginHost.dll",
+        "size": 7168,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.PluginHost.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.PluginHost.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Plugins.deps.json",
+        "size": 130768,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Plugins.dll",
+        "size": 112640,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Sdk.deps.json",
+        "size": 130350,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Sdk.dll",
+        "size": 58880,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Worker.deps.json",
+        "size": 129733,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Worker.dll",
+        "size": 632320,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Worker.exe",
+        "size": 151552,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Runner.Worker.runtimeconfig.json",
+        "size": 433,
+        "modified": "2026-08-26T18:31:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\RunnerService.exe",
+        "size": 16384,
+        "modified": "2026-08-26T18:31:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\RunnerService.exe.config",
+        "size": 188,
+        "modified": "2026-08-26T18:29:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Sdk.deps.json",
+        "size": 92002,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\Sdk.dll",
+        "size": 1529344,
+        "modified": "2026-08-26T18:31:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.AppContext.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Buffers.dll",
+        "size": 15144,
+        "modified": "2026-07-18T01:44:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.ClientModel.dll",
+        "size": 263528,
+        "modified": "2026-05-06T05:24:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Collections.Concurrent.dll",
+        "size": 276304,
+        "modified": "2026-07-18T01:50:26+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Collections.Immutable.dll",
+        "size": 837416,
+        "modified": "2026-07-18T01:50:34+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Collections.NonGeneric.dll",
+        "size": 104232,
+        "modified": "2026-07-18T01:50:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Collections.Specialized.dll",
+        "size": 104272,
+        "modified": "2026-07-18T01:50:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.Collections.dll",
+        "size": 259880,
+        "modified": "2026-07-18T01:50:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.ComponentModel.Annotations.dll",
+        "size": 198480,
+        "modified": "2026-07-18T01:50:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\System.ComponentModel.DataAnnotations.dll",
+        "size": 16720,
+        "modified": "2026-07-18T01:44:36+00:00"
+      }
+    ],
+    "next_offset": 1000,
+    "has_more": true
+  },
+  "job_hash": "d56740750cb01f2a326cc0446696d4b4d797ad777914823850ff30a16d34edd6"
+}
