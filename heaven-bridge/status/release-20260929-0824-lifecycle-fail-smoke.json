@@ -1,9 +1,10 @@
 {
   "id": "release-20260929-0824-lifecycle-fail-smoke",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:25:56.441461+00:00"
+  "updated_at": "2026-09-29T08:26:22.255941+00:00",
+  "exit_code": 23
 }
