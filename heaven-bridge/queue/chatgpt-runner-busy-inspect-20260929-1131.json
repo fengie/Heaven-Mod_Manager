@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-runner-busy-inspect-20260929-1131",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('Runner.Listener.exe','Runner.Worker.exe','powershell.exe','pwsh.exe') -and ($_.ExecutablePath -like '*actions-runner-heaven*' -or $_.CommandLine -like '*actions-runner-heaven*') } | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine | ConvertTo-Json -Depth 4; Get-ChildItem \"$env:USERPROFILE\\actions-runner-heaven\\_diag\" -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 5 Name,Length,LastWriteTime | ConvertTo-Json -Depth 3"
+  },
+  "created_at": "2026-09-29T11:31:40Z",
+  "ttl_seconds": 1200,
+  "priority": 1000
+}
