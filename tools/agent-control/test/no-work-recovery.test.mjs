@@ -176,7 +176,7 @@ test("release-required work is complete only after release verification", () => 
 });
 
 
-test("end-of-swarm recovery waits until the active wave drains", () => {
+test("mid-swarm recovery replaces a crashed lane while other workers keep running", () => {
   const batch = planSwarmTailRecoveryBatch({
     agents: [
       { id: "running", status: "running", taskId: "t-running", task: "still working" },
@@ -187,7 +187,36 @@ test("end-of-swarm recovery waits until the active wave drains", () => {
       { id: "t-crashed", status: "failed", objective: "unfinished" }
     ]
   });
-  assert.deepEqual(batch, []);
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "crashed");
+  assert.equal(batch[0].attempt, 1);
+});
+
+test("mid-swarm recovery treats orphaned lanes as unfinished", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{ id: "orphaned", status: "orphaned", taskId: "t-orphaned", task: "resume me" }],
+    tasks: [{ id: "t-orphaned", status: "running", objective: "resume me" }]
+  });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "orphaned");
+});
+
+test("recovery pool subtracts already-running recovery workers from its worker budget", () => {
+  const agents = [
+    { id: "active-recovery", status: "running", taskId: "task-active", task: "recover root-a", swarmTailRecovery: true, recoveryRootAgentId: "root-a" },
+    { id: "failed-b", status: "failed", taskId: "task-b", task: "finish b" },
+    { id: "failed-c", status: "failed", taskId: "task-c", task: "finish c" },
+    { id: "failed-d", status: "failed", taskId: "task-d", task: "finish d" }
+  ];
+  const tasks = [
+    { id: "task-active", status: "running", objective: "recover root-a" },
+    { id: "task-b", status: "failed", objective: "finish b" },
+    { id: "task-c", status: "failed", objective: "finish c" },
+    { id: "task-d", status: "failed", objective: "finish d" }
+  ];
+  const batch = planSwarmTailRecoveryBatch({ agents, tasks }, { maxWorkers: 2, maxAttemptsPerRoot: 2 });
+  assert.equal(batch.length, 1);
+  assert.notEqual(batch[0].rootId, "root-a");
 });
 
 test("end-of-swarm recovery selects up to four distinct unfinished roots", () => {
