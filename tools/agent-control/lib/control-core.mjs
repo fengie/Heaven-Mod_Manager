@@ -76,7 +76,7 @@ export const DEFAULT_MACHINE_POLICIES = Object.freeze({
   heaven: {
     label: "heaven",
     role: "heavy-worker",
-    repositoryWriteAllowed: true,
+    repositoryWriteAllowed: false,
     foregroundUiAllowed: false,
     preserveResponsiveness: false,
     credentialAuthority: false,
@@ -90,7 +90,6 @@ export const DEFAULT_MACHINE_POLICIES = Object.freeze({
     credentialAuthority: true,
     foregroundUiAllowed: true,
     preserveResponsiveness: true,
-    credentialAuthority: true,
     preferredForHeavyWork: false,
     notes: "Main/control machine and credential authority. Keep secrets here unless scoped runtime access on heaven is genuinely required."
   }
