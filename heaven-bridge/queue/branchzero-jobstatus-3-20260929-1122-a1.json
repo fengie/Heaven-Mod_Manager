@@ -1,0 +1,11 @@
+{
+  "id": "branchzero-jobstatus-3-20260929-1122-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "job_status",
+  "params": {
+    "job_id": "-------------------------------heaven-runner-install-retry-20260929-1114-a2"
+  },
+  "created_at": "2026-09-29T11:22:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
