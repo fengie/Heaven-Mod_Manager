@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0829-agentcontrol-p0-inspect",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-agentcontrol-cycle4-wt",
+    "timeout_seconds": 180,
+    "command": "$ErrorActionPreference='Stop';\nWrite-Output ('HEAD='+(git rev-parse HEAD));\nWrite-Output '=== MATCHES ===';\ngit grep -n -E \"assertWorkerPlacement|approve-for-me|deployOne|worker provider|workerProvider|remote worker|heaven-bridge|HEAVEN\" -- tools/agent-control;\nWrite-Output '=== SERVER CONTEXT ===';\n$path='tools\\agent-control\\server.mjs';\n$lines=Get-Content $path;\n$need=@();\nfor($i=0;$i -lt $lines.Count;$i++){if($lines[$i] -match 'assertWorkerPlacement|approve-for-me|function deployOne|async function deployOne'){ $need += $i }}\nforeach($n in $need){$a=[Math]::Max(0,$n-35);$b=[Math]::Min($lines.Count-1,$n+90);Write-Output (\"--- lines {0}-{1} ---\" -f ($a+1),($b+1));$lines[$a..$b]};\nWrite-Output '=== PACKAGE ==='; Get-Content tools\\agent-control\\package.json;\nWrite-Output '=== TEST FILES ==='; Get-ChildItem tools\\agent-control\\test | Select-Object Name,Length | Format-Table -AutoSize"
+  },
+  "created_at": "2026-09-29T08:29:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
