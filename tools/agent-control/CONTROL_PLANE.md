@@ -9,27 +9,23 @@ The repository already has strong training, continuity, verification, role, and 
 ## Runtime model
 
 ```text
-User / Operator
+User / ChatGPT
       |
       v
-Agent Manager UI / CLI
+Agent Control Plane
+  |-- Task registry
+  |-- Worker registry
+  |-- Mutable-boundary leases
+  |-- Agent process registry
+  |-- Federated provider/agent registry
+  |-- Heartbeat + identity reconciliation
+  |-- Branch/worktree registry
+  |-- Event/history log
+  |-- Integration queue
       |
-      v
-Federated provider layer
-  |-- local-control (automated)
-  |-- ChatGPT bridge registration
-  |-- heaven2 control bridge
-  |-- GitHub / CI bridge
-      |
-      v
-Normalized agent registry
-      |
-      v
-Heartbeat + identity reconciliation
-      |
-      +--> routing / duplicate-work prevention
-      +--> task / lease / worker placement
-      +--> review / verification / integration
+      +--> Codex worker in isolated worktree
+      +--> Reviewer/Test worker
+      +--> Integration worker
 ```
 
 ## State
@@ -39,12 +35,12 @@ Heartbeat + identity reconciliation
 It contains:
 
 - `tasks[]` — requested objective, role, priority, dependencies, machine, branch and lifecycle state.
-- `agents[]` — PID/session, task, role, branch, worktree, output paths and status.
+- `agents[]` — controller-owned PID/session, task, role, branch, worktree, output paths and status.
+- `federation.providers[]` — provider capability/health for local-control, ChatGPT bridge, GitHub/CI bridge, heaven2 control state, and future adapters.
+- `federation.agents[]` — normalized logical agents with provider/source identities, correlation keys, task/branch/PR association, heartbeat, last action, and historical lifecycle.
 - `leases[]` — one named mutable boundary → one managed owner at a time.
 - `events[]` — bounded recent audit/history events.
 - `autopilot` — durable big-direction orchestration state: phase, iteration/repair budgets, candidate/verification/review/repair worker IDs, last canonical-main observation, transition time, and governed stop reason.
-- `federation.providers[]` — provider capability/health records including discovery mode, registration mode, heartbeat, and error state.
-- `federation.agents[]` — normalized logical agents with stable identity, provider observations, role, machine, task, branch/PR, heartbeat, lifecycle state, last action, and correlation metadata.
 
 Git remains the durable engineering source of truth. Runtime state is operational metadata, not a replacement for repository continuity documents.
 
@@ -77,33 +73,24 @@ v0.5.0 registers the controller host as one local worker with:
 - active slots
 - heartbeat timestamp
 
-`heaven2` is the control/credential authority. `heaven` is the preferred heavy worker. On `heaven2`, `auto` targets `heaven`; if no authenticated remote worker transport is connected, dispatch fails clearly instead of silently executing heavy work on the control machine. `local` explicitly means the controller host.
+Placement currently accepts only `auto`, `local`, or the controller hostname. A request for another machine fails instead of pretending the task was deployed.
 
-### Remote worker transport
+### Next worker layer
 
-The normalized registry and provider heartbeat model exist now, but registration is not execution transport. A bridge/provider may report that a worker exists without granting the controller authority to start processes there.
+Add a small worker daemon on Heaven/Heaven2 that registers with the controller and periodically heartbeats:
 
-Until an authenticated remote worker daemon/transport is connected, remote dispatch fails closed. Do not infer execution authority from a fresh heartbeat alone.
+```text
+worker_id
+machine
+capabilities
+models
+active_slots
+cpu
+memory
+last_heartbeat
+```
 
-## Federated registry and heartbeat semantics
-
-Each observation identifies a source with stable `provider + source_id`. The reconciler assigns a logical `agent_id`; repeated observations are idempotent, while explicit correlation keys can join observations from different providers into one logical worker.
-
-Normalized lifecycle states are:
-
-- `working`
-- `tool_wait`
-- `blocked`
-- `idle`
-- `done`
-- `failed`
-- `disconnected`
-
-Fresh `working/tool_wait/blocked/idle` records count as live. Once heartbeat age crosses the stale threshold, the worker remains visible but is removed from live counts. Once it crosses the disconnected threshold, its effective state becomes `disconnected`. `done` and `failed` are historical regardless of heartbeat age.
-
-Automatic discovery is implemented for `local-control`. ChatGPT arbitrary-session discovery is unavailable, so ChatGPT sessions use bridge registration. GitHub/CI and `heaven2` control observations also use the same bridge contract when stable identifiers are available. Unsupported discovery is shown as unavailable; no fake telemetry is generated.
-
-The planner consults both the fresh normalized registry and the routing manifest when deciding whether a role/lane is already occupied.
+Then the scheduler can choose machines by capacity and policy.
 
 ## Autonomy authorization
 
@@ -122,7 +109,7 @@ The default is `assist`, so a fresh controller can inspect, recommend, and previ
 
 ## Engineering autopilot
 
-v0.5.0 preserves the durable control loop for routine engineering work. A user supplies one high-level objective, and the controller advances only from authoritative state/evidence through:
+v0.5.0 adds a durable control loop for routine engineering work. A user supplies one high-level objective, and the controller advances only from authoritative state/evidence through:
 
 ```text
 sync-plan -> implement -> verify -> review
@@ -155,19 +142,32 @@ The queue records:
 
 This queue is intentionally not an automatic merger. It is the input to reviewer/integration agents and the repository's exact-SHA verification gates.
 
+## Federated identity and heartbeat
+
+The live dashboard is derived from the normalized federation registry rather than raw process count. A provider observation supplies a stable `provider + source_id`, normalized lifecycle state, heartbeat, role, machine, task, branch/PR metadata, and optional strong correlation keys.
+
+Reconciliation is idempotent. Multiple observations from the same provider identity update one logical agent. Cross-provider observations merge only through explicit stable correlation evidence; similar chat titles never merge sessions. Fresh `working`, `tool_wait`, `blocked`, and `idle` states are live. Stale/disconnected heartbeats remain visible but are excluded from live capacity/availability counts. `done` and `failed` are historical.
+
+Provider capability is explicit:
+- local-control: automated discovery/registration;
+- ChatGPT: bridge registration, automatic project-session discovery unavailable;
+- GitHub/CI: bridge registration when stable PR/run identifiers are available;
+- heaven2 control state: bridge registration.
+
+Workflow planning consults fresh federated ownership so external Manager/Main/lane work suppresses obvious duplicate lanes. Local worker slot capacity remains based only on controller-owned processes.
+
 ## Observability
 
 The UI currently reports:
 
-- live normalized agents across providers
-- working/tool-wait/blocked/idle/stale/disconnected counts
-- provider/source/machine and heartbeat freshness
+- normalized live/working/tool-wait/blocked/idle/stale/disconnected agent counts
 - worker capacity
 - active leases
 - candidate branches
 - success rate
 - average runtime in the API snapshot
 - managed task/agent lifecycle
+- federated provider health, runtime/machine, task, branch/PR, heartbeat freshness, and last action
 - discovered swarm branches
 - recent controller events
 
@@ -185,9 +185,11 @@ Future telemetry should add:
 
 ## ChatGPT integration
 
-The included private plugin is skills-only and prefers the user's authorized Heaven Local Bridge to reach `heaven`. This avoids falsely claiming that ChatGPT cloud can reach Heaven's localhost interface and avoids silently substituting another remote-control system.
+The included private plugin is skills-only and uses the user-authorized Heaven Local Bridge to reach the authorized Heaven machine.
 
-The same bridge can register ChatGPT/GitHub/control-machine observations through the federation API. Registration proves observation only; it does not grant remote process-execution authority.
+This avoids falsely claiming that ChatGPT cloud can reach Heaven's localhost interface.
+
+A future native MCP mode can replace the bridge once the controller has an authenticated, intentionally exposed Streamable HTTP endpoint.
 
 ## Safety decisions
 
@@ -197,13 +199,10 @@ The same bridge can register ChatGPT/GitHub/control-machine observations through
 4. Named leases prevent silent managed collisions.
 5. Unknown remote workers fail closed.
 6. Controller state is local operational data; Git remains canonical engineering state.
-7. External providers are visible only from real registered observations; unsupported discovery is labeled unavailable and never synthesized.
+7. External Git branches are repository observations, while external agents count as live only through fresh normalized provider heartbeats.
 8. Stopping a managed agent targets only its recorded process tree.
 9. Operator stop intent is terminal: a zero exit after a stop request is recorded as `stopped`, not successful completion.
 10. Child-exit Git evidence is collected before authoritative registry mutation so a stale whole-state snapshot is never saved after an asynchronous yield.
 11. Counted deploys reserve capacity as a batch and fail before the first launch when the full request cannot fit.
 12. Failures after task/lease reservation but before worker launch converge to a failed task and released lease, while retaining created worktree/branch evidence for explicit cleanup.
 13. Autonomy permissions are enforced at server mutation/dispatch boundaries; UI labels or client behavior are not trusted as the authorization mechanism.
-14. Historical completed/failed records and stale/disconnected observations do not inflate the live-agent count.
-15. Similar ChatGPT titles never establish identity; stable source identifiers or explicit correlation keys are required.
-16. A remote heartbeat is not treated as execution authority; unsupported remote placement fails closed.
