@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $Repository = 'fengie/mhw-mods'
 $RunnerName = 'heaven'
 $RunnerDirectory = Join-Path $env:USERPROFILE 'actions-runner-heaven'
-$Labels = @('heaven','local-bridge','mhw-mods')
+$Labels = @('heaven-v2','local-bridge','mhw-mods')
 $ForceReconfigure = $false
 $ApiVersion = '2022-11-28'
 
