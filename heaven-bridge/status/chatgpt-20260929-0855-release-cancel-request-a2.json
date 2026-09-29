@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0855-release-cancel-request-a2",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T08:55:38.500841+00:00"
+}
