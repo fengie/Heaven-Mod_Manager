@@ -1,17 +1,120 @@
 namespace MhwModManager.Core;
 
-public enum FileClass { Texture, Structural, GameData, Plugin, Executable, Other }
-public enum ConflictKind { None, Identical, SharedTexture, TextureOverride, PatchOverlay, PatchSubset, SharedProvider, ModFamilyOption, UserOverlayRule, PossibleOverlay, HardStructural, HardGameData, HardUnknown, Incompatible }
-public enum RuleKind { Overlay, Incompatible, ExactWinner, ResourceProvider }
-public enum RuleScope { ModPair, ExactPath, PathPrefix, FileClass, ArmorComponent, ModFamily }
-public enum Confidence { Explicit, High, Medium, Low }
-public enum ChangeKind { Add, Replace, Remove, RestoreOriginal }
-public enum ExternalChangeKind { Unchanged, DeployedModified, DeployedReplaced, DeployedDeleted, ManagedSourceChanged, OriginalChanged, UnmanagedAppeared }
-public enum OperationState { Prepared, Applying, FilesWritten, StateCommitting, Committed, RollingBack, RolledBack, RecoveryRequired, Failed }
-public enum FailureCategory { ExpectedTransient, UserActionRequired, RecoverableOperationFailure, DataIntegrityFailure, ProgrammingBug, FatalProcessState }
-public enum ProvenanceSource { Unknown, LocalInference, NexusApi, ImportedSidecar, AdoptedManual }
-public enum NexusFileCategory { Unknown, Main, Update, Optional, OldVersion, Miscellaneous, Removed, Archived }
-public enum EffectiveModState { Disabled, FullyEffective, PartiallyOverridden, FullySuperseded, NeedsChoice, NeedsRevalidation }
+public enum FileClass
+{
+    Texture,
+    Structural,
+    GameData,
+    Plugin,
+    Executable,
+    Other
+}
+public enum ConflictKind
+{
+    None,
+    Identical,
+    SharedTexture,
+    TextureOverride,
+    PatchOverlay,
+    PatchSubset,
+    SharedProvider,
+    ModFamilyOption,
+    UserOverlayRule,
+    PossibleOverlay,
+    HardStructural,
+    HardGameData,
+    HardUnknown,
+    Incompatible
+}
+public enum RuleKind
+{
+    Overlay,
+    Incompatible,
+    ExactWinner,
+    ResourceProvider
+}
+public enum RuleScope
+{
+    ModPair,
+    ExactPath,
+    PathPrefix,
+    FileClass,
+    ArmorComponent,
+    ModFamily
+}
+public enum Confidence
+{
+    Explicit,
+    High,
+    Medium,
+    Low
+}
+public enum ChangeKind
+{
+    Add,
+    Replace,
+    Remove,
+    RestoreOriginal
+}
+public enum ExternalChangeKind
+{
+    Unchanged,
+    DeployedModified,
+    DeployedReplaced,
+    DeployedDeleted,
+    ManagedSourceChanged,
+    OriginalChanged,
+    UnmanagedAppeared
+}
+public enum OperationState
+{
+    Prepared,
+    Applying,
+    FilesWritten,
+    StateCommitting,
+    Committed,
+    RollingBack,
+    RolledBack,
+    RecoveryRequired,
+    Failed
+}
+public enum FailureCategory
+{
+    ExpectedTransient,
+    UserActionRequired,
+    RecoverableOperationFailure,
+    DataIntegrityFailure,
+    ProgrammingBug,
+    FatalProcessState
+}
+public enum ProvenanceSource
+{
+    Unknown,
+    LocalInference,
+    NexusApi,
+    ImportedSidecar,
+    AdoptedManual
+}
+public enum NexusFileCategory
+{
+    Unknown,
+    Main,
+    Update,
+    Optional,
+    OldVersion,
+    Miscellaneous,
+    Removed,
+    Archived
+}
+public enum EffectiveModState
+{
+    Disabled,
+    FullyEffective,
+    PartiallyOverridden,
+    FullySuperseded,
+    NeedsChoice,
+    NeedsRevalidation
+}
 
 public sealed record ModDescriptor(
     string Id, string Name, string DisplayName, string SourcePath, bool Enabled, int Priority,
