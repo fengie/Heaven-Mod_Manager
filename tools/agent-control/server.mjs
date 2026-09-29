@@ -41,6 +41,7 @@ import {
   syncManagedAgents
 } from "./lib/federated-registry.mjs";
 import {
+  bridgeMachineStatus,
   bridgeResultSucceeded,
   cancelHeavenBridgeJob,
   inspectHeavenBridge,
@@ -972,7 +973,7 @@ async function workerSnapshot(state = refreshState()) {
         name: policy?.label || id,
         kind: bridgeBacked ? "remote-provider" : "configured",
         provider: bridgeBacked ? "heaven-bridge" : null,
-        status: bridgeBacked && heavenBridge?.healthy ? "online" : "not-connected",
+        status: bridgeBacked ? bridgeMachineStatus(heavenBridge) : "configured",
         controller: false,
         lastHeartbeat: bridgeBacked ? heavenBridge?.heartbeat?.updatedAt || null : null,
         running: bridgeBacked ? heavenBridge?.heartbeat?.running ?? null : null,
