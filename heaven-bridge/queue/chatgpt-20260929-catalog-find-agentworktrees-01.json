@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-20260929-catalog-find-agentworktrees-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\agent-worktrees",
+    "pattern": "CatalogWindow.xaml",
+    "mode": "name",
+    "glob": "*",
+    "max_results": 20
+  },
+  "created_at": "2026-09-29T15:37:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
