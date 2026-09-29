@@ -1112,9 +1112,9 @@ def run_job(job_id, job, cancel_event):
     else:
         codex = find_codex()
         if codex.lower().endswith((".cmd", ".bat")):
-            argv = ["cmd.exe", "/d", "/s", "/c", "call", codex, "exec", "--skip-git-repo-check", "-"]
+            argv = ["cmd.exe", "/d", "/s", "/c", "call", codex, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"]
         else:
-            argv = [codex, "exec", "--skip-git-repo-check", "-"]
+            argv = [codex, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"]
         stdin = payload
     result = run_capture(job_id, argv, cwd, timeout, stdin=stdin, cancel_event=cancel_event, env=os.environ.copy())
     result.update({"host": os.environ.get("COMPUTERNAME", "heaven"), "action": action})
