@@ -6,7 +6,8 @@ import {
   detectWorkHandoffAction,
   learnWorkHandoffSignature,
   normalizeHandoffLabel,
-  normalizeWorkHandoffRegistry
+  normalizeWorkHandoffRegistry,
+  recordWorkHandoffDrift
 } from "../lib/work-handoff-signatures.mjs";
 
 function button(name, x, y) {
@@ -81,4 +82,21 @@ test("verified adaptive detection is learned into the mutable registry", () => {
   assert.ok(learned.declineLabels.includes("keep chatting here"));
   assert.ok(learned.acceptLabels.includes("open in work"));
   assert.equal(learned.learned.length, 1);
+});
+
+
+test("ambiguous drift is persisted without teaching an unsafe action", () => {
+  const base = normalizeWorkHandoffRegistry({});
+  const tree = { items: [
+    { name: "Continue this task in Work", control_type: "Text" },
+    button("Not now", 550, 100),
+    button("Later", 650, 100),
+    button("Move to Work", 790, 100)
+  ] };
+  const detection = detectWorkHandoffAction(tree, base);
+  const drifted = recordWorkHandoffDrift(base, detection, tree, { observedAt: "2026-09-29T18:01:00Z" });
+  assert.equal(drifted.version, base.version + 1);
+  assert.equal(drifted.learned.length, 0);
+  assert.equal(drifted.driftObservations.length, 1);
+  assert.equal(drifted.driftObservations[0].reason, "adaptive-signature-ambiguous");
 });
