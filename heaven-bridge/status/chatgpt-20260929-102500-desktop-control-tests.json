@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-102500-desktop-control-tests",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:24:46.289033+00:00"
+}
