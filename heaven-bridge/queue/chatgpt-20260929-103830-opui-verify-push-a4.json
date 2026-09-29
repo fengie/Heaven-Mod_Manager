@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-103830-opui-verify-push-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:38:30Z",
+  "ttl_seconds": 7200,
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Continue'\n$wt='C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-main-converge-opui-a3'\nif(-not (Test-Path $wt)){ throw 'integration worktree missing' }\nSet-Location $wt\n$pre=(git rev-parse HEAD | Out-String).Trim()\nSet-Location (Join-Path $wt 'tools\\agent-control')\n& npm.cmd run check\n$check=$LASTEXITCODE\nif($check -ne 0){ throw \"npm check failed exit=$check\" }\n& npm.cmd test\n$test=$LASTEXITCODE\nif($test -ne 0){ throw \"npm test failed exit=$test\" }\nSet-Location $wt\ngit fetch origin\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\n$current=(git rev-parse origin/main | Out-String).Trim()\n$base=(git merge-base HEAD origin/main | Out-String).Trim()\nif($current -ne $base){\n  git merge --no-ff --no-edit origin/main\n  if($LASTEXITCODE -ne 0){ $conf=@(git diff --name-only --diff-filter=U); git merge --abort | Out-Null; throw \"reconcile conflict: $($conf -join ', ')\" }\n  Set-Location (Join-Path $wt 'tools\\agent-control')\n  & npm.cmd run check\n  $check2=$LASTEXITCODE\n  if($check2 -ne 0){ throw \"post-reconcile npm check failed exit=$check2\" }\n  & npm.cmd test\n  $test2=$LASTEXITCODE\n  if($test2 -ne 0){ throw \"post-reconcile npm test failed exit=$test2\" }\n  Set-Location $wt\n}\n$final=(git rev-parse HEAD | Out-String).Trim()\ngit push origin \"HEAD:main\"\nif($LASTEXITCODE -ne 0){ throw 'push main failed' }\ngit fetch origin main | Out-Null\n$remote=(git rev-parse origin/main | Out-String).Trim()\nif($remote -ne $final){ throw \"verification mismatch final=$final remote=$remote\" }\n[ordered]@{premerge_head=$pre;final_main=$final;remote_main=$remote;check='pass';tests='pass'} | ConvertTo-Json",
+  "cwd": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-main-converge-opui-a3",
+  "timeout_seconds": 1800,
+  "priority": "highest"
+}
