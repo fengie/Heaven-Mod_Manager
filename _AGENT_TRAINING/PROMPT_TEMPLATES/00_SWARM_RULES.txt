@@ -23,8 +23,10 @@ Before meaningful changes:
 6. Re-check canonical state before every merge/rebase/cherry-pick and immediately before pushing `main`.
 
 ## Execution environment
-- `heaven2` = control machine / credential authority.
-- `heaven` = preferred worker for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy execution.
+- `heaven2` = operator/control machine / credential authority. The user-facing dashboard, Agent Control service/CLI, control panels, browser/UI automation, and routine desktop interaction belong on heaven2.
+- `heaven` = preferred worker/resource machine for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy execution. Treat it as delegated compute, not the default human-facing desktop.
+- New Heaven Bridge jobs must declare top-level `target_host`: use `heaven2` for operator/control/interactive work and `heaven` for heavy delegated work. Omitted target is legacy-only and defaults to heaven.
+- Do not relocate dashboards/control panels or routine interaction to heaven unless the user explicitly requests heaven's desktop or the task needs a worker-specific GUI validation.
 - Keep secrets on `heaven2` unless runtime access elsewhere is genuinely required.
 - Never print, commit, or unnecessarily copy credentials.
 - Work mode is not a repository prerequisite. Use the best execution path actually available. If one path fails, try another supported path before declaring a blocker.
