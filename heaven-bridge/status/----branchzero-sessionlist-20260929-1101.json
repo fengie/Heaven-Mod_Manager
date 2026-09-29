@@ -1,0 +1,9 @@
+{
+  "id": "----branchzero-sessionlist-20260929-1101",
+  "state": "running",
+  "action": "proc_list_sessions",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:05:45.217619+00:00"
+}
