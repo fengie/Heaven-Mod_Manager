@@ -1,3 +1,15 @@
+# 2026-09-29 v8.8.6 reconciliation — CURRENT CRITICAL PATH
+
+1. Treat canonical `main` from reconciliation base `dd1411693e2da467ea5e1dfb5191b9793213ebdf` as repository truth and re-fetch before every integration because main is moving concurrently.
+2. Run/inspect exact-current-main Windows release verification and persist evidence for the exact SHA checked. Do not extend hosted run `36541891969` beyond source `5abe40304dfcb48f96e750bd7da3d0075315625b`.
+3. Execute the integrated installed-client updater E2E for packaged 60→61 success and injected rollback; require exact restart/health identity and unchanged seeded `Mods`, `State`, and unknown-file hashes.
+4. PR #95 is **CLOSED/SUPERSEDED**. Do not merge either v8.8.6 release-convergence branch wholesale.
+5. PR #98 is currently diverged/non-mergeable and must be reconciled by its updater/security owner before any integration.
+6. For Agent Control, reconcile the shared registry contract before dependent dashboard/operator/test lanes: PR #101 owns federation-registry hardening; PR #100 and #103 both overlap registry/package/UI surfaces; PR #99 should verify the reconciled registry behavior; PR #96 owns the separate liveness/server/control-core lane but still must re-check main immediately before delivery.
+7. Preserve exact-SHA continuity evidence and recursively pass the continuity constitution to the successor.
+
+---
+
 # 2026-09-29 updater publication closure — CURRENT CRITICAL PATH
 
 1. **CLOSED:** PR #91 merged as `5abe40304dfcb48f96e750bd7da3d0075315625b`. Exact-main Windows Release Gate **36541891969** passed **25/25** on Windows x64 / .NET SDK 10.0.401. Function status is **748/748 verified**.
