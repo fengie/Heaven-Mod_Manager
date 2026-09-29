@@ -1,0 +1,14 @@
+{
+  "id": "000-000-chatgpt-20260929-1058-runner-env-probe-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$names=@('GH_TOKEN','GITHUB_TOKEN','ACTIONS_RUNNER_INPUT_TOKEN'); foreach($n in $names){$v=[Environment]::GetEnvironmentVariable($n); Write-Output ($n + '=' + [bool](-not [string]::IsNullOrWhiteSpace($v)))}; $paths=@('C:\\actions-runner','C:\\HeavenServices\\actions-runner',(Join-Path $env:USERPROFILE 'actions-runner')); foreach($p in $paths){Write-Output ('PATH '+$p+' exists='+(Test-Path -LiteralPath $p))}; Get-Service -ErrorAction SilentlyContinue | Where-Object {$_.Name -like 'actions.runner.*'} | ForEach-Object {Write-Output ('SERVICE '+$_.Name+' '+$_.Status)}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T10:58:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
