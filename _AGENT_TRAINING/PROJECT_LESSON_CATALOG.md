@@ -32,7 +32,7 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 15. **Prefer the narrowest purpose-built execution capability.** Discover purpose-built plugins/tools/skills before generic shell, remote-control, browser, UI, or API fallbacks.
 16. **Capability discovery is runtime-specific.** Re-read the task and discover/load the capabilities actually available in the current session; require evidence before declaring one unavailable.
 17. **A control channel needs an independent recovery owner.** Critical bridges/workers need a supervisor and local liveness/progress signal that do not depend on the channel being repaired.
-18. **Control-path failure is not host-offline evidence.** Diagnose the narrowest failed layer and require independent host evidence before claiming the host/service is offline.
+18. **Control-path failure is not host-offline evidence.** Diagnose the narrowest failed layer, refresh stale cached liveness from an authoritative source before negative availability claims when safe, and model resource presence separately from transport/write readiness; absent independent host evidence, degraded transport means presence unknown rather than offline.
 19. **Recovery redundancy must cross failure domains.** Two recovery owners sharing one scheduler/principal/runtime/config dependency are not truly independent.
 20. **Validation instances are not canonical installed/runtime identity.** Verify user-facing state through the canonical launcher plus executable/process/artifact identity; clean up temporary validation instances.
 21. **Escaped bugs require defect-class closure.** Fix root cause, add regression coverage, inspect sibling occurrences, and mechanically enforce durable invariants when practical.
