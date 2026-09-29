@@ -1,4 +1,8 @@
-# v8.8.4 Universal Mod Manager
+# v8.8.5 Universal Mod Manager
+
+## v8.8.5 — Agent Control federation and release recovery
+
+This release integrates Agent Control 0.5.0 as the repository's governed engineering control plane, including federated agent registration/heartbeats, live ownership-aware planning, autonomy enforcement, manager-routing awareness, and the heaven2-control / heaven-worker topology model. It also repairs the concurrent-integration duplicate import caught during release validation. The existing v8.8.4 product safety hardening remains intact.
 
 ## v8.8.4 — support recovery hardening
 
