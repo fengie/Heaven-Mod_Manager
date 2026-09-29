@@ -19,15 +19,27 @@ test("manual launcher continually repairs startup restore registration", () => {
 
 test("startup restore is redundant, idempotent, and avoids duplicate Agent Control", () => {
   const installer = read("Install-StartupRestore.ps1");
-  const restore = read("Restore-StartupSetup.ps1");\n  const watchdog = read("Watch-AgentControl.ps1");
+  const restore = read("Restore-StartupSetup.ps1");
+  const watchdog = read("Watch-AgentControl.ps1");
 
   assert.match(installer, /New-ScheduledTaskTrigger\s+-AtLogOn/i);
   assert.match(installer, /HeavenSetupRestore\.vbs/i);
+  assert.match(installer, /Heaven Agent Control Watchdog/i);
+  assert.match(installer, /RestartCount 255/i);
+  assert.match(installer, /RestartInterval \(New-TimeSpan -Minutes 1\)/i);
+  assert.match(installer, /MultipleInstances IgnoreNew/i);
+  assert.match(installer, /HeavenAgentControlWatchdog\.vbs/i);
   assert.match(restore, /FileShare\]::None/);
   assert.match(restore, /Heaven Local Bridge Watchdog/i);
   assert.match(restore, /Test-LocalTcpPort/);
   assert.match(restore, /server\.mjs/);
   assert.match(restore, /startup-profile\.json/i);
+  assert.match(restore, /Heaven Agent Control Watchdog/i);
+  assert.match(watchdog, /while \(\$true\)/i);
+  assert.match(watchdog, /api\/status/i);
+  assert.match(watchdog, /Stop-HungOwnedAgentControl/i);
+  assert.match(watchdog, /restart_timestamps_utc/i);
+  assert.match(watchdog, /cooldown_level/i);
 });
 
 test("startup restore discovers every manifest-backed local plugin dynamically", () => {
@@ -40,7 +52,8 @@ test("startup restore discovers every manifest-backed local plugin dynamically",
 test("startup PowerShell avoids ambiguous variable-colon interpolation", () => {
   const scripts = [
     ["Install-StartupRestore.ps1", read("Install-StartupRestore.ps1")],
-    ["Restore-StartupSetup.ps1", read("Restore-StartupSetup.ps1")],\n    ["Watch-AgentControl.ps1", read("Watch-AgentControl.ps1")],
+    ["Restore-StartupSetup.ps1", read("Restore-StartupSetup.ps1")],
+    ["Watch-AgentControl.ps1", read("Watch-AgentControl.ps1")],
   ];
   const unsafeVariableColon = /\$(?!(?:env|script|global|local|private|using):)[A-Za-z_][A-Za-z0-9_]*:/g;
 
