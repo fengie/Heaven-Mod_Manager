@@ -1,0 +1,14 @@
+{
+  "id": "000-uia-native-branch-gate-20260929T110500",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:05:00+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $HOME 'HeavenBridgeRepo'\n$root=Join-Path $HOME 'HeavenBridgeValidation'\nNew-Item -ItemType Directory -Force -Path $root | Out-Null\n$tmp=Join-Path $root ('uia-' + [guid]::NewGuid().ToString('N'))\n$url=(git -C $relay remote get-url origin).Trim()\ntry {\n  git clone --quiet --single-branch --branch agent/bridge-uia-native-20260929 $url $tmp\n  if($LASTEXITCODE -ne 0){ throw 'clone failed' }\n  Push-Location $tmp\n  try {\n    Write-Output ('HEAD='+(git rev-parse HEAD).Trim())\n    python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'py_compile failed' }\n    python -m unittest -v heaven-bridge/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'primary tests failed' }\n    python -m unittest -v heaven-bridge/tests/test_worker.py\n    if($LASTEXITCODE -ne 0){ throw 'compat tests failed' }\n    foreach($script in @('heaven-bridge/bootstrap.ps1','heaven-bridge/manage.ps1','heaven-bridge/uia-helper.ps1')){\n      $tokens=$null; $errors=$null\n      [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$errors)\n      if($errors.Count -gt 0){ $errors | Format-List | Out-String | Write-Output; throw ('parse failed '+$script) }\n      Write-Output ('PARSE_OK='+$script)\n    }\n    git diff --check\n    if($LASTEXITCODE -ne 0){ throw 'git diff --check failed' }\n    Write-Output 'UIA_BRANCH_GATE_OK'\n  } finally { Pop-Location }\n} finally {\n  if(Test-Path $tmp){ Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }\n}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "priority": "highest"
+}
