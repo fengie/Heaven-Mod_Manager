@@ -147,7 +147,7 @@ try {
                         Write-RestoreLog "Started scheduled task: $taskName"
                     }
                 } catch {
-                    Write-RestoreLog "Could not start bridge task $taskName: $($_.Exception.Message)"
+                    Write-RestoreLog "Could not start bridge task ${taskName}: $($_.Exception.Message)"
                 }
             }
         }
