@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-113400-free-stale-actions-worker",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'; $workers=@(Get-CimInstance Win32_Process -Filter \"Name='Runner.Worker.exe'\"); Write-Output ('RUNNER_WORKER_COUNT='+$workers.Count); foreach($w in $workers){ Write-Output ('RUNNER_WORKER_PID='+$w.ProcessId+' PARENT='+$w.ParentProcessId+' CMD='+$w.CommandLine) }; if($workers.Count -ne 1){ throw ('Refusing to terminate: expected exactly one Runner.Worker.exe, found '+$workers.Count) }; Stop-Process -Id $workers[0].ProcessId -Force; Start-Sleep -Seconds 2; $remaining=@(Get-CimInstance Win32_Process -Filter \"Name='Runner.Worker.exe'\"); Write-Output ('RUNNER_WORKER_REMAINING='+$remaining.Count); if($remaining.Count -ne 0){ throw 'Runner.Worker.exe remained after termination' }; Write-Output 'STALE_ACTIONS_WORKER_TERMINATED'"
+  },
+  "created_at": "2026-09-29T11:34:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
