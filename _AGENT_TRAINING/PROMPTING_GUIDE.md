@@ -29,6 +29,11 @@ Tasks are independent, ownership boundaries are clear, support research can proc
 ## Do not parallelize when
 Several agents would edit the same contract, task order matters, one finding determines the correct implementation, or the verification environment is the bottleneck rather than implementation.
 
+## Adaptive prompts for continuing swarms
+A long-running or multi-wave swarm must not blindly replay its launch prompt. Re-synthesize the prompt immediately before each new worker/replacement starts from current canonical state, completed work, active ownership, failures/blockers, durable partial artifacts, verification results, and recent prompt lineage. Explicitly tell the new worker not to repeat completed work and to change approach after a failed/blocked attempt. Treat this generated context as a launch snapshot only: repository/runtime truth discovered during the mandatory training gate remains authoritative.
+
+Persist enough prompt provenance (generation/hash/wave or equivalent) to prove that retries and later waves actually received updated context instead of a static template.
+
 ## Prompt patterns
 Implementation prompts should state one boundary, non-goals, invariants, tests, persistence, and canonical-truth rules.
 Integration prompts should require remote branch discovery, per-branch disposition, protection of newer canonical continuity, combined verification, and a durable ledger.
