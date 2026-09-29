@@ -28,9 +28,8 @@ class CapabilityRegistry:
         return [self._specs[name].as_dict() for name in sorted(self._specs)]
 
 
-def build_registry() -> CapabilityRegistry:
-    return CapabilityRegistry.from_specs(
-        [
+def build_registry(*, include_indexing: bool = False) -> CapabilityRegistry:
+    specs = [
             CapabilitySpec("control.discovery", 1, "List stable capability contracts.", "control.read", 5, False, 131_072),
             CapabilitySpec("control.health", 1, "Report control-plane and bridge health.", "control.read", 15, False, 131_072),
             CapabilitySpec("control.cancel", 1, "Request cancellation of a bridge job.", "execution.cancel", 15, False, 65_536),
@@ -51,5 +50,14 @@ def build_registry() -> CapabilityRegistry:
             CapabilitySpec("verification.run", 1, "Run one fixed build/test/lint/typecheck plan for a detected project.", "verification.run", 1800, True),
             CapabilitySpec("observability.logs.page", 1, "Page through sanitized in-memory audit records.", "observability.read", 5, False, 131_072),
             CapabilitySpec("observability.artifacts.page", 1, "Page a registered text artifact.", "observability.read", 5, False, 262_144),
-        ]
-    )
+    ]
+    if include_indexing:
+        specs.extend(
+            [
+                CapabilitySpec("index.refresh", 1, "Refresh the bounded local repository index.", "repository.read", 120, False),
+                CapabilitySpec("index.stats", 1, "Report bounded repository index statistics.", "repository.read", 5, False, 131_072),
+                CapabilitySpec("index.search.text", 1, "Search indexed repository text with bounded context.", "repository.read", 30, False),
+                CapabilitySpec("index.search.symbols", 1, "Search indexed repository symbols.", "repository.read", 30, False),
+            ]
+        )
+    return CapabilityRegistry.from_specs(specs)
