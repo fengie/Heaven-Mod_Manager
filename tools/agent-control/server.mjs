@@ -787,9 +787,11 @@ async function deployOne({
   }
 
   const args = [
+    "-a", "never",
+    "-s", "workspace-write",
     "exec",
     "--json",
-    "--approve-for-me",
+    "--skip-git-repo-check",
     "-C", worktree,
     "-o", lastMessagePath
   ];
