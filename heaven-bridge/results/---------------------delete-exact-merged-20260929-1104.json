@@ -1,0 +1,21 @@
+{
+  "id": "---------------------delete-exact-merged-20260929-1104",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T11:04:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:04:51.903092+00:00",
+  "finished_at": "2026-09-29T11:05:00.543010+00:00",
+  "stdout": "{\r\n    \"baseline_origin_main\":  \"c50fed8f23112c4ab4c8015a8060bfb645f809c2\",\r\n    \"final_origin_main\":  \"c50fed8f23112c4ab4c8015a8060bfb645f809c2\",\r\n    \"deleted_local\":  [\r\n\r\n                      ],\r\n    \"deleted_remote\":  [\r\n                           \"agent/replacefilew-failure-characterization-v2\"\r\n                       ],\r\n    \"preserved\":  [\r\n\r\n                  ],\r\n    \"prune\":  [\r\n\r\n              ]\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------delete-exact-merged-20260929-1104.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\---------------------delete-exact-merged-20260929-1104.stderr.log",
+    "stdout_bytes": 415,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "1922abfcb753ae9aebe58212d0e143fcdeac5fc3bce5bf08c1120cd3ddf5d028"
+}
