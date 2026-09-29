@@ -153,6 +153,33 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["capabilities"]["desktop_control"], os.name == "nt")
         self.assertTrue(result["data"]["capabilities"]["clipboard_relay_requires_opt_in"])
 
+    def test_queue_order_prefers_control_then_priority_then_fifo(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs = {
+                "normal-old.json": {"action": "proc_run", "priority": "normal", "created_at": "2026-09-29T10:00:00Z"},
+                "highest-new.json": {"action": "proc_run", "priority": "highest", "created_at": "2026-09-29T10:05:00Z"},
+                "highest-old.json": {"action": "proc_run", "priority": "highest", "created_at": "2026-09-29T10:01:00Z"},
+                "control-low.json": {"action": "cancel", "priority": "lowest", "created_at": "2026-09-29T10:10:00Z"},
+            }
+            paths = []
+            for name, job in jobs.items():
+                path = root / name
+                path.write_text(__import__("json").dumps(job), encoding="utf-8")
+                paths.append(path)
+            ordered = [p.name for p in sorted(paths, key=hb.queue_order_key)]
+            self.assertEqual(ordered, ["control-low.json", "highest-old.json", "highest-new.json", "normal-old.json"])
+
+    def test_queue_order_malformed_job_does_not_break_sort(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bad = root / "bad.json"
+            bad.write_text("{not-json", encoding="utf-8")
+            normal = root / "normal.json"
+            normal.write_text('{"action":"proc_run","priority":"normal","created_at":"2026-09-29T10:00:00Z"}', encoding="utf-8")
+            ordered = sorted([normal, bad], key=hb.queue_order_key)
+            self.assertEqual({p.name for p in ordered}, {"bad.json", "normal.json"})
+
     def test_clipboard_read_requires_explicit_relay_opt_in(self):
         with self.assertRaises(hb.BridgeError) as ctx:
             hb.run_job(
