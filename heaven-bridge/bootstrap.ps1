@@ -133,23 +133,61 @@ if (Test-Path $TestWorker) {
     }
 }
 
-# Prefer Task Scheduler because it supports restart-on-failure. The Startup VBS
-# remains the no-elevation fallback when task registration is unavailable.
+# Prefer Task Scheduler because it supports restart-on-failure. The canonical task
+# runs in the currently logged-in user's interactive session at RunLevel Highest.
+# This preserves GUI/desktop access while giving bridge commands the user's full
+# elevated administrator token. Windows still enforces the one-time security
+# boundary when creating/upgrading this task; after it exists, normal bridge
+# jobs do not need per-command UAC elevation.
 $taskInstalled = $false
+$taskRunLevel = 'Unavailable'
+$existingTask = $null
 try {
-    $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
-    $settings = New-ScheduledTaskSettingsSet `
-        -AllowStartIfOnBatteries `
-        -DontStopIfGoingOnBatteries `
-        -StartWhenAvailable `
-        -MultipleInstances IgnoreNew `
-        -RestartCount 12 `
-        -RestartInterval (New-TimeSpan -Minutes 1)
-    Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null
+    $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+    $taskRunLevel = [string]$existingTask.Principal.RunLevel
+} catch {}
+
+if ($existingTask -and $taskRunLevel -eq 'Highest') {
+    # Keep an already-elevated task. Its action points at the stable runtime path,
+    # which bootstrap refreshes above on every update.
     $taskInstalled = $true
-} catch {
-    Write-Warning "Scheduled Task install failed; Startup VBS remains configured. $($_.Exception.Message)"
+} else {
+    try {
+        $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        if ([string]::IsNullOrWhiteSpace($identityName)) {
+            throw 'Unable to resolve the current Windows identity for the scheduled-task principal.'
+        }
+
+        $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"{0}"' -f $RuntimeWorker)
+        $trigger = New-ScheduledTaskTrigger -AtLogOn
+        $settings = New-ScheduledTaskSettingsSet `
+            -AllowStartIfOnBatteries `
+            -DontStopIfGoingOnBatteries `
+            -StartWhenAvailable `
+            -MultipleInstances IgnoreNew `
+            -RestartCount 12 `
+            -RestartInterval (New-TimeSpan -Minutes 1)
+        $principal = New-ScheduledTaskPrincipal `
+            -UserId $identityName `
+            -LogonType Interactive `
+            -RunLevel Highest
+
+        Register-ScheduledTask `
+            -TaskName $TaskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Settings $settings `
+            -Principal $principal `
+            -Force | Out-Null
+
+        $taskRunLevel = [string](Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop).Principal.RunLevel
+        if ($taskRunLevel -ne 'Highest') {
+            throw "Scheduled task registered but reports unexpected RunLevel '$taskRunLevel'."
+        }
+        $taskInstalled = $true
+    } catch {
+        Write-Warning "Highest-privilege Scheduled Task install/upgrade failed; Startup VBS remains configured. A one-time elevated registration is required before the bridge can hold an administrator token. $($_.Exception.Message)"
+    }
 }
 
 function Get-HeavenBridgeWorker {
@@ -226,4 +264,4 @@ if (-not $proc) {
     throw 'Replacement Heaven Local Bridge worker failed and backup restart also failed; Startup fallback remains configured.'
 }
 
-Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged)
+Write-Output ('HEAVEN_BRIDGE_STARTED pid={0} worker={1} python={2} task_managed={3} task_run_level={4}' -f $proc.ProcessId, $RuntimeWorker, $pythonw, $taskManaged, $taskRunLevel)
