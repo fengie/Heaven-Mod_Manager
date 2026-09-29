@@ -1,0 +1,9 @@
+{
+  "id": "swarm-20260929-155330-home-list",
+  "state": "running",
+  "action": "fs_list",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:54:51.682326+00:00"
+}
