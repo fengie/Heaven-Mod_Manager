@@ -1,0 +1,9 @@
+{
+  "id": "----selfhosted-runner-inspect-20260929-105650",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:59:18.660052+00:00"
+}
