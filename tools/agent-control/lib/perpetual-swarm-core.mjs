@@ -130,17 +130,33 @@ export function perpetualSwarmDecision(controlState, {
   const safetyReason = safetyHoldReason(controlState);
   if (safetyReason) return { kind: "wait", reason: safetyReason };
 
-  const nextActionMs = timestamp(perpetual.nextActionAt);
-  if (nextActionMs !== null && nextActionMs > now) {
-    return { kind: "wait", reason: "cooldown", nextActionAt: new Date(nextActionMs).toISOString() };
-  }
-
   if (providerCapacity?.blocked) {
     return {
       kind: "wait",
       reason: "provider-capacity",
       nextActionAt: providerCapacity.blockedUntil || null,
       sourceAgentId: providerCapacity.sourceAgentId || null
+    };
+  }
+
+  const nextActionMs = timestamp(perpetual.nextActionAt);
+  if (perpetual.lastReason !== "provider-capacity" && nextActionMs !== null && nextActionMs > now) {
+    return { kind: "wait", reason: "cooldown", nextActionAt: new Date(nextActionMs).toISOString() };
+  }
+
+  const agents = Array.isArray(controlState?.agents) ? controlState.agents : [];
+  const pendingReplacement = agents.find(agent =>
+    agent?.perpetualReplacementPending === true
+    && String(agent?.status || "").toLowerCase() !== "capacity-blocked"
+  );
+  if (pendingReplacement) {
+    return {
+      kind: "replace-stuck",
+      reason: "replacement-retry",
+      agentId: pendingReplacement.id,
+      progressAgeMs: null,
+      thresholdMs: null,
+      alreadyStopped: !ACTIVE_STATUSES.has(String(pendingReplacement?.status || "").toLowerCase())
     };
   }
 
@@ -203,6 +219,10 @@ export function recordPerpetualWaveStart(value, {
   waveId = null
 } = {}) {
   const current = normalizePerpetualSwarmState(value);
+  const atMs = timestamp(at) ?? Date.now();
+  const recentBefore = current.waveStarts
+    .map(timestamp)
+    .filter(valueAt => valueAt !== null && atMs - valueAt <= current.restartWindowMs);
   return normalizePerpetualSwarmState({
     ...current,
     generation: current.generation + 1,
@@ -214,7 +234,7 @@ export function recordPerpetualWaveStart(value, {
     lastError: null,
     nextActionAt: null,
     waveStarts: [...current.waveStarts, at],
-    cooldownLevel: 0,
+    cooldownLevel: recentBefore.length === 0 ? 0 : current.cooldownLevel,
     updatedAt: at
   });
 }
