@@ -4,12 +4,15 @@ A zero-dependency local control plane for the MHW programming-agent swarm.
 
 This is the execution layer that sits above the repository's existing agent doctrine and continuity system:
 
-**You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
+**You → normal Chat / registered ChatGPT sessions by default → control plane coordination → review/integration queue → Git/CI**
+
+Local Codex workers are an explicit opt-in execution path, never the default or a fallback.
 
 ## What v0.5.5 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
-- Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
+- Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is the default; a local Codex worker is launched only when the request explicitly sets `executionMode: "codex"` (CLI: `--execution-mode codex`).
+- Agent Control cannot auto-create arbitrary normal ChatGPT conversations. If no normal-Chat session is available/registered, dispatch fails closed instead of silently consuming Codex quota.
 - Enforces a mandatory pre-response repository-training gate: every spawned worker must have all required training/continuity sources present and non-empty, receives their exact hashes in a training manifest, and is instructed to read them plus task-relevant source/tests before it may process the task prompt.
 - Gives every deployed agent its own Git worktree; it reuses a safe compatible unowned branch when available and creates a new `agent/control-*` branch only when no strong safe match exists.
 - Maintains a local process/task registry plus a normalized federated agent registry of:
@@ -35,7 +38,7 @@ This is the execution layer that sits above the repository's existing agent doct
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 - Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
 - Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
-- Classifies Codex usage/quota exhaustion as `capacity-blocked`, preserves the unfinished task/branch as blocked work, and opens a dispatch circuit until the provider reset window expires (or a later successful worker proves recovery). Direct Heaven Bridge `proc_run` build/test/filesystem/process/computer-control work remains available during the cooldown.
+- Classifies Codex usage/quota exhaustion as `capacity-blocked`, preserves the unfinished task/branch as blocked work, and opens a dispatch circuit until the provider reset window expires (or a later successful worker proves recovery). Capacity-blocked work is not eligible for automatic reviewer/takeover replacement on the same provider. Direct Heaven Bridge `proc_run` build/test/filesystem/process/computer-control work remains available during the cooldown.
 - Reconciles response/transport stream loss against durable execution evidence before retrying: `STREAM LOST · CHECKING WORK` resolves to `WORK DETECTED · INCOMPLETE`, `WORK VERIFIED · COMPLETE`, or `NO DURABLE WORK DETECTED · RETRY`. Commits, changed files, artifacts, PRs, and verification evidence prevent destructive full-task retries; evidence-free interrupted work enters the bounded replacement loop only after the durable-evidence scan is authoritative. Unknown worktree/branch evidence fails closed as unverified instead of spawning a duplicate.
 
 ## Federated registry and heartbeat semantics
@@ -106,9 +109,10 @@ node .\agentctl.mjs autopilot-start --task "Build the current big direction" --m
 node .\agentctl.mjs autopilot-pause
 node .\agentctl.mjs autopilot-resume
 node .\agentctl.mjs autopilot-stop
-node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928
-node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90
-node .\agentctl.mjs review <agent-id>
+# Normal Chat is the default; local deploy/review commands will fail closed unless Codex is explicitly requested.
+node .\agentctl.mjs deploy --role support --task "Audit updater rollback" --count 2 --base agent/auto-updater-20260928 --execution-mode codex
+node .\agentctl.mjs deploy --role main --task-file C:\Temp\task.txt --boundary updater-release --priority 90 --execution-mode codex
+node .\agentctl.mjs review <agent-id> --execution-mode codex
 node .\agentctl.mjs log <agent-id>
 node .\agentctl.mjs stop <agent-id>
 ```
@@ -174,7 +178,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
 - `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
 - `AGENT_CONTROL_HEAVEN_REPO_URL` — optional repository URL used by remote Heaven workspace preparation
-- `CODEX_EXE` — optional explicit path to `codex.exe`; otherwise the newest ChatGPT Codex install is discovered automatically.
+- `CODEX_EXE` — optional explicit path to `codex.exe`; used only for tasks that explicitly opt into Codex execution. Otherwise the newest ChatGPT Codex install is not invoked.
 
 ## Safety / isolation
 
