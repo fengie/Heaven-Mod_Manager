@@ -1,4 +1,8 @@
-# v8.8.8 Universal Mod Manager
+# v8.8.9 Universal Mod Manager
+
+## v8.8.9 — updater manifest compatibility and installed-client closure
+
+The automatic updater now accepts legacy UTF-8 BOM manifests from already-immutable releases while new release manifests are emitted as BOM-free UTF-8 so older installed clients can parse them. Windows release publication and the real installed-client update/rollback gate run on the verified Heaven self-hosted runner, and the installed-client gate is sequenced after a successful Windows Release Gate so it validates the exact newly-published immutable release instead of racing publication or retrying the obsolete build-61 target.
 
 ## v8.8.8 — atomic launch-observation persistence
 
