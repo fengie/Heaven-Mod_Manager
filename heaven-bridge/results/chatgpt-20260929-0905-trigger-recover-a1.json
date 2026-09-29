@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0905-trigger-recover-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:05:00Z",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:05:03.598382+00:00",
+  "finished_at": "2026-09-29T10:05:03.598382+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "error": {
+    "code": "JOB_EXPIRED",
+    "message": "job exceeded its TTL",
+    "details": {
+      "age_seconds": 3603,
+      "ttl_seconds": 3600
+    }
+  },
+  "stderr": "job exceeded its TTL",
+  "stdout": ""
+}
