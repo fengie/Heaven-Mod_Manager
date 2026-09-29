@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-complete-workflows-final-reconcile-20260929-1136-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:36:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:36:21.986584+00:00",
+  "finished_at": "2026-09-29T11:36:24.419216+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n - [deleted]           (none)        -> origin/integration/complete-mod-workflows-final-20260929\n   fc8ac424..5a937116  main          -> origin/main\n   245c552c..51883fa7  heaven-bridge -> origin/heaven-bridge\ngit : error: branch 'local/complete-workflows-final-20260929-a1' not found\r\nAt line:7 char:1\r\n+ git -C $repo branch -D 'local/complete-workflows-final-20260929-a1' 2 ...\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (error: branch '...9-a1' not found:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-20260929-1136-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-complete-workflows-final-reconcile-20260929-1136-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 655,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "6684e2622dc555c352f2ff0d3ca7d9937ba8f83b0cf4f421174722629f5cec50"
+}
