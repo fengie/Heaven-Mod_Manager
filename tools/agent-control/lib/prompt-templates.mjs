@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.5";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.6";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -172,7 +172,8 @@ export function renderAgentPrompt({
   machine,
   repositoryWriteAuthorized = false,
   additionalConstraints = [],
-  repositoryTrainingManifest = []
+  repositoryTrainingManifest = [],
+  swarmEvolutionContext = []
 }) {
   const template = ROLE_TEMPLATES[role] || ROLE_TEMPLATES.support;
   const roleProtocol = role === "manager"
@@ -181,6 +182,7 @@ export function renderAgentPrompt({
       ? INTEGRATION_PROTOCOL
       : [];
 
+  const evolutionLines = normalizeLines(swarmEvolutionContext);
   const assignmentRows = [
     `task id: ${assignment.taskId}`,
     `priority: ${assignment.priority}/100`,
@@ -225,6 +227,11 @@ export function renderAgentPrompt({
     "",
     "ADDITIONAL CONSTRAINTS",
     bullets(additionalConstraints),
+    ...(evolutionLines.length ? [
+      "",
+      "LIVE SWARM EVOLUTION CONTEXT — GENERATED FRESH AT LAUNCH",
+      bullets(evolutionLines)
+    ] : []),
     "",
     "USER / MANAGER TASK",
     String(task || "").trim(),
@@ -242,6 +249,9 @@ export function renderAgentPrompt({
     templateId: `role.${role in ROLE_TEMPLATES ? role : "support"}`,
     templateVersion: PROMPT_LIBRARY_VERSION,
     rendered,
-    sha256: createHash("sha256").update(rendered, "utf8").digest("hex")
+    sha256: createHash("sha256").update(rendered, "utf8").digest("hex"),
+    swarmContextHash: evolutionLines.length
+      ? createHash("sha256").update(evolutionLines.join("\n"), "utf8").digest("hex")
+      : null
   };
 }
