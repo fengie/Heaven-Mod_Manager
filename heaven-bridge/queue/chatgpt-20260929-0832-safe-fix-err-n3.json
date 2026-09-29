@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0832-safe-fix-err-n3",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:32:00Z",
+  "ttl_seconds": 3600,
+  "action": "job_output_read",
+  "params": {
+    "job_id": "controller-20260929-0833-agentcontrol-safe-launch-fix-m1",
+    "stream": "stderr",
+    "offset": 0,
+    "length": 30000
+  },
+  "priority": "highest"
+}
