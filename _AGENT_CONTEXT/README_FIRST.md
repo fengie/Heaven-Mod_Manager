@@ -1,4 +1,9 @@
-# READ THIS FIRST — MHW Manual Mod Manager v8.8.4
+# READ THIS FIRST — MHW Manual Mod Manager v8.8.6
+
+**Current reconciliation checkpoint — 2026-09-29:** canonical `main` was audited at `ce74d6abafb02bf4b5af1b59237751dcac84c298`. v8.8.6 is current. Agent Control 0.5.1 liveness/machine policy, reliability verification, security/authorization hardening, updater cross-session ownership, profile/UI/updater-E2E work, and main-first swarm contracts are already canonical. PR #95 was closed as superseded; conflicted reconciliation PR #107 was also closed and rebuilt from this newer main.
+
+The last fully closed hosted verification remains exact source `5abe40304dfcb48f96e750bd7da3d0075315625b` / run `36541891969`; do **not** extend it to later main. Exact-current-main release verification and updater installed-client 60→61 success plus injected rollback remain evidence gates. Remaining open product PRs at this snapshot are #98, #100, #101, and #105; read `_AGENT_CONTEXT/RECONCILIATION_2026-09-29.md` before integrating them.
+
 
 **Newest final support reconciliation:** canonical base `317ba6c86d54012a65a41772109a72566d29c0a9` already contains v8.8.3 archive-streaming cleanup and hosted evidence. v8.8.4 squash-integrates the reviewed support harvest: hardened save-snapshot retention, remote-preview egress hardening, and unique legacy-hardlink/live-writer/cross-session ownership audits preserved as LR-012 through LR-014. Exact local source `b48c1ff865ab41841d8c7eb931fca19f371f960e` passed Verify-Release **25/25**, functions **748/748** / **7,921** call sites / **0** uncovered, Core **79/79**, Automation **31/31**, Integration **199/199**, self-test **11/11**, and Build-Release/ReadyToRun/helper publish; updater build **326**, ZIP SHA-256 `0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154`. Hosted exact-main verification remains pending. Read `_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md` and `_AGENT_CONTEXT/EVIDENCE/v8.8.4-local-windows-closure.md` first.
 
