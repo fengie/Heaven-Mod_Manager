@@ -1,9 +1,10 @@
 {
   "id": "---------------chatgpt-install-heaven-actions-runner-20260929-1107-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:11:04.397489+00:00"
+  "updated_at": "2026-09-29T11:11:50.135921+00:00",
+  "exit_code": 1
 }
