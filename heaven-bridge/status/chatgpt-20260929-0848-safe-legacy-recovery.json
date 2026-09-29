@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0848-safe-legacy-recovery",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:48:19.303385+00:00"
+  "updated_at": "2026-09-29T08:48:37.231495+00:00",
+  "exit_code": 0
 }
