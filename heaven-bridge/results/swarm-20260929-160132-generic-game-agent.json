@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-160132-generic-game-agent",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:01:32Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:02:51.915733+00:00",
+  "finished_at": "2026-09-29T16:02:56.008088+00:00",
+  "stdout": "",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ede7-94d8-7c92-ab1f-9dd869152213\n--------\nuser\nYou are the generic-game / non-MHW path bug-hunt support agent for fengie/mhw-mods. This is an EXECUTION assignment.\n\nMANDATORY TRAINING BEFORE TASK WORK:\nRead AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/README_FIRST.md, CURRENT_REVISION.json, CONTINUITY_PROTOCOL.md, LEARNED_RULES.md, CURRENT_STATE.md, NEXT_STEPS.md, VERIFICATION.md, plugins/README.md and plugins/PLUGIN_GAP_BACKLOG.md. Establish exact current origin/main and inspect active ownership. This worktree began detached at 2fe9ff1b59077b0cad8281fc4096c125e3dfd948; fetch and move detached HEAD to latest origin/main before any edit if main advanced. Never touch the dirty canonical checkout.\n\nSCOPE: generic-game/non-MHW correctness and path/state isolation. Do not work on unified catalog PR #208, startup performance #219, current Smart Inbox fixes, legacy migration, release-validator, diagnostics identity.\n\nHUNT:\n- generic game profile creation/switching; invalid/missing game roots; relative/absolute/path traversal handling; switching between games; per-game state bleed; mod library/deploy roots; source/target containment; launch executable path; duplicate game IDs/names; Unicode/long paths; deleted roots; read-only roots; reopen/restart after switch; generic-game install/enable/disable/conflict workflows where supported.\n- Use only temp/sandbox game roots and manager state. Never touch real installed games or user mod data.\n- Search docs/source/tests before judging intended behavior. Reproduce before CONFIRMED. Classify CONFIRMED BUG / LIKELY BUG / CODE RISK / UX ISSUE / ENHANCEMENT.\n\nIF CONFIRMED:\nCheck branches/PRs before branch creation. Reuse compatible owned work or create one narrow branch from fresh origin/main. Implement root-cause fix + regression, run focused and affected broader tests, self-review/diff-check, push/open PR if possible. No force-push; no merge unless exact-head green and current-main reconciled.\n\nIF NO CONFIRMED BUG:\nReturn tested coverage/risk evidence and next best repro, without inventing issues.\n\nFINAL: STATUS; BASE/FINAL SHA; CLASSIFICATION; REPRO; ROOT CAUSE; CHANGES; TESTS; BRANCH/PR; REMAINING RISKS; NEXT EXACT ACTION.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160132-generic-game-agent.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-160132-generic-game-agent.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2941,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "3a1378d0eabd96ac30d42449567461d8bbdf832a2355f2b3b6986ffc24e9046f"
+}
