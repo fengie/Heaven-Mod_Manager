@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0905-read118",
-  "state": "running",
+  "state": "completed",
   "action": "job_output_read",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T13:03:08.948559+00:00"
+  "updated_at": "2026-09-29T13:03:24.776959+00:00",
+  "exit_code": 0
 }
