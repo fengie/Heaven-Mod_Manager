@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-1051-branchzero-product-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:51:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:41:56.415727+00:00",
+  "finished_at": "2026-09-29T11:42:01.299228+00:00",
+  "stdout": "",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ecf8-b3dd-7bc3-8e60-e6b4845a440a\n--------\nuser\nEXECUTE, do not just audit. Mission: drive remote branch debt in fengie/mhw-mods toward zero, with main as canonical. Work ONLY the product/release/UI branch family so you do not overlap other cleanup agents: agent/archive-streaming-budget-20260928, agent/auto-updater-postupload-publication-pre-reconcile-20260928, agent/control-test-narrow-test-scope-only-build-a-r-20260928133350-vrokm, agent/game-profile-id-containment-20260928, agent/game-profile-id-containment-v2-20260928, agent/game-profile-id-containment-v8.8.5-reconcile, agent/launch-observation-atomicity-20260928, agent/replacefilew-failure-characterization-20260927, agent/replacefilew-failure-characterization-v2, agent/smart-pack-planner-core, agent/updater-cross-session-ownership-20260929, agent/updater-existing-release-rest-ref-20260928, agent/updater-existing-release-rest-ref-gate2-20260928, agent/updater-existing-release-rest-ref-gate-20260928, agent/updater-installed-e2e-20260929-manager, agent/v881-updater-publication-handoff-20260928, agent/windows-live-containment-hardening, agent/windows-live-containment-hardening-v2, codex/complete-mod-workflows, integration/v8.8.6-release-convergence-r2-20260929, release/v8.8.5-20260929, support/updater-publication-input-scope-20260928, ui/frontend-responsive-polish-20260928, ui/frontend-ux-overhaul. Locate the canonical fengie/mhw-mods development checkout under C:\\Users\\Xxkan (do NOT use HeavenBridgeRepo as the development checkout). Fetch/prune origin first. For each assigned branch: determine whether its unique semantic work is already in current main (including squash/cherry-pick equivalents). If yes or obsolete/superseded, delete local branch if present and remote branch. If useful work is missing, reconcile it onto latest main, run the smallest relevant validation plus git diff --check, then integrate to main, push main, verify origin/main contains it, and delete the source branch. Never overwrite newer main; re-fetch before every merge. Do not touch heaven-bridge. Do not leave a completed branch merely because its historical commits are divergent. Finish by reporting exact origin/main SHA, branches deleted, branches integrated, any genuinely blocked branch with concrete reason, and remaining remote branch count.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1051-branchzero-product-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-1051-branchzero-product-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2929,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "599517b53967d14509d6ad09862cddbfb05e1638597d1bc4ab64aee6642cf9cf"
+}
