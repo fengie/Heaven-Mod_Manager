@@ -1,4 +1,8 @@
-# v8.8.8 Universal Mod Manager
+# v8.8.9 Universal Mod Manager
+
+## v8.8.9 — updater manifest compatibility and Heaven release closure
+
+The updater now accepts historical UTF-8 BOM-bearing release manifests while newly published `update-manifest.json` assets are emitted as BOM-free UTF-8 for compatibility with older installed clients. Windows release verification and publication run on the repaired Heaven self-hosted runner, and the release gate is responsible for proving a real build-60 installed client can update to the exact newly published build and survive the deterministic rollback scenario without changing seeded user or unknown files.
 
 ## v8.8.8 — atomic launch-observation persistence
 
