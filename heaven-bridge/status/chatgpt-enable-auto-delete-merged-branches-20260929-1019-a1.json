@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-enable-auto-delete-merged-branches-20260929-1019-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:27:04.562366+00:00"
+  "updated_at": "2026-09-29T15:27:32.787719+00:00",
+  "exit_code": 1
 }
