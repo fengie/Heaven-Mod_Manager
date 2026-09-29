@@ -1,0 +1,9 @@
+{
+  "data": {
+    "id": "fixture-mod-global-id",
+    "game_scoped_id": "101",
+    "name": "Fixture One",
+    "summary": "Fixture mod details",
+    "thumbnail_url": "https://staticdelivery.nexusmods.com/fixture-one.jpg"
+  }
+}
