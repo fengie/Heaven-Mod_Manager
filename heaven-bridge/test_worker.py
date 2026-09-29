@@ -244,13 +244,13 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertTrue(result["data"]["features"]["uia"]["set_value_requires_relay_opt_in"])
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
 
-    def test_secret_channel_is_not_advertised_without_encrypted_inbox(self):
+    def test_secret_channel_is_not_advertised_without_verified_encrypted_smb(self):
         with tempfile.TemporaryDirectory() as td:
             with patch.dict(
                 os.environ,
                 {
                     "HEAVEN_BRIDGE_SECRET_INBOX": td,
-                    "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "0",
+                    "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
                     "COMPUTERNAME": "heaven",
                 },
             ):
@@ -260,7 +260,35 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
                     threading.Event(),
                 )
         self.assertFalse(result["data"]["features"]["secret_input"]["available"])
+        self.assertFalse(result["data"]["features"]["secret_input"]["transport_verified"])
         self.assertNotIn("gui_type_secret", result["data"]["actions"])
+
+    def test_secret_transport_verifier_requires_unc_and_heaven_side_encryption(self):
+        with patch.object(hb.subprocess, "run") as run:
+            self.assertFalse(hb._verify_secret_inbox_encrypted(r"C:\\local\\secret-inbox"))
+            run.assert_not_called()
+
+        completed = type("Completed", (), {"returncode": 0})()
+        with patch.object(hb.os, "name", "nt"), patch.object(hb.subprocess, "run", return_value=completed) as run:
+            self.assertTrue(hb._verify_secret_inbox_encrypted(r"\\\\heaven2\\Credential Inbox"))
+        env = run.call_args.kwargs["env"]
+        self.assertEqual(env["HEAVEN_SECRET_SMB_SERVER"], "heaven2")
+        self.assertEqual(env["HEAVEN_SECRET_SMB_SHARE"], "Credential Inbox")
+        command = run.call_args.args[0][-1]
+        self.assertIn("Get-SmbConnection", command)
+        self.assertIn(".Encrypted", command)
+
+        unencrypted = type("Completed", (), {"returncode": 4})()
+        with patch.object(hb.os, "name", "nt"), patch.object(hb.subprocess, "run", return_value=unencrypted):
+            self.assertFalse(hb._verify_secret_inbox_encrypted(r"\\\\heaven2\\Credential Inbox"))
+
+    def test_secret_helper_cleans_failed_publication_temp_file(self):
+        script = MODULE_PATH.with_name("New-HeavenSecretEnvelope.ps1").read_text(encoding="utf-8")
+        self.assertIn("$temp = $null", script)
+        self.assertIn("$published = $false", script)
+        self.assertIn("$published = $true", script)
+        self.assertIn("if (-not $published -and $temp -and (Test-Path -LiteralPath $temp))", script)
+        self.assertIn("Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue", script)
 
     def test_secret_type_consumes_once_without_relaying_canary(self):
         canary = "CANARY-secret-never-persist-7f2b"
@@ -298,7 +326,10 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
                 "COMPUTERNAME": "heaven",
             }
             typed = {}
-            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed),                     patch.object(hb, "desktop_focus_window", return_value={"focused": True}),                     patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                 patch.object(hb, "_verify_secret_inbox_encrypted", return_value=True), \
+                 patch.object(hb, "desktop_focus_window", return_value={"focused": True}), \
+                 patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
                 health = hb.run_job("health-secret-on", {"action": "health", "params": {}}, threading.Event())
                 self.assertTrue(health["data"]["features"]["secret_input"]["available"])
                 self.assertIn("gui_type_secret", health["data"]["actions"])
@@ -344,7 +375,8 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
                 }
                 (inbox / f"{handle}.json").write_text(json.dumps(doc), encoding="utf-8")
 
-            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed):
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                 patch.object(hb, "_verify_secret_inbox_encrypted", return_value=True):
                 expired_handle = "b" * 48
                 created = datetime.now(timezone.utc) - timedelta(minutes=3)
                 write_envelope(expired_handle, created=created, expires=created + timedelta(seconds=60))
