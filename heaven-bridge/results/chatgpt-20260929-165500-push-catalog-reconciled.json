@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-165500-push-catalog-reconciled",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:55:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T17:00:19.512125+00:00",
+  "finished_at": "2026-09-29T17:00:20.530642+00:00",
+  "stdout": "",
+  "stderr": "remote moved: 84eca92bfcd77e787ec4764f6e0937c8fc1dea98\r\nAt line:1 char:297\r\n+ ... ]; if($remote -ne $expected){throw ('remote moved: '+$remote)}; git - ...\r\n+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (remote moved: 8...e0937c8fc1dea98:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : remote moved: 84eca92bfcd77e787ec4764f6e0937c8fc1dea98\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165500-push-catalog-reconciled.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165500-push-catalog-reconciled.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 428,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "a1f7b239a1cc6d777548e8b28e2ae95e80048d0b87b7d24ebeb2bd75f6057fc5"
+}
