@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0910-agentcontrol-http-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:10:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 35,
+    "command": "$ErrorActionPreference='Continue'; function Probe([string]$u){ $sw=[Diagnostics.Stopwatch]::StartNew(); try { $r=Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 10; $sw.Stop(); [ordered]@{url=$u;ok=($r.StatusCode -eq 200);status=[int]$r.StatusCode;elapsed_ms=$sw.ElapsedMilliseconds;body=$r.Content.Substring(0,[Math]::Min(800,$r.Content.Length))} } catch { $sw.Stop(); [ordered]@{url=$u;ok=$false;elapsed_ms=$sw.ElapsedMilliseconds;error=$_.Exception.Message} } }; $a=Probe 'http://127.0.0.1:7331/api/status'; $b=Probe 'http://127.0.0.1:7443/api/status'; [ordered]@{direct=$a;proxy=$b} | ConvertTo-Json -Depth 5; if(-not $a.ok -or -not $b.ok){ exit 2 }"
+  },
+  "priority": "highest"
+}
