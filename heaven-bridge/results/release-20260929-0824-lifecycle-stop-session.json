@@ -1,0 +1,28 @@
+{
+  "id": "release-20260929-0824-lifecycle-stop-session",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:24:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:26:25.078560+00:00",
+  "finished_at": "2026-09-29T08:26:25.089868+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "data": {
+    "session_id": "1259aa3f317648ff",
+    "pid": 74344,
+    "running": true,
+    "exit_code": null,
+    "shell": "powershell",
+    "command": "Write-Output 'SESSION_STARTED_FOR_STOP_TEST'; Start-Sleep -Seconds 300; Write-Output 'UNEXPECTED_NATURAL_COMPLETION'",
+    "cwd": "C:\\Users\\Xxkan",
+    "started_at": "2026-09-29T08:26:25.089868+00:00",
+    "last_activity_at": "2026-09-29T08:26:25.089868+00:00",
+    "idle_seconds": 0,
+    "idle_timeout_seconds": 600,
+    "max_runtime_seconds": 900,
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1259aa3f317648ff.out.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\sessions\\1259aa3f317648ff.err.log"
+  },
+  "job_hash": "4994320448b3865d35322bb5f8b7a7b64baf875bf26202467552ca3f0eccd857"
+}
