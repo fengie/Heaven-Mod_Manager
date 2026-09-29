@@ -1,0 +1,21 @@
+{
+  "id": "manager-20260929-updater-acquire-progress-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:40:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:38:31.362329+00:00",
+  "finished_at": "2026-09-29T08:38:31.782290+00:00",
+  "stdout": "[\r\n    {\r\n        \"FullName\":  \"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Local\\\\Temp\\\\mhw-updater-e2e-artifacts-60-61\\\\60\\\\MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip\",\r\n        \"Length\":  129573228,\r\n        \"LastWriteTimeUtc\":  \"\\/Date(1790671072290)\\/\"\r\n    },\r\n    {\r\n        \"FullName\":  \"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Local\\\\Temp\\\\mhw-updater-e2e-artifacts-60-61\\\\61\\\\MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip\",\r\n        \"Length\":  0,\r\n        \"LastWriteTimeUtc\":  \"\\/Date(1790671072979)\\/\"\r\n    }\r\n]\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-updater-acquire-progress-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\manager-20260929-updater-acquire-progress-a2.stderr.log",
+    "stdout_bytes": 489,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ab4191487a25c2ce21a86bcb300d38f8d8f6915f3a992de52d498f1b26ec8c95"
+}
