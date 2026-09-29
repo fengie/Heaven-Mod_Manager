@@ -4,6 +4,7 @@ import time
 from typing import Any, Iterable, Mapping
 
 from .adapters.heaven_bridge import BRIDGE_PROTOCOL, HeavenBridgeAdapter
+from .indexing import IndexCapabilityProvider
 from .observability import ArtifactStore, AuditLog
 from .protocol import (
     PLUGIN_VERSION,
@@ -28,12 +29,14 @@ class HeavenControlPlane:
         registry: CapabilityRegistry | None = None,
         audit_log: AuditLog | None = None,
         artifacts: ArtifactStore | None = None,
+        index_provider: IndexCapabilityProvider | None = None,
         granted_permissions: Iterable[str] | None = None,
     ):
         if isinstance(granted_permissions, str):
             raise ValueError("granted_permissions must be an iterable of permission names, not a string")
         self.adapter = adapter
-        self.registry = registry or build_registry()
+        self.index_provider = index_provider
+        self.registry = registry or build_registry(include_indexing=index_provider is not None)
         self.audit_log = audit_log or AuditLog()
         self.artifacts = artifacts or ArtifactStore()
         self.granted_permissions = (
@@ -92,6 +95,13 @@ class HeavenControlPlane:
                     offset=data.get("offset", 0),
                     length=data.get("length", 200_000),
                 )
+            elif capability.name in IndexCapabilityProvider.CAPABILITIES:
+                if self.index_provider is None:
+                    raise ControlPlaneError(
+                        "CAPABILITY_UNAVAILABLE",
+                        "repository indexing provider is not configured",
+                    )
+                raw = self.index_provider.invoke(capability.name, data)
             else:
                 raw = self.adapter.invoke(capability, data)
 
