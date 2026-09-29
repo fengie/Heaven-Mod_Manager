@@ -2232,6 +2232,23 @@ def queue_order_key(path):
     return (control_rank, priority, created_rank, path.name)
 
 
+def queue_priority_rank(value):
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return -float(value)
+    labels = {"highest": 0.0, "urgent": 0.0, "high": 1.0, "normal": 2.0, "default": 2.0, "low": 3.0}
+    return labels.get(str(value or "normal").strip().lower(), 2.0)
+
+
+def queue_sort_key(path):
+    try:
+        job = json.loads(path.read_text(encoding="utf-8-sig"))
+        action = str(job.get("action") or job.get("kind") or "codex").lower()
+        control_rank = 0 if action in CONTROL_ACTIONS else 1
+        return (control_rank, queue_priority_rank(job.get("priority")), str(job.get("created_at") or ""), path.name)
+    except Exception:
+        return (2, 99.0, "", path.name)
+
+
 def process_queue(executor):
     git_sync()
     QUEUE.mkdir(parents=True, exist_ok=True)
@@ -2273,11 +2290,15 @@ def process_queue(executor):
                 restore_cached_result(job_id, previous)
             continue
 
-        if not rate_limit_ok():
-            log("rate limit reached; deferring new jobs")
-            break
-
         action = str(job.get("action") or job.get("kind") or "codex").lower()
+        with STATE_LOCK:
+            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
+        if action not in CONTROL_ACTIONS and active_noncontrol >= MAX_WORKERS:
+            continue
+        if action not in CONTROL_ACTIONS and not rate_limit_ok():
+            log("rate limit reached; deferring non-control jobs")
+            continue
+
         if not claim(job_id):
             continue
         cancel_event = threading.Event()
@@ -2291,10 +2312,6 @@ def process_queue(executor):
             future = executor.submit(execute_job, job_id, job, digest, cancel_event)
             info["future"] = future
 
-        with STATE_LOCK:
-            active_noncontrol = sum(1 for x in RUNNING.values() if x.get("future") is not None)
-        if active_noncontrol >= MAX_WORKERS:
-            break
 
 
 def clean_stale_locks():
