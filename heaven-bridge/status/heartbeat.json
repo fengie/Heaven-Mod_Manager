@@ -4,27 +4,32 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T11:03:53.489644+00:00",
+  "updated_at": "2026-09-29T11:08:56.081606+00:00",
   "running": [
     {
-      "id": "--------branch-prune-20260929-1103",
+      "id": "------------------------------------------------bridge-main-gate-1111",
+      "action": "proc_run",
+      "started_at": "2026-09-29T11:07:49.003857+00:00"
+    },
+    {
+      "id": "--------------------------delete-ledger-superseded-20260929-1107",
       "action": "powershell",
-      "started_at": "2026-09-29T11:02:42.162337+00:00"
+      "started_at": "2026-09-29T11:08:06.772765+00:00"
     },
     {
-      "id": "----------opencode-ollama-fallback-smoke-20260929-110330",
+      "id": "------------------------------chatgpt-opencode-ollama-fallback-smoke-20260929-1109-a2",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:03:07.122149+00:00"
+      "started_at": "2026-09-29T11:08:35.505435+00:00"
     },
     {
-      "id": "--------selfhosted-runner-install-20260929-1101",
+      "id": "----------------------branchzero-delete-b3-20260929-1107",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:03:20.655720+00:00"
+      "started_at": "2026-09-29T11:08:35.527267+00:00"
     },
     {
-      "id": "-------------------branchzero-semantic-prune1-202609291106",
+      "id": "------------------------------------------------------------------------------------------g1108",
       "action": "proc_run",
-      "started_at": "2026-09-29T11:03:51.988526+00:00"
+      "started_at": "2026-09-29T11:08:54.579469+00:00"
     }
   ],
   "capabilities": [
