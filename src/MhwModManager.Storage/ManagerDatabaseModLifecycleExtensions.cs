@@ -27,6 +27,21 @@ public static class ManagerDatabaseModLifecycleExtensions
                     throw new InvalidOperationException($"Cannot retire mod '{modId}' while it still owns files in the current deployment manifest.");
             }
 
+            await using (var manifestRules = c.CreateCommand())
+            {
+                manifestRules.Transaction = tx;
+                manifestRules.CommandText = """
+                    UPDATE deployment_manifest
+                    SET rule_id=NULL
+                    WHERE rule_id IN (
+                        SELECT id FROM conflict_rules
+                        WHERE left_mod_id=$m OR right_mod_id=$m OR winner_mod_id=$m
+                    )
+                    """;
+                manifestRules.Parameters.AddWithValue("$m", modId);
+                await manifestRules.ExecuteNonQueryAsync(token);
+            }
+
             await using (var rules = c.CreateCommand())
             {
                 rules.Transaction = tx;
