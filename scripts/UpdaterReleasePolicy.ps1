@@ -79,7 +79,7 @@ function Get-UpdaterBuildFromTag {
 function Test-UpdaterReleaseRelevantPath {
   param([Parameter(Mandatory=$true)][string]$Path)
   $normalized=$Path.Replace('\','/').TrimStart('/')
-  foreach($prefix in @('src/','data/','docs/','scripts/','legacy-v7/')){
+  foreach($prefix in @('src/','tests/','data/','docs/','scripts/','.github/workflows/','legacy-v7/')){
     if($normalized.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){return $true}
   }
 
@@ -100,6 +100,27 @@ function Test-UpdaterReleaseRelevantPath {
   return $rootFiles -icontains $normalized
 }
 
+function Get-UpdaterMainDriftDecision {
+  param(
+    [Parameter(Mandatory=$true)][string]$CurrentSourceSha,
+    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
+    [string[]]$ChangedPaths=@()
+  )
+  if($CurrentSourceSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw 'Current updater source SHA is malformed.'}
+  if($RemoteMainSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw 'Remote main SHA is malformed.'}
+  if([string]::Equals($CurrentSourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase)){
+    return [pscustomobject]@{Publish=$true;Reason='exact-main';RelevantPaths=[string[]]@()}
+  }
+  if($ChangedPaths.Count -eq 0){
+    return [pscustomobject]@{Publish=$false;Reason='stale-main-unclassified';RelevantPaths=[string[]]@()}
+  }
+  $relevant=@($ChangedPaths | Where-Object {Test-UpdaterReleaseRelevantPath $_})
+  if($relevant.Count -gt 0){
+    return [pscustomobject]@{Publish=$false;Reason='stale-main-release-input-change';RelevantPaths=[string[]]$relevant}
+  }
+  return [pscustomobject]@{Publish=$true;Reason='release-inputs-unchanged';RelevantPaths=[string[]]@()}
+}
+
 function Get-UpdaterPublicationDecision {
   param(
     [Parameter(Mandatory=$true)][long]$CurrentBuild,
@@ -108,13 +129,13 @@ function Get-UpdaterPublicationDecision {
 
     [long]$PreviousBuild=0,
     [string]$PreviousSourceSha='',
-    [string[]]$ChangedPaths=@()
+    [string[]]$ChangedPaths=@(),
+    [string[]]$RemoteMainChangedPaths=@()
   )
   if($CurrentBuild -le 0){throw 'Current updater build number must be positive.'}
-  if($CurrentSourceSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw 'Current updater source SHA is malformed.'}
-  if($RemoteMainSha -notmatch '^[0-9a-fA-F]{7,64}$'){throw 'Remote main SHA is malformed.'}
-  if(-not [string]::Equals($CurrentSourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase)){
-    return [pscustomobject]@{Publish=$false;Reason='stale-main'}
+  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $CurrentSourceSha -RemoteMainSha $RemoteMainSha -ChangedPaths $RemoteMainChangedPaths
+  if(-not $drift.Publish){
+    return [pscustomobject]@{Publish=$false;Reason=$drift.Reason}
   }
   if($PreviousBuild -gt $CurrentBuild){
     throw "Updater build $CurrentBuild is older than published build $PreviousBuild."

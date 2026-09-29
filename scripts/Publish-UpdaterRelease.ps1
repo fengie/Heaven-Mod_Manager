@@ -66,6 +66,16 @@ try {
   & git fetch origin main --tags
   if($LASTEXITCODE -ne 0){throw 'Failed to fetch current main/tags before updater publication.'}
   $remoteMain=(& git rev-parse origin/main).Trim()
+  $remoteMainChangedPaths=@()
+  if(-not [string]::Equals($remoteMain,$ExpectedSourceSha,[StringComparison]::OrdinalIgnoreCase)){
+    & git merge-base --is-ancestor $ExpectedSourceSha $remoteMain
+    if($LASTEXITCODE -ne 0){
+      Write-Host "::notice::Skipping updater publication: stale-main-non-descendant."
+      exit 0
+    }
+    $remoteMainChangedPaths=@(& git diff --name-only "$ExpectedSourceSha..$remoteMain" --)
+    if($LASTEXITCODE -ne 0){throw 'Failed to classify current main drift for updater publication.'}
+  }
   $tag="updater-main-$ExpectedBuildNumber"
 
   $releaseOutput=@(& gh release list --repo $Repository --limit 1000 --json tagName,isDraft,isImmutable)
@@ -123,7 +133,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'Failed to determine updater release-input changes.'}
   }
 
-  $decision=Get-UpdaterPublicationDecision -CurrentBuild $ExpectedBuildNumber -CurrentSourceSha $ExpectedSourceSha -RemoteMainSha $remoteMain -PreviousBuild $previousBuild -PreviousSourceSha $previousSha -ChangedPaths $changed
+  $decision=Get-UpdaterPublicationDecision -CurrentBuild $ExpectedBuildNumber -CurrentSourceSha $ExpectedSourceSha -RemoteMainSha $remoteMain -PreviousBuild $previousBuild -PreviousSourceSha $previousSha -ChangedPaths $changed -RemoteMainChangedPaths $remoteMainChangedPaths
   if(-not $decision.Publish){
     Write-Host "::notice::Skipping updater publication: $($decision.Reason)."
     exit 0
@@ -176,10 +186,20 @@ try {
     -PublishDraft {
       & gh release edit $tag --repo $Repository --draft=false
       if($LASTEXITCODE -ne 0){throw "Failed to publish updater draft release $tag; publication state must be inspected before retry."}
+    } `
+    -EvaluateRefreshedMain {
+      param([string]$refreshedMain)
+      & git merge-base --is-ancestor $ExpectedSourceSha $refreshedMain
+      if($LASTEXITCODE -ne 0){
+        return [pscustomobject]@{Publish=$false;Reason='stale-main-non-descendant'}
+      }
+      $driftPaths=@(& git diff --name-only "$ExpectedSourceSha..$refreshedMain" --)
+      if($LASTEXITCODE -ne 0){throw 'Failed to classify post-upload main drift for updater publication.'}
+      return Get-UpdaterMainDriftDecision -CurrentSourceSha $ExpectedSourceSha -RemoteMainSha $refreshedMain -ChangedPaths $driftPaths
     }
 
   if(-not $publication.Published){
-    Write-Host "::notice::Skipping updater publication because main advanced to $($publication.RemoteMainSha) during draft asset upload."
+    Write-Host "::notice::Skipping updater publication: $($publication.Reason) (remote main $($publication.RemoteMainSha))."
     exit 0
   }
 
