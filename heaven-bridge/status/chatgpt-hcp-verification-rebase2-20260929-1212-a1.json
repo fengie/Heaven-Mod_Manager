@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-hcp-verification-rebase2-20260929-1212-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:12:20.640617+00:00"
+  "updated_at": "2026-09-29T12:12:39.156618+00:00",
+  "exit_code": 0
 }
