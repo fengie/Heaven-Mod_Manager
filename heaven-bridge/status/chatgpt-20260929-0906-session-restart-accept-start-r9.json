@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0906-session-restart-accept-start-r9",
-  "state": "running",
+  "state": "completed",
   "action": "proc_start",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:05:33.986505+00:00"
+  "updated_at": "2026-09-29T09:05:47.210418+00:00",
+  "exit_code": 0
 }
