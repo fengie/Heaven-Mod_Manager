@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-prune-superseded-20260929-1224-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:24:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:27:18.401392+00:00",
+  "finished_at": "2026-09-29T12:30:16.760815+00:00",
+  "stdout": "{\"type\":\"step_start\",\"timestamp\":1790685009444,\"sessionID\":\"ses_f12ddbafaffekdmQs6EPUOkeWf\",\"part\":{\"id\":\"prt_0ed24d624001zGphiiyUlMj0UT\",\"sessionID\":\"ses_f12ddbafaffekdmQs6EPUOkeWf\",\"messageID\":\"msg_0ed2417f7001ml6M1jtgQ5NAyw\",\"type\":\"step-start\"}}\r\n{\"type\":\"text\",\"timestamp\":1790685015698,\"sessionID\":\"ses_f12ddbafaffekdmQs6EPUOkeWf\",\"part\":{\"id\":\"prt_0ed2417f7001ml6M1jtgQ5NAyw_text-0\",\"sessionID\":\"ses_f12ddbafaffekdmQs6EPUOkeWf\",\"messageID\":\"msg_0ed2417f7001ml6M1jtgQ5NAyw\",\"type\":\"text\",\"text\":\"{\\n  \\\"name\\\": \\\"read\\\",\\n  \\\"arguments\\\": {\\n    \\\"path\\\": \\\"<current working directory>\\\"\\n  }\\n}\",\"time\":{\"start\":1790684960849,\"end\":1790685015698}}}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-superseded-20260929-1224-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-superseded-20260929-1224-a1.stderr.log",
+    "stdout_bytes": 657,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "b00829b536ddb3106c8450d52238cd6076abb07f564e33d91d2b330e8de009e3"
+}
