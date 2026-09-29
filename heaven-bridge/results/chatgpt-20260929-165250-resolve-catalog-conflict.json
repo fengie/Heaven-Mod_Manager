@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-165250-resolve-catalog-conflict",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:52:30Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:57:24.351672+00:00",
+  "finished_at": "2026-09-29T16:57:24.771605+00:00",
+  "stdout": "",
+  "stderr": "catalog conflict marker block not found\r\nAt line:8 char:32\r\n+ ... ntains($old)){throw 'catalog conflict marker block not found'}; $t=$t ...\r\n+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (catalog conflict marker block not found:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : catalog conflict marker block not found\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165250-resolve-catalog-conflict.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165250-resolve-catalog-conflict.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 403,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "06e358196fc39d1ef4de833d143cb7e6a78291f8f885cc6b809d05f56c19f78a"
+}
