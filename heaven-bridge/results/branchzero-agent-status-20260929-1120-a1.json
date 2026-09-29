@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-agent-status-20260929-1120-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:20:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:23:25.986242+00:00",
+  "finished_at": "2026-09-29T11:23:54.658853+00:00",
+  "stdout": "{\n  \"ok\": true,\n  \"generatedAt\": \"2026-09-29T11:23:54.464Z\",\n  \"controller\": {\n    \"host\": \"heaven\",\n    \"bindHost\": \"127.0.0.1\",\n    \"port\": 7331,\n    \"repo\": \"C:\\\\Users\\\\Xxkan\\\\local-ai-workspaces\\\\mhw-mods\",\n    \"worktreeRoot\": \"C:\\\\Users\\\\Xxkan\\\\agent-worktrees\",\n    \"codex\": {\n      \"available\": true,\n      \"path\": \"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\faa963e871dd422c\\\\codex.exe\",\n      \"error\": null\n    },\n    \"stateVersion\": 2\n  },\n  \"telemetry\": {\n    \"running\": 3,\n    \"done\": 14,\n    \"failed\": 6,\n    \"stopped\": 0,\n    \"total\": 23,\n    \"successRate\": 70,\n    \"averageRuntimeMs\": 697996,\n    \"activeLeases\": 3,\n    \"integrationCandidates\": 1,\n    \"noChangeCompleted\": 16\n  },\n  \"workers\": [\n    {\n      \"id\": \"heaven\",\n      \"name\": \"heaven\",\n      \"kind\": \"local\",\n      \"status\": \"online\",\n      \"controller\": true,\n      \"lastHeartbeat\": \"2026-09-29T11:23:54.463Z\",\n      \"running\": 3,\n      \"capacity\": 8,\n      \"availableSlots\": 5,\n      \"cpus\": 32,\n      \"totalMemoryBytes\": 33514606592,\n      \"freeMemoryBytes\": 9070542848,\n      \"platform\": \"win32\",\n      \"arch\": \"x64\"\n    }\n  ],\n  \"roles\": {\n    \"manager\": {\n      \"label\": \"Manager\",\n      \"instructions\": \"Coordinate the swarm. Establish repository truth first, inspect active tasks/leases/branches, prevent duplicate implementation, assign bounded work, and leave a durable handoff.\"\n    },\n    \"main\": {\n      \"label\": \"Main Programmer\",\n      \"instructions\": \"Own the requested implementation end to end. Read repository doctrine first, keep one architecture boundary at a time, verify thoroughly, checkpoint frequently, and push useful work.\"\n    },\n    \"support\": {\n      \"label\": \"Support Agent\",\n      \"instructions\": \"Find a bounded, non-duplicative contribution that helps the primary objective. Prefer investigation, focused fixes, tests, or evidence that the primary agent can consume.\"\n    },\n    \"reviewer\": {\n      \"label\": \"Reviewer\",\n      \"instructions\": \"Review independently. Look for correctness, security, races, regressions, missing tests, stale assumptions, and unsupported verification claims. Patch only when justified.\"\n    },\n    \"test\": {\n      \"label\": \"Test Agent\",\n      \"instructions\": \"Design and run targeted tests for the requested boundary. Prefer adversarial and failure-path coverage. Do not weaken tests to make work pass.\"\n    },\n    \"integration\": {\n      \"label\": \"Integration Agent\",\n      \"instructions\": \"Evaluate candidate branches against canonical repository truth. Identify overlaps, verification status, stale context, and safe integration order. Never blindly merge.\"\n    },\n    \"recovery\": {\n      \"label\": \"Recovery Agent\",\n      \"instructions\": \"Recover interrupted or stale work. Re-establish exact branch state, preserve useful work, verify what is actually complete, and leave a precise continuation point.\"\n    },\n    \"release\": {\n      \"label\": \"Release Agent\",\n      \"instructions\": \"Validate release readiness, exact-SHA evidence, packaging, rollback/update behavior, and handoff state. Do not claim release readiness beyond verified evidence.\"\n    }\n  }\n}\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-agent-status-20260929-1120-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-agent-status-20260929-1120-a1.stderr.log",
+    "stdout_bytes": 3111,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "8b55949be21dfbbe4e6cb3fc93c6e5d4324c28172b71ed6341939b2eb0cbede1"
+}
