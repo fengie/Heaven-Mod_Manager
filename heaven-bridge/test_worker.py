@@ -262,6 +262,47 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertFalse(result["data"]["features"]["secret_input"]["available"])
         self.assertNotIn("gui_type_secret", result["data"]["actions"])
 
+    def test_secret_channel_requires_unc_and_live_encrypted_smb_connection(self):
+        with patch.dict(
+            os.environ,
+            {"HEAVEN_BRIDGE_SECRET_INBOX": r"C:\\local\\secrets", "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1"},
+            clear=False,
+        ):
+            self.assertFalse(hb.secret_channel_status()["available"])
+
+        encrypted = hb.subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":true}\n',
+            stderr="",
+        )
+        unencrypted = hb.subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='{"ServerName":"heaven2","ShareName":"secrets","Encrypted":false}\n',
+            stderr="",
+        )
+        unc = r"\\\\heaven2\\secrets"
+        with patch.object(hb.Path, "is_dir", return_value=True), \
+                patch.object(hb.subprocess, "run", return_value=encrypted):
+            self.assertTrue(hb.verify_secret_inbox_transport(unc))
+        with patch.object(hb.Path, "is_dir", return_value=True), \
+                patch.object(hb.subprocess, "run", return_value=unencrypted):
+            self.assertFalse(hb.verify_secret_inbox_transport(unc))
+
+    def test_secret_channel_ignores_legacy_encrypted_env_flag_without_verified_transport(self):
+        with patch.dict(
+            os.environ,
+            {
+                "HEAVEN_BRIDGE_SECRET_INBOX": r"\\\\heaven2\\secrets",
+                "HEAVEN_BRIDGE_SECRET_INBOX_ENCRYPTED": "1",
+            },
+            clear=False,
+        ), patch.object(hb, "verify_secret_inbox_transport", return_value=False):
+            result = hb.secret_channel_status()
+        self.assertFalse(result["available"])
+        self.assertFalse(result["transport_verified"])
+
     def test_secret_type_consumes_once_without_relaying_canary(self):
         canary = "CANARY-secret-never-persist-7f2b"
         handle = "a" * 48
@@ -298,7 +339,10 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
                 "COMPUTERNAME": "heaven",
             }
             typed = {}
-            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed),                     patch.object(hb, "desktop_focus_window", return_value={"focused": True}),                     patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                    patch.object(hb, "verify_secret_inbox_transport", return_value=True), \
+                    patch.object(hb, "desktop_focus_window", return_value={"focused": True}), \
+                    patch.object(hb, "desktop_type_text", side_effect=lambda p: typed.setdefault("value", p["text"]) or {"characters": 0}):
                 health = hb.run_job("health-secret-on", {"action": "health", "params": {}}, threading.Event())
                 self.assertTrue(health["data"]["features"]["secret_input"]["available"])
                 self.assertIn("gui_type_secret", health["data"]["actions"])
@@ -344,7 +388,8 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
                 }
                 (inbox / f"{handle}.json").write_text(json.dumps(doc), encoding="utf-8")
 
-            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed):
+            with patch.dict(os.environ, env), patch.object(hb, "SECRET_CONSUMED_DIR", consumed), \
+                    patch.object(hb, "verify_secret_inbox_transport", return_value=True):
                 expired_handle = "b" * 48
                 created = datetime.now(timezone.utc) - timedelta(minutes=3)
                 write_envelope(expired_handle, created=created, expires=created + timedelta(seconds=60))
