@@ -183,7 +183,7 @@ public sealed class AutomationServiceTests : IDisposable
             VALUES('stale-rule','Overlay','ModPair','a','b','a',NULL,'retirement regression',1,$t);
             INSERT INTO resource_providers(namespace,mod_id) VALUES('retirement:test','a');
             INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at)
-            VALUES('nativePC\\manifest-only.tex','b','manifest-hash','manifest-hash','stale-rule',$t);
+            VALUES('nativePC\manifest-only.tex','b','manifest-hash','manifest-hash','stale-rule',$t);
             INSERT INTO settings(key,value) VALUES('preview:a','preview');
             INSERT INTO settings(key,value) VALUES('visuals:a','[]');
             INSERT INTO settings(key,value) VALUES('update:a','2026-09-29T00:00:00Z');
