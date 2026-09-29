@@ -1,0 +1,21 @@
+{
+  "id": "----------------chatgpt-quota-circuit-test-20260929-1105-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:05:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:10:34.098458+00:00",
+  "finished_at": "2026-09-29T11:10:36.728786+00:00",
+  "stdout": "\n> heaven-agent-control@0.5.2 check\n> node --check server.mjs && node --check agentctl.mjs && node --check lib/control-core.mjs && node --check lib/federated-registry.mjs && node --check lib/liveness-scheduler.mjs && node --check lib/heaven-bridge-provider.mjs && node --check lib/heaven-bridge-runner.mjs && node --check lib/autopilot-core.mjs && node --check lib/prompt-templates.mjs\n\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-quota-circuit-test'...\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------chatgpt-quota-circuit-test-20260929-1105-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------chatgpt-quota-circuit-test-20260929-1105-a1.stderr.log",
+    "stdout_bytes": 387,
+    "stderr_bytes": 75,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "52acf85cda5747cad8918d860ed915fa8f18917f449fd4092a3606313c6e85f3"
+}
