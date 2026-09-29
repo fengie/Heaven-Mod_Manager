@@ -1544,6 +1544,12 @@ def _open_clipboard(user32, attempts=20):
 def desktop_clipboard_read():
     user32 = _require_windows_desktop()
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    user32.GetClipboardData.argtypes = [wintypes.UINT]
+    user32.GetClipboardData.restype = wintypes.HANDLE
+    kernel32.GlobalLock.argtypes = [wintypes.HANDLE]
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalUnlock.argtypes = [wintypes.HANDLE]
+    kernel32.GlobalUnlock.restype = wintypes.BOOL
     _open_clipboard(user32)
     try:
         if not user32.IsClipboardFormatAvailable(13):  # CF_UNICODETEXT
@@ -1569,12 +1575,20 @@ def desktop_clipboard_read():
 def desktop_clipboard_write(value):
     user32 = _require_windows_desktop()
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+    kernel32.GlobalAlloc.restype = wintypes.HANDLE
+    kernel32.GlobalLock.argtypes = [wintypes.HANDLE]
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalUnlock.argtypes = [wintypes.HANDLE]
+    kernel32.GlobalUnlock.restype = wintypes.BOOL
+    kernel32.GlobalFree.argtypes = [wintypes.HANDLE]
+    kernel32.GlobalFree.restype = wintypes.HANDLE
+    user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+    user32.SetClipboardData.restype = wintypes.HANDLE
     text = str(value if value is not None else "")
     if len(text) > 1000000:
         raise BridgeError("TEXT_TOO_LARGE", "clipboard_write is limited to 1000000 characters")
     raw = (text + "\0").encode("utf-16-le")
-    kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
-    kernel32.GlobalLock.restype = ctypes.c_void_p
     handle = kernel32.GlobalAlloc(0x0002, len(raw))  # GMEM_MOVEABLE
     if not handle:
         raise BridgeError("CLIPBOARD_WRITE_FAILED", "GlobalAlloc failed", {"win32_error": ctypes.get_last_error()})
