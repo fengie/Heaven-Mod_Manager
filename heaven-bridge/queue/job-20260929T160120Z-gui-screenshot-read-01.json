@@ -1,0 +1,13 @@
+{
+  "id": "job-20260929T160120Z-gui-screenshot-read-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:01:20Z",
+  "target_host": "heaven",
+  "action": "fs_read_binary",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenBridge\\screenshots\\job-20260929T155945Z-gui-screenshot-01-small.jpg",
+    "offset": 0,
+    "length": 100000
+  },
+  "priority": "high"
+}
