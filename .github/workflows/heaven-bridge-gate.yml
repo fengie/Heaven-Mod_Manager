@@ -19,6 +19,7 @@ on:
       - 'heaven-bridge/worker.py'
       - 'heaven-bridge/bootstrap.ps1'
       - 'heaven-bridge/manage.ps1'
+      - 'heaven-bridge/install-github-runner.ps1'
       - 'heaven-bridge/test_worker.py'
       - 'heaven-bridge/tests/**'
       - 'heaven-bridge/plugin/**'
