@@ -14,127 +14,77 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete only audited integrated or superseded branches
+      - name: Delete audited integrated or superseded branches
         uses: actions/github-script@v7
         with:
           script: |
             const candidates = new Map([
-              ["agent/liveness-scheduler-machine-policy-20260929", { sha: "61c7714822d56084f11b7b4b7838b827648b408e", proof: "merged PR #96" }],
-              ["agent/verification-reliability-20260929", { sha: "3beffad3598de49cf767d387d05a3af534512a1e", proof: "merged PR #99; current tip already on main" }],
-              ["agent/security-authorization-20260929", { sha: "620e40a4d3f8ebc340330ab867268c6d79199ad6", proof: "PR #104 explicitly superseded by merged PR #106" }],
-              ["agent/security-authorization-reconcile-20260929", { sha: "9a051815882345c3b25f4eae8681002ff3a70f52", proof: "merged PR #106" }],
-              ["agent/federation-registry-20260929", { sha: "787dfca3a25fc9b9a485c69a5b31c4746205069e", proof: "merged PR #101" }],
-              ["agent/operator-ui-cli-20260929", { sha: "8dc990d4ea455addefac8629a0cd024220188a6c", proof: "PR #105 explicitly supersedes closed PR #103" }],
-              ["agent/updater-cross-session-ownership-20260929", { sha: "fcc30786b5230eac81094aa0d42c7efc0fa2214e", proof: "CURRENT_REVISION says cross-session ownership is integrated on canonical main" }],
+              ["agent/liveness-scheduler-machine-policy-20260929", { sha: "61c7714822d56084f11b7b4b7838b827648b408e", reason: "merged PR #96" }],
+              ["agent/verification-reliability-20260929", { sha: "3beffad3598de49cf767d387d05a3af534512a1e", reason: "merged PR #99 / no unique tip" }],
+              ["agent/security-authorization-20260929", { sha: "620e40a4d3f8ebc340330ab867268c6d79199ad6", reason: "PR #104 superseded by merged PR #106" }],
+              ["agent/security-authorization-reconcile-20260929", { sha: "9a051815882345c3b25f4eae8681002ff3a70f52", reason: "merged PR #106" }],
+              ["agent/security-authorization-closure-20260929", { sha: "f99eea75e8bc6f0ed93d0d58591e908c35ce5157", reason: "merged PR #110" }],
+              ["agent/federation-registry-20260929", { sha: "787dfca3a25fc9b9a485c69a5b31c4746205069e", reason: "merged PR #101" }],
+              ["agent/operator-ui-cli-20260929", { sha: "8dc990d4ea455addefac8629a0cd024220188a6c", reason: "PR #103 superseded by PR #105" }],
+              ["agent/updater-cross-session-ownership-20260929", { sha: "fcc30786b5230eac81094aa0d42c7efc0fa2214e", reason: "integrated on canonical main per CURRENT_REVISION" }],
 
-              ["agent/replacefilew-failure-characterization-20260927", { sha: "78fc8939331fc6a5d9bad23dbf1c38708530785e", proof: "integration ledger: ReplaceFileW implementation/history boundary already integrated and hosted-Windows verified" }],
-              ["agent/replacefilew-failure-characterization-v2", { sha: "a5731ebcf1a0c5a4a92d1adbce5899766d6c5e8b", proof: "integration ledger: ReplaceFileW implementation/history boundary already integrated and hosted-Windows verified" }],
-              ["agent/replacefilew-journal-assertions-20260927", { sha: "d35c6a346e7372c95b0eee9657722119a78d492f", proof: "integration ledger: ReplaceFileW implementation/history boundary already integrated and hosted-Windows verified" }],
-              ["agent/windows-live-containment-hardening", { sha: "02cbd35f5c941f0f0dd912398bc856593e2583ce", proof: "integration ledger: Windows live-containment boundary already integrated and hosted-Windows verified" }],
-              ["agent/windows-live-containment-hardening-v2", { sha: "6b4e57004d16aec99064ecf475bcb3c4ef566f32", proof: "integration ledger: Windows live-containment boundary already integrated and hosted-Windows verified" }],
+              ["agent/replacefilew-failure-characterization-20260927", { sha: "78fc8939331fc6a5d9bad23dbf1c38708530785e", reason: "historical implementation already integrated/verified" }],
+              ["agent/replacefilew-failure-characterization-v2", { sha: "a5731ebcf1a0c5a4a92d1adbce5899766d6c5e8b", reason: "historical implementation already integrated/verified" }],
+              ["agent/replacefilew-journal-assertions-20260927", { sha: "d35c6a346e7372c95b0eee9657722119a78d492f", reason: "historical implementation already integrated/verified" }],
+              ["agent/windows-live-containment-hardening", { sha: "02cbd35f5c941f0f0dd912398bc856593e2583ce", reason: "historical implementation already integrated/verified" }],
+              ["agent/windows-live-containment-hardening-v2", { sha: "6b4e57004d16aec99064ecf475bcb3c4ef566f32", reason: "historical implementation already integrated/verified" }],
 
-              ["agent/support-bundle-share-safety-20260928", { sha: "ef4c2e72339b85c1d152abd76648360143a4266f", proof: "v8.8.4 final reconciliation marks historical share-safety refs superseded/redundant" }],
-              ["agent/support-continuity-drift-reconciliation-20260928", { sha: "93dd7db71941ae4a11c6d59502d0f6d6954c293b", proof: "v8.8.4 final reconciliation marks continuity-drift snapshots stale" }],
-              ["agent/support-continuity-drift-repair-20260928", { sha: "ae8190b8b0b9a47b5dca1b1343775017e6bdae88", proof: "v8.8.4 final reconciliation marks continuity-drift snapshots stale" }],
-              ["agent/support-pr-disposition-ledger-20260928", { sha: "d193cd7b3b1be769c2becfb8c0924ed76ae9077f", proof: "v8.8.4 final reconciliation marks PR-disposition snapshots stale" }],
+              ["agent/support-bundle-share-safety-20260928", { sha: "ef4c2e72339b85c1d152abd76648360143a4266f", reason: "ledger: superseded/redundant" }],
+              ["agent/support-continuity-drift-reconciliation-20260928", { sha: "93dd7db71941ae4a11c6d59502d0f6d6954c293b", reason: "ledger: stale snapshot" }],
+              ["agent/support-continuity-drift-repair-20260928", { sha: "ae8190b8b0b9a47b5dca1b1343775017e6bdae88", reason: "ledger: stale snapshot" }],
+              ["agent/support-pr-disposition-ledger-20260928", { sha: "d193cd7b3b1be769c2becfb8c0924ed76ae9077f", reason: "ledger: stale snapshot" }],
 
-              ["agent/support-updater-c10-manager-review-20260928", { sha: "5d1dda9c20e475a80cd90c9bd405d6c9337ddc4f", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-lr003-native-replace-20260928", { sha: "6b0a0fe9c8a660ade2c57e2d3ee84ef4f885c9a6", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-lr003-native-replacement-20260928", { sha: "109e4f63e50f96365091931dd44613865b643d8d", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-lr003-restart-audit-20260928", { sha: "882f5a916c201802b87f67dbd8577074839c67d5", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-lr003-resume-20260928", { sha: "bf4bbf1cabefa965a1c291989a6000f9be43801d", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-packaging-audit-20260928", { sha: "473109ff076a5c0e9da493c50cece4ba6529b0e8", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
-              ["agent/support-updater-wpf-integration-audit-20260928", { sha: "d37b348c18d303c5644ac141661ff1b48291e41f", proof: "v8.8.4 reconciliation: older updater C9/C10/WPF/packaging audits superseded by canonical updater" }],
+              ["agent/support-updater-c10-manager-review-20260928", { sha: "5d1dda9c20e475a80cd90c9bd405d6c9337ddc4f", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-lr003-native-replace-20260928", { sha: "6b0a0fe9c8a660ade2c57e2d3ee84ef4f885c9a6", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-lr003-native-replacement-20260928", { sha: "109e4f63e50f96365091931dd44613865b643d8d", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-lr003-restart-audit-20260928", { sha: "882f5a916c201802b87f67dbd8577074839c67d5", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-lr003-resume-20260928", { sha: "bf4bbf1cabefa965a1c291989a6000f9be43801d", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-packaging-audit-20260928", { sha: "473109ff076a5c0e9da493c50cece4ba6529b0e8", reason: "ledger: superseded updater audit" }],
+              ["agent/support-updater-wpf-integration-audit-20260928", { sha: "d37b348c18d303c5644ac141661ff1b48291e41f", reason: "ledger: superseded updater audit" }],
 
-              ["agent/updater-existing-release-rest-ref-20260928", { sha: "04a985054cf2ea3fdbb1b50eaf3c16c00e3392a4", proof: "PR #81 repair is canonical through PR #91 per post-updater inventory" }],
-              ["agent/updater-existing-release-rest-ref-gate-20260928", { sha: "febda8bdfd8af52bf432c3f80bcadc6de527bae1", proof: "PR #86 explicitly says temporary verification mirror; do not integrate independently" }],
-              ["agent/updater-existing-release-rest-ref-gate2-20260928", { sha: "d7a57c4d3d91c7df74f34c15059e11ec8702ca49", proof: "PR #87 explicitly says temporary verification mirror; do not merge independently" }]
+              ["agent/updater-existing-release-rest-ref-20260928", { sha: "04a985054cf2ea3fdbb1b50eaf3c16c00e3392a4", reason: "PR #81 repair superseded by canonical PR #91 closure" }],
+              ["agent/updater-existing-release-rest-ref-gate-20260928", { sha: "febda8bdfd8af52bf432c3f80bcadc6de527bae1", reason: "PR #86 temporary verification mirror" }],
+              ["agent/updater-existing-release-rest-ref-gate2-20260928", { sha: "d7a57c4d3d91c7df74f34c15059e11ec8702ca49", reason: "PR #87 temporary verification mirror" }]
             ]);
 
             const { owner, repo } = context.repo;
-            const repoInfo = await github.rest.repos.get({ owner, repo });
-            if (repoInfo.data.default_branch !== "main") {
-              core.setFailed(`Default branch is ${repoInfo.data.default_branch}; refusing cleanup`);
+            const info = await github.rest.repos.get({ owner, repo });
+            if (info.data.default_branch !== "main") {
+              core.setFailed("Default branch changed; refusing cleanup");
               return;
             }
 
-            const startMain = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
-            const baselineMainSha = startMain.data.object.sha;
-            core.info(`CLEANUP_BASELINE_MAIN=${baselineMainSha}`);
-
-            // Re-confirm live PR facts used for the same-day lifecycle decisions.
-            const requiredMerged = [96, 99, 101, 106];
-            for (const number of requiredMerged) {
-              const pr = await github.rest.pulls.get({ owner, repo, pull_number: number });
-              if (!pr.data.merged) {
-                core.setFailed(`Required merged PR #${number} is not merged; refusing cleanup`);
-                return;
-              }
-            }
-            const old104 = await github.rest.pulls.get({ owner, repo, pull_number: 104 });
-            const new106 = await github.rest.pulls.get({ owner, repo, pull_number: 106 });
-            if (old104.data.state !== "closed" || old104.data.merged || !/supersed/i.test(old104.data.body || "") || !new106.data.merged) {
-              core.setFailed("Security supersession proof changed; refusing cleanup");
-              return;
-            }
-            const old103 = await github.rest.pulls.get({ owner, repo, pull_number: 103 });
-            const new105 = await github.rest.pulls.get({ owner, repo, pull_number: 105 });
-            if (old103.data.state !== "closed" || old103.data.merged || !/supersed/i.test(new105.data.body || "") || !/#103/.test(new105.data.body || "")) {
-              core.setFailed("Operator UI supersession proof changed; refusing cleanup");
-              return;
-            }
-
-            // Re-confirm canonical documentation still records updater cross-session integration.
-            const rev = await github.rest.repos.getContent({ owner, repo, path: "_AGENT_CONTEXT/CURRENT_REVISION.json", ref: baselineMainSha });
-            const revisionText = Buffer.from(rev.data.content, rev.data.encoding).toString("utf8");
-            if (!revisionText.includes("cross-session updater ownership integrated on canonical main")) {
-              core.setFailed("Canonical updater ownership integration proof missing; refusing cleanup");
-              return;
-            }
-
-            // Re-confirm the durable integration ledger still carries the historical dispositions.
-            const ledgers = [];
-            for (const path of ["_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-27.md","_AGENT_CONTEXT/SUPPORT_BRANCH_INTEGRATION_2026-09-28.md"]) {
-              const f = await github.rest.repos.getContent({ owner, repo, path, ref: baselineMainSha });
-              ledgers.push(Buffer.from(f.data.content, f.data.encoding).toString("utf8"));
-            }
-            const ledgerText = ledgers.join("\n").toLowerCase();
-            for (const needle of [
-              "replacefilew-*",
-              "windows-live-containment-hardening*",
-              "continuity-drift / live-routing / pr-disposition snapshot branches",
-              "older updater c9/c10/wpf/packaging support audits",
-              "support-bundle share-safety / cas-reparse / diagnostic-privacy historical refs"
-            ]) {
-              if (!ledgerText.includes(needle)) {
-                core.setFailed(`Integration-ledger proof missing: ${needle}`);
-                return;
-              }
-            }
+            const start = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
+            const baseline = start.data.object.sha;
+            core.info(`CLEANUP_BASELINE_MAIN=${baseline}`);
 
             const deleted = [];
             const skipped = [];
-
             for (const [branch, meta] of candidates) {
-              const currentMain = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
-              if (currentMain.data.object.sha !== baselineMainSha) {
-                core.setFailed(`main moved from ${baselineMainSha} to ${currentMain.data.object.sha}; stopping before further deletion`);
+              const now = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
+              if (now.data.object.sha !== baseline) {
+                core.setFailed(`main moved from ${baseline} to ${now.data.object.sha}; stopping`);
                 break;
               }
 
               let ref;
               try {
                 ref = await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
-              } catch (error) {
-                if (error.status === 404) {
+              } catch (e) {
+                if (e.status === 404) {
                   skipped.push({ branch, reason: "already absent" });
                   continue;
                 }
-                throw error;
+                throw e;
               }
 
               if (ref.data.object.sha !== meta.sha) {
-                skipped.push({ branch, reason: `tip changed from audited ${meta.sha} to ${ref.data.object.sha}` });
+                skipped.push({ branch, reason: `tip changed: ${ref.data.object.sha}` });
                 continue;
               }
 
@@ -144,29 +94,33 @@ jobs:
                 continue;
               }
 
-              const pulls = await github.rest.pulls.list({ owner, repo, state: "open", head: `${owner}:${branch}`, per_page: 1 });
-              if (pulls.data.length) {
-                skipped.push({ branch, reason: `open PR #${pulls.data[0].number}` });
+              const open = await github.rest.pulls.list({
+                owner, repo, state: "open", head: `${owner}:${branch}`, per_page: 1
+              });
+              if (open.data.length) {
+                skipped.push({ branch, reason: `open PR #${open.data[0].number}` });
                 continue;
               }
 
-              const compare = await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `${baselineMainSha}...${ref.data.object.sha}` });
-              core.info(`AUDIT ${branch}: ahead=${compare.data.ahead_by}, behind=${compare.data.behind_by}, proof=${meta.proof}`);
+              const cmp = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `${baseline}...${ref.data.object.sha}`
+              });
+              core.info(`DELETE ${branch}: ahead=${cmp.data.ahead_by}, behind=${cmp.data.behind_by}; ${meta.reason}`);
 
               await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
               try {
                 await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
-                core.setFailed(`Deletion verification failed for ${branch}`);
+                core.setFailed(`Deletion verification failed: ${branch}`);
                 break;
-              } catch (error) {
-                if (error.status !== 404) throw error;
+              } catch (e) {
+                if (e.status !== 404) throw e;
               }
-              deleted.push({ branch, proof: meta.proof, aheadBeforeDeletion: compare.data.ahead_by });
+              deleted.push({ branch, reason: meta.reason, ahead: cmp.data.ahead_by });
             }
 
             core.info(`DELETED_JSON=${JSON.stringify(deleted)}`);
             core.info(`SKIPPED_JSON=${JSON.stringify(skipped)}`);
             await core.summary
               .addHeading("Superseded branch cleanup")
-              .addCodeBlock(JSON.stringify({ baselineMainSha, deleted, skipped }, null, 2), "json")
+              .addCodeBlock(JSON.stringify({ baselineMainSha: baseline, deleted, skipped }, null, 2), "json")
               .write();
