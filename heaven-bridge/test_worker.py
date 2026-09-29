@@ -22,6 +22,81 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertIsInstance(info["data"]["elevated"], bool)
         self.assertEqual(health["data"]["elevated"], hb.is_process_elevated())
 
+    def test_wait_for_file_success_and_soft_timeout(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            target = root / "ready.flag"
+            target.write_text("ok", encoding="utf-8")
+            with patch.object(hb, "allowed_roots", return_value=[root]):
+                ready = hb.run_job(
+                    "wait-file-ready",
+                    {
+                        "action": "wait_for",
+                        "params": {
+                            "condition": "file_exists",
+                            "path": str(target),
+                            "timeout_seconds": 0.2,
+                            "interval_ms": 50,
+                        },
+                    },
+                    threading.Event(),
+                )
+                self.assertTrue(ready["data"]["satisfied"])
+                self.assertFalse(ready["data"]["timed_out"])
+                self.assertTrue(ready["data"]["observed"]["exists"])
+
+                missing = hb.run_job(
+                    "wait-file-missing",
+                    {
+                        "action": "wait_for",
+                        "params": {
+                            "condition": "file_exists",
+                            "path": str(root / "missing.flag"),
+                            "timeout_seconds": 0.05,
+                            "interval_ms": 50,
+                            "soft_timeout": True,
+                        },
+                    },
+                    threading.Event(),
+                )
+                self.assertFalse(missing["data"]["satisfied"])
+                self.assertTrue(missing["data"]["timed_out"])
+
+    def test_wait_for_honors_cancellation_and_advertises_capability(self):
+        event = threading.Event()
+        event.set()
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.wait_for_condition(
+                {
+                    "condition": "session_running",
+                    "session_id": "missing-session",
+                    "timeout_seconds": 1,
+                },
+                event,
+            )
+        self.assertEqual(ctx.exception.code, "WAIT_CANCELLED")
+
+        health = hb.run_job("health-wait", {"action": "health", "params": {}}, threading.Event())
+        self.assertIn("wait_for", health["data"]["actions"])
+
+    def test_wait_for_process_exists_reports_identity(self):
+        result = hb.run_job(
+            "wait-process",
+            {
+                "action": "wait_for",
+                "params": {
+                    "condition": "process_exists",
+                    "pid": os.getpid(),
+                    "timeout_seconds": 0.2,
+                    "interval_ms": 50,
+                },
+            },
+            threading.Event(),
+        )
+        self.assertTrue(result["data"]["satisfied"])
+        self.assertTrue(result["data"]["observed"]["exists"])
+        self.assertEqual(result["data"]["observed"]["pid"], os.getpid())
+
     def test_canonical_hash_ignores_signature_only(self):
         base = {
             "id": "x1",
