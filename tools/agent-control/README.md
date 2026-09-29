@@ -8,7 +8,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
-## What v0.5.7 does
+## What v0.6.0 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is preferred when already available, but local dispatch defaults to a direct non-Work worker path so execution does not stop merely because arbitrary ChatGPT conversations cannot be auto-created.
@@ -33,7 +33,7 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
-- Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
+- Adds **Perpetual Machine** mode: one click persists a standing direction and continuously launches fresh `usual-swarm` generations whenever the previous generation and its recovery tail are drained.\n- Perpetual Machine treats progress, not mere process heartbeat, as liveness: stale/stuck controller-owned lanes are takeover-preserved, authoritatively stopped, and replaced one-for-one by a recovery worker.\n- Provider usage-limit/capacity events suspend replacement/launch activity until the existing provider-capacity circuit clears; repeated rapid wave starts trigger exponential restart-intensity cooldown instead of a respawn storm.\n- Perpetual intent, generation/replacement counts, wave history, cooldown state, last reason/error, and next-action time are durable control-plane state, so a manager process restart resumes the loop automatically.\n- Installs a separate Windows Agent Control watchdog with a single-instance lock, HTTP health probes, ownership-verified hung-process restart, durable restart history, exponential cooldown, Task Scheduler restart-on-failure, and Startup-folder fallback. This provides a second supervision layer if the manager process itself dies.\n- Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
 - Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
 - Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
@@ -174,7 +174,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_WORKTREE_ROOT` — default `%USERPROFILE%\agent-worktrees`
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
-- `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
+- `AGENT_CONTROL_AUTOPILOT_TICK_MS` — bounded autopilot control-loop cadence; default `4000` ms, minimum `1000`\n- `AGENT_CONTROL_PERPETUAL_SWARM_TICK_MS` — Perpetual Machine supervisor cadence; default `5000` ms, minimum `2000`
 - `AGENT_CONTROL_HEAVEN_RELAY_DIR` ? optional override for the dedicated local relay checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch; when unset, Agent Control auto-discovers the documented `%USERPROFILE%\HeavenBridgeRepo` checkout if it exists
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
 - `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
@@ -202,7 +202,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - On `heaven2`, `auto` placement prefers `heaven`. Dispatch fails closed if the dedicated relay checkout or authenticated worker heartbeat cannot be proven healthy; it does not silently fall back to heavy execution on `heaven2`.
 - Governed engineering-autopilot dispatch explicitly authorizes only the scoped remote repository work it creates. The Heaven runner does not push or publish: it executes Codex in an isolated remote checkout, transfers a binary patch back, and commits only in the controller-owned local worktree.
 - Stopping a bridge-backed worker first requires an authoritative cancellation result for the owned remote job before terminating the local runner process or releasing its lease.
-- Autopilot stops at stale ownership, missing structured verification/review evidence, worker-capacity or lease preflight failure, exhausted repair budget, degraded/read-only/emergency state, and the final integration approval boundary.
+- Autopilot stops at stale ownership, missing structured verification/review evidence, worker-capacity or lease preflight failure, exhausted repair budget, degraded/read-only/emergency state, and the final integration approval boundary.\n- Perpetual Machine is deliberately different from bounded autopilot: ordinary pause/read-only/drain/emergency conditions suspend it without erasing durable intent; provider capacity and restart storms cool down and retry later; explicit Perpetual Stop is the operator boundary that disables future waves/replacements. Existing active workers are not killed by Perpetual Stop.
 - The controller does not merge, release, or publish branches automatically.
 - Integration queue state is advisory until a reviewer/integration agent and the repository's own verification requirements approve the work.
 
