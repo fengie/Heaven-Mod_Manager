@@ -1,0 +1,9 @@
+{
+  "id": "ctrl-cancel-duplicate-runner-start-20260929-112100",
+  "state": "running",
+  "action": "cancel",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:48:12.074773+00:00"
+}
