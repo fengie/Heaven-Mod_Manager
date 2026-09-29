@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-find-apppaths-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$ErrorActionPreference='Stop'\n$root = Join-Path $env:TEMP 'mhw-apppaths-inspect'\nif (Test-Path $root) { Remove-Item -Recurse -Force $root }\ngit clone --depth 1 https://github.com/fengie/mhw-mods.git $root | Out-Null\ngit -C $root grep -n \"AppPaths\" -- \"*.cs\"\ngit -C $root grep -n \"MHW_MANAGER_HOME\\|MOD_MANAGER_HOME\" -- \"*.cs\""
+  },
+  "created_at": "2026-09-29T08:52:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
