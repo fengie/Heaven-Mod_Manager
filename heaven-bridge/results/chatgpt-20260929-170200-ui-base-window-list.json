@@ -1,0 +1,287 @@
+{
+  "id": "chatgpt-20260929-170200-ui-base-window-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T17:01:30Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T17:01:05.473711+00:00",
+  "finished_at": "2026-09-29T17:01:05.474731+00:00",
+  "host": "heaven2",
+  "action": "window_list",
+  "data": [
+    {
+      "hwnd": 395818,
+      "pid": 36360,
+      "title": "Runtime Broker",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8000,
+        "y": -8000,
+        "width": 0,
+        "height": 18
+      }
+    },
+    {
+      "hwnd": 524438,
+      "pid": 29984,
+      "title": "ChatGPT",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -7,
+        "y": -7,
+        "width": 1550,
+        "height": 926
+      }
+    },
+    {
+      "hwnd": 19530006,
+      "pid": 1256,
+      "title": "Universal Mod Manager — Monster Hunter: World",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 28,
+        "y": 6,
+        "width": 1480,
+        "height": 900
+      }
+    },
+    {
+      "hwnd": 2031888,
+      "pid": 10256,
+      "title": "Downloads - File Explorer",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -6,
+        "y": 0,
+        "width": 781,
+        "height": 918
+      }
+    },
+    {
+      "hwnd": 15271470,
+      "pid": 10256,
+      "title": "mods - File Explorer",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 66864,
+      "pid": 9288,
+      "title": "OmApSvcBroker",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 51,
+        "y": 51,
+        "width": 2,
+        "height": 2
+      }
+    },
+    {
+      "hwnd": 394436,
+      "pid": 27532,
+      "title": "_SoftwareUpdateNotificationService_Window",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "hwnd": 986266,
+      "pid": 36916,
+      "title": "C:\\Windows\\system32\\cmd.exe",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 22219156,
+      "pid": 36916,
+      "title": "Command Prompt",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 12586190,
+      "pid": 36916,
+      "title": "Windows PowerShell",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 657738,
+      "pid": 8836,
+      "title": "AudioRelay",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 24316522,
+      "pid": 8892,
+      "title": "Administrator: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 66400,
+      "pid": 18280,
+      "title": "fengie/mhw-mods - Brave",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 67448,
+      "pid": 29232,
+      "title": "#requests | Ategenos - Discord",
+      "visible": true,
+      "minimized": true,
+      "rect": {
+        "x": -25600,
+        "y": -25600,
+        "width": 159,
+        "height": 27
+      }
+    },
+    {
+      "hwnd": 330294,
+      "pid": 17920,
+      "title": "InGameOverlay",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8000,
+        "y": -8000,
+        "width": 1536,
+        "height": 960
+      }
+    },
+    {
+      "hwnd": 67278,
+      "pid": 28360,
+      "title": "Nahimic",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 1,
+        "width": 900,
+        "height": 642
+      }
+    },
+    {
+      "hwnd": 67186,
+      "pid": 22920,
+      "title": "Nahimic",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 311,
+        "y": 131,
+        "width": 914,
+        "height": 650
+      }
+    },
+    {
+      "hwnd": 66742,
+      "pid": 22172,
+      "title": "MSI OLED Service",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 51,
+        "y": 51,
+        "width": 13,
+        "height": 13
+      }
+    },
+    {
+      "hwnd": 590106,
+      "pid": 19228,
+      "title": "Windows Input Experience",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 960
+      }
+    },
+    {
+      "hwnd": 1116658,
+      "pid": 39800,
+      "title": "Razer Cortex Overlay",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": -8000,
+        "y": -8000,
+        "width": 1536,
+        "height": 960
+      }
+    },
+    {
+      "hwnd": 65890,
+      "pid": 10256,
+      "title": "Program Manager",
+      "visible": true,
+      "minimized": false,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 960
+      }
+    }
+  ],
+  "job_hash": "625ef331fb1eb6c00ed528a3ab7710a8fe39a8cc3602551113fdba8a9d4fbb7a"
+}
