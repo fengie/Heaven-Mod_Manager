@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0907-issue132-conflicts",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:07:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "high",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows",
+    "timeout_seconds": 120,
+    "command": "git diff -- src/MhwModManager.App/MainWindow.xaml src/MhwModManager.App/ViewModels/MainWindowViewModel.cs src/MhwModManager.Automation/CrashBisectorEngine.cs src/MhwModManager.Automation/SmartInboxService.cs tools/MhwModManager.SelfTest/Program.cs"
+  }
+}
