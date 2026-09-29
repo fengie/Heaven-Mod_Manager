@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-heaven-runner-live-diag-20260929-1220",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:20:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T12:25:21.279706+00:00",
+  "finished_at": "2026-09-29T12:25:24.724287+00:00",
+  "stdout": "{\"listener_count\":1,\"listeners\":[{\"ProcessId\":52236,\"ParentProcessId\":15352,\"ExecutablePath\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Listener.exe\",\"CreationDate\":\"\\/Date(1790682813777)\\/\",\"CommandLine\":\"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\\\\\bin\\\\Runner.Listener.exe\\\"  run \"}],\"worker_count\":1,\"workers\":[{\"ProcessId\":63784,\"ParentProcessId\":52236,\"ExecutablePath\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Worker.exe\",\"CreationDate\":\"\\/Date(1790684415620)\\/\",\"CommandLine\":\"\\\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\\\\bin\\\\Runner.Worker.exe\\\" spawnclient 3060 2676\"}],\"scheduled_task\":null,\"startup_fallback_exists\":true,\"startup_fallback\":\"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\HeavenGitHubActionsRunner.vbs\",\"runner_dir\":\"C:\\\\Users\\\\Xxkan\\\\actions-runner-heaven\"}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-heaven-runner-live-diag-20260929-1220.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-heaven-runner-live-diag-20260929-1220.stderr.log",
+    "stdout_bytes": 849,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1364424d696ea9080d1391b5d345d155b20f714c9e85baabcf13e59fd495482e"
+}
