@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-120930-hcp-index-exact-gate",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:09:43.164288+00:00"
+  "updated_at": "2026-09-29T12:10:09.266081+00:00",
+  "exit_code": 0
 }
