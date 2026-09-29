@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-opencode-run-help-a4",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120,
+    "command": "$oc='C:\\Users\\Xxkan\\local-ai-tools\\opencode\\package\\bin\\opencode.exe'; Write-Output '---RUN HELP---'; & $oc run --help 2>&1 | Select-Object -First 220; Write-Output '---DEBUG HELP---'; & $oc debug --help 2>&1 | Select-Object -First 160"
+  },
+  "created_at": "2026-09-29T08:48:00Z",
+  "ttl_seconds": 1800,
+  "priority": "highest"
+}
