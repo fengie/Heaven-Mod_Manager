@@ -1,0 +1,21 @@
+{
+  "id": "000-releasefix-policybranch-20260929-104705",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:05Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:48:08.356958+00:00",
+  "finished_at": "2026-09-29T10:48:10.783449+00:00",
+  "stdout": "HEAD is now at 51af44b Test release policy workflow relevance\nPASS: updater release publication policy\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch            fix/release-classifier-workflow-scope-20260929 -> FETCH_HEAD\nPreparing worktree (detached HEAD 51af44b)\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-releasefix-policybranch-20260929-104705.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\000-releasefix-policybranch-20260929-104705.stderr.log",
+    "stdout_bytes": 103,
+    "stderr_bytes": 165,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "fcc1c7e86cdc6272d7c91a39931c1d6a44524ce4c0b3d12129bcfb922d1355d3"
+}
