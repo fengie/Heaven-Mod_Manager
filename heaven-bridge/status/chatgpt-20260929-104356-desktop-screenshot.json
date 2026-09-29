@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-104356-desktop-screenshot",
-  "state": "running",
+  "state": "completed",
   "action": "screenshot",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:45:42.567904+00:00"
+  "updated_at": "2026-09-29T10:45:55.284225+00:00",
+  "exit_code": 0
 }
