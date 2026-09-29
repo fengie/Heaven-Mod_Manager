@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T160120Z-gui-screenshot-read-01",
+  "state": "running",
+  "action": "fs_read_binary",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:01:29.558850+00:00"
+}
