@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-103410-releasefix-authcheck",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:34:10Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T10:34:36.278539+00:00",
+  "finished_at": "2026-09-29T10:34:36.901450+00:00",
+  "stdout": "GH_TOKEN_PRESENT=False\r\nGITHUB_TOKEN_PRESENT=False\r\nWINGET_PRESENT=True\r\nCHOCO_PRESENT=False\r\nSCOOP_PRESENT=False\r\nGIT_CREDENTIAL_USER_PRESENT=True\r\nGIT_CREDENTIAL_SECRET_PRESENT=True\r\nCURL_PRESENT=True\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-103410-releasefix-authcheck.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-103410-releasefix-authcheck.stderr.log",
+    "stdout_bytes": 204,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "f61b1c9adc6c7cf144606da109b631e7e4e814b4945b5d738190d40b921dd071"
+}
