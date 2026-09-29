@@ -721,7 +721,9 @@ function refreshState() {
         agent.interruptedAt = isoNow();
         agent.updatedAt = isoNow();
         agent.completionEvidence = null;
-        const noWorkDecision = noWorkTerminationDecision(agent);
+        const noWorkDecision = agent.worktreeClean === true
+          ? noWorkTerminationDecision(agent)
+          : { noWork: false, retry: false, reason: "worktree-cleanliness-unproven" };
         if (noWorkDecision.noWork) {
           markNoWorkRecoveryPending(state, agent, noWorkDecision, "owned-process-missing-no-work");
           addEvent(state, "agent.no-work", `${agent.id} disappeared after producing no substantive work`, {
@@ -1372,7 +1374,9 @@ async function deployOne({
     // Collect asynchronous Git evidence before opening the authoritative state
     // mutation. Never carry a whole-registry snapshot across an await.
     let currentSha = null;
+    let worktreeStatus = null;
     try { currentSha = await git(["rev-parse", branchName]); } catch {}
+    try { worktreeStatus = await git(["status", "--porcelain"], worktree); } catch {}
 
     const current = loadState();
     const item = current.agents.find(candidate => candidate.id === id);
@@ -1382,12 +1386,19 @@ async function deployOne({
       item.signal = signal || null;
       item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
       item.currentSha = currentSha || item.currentSha || null;
+      if (worktreeStatus !== null) {
+        item.worktreeClean = worktreeStatus.length === 0;
+        item.worktreeDirty = worktreeStatus.length > 0;
+        item.worktreeStatusSummary = worktreeStatus ? worktreeStatus.slice(0, 4000) : "";
+      }
       const authoritativeStatus = classifyAuthoritativeExit(item, code);
       item.status = authoritativeStatus;
       item.finishedAt = isoNow();
       item.updatedAt = isoNow();
       item.heartbeatAt = item.finishedAt;
-      const noWorkDecision = noWorkTerminationDecision(item);
+      const noWorkDecision = item.worktreeClean === true
+        ? noWorkTerminationDecision(item)
+        : { noWork: false, retry: false, reason: "worktree-cleanliness-unproven" };
       if (noWorkDecision.noWork) {
         item.status = "failed";
         markNoWorkRecoveryPending(current, item, noWorkDecision, `no-work-process-exit:${code ?? "unknown"}`);
@@ -1582,6 +1593,32 @@ async function recoverNoWorkAgent(agentId) {
     }
 
     const task = state.tasks.find(item => item.id === source.taskId) || null;
+    if (source.worktree && fs.existsSync(source.worktree)) {
+      const residual = await git(["status", "--porcelain"], source.worktree);
+      if (residual) {
+        source.recoveryStatus = "retry-blocked";
+        source.recoveryLastError = "Dead worker worktree contains uncommitted changes; refusing automatic cleanup or duplicate dispatch.";
+        source.recoveryNextAt = null;
+        if (task) {
+          task.status = "blocked";
+          task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-worktree-became-dirty"]));
+          task.nextAction = "Inspect and preserve the dead worker worktree before retrying.";
+        }
+        addNotification(state, {
+          severity: "error",
+          title: "Automatic retry preserved unexpected work",
+          message: `${source.roleLabel || source.id} has uncommitted work in its worktree, so Agent Control refused to delete it or create a competing replacement.`,
+          action: { type: "inspect-agent", agentId: source.id },
+          dedupeKey: `no-work-dirty-worktree:${source.id}`
+        });
+        saveState(state);
+        return null;
+      }
+      await git(["worktree", "remove", "--force", source.worktree]);
+      await git(["worktree", "prune"]);
+      source.worktreeReleasedAt = isoNow();
+    }
+
     const replacement = await deployOne({
       role: rolePresets[source.role] ? source.role : "support",
       task: source.task || task?.objective || "Resume the interrupted execution assignment and complete it with verified evidence.",
