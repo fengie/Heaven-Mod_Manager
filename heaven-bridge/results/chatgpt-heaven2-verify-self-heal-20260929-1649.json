@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-heaven2-verify-self-heal-20260929-1649",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:48:50Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T16:49:05.393933+00:00",
+  "finished_at": "2026-09-29T16:49:09.816546+00:00",
+  "stdout": "{\r\n    \"healthy\":  true,\r\n    \"host\":  \"heaven2\",\r\n    \"repo\":  \"C:\\\\Users\\\\fengc\\\\HeavenBridgeRepo\",\r\n    \"branch\":  \"heaven-bridge\",\r\n    \"tracked_or_untracked_changes\":  [\r\n\r\n                                     ],\r\n    \"canonical_worker_count\":  1,\r\n    \"canonical_worker_pids\":  [\r\n                                  3240\r\n                              ],\r\n    \"watchdog_count\":  1,\r\n    \"watchdog_pids\":  [\r\n                          47656\r\n                      ],\r\n    \"legacy_worker_count\":  0,\r\n    \"legacy_worker_pids\":  [\r\n\r\n                           ],\r\n    \"source_matches_runtime\":  true,\r\n    \"watchdog_source_matches_runtime\":  true,\r\n    \"local_heartbeat\":  {\r\n                            \"exists\":  true,\r\n                            \"updated_at\":  \"2026-09-29T16:49:02.524430+00:00\",\r\n                            \"pid\":  3240,\r\n                            \"age_seconds\":  4,\r\n                            \"parse_error\":  null\r\n                        },\r\n    \"loop_progress\":  {\r\n                          \"exists\":  true,\r\n                          \"updated_at\":  \"2026-09-29T16:49:04.312722+00:00\",\r\n                          \"pid\":  3240,\r\n                          \"age_seconds\":  2,\r\n                          \"parse_error\":  null\r\n                      },\r\n    \"heartbeat\":  {\r\n                      \"exists\":  true,\r\n                      \"host\":  \"heaven2\",\r\n                      \"updated_at\":  \"2026-09-29T16:44:32.399162+00:00\",\r\n                      \"worker_version\":  6,\r\n                      \"protocol\":  \"chatgpt-heaven-bridge-v2\",\r\n                      \"elevated\":  true,\r\n                      \"age_seconds\":  274\r\n                  },\r\n    \"scheduled_task\":  {\r\n                           \"watchdog_run_level\":  \"Highest\",\r\n                           \"canonical_run_level\":  \"Highest\",\r\n                           \"watchdog\":  \"Running\",\r\n                           \"canonical\":  \"Running\",\r\n                           \"legacy\":  \"missing\",\r\n                           \"legacy_run_level\":  \"missing\"\r\n                       },\r\n    \"startup_fallback\":  true,\r\n    \"legacy_worker_startup_fallback\":  false\r\n}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-heaven2-verify-self-heal-20260929-1649.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-heaven2-verify-self-heal-20260929-1649.stderr.log",
+    "stdout_bytes": 2149,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "a37c0bbce6c2213ea9ab88169d9a479cf7a1375d888de280aae914932dba6f0f"
+}
