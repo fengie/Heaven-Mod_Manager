@@ -84,6 +84,15 @@ function Get-ToStageMs($Report, [string]$Name) {
     return ($end - $start).TotalMilliseconds
 }
 
+function Get-MasterMethodMs([string]$ToolRoot, [string]$MethodName) {
+    $path = Join-Path $ToolRoot 'MHW-DEBUG-ALL.log'
+    if (-not (Test-Path -LiteralPath $path)) { return $null }
+    $pattern = '(?:PASS|PASS-CHECK|ERROR-CHECK) ' + [regex]::Escape($MethodName) + ';.*?elapsedMs=([0-9.]+)'
+    $match = Get-Content -LiteralPath $path | Select-String -Pattern $pattern | Select-Object -Last 1
+    if (-not $match) { return $null }
+    return [double]$match.Matches[0].Groups[1].Value
+}
+
 function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [string]$GameRoot, [string]$Exe) {
     $logRoot = Join-Path $ToolRoot 'StartupLogs'
     if (Test-Path -LiteralPath $logRoot) { Remove-Item -LiteralPath $logRoot -Recurse -Force }
@@ -126,6 +135,13 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
             recovery_ms = Get-StageMs $report 'startup.recovery'
             automation_ms = Get-StageMs $report 'startup.automation'
             main_window_initialize_ms = Get-StageMs $report 'ui.main-window.initialize'
+            reload_mods_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.ReloadMods'
+            refresh_analysis_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.RefreshAnalysis'
+            build_analysis_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.BuildAnalysisAsync'
+            refresh_issue_suspects_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.RefreshIssueSuspects'
+            refresh_profiles_ms = Get-MasterMethodMs $ToolRoot 'ProfilesPageViewModel.RefreshAsync'
+            refresh_activity_ms = Get-MasterMethodMs $ToolRoot 'ActivityPageViewModel.RefreshAsync'
+            master_log_mb = if (Test-Path -LiteralPath (Join-Path $ToolRoot 'MHW-DEBUG-ALL.log')) { [math]::Round((Get-Item -LiteralPath (Join-Path $ToolRoot 'MHW-DEBUG-ALL.log')).Length / 1MB, 3) } else { $null }
             report = $completed.Path
         }
     }
@@ -193,7 +209,14 @@ try {
         'game_build_ms',
         'recovery_ms',
         'automation_ms',
-        'main_window_initialize_ms'
+        'main_window_initialize_ms',
+        'reload_mods_ms',
+        'refresh_analysis_ms',
+        'build_analysis_ms',
+        'refresh_issue_suspects_ms',
+        'refresh_profiles_ms',
+        'refresh_activity_ms',
+        'master_log_mb'
     )
 
     $summary = [ordered]@{
