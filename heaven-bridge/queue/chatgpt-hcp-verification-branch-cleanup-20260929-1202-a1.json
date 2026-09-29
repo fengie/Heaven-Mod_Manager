@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-hcp-verification-branch-cleanup-20260929-1202-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "~",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Stop'; $relay=Join-Path $HOME 'HeavenBridgeRepo'; $origin=(git -C $relay remote get-url origin).Trim(); $tmp=Join-Path $env:TEMP ('hcp-clean-'+[guid]::NewGuid().ToString('N')); git clone --quiet --no-checkout $origin $tmp; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; try { git -C $tmp fetch --quiet origin main agent/hcp-verification-20260929-0753; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; $main=(git -C $tmp rev-parse origin/main).Trim(); $branch=(git -C $tmp rev-parse origin/agent/hcp-verification-20260929-0753).Trim(); git -C $tmp diff --quiet origin/main origin/agent/hcp-verification-20260929-0753 -- plugins/heaven-control-plane/heaven_control_plane/verification.py plugins/heaven-control-plane/tests/test_verification.py; if($LASTEXITCODE -ne 0){ throw 'owned file content differs from origin/main; refusing deletion' }; git -C $tmp push origin --delete agent/hcp-verification-20260929-0753; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Write-Output ('MAIN='+$main); Write-Output ('DELETED_BRANCH_SHA='+$branch); Write-Output 'OWNED_FILES_MATCH_MAIN=true' } finally { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }"
+  },
+  "created_at": "2026-09-29T12:02:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
