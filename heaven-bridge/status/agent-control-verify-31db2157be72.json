@@ -1,9 +1,10 @@
 {
   "id": "agent-control-verify-31db2157be72",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:18:52.903690+00:00"
+  "updated_at": "2026-09-29T09:19:07.508520+00:00",
+  "exit_code": 1
 }
