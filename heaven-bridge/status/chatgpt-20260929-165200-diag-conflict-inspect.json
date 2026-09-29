@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-165200-diag-conflict-inspect",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:47:49.724267+00:00"
+  "updated_at": "2026-09-29T16:47:56.400930+00:00",
+  "exit_code": 1
 }
