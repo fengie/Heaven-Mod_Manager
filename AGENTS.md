@@ -98,6 +98,17 @@ Before the current engineering task is considered complete:
 
 Managers and future agents must treat the backlog as actionable engineering work: claim compatible items when capacity exists, keep ownership/status current, and integrate completed capabilities into verified remote `main`.
 
+## Mandatory immediate release-on-ready rule
+
+A completed user-facing version must not sit unreleased. **Release-ready means release now.**
+
+- As soon as a version is integrated into canonical `main` and every required release gate for that version passes, the release-owning agent must publish it **immediately in the same execution cycle**.
+- Do **not** wait for a separate user prompt, reminder, scheduled release window, batching opportunity, or later agent when publication is already eligible, unless the user explicitly says to hold or delay that specific release.
+- `DONE`, `SHIPPED`, `release-ready`, `release-complete`, or equivalent status is forbidden before immutable publication and all required post-publication verification are complete.
+- Publication must include the private updater release and the required public mirror described below. Verify tags, assets, digests, and source provenance before closing the task.
+- If publication is blocked after the release gates pass, immediately attempt the authorized repair/retry path. Report `PARTIAL/BLOCKED` with exact evidence only when an external blocker genuinely prevents publication; never silently leave a verified version queued and unreleased.
+- Release automation, managers, and successor agents must treat an eligible completed version as an active release obligation, not optional follow-up work.
+
 ## Mandatory private-to-public updater release publication
 
 The canonical source repository is private `fengie/mhw-mods`; the credential-free updater feed is public `fengie/mhw-mod-manager-release`.
