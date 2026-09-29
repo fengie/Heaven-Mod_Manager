@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -22,6 +23,21 @@ function delay(ms) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+export function resolveHeavenRelayDir({
+  configuredPath = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  homeDir = os.homedir(),
+  existsSync = fs.existsSync
+} = {}) {
+  const explicit = clean(configuredPath);
+  if (explicit) return explicit;
+
+  const home = clean(homeDir);
+  if (!home) return "";
+
+  const documentedDefault = path.join(home, "HeavenBridgeRepo");
+  return existsSync(documentedDefault) ? documentedDefault : "";
 }
 
 function sanitizeId(value, max = 96) {
@@ -268,7 +284,7 @@ async function readHeartbeatFromRef(relayDir, host, ref = `origin/${HEAVEN_BRIDG
 
 export async function inspectHeavenBridge({
   host = HEAVEN_BRIDGE_HOST,
-  relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  relayDir = resolveHeavenRelayDir(),
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY,
   maxAgeMs = Number(process.env.AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS || DEFAULT_HEARTBEAT_MAX_AGE_MS),
   refreshCooldownMs = Number(process.env.AGENT_CONTROL_HEAVEN_HEALTH_REFRESH_COOLDOWN_MS || DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS),
