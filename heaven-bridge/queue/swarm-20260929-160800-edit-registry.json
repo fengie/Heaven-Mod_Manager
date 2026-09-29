@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-160800-edit-registry",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_edit",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\src\\MhwModManager.Filesystem\\GameProfileRegistry.cs",
+    "old_string": "    public void Upsert(GameProfile profile)\n    {\n        if(!IsUsable(profile))throw new ArgumentException(\"Game profile is invalid or points outside its game root.\",nameof(profile));\n        var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();\n        Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));\n    }\n",
+    "new_string": "    private IReadOnlyList<GameProfile> LoadForMutation()\n    {\n        using var __mhwTrace = MasterDebugLog.BeginMethod();\n        if(!File.Exists(registryPath))return Array.Empty<GameProfile>();\n        try\n        {\n            var parsed=JsonSerializer.Deserialize<GameProfile[]>(File.ReadAllText(registryPath),JsonOptions)\n                ?? throw new InvalidDataException(\"The existing game registry does not contain a valid profile list.\");\n            if(parsed.Any(x=>!IsUsable(x)))\n                throw new InvalidDataException(\"The existing game registry contains an invalid game profile and cannot be rewritten safely.\");\n            var duplicate=parsed.GroupBy(x=>x.Id,StringComparer.OrdinalIgnoreCase).FirstOrDefault(x=>x.Count()>1);\n            if(duplicate is not null)\n                throw new InvalidDataException($\"The existing game registry contains duplicate profile id '{duplicate.Key}' and cannot be rewritten safely.\");\n            return parsed.OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();\n        }\n        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or JsonException)\n        {\n            MasterDebugLog.Write(\"GAME-REGISTRY\",\"Could not read the existing game registry for mutation; leaving it untouched.\",ex);\n            throw new InvalidDataException(\"The existing game registry could not be read safely and was left untouched.\",ex);\n        }\n    }\n\n    public void Upsert(GameProfile profile)\n    {\n        if(!IsUsable(profile))throw new ArgumentException(\"Game profile is invalid or points outside its game root.\",nameof(profile));\n        var list=LoadForMutation().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();\n        Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));\n    }\n",
+    "replace_all": false
+  },
+  "created_at": "2026-09-29T16:08:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
