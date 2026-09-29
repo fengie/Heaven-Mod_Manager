@@ -72,3 +72,9 @@ jobs:
         shell: pwsh
         run: |
           python -c "import json,pathlib; p=json.loads(pathlib.Path('heaven-bridge/plugin/plugin.json').read_text()); c=json.loads(pathlib.Path('heaven-bridge/plugin/.codex-plugin/plugin.json').read_text()); assert p['name']=='heaven-local-bridge'; assert p['version']==c['version']; assert pathlib.Path('heaven-bridge/plugin/skills/heaven-bridge/SKILL.md').is_file(); assert pathlib.Path('heaven-bridge/plugin/skills/heaven-code-execution/SKILL.md').is_file(); assert pathlib.Path('heaven-bridge/plugin/skills/heaven-desktop-control/SKILL.md').is_file(); print('plugin', p['version'], 'ok')"
+
+  dispatcher-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prove hosted runner allocation
+        run: echo dispatcher-ok
