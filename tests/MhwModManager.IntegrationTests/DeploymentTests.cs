@@ -182,7 +182,7 @@ public sealed class DeploymentTests : IDisposable
             [new(1, ChangeKind.Add, path, null, hashB, null, "b", null, null)], [], []);
 
         var taskA = executorA.ApplyAsync(planA, "first concurrent deployment", ct: TestToken);
-        Assert.True(aWroteLiveBytes.Wait(TimeSpan.FromSeconds(20)), "First deployment never reached the post-write fault seam.");
+        Assert.True(aWroteLiveBytes.Wait(TimeSpan.FromSeconds(20), TestToken), "First deployment never reached the post-write fault seam.");
 
         OperationResult resultB;
         try

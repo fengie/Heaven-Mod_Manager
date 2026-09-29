@@ -354,3 +354,10 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - Existing passing tests do not prove prevention was adequate when a bug escaped; add the missing test class or deterministic verifier.
 - Managers and reviewers must reject bug fixes that lack applicable precedent, prevention, regression, and verification evidence.
 - Repeated defects from an existing precedent mean the prior control itself failed and must be strengthened.
+
+
+## LR-021 — analyzer fixes must close the sibling defect class
+- **Scope:** test analyzers, cancellation-aware waits, strict/relaxed verification.
+- **Rule:** A reported analyzer warning is a defect-class signal, not permission for a one-line-only repair. Inspect adjacent/sibling uses of the same API pattern and mechanically escalate the analyzer when the rule is a durable invariant.
+- **Trigger / evidence:** PR #261 repaired one cancellation-unaware deployment wait, but run 36606848564 later surfaced another xUnit1051 in the same integration-test boundary.
+- **Enforcement:** Integration tests treat xUnit1051 as an explicit error; bounded waits that offer a cancellation-token overload must pass the project test token. Reviewers reject a narrow analyzer repair that does not state which sibling cases were checked.
