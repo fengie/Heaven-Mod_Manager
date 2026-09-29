@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-103812-persistent-dev-smoke-input",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:38:12.447Z",
+  "ttl_seconds": 1200,
+  "action": "proc_input",
+  "params": {
+    "session_id": "4c26cf188c344d81",
+    "input": "Write-Output 'DEV_SERVER_START'; python -m http.server 8765 --bind 127.0.0.1",
+    "newline": true
+  },
+  "priority": "highest"
+}
