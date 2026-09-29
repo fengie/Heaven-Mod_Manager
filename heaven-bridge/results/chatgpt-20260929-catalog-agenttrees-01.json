@@ -1,0 +1,2872 @@
+{
+  "id": "chatgpt-20260929-catalog-agenttrees-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:36:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:36:07.422181+00:00",
+  "finished_at": "2026-09-29T15:36:07.513728+00:00",
+  "host": "heaven",
+  "action": "fs_list",
+  "data": {
+    "root": "C:\\Users\\Xxkan\\agent-worktrees",
+    "offset": 0,
+    "items": [
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-final-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-final2-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-remote-check-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-ship-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\complete-workflows-final-1142-a2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\complete-workflows-final-1147"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\complete-workflows-final-20260929-chatgpt-a2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\complete-workflows-final-r2-20260929-chatgpt"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\converge-main-20260929-0530"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\integration-20260928141020-uydo9"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\integration-20260928183241-et84v"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\main-20260928182022-2ewr0"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\main-20260929104715-d4eza"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\main-20260929115128-96p4g"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-20260928182020-qlec9"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-20260929104713-ln9yh"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-20260929115123-n04je"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-pr58-verify-bf499680"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-pr58-verify-ce2c1fef"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manager-pr58-verify-ce2c1fef-winenv"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\manual-pr54-review"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\reconciliation-20260929-0542"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\release-20260928141106-yqhte"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\reviewer-20260928141016-jmwi0"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\reviewer-20260928141025-kjk5o"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\reviewer-20260928162210-s634f"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\reviewer-20260928183029-u07k8"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\security-authz-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928155645-pvxin"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928155945-r2ne5"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928160109-nlgp1"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928160321-zhini"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928161951-qn586"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928182023-9yhll"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260928182024-op09o"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929104718-nqrmb"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929104724-nyxyj"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929104726-lae4b"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929115131-w5rod"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929115134-nfj28"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929115137-3ftqc"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\support-20260929115141-unsi5"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\test-20260928133350-vrokm"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\test-20260928183031-yxzw2"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\workflow-deterministic-salvage-20260929"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.github"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\TestResults"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\_AGENT_CONTEXT"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\_AGENT_TRAINING"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\artifacts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\benchmarks"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\data"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\tests"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\tools"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.git",
+        "size": 102,
+        "modified": "2026-09-29T09:28:16.263654+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.gitignore",
+        "size": 88,
+        "modified": "2026-09-29T09:28:16.287483+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\AGENTS.md",
+        "size": 4802,
+        "modified": "2026-09-29T09:28:16.292247+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Build Source Handoff.bat",
+        "size": 147,
+        "modified": "2026-09-29T09:28:16.292247+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Build.bat",
+        "size": 817,
+        "modified": "2026-09-29T09:28:16.292247+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\CHANGELOG.md",
+        "size": 47839,
+        "modified": "2026-09-29T09:30:05.477422+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Directory.Build.props",
+        "size": 714,
+        "modified": "2026-09-29T09:30:05.320422+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Directory.Packages.props",
+        "size": 692,
+        "modified": "2026-09-29T09:28:16.293763+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\GLOBAL_GIT_DIRECTIVE.md",
+        "size": 10209,
+        "modified": "2026-09-29T09:28:16.295372+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\MHW-DEBUG-ALL.log",
+        "size": 635,
+        "modified": "2026-09-29T09:36:55.137361+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\MhwModManager.sln",
+        "size": 8354,
+        "modified": "2026-09-29T09:28:16.295372+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\NEXT-AGENT-START-HERE.md",
+        "size": 25136,
+        "modified": "2026-09-29T09:39:44.727241+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\OPEN MASTER DEBUG LOG.bat",
+        "size": 308,
+        "modified": "2026-09-29T09:28:16.296888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Open Startup Logs.bat",
+        "size": 322,
+        "modified": "2026-09-29T09:28:16.296888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\README.md",
+        "size": 32774,
+        "modified": "2026-09-29T09:30:05.464815+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\REPAIR-NOTES.md",
+        "size": 1996,
+        "modified": "2026-09-29T09:28:16.298409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\RESEARCH-FAMILY-INFERENCE.md",
+        "size": 1479,
+        "modified": "2026-09-29T09:28:16.298409+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\RESEARCH-MULTIGAME.md",
+        "size": 2265,
+        "modified": "2026-09-29T09:28:16.299573+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\RESEARCH-UX-ROBUSTNESS.md",
+        "size": 3124,
+        "modified": "2026-09-29T09:28:16.300095+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\RESEARCH-VISUALS-AND-UPDATES.md",
+        "size": 1267,
+        "modified": "2026-09-29T09:28:16.300095+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\RUN BUILT APP.bat",
+        "size": 1303,
+        "modified": "2026-09-29T09:28:16.300609+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Test Everything.bat",
+        "size": 915,
+        "modified": "2026-09-29T09:28:16.300609+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\VALIDATION.md",
+        "size": 15846,
+        "modified": "2026-09-29T09:28:16.300609+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\VERSION.txt",
+        "size": 7,
+        "modified": "2026-09-29T09:30:05.307769+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\Verify.bat",
+        "size": 807,
+        "modified": "2026-09-29T09:28:16.302133+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\global.json",
+        "size": 181,
+        "modified": "2026-09-29T09:28:16.370912+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.github\\workflows"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.github\\workflows\\agent-control-pr-gate.yml",
+        "size": 1003,
+        "modified": "2026-09-29T09:28:16.286440+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.github\\workflows\\updater-publication-pr-gate.yml",
+        "size": 2585,
+        "modified": "2026-09-29T09:28:16.286972+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.github\\workflows\\windows-release-gate.yml",
+        "size": 6090,
+        "modified": "2026-09-29T09:30:05.375345+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification\\README.md",
+        "size": 2774,
+        "modified": "2026-09-29T09:28:16.288501+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification\\function-status.json",
+        "size": 285672,
+        "modified": "2026-09-29T09:36:55.134828+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification\\stage-status.json",
+        "size": 8950,
+        "modified": "2026-09-29T09:36:55.136850+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification\\trusted-v8.7.0-files.json",
+        "size": 9443,
+        "modified": "2026-09-29T09:28:16.288501+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\.verification\\trusted-v8.7.0-src.zip",
+        "size": 177136,
+        "modified": "2026-09-29T09:28:16.290726+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\artifacts\\MHW-Manual-Mod-Manager-v8.8.6-win-x64.zip",
+        "size": 129576925,
+        "modified": "2026-09-29T09:33:30.918926+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\artifacts\\update-manifest.json",
+        "size": 613,
+        "modified": "2026-09-29T09:33:31.095104+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\benchmarks\\MhwModManager.Benchmarks"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\benchmarks\\MhwModManager.Benchmarks\\MhwModManager.Benchmarks.csproj",
+        "size": 298,
+        "modified": "2026-09-29T09:28:16.363821+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\benchmarks\\MhwModManager.Benchmarks\\Program.cs",
+        "size": 1994,
+        "modified": "2026-09-29T09:28:16.363821+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\data\\Armor Database.csv",
+        "size": 18510,
+        "modified": "2026-09-29T09:28:16.365332+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\ARCHITECTURE.md",
+        "size": 6267,
+        "modified": "2026-09-29T09:28:16.365332+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\AUTO-COMPOSITION.md",
+        "size": 8294,
+        "modified": "2026-09-29T09:28:16.365332+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\AUTOMATION-AND-TESTING.md",
+        "size": 3127,
+        "modified": "2026-09-29T09:28:16.366845+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\BRANDING.md",
+        "size": 967,
+        "modified": "2026-09-29T09:28:16.367364+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\BUG-AUDIT.md",
+        "size": 8731,
+        "modified": "2026-09-29T09:28:16.367883+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\DIAGNOSTICS.md",
+        "size": 2848,
+        "modified": "2026-09-29T09:28:16.367883+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\FAILURE-MODES.md",
+        "size": 2439,
+        "modified": "2026-09-29T09:28:16.369393+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\FUNCTION-VERIFICATION.md",
+        "size": 10225,
+        "modified": "2026-09-29T09:28:16.369393+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\MIGRATION.md",
+        "size": 4555,
+        "modified": "2026-09-29T09:28:16.369393+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\docs\\SCHEMA.md",
+        "size": 542,
+        "modified": "2026-09-29T09:28:16.369393+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Armor Database.csv",
+        "size": 18510,
+        "modified": "2026-09-29T09:28:16.370912+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\CHANGELOG-v4.txt",
+        "size": 1277,
+        "modified": "2026-09-29T09:28:16.370912+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\CHANGELOG-v5.txt",
+        "size": 1006,
+        "modified": "2026-09-29T09:28:16.372493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\CHANGELOG-v6.txt",
+        "size": 1037,
+        "modified": "2026-09-29T09:28:16.372493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\CHANGELOG-v7.txt",
+        "size": 1926,
+        "modified": "2026-09-29T09:28:16.372493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Debug Console.bat",
+        "size": 113,
+        "modified": "2026-09-29T09:28:16.372493+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Engine.ps1",
+        "size": 15082,
+        "modified": "2026-09-29T09:28:16.374010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Launch Mod Manager.bat",
+        "size": 144,
+        "modified": "2026-09-29T09:28:16.374010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\MHW Mod Manager.ps1",
+        "size": 63831,
+        "modified": "2026-09-29T09:28:16.374010+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Manage Mods.bat",
+        "size": 144,
+        "modified": "2026-09-29T09:28:16.375522+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\ModManager.ps1",
+        "size": 10121,
+        "modified": "2026-09-29T09:28:16.375522+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\README.txt",
+        "size": 8025,
+        "modified": "2026-09-29T09:28:16.378560+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Test-Manager.ps1",
+        "size": 15288,
+        "modified": "2026-09-29T09:28:16.378560+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\VALIDATION.txt",
+        "size": 1201,
+        "modified": "2026-09-29T09:28:16.380084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\VERSION.txt",
+        "size": 5,
+        "modified": "2026-09-29T09:28:16.380084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Deployment.ps1",
+        "size": 10737,
+        "modified": "2026-09-29T09:28:16.375522+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Diagnostics.ps1",
+        "size": 7571,
+        "modified": "2026-09-29T09:28:16.377036+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Import.ps1",
+        "size": 10717,
+        "modified": "2026-09-29T09:28:16.377036+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Planner.ps1",
+        "size": 26242,
+        "modified": "2026-09-29T09:28:16.377036+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Profiles.ps1",
+        "size": 6733,
+        "modified": "2026-09-29T09:28:16.377036+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\legacy-v7\\Modules\\Reports.ps1",
+        "size": 14054,
+        "modified": "2026-09-29T09:28:16.378560+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Accessibility.dll",
+        "size": 20776,
+        "modified": "2026-08-22T15:53:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\CHANGELOG.md",
+        "size": 47839,
+        "modified": "2026-09-29T09:30:05.477422+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\CommunityToolkit.Mvvm.dll",
+        "size": 372736,
+        "modified": "2026-09-29T09:32:54.632756+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\D3DCompiler_47_cor3.dll",
+        "size": 4741488,
+        "modified": "2026-01-27T06:18:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\DirectWriteForwarder.dll",
+        "size": 509736,
+        "modified": "2026-08-22T17:06:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\KEEP MODS AND STATE.txt",
+        "size": 256,
+        "modified": "2026-09-29T09:33:11.409189+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.deps.json",
+        "size": 47216,
+        "modified": "2026-09-29T09:32:54.147861+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.dll",
+        "size": 843776,
+        "modified": "2026-09-29T09:32:58.263420+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.exe",
+        "size": 176128,
+        "modified": "2026-09-29T09:32:50.066839+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.pdb",
+        "size": 120512,
+        "modified": "2026-09-29T09:32:50.045673+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MHW Mod Manager.runtimeconfig.json",
+        "size": 596,
+        "modified": "2026-09-29T09:32:54.185144+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Automation.dll",
+        "size": 675840,
+        "modified": "2026-09-29T09:32:56.834652+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Automation.pdb",
+        "size": 50676,
+        "modified": "2026-09-29T09:31:27.749878+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Core.dll",
+        "size": 585728,
+        "modified": "2026-09-29T09:32:57.025541+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Core.pdb",
+        "size": 76476,
+        "modified": "2026-09-29T09:31:25.453883+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Diagnostics.dll",
+        "size": 237568,
+        "modified": "2026-09-29T09:32:57.187095+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Diagnostics.pdb",
+        "size": 24448,
+        "modified": "2026-09-29T09:31:27.118509+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Filesystem.dll",
+        "size": 724992,
+        "modified": "2026-09-29T09:32:57.437543+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Filesystem.pdb",
+        "size": 73736,
+        "modified": "2026-09-29T09:31:26.702951+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Mhw.dll",
+        "size": 49152,
+        "modified": "2026-09-29T09:32:57.574093+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Mhw.pdb",
+        "size": 14512,
+        "modified": "2026-09-29T09:31:26.366985+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Storage.dll",
+        "size": 483328,
+        "modified": "2026-09-29T09:32:57.759319+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Storage.pdb",
+        "size": 34512,
+        "modified": "2026-09-29T09:31:26.013912+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Updater.dll",
+        "size": 450560,
+        "modified": "2026-09-29T09:32:57.947232+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\MhwModManager.Updater.pdb",
+        "size": 39940,
+        "modified": "2026-09-29T09:31:27.456169+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.CSharp.dll",
+        "size": 980776,
+        "modified": "2026-08-22T15:26:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Data.Sqlite.dll",
+        "size": 450560,
+        "modified": "2026-09-29T09:32:54.904626+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.DiaSymReader.Native.amd64.dll",
+        "size": 2377016,
+        "modified": "2026-08-05T14:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.VisualBasic.Core.dll",
+        "size": 1193768,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.VisualBasic.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Registry.AccessControl.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.Registry.dll",
+        "size": 116520,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Win32.SystemEvents.dll",
+        "size": 116520,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Microsoft.Windows.SDK.NET.dll",
+        "size": 55316480,
+        "modified": "2026-09-29T09:33:08.016860+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\OPEN MASTER DEBUG LOG.bat",
+        "size": 308,
+        "modified": "2026-09-29T09:28:16.296888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Open Startup Logs.bat",
+        "size": 322,
+        "modified": "2026-09-29T09:28:16.296888+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PenImc_cor3.dll",
+        "size": 158032,
+        "modified": "2026-08-22T16:05:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationCore.dll",
+        "size": 8324904,
+        "modified": "2026-08-22T17:06:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemCore.dll",
+        "size": 38736,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemData.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemDrawing.dll",
+        "size": 34640,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemXml.dll",
+        "size": 34600,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework-SystemXmlLinq.dll",
+        "size": 30504,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Aero.dll",
+        "size": 440104,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Aero2.dll",
+        "size": 444200,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.AeroLite.dll",
+        "size": 239400,
+        "modified": "2026-08-22T17:06:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Classic.dll",
+        "size": 272168,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Fluent.dll",
+        "size": 980776,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Luna.dll",
+        "size": 669480,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.Royale.dll",
+        "size": 333608,
+        "modified": "2026-08-22T17:06:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationFramework.dll",
+        "size": 15816488,
+        "modified": "2026-08-22T17:06:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationNative_cor3.dll",
+        "size": 1235240,
+        "modified": "2026-07-06T04:59:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\PresentationUI.dll",
+        "size": 1259304,
+        "modified": "2026-08-22T17:06:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\README.md",
+        "size": 32774,
+        "modified": "2026-09-29T09:30:05.464815+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\ReachFramework.dll",
+        "size": 1570600,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.batteries_v2.dll",
+        "size": 20480,
+        "modified": "2026-09-29T09:32:56.176423+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.core.dll",
+        "size": 110592,
+        "modified": "2026-09-29T09:32:56.327084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SQLitePCLRaw.provider.e_sqlite3.dll",
+        "size": 90112,
+        "modified": "2026-09-29T09:32:56.481670+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Serilog.Sinks.File.dll",
+        "size": 86016,
+        "modified": "2026-09-29T09:32:55.267408+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\Serilog.dll",
+        "size": 421888,
+        "modified": "2026-09-29T09:32:55.110559+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\SharpCompress.dll",
+        "size": 5664768,
+        "modified": "2026-09-29T09:32:56.053046+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.AppContext.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Buffers.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.CodeDom.dll",
+        "size": 476968,
+        "modified": "2026-08-22T17:05:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Concurrent.dll",
+        "size": 231248,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Immutable.dll",
+        "size": 976680,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.NonGeneric.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.Specialized.dll",
+        "size": 104272,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Collections.dll",
+        "size": 296744,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.Annotations.dll",
+        "size": 198480,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.DataAnnotations.dll",
+        "size": 16720,
+        "modified": "2026-08-22T15:13:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.EventBasedAsync.dll",
+        "size": 46888,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.Primitives.dll",
+        "size": 79656,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.TypeConverter.dll",
+        "size": 767784,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ComponentModel.dll",
+        "size": 30544,
+        "modified": "2026-08-22T15:26:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Configuration.ConfigurationManager.dll",
+        "size": 1046352,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Configuration.dll",
+        "size": 19240,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Console.dll",
+        "size": 169808,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Core.dll",
+        "size": 23336,
+        "modified": "2026-08-22T15:13:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.Common.dll",
+        "size": 2770728,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.DataSetExtensions.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:14:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Data.dll",
+        "size": 25424,
+        "modified": "2026-08-22T15:14:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Contracts.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Debug.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.DiagnosticSource.dll",
+        "size": 501544,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.EventLog.Messages.dll",
+        "size": 800552,
+        "modified": "2026-08-22T15:17:32+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.EventLog.dll",
+        "size": 366376,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.FileVersionInfo.dll",
+        "size": 46928,
+        "modified": "2026-08-22T15:26:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.PerformanceCounter.dll",
+        "size": 300840,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Process.dll",
+        "size": 329552,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.StackTrace.dll",
+        "size": 46888,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.TextWriterTraceListener.dll",
+        "size": 67368,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Tools.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.TraceSource.dll",
+        "size": 141096,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Diagnostics.Tracing.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:09:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.DirectoryServices.dll",
+        "size": 1021736,
+        "modified": "2026-08-22T17:05:48+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.Common.dll",
+        "size": 923432,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.Primitives.dll",
+        "size": 132944,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Drawing.dll",
+        "size": 20304,
+        "modified": "2026-08-22T15:13:44+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Dynamic.Runtime.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Asn1.dll",
+        "size": 239440,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Nrbf.dll",
+        "size": 137000,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Formats.Tar.dll",
+        "size": 272168,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.Calendars.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.Extensions.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Globalization.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.Brotli.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.FileSystem.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.Native.dll",
+        "size": 937256,
+        "modified": "2026-08-22T15:08:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.ZipFile.dll",
+        "size": 100176,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Compression.dll",
+        "size": 419624,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.AccessControl.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.DriveInfo.dll",
+        "size": 55120,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.Primitives.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.Watcher.dll",
+        "size": 87848,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.FileSystem.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Hashing.dll",
+        "size": 90112,
+        "modified": "2026-09-29T09:32:56.629561+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.IsolatedStorage.dll",
+        "size": 87848,
+        "modified": "2026-08-22T15:26:56+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.MemoryMappedFiles.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Packaging.dll",
+        "size": 321360,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipelines.dll",
+        "size": 190248,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipes.AccessControl.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:10:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.Pipes.dll",
+        "size": 165712,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.UnmanagedMemoryStream.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.IO.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.AsyncEnumerable.dll",
+        "size": 1292072,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Expressions.dll",
+        "size": 3639080,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Parallel.dll",
+        "size": 775976,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.Queryable.dll",
+        "size": 182056,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Linq.dll",
+        "size": 698192,
+        "modified": "2026-08-22T15:26:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Memory.dll",
+        "size": 161576,
+        "modified": "2026-08-22T15:27:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Http.Json.dll",
+        "size": 128848,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Http.dll",
+        "size": 1746768,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.HttpListener.dll",
+        "size": 534312,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Mail.dll",
+        "size": 481064,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.NameResolution.dll",
+        "size": 124712,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.NetworkInformation.dll",
+        "size": 157520,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Ping.dll",
+        "size": 91984,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Primitives.dll",
+        "size": 210728,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Quic.dll",
+        "size": 358224,
+        "modified": "2026-08-22T15:27:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Requests.dll",
+        "size": 374568,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Security.dll",
+        "size": 665424,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.ServerSentEvents.dll",
+        "size": 83752,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.ServicePoint.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.Sockets.dll",
+        "size": 530216,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebClient.dll",
+        "size": 165672,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebHeaderCollection.dll",
+        "size": 63312,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebProxy.dll",
+        "size": 42832,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebSockets.Client.dll",
+        "size": 104232,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.WebSockets.dll",
+        "size": 243496,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Net.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:36+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Numerics.Vectors.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Numerics.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ObjectModel.dll",
+        "size": 79656,
+        "modified": "2026-08-22T15:27:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Printing.dll",
+        "size": 968488,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.CoreLib.dll",
+        "size": 16033576,
+        "modified": "2026-08-22T14:54:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.DataContractSerialization.dll",
+        "size": 2062120,
+        "modified": "2026-08-22T15:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Uri.dll",
+        "size": 255824,
+        "modified": "2026-08-22T15:27:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Windows.Core.dll",
+        "size": 1906472,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Windows.GdiPlus.dll",
+        "size": 427816,
+        "modified": "2026-08-22T17:05:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Xml.Linq.dll",
+        "size": 390952,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Private.Xml.dll",
+        "size": 7788328,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.DispatchProxy.dll",
+        "size": 75600,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.ILGeneration.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.Lightweight.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Emit.dll",
+        "size": 309032,
+        "modified": "2026-08-22T15:27:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Extensions.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Metadata.dll",
+        "size": 1156904,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.TypeExtensions.dll",
+        "size": 42792,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Reflection.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Extensions.dll",
+        "size": 194344,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Reader.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.ResourceManager.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:12:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Resources.Writer.dll",
+        "size": 50984,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.CompilerServices.Unsafe.dll",
+        "size": 15184,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.CompilerServices.VisualC.dll",
+        "size": 30504,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Extensions.dll",
+        "size": 17704,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Handles.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.JavaScript.dll",
+        "size": 50984,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.RuntimeInformation.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.InteropServices.dll",
+        "size": 112464,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Intrinsics.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:09:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Loader.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Numerics.dll",
+        "size": 354128,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Formatters.dll",
+        "size": 124712,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Json.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Primitives.dll",
+        "size": 38696,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.Xml.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.Serialization.dll",
+        "size": 17192,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Runtime.dll",
+        "size": 44840,
+        "modified": "2026-08-22T15:09:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.AccessControl.dll",
+        "size": 227112,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Claims.dll",
+        "size": 100176,
+        "modified": "2026-08-22T15:27:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Algorithms.dll",
+        "size": 17232,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Cng.dll",
+        "size": 16168,
+        "modified": "2026-08-22T15:13:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Csp.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Encoding.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:04+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.OpenSsl.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Pkcs.dll",
+        "size": 767784,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Primitives.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.ProtectedData.dll",
+        "size": 59216,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.X509Certificates.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.Xml.dll",
+        "size": 452392,
+        "modified": "2026-08-22T17:05:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Cryptography.dll",
+        "size": 2549544,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Permissions.dll",
+        "size": 190248,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Principal.Windows.dll",
+        "size": 178000,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.Principal.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.SecureString.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Security.dll",
+        "size": 18256,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ServiceModel.Web.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ServiceProcess.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.CodePages.dll",
+        "size": 862032,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.Extensions.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encoding.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Encodings.Web.dll",
+        "size": 124752,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.Json.dll",
+        "size": 1890128,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Text.RegularExpressions.dll",
+        "size": 1034064,
+        "modified": "2026-08-22T15:27:12+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.AccessControl.dll",
+        "size": 75560,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Channels.dll",
+        "size": 157480,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Overlapped.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:09:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Dataflow.dll",
+        "size": 472872,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Extensions.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.Parallel.dll",
+        "size": 132904,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Tasks.dll",
+        "size": 16680,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Thread.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.ThreadPool.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:09:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.Timer.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Threading.dll",
+        "size": 83792,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Transactions.Local.dll",
+        "size": 640808,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Transactions.dll",
+        "size": 16720,
+        "modified": "2026-08-22T15:13:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.ValueTuple.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Web.HttpUtility.dll",
+        "size": 63272,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Web.dll",
+        "size": 15144,
+        "modified": "2026-08-22T15:13:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Controls.Ribbon.dll",
+        "size": 1439528,
+        "modified": "2026-08-22T17:06:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Extensions.dll",
+        "size": 120616,
+        "modified": "2026-08-22T17:05:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Input.Manipulations.dll",
+        "size": 141136,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Presentation.dll",
+        "size": 30544,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.Primitives.dll",
+        "size": 386856,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Windows.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xaml.dll",
+        "size": 1390376,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.Linq.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.ReaderWriter.dll",
+        "size": 21840,
+        "modified": "2026-08-22T15:12:46+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.Serialization.dll",
+        "size": 16208,
+        "modified": "2026-08-22T15:13:24+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XDocument.dll",
+        "size": 15696,
+        "modified": "2026-08-22T15:13:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XPath.XDocument.dll",
+        "size": 30504,
+        "modified": "2026-08-22T15:27:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XPath.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:10+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XmlDocument.dll",
+        "size": 15656,
+        "modified": "2026-08-22T15:13:08+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.XmlSerializer.dll",
+        "size": 17744,
+        "modified": "2026-08-22T15:13:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.Xml.dll",
+        "size": 23376,
+        "modified": "2026-08-22T15:13:22+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\System.dll",
+        "size": 50472,
+        "modified": "2026-08-22T15:14:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationClient.dll",
+        "size": 407336,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationClientSideProviders.dll",
+        "size": 857936,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationProvider.dll",
+        "size": 63272,
+        "modified": "2026-08-22T17:06:16+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\UIAutomationTypes.dll",
+        "size": 296744,
+        "modified": "2026-08-22T17:06:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\VALIDATION.md",
+        "size": 15846,
+        "modified": "2026-09-29T09:28:16.300609+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\VERSION.txt",
+        "size": 7,
+        "modified": "2026-09-29T09:30:05.307769+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\WinRT.Runtime.dll",
+        "size": 1396736,
+        "modified": "2026-09-29T09:33:08.477111+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\WindowsBase.dll",
+        "size": 2176808,
+        "modified": "2026-08-22T17:06:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\build-identity.json",
+        "size": 236,
+        "modified": "2026-09-29T09:33:11.413871+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clretwrc.dll",
+        "size": 317736,
+        "modified": "2026-08-22T14:49:42+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrgc.dll",
+        "size": 674088,
+        "modified": "2026-08-22T14:48:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrgcexp.dll",
+        "size": 711464,
+        "modified": "2026-08-22T14:49:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\clrjit.dll",
+        "size": 2092328,
+        "modified": "2026-08-22T14:50:20+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\coreclr.dll",
+        "size": 4614992,
+        "modified": "2026-08-22T14:50:14+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\createdump.exe",
+        "size": 71552,
+        "modified": "2026-08-22T14:49:54+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\e_sqlite3.dll",
+        "size": 1978880,
+        "modified": "2026-07-07T02:11:30+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\hostfxr.dll",
+        "size": 379688,
+        "modified": "2026-08-22T15:08:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\hostpolicy.dll",
+        "size": 378664,
+        "modified": "2026-08-22T15:08:02+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\mscordaccore.dll",
+        "size": 1356640,
+        "modified": "2026-08-22T14:47:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\mscordaccore_amd64_amd64_10.0.1226.42308.dll",
+        "size": 1356640,
+        "modified": "2026-08-22T14:47:38+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\mscordbi.dll",
+        "size": 1237888,
+        "modified": "2026-08-22T14:47:58+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\mscorlib.dll",
+        "size": 59728,
+        "modified": "2026-08-22T15:13:40+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\mscorrc.dll",
+        "size": 133968,
+        "modified": "2026-08-22T14:49:50+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\msquic.dll",
+        "size": 536344,
+        "modified": "2026-08-11T21:41:52+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\netstandard.dll",
+        "size": 100648,
+        "modified": "2026-08-22T15:14:06+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\product-files.json",
+        "size": 174047,
+        "modified": "2026-09-29T09:33:15.906895+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\release-install.json",
+        "size": 620,
+        "modified": "2026-09-29T09:33:15.919592+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\vcruntime140_cor3.dll",
+        "size": 124544,
+        "modified": "2026-08-05T02:43:18+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\release\\MHW-Manual-Mod-Manager-v8.8.6\\wpfgfx_cor3.dll",
+        "size": 1956136,
+        "modified": "2026-08-22T16:06:00+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Build-Release.ps1",
+        "size": 22339,
+        "modified": "2026-09-29T09:28:16.380084+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Build-Source-Handoff.ps1",
+        "size": 4672,
+        "modified": "2026-09-29T09:28:16.381606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Capture-Diagnostics.ps1",
+        "size": 4912,
+        "modified": "2026-09-29T09:28:16.381606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Master-Debug.ps1",
+        "size": 1920,
+        "modified": "2026-09-29T09:28:16.381606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Publish-UpdaterRelease.ps1",
+        "size": 12669,
+        "modified": "2026-09-29T09:28:16.381606+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Run-Benchmarks.ps1",
+        "size": 869,
+        "modified": "2026-09-29T09:28:16.383124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Run-Tests.ps1",
+        "size": 1409,
+        "modified": "2026-09-29T09:28:16.383124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-AgentHandoff-NegativeFixtures.ps1",
+        "size": 5758,
+        "modified": "2026-09-29T09:28:16.383124+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-AgentHandoff.ps1",
+        "size": 12665,
+        "modified": "2026-09-29T09:28:16.384638+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-CSharpTracePlacement.ps1",
+        "size": 1682,
+        "modified": "2026-09-29T09:28:16.384638+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-PowerShellSyntax.ps1",
+        "size": 1792,
+        "modified": "2026-09-29T09:28:16.384638+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-UpdaterPackage.ps1",
+        "size": 7358,
+        "modified": "2026-09-29T09:28:16.386151+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-UpdaterReleasePolicy.ps1",
+        "size": 11323,
+        "modified": "2026-09-29T09:28:16.386151+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Test-VerificationCache.ps1",
+        "size": 3115,
+        "modified": "2026-09-29T09:28:16.386752+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\UpdaterReleasePolicy.ps1",
+        "size": 4896,
+        "modified": "2026-09-29T09:28:16.387273+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\UpdaterReleasePublication.ps1",
+        "size": 2480,
+        "modified": "2026-09-29T09:28:16.387273+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\scripts\\Verify-Release.ps1",
+        "size": 28829,
+        "modified": "2026-09-29T09:28:16.387273+00:00"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Filesystem"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Mhw"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Storage"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Updater"
+      },
+      {
+        "type": "dir",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Updater.Helper"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\App.xaml",
+        "size": 23568,
+        "modified": "2026-09-29T09:40:38.927973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\App.xaml.cs",
+        "size": 23934,
+        "modified": "2026-09-29T09:30:05.334240+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\DispatcherWatchdog.cs",
+        "size": 3616,
+        "modified": "2026-09-29T09:28:16.390311+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\GameProfileEditorWindow.cs",
+        "size": 7064,
+        "modified": "2026-09-29T09:40:38.927973+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\MainWindow.xaml",
+        "size": 80389,
+        "modified": "2026-09-29T09:40:38.929499+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\MainWindow.xaml.cs",
+        "size": 2005,
+        "modified": "2026-09-29T09:28:16.391836+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\MhwModManager.App.csproj",
+        "size": 1463,
+        "modified": "2026-09-29T09:28:16.393348+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\SafeImageSourceConverter.cs",
+        "size": 1309,
+        "modified": "2026-09-29T09:28:16.393348+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\StartupWindow.cs",
+        "size": 3525,
+        "modified": "2026-09-29T09:28:16.393348+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\WpfMasterTraceListener.cs",
+        "size": 2798,
+        "modified": "2026-09-29T09:28:16.400201+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.App\\app.manifest",
+        "size": 493,
+        "modified": "2026-09-29T09:28:16.400201+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\ArchiveImportService.cs",
+        "size": 2663,
+        "modified": "2026-09-29T09:28:16.401721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\AutoCategoryService.cs",
+        "size": 6137,
+        "modified": "2026-09-29T09:28:16.401721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\AutomationCoordinator.cs",
+        "size": 12442,
+        "modified": "2026-09-29T09:28:16.401721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\AutomationJson.cs",
+        "size": 384,
+        "modified": "2026-09-29T09:28:16.401721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\AutomationModels.cs",
+        "size": 4924,
+        "modified": "2026-09-29T09:28:16.401721+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\ChangeTimelineService.cs",
+        "size": 2108,
+        "modified": "2026-09-29T09:28:16.403351+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\CollectionRecipeService.cs",
+        "size": 1283,
+        "modified": "2026-09-29T09:28:16.403351+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\CrashBisectorEngine.cs",
+        "size": 2502,
+        "modified": "2026-09-29T09:28:16.404862+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\DependencyDoctorService.cs",
+        "size": 3433,
+        "modified": "2026-09-29T09:28:16.404862+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\DuplicateCleanupService.cs",
+        "size": 5718,
+        "modified": "2026-09-29T09:28:16.404862+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\EffectiveInspectorService.cs",
+        "size": 7844,
+        "modified": "2026-09-29T09:28:16.404862+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\GameUpdateImpactService.cs",
+        "size": 1173,
+        "modified": "2026-09-29T09:28:16.406371+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\GlobalUsings.cs",
+        "size": 34,
+        "modified": "2026-09-29T09:28:16.406371+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\LastKnownGoodService.cs",
+        "size": 2247,
+        "modified": "2026-09-29T09:28:16.406371+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\LaunchHealthGateService.cs",
+        "size": 2176,
+        "modified": "2026-09-29T09:28:16.407379+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\MhwModManager.Automation.csproj",
+        "size": 625,
+        "modified": "2026-09-29T09:28:16.407889+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\ModIssueFallbackService.cs",
+        "size": 16502,
+        "modified": "2026-09-29T09:28:16.407889+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\ModTrustService.cs",
+        "size": 2789,
+        "modified": "2026-09-29T09:28:16.407889+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\OutfitPresetService.cs",
+        "size": 1900,
+        "modified": "2026-09-29T09:28:16.408894+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\SaveBackupService.cs",
+        "size": 9999,
+        "modified": "2026-09-29T09:28:16.408894+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\SmartInboxService.cs",
+        "size": 6657,
+        "modified": "2026-09-29T09:28:16.408894+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Automation\\UpdateDiffService.cs",
+        "size": 2142,
+        "modified": "2026-09-29T09:28:16.408894+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\AssetBundles.cs",
+        "size": 1891,
+        "modified": "2026-09-29T09:28:16.410415+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\AutoCompatibility.cs",
+        "size": 34775,
+        "modified": "2026-09-29T09:28:16.410415+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\ConflictEngine.cs",
+        "size": 19005,
+        "modified": "2026-09-29T09:28:16.410415+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\ConflictRuleIndex.cs",
+        "size": 6799,
+        "modified": "2026-09-29T09:28:16.411947+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\DeploymentPlanner.cs",
+        "size": 7533,
+        "modified": "2026-09-29T09:28:16.411947+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\Domain.cs",
+        "size": 6312,
+        "modified": "2026-09-29T09:28:16.411947+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\FamilyInference.cs",
+        "size": 1554,
+        "modified": "2026-09-29T09:28:16.413469+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\GameProfiles.cs",
+        "size": 5791,
+        "modified": "2026-09-29T09:40:38.931091+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\GenericFamilyInference.cs",
+        "size": 14611,
+        "modified": "2026-09-29T09:28:16.413469+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\LogicalModFamilies.cs",
+        "size": 14428,
+        "modified": "2026-09-29T09:28:16.414988+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\MasterDebugLog.cs",
+        "size": 18097,
+        "modified": "2026-09-29T09:28:16.414988+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\MhwModManager.Core.csproj",
+        "size": 157,
+        "modified": "2026-09-29T09:28:16.414988+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\PathRules.cs",
+        "size": 5397,
+        "modified": "2026-09-29T09:28:16.414988+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\ProvenanceIntelligence.cs",
+        "size": 9545,
+        "modified": "2026-09-29T09:28:16.416500+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\RuleGraph.cs",
+        "size": 1840,
+        "modified": "2026-09-29T09:28:16.416500+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Core\\TextureSafetyInspector.cs",
+        "size": 1504,
+        "modified": "2026-09-29T09:28:16.417015+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\AppLogging.cs",
+        "size": 1374,
+        "modified": "2026-09-29T09:30:05.335750+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\DiagnosticTelemetry.cs",
+        "size": 7510,
+        "modified": "2026-09-29T09:28:16.417585+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\ExceptionPolicy.cs",
+        "size": 2693,
+        "modified": "2026-09-29T09:28:16.417585+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\HealthService.cs",
+        "size": 7094,
+        "modified": "2026-09-29T09:28:16.417585+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj",
+        "size": 602,
+        "modified": "2026-09-29T09:28:16.417585+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\StartupDiagnosticSession.cs",
+        "size": 10772,
+        "modified": "2026-09-29T09:28:16.419096+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\SupportBundleService.cs",
+        "size": 12403,
+        "modified": "2026-09-29T09:28:16.419096+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Diagnostics\\UnifiedDebugLog.cs",
+        "size": 1307,
+        "modified": "2026-09-29T09:28:16.420614+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Filesystem\\ArchiveInspector.cs",
+        "size": 10872,
+        "modified": "2026-09-29T09:28:16.421645+00:00"
+      },
+      {
+        "type": "file",
+        "path": "C:\\Users\\Xxkan\\agent-worktrees\\agent-manager-051-release-20260929\\src\\MhwModManager.Filesystem\\AtomicFileOps.cs",
+        "size": 5170,
+        "modified": "2026-09-29T09:28:16.421645+00:00"
+      }
+    ],
+    "next_offset": 500,
+    "has_more": true
+  },
+  "job_hash": "e1edd97a31c68c60cfbafe50565f0f9ace9f054aacbc95e015d4d0954f149013"
+}
