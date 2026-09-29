@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-0906-session-restart-accept-start-r9",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_start",
+  "params": {
+    "shell": "powershell",
+    "command": "Write-Output 'SESSION_RECOVERY_ACCEPTANCE_STARTED'; Start-Sleep -Seconds 600; Write-Output 'UNEXPECTED_NATURAL_COMPLETION'",
+    "cwd": "C:\\Users\\Xxkan",
+    "idle_timeout_seconds": 900,
+    "max_runtime_seconds": 1200
+  },
+  "created_at": "2026-09-29T09:06:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
