@@ -1,0 +1,21 @@
+{
+  "id": "swarm-20260929-1546-build-main",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:46:03Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:47:52.107708+00:00",
+  "finished_at": "2026-09-29T15:48:00.142821+00:00",
+  "stdout": "  Determining projects to restore...\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Core\\MhwModManager.Core.csproj (in 96 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Storage\\MhwModManager.Storage.csproj (in 148 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Mhw\\MhwModManager.Mhw.csproj (in 148 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Automation\\MhwModManager.Automation.csproj (in 149 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Filesystem\\MhwModManager.Filesystem.csproj (in 148 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Diagnostics\\MhwModManager.Diagnostics.csproj (in 148 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Updater\\MhwModManager.Updater.csproj (in 148 ms).\r\n  Restored C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.App\\MhwModManager.App.csproj (in 149 ms).\r\n  MhwModManager.Core -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Core\\bin\\Release\\net10.0\\MhwModManager.Core.dll\r\n  MhwModManager.Storage -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Storage\\bin\\Release\\net10.0\\MhwModManager.Storage.dll\r\n  MhwModManager.Mhw -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Mhw\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Mhw.dll\r\n  MhwModManager.Filesystem -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Filesystem\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Filesystem.dll\r\n  MhwModManager.Diagnostics -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Diagnostics\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Diagnostics.dll\r\n  MhwModManager.Updater -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Updater\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Updater.dll\r\n  MhwModManager.Automation -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.Automation\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.Automation.dll\r\n  MhwModManager.App -> C:\\Users\\Xxkan\\HeavenWork\\swarm-main-fabf715f\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:06.21\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1546-build-main.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\swarm-20260929-1546-build-main.stderr.log",
+    "stdout_bytes": 2408,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "53ce36fea49a2d63540a073e02d19467b88566ebee64f29b7b48ae19a9fe8777"
+}
