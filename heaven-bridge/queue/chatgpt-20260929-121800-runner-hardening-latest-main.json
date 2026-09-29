@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-121800-runner-hardening-latest-main",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$relay=Join-Path $HOME 'HeavenBridgeRepo'\n$origin=(git -C $relay remote get-url origin).Trim()\n$tmp=Join-Path $env:TEMP ('runner-hardening-latest-main-'+[guid]::NewGuid().ToString('N'))\ngit clone --quiet $origin $tmp\nif($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\ntry {\n  Set-Location $tmp\n  git checkout --quiet fix/heaven-runner-single-session-20260929\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  git fetch --quiet origin main\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  $base=(git rev-parse origin/main).Trim()\n  $head=(git rev-parse HEAD).Trim()\n  git -c user.name='Heaven Verification' -c user.email='heaven-verification@local.invalid' merge --no-ff --no-edit origin/main\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  $merge=(git rev-parse HEAD).Trim()\n  $script=Join-Path $tmp 'heaven-bridge\\install-github-runner.ps1'\n  $tokens=$null; $errors=$null\n  [System.Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors) | Out-Null\n  if($errors.Count -gt 0){ $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }\n  python .\\heaven-bridge\\test_worker.py\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  python .\\heaven-bridge\\tests\\test_worker.py\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  git diff --check origin/main...HEAD\n  if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }\n  Write-Output ('LATEST_MAIN='+$base)\n  Write-Output ('PR_HEAD='+$head)\n  Write-Output ('SYNTHETIC_MERGE='+$merge)\n} finally {\n  Set-Location $HOME\n  Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue\n}",
+    "timeout_seconds": 600,
+    "cwd": "C:\\Users\\Xxkan"
+  },
+  "priority": "highest"
+}
