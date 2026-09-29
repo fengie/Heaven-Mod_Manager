@@ -1,0 +1,76 @@
+name: Startup Performance Gate
+
+on:
+  push:
+    branches:
+      - 'perf-startup-*'
+    paths:
+      - 'src/**'
+      - 'scripts/Measure-StartupPerformance.ps1'
+      - '.github/workflows/startup-performance-gate.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/Measure-StartupPerformance.ps1'
+      - '.github/workflows/startup-performance-gate.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: startup-performance-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Measure startup on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 35
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@v4
+        with:
+          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify pinned .NET SDK
+        shell: powershell
+        run: |
+          $version = (& dotnet --version).Trim()
+          if ($version -ne '10.0.401') { throw "Startup performance gate requires .NET SDK 10.0.401; found $version." }
+
+      - name: Restore application
+        shell: powershell
+        run: |
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build Release application
+        shell: powershell
+        run: |
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Measure cold-state and warm-state startup
+        shell: powershell
+        run: |
+          .\scripts\Measure-StartupPerformance.ps1 -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 120
+
+      - name: Preserve startup benchmark evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-performance-\${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            BuildLogs/startup-performance-*.json
