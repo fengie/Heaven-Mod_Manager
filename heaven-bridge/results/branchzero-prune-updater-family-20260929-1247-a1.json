@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-prune-updater-family-20260929-1247-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:47:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:47:56.842713+00:00",
+  "finished_at": "2026-09-29T12:48:00.690421+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * [new branch]        fix/issue-118-secret-input-20260929 -> origin/fix/issue-118-secret-input-20260929\n   2e2ea5f1..244b33a1  heaven-bridge -> origin/heaven-bridge\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:19 char:10\r\n+   $open=(gh pr list --repo fengie/mhw-mods --state open --head $b --j ...\r\n+          ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-family-20260929-1247-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-prune-updater-family-20260929-1247-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 690,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a97b6faf198c61cc823feda1cf67fab9c06c602f183d8e442d420527bef90812"
+}
