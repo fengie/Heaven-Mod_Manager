@@ -293,6 +293,29 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"], expected)
         semantic.assert_called_once()
 
+    def test_uia_bounded_wait_retries_window_discovery(self):
+        miss = hb.BridgeError("UIA_WINDOW_NOT_FOUND", "not ready")
+        ready = {"count": 1, "items": [{"name": "ready"}]}
+        with patch.object(hb, "_require_windows_desktop"), \
+             patch.object(hb, "_run_uia_once", side_effect=[miss, ready]) as backend, \
+             patch.object(hb.time, "sleep"):
+            result = hb.desktop_uia({"title": "Eventually Ready", "wait_ms": 1000}, "uia_find")
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(backend.call_count, 2)
+
+    def test_uia_set_value_requires_explicit_nonsecret_relay_opt_in(self):
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb._validate_uia_request(
+                {"selector": {"name": "Input"}, "value": "ordinary-text"},
+                "uia_set_value",
+            )
+        self.assertEqual(ctx.exception.code, "UIA_RELAY_TEXT_OPT_IN_REQUIRED")
+        request = hb._validate_uia_request(
+            {"selector": {"name": "Input"}, "value": "ordinary-text", "allow_relay_text": True},
+            "uia_set_value",
+        )
+        self.assertEqual(request["value"], "ordinary-text")
+
     def test_uia_backend_never_reads_password_values(self):
         script = MODULE_PATH.with_name("uia.ps1").read_text(encoding="utf-8")
         self.assertIn("IsPassword", script)

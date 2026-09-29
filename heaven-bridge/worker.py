@@ -1656,7 +1656,7 @@ def desktop_uia(p, operation):
                 continue
             return data
         except BridgeError as exc:
-            if wait_ms and exc.code == "UIA_NOT_FOUND" and time.monotonic() < deadline:
+            if wait_ms and exc.code in ("UIA_NOT_FOUND", "UIA_WINDOW_NOT_FOUND") and time.monotonic() < deadline:
                 time.sleep(0.15)
                 continue
             raise
@@ -1835,7 +1835,7 @@ def run_job(job_id, job, cancel_event):
                 "display_enumeration": os.name == "nt", "app_launch": os.name == "nt",
                 "clipboard_read": os.name == "nt", "clipboard_write": os.name == "nt",
                 "uia_semantic_control": os.name == "nt", "uia_password_values_redacted": True,
-                "uia_password_set_value_blocked": True, "uia_set_value_requires_relay_opt_in": True,
+                "uia_password_set_value_blocked": True, "uia_set_value_relay_opt_in": True, "uia_set_value_requires_relay_opt_in": True,
                 "clipboard_relay_requires_opt_in": True, "public_raw_shell": False,
             },
             "capability_schema": 2,
