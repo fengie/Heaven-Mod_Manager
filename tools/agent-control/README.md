@@ -212,3 +212,8 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
 See `CONTROL_PLANE.md` for the federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
+
+
+### Adaptive Work handoff signatures
+
+The controller does not assume ChatGPT's handoff card labels are permanent. It reads the accessible UI tree, uses the built-in signature registry for known labels, and can safely learn renamed labels only after a unique non-Work action is identified and the Work action is verified gone. Learned aliases and ambiguous drift observations are persisted under the gitignored Agent Control `data/` directory and are available through `GET /api/work-handoff-signatures`. This updates plugin behavior without self-editing tracked source or dirtying `main`.
