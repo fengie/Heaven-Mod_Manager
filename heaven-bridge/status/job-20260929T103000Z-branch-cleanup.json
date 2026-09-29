@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T103000Z-branch-cleanup",
-  "state": "running",
+  "state": "failed",
   "action": "codex",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T10:40:36.424071+00:00"
+  "updated_at": "2026-09-29T10:41:01.356364+00:00",
+  "exit_code": 1
 }
