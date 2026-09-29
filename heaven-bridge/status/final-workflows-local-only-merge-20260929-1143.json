@@ -1,0 +1,9 @@
+{
+  "id": "final-workflows-local-only-merge-20260929-1143",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T11:55:11.836701+00:00"
+}
