@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-branch-zero-sweep-20260929-1059-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:59:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:49:46.751989+00:00",
+  "finished_at": "2026-09-29T11:49:49.182081+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   c8b1e347..1936984c  agent/hcp-phase0-hardening-20260929-1138 -> origin/agent/hcp-phase0-hardening-20260929-1138\n   4ee9e251..1369b0c0  heaven-bridge -> origin/heaven-bridge\n   a426ba2b..58009191  main          -> origin/main\ngit : fatal: invalid refspec 'refs/heads//remotes/origin/agent/hcp-hardening-review-20260929-1137-a1'\r\nAt line:1 char:486\r\n+ ...  in $refs){ git -C $repo fetch origin \"refs/heads/$b:refs/remotes/ori ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: invalid ...260929-1137-a1':String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-zero-sweep-20260929-1059-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-branch-zero-sweep-20260929-1059-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 710,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1cd823236a83a955ecaf1b514439c482b59f746868d91d86ab24e160ef52681b"
+}
