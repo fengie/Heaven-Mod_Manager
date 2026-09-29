@@ -2073,7 +2073,8 @@ async function dispatchAutopilotImplementation(state) {
   const result = await executeWorkflow("usual-swarm", {
     objective: state.autopilot.objective,
     baseBranch: state.autopilot.baseBranch || "main",
-    requireReconciledOwnership: true
+    requireReconciledOwnership: true,
+    repositoryWriteAuthorized: true
   });
   if (result.blocked?.length) {
     throw new Error(`Autopilot swarm dispatch blocked: ${JSON.stringify(result.blocked)}`);
@@ -2110,6 +2111,7 @@ async function dispatchAutopilotVerification(state) {
     priority: 92,
     machine: "auto",
     targetAgentId: candidate.id,
+    repositoryWriteAuthorized: true,
     verification: ["A pass requires structured verification evidence, not prose output."]
   }));
 }
@@ -2128,7 +2130,8 @@ async function dispatchAutopilotReview(state) {
     task,
     boundary: `autopilot:review:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
     priority: 93,
-    machine: "auto"
+    machine: "auto",
+    repositoryWriteAuthorized: true
   }));
 }
 
@@ -2148,7 +2151,8 @@ async function dispatchAutopilotRepair(state) {
     baseBranch: candidate.branchName,
     boundary: `autopilot:repair:${state.autopilot.runId}:${state.autopilot.repairLoops + 1}`,
     priority: 96,
-    machine: "auto"
+    machine: "auto",
+    repositoryWriteAuthorized: true
   }));
 }
 
