@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-104703-agent-uia",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:47:03.541Z",
+  "ttl_seconds": 21600,
+  "action": "codex",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 3600,
+  "payload": "You are the Heaven Local Bridge Windows UI Automation agent. Execute, do not just review.\nRepository: https://github.com/fengie/mhw-mods.git. Canonical durable branch is main; heaven-bridge is transport only.\nCreate or reuse an isolated local clone/worktree under C:\\Users\\Xxkan\\local-ai-workspaces, based on current origin/main, on a temporary branch named bridge-uia-20260929. Do NOT modify relay queue/status/results history.\nGoal: add structured semantic Windows UI Automation/accessibility-tree control so callers can discover and act on buttons, text boxes, menus, checkboxes, tabs, list items, etc. without relying on screen coordinates.\nImplement a compact set such as uia_tree/uia_find/uia_focus/uia_invoke/uia_set_value/uia_toggle/uia_select (names may differ if a cleaner design). Selectors should support window HWND/title plus automation id/name/control type, bound traversal depth/result count, reject ambiguous matches unless explicitly allowed, and return compact metadata only. Use Windows UI Automation APIs or a trusted built-in Windows/.NET surface; do not accept raw PowerShell/script payloads in structured UIA actions. Preserve existing coordinate actions as fallback.\nAdd health capabilities, regression tests with mockable boundaries, Windows-only live smoke if safe/non-destructive, and docs/skill-facing action semantics in repo docs if appropriate. Run py_compile and both bridge test suites plus PowerShell parser validation. Commit and push ONLY your temporary branch. Report branch, commit SHA, tests, changed files, and dependencies. Do not merge main.",
+  "priority": "highest"
+}
