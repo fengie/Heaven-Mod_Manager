@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-164900-heaven2-find-checkouts",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='SilentlyContinue'; $rows=@(); Get-ChildItem -LiteralPath $env:USERPROFILE -Directory | ForEach-Object { if (Test-Path (Join-Path $_.FullName '.git')) { $url=& git -C $_.FullName remote get-url origin 2>$null; if ($LASTEXITCODE -eq 0 -and $url -match 'fengie/mhw-mods') { $branch=& git -C $_.FullName branch --show-current; $sha=& git -C $_.FullName rev-parse HEAD; $status=@(& git -C $_.FullName status --short); $rows += [pscustomobject]@{Path=$_.FullName;Branch=$branch;Sha=$sha;Status=$status} } } }; $rows | ConvertTo-Json -Depth 5",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T16:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
