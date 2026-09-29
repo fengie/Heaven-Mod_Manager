@@ -6,10 +6,11 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.2 does
+## What v0.5.3 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
+- Enforces a mandatory pre-response repository-training gate: every spawned worker must have all required training/continuity sources present and non-empty, receives their exact hashes in a training manifest, and is instructed to read them plus task-relevant source/tests before it may process the task prompt.
 - Gives every deployed agent its own Git worktree; it reuses a safe compatible unowned branch when available and creates a new `agent/control-*` branch only when no strong safe match exists.
 - Maintains a local process/task registry plus a normalized federated agent registry of:
   - managed local agents
@@ -201,4 +202,4 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 
 That bridge is intentional: ChatGPT cloud cannot directly call `127.0.0.1` on Heaven. The plugin uses the user-authorized Heaven Local Bridge to invoke `agentctl.mjs`, register session heartbeats, start the controller when needed, deploy agents, inspect snapshots, read logs, stop proven-owned workers, and launch reviewers.
 
-See `CONTROL_PLANE.md` for the current v0.5.1 federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
+See `CONTROL_PLANE.md` for the federation/liveness architecture, authenticated Heaven Bridge execution transport, heartbeat semantics, and engineering-autopilot state machine.
