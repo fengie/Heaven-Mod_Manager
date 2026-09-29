@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'scripts/Publish-UpdaterRelease.ps1'
+      - 'scripts/Publish-PublicUpdaterRelease.ps1'
       - 'scripts/UpdaterReleasePublication.ps1'
       - 'scripts/UpdaterReleasePolicy.ps1'
       - 'scripts/Test-UpdaterReleasePolicy.ps1'
@@ -51,6 +52,20 @@ jobs:
             throw "Checked-out source $head does not match PR head ${{ github.event.pull_request.head.sha }}."
           }
 
+      - name: Parse public updater mirror script
+        shell: powershell
+        run: |
+          $tokens=$null
+          $errors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.\scripts\Publish-PublicUpdaterRelease.ps1'),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host "::error::$($_.Message)" }
+            throw 'Publish-PublicUpdaterRelease.ps1 contains PowerShell parse errors.'
+          }
+          if(Select-String -LiteralPath '.\scripts\Publish-PublicUpdaterRelease.ps1' -Pattern 'Get-Command gh|& gh ' -Quiet) {
+            throw 'Public updater mirroring must not depend on GitHub CLI on Heaven.'
+          }
+
       - name: Run updater publication policy and fault tests
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
@@ -69,6 +84,7 @@ jobs:
 
       - name: Preserve PR verification evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
