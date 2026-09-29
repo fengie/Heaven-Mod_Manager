@@ -1,0 +1,11 @@
+{
+  "id": "chatgpt-20260929-104050-cancel-long-audit-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:40:50Z",
+  "ttl_seconds": 3600,
+  "action": "cancel",
+  "params": {
+    "job_id": "chatgpt-20260929-103420-main-reconcile-audit-a3"
+  },
+  "priority": "highest"
+}
