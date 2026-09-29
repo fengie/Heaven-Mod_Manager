@@ -312,3 +312,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant implementation:** PR #230 establishes independent bridge recovery; this rule governs diagnosis and wording when any control path fails.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-019 — independent recovery owners must not share one failure domain
+
+- **Rule ID:** LR-019
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** persistent local agents, watchdogs, task schedulers, startup recovery, operator control planes
+- **Rule:** A recovery owner is not genuinely independent when it shares the same principal, trigger, scheduler lifetime, or mutable runtime dependency as the component it is supposed to repair. Critical control paths need at least one recovery owner in a different failure domain, plus a non-scheduler fallback where practical.
+- **Trigger / evidence:** The first heaven2 self-healing repair added an interactive watchdog and Startup-folder fallback, but the canonical worker and watchdog still depended on the same user-session Scheduled Task subsystem. A simultaneous user-task deletion, disablement, or definition failure could strand both until another bootstrap.
+- **Rationale:** Redundant processes are not redundant recovery if one configuration failure can disable them together. Separating the repair supervisor into a SYSTEM-owned machine-start task lets it restore user-scoped task definitions and the Startup fallback without relying on the bridge worker or its interactive watchdog.
+- **Enforcement:** Heaven Local Bridge health requires the interactive worker, interactive watchdog, SYSTEM sentinel, Startup fallback, local heartbeat/progress signals, and runtime-copy integrity. The sentinel must never execute arbitrary bridge jobs or carry secrets; it is limited to repairing persistence and the heaven2 recovery shortcut. STOP/bootstrap handoffs quiesce the sentinel first to avoid intentional-shutdown races.
+- **Relevant implementation:** Heaven Local Bridge plugin v0.8.2; `heaven-bridge/sentinel.ps1`, bootstrap/manage health enforcement, and bridge gate regressions.
+- **Supersedes:** none
+- **Superseded by:** none
+
