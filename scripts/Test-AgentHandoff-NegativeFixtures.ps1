@@ -96,7 +96,10 @@ try{
 
     Expect-Rejected 'AGENTS hides learned-rules requirement in a comment' 'AGENTS.md' {
         param($text)
-        $text -replace '(?m)^8\. Read active rules in `_AGENT_CONTEXT/LEARNED_RULES\.md`.*$','8. Read active rules in the continuity ledger. <!-- _AGENT_CONTEXT/LEARNED_RULES.md -->'
+        $line=[regex]::Match($text,'(?m)^2\. Read .*$').Value
+        if([string]::IsNullOrWhiteSpace($line)){throw 'Fixture could not locate mandatory training read step 2.'}
+        $changed=$line -replace '`_AGENT_CONTEXT/LEARNED_RULES\.md`','the continuity ledger'
+        return $text.Replace($line,$changed+' <!-- _AGENT_CONTEXT/LEARNED_RULES.md -->')
     }
 
     Expect-Rejected 'start-here explicitly negates successor propagation' 'NEXT-AGENT-START-HERE.md' {

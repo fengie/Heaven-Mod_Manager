@@ -99,6 +99,9 @@ Do not blindly merge unrelated or unverified branches just to empty the queue. I
 If direct `main` delivery is genuinely impossible, do not silently stop at a side branch. Record the exact failed operation, error/evidence, paths attempted, current branch/head, and exact external action required.
 
 ## Release publication completion rule
+- **Release-ready means release now.** As soon as a user-facing version is integrated into canonical `main` and every required release gate for that version passes, the release-owning agent must publish it immediately in the same execution cycle.
+- Do not wait for a separate user prompt, reminder, batching window, scheduled release window, or successor unless the user explicitly orders a hold/delay for that specific release.
+- A green-but-unpublished version is active unfinished work and must be surfaced as highest-priority release closure by workers, managers, Integration & Release, and successor agents. `DONE`, `SHIPPED`, or `release-complete` is forbidden until publication and post-publication verification finish.
 - Private updater publication is not the end of a release. The same immutable `updater-main-<build>` release must also exist in public `fengie/mhw-mod-manager-release`.
 - Use the repository's canonical private publisher first and public mirror second; never bypass their source/digest/immutability checks with ad-hoc release uploads.
 - Before reporting SHIPPED/DONE, verify private/public tags match, both expected assets exist, and their server SHA-256 digests match. If the public mirror is missing/stale/failed, report PARTIAL/BLOCKED and repair it before closing the release.
