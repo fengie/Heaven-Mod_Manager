@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T155445Z-heaven-desktop-health-01",
+  "state": "running",
+  "action": "health",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:56:05.500689+00:00"
+}
