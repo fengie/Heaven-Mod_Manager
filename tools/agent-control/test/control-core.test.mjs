@@ -270,6 +270,18 @@ test("operator stop intent dominates an authoritative zero exit", () => {
   assert.equal(classifyAuthoritativeExit(blockedAfterStop, 0), "stopped");
   assert.equal(classifyAuthoritativeExit({ status: "running" }, 0), "done");
   assert.equal(classifyAuthoritativeExit({ status: "running" }, 1), "failed");
+  assert.equal(classifyAuthoritativeExit({
+    status: "running",
+    lastMessage: "You've hit your usage limit. Try again later."
+  }, 1), "capacity-blocked");
+  assert.equal(classifyAuthoritativeExit({
+    status: "running",
+    lastMessage: "429 insufficient_quota"
+  }, 1), "capacity-blocked");
+  assert.equal(classifyAuthoritativeExit({
+    status: "running",
+    lastMessage: "Unit tests failed: assertion limit mismatch"
+  }, 1), "failed");
   assert.equal(isIntegrationEligible({
     status: classifyAuthoritativeExit(stopping, 0),
     exitCode: 0,
