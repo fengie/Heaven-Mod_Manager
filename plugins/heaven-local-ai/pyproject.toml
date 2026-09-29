@@ -1,0 +1,5 @@
+[project]
+name = "heaven-local-ai"
+version = "0.1.0"
+description = "Safe local Ollama offload through Heaven Control Plane"
+requires-python = ">=3.10"
