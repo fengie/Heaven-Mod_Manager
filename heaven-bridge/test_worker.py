@@ -141,9 +141,37 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         )
         self.assertEqual(result["data"]["worker_version"], 3)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
-        for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel", "controller_checkpoint"):
+        for action in (
+            "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
+            "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
+            "window_list", "window_focus", "window_move", "window_close", "gui_mouse_move",
+            "gui_mouse_click", "gui_mouse_scroll", "gui_key", "gui_type",
+        ):
             self.assertIn(action, result["data"]["actions"])
         self.assertTrue(result["data"]["capabilities"]["session_restart_recovery"])
+        self.assertEqual(result["data"]["capabilities"]["desktop_control"], os.name == "nt")
+        self.assertTrue(result["data"]["capabilities"]["clipboard_relay_requires_opt_in"])
+
+    def test_clipboard_read_requires_explicit_relay_opt_in(self):
+        with self.assertRaises(hb.BridgeError) as ctx:
+            hb.run_job(
+                "clipboard-guard-test",
+                {"action": "clipboard_read", "params": {}},
+                threading.Event(),
+            )
+        self.assertEqual(ctx.exception.code, "CLIPBOARD_RELAY_OPT_IN_REQUIRED")
+
+    def test_structured_desktop_action_routes_without_raw_payload(self):
+        expected = {"x": 321, "y": 654}
+        with patch.object(hb, "desktop_mouse_move", return_value=expected) as move:
+            result = hb.run_job(
+                "mouse-move-test",
+                {"action": "gui_mouse_move", "params": {"x": 321, "y": 654}},
+                threading.Event(),
+            )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["data"], expected)
+        move.assert_called_once_with({"x": 321, "y": 654})
 
     def test_codex_batch_wrapper_uses_call_arguments(self):
         captured = {}
