@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
-PLUGIN_VERSION = "0.2.0"
+PLUGIN_VERSION = "0.3.0"
 SCHEMA_VERSION = "heaven-control-plane/v1"
 MAX_REQUEST_BYTES = 1_048_576
 DEFAULT_MAX_OUTPUT_BYTES = 262_144
