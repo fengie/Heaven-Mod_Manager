@@ -1,0 +1,16 @@
+{
+  "id": "chatgpt-20260929-catalog-find-final-conflict-01",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_search",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\mhw-catalog-pr208\\src\\MhwModManager.App",
+    "pattern": "<<<<<<<",
+    "mode": "content",
+    "glob": "MainWindow.xaml",
+    "max_results": 20
+  },
+  "created_at": "2026-09-29T15:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
