@@ -1,0 +1,14 @@
+{
+  "id": "000-00-pr127-reconcile-202609291101",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$src='C:\\Users\\Xxkan\\mhw-safe-branch-delete2'\n$wt='C:\\Users\\Xxkan\\branchzero-pr127'\nif(Test-Path $wt){ git -C $src worktree remove --force $wt 2>$null; if(Test-Path $wt){ Remove-Item -Recurse -Force $wt } }\ngit -C $src fetch origin --prune\nif($LASTEXITCODE -ne 0){ throw 'fetch failed' }\ngit -C $src worktree add --detach $wt origin/main\nif($LASTEXITCODE -ne 0){ throw 'worktree add failed' }\ngit -C $wt checkout -b reconcile/branchzero-pr127\ngit -C $wt merge --no-ff --no-commit origin/agent/bridge-priority-scheduler-20260929\n$mergeExit=$LASTEXITCODE\n$conflicts=@(git -C $wt diff --name-only --diff-filter=U)\nif($mergeExit -ne 0 -and $conflicts.Count -gt 0){\n  Write-Output ('CONFLICTS='+($conflicts -join ','))\n  git -C $wt merge --abort\n  exit 20\n}\npython -m py_compile \"$wt\\heaven-bridge\\worker.py\"\nif($LASTEXITCODE -ne 0){ git -C $wt merge --abort 2>$null; exit 21 }\npython \"$wt\\heaven-bridge\\test_worker.py\"\nif($LASTEXITCODE -ne 0){ git -C $wt merge --abort 2>$null; exit 22 }\npython \"$wt\\heaven-bridge\\tests\\test_worker.py\"\nif($LASTEXITCODE -ne 0){ git -C $wt merge --abort 2>$null; exit 23 }\ngit -C $wt diff --check\nif($LASTEXITCODE -ne 0){ git -C $wt merge --abort 2>$null; exit 24 }\ngit -C $wt commit -m \"Merge branch 'agent/bridge-priority-scheduler-20260929' into main\"\nif($LASTEXITCODE -ne 0){ exit 25 }\ngit -C $wt fetch origin main\n$remote=(git -C $wt rev-parse origin/main).Trim()\n$parent=(git -C $wt rev-parse HEAD^1).Trim()\nif($remote -ne $parent){ Write-Output \"MAIN_MOVED remote=$remote parent=$parent\"; exit 26 }\ngit -C $wt push origin HEAD:main\nif($LASTEXITCODE -ne 0){ exit 27 }\ngit -C $wt fetch origin main\n$head=(git -C $wt rev-parse HEAD).Trim(); $verified=(git -C $wt rev-parse origin/main).Trim()\nif($head -ne $verified){ throw \"push verification mismatch $head $verified\" }\ngit -C $wt push origin --delete agent/bridge-priority-scheduler-20260929\n[pscustomobject]@{merged=$true;main_sha=$verified;source_deleted=($LASTEXITCODE -eq 0);tests=@('py_compile','heaven-bridge/test_worker.py','heaven-bridge/tests/test_worker.py','git diff --check')} | ConvertTo-Json -Depth 4",
+    "cwd": "C:\\Users\\Xxkan\\mhw-safe-branch-delete2",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T11:01:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
