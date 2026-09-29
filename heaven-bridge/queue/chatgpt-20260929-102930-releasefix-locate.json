@@ -1,0 +1,13 @@
+{
+  "id": "chatgpt-20260929-102930-releasefix-locate",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:29:30Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$paths=@(\"$env:USERPROFILE\\local-ai-workspaces\\mhw-mods\",\"$env:USERPROFILE\\agent-control-panel\"); foreach($p in $paths){ if(Test-Path -LiteralPath $p){ Write-Output \"PATH=$p\"; git -C $p rev-parse --show-toplevel; git -C $p status --short --branch; git -C $p remote get-url origin } }",
+    "timeout_seconds": 60
+  },
+  "priority": "highest"
+}
