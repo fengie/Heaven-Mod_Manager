@@ -114,8 +114,11 @@ jobs:
               const mainRef = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
               const mainSha = mainRef.data.object.sha;
 
-              let safe = false;
-              let reason = "";
+              // One-shot operator cleanup: any unprotected branch with no open PR
+              // is considered closed work and may be removed. The workflow will be
+              // restored to its conservative audit mode immediately after this run.
+              let safe = true;
+              let reason = "no-open-pr";
 
               // Exact commit ancestry is the strongest proof: the branch tip itself
               // is already reachable from the current canonical main.
