@@ -656,7 +656,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [RelayCommand]
     private async Task AdoptManualFiles()=>await RunBusy("catalog.adopt","Bringing In Manual Mods","Copying existing manual mod files into the library without deleting or changing the files currently used by the game…",true,async ct=>
     {
-        if(!SupportsLiveAdoption){StatusText="Manual live-file adoption is not enabled for this generic game adapter.";return;}
+        if(!SupportsLiveAdoption){StatusText="This game setup does not support importing already-installed manual mod files.";return;}
         var result=await s.Adoption.AdoptAsync(ct);
         if(!result.Created){StatusText=result.Message;return;}
         await s.Catalog.RefreshFoldersAsync(ct);
@@ -694,7 +694,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ExportSupport()=>await RunBusy("diagnostics.bundle","Exporting support bundle","Collecting small diagnostic metadata, transaction state, timings, and recent logs…",true,async ct=>
+    private async Task ExportSupport()=>await RunBusy("diagnostics.bundle","Creating Support Bundle","Collecting recent logs and small diagnostic details that can help troubleshoot a problem…",true,async ct=>
     {
         var path=await s.Support.CreateAsync(Path.Combine(s.Paths.ToolRoot,"Support Bundles"),ct);
         StatusText=$"Support bundle: {path}";
@@ -791,7 +791,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(string.IsNullOrWhiteSpace(modId))return;
-        await RunBusy("diagnosis.issue-clear","Clearing issue mark","Removing this suspect mark without changing the mod or deployment…",true,async ct=>
+        await RunBusy("diagnosis.issue-clear","Clearing Problem Mark","Removing this warning without changing the mod or installed game files…",true,async ct=>
         {
             await s.Issues.ClearAsync(modId,ct);
             await RefreshIssueSuspects(ct);
@@ -800,7 +800,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task Undo()=>await RunBusy("deployment.undo","Undo","Restoring the previous committed filesystem and mod-state snapshot…",false,async ct=>
+    private async Task Undo()=>await RunBusy("deployment.undo","Undo Last Change","Restoring the mod setup from before the last applied change…",false,async ct=>
     {
         var result=await s.Executor.UndoLastAsync(ct);
         if(!result.Success)throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
@@ -855,7 +855,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ExportRecipe()=>await RunBusy("automation.recipe","Exporting collection recipe","Writing Nexus IDs, logical state, priorities, and provenance without copying mod payloads…",true,async ct=>
+    private async Task ExportRecipe()=>await RunBusy("automation.recipe","Exporting Mod List","Saving the mod list, enabled state, load order, and source references without copying the mod files themselves…",true,async ct=>
     {
         var dir=Path.Combine(s.Paths.ToolRoot,"Collection Recipes");Directory.CreateDirectory(dir);
         var path=Path.Combine(dir,GameProfile.NormalizeId(s.Paths.Game.DisplayName)+"-collection-"+DateTime.Now.ToString("yyyyMMdd-HHmmss",CultureInfo.InvariantCulture)+".json");
@@ -863,11 +863,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private async Task SmartCleanup()=>await RunBusy("automation.cleanup","Cleaning safe duplicates","Archiving only disabled exact duplicates and superseded source packages; nothing is deleted…",true,async ct=>
+    private async Task SmartCleanup()=>await RunBusy("automation.cleanup","Cleaning Up Duplicate Mods","Moving only safe disabled duplicates and older replaced packages into the archive. Nothing is permanently deleted…",true,async ct=>
     {
         var analysis=await s.Duplicates.AnalyzeAsync(ct);var moved=await s.Duplicates.ArchiveSafeAsync(ct);
         await s.Catalog.RefreshFoldersAsync(ct);await ReloadMods(ct);
-        StatusText=$"Safe cleanup archived {moved} folder(s). "+(analysis.ReclaimableBytes/1024d/1024d/1024d).ToString("F2",CultureInfo.CurrentCulture)+" GB was identified as duplicate/superseded data before cleanup.";
+        StatusText=$"Cleanup archived {moved} folder(s). "+(analysis.ReclaimableBytes/1024d/1024d/1024d).ToString("F2",CultureInfo.CurrentCulture)+" GB of duplicate or older replaced data was identified before cleanup.";
     });
 
     [RelayCommand]
