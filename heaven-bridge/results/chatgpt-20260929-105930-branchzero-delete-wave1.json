@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-105930-branchzero-delete-wave1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:59:30Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:43:39.813226+00:00",
+  "finished_at": "2026-09-29T11:44:05.885192+00:00",
+  "stdout": "DELETED=\r\nALREADY_MISSING=fix/release-classifier-workflow-scope-20260929,feature/agent-control-plane-v2-20260928,agent/liveness-scheduler-machine-policy-20260929,agent/agent-control-federation-heartbeat-20260929,feature/agent-control-panel-20260928,agent/game-profile-id-containment-v8.8.5-reconcile,ui/frontend-responsive-polish-20260928,release/v8.8.5-20260929,agent/smart-pack-planner-core,integration/smart-pack-planner-main-20260929,integration/smart-pack-planner-main-r2-20260929,support/updater-publication-input-scope-20260928,agent/archive-streaming-budget-20260928,agent/support-bundle-share-safety-20260928,agent/support-auto-updater-release-security-audit-20260928,agent/replacefilew-failure-characterization-20260927,agent/replacefilew-failure-characterization-v2,agent/windows-live-containment-hardening,agent/windows-live-containment-hardening-v2,agent/support-updater-binary-asset-accept-20260928\r\nREMAINING_COUNT=6\r\nBRANCH=agent/hcp-hardening-review-20260929-1137-a1\r\nBRANCH=agent/hcp-phase0-hardening-20260929-1138\r\nBRANCH=agent/hcp-sessions-search-20260929\r\nBRANCH=codex/complete-mod-workflows\r\nBRANCH=heaven-bridge\r\nBRANCH=main\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-105930-branchzero-delete-wave1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-105930-branchzero-delete-wave1.stderr.log",
+    "stdout_bytes": 1149,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ed71205a145d47a094c5df69e769d4bfe2b500dd155daf4aea41f7b5e26ff658"
+}
