@@ -1,3 +1,13 @@
+# v8.8.20 — One-click Auto Populate
+
+- Add an **Auto Populate** button to the Mods toolbar that computes and immediately applies a deterministic maximal conflict-free installed setup.
+- Preserve currently enabled choices first, then fill remaining compatible packages without blindly enabling direct replacements.
+- Recursively include explicit mod dependencies, inferred main/base family packages, required file and texture providers, tracked native plugin-loader packages, and pinned shared-resource providers.
+- Run every candidate together with its complete requirement closure through the existing DeploymentPlanner/ConflictEngine; dependencies and texture providers must themselves remain non-conflicting.
+- Extend dependency validation to prospective staged sets and support requirements sidecars with `mods`/`dependencies`/`requires`, `files`, and `textures` entries while preserving the existing file-requirement format.
+- Fail closed on ambiguous required providers, missing packages, unsafe/invalid requirement paths, independent texture-replacer collisions, and non-converging dependency state.
+- Add Automation regressions for dependency + required-texture closure, independent texture alternatives, and missing packages, plus a UX regression that pins the Auto Populate entry point.
+
 # v8.8.19 — Auto Modder foundation
 
 - Keep updater progress reporting observational: a loading-screen callback failure is logged but cannot turn a healthy update into rollback or otherwise change update safety semantics.
