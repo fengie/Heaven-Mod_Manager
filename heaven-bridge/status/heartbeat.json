@@ -5,14 +5,8 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T13:04:16.936741+00:00",
-  "running": [
-    {
-      "id": "branchzero-prune-settled-secret-refs-20260929-1304-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T13:03:45.534395+00:00"
-    }
-  ],
+  "updated_at": "2026-09-29T13:09:17.401875+00:00",
+  "running": [],
   "capabilities": [
     "app_launch",
     "cancel",
