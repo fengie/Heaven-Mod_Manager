@@ -1,9 +1,10 @@
 {
   "id": "updater-release-runner-agent-20260929-1255-a1",
-  "state": "running",
+  "state": "failed",
   "action": "codex",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:56:56.373367+00:00"
+  "updated_at": "2026-09-29T12:57:31.206038+00:00",
+  "exit_code": 1
 }
