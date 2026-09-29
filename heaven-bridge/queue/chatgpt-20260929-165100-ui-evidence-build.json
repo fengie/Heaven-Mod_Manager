@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165100-ui-evidence-build",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $src=Join-Path $env:USERPROFILE 'HeavenBridgeSource'; $root=Join-Path $env:USERPROFILE 'MhwUiEvidence'; if(Test-Path $root){ Get-ChildItem $root -Directory -ErrorAction SilentlyContinue | ForEach-Object { try { git -C $src worktree remove --force $_.FullName 2>$null } catch {}; Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue } } else { New-Item -ItemType Directory -Path $root | Out-Null }; git -C $src fetch origin; git -C $src worktree add --detach (Join-Path $root 'main') e282fa0499e15e9ab57ecbd3b21ab7e341bc6b56; git -C $src worktree add --detach (Join-Path $root 'candidate') 35af25b2695773248afba10e88783e0b99767324; dotnet build (Join-Path $root 'main\\src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release -p:NuGetAudit=false; dotnet build (Join-Path $root 'candidate\\src\\MhwModManager.App\\MhwModManager.App.csproj') -c Release -p:NuGetAudit=false; Write-Output ('MAIN_EXE=' + (Get-ChildItem (Join-Path $root 'main\\src\\MhwModManager.App\\bin\\Release') -Filter 'MHW Mod Manager.exe' -Recurse -File | Select-Object -First 1 -ExpandProperty FullName)); Write-Output ('CANDIDATE_EXE=' + (Get-ChildItem (Join-Path $root 'candidate\\src\\MhwModManager.App\\bin\\Release') -Filter 'MHW Mod Manager.exe' -Recurse -File | Select-Object -First 1 -ExpandProperty FullName))",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 900
+  },
+  "created_at": "2026-09-29T16:49:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
