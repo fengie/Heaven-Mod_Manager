@@ -224,7 +224,7 @@ public sealed class ModCatalogService(
         return result;
     }
 
-    private static IReadOnlyList<CatalogMod> FilterAndSort(IReadOnlyList<CatalogMod> mods, CatalogBrowseRequest request)
+    private static CatalogMod[] FilterAndSort(IReadOnlyList<CatalogMod> mods, CatalogBrowseRequest request)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"query={request.Query ?? "<empty>"}; mode={request.Mode}");
         IEnumerable<CatalogMod> query = mods;
@@ -249,7 +249,7 @@ public sealed class ModCatalogService(
         return query.ToArray();
     }
 
-    private static IReadOnlyList<CatalogMod> Deduplicate(IEnumerable<CatalogMod> mods)
+    private static CatalogMod[] Deduplicate(IEnumerable<CatalogMod> mods)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // Provider identity is always safe. Cross-provider merging stays deliberately conservative
