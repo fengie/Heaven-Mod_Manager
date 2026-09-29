@@ -1,0 +1,14 @@
+{
+  "id": "manager-20260929-updater-e2e-harness-build-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'\n$root = Join-Path $env:TEMP 'mhw-updater-e2e-harness-build-a2'\nif (Test-Path $root) { Remove-Item -Recurse -Force $root }\ngit clone --no-tags --branch agent/updater-installed-client-e2e-harness-20260929 https://github.com/fengie/mhw-mods.git $root\nif ($LASTEXITCODE -ne 0) { throw 'clone failed' }\n$proj = Join-Path $root 'tests\\MhwModManager.IntegrationTests\\MhwModManager.IntegrationTests.csproj'\ndotnet restore $proj --source (Join-Path $root 'data') -p:NuGetAudit=false --ignore-failed-sources\nif ($LASTEXITCODE -ne 0) { throw 'restore failed' }\ndotnet build $proj -c Release --no-restore -p:NuGetAudit=false\nif ($LASTEXITCODE -ne 0) { throw 'build failed' }\ngit -C $root status --short\ngit -C $root rev-parse HEAD"
+  },
+  "created_at": "2026-09-29T09:02:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
