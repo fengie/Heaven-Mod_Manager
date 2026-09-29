@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0825-topology-output-q2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:25:00Z",
+  "ttl_seconds": 3600,
+  "action": "job_output_read",
+  "params": {
+    "job_id": "controller-20260929-0823-agentcontrol-topology-main-a1",
+    "stream": "stdout",
+    "offset": 0,
+    "length": 12000
+  },
+  "priority": "highest"
+}
