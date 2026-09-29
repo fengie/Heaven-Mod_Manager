@@ -1685,18 +1685,63 @@ def desktop_type_text(p):
     return {"characters": len(value), "utf16_units": sent_units}
 
 
+def _secret_unc_share(raw):
+    value = str(raw or "").strip()
+    if not value.startswith("\\\\"):
+        return None
+    trimmed = value.lstrip("\\")
+    parts = trimmed.split("\\")
+    if len(parts) < 2 or not parts[0] or not parts[1]:
+        return None
+    server, share = parts[0], parts[1]
+    if any(ord(ch) < 32 for ch in server + share):
+        return None
+    return value, server, share
+
+
+def _verify_secret_inbox_encrypted(raw):
+    unc = _secret_unc_share(raw)
+    if unc is None or os.name != "nt":
+        return False
+    _, server, share = unc
+    env = os.environ.copy()
+    env["HEAVEN_SECRET_SMB_SERVER"] = server
+    env["HEAVEN_SECRET_SMB_SHARE"] = share
+    command = (
+        "$ErrorActionPreference='Stop'; "
+        "$c = @(Get-SmbConnection -ServerName $env:HEAVEN_SECRET_SMB_SERVER -ErrorAction Stop | "
+        "Where-Object { $_.ShareName -eq $env:HEAVEN_SECRET_SMB_SHARE }) | Select-Object -First 1; "
+        "if (-not $c) { exit 3 }; "
+        "if (-not [bool]$c.Encrypted) { exit 4 }; "
+        "exit 0"
+    )
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            env=env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return proc.returncode == 0
+
+
 def secret_channel_status():
     raw = str(os.environ.get(SECRET_INBOX_ENV) or "").strip()
-    encrypted = str(os.environ.get(SECRET_INBOX_ENCRYPTED_ENV) or "").strip() == "1"
     available = False
-    if raw and encrypted:
+    if raw:
         try:
-            available = Path(os.path.expandvars(os.path.expanduser(raw))).is_dir()
+            path_available = Path(os.path.expandvars(os.path.expanduser(raw))).is_dir()
         except OSError:
-            available = False
+            path_available = False
+        available = bool(path_available and _verify_secret_inbox_encrypted(raw))
     return {
         "available": available,
         "transport": "encrypted-smb-inbox-v1" if available else "not_configured",
+        "transport_verified": available,
         "relay_secret_values_allowed": False,
         "single_use": True,
         "destination_bound": True,
