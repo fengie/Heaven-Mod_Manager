@@ -135,8 +135,8 @@ test("v2 state migrates without dropping durable records", () => {
     leases: [{ id: "l1" }],
     events: [{ type: "old" }]
   }, { sessionId: "new-session", hostname: "heaven2" });
-  assert.equal(migrated.version, 8);
-  assert.equal(migrated.autopilot.phase, "waiting-for-direction");
+  assert.equal(migrated.version, 9);
+  assert.equal(migrated.autopilot.phase, "waiting-for-direction");\n  assert.equal(migrated.perpetualSwarm.enabled, false);\n  assert.equal(migrated.perpetualSwarm.workflowId, "usual-swarm");
   assert.equal(migrated.agents.length, 1);
   assert.equal(migrated.tasks.length, 1);
   assert.equal(migrated.controller.sessionId, "new-session");
