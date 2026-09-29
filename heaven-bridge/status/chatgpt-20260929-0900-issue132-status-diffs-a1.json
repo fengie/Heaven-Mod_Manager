@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0900-issue132-status-diffs-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 4,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T12:59:59.756570+00:00"
+  "updated_at": "2026-09-29T13:00:17.488825+00:00",
+  "exit_code": 0
 }
