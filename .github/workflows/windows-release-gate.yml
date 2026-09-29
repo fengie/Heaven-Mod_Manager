@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   windows-release:
-    name: Verify and publish on Windows
+    name: Verify, publish, and prove update on Heaven
     # GitHub-hosted Windows currently fails before runner allocation; use the repaired Heaven runner.
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
@@ -87,6 +87,68 @@ jobs:
         run: |
           .\scripts\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
+      - name: Build installed-client updater E2E
+        if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        run: |
+          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run real build-60 update and rollback against published release
+        if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        env:
+          MHW_RUN_UPDATER_INSTALLED_E2E: '1'
+          MHW_MOD_MANAGER_GITHUB_TOKEN: ${{ github.token }}
+          MHW_E2E_EVIDENCE_PATH: ${{ github.workspace }}\BuildLogs\updater-installed-e2e\evidence.json
+        run: |
+          $manifestPath = '.\artifacts\update-manifest.json'
+          if (!(Test-Path -LiteralPath $manifestPath)) { throw "Published updater manifest is missing: $manifestPath" }
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          if ([long]$manifest.buildNumber -le 60) {
+            throw "Published updater build must be newer than 60; found $($manifest.buildNumber)."
+          }
+          if ([string]::IsNullOrWhiteSpace([string]$manifest.sourceSha)) {
+            throw 'Published updater manifest is missing sourceSha.'
+          }
+          if (-not [string]::Equals([string]$manifest.sourceSha, $env:GITHUB_SHA, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Published updater source $($manifest.sourceSha) does not match exact workflow source $env:GITHUB_SHA."
+          }
+
+          $env:MHW_E2E_TARGET_BUILD = [string]$manifest.buildNumber
+          $env:MHW_E2E_TARGET_SOURCE = [string]$manifest.sourceSha
+          $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          New-Item -ItemType Directory -Force -Path $evidence | Out-Null
+
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          if (!(Test-Path -LiteralPath $runner)) { throw "Missing test runner: $runner" }
+          $stdout = Join-Path $evidence 'installed-client-e2e.stdout.log'
+          $stderr = Join-Path $evidence 'installed-client-e2e.stderr.log'
+          $combined = Join-Path $evidence 'installed-client-e2e-test.log'
+          Remove-Item -LiteralPath $stdout,$stderr,$combined -Force -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath $runner `
+            -ArgumentList @('--filter-class', 'MhwModManager.IntegrationTests.UpdaterInstalledClientE2ETests') `
+            -Wait -PassThru -NoNewWindow `
+            -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+
+          @('=== STDOUT ===') | Set-Content -LiteralPath $combined -Encoding UTF8
+          if (Test-Path -LiteralPath $stdout) { Get-Content -LiteralPath $stdout | Add-Content -LiteralPath $combined }
+          @('=== STDERR ===') | Add-Content -LiteralPath $combined
+          if (Test-Path -LiteralPath $stderr) { Get-Content -LiteralPath $stderr | Add-Content -LiteralPath $combined }
+
+          if ($process.ExitCode -ne 0) {
+            throw "Installed-client updater E2E failed with exit code $($process.ExitCode). See $combined."
+          }
+          if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
+            throw 'Installed-client updater E2E returned success without evidence.json.'
+          }
+          $doc = Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw | ConvertFrom-Json
+          if ($doc.status -eq 'FAIL' -or $doc.scenarioA.status -ne 'PASS' -or $doc.scenarioB.status -ne 'PASS') {
+            throw 'Installed-client updater E2E evidence is not fully green.'
+          }
+
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -123,9 +185,11 @@ jobs:
           $build = Get-ChildItem -Path BuildLogs -Filter 'build-release-report-*.txt' | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
           if (-not $verify -or -not $build) { throw 'Expected verification/build reports were not produced.' }
 
-          $evidencePath = '_AGENT_CONTEXT/EVIDENCE/v8.8.7-hosted-windows-closure.log'
+          $releaseVersion = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
+          if ([string]::IsNullOrWhiteSpace($releaseVersion)) { throw 'VERSION.txt is empty.' }
+          $evidencePath = "_AGENT_CONTEXT/EVIDENCE/v$releaseVersion-heaven-windows-closure.log"
           @(
-            'MHW Manual Mod Manager v8.8.7 hosted Windows closure'
+            ("MHW Manual Mod Manager v$releaseVersion Heaven Windows closure")
             ('source_sha=' + $env:GITHUB_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
             ('runner_os=' + $env:RUNNER_OS)
@@ -139,12 +203,31 @@ jobs:
             (Get-Content -LiteralPath $build.FullName -Raw)
           ) | Set-Content -LiteralPath $evidencePath -Encoding UTF8
 
+          $updaterEvidenceJson = Join-Path $env:GITHUB_WORKSPACE 'BuildLogs\updater-installed-e2e\evidence.json'
+          if (!(Test-Path -LiteralPath $updaterEvidenceJson)) {
+            throw 'Successful release gate is missing installed-client updater E2E evidence.'
+          }
+          $updaterEvidenceHash = (Get-FileHash -LiteralPath $updaterEvidenceJson -Algorithm SHA256).Hash
+          $updaterClosurePath = "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v$releaseVersion.log"
+          @(
+            ("MHW Manual Mod Manager v$releaseVersion installed-client updater E2E closure")
+            ('source_sha=' + $env:GITHUB_SHA)
+            ('run_id=' + $env:GITHUB_RUN_ID)
+            ('runner_os=' + $env:RUNNER_OS)
+            ('runner_arch=' + $env:RUNNER_ARCH)
+            ('dotnet_sdk=' + (& dotnet --version))
+            ('evidence_sha256=' + $updaterEvidenceHash)
+            ''
+            '=== EVIDENCE.JSON ==='
+            (Get-Content -LiteralPath $updaterEvidenceJson -Raw)
+          ) | Set-Content -LiteralPath $updaterClosurePath -Encoding UTF8
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath
+          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath $updaterClosurePath
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
-            git commit -m 'Persist hosted Windows verification evidence [skip ci]'
+            git commit -m 'Persist Heaven release and updater evidence [skip ci]'
             if ($LASTEXITCODE -ne 0) { throw 'Failed to create the verification evidence commit.' }
 
             git push origin HEAD:main
