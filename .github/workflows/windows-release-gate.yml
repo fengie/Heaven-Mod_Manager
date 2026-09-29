@@ -4,10 +4,34 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'data/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+      - 'legacy-v7/**'
+      - 'MhwModManager.sln'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'NuGet.config'
+      - 'global.json'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'VERSION.txt'
+      - 'VALIDATION.md'
+      - 'Open Startup Logs.bat'
+      - 'OPEN MASTER DEBUG LOG.bat'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: windows-release-main
+  cancel-in-progress: true
 
 jobs:
   windows-release:
