@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-1534-bughunt-workspace-snapshot",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "created_at": "2026-09-29T15:34:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$paths=@(\"$env:USERPROFILE\\local-ai-workspaces\\mhw-mods\",\"$env:USERPROFILE\\mhw-mods\"); foreach($p in $paths){ if(Test-Path (Join-Path $p '.git')){ Write-Output \"REPO=$p\"; git -C $p fetch origin main --prune; Write-Output ('HEAD='+(git -C $p rev-parse HEAD)); Write-Output ('BRANCH='+(git -C $p branch --show-current)); Write-Output ('ORIGIN_MAIN='+(git -C $p rev-parse origin/main)); git -C $p status --short; break } }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 120
+  }
+}
