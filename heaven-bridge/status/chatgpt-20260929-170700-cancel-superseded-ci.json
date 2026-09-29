@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-170700-cancel-superseded-ci",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T17:03:14.442423+00:00"
+  "updated_at": "2026-09-29T17:03:21.645046+00:00",
+  "exit_code": 1
 }
