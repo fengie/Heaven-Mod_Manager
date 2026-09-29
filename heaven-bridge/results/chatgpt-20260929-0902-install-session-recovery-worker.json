@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0902-install-session-recovery-worker",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:59:33.107769+00:00",
+  "status": "error",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:26:47.582758+00:00",
+  "finished_at": "2026-09-29T15:26:47.582758+00:00",
+  "host": "heaven",
+  "action": "proc_start",
+  "error": {
+    "code": "JOB_EXPIRED",
+    "message": "job exceeded its TTL",
+    "details": {
+      "age_seconds": 23234,
+      "ttl_seconds": 21600
+    }
+  },
+  "stderr": "job exceeded its TTL",
+  "stdout": ""
+}
