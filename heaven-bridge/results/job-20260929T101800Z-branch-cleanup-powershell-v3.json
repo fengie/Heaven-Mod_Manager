@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T101800Z-branch-cleanup-powershell-v3",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T10:18:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:20:11.233926+00:00",
+  "finished_at": "2026-09-29T10:20:11.859369+00:00",
+  "stdout": "",
+  "stderr": "Set-Location : Cannot find path 'C:\\Users\\Xxkan\\mhw-mods' because it does not exist.\r\nAt line:2 char:1\r\n+ Set-Location 'C:\\Users\\Xxkan\\mhw-mods'\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\Xxkan\\mhw-mods:String) [Set-Location], ItemNotFoundException\r\n    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.SetLocationCommand\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T101800Z-branch-cleanup-powershell-v3.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T101800Z-branch-cleanup-powershell-v3.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 402,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "94970ee99e69bffd9e7a94ea24be3c230a1947461f22edf16cc33448d4c87baf"
+}
