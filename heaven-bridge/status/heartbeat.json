@@ -4,27 +4,32 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T08:51:36.909453+00:00",
+  "updated_at": "2026-09-29T08:56:51.919484+00:00",
   "running": [
     {
-      "id": "chatgpt-20260929-0851-pr90-merge-probe-a1",
+      "id": "chatgpt-20260929-0856-proxy-access-control-proof",
       "action": "proc_run",
-      "started_at": "2026-09-29T08:51:08.712804+00:00"
+      "started_at": "2026-09-29T08:56:24.659089+00:00"
     },
     {
-      "id": "chatgpt-20260929-0852-agent-control-snapshot",
+      "id": "chatgpt-20260929-0859-pr90-worktree-state-g2",
       "action": "proc_run",
-      "started_at": "2026-09-29T08:51:08.719367+00:00"
+      "started_at": "2026-09-29T08:56:24.668971+00:00"
     },
     {
-      "id": "manager-20260929-find-apppaths-a1",
-      "action": "proc_run",
-      "started_at": "2026-09-29T08:51:08.735693+00:00"
+      "id": "chatgpt-20260929-0854-session-recovery-patch-r3",
+      "action": "python",
+      "started_at": "2026-09-29T08:56:32.638360+00:00"
     },
     {
-      "id": "chatgpt-20260929-0850-agent-control-snapshot-now",
+      "id": "chatgpt-20260929-0857-pr90-full-verify-a1",
       "action": "proc_run",
-      "started_at": "2026-09-29T08:51:35.408420+00:00"
+      "started_at": "2026-09-29T08:56:32.655220+00:00"
+    },
+    {
+      "id": "chatgpt-20260929-0857-agent-control-live-status-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T08:56:50.418774+00:00"
     }
   ],
   "capabilities": [
