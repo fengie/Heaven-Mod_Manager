@@ -36,3 +36,19 @@ test("startup restore discovers every manifest-backed local plugin dynamically",
   assert.match(restore, /manifest\.json/i);
   assert.match(restore, /manifest_count/);
 });
+
+test("startup PowerShell avoids ambiguous variable-colon interpolation", () => {
+  const scripts = [
+    ["Install-StartupRestore.ps1", read("Install-StartupRestore.ps1")],
+    ["Restore-StartupSetup.ps1", read("Restore-StartupSetup.ps1")],
+  ];
+  const unsafeVariableColon = /\$(?!(?:env|script|global|local|private|using):)[A-Za-z_][A-Za-z0-9_]*:/g;
+
+  for (const [name, source] of scripts) {
+    assert.deepEqual(
+      source.match(unsafeVariableColon) ?? [],
+      [],
+      `${name} contains a PowerShell interpolation like $name: that must use ${name}: or a format expression`,
+    );
+  }
+});
