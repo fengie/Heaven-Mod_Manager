@@ -323,7 +323,7 @@ public sealed class CatalogTests : IDisposable
                 Content = new ByteArrayContent(payload),
                 RequestMessage = request
             };
-            response.Content.Headers.ContentRange = new("bytes", 0, payload.LongLength - 1, payload.LongLength);
+            response.Content.Headers.ContentRange = new(0, payload.LongLength - 1, payload.LongLength) { Unit = "bytes" };
             return Task.FromResult(response);
         }
     }
@@ -347,7 +347,7 @@ public sealed class CatalogTests : IDisposable
                 RequestMessage = request
             };
             if (request.Headers.Range is not null)
-                response.Content.Headers.ContentRange = new("bytes", offset, payload.LongLength - 1, payload.LongLength);
+                response.Content.Headers.ContentRange = new(offset, payload.LongLength - 1, payload.LongLength) { Unit = "bytes" };
             return Task.FromResult(response);
         }
     }
