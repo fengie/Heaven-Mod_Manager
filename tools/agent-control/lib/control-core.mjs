@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
@@ -73,6 +73,44 @@ export function workflowPermission(workflowId) {
   return WORKFLOW_PERMISSION_REQUIREMENTS[String(workflowId || "")] || null;
 }
 
+export function agentExecutionModeDecision(requestedMode = "") {
+  const requested = String(requestedMode || "").trim().toLowerCase();
+
+  if (!requested || requested === "chat" || requested === "normal-chat" || requested === "normal_chat") {
+    return {
+      allowed: false,
+      mode: "chat",
+      code: "CHAT_SESSION_REQUIRED",
+      reason: "Normal Chat is the default agent mode. Agent Control cannot create ChatGPT chats automatically and will not silently fall back to Codex. Use or register a normal ChatGPT session for this task, or explicitly request executionMode=\"codex\" only when you intentionally want a Codex worker."
+    };
+  }
+
+  if (requested === "codex") {
+    return {
+      allowed: true,
+      mode: "codex",
+      code: null,
+      reason: "Explicit Codex opt-in accepted for this task."
+    };
+  }
+
+  if (requested === "work") {
+    return {
+      allowed: false,
+      mode: "work",
+      code: "WORK_MODE_EXTERNAL",
+      reason: "Work is a ChatGPT product mode and must be explicitly selected in ChatGPT. Agent Control will not translate a Work request into a Codex worker."
+    };
+  }
+
+  return {
+    allowed: false,
+    mode: requested,
+    code: "UNKNOWN_EXECUTION_MODE",
+    reason: `Unknown execution mode "${requested}". Normal Chat is the default; Codex requires an explicit executionMode="codex" request.`
+  };
+}
+
 export const DEFAULT_MACHINE_POLICIES = Object.freeze({
   heaven: {
     label: "heaven",
@@ -119,6 +157,8 @@ export function defaultControlState({ sessionId, hostname }) {
     controller: { sessionId, hostname, startedAt: new Date().toISOString() },
     settings: {
       autonomyLevel: "assist",
+      defaultAgentExecutionMode: "chat",
+      requireExplicitCodexOptIn: true,
       dispatchPaused: false,
       readOnly: false,
       emergencyStop: false,
