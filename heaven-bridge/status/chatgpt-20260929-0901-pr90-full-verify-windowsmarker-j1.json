@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-0901-pr90-full-verify-windowsmarker-j1",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:01:18.087208+00:00"
+}
