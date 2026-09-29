@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0849-issue118-worktree",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:49:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:49:23.320277+00:00",
+  "finished_at": "2026-09-29T12:49:25.959837+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\ngit : error: branch 'fix/credential-safe-secret-input-20260929' not found\r\nAt line:1 char:169\r\n+ ... orce $wt }; git branch -D fix/credential-safe-secret-input-20260929 2 ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (error: branch '...0929' not found:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0849-issue118-worktree.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0849-issue118-worktree.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 502,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "5a8fd60e8b7714dfd77bd9cf59f3f73c7f57eb534f4538286bb85549161c8283"
+}
