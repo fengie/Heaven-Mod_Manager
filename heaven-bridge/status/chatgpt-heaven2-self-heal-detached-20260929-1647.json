@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-heaven2-self-heal-detached-20260929-1647",
+  "state": "running",
+  "action": "app_launch",
+  "host": "heaven2",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T16:47:19.810261+00:00"
+}
