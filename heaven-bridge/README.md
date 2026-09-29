@@ -31,7 +31,7 @@ Relay paths:
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
-## Worker v6
+## Worker v7
 
 Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and compatibility mirror; do not merge its operational job history wholesale into `main`.
 
@@ -41,7 +41,19 @@ Bootstrap keeps two separate local checkouts: `%USERPROFILE%\HeavenBridgeRepo` t
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
-The worker preserves v2 protocol compatibility and reports `worker_version: 6`.
+The worker preserves v2 protocol compatibility and reports `worker_version: 7`.
+
+Worker v7 scales the heavy-worker pool automatically instead of using the old fixed 4-worker default. The default ceiling is derived from logical CPU count (75% of logical CPUs, minimum 8, maximum 24), while `HEAVEN_BRIDGE_MAX_WORKERS` can raise the configured ceiling up to 32. Before launching another ordinary job, the worker preserves the larger of a 4 GiB RAM reserve or 12% of physical memory and budgets 1.25 GiB of free memory per newly admitted worker. Starts are also ramped per queue tick instead of spawning the entire backlog at once. Control-plane actions remain responsive even when ordinary worker capacity is saturated.
+
+Tuning knobs:
+
+- `HEAVEN_BRIDGE_MAX_WORKERS` — explicit worker ceiling, hard-capped at 32.
+- `HEAVEN_BRIDGE_MEMORY_RESERVE_GB` — minimum free-RAM reserve, default 4 GiB.
+- `HEAVEN_BRIDGE_MEMORY_RESERVE_PERCENT` — proportional RAM reserve, default 12%.
+- `HEAVEN_BRIDGE_MEMORY_PER_WORKER_GB` — admission budget per additional worker, default 1.25 GiB.
+- `HEAVEN_BRIDGE_MAX_STARTS_PER_TICK` — ramp-up burst cap, auto-derived from worker ceiling and capped at 16.
+
+Health and relay heartbeat payloads expose the configured ceiling, effective capacity, logical CPU count, current memory headroom, and available start slots so Agent Control can diagnose whether the worker is CPU/config-limited or memory-limited.
 
 Core capabilities:
 
@@ -54,7 +66,7 @@ Core capabilities:
 - bounded structured `wait_for` polling for files, processes, sessions, and windows with cancellation/timeout evidence
 - process-tree termination
 - job cancellation and status
-- bounded concurrent job execution
+- adaptive high-concurrency job execution with CPU-derived default capacity, RAM headroom admission control, and bounded start bursts
 - TTL/replay/idempotency checks
 - optional HMAC-SHA256 authentication
 - structured error codes
