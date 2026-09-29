@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-100320-active-local-branches-c91d",
+  "state": "running",
+  "action": "powershell",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T10:04:32.118576+00:00"
+}
