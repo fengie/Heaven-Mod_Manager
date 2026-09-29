@@ -56,6 +56,8 @@ const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
+const CONTROLLER_HOST = String(process.env.AGENT_CONTROL_CONTROLLER_HOST || "heaven2").trim().toLowerCase();
+const ALLOW_NON_CONTROLLER_HOST = process.env.AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST === "1";
 const REPO = process.env.AGENT_CONTROL_REPO || path.join(os.homedir(), "local-ai-workspaces", "mhw-mods");
 const WORKTREE_ROOT = process.env.AGENT_WORKTREE_ROOT || path.join(os.homedir(), "agent-worktrees");
 const MAX_DEPLOY_COUNT = Number(process.env.AGENT_CONTROL_MAX_DEPLOY_COUNT || 8);
@@ -3038,6 +3040,11 @@ const server = http.createServer(async (req, res) => {
     });
   }
 });
+
+const RUNTIME_HOSTNAME = os.hostname().trim().toLowerCase();
+if (!ALLOW_NON_CONTROLLER_HOST && RUNTIME_HOSTNAME !== CONTROLLER_HOST) {
+  throw new Error(`Agent Control must run on ${CONTROLLER_HOST}; observed ${RUNTIME_HOSTNAME || "unknown"}. Set AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1 only for isolated tests or an explicit recovery override.`);
+}
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 if (!LOOPBACK_HOSTS.has(String(HOST).trim().toLowerCase())) {
