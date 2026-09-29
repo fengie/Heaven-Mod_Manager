@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1216-hcp-v040-verify",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop';\n$repo='C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods';\nif (-not (Test-Path (Join-Path $repo '.git'))) { throw 'canonical checkout unavailable' }\nSet-Location $repo;\ngit fetch origin main integration/hcp-index-wiring-v040-20260929;\nif ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }\n$remoteHead=(git rev-parse origin/integration/hcp-index-wiring-v040-20260929).Trim();\nif ($remoteHead -ne '58ddc0059c74c07da8c53d4a2fa88fdb60520371') { throw \"branch head moved: $remoteHead\" }\n$wt=Join-Path $env:TEMP 'mhw-hcp-v040-58ddc005';\nif (Test-Path $wt) { git worktree remove --force $wt 2>$null; if (Test-Path $wt) { Remove-Item -LiteralPath $wt -Recurse -Force } }\ngit worktree add --detach $wt $remoteHead;\nif ($LASTEXITCODE -ne 0) { throw 'git worktree add failed' }\ntry {\n  Set-Location $wt;\n  python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'bridge compile failed' }\n  python -m compileall -q plugins/heaven-control-plane/heaven_control_plane plugins/heaven-control-plane/tests plugins/heaven-control-plane/verify.py;\n  if ($LASTEXITCODE -ne 0) { throw 'control-plane compile failed' }\n  python heaven-bridge/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'primary bridge tests failed' }\n  python heaven-bridge/tests/test_worker.py;\n  if ($LASTEXITCODE -ne 0) { throw 'compat bridge tests failed' }\n  python plugins/heaven-control-plane/verify.py;\n  if ($LASTEXITCODE -ne 0) { throw 'control-plane verify failed' }\n  $base=(git merge-base origin/main HEAD).Trim();\n  git diff --check $base HEAD;\n  if ($LASTEXITCODE -ne 0) { throw 'git diff --check failed' }\n  [pscustomobject]@{\n    verified_head=(git rev-parse HEAD);\n    merge_base=$base;\n    origin_main=(git rev-parse origin/main);\n    result='PASS'\n  } | ConvertTo-Json -Compress\n}\nfinally {\n  Set-Location $repo;\n  git worktree remove --force $wt 2>$null\n}",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "created_at": "2026-09-29T12:16:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
