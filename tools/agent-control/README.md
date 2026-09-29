@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.0 does
+## What v0.5.1 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -39,7 +39,9 @@ The controller remains authoritative only for processes it launches, while `fede
 
 Normalized states are `working`, `tool_wait`, `blocked`, `idle`, `done`, `failed`, and `disconnected`. Fresh non-terminal heartbeats are live. Stale or disconnected observations remain visible but do not inflate Active Agents. Completed and failed historical records never count as live.
 
-Identity reconciliation uses stable provider/source identities plus explicit correlation keys. Similar chat titles are display metadata only and never cause sessions to be merged. The same logical worker can be correlated across ChatGPT and GitHub when a shared strong correlation key is supplied.
+Identity reconciliation uses stable provider/source identities plus explicit, namespaced strong correlation keys. Similar chat titles, tasks, branches, PR numbers, roles, and machine labels are metadata only and never become logical identity keys. The same logical worker can be correlated across ChatGPT and GitHub only when explicit strong evidence such as a logical-agent, session, workflow-run, bridge-job, or work-item key is supplied.
+
+Federation schema v2 adds an AgentSource-style adapter boundary for normalize / ingest / reconcile / heartbeat / supported discovery, preserves runtime/session/conversation identity plus opaque source metadata, rejects unknown or unsupported providers at ingestion, rejects ambiguous multi-agent correlation, and ignores late observations that would regress a newer provider/source heartbeat. Persisted v1 registry data migrates non-destructively; legacy providers without an installed adapter remain inspectable as `unsupported` but cannot emit new observations.
 
 External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes, while local execution capacity is still calculated from controller-owned processes only.
 
