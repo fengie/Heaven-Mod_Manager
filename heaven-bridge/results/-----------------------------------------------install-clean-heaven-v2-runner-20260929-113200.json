@@ -1,0 +1,21 @@
+{
+  "id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:32:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:33:07.920663+00:00",
+  "finished_at": "2026-09-29T11:35:30.200891+00:00",
+  "stdout": "\r\n--------------------------------------------------------------------------------\r\n|        ____ _ _   _   _       _          _        _   _                      |\r\n|       / ___(_) |_| | | |_   _| |__      / \\   ___| |_(_) ___  _ __  ___      |\r\n|      | |  _| | __| |_| | | | | '_ \\    / _ \\ / __| __| |/ _ \\| '_ \\/ __|     |\r\n|      | |_| | | |_|  _  | |_| | |_) |  / ___ \\ (__| |_| | (_) | | | \\__ \\     |\r\n|       \\____|_|\\__|_| |_|\\__,_|_.__/  /_/   \\_\\___|\\__|_|\\___/|_| |_|___/     |\r\n|                                                                              |\r\n|                       Self-hosted runner registration                        |\r\n|                                                                              |\r\n--------------------------------------------------------------------------------\r\n\r\n# Authentication\r\n\r\n\r\n� Connected to GitHub\r\n\r\n# Runner Registration\r\n\r\n\r\n\r\n\r\n� Runner successfully added\r\n\r\n# Runner settings\r\n\r\n\r\n� Settings Saved.\r\n\r\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-v2-clean'...\nThe batch file cannot be found.\r\nconfig.cmd failed with exit code 1.\r\nAt C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-v2-clean\\heaven-bridge\\install-github-runner-v2.ps1:171 char:36\r\n+ ... DE -ne 0) { throw \"config.cmd failed with exit code $LASTEXITCODE.\" } ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (config.cmd failed with exit code 1.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : config.cmd failed with exit code 1.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----------------------------------------------install-clean-heaven-v2-runner-20260929-113200.stderr.log",
+    "stdout_bytes": 977,
+    "stderr_bytes": 596,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "a29c782fe71f2c048ccefad7e81269a05086c2893a36748eafc717a517eba3d9"
+}
