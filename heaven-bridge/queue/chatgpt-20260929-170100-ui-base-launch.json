@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170100-ui-base-launch",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $root=Join-Path $env:USERPROFILE 'MhwUiEvidence\\runtime-base'; $game=Join-Path $root 'game'; New-Item -ItemType Directory -Force -Path (Join-Path $game 'nativePC') | Out-Null; $gameExe=Join-Path $game 'MonsterHunterWorld.exe'; if(-not (Test-Path $gameExe)){ [IO.File]::WriteAllBytes($gameExe,[byte[]](0..255)) }; $env:MOD_MANAGER_HOME=$root; $env:MOD_MANAGER_GAME_ROOT=$game; $env:MOD_MANAGER_DEBUG_ROOT=$root; $exe=Join-Path $env:USERPROFILE 'MhwUiEvidence\\base\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0\\MHW Mod Manager.exe'; if(-not (Test-Path $exe)){ throw \"Base executable missing: $exe\" }; $p=Start-Process -FilePath $exe -WorkingDirectory (Split-Path $exe) -PassThru; Write-Output ('PID='+$p.Id)",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T17:00:30Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
