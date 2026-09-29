@@ -75,6 +75,7 @@ const STATE_FILE = path.join(DATA_DIR, "control-plane.json");
 const STATE_BACKUP_FILE = path.join(DATA_DIR, "control-plane.json.bak");
 const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
 const WORK_HANDOFF_SIGNATURES_FILE = path.join(DATA_DIR, "work-handoff-signatures.json");
+const CONTROLLER_PID_FILE = path.join(DATA_DIR, "controller-process.json");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
@@ -4843,7 +4844,30 @@ if (!LOOPBACK_HOSTS.has(String(HOST).trim().toLowerCase())) {
   throw new Error(`Refusing unauthenticated non-loopback bind host "${HOST}". Configure an authenticated remote-access boundary before exposing Agent Control beyond localhost.`);
 }
 
+function writeControllerProcessIdentity() {
+  const identity = {
+    pid: process.pid,
+    sessionId: SESSION_ID,
+    startedAt: isoNow(),
+    serverPath: fileURLToPath(import.meta.url),
+    host: os.hostname(),
+    port: PORT
+  };
+  fs.writeFileSync(CONTROLLER_PID_FILE, JSON.stringify(identity, null, 2), "utf8");
+}
+
+function clearControllerProcessIdentity() {
+  try {
+    if (!fs.existsSync(CONTROLLER_PID_FILE)) return;
+    const current = JSON.parse(fs.readFileSync(CONTROLLER_PID_FILE, "utf8"));
+    if (Number(current?.pid) === process.pid) fs.rmSync(CONTROLLER_PID_FILE, { force: true });
+  } catch {}
+}
+
+process.once("exit", clearControllerProcessIdentity);
+
 server.listen(PORT, HOST, () => {
+  writeControllerProcessIdentity();
   console.log(`Heaven Agent Control Plane listening on http://${HOST}:${PORT}`);
   console.log(`Repo: ${REPO}`);
   console.log(`Worktrees: ${WORKTREE_ROOT}`);
