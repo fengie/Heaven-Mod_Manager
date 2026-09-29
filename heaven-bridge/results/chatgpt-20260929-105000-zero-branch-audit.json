@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-105000-zero-branch-audit",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:50:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:34:28.155068+00:00",
+  "finished_at": "2026-09-29T11:34:35.201455+00:00",
+  "stdout": "{\r\n    \"main\":  \"a1e99bc393b0f89065ac548a02405c179b27037e\",\r\n    \"deleted\":  [\r\n                    {\r\n                        \"branch\":  \"integration/complete-mod-workflows-final-20260929\",\r\n                        \"proof\":  \"ancestor-of-main\"\r\n                    }\r\n                ],\r\n    \"preserved\":  [\r\n                      {\r\n                          \"branch\":  \"codex/complete-mod-workflows\",\r\n                          \"reason\":  \"unique-patches\",\r\n                          \"unique\":  10\r\n                      }\r\n                  ],\r\n    \"active_worktrees\":  [\r\n                             \"main\",\r\n                             \"agent/security-authorization-20260929\",\r\n                             \"audit/complete-workflows-current-main-20260929\",\r\n                             \"reconcile/smart-pack-current-main-20260929\",\r\n                             \"agent/federation-registry-20260929\",\r\n                             \"integration/final-main-reconcile-20260929\",\r\n                             \"converge/final-v886-20260929b\",\r\n                             \"integration/release-lead-20260929-0543\",\r\n                             \"converge/main-20260929\",\r\n                             \"integration/pr90-reconcile-20260929\",\r\n                             \"agent/auto-updater-publication-fix-20260928\",\r\n                             \"integration/pr90-reconcile-local-20260929\",\r\n                             \"release/v8.8.5-20260929\",\r\n                             \"fix/v8.8.5-installed-label-trace\",\r\n                             \"agent/verification-reliability-20260929\"\r\n                         ],\r\n    \"remaining_remote_count\":  2,\r\n    \"remaining_remote\":  [\r\n                             \"codex/complete-mod-workflows\",\r\n                             \"heaven-bridge\"\r\n                         ]\r\n}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   4577cd5f..a1e99bc3  main          -> origin/main\n   d8f497d2..3dfb2ad1  heaven-bridge -> origin/heaven-bridge\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           integration/complete-mod-workflows-final-20260929\nFrom https://github.com/fengie/mhw-mods\n   3dfb2ad1..d3c663ec  heaven-bridge -> origin/heaven-bridge\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-105000-zero-branch-audit.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-105000-zero-branch-audit.stderr.log",
+    "stdout_bytes": 1823,
+    "stderr_bytes": 369,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "576835ece42cfb98f64daa522fca912e519d0e5f84f9730e730da1ba91672157"
+}
