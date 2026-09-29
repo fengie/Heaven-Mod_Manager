@@ -93,6 +93,12 @@ public sealed partial class App:Application, IDisposable
             var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
             var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
             var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,plannerSnapshots,paths.NextStateRoot,paths.Game));
+            var catalogCredentials=startup.Run("services.catalog-credentials",()=>new CatalogCredentialStore(paths.NextStateRoot));
+            var nexusCatalog=startup.Run("services.nexus-catalog",()=>new NexusCatalogProvider(catalogCredentials));
+            var catalogProviders=startup.Run("services.catalog-providers",()=>new ModCatalogProviderRegistry([nexusCatalog]));
+            var remoteCatalogCache=startup.Run("services.remote-catalog-cache",()=>new CatalogCacheStore(Path.Combine(paths.NextStateRoot,"CatalogCache")));
+            var remoteCatalog=startup.Run("services.remote-catalog",()=>new ModCatalogService(catalogProviders,remoteCatalogCache));
+            var catalogDownloads=startup.Run("services.catalog-downloads",()=>new CatalogDownloadManager(Path.Combine(paths.NextStateRoot,"Downloads")));
             var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,plannerSnapshots,paths.Game));
             var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,plannerSnapshots,hash,paths.ModsRoot,paths.Game));
             var previews=startup.Run("services.texture-preview",()=>new TexturePreviewService(Path.Combine(paths.NextStateRoot,"PreviewCache")));
@@ -111,6 +117,7 @@ public sealed partial class App:Application, IDisposable
             var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
             var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(plannerSnapshots));
             var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
+            var catalogInstall=startup.Run("services.catalog-install",()=>new CatalogInstallService(db,remoteCatalog,catalogDownloads));
             var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
@@ -129,7 +136,7 @@ public sealed partial class App:Application, IDisposable
             };
 
             Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
+                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,remoteCatalog,catalogDownloads,catalogInstall,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
             var migration=paths.Game.IsMonsterHunterWorld
