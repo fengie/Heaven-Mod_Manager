@@ -13,8 +13,33 @@ import {
   buildBridgeJob,
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
+  resolveHeavenRelayDir,
   validateBridgeResult
 } from "../lib/heaven-bridge-provider.mjs";
+
+test("bridge relay auto-discovers the documented per-user checkout", () => {
+  const homeDir = path.join("home", "operator");
+  const expected = path.join(homeDir, "HeavenBridgeRepo");
+
+  assert.equal(resolveHeavenRelayDir({
+    configuredPath: "",
+    homeDir,
+    existsSync: candidate => candidate === expected
+  }), expected);
+
+  const explicit = path.join("custom", "relay");
+  assert.equal(resolveHeavenRelayDir({
+    configuredPath: explicit,
+    homeDir,
+    existsSync: () => false
+  }), explicit);
+
+  assert.equal(resolveHeavenRelayDir({
+    configuredPath: "",
+    homeDir,
+    existsSync: () => false
+  }), "");
+});
 
 test("bridge jobs normalize ids and preserve bounded execution metadata", () => {
   const job = buildBridgeJob({
