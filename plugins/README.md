@@ -15,6 +15,24 @@ From 2026-09-29 forward:
 - Repository-wide scripts may invoke plugins, but the plugin implementation remains owned here.
 - Every plugin must include a README describing purpose, exposed capabilities, security boundary, local dependencies, validation commands, and ownership/migration notes.
 
+
+## Plugin-first routing and gap capture
+
+The plugin workspace is not only an implementation location; it is the canonical routing and capability-improvement surface for agents.
+
+Before using a generic/manual fallback for a task:
+
+1. inspect the available plugin/toolbox capabilities;
+2. choose the narrowest purpose-built implemented capability;
+3. prefer structured workflow/control-plane functions over raw shell/browser/desktop primitives when they cover the same operation safely;
+4. consult `PLUGIN_GAP_BACKLOG.md` before assuming a capability is missing.
+
+When a reusable capability is missing or incomplete, update `PLUGIN_GAP_BACKLOG.md` immediately. Do not leave the idea only in chat or agent memory. Search active plugin branches/PRs first so the plan extends existing work rather than duplicating it.
+
+A gap entry must be implementation-ready enough for a future agent to pick up without the original conversation: triggering use case, proposed owner/plugin boundary, capability/API contract, security constraints, dependencies/reuse, acceptance tests, priority, and current status.
+
+The immediate user task should still proceed through the safest authorized fallback when possible. The backlog exists to eliminate repeated manual fallbacks over time, not to create artificial blockers.
+
 ## Existing Heaven Local Bridge compatibility
 
 The existing `heaven-bridge/` tree predates this workspace and is currently active infrastructure. Its existing runtime/relay paths must not be broken by a cosmetic move.
