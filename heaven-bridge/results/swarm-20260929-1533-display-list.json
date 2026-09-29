@@ -1,0 +1,27 @@
+{
+  "id": "swarm-20260929-1533-display-list",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T15:33:00Z",
+  "status": "completed",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:31:36.779816+00:00",
+  "finished_at": "2026-09-29T15:31:37.412585+00:00",
+  "host": "heaven",
+  "action": "display_list",
+  "data": [
+    {
+      "index": 0,
+      "device": "\\\\.\\DISPLAY6",
+      "primary": true,
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "work_x": 0,
+      "work_y": 0,
+      "work_width": 1920,
+      "work_height": 1032
+    }
+  ],
+  "job_hash": "2beb86b1db62aa6efc398dc8cfd1651ba279f766945cf2c788de0213711175c3"
+}
