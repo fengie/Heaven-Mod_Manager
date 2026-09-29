@@ -1,0 +1,57 @@
+﻿MHW Manual Mod Manager v8.8.10 Heaven Windows closure
+source_sha=25f9ce08e40812256ac5342ec9976207e58719a2
+run_id=36578655213
+runner_os=Windows
+runner_arch=X64
+dotnet_sdk=10.0.401
+
+=== VERIFICATION REPORT ===
+# MHW Manual Mod Manager verification report
+
+Generated: 2026-09-29T09:56:25.0061253-04:00
+SDK: 10.0.401
+Overall: **PASS** - 25 passed / 0 failed
+
+| Group | Stage | Result | Exit | Seconds | Detail | Log |
+|---|---|---:|---:|---:|---|---|
+| Harness | PowerShell syntax sweep | PASS | 0 | 0 | All active PowerShell scripts parsed successfully. | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\powershell-syntax-20260929-095505.log |
+| Harness | Report serialization preflight | PASS | 0 | 0.022 | Plain PowerShell object-array report serialization round-tripped successfully. | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\harness-report-preflight-20260929-095505.log |
+| Harness | Agent handoff continuity preflight | PASS | 0 | 1.571 | Required continuity context/manifest is present and propagates to the next agent. | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\agent-handoff-preflight-20260929-095505.log |
+| Restore | Solution restore | PASS | 0 | 3.961 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\restore-20260929-095505-Solution_restore.log |
+| Verification | Function fingerprint scan | PASS | 0 | 4.326 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\function-scan-20260929-095505-Function_fingerprint_scan.log |
+| Compile | Relaxed whole solution | PASS | 0 | 9.452 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-relaxed-20260929-095505-Relaxed_whole_solution.log |
+| Strict compile/analyzers | Core | PASS | 0 | 1.052 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Core.log |
+| Strict compile/analyzers | Storage | PASS | 0 | 1.013 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Storage.log |
+| Strict compile/analyzers | Filesystem | PASS | 0 | 1.105 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Filesystem.log |
+| Strict compile/analyzers | Mhw | PASS | 0 | 1.128 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Mhw.log |
+| Strict compile/analyzers | Diagnostics | PASS | 0 | 1.168 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Diagnostics.log |
+| Strict compile/analyzers | Automation | PASS | 0 | 1.42 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Automation.log |
+| Strict compile/analyzers | UnitTests | PASS | 0 | 1.213 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-UnitTests.log |
+| Strict compile/analyzers | AutomationTests | PASS | 0 | 1.286 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-AutomationTests.log |
+| Strict compile/analyzers | IntegrationTests | PASS | 0 | 1.431 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-IntegrationTests.log |
+| Strict compile/analyzers | Benchmarks | PASS | 0 | 1.086 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-Benchmarks.log |
+| Strict compile/analyzers | SelfTest | PASS | 0 | 1.191 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-SelfTest.log |
+| Strict compile/analyzers | FunctionVerifier | PASS | 0 | 0.886 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-FunctionVerifier.log |
+| Strict compile/analyzers | App | PASS | 0 | 1.062 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260929-095505-App.log |
+| Compile | Strict whole solution | PASS | 0 | 2.071 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\compile-final-20260929-095505-Strict_whole_solution.log |
+| Tests | Core unit tests | PASS | 0 | 8.771 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\test-20260929-095505-Core_unit_tests.log |
+| Tests | Automation unit tests | PASS | 0 | 11.009 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\test-20260929-095505-Automation_unit_tests.log |
+| Tests | Integration + fault injection | PASS | 0 | 13.337 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\test-20260929-095505-Integration___fault_injection.log |
+| Tests | Full automation self-test | PASS | 0 | 4.694 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\selftest-20260929-095505-Full_automation_self-test.log |
+| Verification | Promote verified function fingerprints | PASS | 0 | 1.688 | ok | C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\function-confirm-20260929-095505-Promote_verified_function_fingerprints.log |
+
+
+
+=== RELEASE BUILD REPORT ===
+Version: 8.8.10
+Source SHA: 25f9ce08e40812256ac5342ec9976207e58719a2
+Updater build number: 174
+SDK: 10.0.401
+ReadyToRun fallback used: False
+Release folder: C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\release\MHW-Manual-Mod-Manager-v8.8.10
+Artifact: C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\artifacts\MHW-Manual-Mod-Manager-v8.8.10-win-x64.zip
+SHA256: B3FB12A4410FEEED2F38B1F5D70A9286B488EFDC287687FF92B3F98B4BDD5499
+Product manifest SHA256: 46F4A330329CF5A40B45E2A7880520911E52912E2FE41196B3B2F70D4499E1E9
+Update manifest: C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\artifacts\update-manifest.json
+Master transcript: C:\Users\Xxkan\actions-runner-heaven\_work\mhw-mods\mhw-mods\BuildLogs\build-release-20260929-095625.log
+
