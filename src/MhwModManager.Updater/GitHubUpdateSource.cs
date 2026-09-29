@@ -110,6 +110,7 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
 
     private static UpdateManifest DeserializeManifest(ReadOnlySpan<byte> bytes)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"bytes={bytes.Length}");
         // PowerShell 5.1's -Encoding UTF8 emits a BOM. Accept existing immutable
         // updater manifests while publication is migrated to BOM-free UTF-8.
         if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
