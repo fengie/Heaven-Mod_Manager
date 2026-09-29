@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0903-issue132-port2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:03:00Z",
+  "ttl_seconds": 86400,
+  "action": "proc_run",
+  "priority": "high",
+  "params": {
+    "shell": "cmd",
+    "cwd": "C:\\Users\\Xxkan\\HeavenBridgeRepo",
+    "timeout_seconds": 300,
+    "command": "git fetch origin main recovery/complete-mod-workflows-20260929 && (git worktree remove --force C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows 2>nul || ver > nul) && (if exist C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows rmdir /s /q C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows) && git worktree prune && (git show-ref --verify --quiet refs/heads/fix/rebuild-mod-workflows-20260929 && git branch -D fix/rebuild-mod-workflows-20260929 || ver > nul) && git worktree add -b fix/rebuild-mod-workflows-20260929 C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows origin/main && git -C C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows cherry-pick --no-commit 02fa1dd5c3e98d319067043598bfdfd32617e65f || (git -C C:\\Users\\Xxkan\\mhw-worktrees\\issue132-workflows status --short && exit /b 2)"
+  }
+}
