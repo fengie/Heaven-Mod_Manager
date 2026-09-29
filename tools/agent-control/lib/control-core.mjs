@@ -1,7 +1,8 @@
 import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
+import { defaultFederationState, migrateFederationState } from "./federated-registry.mjs";
 
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned"]);
 
@@ -120,6 +121,7 @@ export function defaultControlState({ sessionId, hostname }) {
       routingManifest: null
     },
     autopilot: defaultAutopilotState(),
+    federation: defaultFederationState(),
     agents: [],
     tasks: [],
     leases: [],
@@ -145,6 +147,7 @@ export function migrateControlState(parsed, context) {
       machinePolicies: { ...base.settings.machinePolicies, ...(parsed.settings?.machinePolicies || {}) }
     },
     autopilot: normalizeAutopilotState(parsed.autopilot),
+    federation: migrateFederationState(parsed.federation),
     agents: Array.isArray(parsed.agents) ? parsed.agents : [],
     tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
     leases: Array.isArray(parsed.leases) ? parsed.leases : [],
