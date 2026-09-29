@@ -1,3 +1,4 @@
+# Permanent repository policy enforcement. Temporary task branches are disposable only after canonical integration is proven.
 name: Branch Lifecycle Enforcer
 
 on:
