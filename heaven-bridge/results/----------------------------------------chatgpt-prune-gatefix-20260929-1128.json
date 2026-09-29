@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------chatgpt-prune-gatefix-20260929-1128",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:28:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T11:30:47.869400+00:00",
+  "finished_at": "2026-09-29T11:30:53.706343+00:00",
+  "stdout": "{\"deleted\":true,\"branch\":\"fix/heaven-gate-concurrency-20260929\",\"main\":\"31554b4bbc19f7ae11818827787ff6229132dcbe\"}\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   febcf269..31554b4b  main          -> origin/main\n   7a954a67..631c45cd  heaven-bridge -> origin/heaven-bridge\n   e96000bc..febcf269  integration/complete-mod-workflows-main-20260929 -> origin/integration/complete-mod-workflows-main-20260929\nTo https://github.com/fengie/mhw-mods.git\n - [deleted]           fix/heaven-gate-concurrency-20260929\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-prune-gatefix-20260929-1128.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------chatgpt-prune-gatefix-20260929-1128.stderr.log",
+    "stdout_bytes": 116,
+    "stderr_bytes": 386,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "ae4ea15ae5ea38116deaa7a4c1bd0589f3ae5d93c3a3e97725f333f0368d8ce2"
+}
