@@ -247,9 +247,9 @@ public sealed record ConflictRow(
     IReadOnlyList<ConflictOptionRow> Options)
 {
     public string Providers=>string.Join("  ↔  ",Options.Select(x=>x.DisplayName));
-    public string Scope=>FileCount<=1?Path:$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
+    public string Scope=>FileCount<=1?AssetBundles.DisplayNameForPath(Path):$"{FileCount} files • {AssetBundles.DisplayNameForPath(Path)}";
     public string FileCountLabel=>FileCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    public string ConfidenceLabel=>$"{ResolverScore}% • {Confidence}";
+    public string ConfidenceLabel=>$"{Confidence} confidence";
 }
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
@@ -257,7 +257,7 @@ public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int Prov
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)
 {
-    public string ConfidenceLabel=>Confirmed?"ISOLATED":$"{Score}% suspect";
+    public string ConfidenceLabel=>Confirmed?"Confirmed by test":$"Evidence {Score}%";
     public string FailureLabel=>FailureCount==1?"1 report":$"{FailureCount} reports";
 }
 
