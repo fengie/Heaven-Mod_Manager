@@ -44,7 +44,7 @@ public sealed class UpdateRuntimeTests : IDisposable
         using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
         try
         {
-            Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
+            Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken));
 
             var error = Record.Exception(
                 () => { using var second = UpdateMutexLease.Acquire(install, TimeSpan.Zero); });
@@ -67,7 +67,7 @@ public sealed class UpdateRuntimeTests : IDisposable
         if (!OperatingSystem.IsWindows()) return;
         var install = Path.Combine(Path.GetTempPath(), "mhwmm-crash-" + Guid.NewGuid().ToString("N"));
         using var owner = StartExternalSemaphoreOwner(GetGlobalSemaphoreName(install));
-        Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(5), TestToken));
+        Assert.Equal("READY", await owner.StandardOutput.ReadLineAsync(TestToken));
 
         owner.Kill(entireProcessTree: true);
         await owner.WaitForExitAsync(TestToken);
