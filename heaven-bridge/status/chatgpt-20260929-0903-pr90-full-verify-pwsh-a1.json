@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0903-pr90-full-verify-pwsh-a1",
-  "state": "running",
+  "state": "failed",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:59:57.798578+00:00"
+  "updated_at": "2026-09-29T09:00:17.552146+00:00",
+  "exit_code": 1
 }
