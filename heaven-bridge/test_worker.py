@@ -222,11 +222,11 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 5)
+        self.assertEqual(result["data"]["worker_version"], 6)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
-            "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch",
+            "controller_checkpoint", "display_list", "clipboard_read", "clipboard_write", "app_launch", "desktop_shortcut_create",
             "window_list", "window_focus", "window_move", "window_state", "window_close",
             "gui_cursor_get", "gui_mouse_move", "gui_mouse_button", "gui_mouse_click",
             "gui_mouse_scroll", "gui_key", "gui_type",
@@ -516,6 +516,24 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(result["data"], expected)
         move.assert_called_once_with({"x": 321, "y": 654})
+
+    def test_desktop_shortcut_create_routes_structured_request(self):
+        expected = {"path": r"C:\\Users\\Example\\Desktop\\Agent Control.lnk", "created": True}
+        payload = {
+            "name": "Agent Control",
+            "target": r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "args": ["-NoProfile"],
+            "overwrite": True,
+        }
+        with patch.object(hb, "desktop_create_shortcut", return_value=expected) as create:
+            result = hb.run_job(
+                "shortcut-create-test",
+                {"action": "desktop_shortcut_create", "params": payload},
+                threading.Event(),
+            )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["data"], expected)
+        create.assert_called_once()
 
     def test_uia_request_validation_and_structured_route(self):
         with self.assertRaises(hb.BridgeError) as missing:
