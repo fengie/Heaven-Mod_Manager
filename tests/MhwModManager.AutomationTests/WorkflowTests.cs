@@ -255,6 +255,41 @@ public sealed class WorkflowTests : IDisposable
     }
 
     [Fact]
+    public async Task FomodCancelRefusesToDeleteOutsideImportWorkspace()
+    {
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "fomod-cancel-containment-mods");
+        Directory.CreateDirectory(mods);
+        var outside = Path.Combine(root, "must-survive-fomod-cancel");
+        Directory.CreateDirectory(outside);
+        var sentinel = Path.Combine(outside, "sentinel.txt");
+        await File.WriteAllTextAsync(sentinel, "KEEP", Token);
+
+        var package = Path.Combine(root, "fomod-cancel-package");
+        Directory.CreateDirectory(Path.Combine(package, "fomod"));
+        await File.WriteAllTextAsync(Path.Combine(package, "payload.bin"), "payload", Token);
+        await File.WriteAllTextAsync(
+            Path.Combine(package, "fomod", "ModuleConfig.xml"),
+            "<config><moduleName>Test</moduleName><requiredInstallFiles><file source=\"payload.bin\" destination=\"payload.bin\"/></requiredInstallFiles></config>",
+            Token);
+
+        var importer = new ArchiveImportService(
+            new ArchiveInspector(),
+            new CatalogService(db, null!, mods),
+            mods);
+        var forged = new FomodImportPreparation(
+            outside,
+            Path.Combine(mods, "destination"),
+            "forged",
+            new FomodInstallerService(package));
+
+        await importer.CancelFomodAsync(forged);
+
+        Assert.True(Directory.Exists(outside));
+        Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+    }
+
+    [Fact]
     public async Task MigrationCommitAndUndoRestoreMetadataAndFilesTogether()
     {
         var db = await DatabaseAsync(); await SeedAsync(db, "old", true); await SeedAsync(db, "new");
