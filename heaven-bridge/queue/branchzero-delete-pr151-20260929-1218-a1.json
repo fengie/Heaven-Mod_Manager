@@ -1,0 +1,11 @@
+{
+  "id": "branchzero-delete-pr151-20260929-1218-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:18:00Z",
+  "ttl_seconds": 7200,
+  "action": "powershell",
+  "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+  "timeout_seconds": 300,
+  "priority": "highest",
+  "payload": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\ngit -C $repo fetch origin --prune\n$b='fix/heaven-runner-single-session-20260929'\n$expected='4ebc5825779ceba58e03716aef322193f14c4e0f'\n$line=(git -C $repo ls-remote origin \"refs/heads/$b\")\nif($line){$actual=($line -split '\\\\s+')[0]; if($actual -ne $expected){throw \"tip changed for $b expected=$expected actual=$actual\"}; git -C $repo push origin --delete $b; if($LASTEXITCODE -ne 0){throw 'delete failed'}}\ngit -C $repo fetch origin --prune\n@{deleted=$b;remaining=@(git -C $repo for-each-ref --format='%(refname:short)' refs/remotes/origin | ? {$_ -notmatch 'origin/HEAD'})}|ConvertTo-Json -Depth 4"
+}
