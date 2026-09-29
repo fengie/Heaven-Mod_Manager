@@ -1,0 +1,12 @@
+{
+  "id": "chatgpt-20260929-0906-d-kill-recovered-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T09:06:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_kill",
+  "params": {
+    "session_id": "da25e55fb97c4e36",
+    "force": true
+  },
+  "priority": "highest"
+}
