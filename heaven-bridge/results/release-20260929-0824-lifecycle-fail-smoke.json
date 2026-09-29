@@ -1,0 +1,21 @@
+{
+  "id": "release-20260929-0824-lifecycle-fail-smoke",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:24:00Z",
+  "status": "failed",
+  "exit_code": 23,
+  "started_at": "2026-09-29T08:26:07.799171+00:00",
+  "finished_at": "2026-09-29T08:26:08.220753+00:00",
+  "stdout": "INTENTIONAL_FAILURE_SMOKE\r\n",
+  "stderr": "Write-Output 'INTENTIONAL_FAILURE_SMOKE'; Write-Error 'intentional release validation failure'; exit 23 : intentional \r\nrelease validation failure\r\n    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException\r\n    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0824-lifecycle-fail-smoke.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\release-20260929-0824-lifecycle-fail-smoke.stderr.log",
+    "stdout_bytes": 27,
+    "stderr_bytes": 316,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4c0ed8fe7e931733ac5d2adf37c0376b8bb387001a4a839e16292189db221624"
+}
