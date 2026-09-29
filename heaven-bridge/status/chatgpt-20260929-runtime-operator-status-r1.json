@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-runtime-operator-status-r1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T08:47:52.968305+00:00"
+  "updated_at": "2026-09-29T08:48:25.409323+00:00",
+  "exit_code": 0
 }
