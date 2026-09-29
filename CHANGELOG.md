@@ -1,3 +1,10 @@
+# v8.8.17 — Reliable mod discovery after update restart
+
+- Preserve the canonical manager-home path explicitly across updater handoff and application restart so the first launch after an update reads the real Mods and State directories instead of an install-local empty library.
+- Recover the manager home from the known project release layout when no manager-home environment variable is present, matching diagnostic-root behavior.
+- Export the resolved manager home for child processes and restore both manager-home environment variables during updated and rollback launches.
+- Add regression coverage for release-layout root recovery and serialized updater handoff identity.
+
 # v8.8.16 — Larger mod library workspace
 
 - Give the Mods library more vertical room by compacting the controls around it instead of shrinking mod rows.
