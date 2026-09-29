@@ -210,9 +210,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Mods" Style="{StaticResource PageTitle}"/>
                                 <Border Margin="12,5,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Top">
-                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold">
-                                        <Run Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
-                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold" Text="{Binding InstalledCountLabel,Mode=OneWay}"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Text="Stage what you want active, inspect the result, then apply once." Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"/>
