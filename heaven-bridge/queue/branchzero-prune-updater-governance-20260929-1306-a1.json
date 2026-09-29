@@ -1,0 +1,14 @@
+{
+  "id": "branchzero-prune-updater-governance-20260929-1306-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T13:06:00Z",
+  "ttl_seconds": 7200,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "timeout_seconds": 600,
+    "command": "$ErrorActionPreference='Stop'\n$repo='C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods'\n$expected=[ordered]@{\n 'fix/updater-release-gate-governance-20260929'='6f54623190e3af6dd0e111778ec60e38db1ee48a'\n 'fix/updater-release-gate-verification-20260929'='5108f92476c13ccb44538124c234afbb314c0acb'\n}\ngit -C $repo fetch origin --prune\n$deleted=@();$skipped=@()\nforeach($b in $expected.Keys){\n $line=(git -C $repo ls-remote origin \"refs/heads/$b\")\n if(-not $line){$skipped += [pscustomobject]@{branch=$b;reason='absent'};continue}\n $actual=(($line.Trim()) -split '\\s+')[0]\n if($actual -ne $expected[$b]){$skipped += [pscustomobject]@{branch=$b;reason='moved';actual=$actual};continue}\n git -C $repo push origin --delete $b\n if($LASTEXITCODE -ne 0){throw \"delete failed $b\"}\n $deleted += $b\n}\n[pscustomobject]@{deleted=$deleted;skipped=$skipped}|ConvertTo-Json -Depth 4"
+  },
+  "priority": "highest"
+}
