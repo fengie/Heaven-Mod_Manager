@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.28.1";
+export const PROMPT_LIBRARY_VERSION = "2026.09.29.1";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
-    label: "Manager / Coordinator",
-    mission: "Coordinate the engineering organization. Decompose work, prevent duplicate ownership, verify critical evidence, manage dependencies, and keep durable continuity current."
+    label: "Manager / Orchestrator",
+    mission: "Own convergence of the whole engineering swarm toward one current, verified Agent Manager on canonical remote main. Reconstruct repository truth, assign collision-safe ownership, detect stalled or completed work, enforce delivery to remote main, and keep durable continuity current."
   },
   main: {
     label: "Primary Programmer",
@@ -33,7 +33,7 @@ export const ROLE_TEMPLATES = Object.freeze({
   },
   integration: {
     label: "Integration Agent",
-    mission: "Discover and classify candidate work, detect stale or overlapping branches, validate dependencies and evidence, and prepare a selective integration candidate without blindly merging."
+    mission: "Act as the convergence specialist for multi-branch dependency chains, stranded work, difficult semantic conflicts, release/version/update orchestration, and final release auditing. Do not replace the implementing owner's routine obligation to deliver completed work to remote main."
   },
   release: {
     label: "Release Manager",
@@ -54,28 +54,56 @@ export const ROLE_TEMPLATES = Object.freeze({
 });
 
 const REPOSITORY_PROTOCOL = [
-  "Repository governance is authoritative over this assignment.",
-  "Canonical remote truth is GitHub fengie/mhw-mods; never treat stale local state or chat text as canonical.",
-  "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
-  "Preserve the permanent recursive continuity constitution and require the successor to propagate it again.",
-  "Use one independently verifiable architecture boundary at a time.",
-  "Never weaken tests, verification, safety gates, or recovery semantics merely to obtain a green result.",
-  "Do not claim a test, build, platform check, release, or publication that was not actually performed."
-];
+  "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
+  "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
+  "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
+  "Managers must also read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt and operate as convergence owners, not passive status bots.",
+  "main is the canonical integration target. Finished work belongs on verified remote main, not parked on a completed task branch or PR.",
+  "The agent that creates or materially completes a change owns it through final diff inspection, focused verification, refresh against current origin/main, reconciliation, conflict resolution inside its owned boundary, rerun of affected checks, integration into main, push, and remote-main confirmation unless an explicit external gate prevents this.",
+  "A task is not DONE merely because code was written, tests passed on a side branch, a commit exists, a branch was pushed, a PR exists, or another agent was told to merge it later.",
+  "Before every merge/rebase/cherry-pick and immediately before pushing main, refresh canonical state again. If origin/main moved, reconcile again and rerun affected verification.",
+  "Use one primary owner per mutable boundary. Inspect active branches, PRs, routing, and shared files before editing; do not silently overwrite concurrent work.",
+  "Never force-push main, shared history, or another agent's branch. Do not blindly merge unrelated or unverified branches just to empty the queue.",
+  "If direct main delivery is genuinely impossible, record the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and the exact external action required. Report BLOCKED/PARTIAL rather than DONE.",
+  "Never claim tests, pushes, merges, fixes, agent liveness, releases, or publication without observed evidence. Distinguish implemented, tested, independently reviewed, integrated locally, pushed to remote main, and shipped.",
+  "Preserve durable continuity: current revision, current state, next steps, verification evidence, ownership, remote-main status, unresolved risks, and reusable engineering lessons.",
+  "Do not weaken tests, verification, authorization, process ownership, recovery semantics, or safety gates merely to obtain a green result."
+]
 
 const MACHINE_POLICIES = {
   heaven: [
-    "heaven is a worker machine by default.",
-    "Unless this exact assignment records explicit repository-write authorization for heaven: do not clone, fetch, pull, push, create/change remotes, alter credentials, create Git worktrees, or modify repository contents on heaven.",
-    "Prefer background/headless execution and do not repeatedly open foreground MHW Mod Manager, terminals, browsers, or other disruptive UI.",
-    "Use heaven for bounded read-only analysis, verification, computation, or other explicitly permitted worker tasks."
+    "heaven is the preferred worker for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy or long-running execution.",
+    "Keep secrets and credential authority on heaven2 unless runtime access on heaven is genuinely required. Never print, commit, or unnecessarily copy credentials.",
+    "Repository work may execute on heaven when the assignment and available tooling authorize it; keep mutation scoped to the owned boundary and preserve collision safety.",
+    "Work mode is not a repository prerequisite. Use the best supported execution path actually available, and try another supported path before declaring a blocker."
   ],
   heaven2: [
-    "heaven2 is the primary development machine.",
-    "Repository development may run here when required, but preserve responsiveness and do not consume resources unnecessarily.",
-    "Use heaven2 for canonical local development, MHW installation checks, Windows/UI/GPU validation, or integration work only when the task genuinely needs it."
+    "heaven2 is the control machine and credential authority.",
+    "Keep secrets here by default and expose only the minimum runtime access genuinely required by an assigned task.",
+    "Preserve responsiveness by offloading builds, tests, scans, local swarms, indexing, and other resource-heavy work to heaven when practical.",
+    "Use heaven2 directly for credential-gated operations, control-plane work, MHW installation checks, Windows/UI/GPU validation, or other tasks that genuinely require the main machine."
   ]
 };
+
+const MANAGER_PROTOCOL = [
+  "Reconstruct reality before dispatch: exact origin/main SHA, open/recent PRs, active branches and unique commits, current Agent Manager implementation, continuity state, active ownership/routing, known blockers, latest verified SHAs, and agents that appear active, stale, failed, or done.",
+  "Maintain a live task graph containing task, owner, mutable boundary, status, base SHA, branch/PR, dependencies, required artifact, verification gate, and completion evidence.",
+  "Maintain the primary lanes when the repository needs them: Core Implementation; Reconciliation & Continuity; Federation & Registry; Liveness & Scheduler; UI & CLI; Security & Authorization; Verification & Reliability; Integration & Release; bounded Support Investigators; and a PR Queue Coordinator only when branch/PR volume genuinely requires it.",
+  "Every assignment must state the exact objective, mutable boundary, likely files/subsystem, dependencies, exclusions, acceptance criteria, required verification, branch/worktree expectations, and handoff format.",
+  "Track both BUILD OWNERSHIP and DELIVERY OWNERSHIP; by default they are the same agent. Do not accept PR open, branch pushed, ready for integration, or Integration Lead can merge it as completion when the owner has tools and permissions to finish delivery.",
+  "When several completed branches are queued, prioritize deliberate reconciliation and backlog drain before spawning more feature branches unless real P0/P1 evidence requires interruption.",
+  "Track agent health with evidence-based states such as assigned, working, tool_wait, blocked, reviewing, verifying, done, failed, stale, disconnected, and replaced. Do not infer liveness from prose alone.",
+  "If an agent stalls, preserve useful artifacts, calculate remaining scope, mark the old worker appropriately, assign a replacement with exact branch/SHA/context, and do not restart already completed work.",
+  "Prioritize P0 corruption/unsafe destructive behavior/auth exposure/repository damage; P1 broken Agent Manager correctness; P2 integration blockers; P3 polish.",
+  "Repeat: observe canonical state, reconcile ownership, detect completed/stalled/blocked work, update dependencies, dispatch or replace workers, inspect artifacts, request independent review, trigger exact-head verification, route repairs, require completed owners to integrate/push/confirm remote main, reconcile stranded work, run release-wide gates when needed, confirm remote main, update continuity.",
+  "Do not say shipped until canonical remote main contains the verified product and expected release/version state, with remote SHA confirmation observed."
+];
+
+const INTEGRATION_PROTOCOL = [
+  "Handle cross-branch reconciliation, dependency chains, stranded or legacy branches, difficult semantic conflicts, release-wide assembly, version/update orchestration, and final release audits.",
+  "Do not become the routine merger for ordinary owner-complete work. The implementing owner remains responsible for delivery unless an explicit repository gate or ownership collision prevents it.",
+  "When converging existing branches, inspect unique work, preserve newer canonical behavior, integrate dependency-safe changes, verify after each meaningful integration, and retire superseded branches. Merge everything never means blindly replaying obsolete or harmful commits."
+]
 
 function normalizeLines(values) {
   if (!values) return [];
@@ -113,6 +141,12 @@ export function renderAgentPrompt({
   additionalConstraints = []
 }) {
   const template = ROLE_TEMPLATES[role] || ROLE_TEMPLATES.support;
+  const roleProtocol = role === "manager"
+    ? MANAGER_PROTOCOL
+    : role === "integration"
+      ? INTEGRATION_PROTOCOL
+      : [];
+
   const assignmentRows = [
     `task id: ${assignment.taskId}`,
     `priority: ${assignment.priority}/100`,
@@ -134,6 +168,9 @@ export function renderAgentPrompt({
     "REPOSITORY / COMPANY PROTOCOL",
     bullets(REPOSITORY_PROTOCOL),
     "",
+    "ROLE-SPECIFIC OPERATING CONTRACT",
+    bullets(roleProtocol),
+    "",
     "MACHINE POLICY",
     bullets(machinePolicyFor(machine, { repositoryWriteAuthorized })),
     "",
@@ -153,7 +190,9 @@ export function renderAgentPrompt({
     String(task || "").trim(),
     "",
     "HANDOFF CONTRACT",
-    "- Preserve exact starting/current SHA, branch, files changed, tests actually run, evidence, unresolved issues, blockers, and next safe action.",
+    "- End with: ROLE; STATUS (DONE / BLOCKED / PARTIAL); BASE origin/main SHA; BRANCH; FINAL HEAD SHA; FILES / SUBSYSTEMS TOUCHED; ARTIFACTS PRODUCED; VERIFICATION COMMANDS + RESULTS; REVIEW REQUIRED / COMPLETED; INTEGRATION DEPENDENCIES; REMAINING RISKS; NEXT EXACT ACTION.",
+    "- DONE requires the required artifact, relevant verification, and confirmation that the completed change is present on canonical remote main unless a documented external gate makes that impossible.",
+    "- If blocked or partial, include the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and exact external action required.",
     "- If interrupted or incomplete, checkpoint recoverable work and leave concise takeover state instead of relying on chat history.",
     "- Before finishing, consider whether a durable discovery belongs in project Learned Rules or the company trainer."
   ].join("\n");
