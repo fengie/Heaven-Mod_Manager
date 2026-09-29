@@ -1,0 +1,15 @@
+{
+  "id": "swarm-20260929-161900-trace-upsert",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven",
+  "action": "fs_edit",
+  "params": {
+    "path": "C:\\Users\\Xxkan\\HeavenWork\\audit-generic-game-20260929\\src\\MhwModManager.Filesystem\\GameProfileRegistry.cs",
+    "old_string": "    public void Upsert(GameProfile profile)\n    {\n        if(!IsUsable(profile))throw new ArgumentException(\"Game profile is invalid or points outside its game root.\",nameof(profile));\n",
+    "new_string": "    public void Upsert(GameProfile profile)\n    {\n        using var __mhwTrace = MasterDebugLog.BeginMethod($\"game={profile.Id}\");\n        if(!IsUsable(profile))throw new ArgumentException(\"Game profile is invalid or points outside its game root.\",nameof(profile));\n",
+    "replace_all": false
+  },
+  "created_at": "2026-09-29T16:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
