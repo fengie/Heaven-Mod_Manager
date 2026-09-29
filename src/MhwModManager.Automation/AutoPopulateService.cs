@@ -33,6 +33,7 @@ internal static class ModRequirementReader
         bool isMonsterHunterWorld,
         CancellationToken ct = default)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var requiredMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var requiredPaths = new HashSet<string>(PathRules.Comparer);
         var requiredTextures = new HashSet<string>(PathRules.Comparer);
@@ -93,6 +94,7 @@ internal static class ModRequirementReader
 
     public static bool MatchesToken(ModDescriptor mod, string token)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (StringComparer.OrdinalIgnoreCase.Equals(mod.Id, token) ||
             StringComparer.OrdinalIgnoreCase.Equals(mod.NexusModId, token) ||
             StringComparer.OrdinalIgnoreCase.Equals(mod.NexusModUuid, token))
@@ -110,6 +112,7 @@ internal static class ModRequirementReader
 
     public static string LivePath(string gameRoot, string normalized)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var relative = normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase)
             ? normalized["root\\".Length..]
             : normalized;
@@ -118,6 +121,7 @@ internal static class ModRequirementReader
 
     public static bool IsLoaderPath(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         string normalized;
         try { normalized = PathRules.Normalize(path); }
         catch (ArgumentException) { return false; }
@@ -128,6 +132,7 @@ internal static class ModRequirementReader
 
     private static void ReadPathArray(JsonElement root, string propertyName, HashSet<string> output, List<string> errors)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
             return;
 
@@ -156,6 +161,7 @@ internal static class ModRequirementReader
 
     private static string NormalizeRequirementPath(string value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = value.Replace('/', '\\').Trim();
         if (!normalized.StartsWith("nativePC\\", StringComparison.OrdinalIgnoreCase) &&
             !normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase))
@@ -165,6 +171,7 @@ internal static class ModRequirementReader
 
     private static void ReadDependencyArray(JsonElement root, string propertyName, HashSet<string> output)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
             return;
 
@@ -213,6 +220,7 @@ public sealed class AutoPopulateService(
 {
     public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = await plannerSnapshots.LoadAsync(ct);
         var mods = snapshot.Mods.Where(m => !m.IsSuperseded).ToArray();
         var modsById = mods.ToDictionary(m => m.Id, PathRules.Comparer);
@@ -350,15 +358,16 @@ public sealed class AutoPopulateService(
 
     private ClosureResult ResolveClosure(
         string rootId,
-        IReadOnlySet<string> alreadySelected,
-        IReadOnlyList<ModDescriptor> mods,
-        IReadOnlyDictionary<string,ModDescriptor> modsById,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod,
-        IReadOnlyDictionary<string,ModFileDescriptor[]> providersByPath,
+        HashSet<string> alreadySelected,
+        ModDescriptor[] mods,
+        Dictionary<string,ModDescriptor> modsById,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod,
+        Dictionary<string,ModFileDescriptor[]> providersByPath,
         IReadOnlyDictionary<string,string> resourceProviders,
-        IReadOnlyDictionary<string,ModContentStats> contentStats,
-        IReadOnlyDictionary<string,ModRequirementSpec> requirements)
+        Dictionary<string,ModContentStats> contentStats,
+        Dictionary<string,ModRequirementSpec> requirements)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var closure = new HashSet<string>(PathRules.Comparer);
         var queue = new Queue<string>();
         queue.Enqueue(rootId);
@@ -434,47 +443,62 @@ public sealed class AutoPopulateService(
         return ClosureResult.Ok(closure);
     }
 
-    private DeploymentPlan BuildPlan(PlannerSnapshot snapshot, IReadOnlySet<string> selected)
+    private DeploymentPlan BuildPlan(PlannerSnapshot snapshot, HashSet<string> selected)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var staged = snapshot.Mods
             .Select(m => m with { Enabled = selected.Contains(m.Id) && !m.IsSuperseded })
             .ToArray();
         return planner.Build(snapshot with { Mods = staged });
     }
 
-    private bool HasLiveLoader() =>
-        File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
-        File.Exists(Path.Combine(gameRoot, "loader.dll"));
+    private bool HasLiveLoader()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
+               File.Exists(Path.Combine(gameRoot, "loader.dll"));
+    }
 
     private static bool HasSelectedLoader(
-        IReadOnlySet<string> selected,
-        IReadOnlySet<string> closure,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        selected.Concat(closure).Any(id =>
+        HashSet<string> selected,
+        HashSet<string> closure,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return selected.Concat(closure).Any(id =>
             filesByMod.TryGetValue(id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)));
+    }
 
     private static ModDescriptor? ChooseLoaderProvider(
-        IReadOnlyList<ModDescriptor> mods,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)))
+        ModDescriptor[] mods,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)))
             .OrderByDescending(m => m.Enabled)
             .ThenBy(RoleRank)
             .ThenByDescending(m => m.ProvenanceScore)
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
 
     private static bool IsPathSatisfiedBySelection(
         string path,
-        IReadOnlySet<string> selected,
-        IReadOnlySet<string> closure,
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        selected.Concat(closure).Any(id =>
+        HashSet<string> selected,
+        HashSet<string> closure,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return selected.Concat(closure).Any(id =>
             filesByMod.TryGetValue(id, out var files) &&
             files.Any(f => PathRules.Comparer.Equals(f.Path, path)));
+    }
 
-    private static ModDescriptor? ChooseModTokenProvider(string token, IReadOnlyList<ModDescriptor> mods) =>
-        mods.Where(m => ModRequirementReader.MatchesToken(m, token) && !m.IsSuperseded)
+    private static ModDescriptor? ChooseModTokenProvider(string token, ModDescriptor[] mods)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mods.Where(m => ModRequirementReader.MatchesToken(m, token) && !m.IsSuperseded)
             .OrderBy(RoleRank)
             .ThenByDescending(m => m.Enabled)
             .ThenByDescending(m => m.ProvenanceScore)
@@ -482,9 +506,11 @@ public sealed class AutoPopulateService(
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
 
-    private static ModDescriptor? FindRequiredMain(ModDescriptor mod, IReadOnlyList<ModDescriptor> mods)
+    private static ModDescriptor? FindRequiredMain(ModDescriptor mod, ModDescriptor[] mods)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!IsDependentRole(mod))
             return null;
 
@@ -507,20 +533,30 @@ public sealed class AutoPopulateService(
         return related.FirstOrDefault();
     }
 
-    private static bool IsDependentRole(ModDescriptor mod) =>
-        mod.NexusCategory is NexusFileCategory.Optional or NexusFileCategory.Update ||
-        ContainsRole(mod.FamilyRole, "optional", "update", "patch", "addon", "add-on", "child");
+    private static bool IsDependentRole(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mod.NexusCategory is NexusFileCategory.Optional or NexusFileCategory.Update ||
+               ContainsRole(mod.FamilyRole, "optional", "update", "patch", "addon", "add-on", "child");
+    }
 
-    private static bool IsMainRole(ModDescriptor mod) =>
-        mod.NexusCategory == NexusFileCategory.Main ||
-        ContainsRole(mod.FamilyRole, "main", "base", "core", "root");
+    private static bool IsMainRole(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mod.NexusCategory == NexusFileCategory.Main ||
+               ContainsRole(mod.FamilyRole, "main", "base", "core", "root");
+    }
 
-    private static bool ContainsRole(string? value, params string[] roles) =>
-        !string.IsNullOrWhiteSpace(value) &&
-        roles.Any(role => value.Contains(role, StringComparison.OrdinalIgnoreCase));
+    private static bool ContainsRole(string? value, params string[] roles)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return !string.IsNullOrWhiteSpace(value) &&
+               roles.Any(role => value.Contains(role, StringComparison.OrdinalIgnoreCase));
+    }
 
     private static int RoleRank(ModDescriptor mod)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (IsMainRole(mod))
             return 0;
         if (IsDependentRole(mod))
@@ -530,11 +566,12 @@ public sealed class AutoPopulateService(
 
     private static ModDescriptor? ChoosePathProvider(
         string path,
-        IReadOnlyDictionary<string,ModFileDescriptor[]> providersByPath,
-        IReadOnlyDictionary<string,ModDescriptor> modsById,
-        IReadOnlyDictionary<string,ModContentStats> contentStats,
+        Dictionary<string,ModFileDescriptor[]> providersByPath,
+        Dictionary<string,ModDescriptor> modsById,
+        Dictionary<string,ModContentStats> contentStats,
         IReadOnlyDictionary<string,string> resourceProviders)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!providersByPath.TryGetValue(path, out var providerFiles) || providerFiles.Length == 0)
             return null;
 
@@ -568,9 +605,11 @@ public sealed class AutoPopulateService(
             : null;
     }
 
-    private static IReadOnlyDictionary<string,ModContentStats> BuildContentStats(
-        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod) =>
-        filesByMod.ToDictionary(
+    private static Dictionary<string,ModContentStats> BuildContentStats(
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return filesByMod.ToDictionary(
             pair => pair.Key,
             pair =>
             {
@@ -583,10 +622,20 @@ public sealed class AutoPopulateService(
                     files.Count == 0 ? DateTimeOffset.MinValue : files.Max(f => f.LastWriteUtc));
             },
             PathRules.Comparer);
+    }
 
     private sealed record ClosureResult(bool Success, IReadOnlySet<string> ModIds, string Reason)
     {
-        public static ClosureResult Ok(IReadOnlySet<string> ids) => new(true, ids, string.Empty);
-        public static ClosureResult Fail(string reason) => new(false, new HashSet<string>(PathRules.Comparer), reason);
+        public static ClosureResult Ok(HashSet<string> ids)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new(true, ids, string.Empty);
+        }
+
+        public static ClosureResult Fail(string reason)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new(false, new HashSet<string>(PathRules.Comparer), reason);
+        }
     }
 }
