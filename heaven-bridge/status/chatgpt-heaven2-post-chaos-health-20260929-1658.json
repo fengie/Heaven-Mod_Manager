@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-heaven2-post-chaos-health-20260929-1658",
-  "state": "running",
+  "state": "completed",
   "action": "health",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T16:58:49.269307+00:00"
+  "updated_at": "2026-09-29T16:59:00.358221+00:00",
+  "exit_code": 0
 }
