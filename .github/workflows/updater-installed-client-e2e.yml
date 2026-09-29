@@ -74,6 +74,15 @@ jobs:
           dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Run updater runtime ownership regressions
+        shell: powershell
+        run: |
+          $evidence = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          $log = Join-Path $evidence 'runtime-ownership-tests.log'
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore --no-build --logger "console;verbosity=detailed" --filter-class "MhwModManager.IntegrationTests.UpdateRuntimeTests" 2>&1 |
+            Tee-Object -FilePath $log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Run real packaged updater E2E
         shell: powershell
         run: |
@@ -143,9 +152,11 @@ jobs:
           $provenancePath = Join-Path $evidenceDir 'provenance.txt'
           $testLogPath = Join-Path $evidenceDir 'installed-client-e2e-test.log'
           $rollbackLogPath = Join-Path $evidenceDir 'rollback-regression-tests.log'
+          $runtimeOwnershipLogPath = Join-Path $evidenceDir 'runtime-ownership-tests.log'
           $provenanceHash = if (Test-Path -LiteralPath $provenancePath) { (Get-FileHash -LiteralPath $provenancePath -Algorithm SHA256).Hash } else { 'missing' }
           $testLogHash = if (Test-Path -LiteralPath $testLogPath) { (Get-FileHash -LiteralPath $testLogPath -Algorithm SHA256).Hash } else { 'missing' }
           $rollbackLogHash = if (Test-Path -LiteralPath $rollbackLogPath) { (Get-FileHash -LiteralPath $rollbackLogPath -Algorithm SHA256).Hash } else { 'missing' }
+          $runtimeOwnershipLogHash = if (Test-Path -LiteralPath $runtimeOwnershipLogPath) { (Get-FileHash -LiteralPath $runtimeOwnershipLogPath -Algorithm SHA256).Hash } else { 'missing' }
 
           $closurePath = '_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.6.log'
           @(
@@ -159,6 +170,7 @@ jobs:
             ('provenance_sha256=' + $provenanceHash)
             ('installed_client_test_log_sha256=' + $testLogHash)
             ('rollback_regression_log_sha256=' + $rollbackLogHash)
+            ('runtime_ownership_test_log_sha256=' + $runtimeOwnershipLogHash)
             ''
             '=== EVIDENCE.JSON ==='
             (Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw)
