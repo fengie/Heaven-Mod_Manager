@@ -43,15 +43,56 @@ function remoteMatchesExpected(remote, expected = DEFAULT_RELAY_REPOSITORY) {
   return value.endsWith(`github.com/${suffix}`) || value.endsWith(`github.com:${suffix}`);
 }
 
-async function git(relayDir, args, { maxBuffer = 4 * 1024 * 1024 } = {}) {
+async function git(relayDir, args, { maxBuffer = 4 * 1024 * 1024, timeoutMs = 60_000 } = {}) {
   const { stdout, stderr } = await execFileAsync("git", ["-C", relayDir, ...args], {
     windowsHide: true,
-    maxBuffer
+    maxBuffer,
+    timeout: Math.max(1_000, Number(timeoutMs) || 60_000)
   });
   return `${stdout || ""}${stderr || ""}`.trim();
 }
 
-async function withRelayLock(relayDir, fn, { timeoutMs = 30_000, pollMs = 100 } = {}) {
+function localPidAlive(pid) {
+  const value = Number(pid);
+  if (!Number.isInteger(value) || value <= 0) return false;
+  try {
+    process.kill(value, 0);
+    return true;
+  } catch (error) {
+    return error?.code === "EPERM";
+  }
+}
+
+export function assessRelayLock(lockPath, {
+  now = Date.now(),
+  staleAfterMs = 120_000
+} = {}) {
+  if (!fs.existsSync(lockPath)) return { exists: false, stale: false, ownerPid: null, ageMs: 0 };
+  let stat;
+  let raw = "";
+  try {
+    stat = fs.statSync(lockPath);
+    raw = fs.readFileSync(lockPath, "utf8").trim();
+  } catch {
+    return { exists: true, stale: false, ownerPid: null, ageMs: 0 };
+  }
+  const ownerPid = Number.parseInt(raw.split(/\s+/)[0], 10);
+  const ageMs = Math.max(0, Number(now) - stat.mtimeMs);
+  const ownerAlive = localPidAlive(ownerPid);
+  return {
+    exists: true,
+    stale: ageMs >= Math.max(1_000, Number(staleAfterMs) || 120_000) && !ownerAlive,
+    ownerPid: Number.isInteger(ownerPid) ? ownerPid : null,
+    ownerAlive,
+    ageMs
+  };
+}
+
+async function withRelayLock(relayDir, fn, {
+  timeoutMs = 30_000,
+  pollMs = 100,
+  staleAfterMs = Number(process.env.AGENT_CONTROL_HEAVEN_LOCK_STALE_MS || 120_000)
+} = {}) {
   const gitDir = path.join(relayDir, ".git");
   if (!fs.existsSync(gitDir)) throw new Error("Heaven relay checkout is not a Git working tree.");
   const lockPath = path.join(gitDir, "agent-control-heaven-bridge.lock");
@@ -60,10 +101,19 @@ async function withRelayLock(relayDir, fn, { timeoutMs = 30_000, pollMs = 100 } 
   while (Date.now() < deadline) {
     try {
       fd = fs.openSync(lockPath, "wx");
-      fs.writeFileSync(fd, `${process.pid}\n`, "utf8");
+      fs.writeFileSync(fd, `${process.pid} ${new Date().toISOString()}\n`, "utf8");
       break;
     } catch (error) {
       if (error?.code !== "EEXIST") throw error;
+      const assessment = assessRelayLock(lockPath, { staleAfterMs });
+      if (assessment.stale) {
+        try {
+          fs.unlinkSync(lockPath);
+          continue;
+        } catch (unlinkError) {
+          if (unlinkError?.code !== "ENOENT") throw unlinkError;
+        }
+      }
       await delay(pollMs);
     }
   }
@@ -243,7 +293,7 @@ export function validateBridgeResult(result, { id, action, requireHost = HEAVEN_
   if (result.source !== HEAVEN_BRIDGE_PROTOCOL) throw new Error("Bridge result protocol/source mismatch.");
   if (action && result.action !== action) throw new Error("Bridge result action mismatch.");
   if (requireHost && result.host !== requireHost) throw new Error("Bridge result host mismatch.");
-  const terminal = new Set(["done", "failed", "timeout", "cancelled"]);
+  const terminal = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
   if (!terminal.has(String(result.status || "").toLowerCase())) {
     throw new Error(`Bridge result has non-terminal or unsupported status "${result.status}".`);
   }
@@ -251,7 +301,8 @@ export function validateBridgeResult(result, { id, action, requireHost = HEAVEN_
 }
 
 export function bridgeResultSucceeded(result) {
-  return result?.status === "done" && Number(result?.exit_code) === 0;
+  const status = String(result?.status || "").toLowerCase();
+  return (status === "completed" || status === "done") && Number(result?.exit_code) === 0;
 }
 
 export async function submitHeavenBridgeJob(job, {
