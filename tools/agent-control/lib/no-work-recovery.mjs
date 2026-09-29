@@ -64,6 +64,127 @@ export function hasSubstantiveWorkEvidence(agent) {
   return false;
 }
 
+function explicitTrue(...values) {
+  return values.some(value => value === true);
+}
+
+function verificationArrayPassed(value) {
+  if (!Array.isArray(value) || value.length === 0) return false;
+  return value.every(item => {
+    if (item === true) return true;
+    if (!item || typeof item !== "object") return false;
+    const status = String(item.status || item.result || item.outcome || "").trim().toLowerCase();
+    return ["pass", "passed", "success", "succeeded", "green", "ok"].includes(status);
+  });
+}
+
+export function hasVerifiedCompletionEvidence(agent) {
+  const metadata = agent?.source_metadata && typeof agent.source_metadata === "object"
+    ? agent.source_metadata
+    : {};
+
+  if (explicitTrue(
+    agent?.completionVerified,
+    agent?.verifiedComplete,
+    metadata.completion_verified,
+    metadata.verified_complete
+  )) return true;
+
+  const integrated = explicitTrue(
+    agent?.integratedToMain,
+    agent?.mergedToMain,
+    agent?.prMerged,
+    metadata.integrated_to_main,
+    metadata.merged_to_main,
+    metadata.pr_merged,
+    metadata.pull_request_merged
+  );
+  const verificationPassed = explicitTrue(
+    agent?.verificationPassed,
+    metadata.verification_passed,
+    metadata.tests_passed,
+    metadata.release_gate_passed
+  ) || verificationArrayPassed(agent?.verificationResults)
+    || verificationArrayPassed(metadata.verification_results);
+
+  const acceptanceComplete = explicitTrue(
+    agent?.acceptanceCriteriaComplete,
+    metadata.acceptance_criteria_complete
+  );
+
+  return integrated && (verificationPassed || acceptanceComplete);
+}
+
+export function terminationReconciliationDecision(agent, {
+  expectsRepositoryWork = true,
+  streamLost = false,
+  maxOpeningMessageChars = 1800
+} = {}) {
+  const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
+  const metadata = agent?.source_metadata && typeof agent.source_metadata === "object"
+    ? agent.source_metadata
+    : {};
+  if (!expectsRepositoryWork || !NO_WORK_TERMINAL_STATUSES.has(status)) {
+    return {
+      reconcile: false,
+      recoveryStatus: null,
+      retry: false,
+      action: "none",
+      reason: null
+    };
+  }
+
+  const transportLost = streamLost === true
+    || status === "disconnected"
+    || explicitTrue(
+      metadata.stream_lost,
+      metadata.response_stream_failed,
+      metadata.transport_disconnected
+    );
+
+  if (hasVerifiedCompletionEvidence(agent)) {
+    return {
+      reconcile: true,
+      recoveryStatus: "work-verified-complete",
+      retry: false,
+      action: "complete",
+      reason: "durable-completion-evidence"
+    };
+  }
+
+  if (hasSubstantiveWorkEvidence(agent)) {
+    return {
+      reconcile: true,
+      recoveryStatus: "work-detected-incomplete",
+      retry: false,
+      action: "reconcile-existing-work",
+      reason: "durable-work-without-completion-proof"
+    };
+  }
+
+  const noWork = noWorkTerminationDecision(agent, {
+    expectsRepositoryWork,
+    maxOpeningMessageChars
+  });
+  if (noWork.noWork || transportLost) {
+    return {
+      reconcile: true,
+      recoveryStatus: "no-durable-work-detected-retry",
+      retry: true,
+      action: "retry",
+      reason: noWork.reason || "stream-lost-without-durable-work"
+    };
+  }
+
+  return {
+    reconcile: true,
+    recoveryStatus: "work-unverified",
+    retry: false,
+    action: "inspect",
+    reason: noWork.reason || "terminal-output-without-durable-proof"
+  };
+}
+
 export function noWorkTerminationDecision(agent, {
   expectsRepositoryWork = true,
   maxOpeningMessageChars = 1800
