@@ -5,6 +5,7 @@ import {
   DEFAULT_PROVIDER_DEFINITIONS,
   defaultFederationState,
   federationSnapshot,
+  migrateFederationState,
   reconcileObservation,
   syncManagedAgents
 } from "../lib/federated-registry.mjs";
