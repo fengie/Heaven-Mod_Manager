@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T155005Z-main-broad-regression-02",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T15:50:05Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T15:50:14.607993+00:00",
+  "finished_at": "2026-09-29T15:50:16.682050+00:00",
+  "stdout": "",
+  "stderr": "From https://github.com/fengie/mhw-mods\n * branch              main       -> FETCH_HEAD\nerror: cannot lock ref 'refs/remotes/origin/main': is at 6d573af46c103da9804bd5667233d76c9d50f096 but expected 99521ca4e2823163e33d155019c17a60eaa1b9d0\n ! 99521ca4..6d573af4  main       -> origin/main  (unable to update local ref)\nfetch failed\r\nAt line:4 char:26\r\n+ if($LASTEXITCODE -ne 0){ throw 'fetch failed' }\r\n+                          ~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (fetch failed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : fetch failed\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T155005Z-main-broad-regression-02.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T155005Z-main-broad-regression-02.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 591,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "a68f0c392b94626634e61452ad4396a93e02d8bd71083b489f4e40b4840468a4"
+}
