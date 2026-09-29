@@ -31,6 +31,12 @@ import {
   workflowLeasePreflight,
   workflowPermission
 } from "./lib/control-core.mjs";
+import {
+  federationSnapshot,
+  reconcileObservation,
+  recordProviderHeartbeat,
+  syncManagedAgents
+} from "./lib/federated-registry.mjs";
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -464,6 +470,10 @@ function refreshState() {
     }
     changed = true;
   }
+
+  const federationBefore = JSON.stringify(state.federation);
+  syncManagedAgents(state.federation, state.agents, { hostname: os.hostname(), now });
+  if (JSON.stringify(state.federation) !== federationBefore) changed = true;
 
   if (changed && !degradedReason) saveState(state);
   return state;
@@ -1160,14 +1170,13 @@ async function observedBranches(state = refreshState()) {
   }
 }
 
-function telemetry(state, queue) {
-  const agents = state.agents;
-  const running = agents.filter(agent => coreIsActiveStatus(agent.status)).length;
-  const done = agents.filter(agent => agent.status === "done").length;
-  const failed = agents.filter(agent => agent.status === "failed").length;
-  const stopped = agents.filter(agent => agent.status === "stopped").length;
-  const uncertain = agents.filter(agent => ["interrupted", "orphaned", "stale"].includes(agent.status)).length;
-  const finished = agents.filter(agent => isTerminalStatus(agent.status));
+function telemetry(state, queue, federation = federationSnapshot(state.federation)) {
+  const managedAgents = state.agents;
+  const done = managedAgents.filter(agent => agent.status === "done").length;
+  const failed = managedAgents.filter(agent => agent.status === "failed").length;
+  const stopped = managedAgents.filter(agent => agent.status === "stopped").length;
+  const uncertain = managedAgents.filter(agent => ["interrupted", "orphaned", "stale"].includes(agent.status)).length;
+  const finished = managedAgents.filter(agent => isTerminalStatus(agent.status));
   const completedWithOutcome = done + failed;
   const successRate = completedWithOutcome ? Math.round((done / completedWithOutcome) * 1000) / 10 : null;
   const durations = finished
@@ -1177,18 +1186,26 @@ function telemetry(state, queue) {
   const averageRuntimeMs = durations.length ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : null;
 
   return {
-    running,
+    running: federation.counts.live,
+    working: federation.counts.working,
+    toolWait: federation.counts.tool_wait,
+    blocked: federation.counts.blocked,
+    idle: federation.counts.idle,
+    stale: federation.counts.stale,
+    disconnected: federation.counts.disconnected,
     done,
     failed,
     stopped,
     uncertain,
-    total: agents.length,
+    total: federation.counts.total,
+    managedTotal: managedAgents.length,
     successRate,
     averageRuntimeMs,
     activeLeases: state.leases.filter(lease => lease.status === "active").length,
     integrationCandidates: queue.filter(item => item.state === "candidate").length,
     blockedIntegration: queue.filter(item => item.state === "preserved-noneligible").length,
-    noChangeCompleted: queue.filter(item => item.state === "no-change").length
+    noChangeCompleted: queue.filter(item => item.state === "no-change").length,
+    federated: federation.counts
   };
 }
 
@@ -1288,6 +1305,45 @@ function releaseGate(state, queue, repository, repositoryContext) {
   };
 }
 
+function ingestFederatedObservations(body = {}) {
+  const state = refreshState();
+  assertMutationsAllowed(state);
+  const raw = Array.isArray(body.observations) ? body.observations : [body];
+  if (!raw.length) throw new Error("At least one federation observation is required.");
+
+  const accepted = raw.map(item => reconcileObservation(state.federation, {
+    ...item,
+    provider: item?.provider || body.provider
+  }, { now: Date.now() }));
+
+  addEvent(state, "federation.observed", `Accepted ${accepted.length} federated agent observation${accepted.length === 1 ? "" : "s"}`, {
+    agentIds: [...new Set(accepted.map(item => item.agent_id))]
+  });
+  saveState(state);
+  return {
+    accepted: accepted.length,
+    agents: accepted,
+    federation: federationSnapshot(state.federation)
+  };
+}
+
+function heartbeatFederatedProvider(providerId, body = {}) {
+  const state = refreshState();
+  assertMutationsAllowed(state);
+  const provider = recordProviderHeartbeat(state.federation, providerId, {
+    status: body.status || "online",
+    at: body.at || Date.now(),
+    error: body.error || null,
+    metadata: body.metadata && typeof body.metadata === "object" ? body.metadata : null
+  });
+  addEvent(state, "federation.provider-heartbeat", `Provider ${provider.id} heartbeat`, {
+    providerId: provider.id,
+    status: provider.status
+  });
+  saveState(state);
+  return provider;
+}
+
 async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = false } = {}) {
   if (fetchRemote) {
     const beforeSync = loadState();
@@ -1306,6 +1362,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     repositorySnapshot()
   ]);
   const workers = workerSnapshot(state);
+  const federation = federationSnapshot(state.federation, { now: Date.now() });
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
 
@@ -1327,7 +1384,10 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     suggestedActions,
     repository,
     repositoryContext,
-    telemetry: telemetry(state, queue),
+    telemetry: telemetry(state, queue, federation),
+    federation,
+    federatedAgents: federation.agents,
+    providers: federation.providers,
     settings: state.settings,
     autopilot: state.autopilot,
     autonomyProfiles: AUTONOMY_PROFILES,
@@ -2149,6 +2209,10 @@ const server = http.createServer(async (req, res) => {
         generatedAt: snapshot.generatedAt,
         controller: snapshot.controller,
         telemetry: snapshot.telemetry,
+        federation: {
+          counts: snapshot.federation.counts,
+          providers: snapshot.federation.providers
+        },
         workers: snapshot.workers,
         roles: snapshot.roles
       });
@@ -2168,6 +2232,27 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && pathname === "/api/agents") {
       return sendJson(res, 200, refreshState().agents);
+    }
+
+    if (req.method === "GET" && pathname === "/api/federation") {
+      const state = refreshState();
+      return sendJson(res, 200, federationSnapshot(state.federation));
+    }
+
+    if (req.method === "GET" && pathname === "/api/providers") {
+      const state = refreshState();
+      return sendJson(res, 200, federationSnapshot(state.federation).providers);
+    }
+
+    if (req.method === "POST" && (pathname === "/api/federation/observations" || pathname === "/api/federation/heartbeat")) {
+      const body = await readJson(req);
+      return sendJson(res, 200, ingestFederatedObservations(body));
+    }
+
+    const providerHeartbeatMatch = pathname.match(/^\/api\/federation\/providers\/([^/]+)\/heartbeat$/);
+    if (req.method === "POST" && providerHeartbeatMatch) {
+      const body = await readJson(req);
+      return sendJson(res, 200, heartbeatFederatedProvider(providerHeartbeatMatch[1], body));
     }
 
     if (req.method === "GET" && pathname === "/api/tasks") {
