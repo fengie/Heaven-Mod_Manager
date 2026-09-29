@@ -1,3 +1,13 @@
+# 2026-09-29 v8.8.7 reconciliation checkpoint — CURRENT
+
+Canonical `main` was audited at `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`; shipped identity is **v8.8.7**. The v8.8.7 line includes updater cross-session ownership, while main also contains Agent Control 0.5.1 liveness, reliability verification, security/authorization hardening, v8.8.6 profile/UI work, and updater E2E/release-gating follow-ups.
+
+Verification remains exact-SHA scoped. Hosted run `36541891969` applies to `5abe40304dfcb48f96e750bd7da3d0075315625b` only and does not verify later v8.8.7 commits. Current-main release verification and installed-client updater success/rollback evidence still need to be persisted before declaring present main fully verified.
+
+PR #95 and conflicted reconciliation PRs #107/#109 were closed rather than replayed over newer main. Open PRs are a moving snapshot and must be re-queried. Use `_AGENT_CONTEXT/RECONCILIATION_2026-09-29.md` before acting on stale or overlapping branches.
+
+---
+
 # 2026-09-29 manager checkpoint — updater publication CLOSED, installed-client E2E pending
 
 Canonical production source for the current updater closure is merge commit `5abe40304dfcb48f96e750bd7da3d0075315625b` (PR #91). Hosted Windows Release Gate `36541891969` passed **25/25** and the verifier promoted **748/748** functions. The exact release build is updater build **61**, ZIP SHA-256 `C31CAA1F5CBA65EBF9D526B02BA718F807EBC18A7E7554269E3754D710F86420`.
