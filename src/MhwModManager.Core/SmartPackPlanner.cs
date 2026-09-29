@@ -88,6 +88,7 @@ public sealed record SmartPackPlan(
 /// </summary>
 public sealed class SmartPackPlanner
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Keep the planner instance-based for service/API consistency.")]
     public SmartPackPlan Build(SmartPackPlannerRequest request)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
