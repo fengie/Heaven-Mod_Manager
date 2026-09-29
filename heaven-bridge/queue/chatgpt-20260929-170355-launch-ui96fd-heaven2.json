@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-170355-launch-ui96fd-heaven2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$p=Join-Path $env:USERPROFILE 'MhwUiValidation\\src\\MhwModManager.App\\bin\\Release\\net10.0-windows10.0.19041.0'; $exe=Join-Path $p 'MHW Mod Manager.exe'; if(-not(Test-Path $exe)){throw \"Missing $exe\"}; $proc=Start-Process -FilePath $exe -WorkingDirectory $p -PassThru; Start-Sleep -Seconds 4; Write-Output (\"APP_PID=\"+$proc.Id); Write-Output (\"APP_EXITED=\"+$proc.HasExited)",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 60
+  },
+  "created_at": "2026-09-29T17:03:55Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
