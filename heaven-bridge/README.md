@@ -29,7 +29,7 @@ Relay paths:
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
-## Worker v4
+## Worker v6
 
 Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and runtime mirror; do not merge its operational job history wholesale into `main`.
 
@@ -37,7 +37,7 @@ Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is th
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
-The worker preserves v2 protocol compatibility and reports `worker_version: 4`.
+The worker preserves v2 protocol compatibility and reports `worker_version: 6`.
 
 Core capabilities:
 
@@ -63,6 +63,7 @@ Core capabilities:
 - structured display/window enumeration and window focus/move/state/close
 - structured cursor, mouse button/click/scroll, keyboard shortcut, and Unicode text input
 - structured app launch without shell interpolation
+- structured Windows desktop shortcut creation (`desktop_shortcut_create`) with target, arguments, working directory, description, icon, and overwrite controls
 - clipboard text read/write with relay-aware privacy guards
 - local Codex dispatch using an absolute user npm path fallback
 
@@ -241,6 +242,7 @@ Interaction actions:
 - `gui_type`: inject Unicode text through Win32 `SendInput`.
 - `window_focus`, `window_move`, `window_state`, `window_close`: manage a window selected by HWND, PID, or title.
 - `app_launch`: launch an executable with an argv list and no shell interpolation.
+- `desktop_shortcut_create`: create or replace a `.lnk` on the current user's Desktop with structured target/args/working-directory/description/icon fields.
 - `clipboard_write`: place Unicode text on the interactive clipboard.
 - `clipboard_read`: read Unicode text only when `params.allow_relay=true` is supplied for an explicit clipboard-read request.
 
