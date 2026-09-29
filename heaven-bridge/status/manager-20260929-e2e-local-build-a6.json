@@ -1,0 +1,9 @@
+{
+  "id": "manager-20260929-e2e-local-build-a6",
+  "state": "running",
+  "action": "proc_run",
+  "host": "heaven",
+  "worker_version": 3,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T09:00:11.580145+00:00"
+}
