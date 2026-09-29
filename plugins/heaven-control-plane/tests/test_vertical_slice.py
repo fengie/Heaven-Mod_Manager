@@ -65,6 +65,11 @@ class VerticalSliceTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["error"]["code"], "INVALID_INPUT")
 
+    def test_falsy_non_mapping_input_is_rejected(self):
+        result = self.control.invoke("control.discovery", [])
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"]["code"], "INVALID_INPUT")
+
     def test_oversized_request_is_rejected_before_transport(self):
         result = self.control.invoke("execution.run", {"command": "x" * 1_100_000})
         self.assertFalse(result["ok"])

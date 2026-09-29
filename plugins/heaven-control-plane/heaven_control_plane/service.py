@@ -51,7 +51,7 @@ class HeavenControlPlane:
 
         try:
             capability = self.registry.get(capability_name)
-            data = require_mapping(payload or {})
+            data = require_mapping({} if payload is None else payload)
             input_bytes = validate_request_size(data)
 
             if capability.name == "control.discovery":
