@@ -8,3 +8,6 @@ State/Next/
 *.db-shm
 *.db-wal
 Mods/
+/MHW-DEBUG-ALL.log
+/BuildLogs/
+/StartupLogs/

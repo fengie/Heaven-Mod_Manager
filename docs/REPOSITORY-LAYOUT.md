@@ -11,7 +11,8 @@ Keep the repository root intentionally small. Root files should be limited to pr
 - `tools/` — developer utilities and standalone helper programs.
 - `plugins/` — plugin implementations and plugin-specific docs/tests.
 - `docs/` — durable product/architecture documentation.
-- `docs/research/` — external research and historical design notes.
+- `docs/research/` — external research and design notes.
+- `docs/history/` — superseded release/repair notes kept only for historical context.
 - `data/` — checked-in reference datasets.
 - `legacy-v7/` — frozen legacy implementation/material.
 - `_AGENT_CONTEXT/` — live multi-agent continuity, audits, checkpoints, and evidence only.
@@ -20,6 +21,6 @@ Keep the repository root intentionally small. Root files should be limited to pr
 
 ## Hygiene
 
-Do not add ad-hoc research notes, debug logs, queue payloads, generated artifacts, release output, or temporary investigation files to the root. Prefer the folders above and add generated/runtime paths to `.gitignore` where appropriate.
+Do not add ad-hoc research notes, committed runtime debug logs, queue payloads, generated artifacts, release output, or temporary investigation files to the root. Prefer the folders above and add generated/runtime paths to `.gitignore` where appropriate.
 
 For structural moves, first check active PR/branch changed files. Avoid moving files another agent is editing; relocate them only when references can be updated atomically without creating merge conflicts.
