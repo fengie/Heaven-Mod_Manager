@@ -70,9 +70,11 @@ Before meaningful changes:
 - Route work through the narrowest purpose-built implemented plugin/capability. Prefer structured high-level workflows over raw primitives when they preserve the required safety and evidence.
 - For `heaven`, prefer the most specific Heaven toolbox capability, then structured Heaven Local Bridge actions. Do not use Remote Desktop Commander unless the user explicitly authorizes it in the current request.
 - If a reusable capability is missing or materially incomplete, search existing packages, branches, PRs, and backlog entries for duplicates, then immediately create/update a durable implementation plan in `plugins/PLUGIN_GAP_BACKLOG.md`.
-- A gap plan must state the triggering use case, owner/new-plugin decision, capability/API contract, security boundary, dependencies, acceptance tests, priority, and status.
-- Continue the user's current task with the safest authorized fallback when possible; plugin-gap capture is mandatory but must not become an excuse to stop execution.
-- Never leave reusable plugin ideas only in chat or transient agent state.
+- If the task-relevant plugin/connector/tool is proven unavailable in the current runtime, apply `plugins/LOCAL_REPLACEMENT_PROTOCOL.md` immediately: record outage evidence, claim/start the local replacement project in the same execution cycle, and make the first concrete repository implementation move. Do not leave an outage-triggered item merely planned when repository mutation is available.
+- Prefer a compatibility/adapter layer over duplicating existing Heaven/bridge primitives. A local replacement must never be used to bypass third-party quotas, authentication, OAuth, account permissions, or service-side authorization.
+- A gap/replacement plan must state the triggering use case, owner/new-plugin decision, upstream capability surface, local capability/API contract, security boundary, dependencies/reuse, acceptance tests, priority, status, and project path.
+- Continue the user's current task with the safest authorized fallback when possible; plugin-gap capture/replacement startup is mandatory but must not become an excuse to stop execution.
+- Never leave reusable plugin ideas or outage plans only in chat or transient agent state.
 
 ## Ownership and collision safety
 - Every mutable boundary has one primary owner.
