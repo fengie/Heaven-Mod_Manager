@@ -8,9 +8,10 @@ This is the execution layer that sits above the repository's existing agent doct
 
 ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
-## What v0.5.7 does
+## What v0.5.8 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
+- Makes startup a single normal action: open the dashboard and press **START SWARM**. That explicit operator action switches the controller to `coordinate`, clears pause/read-only/drain/emergency-stop friction, and launches/fills the usual 1 Manager + 1 Primary Programmer + 4 Support topology while preserving capacity, live-ownership, lease, machine, and degraded-state checks. Raw routing/autonomy controls remain available only under Advanced / diagnostics.
 - Coordinates Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release roles. Normal Chat is preferred when already available, but local dispatch defaults to a direct non-Work worker path so execution does not stop merely because arbitrary ChatGPT conversations cannot be auto-created.
 - Agent Control never initiates ChatGPT Work mode. Work is an external, explicit current-task opt-in; ordinary dispatch, review, retry, recovery, and autopilot flows remain non-Work.
 - Enforces a mandatory pre-response repository-training gate: every spawned worker must have all required training/continuity sources present and non-empty, receives their exact hashes in a training manifest, and is instructed to read them plus task-relevant source/tests before it may process the task prompt.
@@ -35,7 +36,7 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
 - Adds a durable engineering-autopilot state machine for a user-supplied big direction: sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
 - Persists autopilot phase, iteration/repair budgets, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
-- Requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
+- Engineering autopilot requires fresh routing ownership plus structured verification/review evidence; it fails closed instead of inferring success from an agent's last prose message.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
 - Gives operators truthful lifecycle counts (working, waiting, blocked, idle, stale, disconnected), provider failure details, lease/boundary provenance, integration readiness, and recent controller events.
 - Exposes existing server-authorized control operations in both dashboard and CLI: autonomy changes, routing set/clear, pause/resume, read-only mode, drain, emergency stop, owned-agent stop, and swarm stop. The UI remains a client; server-side authorization and ownership checks remain authoritative.
@@ -147,7 +148,7 @@ Use the routing manifest when live ownership exists outside this controller (for
 - `node agentctl.mjs routing-clear` clears it.
 - `mode: "authoritative"` means the manifest defines the swarm slots and only open/missing/unassigned entries may be launched.
 - `mode: "overlay"` augments normal planner heuristics with external ownership claims.
-- `observedAt` + `expiresAt` scope freshness; broad automatic swarm execution refuses stale ownership.
+- `observedAt` + `expiresAt` scope freshness; broad automatic/background swarm execution refuses stale ownership. A deliberate dashboard **START SWARM** click is an explicit operator start and can plan from current managed/federated live ownership without forcing the operator to hand-author a routing manifest first.
 
 Only ownership metadata belongs in this manifest. Never place credentials, access tokens, or other secrets in it.
 

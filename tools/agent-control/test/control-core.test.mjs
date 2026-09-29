@@ -209,9 +209,24 @@ test("usual swarm fills only missing roles and distinct support lanes", () => {
   assert.equal(plan.steps.filter(item => item.role === "manager").length, 0);
   assert.equal(plan.steps.filter(item => item.role === "main").length, 1);
   const support = plan.steps.filter(item => item.role === "support");
-  assert.equal(support.length, 7);
-  assert.equal(new Set(support.map(item => item.lane)).size, 7);
+  assert.equal(support.length, 3);
+  assert.equal(new Set(support.map(item => item.lane)).size, 3);
   assert.ok(!support.some(item => item.lane === "architecture"));
+});
+
+test("usual swarm one-click topology fits the default eight-worker controller capacity", () => {
+  const current = state();
+  const plan = planWorkflow("usual-swarm", {
+    state: current,
+    mission: "Continue the highest-value unfinished project work",
+    machine: "heaven"
+  });
+  assert.equal(plan.steps.filter(item => item.role === "manager").length, 1);
+  assert.equal(plan.steps.filter(item => item.role === "main").length, 1);
+  assert.equal(plan.steps.filter(item => item.role === "support").length, 4);
+  assert.equal(plan.steps.length, 6);
+  const capacity = deploymentBatchCapacity(current, plan.steps.length, 8);
+  assert.equal(capacity.allowed, true);
 });
 
 test("authoritative routing manifest fills declared missing slots instead of inventing a second swarm", () => {

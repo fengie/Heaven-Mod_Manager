@@ -3218,7 +3218,7 @@ async function previewWorkflow(workflowId, body = {}) {
   });
 }
 
-async function executeWorkflow(workflowId, body = {}) {
+async function executeWorkflow(workflowId, body = {}, { operatorInitiated = false } = {}) {
   return withDeployLock(async () => {
     const workflowStartedAt = isoNow();
     const workflowWaveId = randomUUID();
@@ -3227,7 +3227,9 @@ async function executeWorkflow(workflowId, body = {}) {
     assertWorkflowAutonomy(state, workflowId);
     const plan = await previewWorkflow(workflowId, {
       ...body,
-      requireReconciledOwnership: workflowId === "usual-swarm" || Boolean(body.requireReconciledOwnership)
+      requireReconciledOwnership: workflowId === "usual-swarm"
+        ? (!operatorInitiated || Boolean(body.requireReconciledOwnership))
+        : Boolean(body.requireReconciledOwnership)
     });
     if (plan.blocked?.length) return { plan, created: [], blocked: plan.blocked };
 
@@ -3323,6 +3325,22 @@ async function executeWorkflow(workflowId, body = {}) {
     }
     return { plan, created, blocked };
   });
+}
+
+async function startUsualSwarm(body = {}) {
+  updateControlSettings({
+    autonomyLevel: "coordinate",
+    dispatchPaused: false,
+    readOnly: false,
+    draining: false,
+    clearEmergencyStop: true,
+    reason: "operator-start-swarm"
+  });
+
+  return executeWorkflow("usual-swarm", {
+    ...body,
+    repositoryWriteAuthorized: true
+  }, { operatorInitiated: true });
 }
 
 function buildTakeoverForAgent(id, { persist = false, safetyControl = false } = {}) {
@@ -4128,6 +4146,11 @@ const server = http.createServer(async (req, res) => {
           })
         : null;
       return sendJson(res, 200, { interpretation, plan });
+    }
+
+    if (req.method === "POST" && pathname === "/api/swarm/start") {
+      const body = await readJson(req);
+      return sendJson(res, 201, await startUsualSwarm(body));
     }
 
     const workflowMatch = pathname.match(/^\/api\/workflows\/([^/]+)\/(preview|execute)$/);
