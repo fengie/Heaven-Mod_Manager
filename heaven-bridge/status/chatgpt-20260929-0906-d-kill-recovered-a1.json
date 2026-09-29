@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-0906-d-kill-recovered-a1",
-  "state": "running",
+  "state": "completed",
   "action": "proc_kill",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T09:06:57.753533+00:00"
+  "updated_at": "2026-09-29T09:07:03.891700+00:00",
+  "exit_code": 0
 }
