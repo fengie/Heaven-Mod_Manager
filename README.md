@@ -1,3 +1,9 @@
+# v8.8.11 Universal Mod Manager
+
+## v8.8.11 — FOMOD staging cleanup
+
+Interactive FOMOD imports now always retire their manager-owned preparation directory when the chooser is canceled or fails during validation/rendering. Invalid or unsupported installer metadata can no longer leave hidden `.fomod-*.staging` directories behind in the managed mod library.
+
 # v8.8.10 Universal Mod Manager
 
 ## v8.8.10 — workflow feature closure
