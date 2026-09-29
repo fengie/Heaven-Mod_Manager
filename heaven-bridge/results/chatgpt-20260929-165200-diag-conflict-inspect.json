@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-165200-diag-conflict-inspect",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T16:52:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T16:47:52.353988+00:00",
+  "finished_at": "2026-09-29T16:47:53.772241+00:00",
+  "stdout": "MERGE_EXIT=128\r\n",
+  "stderr": "From https://github.com/fengie/mhw-mods\n   5b6259b..e282fa0  main             -> origin/main\n * [new tag]         updater-main-191 -> updater-main-191\nfatal: invalid reference: origin/fix/support-bundle-version-identity-20260929\nfatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\nfatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\nfatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\nfatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\nfatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\ngit : fatal: cannot change to 'C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929': No such file or directory\r\nAt line:1 char:634\r\n+ ... name-only --diff-filter=U }; git -C $wt merge --abort 2>$null; exit 0\r\n+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: cannot c...le or directory:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165200-diag-conflict-inspect.stdout.log",
+    "stderr_path": "C:\\Users\\fengc\\HeavenBridge\\outputs\\chatgpt-20260929-165200-diag-conflict-inspect.stderr.log",
+    "stdout_bytes": 16,
+    "stderr_bytes": 1235,
+    "tail_chars": 60000
+  },
+  "host": "heaven2",
+  "action": "proc_run",
+  "job_hash": "12c36701fc3b024e3d112024cdb2261a04c5ee7c58861ce09ae724448bc4514d"
+}
