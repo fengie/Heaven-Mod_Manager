@@ -1,0 +1,14 @@
+{
+  "id": "agent-control-pr59-final-085781aa-v1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1800,
+    "command": "$ErrorActionPreference = 'Stop'; $d = Join-Path $env:TEMP 'agent-control-pr59-final-085781aa-v1'; if (Test-Path -LiteralPath $d) { Remove-Item -LiteralPath $d -Recurse -Force }; & git clone --branch 'feature/agent-control-plane-v2-20260928' --single-branch 'https://github.com/fengie/mhw-mods.git' $d; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; & git -C $d checkout --detach '085781aa57bc3bec3d07004cb72c7a5b2165c59f'; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $actual = (& git -C $d rev-parse HEAD).Trim(); if ($actual -ne '085781aa57bc3bec3d07004cb72c7a5b2165c59f') { Write-Error ('HEAD_MISMATCH=' + $actual); exit 42 }; $ac = Join-Path $d 'tools\\agent-control'; Set-Location -LiteralPath $ac; & npm.cmd run check; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; & npm.cmd test; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; Write-Output ('AGENT_CONTROL_FINAL_HEAD_OK=' + $actual)"
+  },
+  "created_at": "2026-09-29T09:20:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
