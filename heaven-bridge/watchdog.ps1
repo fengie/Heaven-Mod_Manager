@@ -5,7 +5,9 @@ param(
     [ValidateRange(5, 300)]
     [int]$IntervalSeconds = 30,
     [ValidateRange(30, 900)]
-    [int]$StaleSeconds = 120
+    [int]$StaleSeconds = 120,
+    [ValidateRange(120, 3600)]
+    [int]$LoopStaleSeconds = 900
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +17,7 @@ $RuntimeDir = Split-Path -Parent $PSCommandPath
 $RuntimeWorker = Join-Path $RuntimeDir 'heaven-desktop-worker.py'
 $StateDir = Join-Path $env:USERPROFILE 'HeavenBridge'
 $LocalHeartbeat = Join-Path $StateDir 'worker-local-heartbeat.json'
+$LoopProgress = Join-Path $StateDir 'worker-loop-progress.json'
 $WatchdogLog = Join-Path $StateDir 'watchdog.log'
 $MutexName = 'Local\MHW.HeavenBridgeWatchdog'
 $StartupGraceSeconds = 45
@@ -60,6 +63,24 @@ function Get-LocalHeartbeatState {
 
     try {
         $row = Get-Content -Raw -Path $LocalHeartbeat | ConvertFrom-Json
+        $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
+        return [ordered]@{
+            exists = $true
+            age_seconds = [Math]::Max(0, [int]([DateTimeOffset]::UtcNow - $updated).TotalSeconds)
+            pid = if ($null -eq $row.pid) { $null } else { [int]$row.pid }
+            parse_error = $null
+        }
+    } catch {
+        return [ordered]@{ exists = $true; age_seconds = $null; pid = $null; parse_error = $_.Exception.Message }
+    }
+}
+
+function Get-LoopProgressState {
+    if (-not (Test-Path $LoopProgress)) {
+        return [ordered]@{ exists = $false; age_seconds = $null; pid = $null; parse_error = $null }
+    }
+    try {
+        $row = Get-Content -Raw -Path $LoopProgress | ConvertFrom-Json
         $updated = [DateTimeOffset]::Parse([string]$row.updated_at)
         return [ordered]@{
             exists = $true
@@ -160,6 +181,26 @@ function Invoke-WatchdogCheck {
 
     if ($heartbeat.age_seconds -ne $null -and $heartbeat.age_seconds -gt $StaleSeconds) {
         Restart-WorkerSafely -Reason "local heartbeat stale by $($heartbeat.age_seconds)s"
+        return
+    }
+
+    $progress = Get-LoopProgressState
+    if (-not $progress.exists -and $workerAge -ne $null -and $workerAge -ge $LoopStaleSeconds) {
+        Restart-WorkerSafely -Reason "worker loop progress missing for $workerAge seconds"
+        return
+    }
+    if ($progress.parse_error -and $workerAge -ne $null -and $workerAge -ge $LoopStaleSeconds) {
+        Restart-WorkerSafely -Reason "worker loop progress unreadable: $($progress.parse_error)"
+        return
+    }
+    if (
+        $progress.exists -and
+        -not $progress.parse_error -and
+        $progress.pid -eq [int]$worker.ProcessId -and
+        $progress.age_seconds -ne $null -and
+        $progress.age_seconds -gt $LoopStaleSeconds
+    ) {
+        Restart-WorkerSafely -Reason "worker queue loop stalled for $($progress.age_seconds)s"
     }
 }
 
@@ -202,7 +243,7 @@ try {
         exit 0
     }
 
-    Write-WatchdogLog ("Watchdog started once={0} dryRun={1} interval={2}s stale={3}s" -f $Once, $DryRun, $IntervalSeconds, $StaleSeconds)
+    Write-WatchdogLog ("Watchdog started once={0} dryRun={1} interval={2}s stale={3}s loopStale={4}s" -f $Once, $DryRun, $IntervalSeconds, $StaleSeconds, $LoopStaleSeconds)
     do {
         try {
             Invoke-WatchdogCheck
