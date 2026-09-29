@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T155830Z-gui-app-launch-01",
+  "state": "running",
+  "action": "app_launch",
+  "host": "heaven",
+  "worker_version": 6,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T15:58:19.149578+00:00"
+}
