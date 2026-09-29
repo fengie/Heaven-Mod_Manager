@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-enable-auto-delete-merged-branches-20260929-1019-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'\n$repo='fengie/mhw-mods'\n$gh=(Get-Command gh.exe -ErrorAction Stop).Source\n& $gh auth status\nif($LASTEXITCODE -ne 0){throw 'gh auth unavailable'}\n& $gh api --method PATCH \"repos/$repo\" -f delete_branch_on_merge=true | Out-Null\nif($LASTEXITCODE -ne 0){throw 'failed to enable delete_branch_on_merge'}\n$state=& $gh api \"repos/$repo\" --jq '.delete_branch_on_merge'\nif($LASTEXITCODE -ne 0){throw 'failed to verify repository setting'}\n[pscustomobject]@{delete_branch_on_merge=$state} | ConvertTo-Json -Compress",
+    "cwd": "C:\\Users\\Xxkan\\mhw-mods-work-canonical",
+    "timeout_seconds": 120
+  },
+  "created_at": "2026-09-29T14:19:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
