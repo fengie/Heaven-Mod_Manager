@@ -168,7 +168,7 @@ try{
   # This catches RID-specific analyzer/compiler diagnostics (for example CA2016)
   # before the publish phase so the failure is reported as a compile gate.
   $ridCompileLog=Join-Path $logRoot ("build-compile-win-x64-"+$stamp+".log")
-  Require-Stage 'App win-x64 compile/analyzers' @('build','.\src\MhwModManager.App\MhwModManager.App.csproj','-c','Release','-r','win-x64','--self-contained','true','-warnaserror') $ridCompileLog
+  Require-Stage 'App win-x64 compile/analyzers' @('build','.\src\MhwModManager.App\MhwModManager.App.csproj','-c','Release','-r','win-x64','--self-contained','true','-warnaserror','-m:1','-p:BuildInParallel=false','-p:UseSharedCompilation=false') $ridCompileLog
 
   $ridRestoreLog=Join-Path $logRoot ("build-restore-win-x64-r2r-"+$stamp+".log")
   $ridRestoreCode=Invoke-DotNetStage 'win-x64 ReadyToRun restore' @('restore','.\src\MhwModManager.App\MhwModManager.App.csproj','-r','win-x64','-p:PublishReadyToRun=true') $ridRestoreLog
