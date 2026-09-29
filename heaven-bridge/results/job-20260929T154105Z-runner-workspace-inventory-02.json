@@ -1,0 +1,21 @@
+{
+  "id": "job-20260929T154105Z-runner-workspace-inventory-02",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T15:41:05Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T15:40:12.340603+00:00",
+  "finished_at": "2026-09-29T15:40:13.572117+00:00",
+  "stdout": "=== C:\\Users\\Xxkan\\actions-runner-heaven-v2\\_work\\mhw-mods\\mhw-mods ===\r\n## HEAD (no branch)\naabfc6fd846196aba89512fd89c75299fd174b06\norigin\thttps://github.com/fengie/mhw-mods (fetch)\norigin\thttps://github.com/fengie/mhw-mods (push)\n* (HEAD detached at aabfc6fd)\n  agent/bug-hunt-swarm-20260929\n  main\n  ops/heaven-bridge-shortcut-recovery-20260929\n  remotes/origin/agent/bug-hunt-swarm-20260929\n  remotes/origin/agent/bughunt-recipe-family-idempotence-20260929\n  remotes/origin/agent/fomod-staging-cleanup-20260929\n  remotes/origin/agent/heaven-bridge-recover-20260929\n  remotes/origin/agent/unified-mod-catalog-20260929\n  remotes/origin/fix-mod-retirement-lifecycle-20260929\n  remotes/origin/fix/legacy-migration-corrupt-cas-20260929\n  remotes/origin/heaven-bridge\n  remotes/origin/main\n  remotes/origin/perf-startup-20260929\n  remotes/origin/release-8.8.11-verification-fix\n  remotes/origin/release-8.8.12-verification-fix\n  remotes/pull/140/merge\n  remotes/pull/141/merge\n  remotes/pull/151/merge\n  remotes/pull/164/merge\n  remotes/pull/166/merge\n  remotes/pull/198/merge\n  remotes/pull/199/merge\n  remotes/pull/202/merge\n  remotes/pull/203/merge\n  remotes/pull/205/merge\n  remotes/pull/207/merge\n=== C:\\Users\\Xxkan\\actions-runner-heaven\\_work\\mhw-mods\\mhw-mods ===\r\n## agent/bug-hunt-swarm-20260929...origin/agent/bug-hunt-swarm-20260929\n5e3bd24e6de243f96c16af267c74e1104f3b6dbd\norigin\thttps://github.com/fengie/mhw-mods (fetch)\norigin\thttps://github.com/fengie/mhw-mods (push)\n* agent/bug-hunt-swarm-20260929\n  main\n  remotes/origin/agent/bug-hunt-swarm-20260929\n  remotes/origin/agent/bughunt-recipe-family-idempotence-20260929\n  remotes/origin/agent/fomod-staging-cleanup-20260929\n  remotes/origin/agent/heaven-bridge-recover-20260929\n  remotes/origin/agent/unified-mod-catalog-20260929\n  remotes/origin/fix-mod-retirement-lifecycle-20260929\n  remotes/origin/fix/legacy-migration-corrupt-cas-20260929\n  remotes/origin/heaven-bridge\n  remotes/origin/main\n  remotes/origin/perf-startup-20260929\n  remotes/origin/release-8.8.11-verification-fix\n  remotes/origin/release-8.8.12-verification-fix\n  remotes/pull/128/merge\n  remotes/pull/129/merge\n  remotes/pull/131/merge\n  remotes/pull/138/merge\n  remotes/pull/140/merge\n  remotes/pull/141/merge\n  remotes/pull/144/merge\n  remotes/pull/145/merge\n  remotes/pull/146/merge\n  remotes/pull/147/merge\n  remotes/pull/148/merge\n  remotes/pull/149/merge\n  remotes/pull/150/merge\n  remotes/pull/151/merge\n  remotes/pull/152/merge\n  remotes/pull/153/merge\n  remotes/pull/154/merge\n  remotes/pull/156/merge\n  remotes/pull/159/merge\n  remotes/pull/160/merge\n  remotes/pull/161/merge\n  remotes/pull/164/merge\n  remotes/pull/166/merge\n  remotes/pull/167/merge\n  remotes/pull/203/merge\n  remotes/pull/205/merge\n  remotes/pull/207/merge\n  remotes/pull/209/merge\n  remotes/pull/213/merge\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T154105Z-runner-workspace-inventory-02.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\job-20260929T154105Z-runner-workspace-inventory-02.stderr.log",
+    "stdout_bytes": 2824,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "powershell",
+  "job_hash": "f8cb3a1bb7209173b8de9ad5bf3a6c32313c1d7490c3b07cf54847563dfb3b41"
+}
