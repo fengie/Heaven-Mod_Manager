@@ -38,6 +38,37 @@ jobs:
             const deleted = [];
             const preserved = [];
 
+            // Exact-tip approvals for work already salvaged, merged, or explicitly
+            // superseded by canonical main. These are intentionally SHA-pinned:
+            // if another agent moves a branch, cleanup preserves it for re-audit.
+            const approvedSuperseded = new Map([
+              ["agent/liveness-scheduler-machine-policy-20260929", { sha: "61c7714822d56084f11b7b4b7838b827648b408e", reason: "merged PR #96" }],
+              ["agent/updater-cross-session-ownership-20260929", { sha: "fcc30786b5230eac81094aa0d42c7efc0fa2214e", reason: "integrated on canonical main" }],
+              ["agent/replacefilew-failure-characterization-20260927", { sha: "78fc8939331fc6a5d9bad23dbf1c38708530785e", reason: "historical implementation already integrated and verified" }],
+              ["agent/replacefilew-failure-characterization-v2", { sha: "a5731ebcf1a0c5a4a92d1adbce5899766d6c5e8b", reason: "historical implementation already integrated and verified" }],
+              ["agent/windows-live-containment-hardening", { sha: "02cbd35f5c941f0f0dd912398bc856593e2583ce", reason: "historical implementation already integrated and verified" }],
+              ["agent/windows-live-containment-hardening-v2", { sha: "6b4e57004d16aec99064ecf475bcb3c4ef566f32", reason: "historical implementation already integrated and verified" }],
+              ["agent/support-bundle-share-safety-20260928", { sha: "ef4c2e72339b85c1d152abd76648360143a4266f", reason: "support harvest already canonical" }],
+              ["agent/support-continuity-drift-reconciliation-20260928", { sha: "93dd7db71941ae4a11c6d59502d0f6d6954c293b", reason: "stale continuity snapshot" }],
+              ["agent/support-continuity-drift-repair-20260928", { sha: "ae8190b8b0b9a47b5dca1b1343775017e6bdae88", reason: "stale continuity snapshot" }],
+              ["agent/support-pr-disposition-ledger-20260928", { sha: "d193cd7b3b1be769c2becfb8c0924ed76ae9077f", reason: "stale support ledger snapshot" }],
+              ["agent/support-updater-c10-manager-review-20260928", { sha: "5d1dda9c20e475a80cd90c9bd405d6c9337ddc4f", reason: "superseded updater audit" }],
+              ["agent/support-updater-lr003-native-replacement-20260928", { sha: "109e4f63e50f96365091931dd44613865b643d8d", reason: "superseded updater audit" }],
+              ["agent/support-updater-lr003-restart-audit-20260928", { sha: "882f5a916c201802b87f67dbd8577074839c67d5", reason: "superseded updater audit" }],
+              ["agent/support-updater-lr003-resume-20260928", { sha: "bf4bbf1cabefa965a1c291989a6000f9be43801d", reason: "superseded updater audit" }],
+              ["agent/support-updater-packaging-audit-20260928", { sha: "473109ff076a5c0e9da493c50cece4ba6529b0e8", reason: "superseded updater audit" }],
+              ["agent/support-updater-wpf-integration-audit-20260928", { sha: "d37b348c18d303c5644ac141661ff1b48291e41f", reason: "superseded updater audit" }],
+              ["agent/updater-existing-release-rest-ref-20260928", { sha: "04a985054cf2ea3fdbb1b50eaf3c16c00e3392a4", reason: "superseded by canonical updater closure" }],
+              ["agent/updater-existing-release-rest-ref-gate-20260928", { sha: "febda8bdfd8af52bf432c3f80bcadc6de527bae1", reason: "temporary verification mirror" }],
+              ["agent/updater-existing-release-rest-ref-gate2-20260928", { sha: "d7a57c4d3d91c7df74f34c15059e11ec8702ca49", reason: "temporary verification mirror" }],
+
+              ["agent/smart-pack-planner-core", { sha: "ddcbe89839501e0689d6b2972cd972426201649b", reason: "useful delta salvaged by merged PR #125" }],
+              ["integration/smart-pack-planner-main-20260929", { sha: "54b9219f4e02013b67369dc7bff2a902e64dc03f", reason: "superseded by fresh-main PR #125" }],
+              ["agent/updater-installed-e2e-20260929-manager", { sha: "9dca0f2ba007b2489c8b26241274e9b5962277db", reason: "older E2E harness superseded by stronger canonical main E2E" }],
+              ["agent/bridge-priority-scheduler-20260929", { sha: "6fb237790f49a65c8a68220e1b2872187655f9a6", reason: "useful priority aging reconciled by merged PR #129" }],
+              ["integration/bridge-priority-aging-main-20260929", { sha: "6a3074831612179d8115d238593f62ff5885abc3", reason: "superseded by rebased merged PR #129" }]
+            ]);
+
             for (const branchInfo of branches) {
               const branch = branchInfo.name;
               if (branch === "main" || branch === "heaven-bridge") continue;
@@ -132,10 +163,20 @@ jobs:
               }
 
               if (!safe) {
+                const approval = approvedSuperseded.get(branch);
+                if (approval && approval.sha === branchSha) {
+                  safe = true;
+                  reason = `approved-superseded: ${approval.reason}`;
+                }
+              }
+
+              if (!safe) {
                 preserved.push({
                   branch,
                   sha: branchSha,
-                  reason: "unique-or-unproven"
+                  reason: approvedSuperseded.has(branch)
+                    ? "approved-tip-changed-requires-reaudit"
+                    : "unique-or-unproven"
                 });
                 continue;
               }
