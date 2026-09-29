@@ -1,0 +1,21 @@
+{
+  "id": "----------------------------------------------rotate-heaven-runner-v2-20260929-112900",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:29:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:30:28.974736+00:00",
+  "finished_at": "2026-09-29T11:30:36.824809+00:00",
+  "stdout": "\r\n# Runner removal\r\n\r\n",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-v2-reconfigure'...\nUnrecognized command-line input arguments for command remove: 'unattended'. For usage refer to: .\\config.cmd --help or ./config.sh --help\r\nFailed: Removing runner from the server\r\nRunner heaven is currently running a job and cannot be deleted.\r\nconfig.cmd remove failed with exit code 1.\r\nAt C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-v2-reconfigure\\heaven-bridge\\install-github-runner-reconfigure.ps1:146 \r\nchar:36\r\n+ ... DE -ne 0) { throw \"config.cmd remove failed with exit code $LASTEXITC ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (config.cmd remo...th exit code 1.:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : config.cmd remove failed with exit code 1.\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------------rotate-heaven-runner-v2-20260929-112900.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\----------------------------------------------rotate-heaven-runner-v2-20260929-112900.stderr.log",
+    "stdout_bytes": 22,
+    "stderr_bytes": 845,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "36c84c6d0ae54fbd89e615720a6562f2ebf98509d4472c50a712092ea1666589"
+}
