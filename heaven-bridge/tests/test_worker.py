@@ -32,7 +32,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["worker_version"], 4)
         self.assertEqual(result["data"]["protocol"], "chatgpt-heaven-bridge-v2")
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
-        for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read"):
+        for action in ("fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "secret_type"):
             self.assertIn(action, result["data"]["actions"])
 
     def test_priority_queue_ordering_keeps_control_responsive(self):
