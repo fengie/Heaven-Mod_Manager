@@ -1,0 +1,21 @@
+{
+  "id": "003-bridge-hardening-20260929-1044-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:44:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T10:47:50.481878+00:00",
+  "finished_at": "2026-09-29T10:47:53.702317+00:00",
+  "stdout": "",
+  "stderr": "OpenAI Codex v0.158.0\n--------\nworkdir: C:\\Users\\Xxkan\nmodel: gpt-6-astra\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ecc7-2b4f-7c73-b967-ca98e525b842\n--------\nuser\nYou are Agent HARDEN for Heaven Local Bridge. Work independently and actually implement reliability/security/agent-ergonomics improvements in fengie/mhw-mods.\n\nContext:\n- heaven = worker/execution Windows machine; heaven2 = control/credential authority.\n- Durable source is main; heaven-bridge branch is long-lived queue/result transport only.\n- Worker v3 supports filesystem, processes, sessions, jobs/cancel, desktop, screenshots, controller checkpoints, local Codex, Docker worker fabric.\n- Do NOT use Remote Desktop Commander.\n- Other agents are concurrently implementing secret-safe GUI input and Windows UIA; avoid overlapping their feature code when possible.\n\nPriorities:\n1. Fix relay scheduling/starvation: worker currently sorts queue filenames and can stop once non-control workers are saturated, so late health/cancel/highest-priority control jobs can be delayed. Implement explicit priority/control-plane scheduling with deterministic fairness and tests.\n2. Improve capability negotiation metadata/versioning so clients can distinguish feature sets and optional degraded capabilities without parsing prose.\n3. Tighten result/log redaction and error hygiene, especially around subprocess environment/argv/output metadata. Never weaken existing secret protections.\n4. Improve crash/restart recovery, stale-running cleanup, idempotency, and diagnostics where low-risk and testable.\n5. Add compact agent-facing docs/examples that minimize token usage and make the bridge easy to operate through the GitHub connector.\n6. Run full bridge gate and add targeted regression tests.\n\nWorkflow:\n- Start from current origin/main in dedicated worktree/branch agent/bridge-hardening (or collision-safe equivalent).\n- Preserve unrelated concurrent work.\n- Do not merge to main; push the task branch for a dedicated integrator.\n- Final stdout must include branch, commit SHA, changed files, exact tests/pass counts, what was hardened, and remaining gaps.\n- Clean temporary artifacts but keep task branch for integration.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\nERROR: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Oct 4th, 2026 8:18 AM.\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\003-bridge-hardening-20260929-1044-a1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\003-bridge-hardening-20260929-1044-a1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2684,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "codex",
+  "job_hash": "8036e5b8c3f6ce0b9178b01e2ada7f97a9c2cec7d65c038cd81de06d48a65ea2"
+}
