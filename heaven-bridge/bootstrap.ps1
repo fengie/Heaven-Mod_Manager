@@ -11,6 +11,27 @@ $Startup = [Environment]::GetFolderPath('Startup')
 $StartupVbs = Join-Path $Startup 'HeavenBridgeWorker.vbs'
 $TaskName = 'Heaven Local Bridge'
 
+function Test-IsElevated {
+    $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object System.Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Ensure-ElevatedBootstrap {
+    if (Test-IsElevated) { return }
+    if ([string]::IsNullOrWhiteSpace($PSCommandPath)) {
+        throw 'Heaven Bridge bootstrap needs elevation but PSCommandPath is unavailable.'
+    }
+
+    $hostExe = (Get-Process -Id $PID -ErrorAction Stop).Path
+    $args = '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
+    Write-Output 'HEAVEN_BRIDGE_ELEVATION_REQUESTED'
+    $child = Start-Process -FilePath $hostExe -Verb RunAs -ArgumentList $args -Wait -PassThru
+    exit $child.ExitCode
+}
+
+Ensure-ElevatedBootstrap
+
 $env:GIT_TERMINAL_PROMPT = '0'
 $RecoveryDir = Join-Path (Join-Path $env:USERPROFILE 'HeavenBridge') 'bootstrap-recovery'
 New-Item -ItemType Directory -Force -Path $RuntimeDir,$RecoveryDir | Out-Null
