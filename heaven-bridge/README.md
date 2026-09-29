@@ -238,7 +238,8 @@ Interaction actions:
 - `gui_mouse_click`: single/double/triple click at the current or supplied coordinates.
 - `gui_mouse_scroll`: vertical or horizontal wheel input.
 - `gui_key`: named key/shortcut input such as Ctrl+L, Alt+F4, arrows, or function keys.
-- `gui_type`: inject Unicode text through Win32 `SendInput`.
+- `gui_type`: inject explicitly non-secret Unicode text through Win32 `SendInput`.
+- `secret_type`: consume a short-lived one-time secret handle from the locally configured out-of-band credential inbox and type it through Win32 `SendInput`; the secret value never enters the GitHub relay.
 - `window_focus`, `window_move`, `window_state`, `window_close`: manage a window selected by HWND, PID, or title.
 - `app_launch`: launch an executable with an argv list and no shell interpolation.
 - `clipboard_write`: place Unicode text on the interactive clipboard.
@@ -248,9 +249,46 @@ Desktop selectors fail closed on ambiguous window matches unless `first_match:tr
 
 ### Sensitive input boundary
 
-The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, or controller state.
+The GitHub queue/result relay is private but it is still persisted transport. Do **not** put passwords, access tokens, API keys, cookies, private keys, recovery codes, or other secrets into `clipboard_write`, `gui_type`, command payloads, queue params, results, logs, screenshots, or controller state.
 
-For full credential-safe desktop parity, secrets should be referenced by a local named-secret handle owned by the credential authority and resolved only on the destination machine; the secret value itself must never enter GitHub. Until that channel is implemented, credential entry remains outside the bridge's safe structured surface.
+Credential-safe GUI entry uses `secret_type`. GitHub carries only an opaque one-time handle plus a non-secret target-window selector. The secret value is delivered out of band from the `heaven2` credential authority into a worker-local configured inbox and is never copied into queue/result/status/controller payloads.
+
+On `heaven`, configure the worker process with:
+
+- `HEAVEN_BRIDGE_SECRET_INBOX=<dedicated out-of-band inbox>`
+- `HEAVEN_BRIDGE_SECRET_INBOX_TRUSTED=1`
+
+Use a dedicated inbox whose transport and ACL are managed outside this repository. For the current two-machine setup, the recommended deployment is an SMB share owned by `heaven2`, with SMB encryption required and access restricted to the credential-authority account plus the `heaven` worker account. Do not send the inbox path, credentials, secret value, ciphertext, or envelope contents as per-job GitHub parameters.
+
+The authority writes exactly one `<handle>.json` envelope directly to that inbox:
+
+```json
+{
+  "schema": "heaven-bridge-secret-v1",
+  "handle": "opaque-random-handle-at-least-128-bits",
+  "destination": "heaven",
+  "purpose": "secret_type",
+  "created_at": "2026-09-29T12:00:00Z",
+  "expires_at": "2026-09-29T12:01:00Z",
+  "value": "<secret only in the out-of-band envelope>"
+}
+```
+
+Then the relay job contains only the handle and target:
+
+```json
+{
+  "action": "secret_type",
+  "params": {
+    "handle": "opaque-random-handle-at-least-128-bits",
+    "target": { "hwnd": 123456 }
+  }
+}
+```
+
+The worker resolves and focuses the target before secret consumption, atomically claims the envelope, verifies schema/handle/destination/purpose/TTL, records a non-secret replay marker, deletes the claimed envelope, and injects the secret directly with `SendInput`. The result is metadata-only (`typed`, `consumed`, and target HWND); it never returns the secret, a hash of the secret, its length, or a preview.
+
+`health.data.features.secret_input.available` is true only when the worker is on Windows and the trusted configured inbox is reachable. Otherwise `secret_type` fails closed with `SECRET_CHANNEL_UNAVAILABLE`. A consumed handle is single-use. If typing fails after consumption, issue a new handle/envelope; never delete replay state merely to retry. Expired, wrong-host, malformed, missing, or replayed envelopes fail closed and are not restored to the inbox.
 
 ## Agent code, build, and test workflow
 
@@ -299,7 +337,7 @@ Use the operator gate from the repository root:
 .\heaven-bridge\manage.ps1 TEST
 ```
 
-That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
+That command compiles `worker.py`, runs both `heaven-bridge/test_worker.py` and `heaven-bridge/tests/test_worker.py`, and parses `bootstrap.ps1` plus `manage.ps1`. The suites cover TTL/future-skew validation, canonical duplicate hashing, allowlist/delete protections, binary pagination/roundtrip helpers, copy/delete behavior, structured errors, search-mode compatibility, secret-like inline env blocking, credential-safe secret TTL/destination/replay/leak guards, singleton/stale-lock behavior, bootstrap handoff safety, Codex batch invocation, and health capabilities.
 
 ## Security boundary
 
