@@ -1,5 +1,7 @@
 # Agent Control Federation / Registry v2 — 2026-09-29
 
+> **Plugin platform update (2026-09-29):** new plugin work is centralized under `plugins/`. Read `_AGENT_CONTEXT/PLUGIN_PLATFORM_2026-09-29.md`, `plugins/README.md`, and `plugins/IMPLEMENTATION_SWARM_PROMPT.md` before creating or restructuring plugin/control-plane code. The active `heaven-bridge/` tree remains a compatibility/runtime boundary; new control-plane implementation begins under `plugins/heaven-control-plane/`.
+
 Federation/Registry schema v2 and Agent Control 0.5.1 continuity are preserved in `_AGENT_CONTEXT/AGENT_CONTROL_FEDERATION_REGISTRY_V2_2026-09-29.md`. Read it before changing provider adapters, normalized observations, logical identity reconciliation, persisted federation state, or provider capability/health semantics. Preserve fail-closed strong-correlation identity, honest bridge/manual registration where automatic discovery is unavailable, and the repository's main-first delivery contract.
 
 ---
