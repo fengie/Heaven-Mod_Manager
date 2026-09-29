@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-1049-hosted-actions-diagnose-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T10:49:30Z",
+  "ttl_seconds": 21600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan\\local-ai-workspaces\\mhw-mods",
+    "command": "$ErrorActionPreference='Continue'; Write-Output '=== GH AUTH ==='; gh auth status; Write-Output '=== REPO ACTIONS PERMISSIONS ==='; gh api repos/fengie/mhw-mods/actions/permissions; Write-Output '=== HEAVEN BRIDGE RUNS ==='; gh run list --repo fengie/mhw-mods --workflow 'Heaven Local Bridge Gate' --limit 20 --json databaseId,name,workflowName,status,conclusion,event,headSha,createdAt,updatedAt,url; Write-Output '=== RECENT RUN JOBS ==='; $runsJson = gh run list --repo fengie/mhw-mods --workflow 'Heaven Local Bridge Gate' --limit 8 --json databaseId; $runs = $runsJson | ConvertFrom-Json; foreach($r in $runs){ Write-Output ('--- RUN ' + $r.databaseId + ' ---'); gh api ('repos/fengie/mhw-mods/actions/runs/' + $r.databaseId + '/jobs?filter=latest') }; Write-Output '=== BILLING USER ==='; gh api /users/fengie/settings/billing/actions; Write-Output '=== RUNNERS ==='; gh api repos/fengie/mhw-mods/actions/runners",
+    "timeout_seconds": 900
+  },
+  "priority": "highest"
+}
