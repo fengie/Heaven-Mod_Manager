@@ -1,0 +1,21 @@
+{
+  "id": "-----------------------------------------------install-clean-heaven-v2-runner-20260929-113300-b1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:33:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T11:33:15.820501+00:00",
+  "finished_at": "2026-09-29T11:35:28.502405+00:00",
+  "stdout": "",
+  "stderr": "Cloning into 'C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-runner-v2-clean-b1'...\nRemove-Item : Cannot remove item C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\clrjit.dll: Access to the path \r\n'C:\\Users\\Xxkan\\actions-runner-heaven-v2\\bin\\clrjit.dll' is denied.\r\nAt \r\nC:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\Modules\\Microsoft.PowerShell.Archive\\Microsoft.PowerShell.Archive.psm1:411 \r\nchar:46\r\n+ ...                 $expandedItems | % { Remove-Item $_ -Force -Recurse }\r\n+                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : PermissionDenied: (C:\\Users\\Xxkan\\...\\bin\\clrjit.dll:FileInfo) [Remove-Item], Unauthoriz \r\n   edAccessException\r\n    + FullyQualifiedErrorId : RemoveFileSystemItemUnAuthorizedAccess,Microsoft.PowerShell.Commands.RemoveItemCommand\r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----------------------------------------------install-clean-heaven-v2-runner-20260929-113300-b1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\-----------------------------------------------install-clean-heaven-v2-runner-20260929-113300-b1.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 801,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "7d663616953ce32337af05a0ec94438b00e2c1804e894ce080dfcf78d60038ba"
+}
