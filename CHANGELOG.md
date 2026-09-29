@@ -1,3 +1,12 @@
+# v8.8.20 — Smoother UI transitions
+
+- Add short transform/opacity transitions for top-level page changes and the blocking-operation overlay.
+- Add subtle shared hover/press feedback for buttons and sidebar navigation without animating layout dimensions.
+- Respect the Windows client-area animation preference so reduced-motion users get immediate state changes.
+- Preserve list virtualization, command bindings, keyboard behavior, updater behavior, and the v8.8.19 Auto Modder foundation.
+- Repair the stale v8.8.16 Mods structural assertion so it matches the intentionally shipped v8.8.18 compact, non-wrapping toolbar layout.
+- Add regression coverage that prevents layout-heavy UI motion.
+
 # v8.8.19 — Auto Modder foundation
 
 - Add a dedicated updater progress window with live prepare/install/restart/health-verification stages, an animated working state, safe rollback/error messaging, and automatic close after successful handoff.
