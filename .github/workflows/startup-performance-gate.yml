@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: startup-performance-\${{ github.ref }}
+  group: startup-performance-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
       - name: Check out exact revision
         uses: actions/checkout@v4
         with:
-          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Verify pinned .NET SDK
@@ -69,7 +69,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: startup-performance-\${{ github.sha }}
+          name: startup-performance-${{ github.sha }}
           if-no-files-found: warn
           retention-days: 14
           path: |
