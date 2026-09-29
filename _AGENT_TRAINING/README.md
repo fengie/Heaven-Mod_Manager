@@ -2,6 +2,11 @@
 
 This directory is the company-level engineering doctrine derived from reusable lessons learned across software projects. It is intentionally project-agnostic.
 
+
+## Mandatory task/plugin preflight
+
+Every trained agent must still perform a fresh task-specific plugin preflight before planning or execution. Re-read the full assigned task, discover the actual plugins/connectors/skills/toolbox capabilities available in that runtime, load/read the instructions for relevant capabilities, and use/activate the narrowest applicable purpose-built route. Persist `PLUGIN-PREFLIGHT` evidence. User-named plugins are mandatory routes unless current-runtime evidence proves them unavailable, unsafe, or insufficient. Managers must embed and verify this gate for every dispatch; stale assumptions or a single failed lookup are not acceptable evidence that a plugin is unavailable.
+
 ## Authority and hierarchy
 
 Use this order when deciding how to work:
