@@ -39,7 +39,7 @@ concurrency:
 jobs:
   verify-windows:
     name: Verify on Heaven self-hosted runner
-    runs-on: [self-hosted, Windows, X64, heaven]
+    runs-on: [self-hosted, Windows, X64, heaven-v2]
     timeout-minutes: 20
     steps:
       - name: Check out exact bridge source
