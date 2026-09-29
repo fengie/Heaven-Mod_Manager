@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0855-lan-proxy-security-narrow",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:55:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:55:12.742275+00:00",
+  "finished_at": "2026-09-29T08:55:13.969551+00:00",
+  "stdout": "{\"proxy_exists\":true,\"security_lines\":[\"const targetHost = \\u0027127.0.0.1\\u0027;\",\"const targetPort = 7331;\",\"const listenPort = 7443;\",\"  for (const host of [\\u0027heaven2\\u0027, \\u0027heaven2.myfiosgateway.com\\u0027]) {\",\"      const rows = await dns.lookup(host, { all: true, verbatim: true });\",\"  const headers = { ...req.headers, host: `${targetHost}:${targetPort}` };\",\"    host: targetHost,\",\"    headers\",\"    res.writeHead(upstream.statusCode || 502, upstream.headers);\",\"server.listen({ port: listenPort, host: \\u0027::\\u0027, ipv6Only: false }, () =\\u003e {\",\"  console.log(`Heaven LAN control proxy listening on [::]:${listenPort}; backend 127.0.0.1:${targetPort}`);\"],\"listeners\":[{\"LocalAddress\":\"::\",\"LocalPort\":7443,\"OwningProcess\":44916}],\"tunnel_processes\":[{\"ProcessId\":57704,\"Name\":\"node.exe\",\"CommandLine\":\"\\\"C:\\\\Program Files\\\\nodejs\\\\node.exe\\\" \\\"C:\\\\Program Files\\\\nodejs/node_modules/npm/bin/npx-cli.js\\\" --yes localtunnel --port 7443 --local-host 127.0.0.1\"},{\"ProcessId\":93852,\"Name\":\"node.exe\",\"CommandLine\":\"\\\"node\\\"   \\\"C:\\\\Users\\\\Xxkan\\\\AppData\\\\Local\\\\npm-cache\\\\_npx\\\\75ac80b86e83d4a2\\\\node_modules\\\\.bin\\\\\\\\..\\\\localtunnel\\\\bin\\\\lt.js\\\" --port 7443 --local-host 127.0.0.1\"},{\"ProcessId\":74916,\"Name\":\"powershell.exe\",\"CommandLine\":\"powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \\\"$proxy=\\u0027C:\\\\Users\\\\Xxkan\\\\.mhw-local-tools\\\\heaven-agent-control-proxy.mjs\\u0027; $lines=if(Test-Path $proxy){Get-Content -LiteralPath $proxy}else{@()}; $hits=@($lines | Where-Object { $_ -match \\u0027listen|host|auth|token|secret|header|bearer|7443|7331\\u0027 } | ForEach-Object { $_ -replace \\u0027(?i)(token|secret|key)\\\\s*[:=]\\\\s*[\\\\\\\"\\u0027\\u0027]?[^\\\\\\\"\\u0027\\u0027;\\\\s]+\\u0027,\\u0027$1=\\u003cREDACTED\\u003e\\u0027 }); $tunnel=@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match \\u0027localtunnel\\u0027 -and $_.CommandLine -match \\u00277443\\u0027 } | Select-Object ProcessId,Name,CommandLine); $listeners=@(Get-NetTCPConnection -LocalPort 7443 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess); [pscustomobject]@{proxy_exists=(Test-Path $proxy);security_lines=$hits;listeners=$listeners;tunnel_processes=$tunnel} | ConvertTo-Json -Depth 5 -Compress\\\"\"}]}\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0855-lan-proxy-security-narrow.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0855-lan-proxy-security-narrow.stderr.log",
+    "stdout_bytes": 2282,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "4d4c17b7f9e8a6c6a03ced5e1324b49cf9e27ad3662ee40cdeb6a76a825c7667"
+}
