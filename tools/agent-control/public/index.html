@@ -575,7 +575,15 @@
     async function controlAction(action) {
       try {
         const settings = state.snapshot?.settings || {};
-        let endpoint = "/api/control/" + action;
+        const endpoints = {
+          "pause": "/api/control/pause",
+          "resume": "/api/control/resume",
+          "read-only": "/api/control/read-only",
+          "drain": "/api/control/drain",
+          "emergency-stop": "/api/control/emergency-stop"
+        };
+        const endpoint = endpoints[action];
+        if (!endpoint) throw new Error("Unsupported control action.");
         let body = { reason: "ui-" + action };
         if (action === "read-only") body.enabled = !settings.readOnly;
         if (action === "resume") body.clearEmergencyStop = false;
