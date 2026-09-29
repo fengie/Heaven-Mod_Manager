@@ -41,6 +41,17 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Mods_page_prioritizes_library_height_on_wide_layouts()
+    {
+        var root=FindRepositoryRoot();
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+
+        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\" Grid.Row=\"1\"",xaml);
+        Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
+        Assert.Contains("<WrapPanel Grid.Column=\"1\" Margin=\"20,0,0,0\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+    }
+
+    [Fact]
     public void Background_metadata_and_remote_visual_cache_are_hardened()
     {
         var root=FindRepositoryRoot();
