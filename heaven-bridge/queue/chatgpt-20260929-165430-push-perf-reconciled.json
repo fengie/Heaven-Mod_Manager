@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165430-push-perf-reconciled",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $wt='C:\\Users\\fengc\\agent-worktrees\\finish-perf219'; $branch='perf-startup-20260929'; $expected='f4198b7c1d4941f643410aea774f1be2e71724b5'; $remote=((& git -C $wt ls-remote origin ('refs/heads/'+$branch)) -split '\\s+')[0]; if($remote -ne $expected){throw ('remote moved: '+$remote)}; git -C $wt status --short; git -C $wt commit -m 'Merge current main into startup performance lane'; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; $sha=(& git -C $wt rev-parse HEAD).Trim(); git -C $wt push origin ('HEAD:refs/heads/'+$branch); if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; Write-Output ('PUSHED='+$sha);",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 180
+  },
+  "created_at": "2026-09-29T16:54:30Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
