@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-111330-runner-agentctl-inspect-a1",
-  "state": "running",
+  "state": "done",
   "action": "proc_run",
   "host": "heaven",
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T11:44:52.138146+00:00"
+  "updated_at": "2026-09-29T11:45:32.834056+00:00",
+  "exit_code": 0
 }
