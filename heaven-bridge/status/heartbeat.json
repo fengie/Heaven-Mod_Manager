@@ -4,8 +4,14 @@
   "worker_version": 3,
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
-  "updated_at": "2026-09-29T09:18:02.729559+00:00",
-  "running": [],
+  "updated_at": "2026-09-29T09:23:05.841332+00:00",
+  "running": [
+    {
+      "id": "agent-control-exact-test-2833d7bb84b2-a1",
+      "action": "proc_run",
+      "started_at": "2026-09-29T09:23:04.310765+00:00"
+    }
+  ],
   "capabilities": [
     "cancel",
     "cmd",
