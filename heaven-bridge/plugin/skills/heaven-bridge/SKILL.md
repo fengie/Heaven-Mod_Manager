@@ -50,7 +50,7 @@ The private-repo ACL is the compatibility auth mode when no local HMAC key is co
 
 ## Health and capability negotiation
 
-Start a new workflow with `health` when worker state matters. Healthy v4 must report `status: completed`, `host: heaven`, `data.worker_version: 3`, `data.protocol: chatgpt-heaven-bridge-v2`, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
+Start a new workflow with `health` when worker state matters. Healthy v4 must report `status: completed`, `host: heaven`, `data.worker_version: 4`, `data.protocol: chatgpt-heaven-bridge-v2`, and advertised actions/capabilities. Also inspect `heaven-bridge/status/heartbeat.json` when diagnosing liveness. Treat advertised actions as capability negotiation.
 
 Expected current capability families include:
 - filesystem/text/binary/search: `fs_read`, `fs_read_many`, `fs_write`, `fs_edit`, `fs_mkdir`, `fs_list`, `fs_move`, `fs_info`, `fs_search`, `fs_copy`, `fs_delete`, `fs_read_binary`, `fs_write_binary`
