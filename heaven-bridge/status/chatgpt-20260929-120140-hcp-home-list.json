@@ -1,0 +1,9 @@
+{
+  "id": "chatgpt-20260929-120140-hcp-home-list",
+  "state": "running",
+  "action": "fs_list",
+  "host": "heaven",
+  "worker_version": 4,
+  "protocol": "chatgpt-heaven-bridge-v2",
+  "updated_at": "2026-09-29T12:01:25.029597+00:00"
+}
