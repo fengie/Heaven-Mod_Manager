@@ -75,19 +75,19 @@ export function workflowPermission(workflowId) {
 export const DEFAULT_MACHINE_POLICIES = Object.freeze({
   heaven: {
     label: "heaven",
-    role: "background-worker",
+    role: "default-worker",
     repositoryWriteAllowed: false,
     foregroundUiAllowed: false,
     preserveResponsiveness: false,
-    notes: "Read-only/background worker by default. Per-task repository-write authorization is required."
+    notes: "Preferred machine for builds, tests, scans, local agents, indexing, automation, and other heavy execution. Repository writes still require explicit per-task authorization when credentials are not local."
   },
   heaven2: {
     label: "heaven2",
-    role: "primary-development",
+    role: "control-credential-authority",
     repositoryWriteAllowed: true,
     foregroundUiAllowed: true,
     preserveResponsiveness: true,
-    notes: "Primary development machine; use only when the task genuinely needs canonical local development or Windows/MHW validation."
+    notes: "Main/control machine and credential authority. Preserve responsiveness; use for coordination, credentials, canonical Windows/MHW state, or explicitly selected local execution."
   }
 });
 
