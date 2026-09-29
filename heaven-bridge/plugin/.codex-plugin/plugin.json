@@ -2,7 +2,7 @@
   "interface": {
     "displayName": "Heaven Local Bridge",
     "shortDescription": "Primary local execution, testing, desktop, and agent bridge for heaven",
-    "longDescription": "Use the user's private Heaven Local Bridge as the default and exclusive path for computer work on heaven. Durable implementation lives on repository main; the heaven-bridge branch is the live queue/result transport only. Worker v5 adds credential-safe `gui_type_secret` using one-time encrypted-SMB handles with TTL, destination/HWND binding, replay protection, and payload-free results, while retaining bounded semantic Windows UI Automation on top of structured filesystem/process execution, screenshots, coordinate desktop input, window control, controller checkpoints, local-agent dispatch, and token-efficient result handling. Version 0.6.2 supports UIA tree/find/focus/invoke/value/toggle/select/expand/collapse, priority-aware scheduling, effective elevation reporting, and bounded `wait_for` synchronization across files, processes, sessions, and windows; UIA mutation searches fail closed on ambiguity/truncation, password ValuePattern writes are blocked, and non-secret UIA text requires explicit relay opt-in. Agent Control/local worker fabric remains the preferred parallel-work path when Codex quota is unavailable.",
+    "longDescription": "Use the user's private Heaven Local Bridge as the default and exclusive path for computer work on heaven. Durable implementation lives on repository main; the heaven-bridge branch is the live queue/result transport only. Worker v6 adds credential-safe `gui_type_secret` using one-time encrypted-SMB handles with TTL, destination/HWND binding, replay protection, and payload-free results, while retaining bounded semantic Windows UI Automation on top of structured filesystem/process execution, screenshots, coordinate desktop input, window control, structured desktop shortcut creation, controller checkpoints, local-agent dispatch, and token-efficient result handling. Version 0.7.0 supports UIA tree/find/focus/invoke/value/toggle/select/expand/collapse, priority-aware scheduling, effective elevation reporting, and bounded `wait_for` synchronization across files, processes, sessions, and windows; UIA mutation searches fail closed on ambiguity/truncation, password ValuePattern writes are blocked, and non-secret UIA text requires explicit relay opt-in. Agent Control/local worker fabric remains the preferred parallel-work path when Codex quota is unavailable.",
     "developerName": "Plugin owner",
     "category": "Productivity",
     "capabilities": [
@@ -16,7 +16,7 @@
   },
   "apps": "./.app.json",
   "name": "heaven-local-bridge",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Primary local-control and development bridge for the user's heaven worker: secure filesystem, code build/test execution, persistent dev processes, binary transfer, search, shell, concurrent jobs, screenshots, desktop control, structured desktop shortcuts, status/cancellation, controller checkpoints, local agents, worker-fabric offloading, and token-efficient result handling through its declared GitHub connected-app relay. Includes dedicated code-execution, desktop-control, and local-agent orchestration skills with semantic Windows UI Automation and credential-safe one-time GUI secret input. Use this instead of Remote Desktop Commander for heaven work unless the user explicitly authorizes Remote Desktop Commander.",
   "author": {
     "name": "Plugin owner"
