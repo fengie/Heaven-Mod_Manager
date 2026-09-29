@@ -5,14 +5,8 @@
   "protocol": "chatgpt-heaven-bridge-v2",
   "auth_mode": "private-repo-acl",
   "elevated": false,
-  "updated_at": "2026-09-29T16:00:42.553033+00:00",
-  "running": [
-    {
-      "id": "swarm-20260929-160100-detached-audits",
-      "action": "proc_run",
-      "started_at": "2026-09-29T16:00:26.131286+00:00"
-    }
-  ],
+  "updated_at": "2026-09-29T16:05:42.824858+00:00",
+  "running": [],
   "capabilities": [
     "app_launch",
     "cancel",
