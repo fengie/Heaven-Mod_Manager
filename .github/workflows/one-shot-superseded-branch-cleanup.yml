@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   cleanup:
-    runs-on: [self-hosted, Windows, X64, heaven-v2]
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     steps:
       - name: Delete only branches already integrated into main
         uses: actions/github-script@v7
@@ -68,7 +68,8 @@ jobs:
               ["agent/bridge-priority-scheduler-20260929", { sha: "6fb237790f49a65c8a68220e1b2872187655f9a6", reason: "useful priority aging reconciled by merged PR #129" }],
               ["integration/bridge-priority-aging-main-20260929", { sha: "6a3074831612179d8115d238593f62ff5885abc3", reason: "superseded by rebased merged PR #129" }],
               ["agent/hcp-index-wiring-20260929", { sha: "b2ca4d8e75b7c1de48b7b403ac35c7a0bed5a023", reason: "superseded by merged HCP v0.4.0 integration PR #153" }],
-              ["integration/hcp-index-wiring-20260929", { sha: "b4b5a2e58d37b4f6638af4516c08f381192e1d46", reason: "superseded by merged HCP v0.4.0 integration PR #153" }]
+              ["integration/hcp-index-wiring-20260929", { sha: "b4b5a2e58d37b4f6638af4516c08f381192e1d46", reason: "superseded by merged HCP v0.4.0 integration PR #153" }],
+              ["fix/updater-heaven-routing-20260929", { sha: "61e9fd266746f4e0c4ca5f28b65ffd8f88107e28", reason: "superseded by merged PR #148 with safer Heaven runner handling" }]
             ]);
 
             for (const branchInfo of branches) {
