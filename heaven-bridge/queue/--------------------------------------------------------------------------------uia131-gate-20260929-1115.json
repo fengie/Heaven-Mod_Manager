@@ -1,0 +1,14 @@
+{
+  "id": "--------------------------------------------------------------------------------uia131-gate-20260929-1115",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:15:00+00:00",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $relay=Join-Path $HOME 'HeavenBridgeRepo'; $tmp=Join-Path $HOME ('uia131-gate-'+[guid]::NewGuid().ToString('N')); $url=(git -C $relay remote get-url origin).Trim(); try { git clone --quiet --single-branch --branch agent/bridge-uia-hardening-20260929 $url $tmp; if($LASTEXITCODE -ne 0){throw 'clone failed'}; Push-Location $tmp; try { Write-Output ('HEAD='+(git rev-parse HEAD).Trim()); python -m py_compile heaven-bridge/worker.py heaven-bridge/test_worker.py heaven-bridge/tests/test_worker.py; if($LASTEXITCODE -ne 0){throw 'compile failed'}; python heaven-bridge/test_worker.py; if($LASTEXITCODE -ne 0){throw 'primary failed'}; python heaven-bridge/tests/test_worker.py; if($LASTEXITCODE -ne 0){throw 'compat failed'}; foreach($p in @('heaven-bridge/bootstrap.ps1','heaven-bridge/manage.ps1','heaven-bridge/uia.ps1')){ $t=$null;$e=$null;[void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$t,[ref]$e); if($e.Count){$e|Out-String|Write-Output;throw ('parse '+$p)} }; git diff --check origin/main...HEAD; if($LASTEXITCODE -ne 0){throw 'diff-check failed'}; Write-Output 'UIA131_GATE_OK' } finally { Pop-Location } } finally { if(Test-Path $tmp){Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue} }",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 1200
+  },
+  "priority": "highest"
+}
