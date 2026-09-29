@@ -1,0 +1,9 @@
+{
+  "id": "job-20260929T153500Z-repo-locate-01",
+  "source": "chatgpt-heaven-bridge-v1",
+  "created_at": "2026-09-29T15:35:00Z",
+  "action": "powershell",
+  "payload": "$ErrorActionPreference='Stop'\n$candidates = @(\n  'C:\\Users\\Xxkan\\mhw-mods',\n  'C:\\Users\\Xxkan\\source\\repos\\mhw-mods',\n  'C:\\Users\\Xxkan\\Documents\\GitHub\\mhw-mods',\n  'C:\\Users\\Xxkan\\Desktop\\mhw-mods'\n)\n$repo=$null\nforeach($p in $candidates){ if(Test-Path (Join-Path $p '.git')){$repo=$p;break} }\nif(-not $repo){\n  $gitDirs=Get-ChildItem 'C:\\Users\\Xxkan' -Directory -Filter '.git' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 20\n  foreach($g in $gitDirs){\n    $p=$g.Parent.FullName\n    try{\n      $url=(git -C $p remote get-url origin 2>$null)\n      if($url -match 'fengie/mhw-mods'){ $repo=$p; break }\n    } catch {}\n  }\n}\nif(-not $repo){ throw 'Canonical mhw-mods checkout not found.' }\nWrite-Output \"REPO=$repo\"\ngit -C $repo fetch --all --prune\nWrite-Output 'STATUS:'\ngit -C $repo status --short --branch\nWrite-Output 'BRANCHES:'\ngit -C $repo branch -vv\nWrite-Output 'REMOTE HEADS:'\ngit -C $repo ls-remote --heads origin\n",
+  "cwd": "C:\\Users\\Xxkan",
+  "timeout_seconds": 600
+}
