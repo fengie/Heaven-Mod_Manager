@@ -41,3 +41,6 @@ High-risk changes should receive a review/test/stress pass whose author is not f
 
 ## Honest limitations
 If the authoritative environment or dependency is unavailable, say what remains unverified. Do not substitute a weaker check and present it as equivalent.
+
+## Defect-class and sibling closure
+An escaped failure is evidence about the verification system, not only the product. After reproducing the defect, inspect sibling uses of the risky pattern, add a regression that fails on old behavior, prefer invariant/property/analyzer enforcement for broad classes, and verify the actual risk surface. A green suite after a one-line repair is insufficient if equivalent sibling defects remain discoverable.
