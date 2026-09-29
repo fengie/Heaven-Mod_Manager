@@ -1,9 +1,10 @@
 {
   "id": "chatgpt-20260929-170800-read-sentinel-install-heaven2",
-  "state": "running",
+  "state": "completed",
   "action": "proc_read",
   "host": "heaven2",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T17:08:17.080063+00:00"
+  "updated_at": "2026-09-29T17:08:24.181676+00:00",
+  "exit_code": 0
 }
