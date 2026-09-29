@@ -1,0 +1,165 @@
+<Window x:Class="MhwModManager.App.CatalogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mod Catalog"
+        Width="1360" Height="850" MinWidth="1040" MinHeight="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#0D1117">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="MOD CATALOG" Foreground="#F6C85F" FontSize="11" FontWeight="Bold"/>
+                <TextBlock x:Name="GameTitle" Margin="0,4,0,0" Foreground="#F2F4F8" FontSize="25" FontWeight="SemiBold"/>
+                <TextBlock x:Name="CatalogSubtitle" Margin="0,5,0,0" Foreground="#98A2B3" FontSize="12"
+                           Text="Browse legitimate provider metadata, choose the exact file you want, then install through the existing safe pipeline."/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                <TextBlock Text="NEXUS CONNECTION" Foreground="#98A2B3" FontSize="10" FontWeight="SemiBold"/>
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <PasswordBox x:Name="NexusKeyBox" Width="210" Height="30" Padding="7,4"
+                                 ToolTip="Development/personal Nexus API key. Saved in Windows Credential Manager."/>
+                    <Button Margin="7,0,0,0" Padding="12,4" Content="Connect" Click="ConnectNexusClick"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Margin="0,18,0,14" Padding="12" Background="#121821" BorderBrush="#29313D" BorderThickness="1" CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="190"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="SearchBox" Height="34" Padding="9,5" VerticalContentAlignment="Center"
+                         KeyDown="SearchKeyDown" ToolTip="Search the currently indexed provider catalog by title, author, summary, category, or tag."/>
+                <ComboBox x:Name="BrowseModeBox" Grid.Column="1" Margin="10,0,0,0" Height="34" SelectedIndex="0">
+                    <ComboBoxItem Content="Trending"/>
+                    <ComboBoxItem Content="Recently Updated"/>
+                    <ComboBoxItem Content="Latest"/>
+                    <ComboBoxItem Content="Popular"/>
+                </ComboBox>
+                <Button Grid.Column="2" Margin="10,0,0,0" Padding="16,5" Content="Search / Refresh" Click="RefreshClick"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="470"/>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#10161E" BorderBrush="#29313D" BorderThickness="1" CornerRadius="9" Padding="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Margin="5,3,5,9">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ResultCountText" Foreground="#F2F4F8" FontWeight="SemiBold" Text="Mods"/>
+                        <TextBlock x:Name="SyncText" Grid.Column="1" Foreground="#98A2B3" FontSize="10"/>
+                    </Grid>
+                    <DataGrid x:Name="ModsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                              SelectionMode="Single" SelectionChanged="ModSelectionChanged"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              Background="#0D1117" Foreground="#F2F4F8" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mod" Binding="{Binding Name}" Width="2*"/>
+                            <DataGridTextColumn Header="Author" Binding="{Binding Author}" Width="*"/>
+                            <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="82"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Background="#10161E" BorderBrush="#29313D" BorderThickness="1" CornerRadius="9" Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock x:Name="ModTitleText" Foreground="#F2F4F8" FontSize="23" FontWeight="SemiBold" Text="Select a mod"/>
+                        <TextBlock x:Name="ModMetaText" Margin="0,5,0,0" Foreground="#98A2B3" FontSize="11"/>
+                        <TextBlock x:Name="ModSummaryText" Margin="0,14,0,0" Foreground="#E4E7EC" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="ModDescriptionText" Margin="0,9,0,0" Foreground="#B8C0CC" FontSize="12" TextWrapping="Wrap" MaxHeight="180"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                            <Button x:Name="SourceButton" Padding="12,5" Content="Open source page" Click="OpenSourceClick" IsEnabled="False"/>
+                            <Button x:Name="InstallButton" Margin="8,0,0,0" Padding="16,5" Content="Install selected" Click="InstallSelectedClick" IsEnabled="False"/>
+                        </StackPanel>
+
+                        <Border Margin="0,18,0,0" Padding="12" Background="#0D1117" BorderBrush="#29313D" BorderThickness="1" CornerRadius="7">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="CHOOSE FILES" Foreground="#F6C85F" FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Margin="0,3,0,0" Foreground="#98A2B3" FontSize="10"
+                                                   Text="One Main file is selected by default. Optional files can be added independently."/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ShowOldFilesBox" Grid.Column="1" VerticalAlignment="Center"
+                                              Foreground="#B8C0CC" Content="Show old / archived" Click="ShowOldFilesClick"/>
+                                </Grid>
+
+                                <TextBlock x:Name="FileHintText" Grid.Row="1" Margin="0,9,0,7" Foreground="#B8C0CC" FontSize="11"/>
+
+                                <DataGrid x:Name="FilesGrid" Grid.Row="2" MinHeight="220" MaxHeight="340"
+                                          AutoGenerateColumns="False" IsReadOnly="False" HeadersVisibility="Column"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" GridLinesVisibility="Horizontal"
+                                          Background="#0D1117" Foreground="#F2F4F8" BorderThickness="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Install" Width="58">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding IsSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                              Click="FileSelectionClick"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Category}" Width="88"/>
+                                        <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="2*"/>
+                                        <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="90"/>
+                                        <DataGridTextColumn Header="Size" Binding="{Binding SizeLabel}" Width="85"/>
+                                        <DataGridTextColumn Header="Notes" Binding="{Binding Description}" Width="2*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="3" Margin="0,12,0,0" Padding="10,7" Background="#121821" BorderBrush="#29313D" BorderThickness="1" CornerRadius="7">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="StatusText" Foreground="#B8C0CC" Text="Catalog ready." TextWrapping="Wrap"/>
+                <TextBlock x:Name="ProviderHealthText" Grid.Column="1" Margin="16,0,0,0" Foreground="#98A2B3"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
