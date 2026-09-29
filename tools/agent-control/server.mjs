@@ -56,6 +56,12 @@ import {
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
 import { planGoToWorkRecoveries } from "./lib/go-to-work-recovery.mjs";
+import {
+  detectWorkHandoffAction,
+  learnWorkHandoffSignature,
+  normalizeWorkHandoffRegistry,
+  recordWorkHandoffDrift
+} from "./lib/work-handoff-signatures.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -65,6 +71,7 @@ const DATA_DIR = process.env.AGENT_CONTROL_DATA_DIR || path.join(HERE, "data");
 const STATE_FILE = path.join(DATA_DIR, "control-plane.json");
 const STATE_BACKUP_FILE = path.join(DATA_DIR, "control-plane.json.bak");
 const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
+const WORK_HANDOFF_SIGNATURES_FILE = path.join(DATA_DIR, "work-handoff-signatures.json");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
@@ -1670,8 +1677,28 @@ function goToWorkRecoveryConfig(state) {
     browser: ["brave", "edge", "chrome"].includes(browser) ? browser : "brave",
     staleAfterMs: Math.max(10_000, Number(raw.staleAfterMs) || 45_000),
     cooldownMs: Math.max(10_000, Number(raw.cooldownMs) || 60_000),
-    maxPerSweep: Math.max(1, Math.min(8, Math.floor(Number(raw.maxPerSweep) || 2)))
+    maxPerSweep: Math.max(1, Math.min(8, Math.floor(Number(raw.maxPerSweep) || 2))),
+    adaptiveSignatures: raw.adaptiveSignatures !== false
   };
+}
+
+function loadWorkHandoffSignatures() {
+  try {
+    if (!fs.existsSync(WORK_HANDOFF_SIGNATURES_FILE)) return normalizeWorkHandoffRegistry({});
+    const parsed = JSON.parse(fs.readFileSync(WORK_HANDOFF_SIGNATURES_FILE, "utf8"));
+    return normalizeWorkHandoffRegistry(parsed);
+  } catch {
+    return normalizeWorkHandoffRegistry({});
+  }
+}
+
+function saveWorkHandoffSignatures(value) {
+  const registry = normalizeWorkHandoffRegistry(value);
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const tmp = `${WORK_HANDOFF_SIGNATURES_FILE}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, `${JSON.stringify(registry, null, 2)}\n`, "utf8");
+  fs.renameSync(tmp, WORK_HANDOFF_SIGNATURES_FILE);
+  return registry;
 }
 
 function browserExecutable(browser) {
@@ -2102,49 +2129,40 @@ async function dismissGoToWorkPrompt(agent, decision, config) {
       throw new Error("Opened ChatGPT recovery window could not be identified safely.");
     }
 
-    const continueWorkSelector = { name_contains: "Continue in Work", control_type: "Button", enabled: true, offscreen: false };
-    let continueWork = await runHeaven2DesktopAction("uia_find", {
+    const tree = await runHeaven2DesktopAction("uia_tree", {
       hwnd: openedHwnd,
-      selector: continueWorkSelector,
-      scope: "descendants",
+      include_root: false,
       max_nodes: 1000,
-      max_depth: 12,
-      wait_ms: 8000
+      max_depth: 12
     }, 45_000);
+    let registry = loadWorkHandoffSignatures();
+    const detection = detectWorkHandoffAction(tree, registry);
 
-    if (!Number(continueWork?.count)) {
-      continueWork = await runHeaven2DesktopAction("uia_find", {
-        hwnd: openedHwnd,
-        selector: { name_contains: "Continue in ChatGPT Work", enabled: true, offscreen: false },
-        scope: "descendants",
-        max_nodes: 1000,
-        max_depth: 12,
-        wait_ms: 2000
-      }, 30_000);
-    }
-
-    if (!Number(continueWork?.count)) {
+    if (!detection.detected) {
+      if (config.adaptiveSignatures && detection.reason === "adaptive-signature-ambiguous") {
+        registry = saveWorkHandoffSignatures(recordWorkHandoffDrift(registry, detection, tree));
+        outcome = {
+          dismissed: false,
+          verified: false,
+          driftDetected: true,
+          registryVersion: registry.version,
+          reason: detection.reason
+        };
+        return outcome;
+      }
       outcome = { dismissed: false, verified: true, reason: "work-handoff-card-not-present" };
       return outcome;
     }
 
-    const stayInChatSelector = { name_contains: "Stay in Chat", control_type: "Button", enabled: true, offscreen: false };
-    const stayInChat = await runHeaven2DesktopAction("uia_find", {
-      hwnd: openedHwnd,
-      selector: stayInChatSelector,
-      scope: "descendants",
-      max_nodes: 1000,
-      max_depth: 12,
-      wait_ms: 3000
-    }, 30_000);
-
-    if (Number(stayInChat?.count) !== 1) {
-      throw new Error(`Work handoff card was found, but the recovery window exposed ${Number(stayInChat?.count) || 0} unambiguous Stay in Chat buttons.`);
+    const declineName = String(detection?.decline?.name || "").trim();
+    const acceptName = String(detection?.accept?.name || "").trim();
+    if (!declineName || !acceptName) {
+      throw new Error("Work handoff detection produced incomplete action labels.");
     }
 
     await runHeaven2DesktopAction("uia_invoke", {
       hwnd: openedHwnd,
-      selector: stayInChatSelector,
+      selector: { name: declineName, control_type: "Button", enabled: true, offscreen: false },
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12
@@ -2153,17 +2171,32 @@ async function dismissGoToWorkPrompt(agent, decision, config) {
     await waitMs(700);
     const remaining = await runHeaven2DesktopAction("uia_find", {
       hwnd: openedHwnd,
-      selector: continueWorkSelector,
+      selector: { name: acceptName, control_type: "Button", enabled: true, offscreen: false },
       scope: "descendants",
       max_nodes: 1000,
       max_depth: 12
     }, 30_000);
 
     if (Number(remaining?.count) > 0) {
-      throw new Error("Work handoff card remained visible after Agent Control invoked Stay in Chat.");
+      throw new Error(`Work handoff card remained visible after Agent Control invoked "${declineName}".`);
     }
 
-    outcome = { dismissed: true, verified: true, reason: "stay-in-chat-invoked-and-card-cleared" };
+    let learnedSignature = false;
+    if (config.adaptiveSignatures && detection.learned) {
+      const learned = learnWorkHandoffSignature(registry, detection, { verification: "card-cleared" });
+      registry = saveWorkHandoffSignatures(learned);
+      learnedSignature = true;
+    }
+
+    outcome = {
+      dismissed: true,
+      verified: true,
+      learnedSignature,
+      registryVersion: registry.version,
+      declineLabel: declineName,
+      acceptLabel: acceptName,
+      reason: detection.learned ? "adaptive-signature-learned" : "known-signature-dismissed"
+    };
     return outcome;
   } finally {
     if (Number.isInteger(openedHwnd) && openedHwnd > 0) {
@@ -2193,9 +2226,26 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
       ? stored.source_metadata
       : {};
     stored.source_metadata.go_to_work_recovery_last_checked_at = checkedAt;
-    stored.source_metadata.go_to_work_recovery_status = outcome?.dismissed ? "dismissed" : "not-present";
+    stored.source_metadata.go_to_work_recovery_status = outcome?.dismissed ? "dismissed" : (outcome?.driftDetected ? "ui-drift-detected" : "not-present");
     stored.source_metadata.go_to_work_recovery_reason = outcome?.reason || decision.reason;
     stored.source_metadata.go_to_work_recovery_error_count = 0;
+    if (outcome?.registryVersion) {
+      stored.source_metadata.go_to_work_signature_registry_version = outcome.registryVersion;
+    }
+    if (outcome?.driftDetected) {
+      addEvent(next, "federation.work-handoff-ui-drift", `${agentId} exposed an unrecognized Work handoff card shape`, {
+        agentIds: [agentId],
+        reason: outcome.reason,
+        evidence: { registryVersion: outcome.registryVersion }
+      });
+      addNotification(next, {
+        severity: "warning",
+        title: "Work handoff UI changed",
+        message: `${agentId}: Agent Control captured the new accessible card signature but refused to guess between ambiguous actions.`,
+        action: { type: "inspect-agent", agentId },
+        dedupeKey: `work-handoff-ui-drift:${agentId}:${outcome.registryVersion || "unknown"}`
+      });
+    }
     if (outcome?.dismissed) {
       stored.source_metadata.go_to_work_pending = false;
       stored.source_metadata.work_handoff_pending = false;
@@ -2206,8 +2256,24 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
       addEvent(next, "federation.go-to-work-dismissed", `${agentId} had its Work handoff rejected automatically`, {
         agentIds: [agentId],
         reason: decision.reason,
-        evidence: { verified: outcome?.verified === true }
+        evidence: {
+          verified: outcome?.verified === true,
+          declineLabel: outcome?.declineLabel || null,
+          acceptLabel: outcome?.acceptLabel || null,
+          registryVersion: outcome?.registryVersion || null
+        }
       });
+      if (outcome?.learnedSignature) {
+        addEvent(next, "federation.work-handoff-signature-learned", `${agentId} taught Agent Control a renamed Work handoff card`, {
+          agentIds: [agentId],
+          reason: outcome.reason,
+          evidence: {
+            declineLabel: outcome.declineLabel,
+            acceptLabel: outcome.acceptLabel,
+            registryVersion: outcome.registryVersion
+          }
+        });
+      }
     }
     saveState(next);
     return outcome;
@@ -4024,6 +4090,10 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && pathname === "/api/autopilot/step") {
       return sendJson(res, 200, await autopilotStep());
+    }
+
+    if (req.method === "GET" && pathname === "/api/work-handoff-signatures") {
+      return sendJson(res, 200, loadWorkHandoffSignatures());
     }
 
     if (req.method === "GET" && pathname === "/api/control/routing-manifest") {
