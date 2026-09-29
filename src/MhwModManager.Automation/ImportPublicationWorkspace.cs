@@ -57,26 +57,21 @@ internal static class ImportPublicationWorkspace
         Directory.Move(stagingFull, destinationFull);
     }
 
-    public static void RollbackPublished(string modsRoot, string? destination)
+    public static Exception? RollbackPublished(string modsRoot, string? destination)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (string.IsNullOrWhiteSpace(destination)) return;
+        if (string.IsNullOrWhiteSpace(destination)) return null;
         try
         {
             var fullModsRoot = Path.GetFullPath(modsRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             var candidate = Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(candidate), fullModsRoot))
-            {
-                MasterDebugLog.Write("IMPORT-ROLLBACK", $"Refusing to delete non-ModsRoot published path: {candidate}");
-                return;
-            }
-            if (!Directory.Exists(candidate)) return;
+                throw new InvalidDataException($"Refusing to delete non-ModsRoot published path: {candidate}");
+            if (!Directory.Exists(candidate)) return null;
             if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
-            {
-                MasterDebugLog.Write("IMPORT-ROLLBACK", $"Refusing recursive rollback of reparse published path: {candidate}");
-                return;
-            }
+                throw new InvalidDataException($"Refusing recursive rollback of reparse published path: {candidate}");
             Directory.Delete(candidate, true);
+            return null;
         }
         catch (Exception ex)
         {
@@ -84,6 +79,7 @@ internal static class ImportPublicationWorkspace
                 "IMPORT-ROLLBACK",
                 $"Failed to roll back published import '{destination}' after source archival failed.",
                 ex);
+            return ex;
         }
     }
 

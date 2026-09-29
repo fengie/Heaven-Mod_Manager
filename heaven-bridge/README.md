@@ -33,9 +33,11 @@ Do not use Remote Desktop Commander for `heaven` work unless the user explicitly
 
 ## Worker v6
 
-Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and runtime mirror; do not merge its operational job history wholesale into `main`.
+Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and compatibility mirror; do not merge its operational job history wholesale into `main`.
 
-`heaven-bridge/worker.py` is the canonical worker source path. `bootstrap.ps1` installs the relay-mirrored copy to:
+Bootstrap keeps two separate local checkouts: `%USERPROFILE%\HeavenBridgeRepo` tracks the operational `heaven-bridge` relay, while the disposable `%USERPROFILE%\HeavenBridgeSource` tracks canonical `main`. Worker/watchdog runtime files and their regression suite are installed only from the canonical-main source mirror. A bootstrap launched from the relay/runtime copy refreshes that mirror and then hands execution to `main`'s bootstrap, so later recovery fixes do not depend on manually mirroring the bootstrap file into transport. If GitHub is temporarily unavailable, bootstrap may use that mirror only when it is already a clean `main` checkout; otherwise recovery fails closed rather than trusting relay drift or local edits.
+
+`heaven-bridge/worker.py` is the canonical worker source path. `bootstrap.ps1` installs the canonical-main copy to:
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 

@@ -705,6 +705,26 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(row["pid"], os.getpid())
         self.assertIn("updated_at", row)
 
+    def test_bootstrap_sources_runtime_from_canonical_main_mirror(self):
+        bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
+        self.assertIn("$SourceRepoRoot = Join-Path $env:USERPROFILE 'HeavenBridgeSource'", bootstrap)
+        self.assertIn("$SourceBranch = 'main'", bootstrap)
+        self.assertIn("$SourceWorker = Join-Path $SourceRepoRoot 'heaven-bridge\\worker.py'", bootstrap)
+        self.assertIn("$SourceWatchdog = Join-Path $SourceRepoRoot 'heaven-bridge\\watchdog.ps1'", bootstrap)
+        self.assertIn("git clone --branch $SourceBranch --single-branch $RepoUrl $SourceRepoRoot", bootstrap)
+        self.assertIn("Invoke-SourceGitChecked @('fetch', 'origin', $SourceBranch)", bootstrap)
+        self.assertIn("Invoke-SourceGitChecked @('checkout', '-B', $SourceBranch, \"origin/$SourceBranch\")", bootstrap)
+        self.assertIn("using clean last-known-good main source mirror", bootstrap)
+        self.assertIn("source mirror is not a clean main checkout", bootstrap)
+        self.assertIn("Push-Location $SourceRepoRoot", bootstrap)
+        self.assertIn("HEAVEN_BRIDGE_SOURCE revision=", bootstrap)
+        self.assertIn("$SourceBootstrap = Join-Path $SourceRepoRoot 'heaven-bridge\\bootstrap.ps1'", bootstrap)
+        self.assertIn("HEAVEN_BRIDGE_BOOTSTRAP_HANDOFF", bootstrap)
+        self.assertIn("& $SourceBootstrap", bootstrap)
+        self.assertIn("if ($currentBootstrap -ne $canonicalBootstrap)", bootstrap)
+        self.assertNotIn("$SourceWorker = Join-Path $RepoRoot", bootstrap)
+        self.assertNotIn("$SourceWatchdog = Join-Path $RepoRoot", bootstrap)
+
     def test_bootstrap_installs_indefinite_worker_and_watchdog_tasks(self):
         bootstrap = MODULE_PATH.with_name("bootstrap.ps1").read_text(encoding="utf-8")
         watchdog = MODULE_PATH.with_name("watchdog.ps1").read_text(encoding="utf-8")

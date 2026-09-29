@@ -188,7 +188,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         Games=GamesPage.Rows;
         PropertyChanged += (_, args) => MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
         Mods.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
-        Conflicts.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
+        Conflicts.CollectionChanged += (_, args) =>
+        {
+            MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
+            NotifyConflictDerivedState();
+        };
         OutfitRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"OutfitRows change={args.Action}; count={OutfitRows.Count}");
         Profiles.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Profiles change={args.Action}; count={Profiles.Count}");
         ActivityRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"ActivityRows change={args.Action}; count={ActivityRows.Count}");
@@ -198,6 +202,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ModsView.Filter=FilterMod;
         GamesPage.Refresh();
         SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void NotifyConflictDerivedState()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(BlockerCount));
+        OnPropertyChanged(nameof(HeaderSummary));
     }
 
     public async Task InitializeAsync()
@@ -535,7 +546,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);
             ModsView.Refresh();
-            OnPropertyChanged(nameof(BlockerCount));
             OnPropertyChanged(nameof(FullyEffectiveCount));
             OnPropertyChanged(nameof(ComposedCount));
             OnPropertyChanged(nameof(RevalidationCount));
