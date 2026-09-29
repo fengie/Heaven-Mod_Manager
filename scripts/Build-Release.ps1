@@ -8,7 +8,7 @@ $publishForMasterCopy=$null
 $dotnet=(Get-Command dotnet -ErrorAction Stop).Source
 $version=& $dotnet --version
 if([version]$version -lt [version]'10.0.401'){throw "Install the .NET 10.0.401 or newer SDK. Found: $version"}
-if($env:OS -ne 'Windows_NT'){throw 'The production WPF release must be built and integration-tested on Windows.'}
+if([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT){throw 'The production WPF release must be built and integration-tested on Windows.'}
 
 $logRoot=Join-Path $Root 'BuildLogs'
 New-Item -ItemType Directory -Force $logRoot|Out-Null
