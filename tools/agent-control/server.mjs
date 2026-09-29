@@ -48,7 +48,8 @@ import {
   looksLikeExecutionOpener,
   noWorkTerminationDecision,
   recoveryBackoffMs,
-  recoveryMachineTarget
+  recoveryMachineTarget,
+  terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
@@ -721,34 +722,90 @@ function refreshState() {
         agent.interruptedAt = isoNow();
         agent.updatedAt = isoNow();
         agent.completionEvidence = null;
-        const noWorkDecision = agent.worktreeClean === true
-          ? noWorkTerminationDecision(agent)
-          : { noWork: false, retry: false, reason: "worktree-cleanliness-unproven" };
-        if (noWorkDecision.noWork) {
-          markNoWorkRecoveryPending(state, agent, noWorkDecision, "owned-process-missing-no-work");
-          addEvent(state, "agent.no-work", `${agent.id} disappeared after producing no substantive work`, {
+        agent.recoveryStatus = "stream-lost-checking-work";
+        agent.recoveryDetectedAt ||= isoNow();
+        const reconciliation = terminationReconciliationDecision({
+          ...agent,
+          status: "interrupted",
+          worktreeDirty: agent.worktreeClean === false
+        }, {
+          expectsRepositoryWork: true,
+          streamLost: true
+        });
+
+        if (reconciliation.recoveryStatus === "no-durable-work-detected-retry") {
+          markNoWorkRecoveryPending(state, agent, {
+            ...reconciliation,
+            noWork: true
+          }, "owned-process-missing-no-durable-work");
+          addEvent(state, "agent.no-work", `${agent.id} disappeared without durable work evidence`, {
             agentId: agent.id,
             taskId: agent.taskId,
-            reason: noWorkDecision.reason
+            reason: reconciliation.reason
           });
           addNotification(state, {
             severity: "warning",
-            title: "Worker stalled before doing work",
-            message: `${agent.roleLabel || agent.id} terminated without substantive work. A bounded automatic retry is queued.`,
+            title: "Stream lost · no durable work",
+            message: `${agent.roleLabel || agent.id} terminated without durable work evidence. A bounded replacement is queued.`,
             action: { type: "inspect-agent", agentId: agent.id },
             dedupeKey: `no-work:${agent.id}`
           });
-        } else {
+        } else if (reconciliation.recoveryStatus === "work-verified-complete") {
+          agent.status = "done";
+          agent.failureClass = null;
+          agent.recoveryStatus = "work-verified-complete";
+          agent.recoveryReason = reconciliation.reason;
+          agent.completionEvidence = "durable-work-verified-after-stream-loss";
+          releaseLeaseForAgent(state, agent, "stream-lost-work-verified-complete");
           updateTaskForAgent(state, agent);
-          addEvent(state, "agent.interrupted", `${agent.id} disappeared before an authoritative exit event`, {
+          const task = state.tasks.find(item => item.id === agent.taskId);
+          if (task) {
+            task.status = "done";
+            task.finishedAt ||= isoNow();
+            task.nextAction = "No restart required; durable completion evidence was verified after the stream loss.";
+          }
+          addEvent(state, "agent.stream-loss-complete", `${agent.id} lost its stream after verified durable completion`, {
             agentId: agent.id,
             taskId: agent.taskId,
-            reason: "owned-process-missing-without-exit-event"
+            reason: reconciliation.reason
+          });
+        } else if (reconciliation.recoveryStatus === "work-detected-incomplete") {
+          agent.failureClass = "stream-lost";
+          agent.recoveryStatus = "work-detected-incomplete";
+          agent.recoveryReason = reconciliation.reason;
+          agent.completionEvidence = "durable-work-detected";
+          updateTaskForAgent(state, agent);
+          const task = state.tasks.find(item => item.id === agent.taskId);
+          if (task) {
+            task.status = "needs-attention";
+            task.finishedAt = null;
+            task.nextAction = "Resume or reconcile the existing branch/PR/worktree. Do not restart the assignment from scratch.";
+          }
+          addEvent(state, "agent.stream-loss-incomplete", `${agent.id} lost its stream after producing durable work`, {
+            agentId: agent.id,
+            taskId: agent.taskId,
+            reason: reconciliation.reason
           });
           addNotification(state, {
             severity: "warning",
-            title: "Worker interrupted",
-            message: `${agent.roleLabel || agent.id} stopped without authoritative completion evidence. Its lease is preserved.`,
+            title: "Work detected · incomplete",
+            message: `${agent.roleLabel || agent.id} has durable work but no verified completion evidence. Preserve and reconcile that work instead of starting over.`,
+            action: { type: "generate-takeover", agentId: agent.id },
+            dedupeKey: `stream-loss-incomplete:${agent.id}`
+          });
+        } else {
+          agent.recoveryStatus = reconciliation.recoveryStatus || "work-unverified";
+          agent.recoveryReason = reconciliation.reason;
+          updateTaskForAgent(state, agent);
+          addEvent(state, "agent.interrupted", `${agent.id} disappeared before authoritative completion could be established`, {
+            agentId: agent.id,
+            taskId: agent.taskId,
+            reason: reconciliation.reason || "owned-process-missing-without-exit-event"
+          });
+          addNotification(state, {
+            severity: "warning",
+            title: "Worker needs reconciliation",
+            message: `${agent.roleLabel || agent.id} stopped and Agent Control could not prove completion. Existing work is preserved for inspection.`,
             action: { type: "generate-takeover", agentId: agent.id },
             dedupeKey: `interrupted:${agent.id}`
           });
@@ -2276,26 +2333,66 @@ function ingestFederatedObservations(body = {}) {
       ? agent.source_metadata
       : {};
     const message = agent.last_action_summary || metadata.final_message || "";
-    const expectsRepositoryWork = metadata.execution_assignment === true || looksLikeExecutionOpener(message);
-    const status = agent.state === "disconnected" ? "interrupted" : agent.state;
-    const decision = noWorkTerminationDecision({
+    const expectsRepositoryWork = metadata.execution_assignment === true
+      || looksLikeExecutionOpener(message)
+      || Boolean(metadata.pr_number || metadata.pull_request_number || metadata.branch || agent.branch);
+    const rawState = String(agent.state || "").trim().toLowerCase();
+    const streamLost = ["disconnected", "interrupted", "orphaned"].includes(rawState)
+      || metadata.stream_lost === true
+      || metadata.response_stream_failed === true
+      || metadata.transport_disconnected === true;
+    const status = rawState === "disconnected" ? "interrupted" : rawState;
+    const stored = state.federation.agents.find(item => item.agent_id === agent.agent_id);
+    if (!stored || !expectsRepositoryWork || !["done", "failed", "finished", "interrupted", "orphaned", "disconnected"].includes(rawState)) continue;
+
+    stored.recovery_status = "stream-lost-checking-work";
+    stored.recovery_detected_at ||= isoNow();
+    const decision = terminationReconciliationDecision({
       status,
       lastMessage: message,
       baseSha: metadata.base_sha,
       currentSha: metadata.current_sha,
       changedFiles: metadata.changed_files,
+      prNumber: metadata.pr_number || metadata.pull_request_number,
+      verificationResults: metadata.verification_results,
       source_metadata: metadata
-    }, { expectsRepositoryWork });
-    if (!decision.noWork) continue;
-    const stored = state.federation.agents.find(item => item.agent_id === agent.agent_id);
-    if (!stored) continue;
-    if (String(stored.recovery_status || "").startsWith("retry-")) continue;
-    stored.recovery_status = stored.task ? "retry-pending" : "retry-blocked";
+    }, {
+      expectsRepositoryWork,
+      streamLost
+    });
+
     stored.recovery_reason = decision.reason;
-    stored.recovery_detected_at ||= isoNow();
     stored.recovery_next_at = null;
-    if (!stored.task) stored.recovery_last_error = "Federated execution session terminated without a task body for safe retry.";
-    if (stored.recovery_status === "retry-pending") federatedRecoveryIds.push(stored.agent_id);
+
+    if (decision.recoveryStatus === "work-verified-complete") {
+      stored.recovery_status = "work-verified-complete";
+      stored.recovery_last_error = null;
+      addEvent(state, "federation.stream-loss-complete", `${stored.agent_id} has verified durable completion evidence`, {
+        agentIds: [stored.agent_id],
+        reason: decision.reason
+      });
+      continue;
+    }
+
+    if (decision.recoveryStatus === "work-detected-incomplete") {
+      stored.recovery_status = "work-detected-incomplete";
+      stored.recovery_last_error = null;
+      addEvent(state, "federation.stream-loss-incomplete", `${stored.agent_id} has durable work without completion proof`, {
+        agentIds: [stored.agent_id],
+        reason: decision.reason
+      });
+      continue;
+    }
+
+    if (decision.recoveryStatus === "no-durable-work-detected-retry") {
+      if (String(stored.recovery_status || "").startsWith("retry-")) continue;
+      stored.recovery_status = stored.task ? "retry-pending" : "retry-blocked";
+      if (!stored.task) stored.recovery_last_error = "Federated execution session terminated without a task body for safe retry.";
+      if (stored.recovery_status === "retry-pending") federatedRecoveryIds.push(stored.agent_id);
+      continue;
+    }
+
+    stored.recovery_status = decision.recoveryStatus || "work-unverified";
   }
 
   addEvent(state, "federation.observed", `Accepted ${accepted.length} federated agent observation${accepted.length === 1 ? "" : "s"}`, {
