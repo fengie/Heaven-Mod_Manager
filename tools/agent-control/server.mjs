@@ -42,7 +42,8 @@ import {
 import {
   bridgeResultSucceeded,
   cancelHeavenBridgeJob,
-  inspectHeavenBridge
+  inspectHeavenBridge,
+  runHeaven2BridgeAction
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
 import {
@@ -53,6 +54,7 @@ import {
   recoveryMachineTarget,
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
+import { planGoToWorkRecoveries } from "./lib/go-to-work-recovery.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -83,11 +85,14 @@ let degradedReason = null;
 let deployMutex = Promise.resolve();
 let autopilotTickRunning = false;
 let noWorkRecoveryTickRunning = false;
+let goToWorkRecoveryTickRunning = false;
 let swarmTailRecoveryTickRunning = false;
 const noWorkRecoveryOperations = new Set();
+const goToWorkRecoveryOperations = new Set();
 const swarmTailRecoveryOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
 const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
+const GO_TO_WORK_RECOVERY_TICK_MS = Math.max(5000, Number(process.env.AGENT_CONTROL_GO_TO_WORK_RECOVERY_TICK_MS || 10000));
 
 const rolePresets = roleCatalog();
 
@@ -1580,6 +1585,48 @@ function noWorkRecoveryConfig(state) {
   };
 }
 
+function goToWorkRecoveryConfig(state) {
+  const raw = state?.settings?.goToWorkRecovery || {};
+  const browser = String(raw.browser || "brave").trim().toLowerCase();
+  return {
+    enabled: raw.enabled !== false,
+    browser: ["brave", "edge", "chrome"].includes(browser) ? browser : "brave",
+    staleAfterMs: Math.max(10_000, Number(raw.staleAfterMs) || 45_000),
+    cooldownMs: Math.max(10_000, Number(raw.cooldownMs) || 60_000),
+    maxPerSweep: Math.max(1, Math.min(8, Math.floor(Number(raw.maxPerSweep) || 2)))
+  };
+}
+
+function browserExecutable(browser) {
+  return {
+    brave: "brave.exe",
+    edge: "msedge.exe",
+    chrome: "chrome.exe"
+  }[browser] || "brave.exe";
+}
+
+function bridgeDesktopJobId(action) {
+  return `agent-control-${String(action || "desktop").replace(/[^a-z0-9_-]+/gi, "-")}-${Date.now()}-${randomUUID().slice(0, 8)}`;
+}
+
+async function runHeaven2DesktopAction(action, params, timeoutMs = 60_000) {
+  const result = await runHeaven2BridgeAction({
+    id: bridgeDesktopJobId(action),
+    action,
+    params,
+    timeoutMs,
+    priority: "high"
+  });
+  if (!bridgeResultSucceeded(result)) {
+    throw new Error(`Heaven2 desktop action ${action} failed with status ${result?.status || "unknown"} / exit ${result?.exit_code ?? "unknown"}.`);
+  }
+  return result?.data ?? null;
+}
+
+function waitMs(ms) {
+  return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
 function swarmTailRecoveryConfig(state) {
   const raw = state?.settings?.swarmTailRecovery || {};
   return {
@@ -1940,6 +1987,197 @@ async function recoverFederatedNoWorkAgent(agentId) {
     return null;
   } finally {
     noWorkRecoveryOperations.delete(operationId);
+  }
+}
+
+
+async function dismissGoToWorkPrompt(agent, decision, config) {
+  const operationId = String(agent?.agent_id || "");
+  if (!operationId || goToWorkRecoveryOperations.has(operationId)) return null;
+  goToWorkRecoveryOperations.add(operationId);
+
+  let openedHwnd = null;
+  let outcome = null;
+  try {
+    const beforeRows = await runHeaven2DesktopAction("window_list", { limit: 400, visible_only: true }, 45_000);
+    const before = new Set((Array.isArray(beforeRows) ? beforeRows : []).map(row => Number(row?.hwnd)).filter(Number.isFinite));
+
+    await runHeaven2DesktopAction("app_launch", {
+      path: browserExecutable(config.browser),
+      args: ["--new-window", decision.url],
+      detached: true
+    }, 45_000);
+
+    for (const pause of [1200, 1800, 2500]) {
+      await waitMs(pause);
+      const rows = await runHeaven2DesktopAction("window_list", { limit: 400, visible_only: true }, 45_000);
+      const candidates = (Array.isArray(rows) ? rows : []).filter(row =>
+        !before.has(Number(row?.hwnd))
+        && /chatgpt/i.test(String(row?.title || ""))
+      );
+      if (candidates.length) {
+        openedHwnd = Number(candidates[0].hwnd);
+        break;
+      }
+    }
+
+    if (!Number.isInteger(openedHwnd) || openedHwnd <= 0) {
+      throw new Error("Opened ChatGPT recovery window could not be identified safely.");
+    }
+
+    const goButtonSelector = { name: "Go to Work", control_type: "Button", enabled: true, offscreen: false };
+    let goButton = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: goButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12,
+      wait_ms: 8000
+    }, 45_000);
+
+    if (!Number(goButton?.count)) {
+      goButton = await runHeaven2DesktopAction("uia_find", {
+        hwnd: openedHwnd,
+        selector: { name_contains: "Go to Work", enabled: true, offscreen: false },
+        scope: "descendants",
+        max_nodes: 1000,
+        max_depth: 12,
+        wait_ms: 2000
+      }, 30_000);
+    }
+
+    if (!Number(goButton?.count)) {
+      outcome = { dismissed: false, verified: true, reason: "go-to-work-card-not-present" };
+      return outcome;
+    }
+
+    const noButtonSelector = { name: "No", control_type: "Button", enabled: true, offscreen: false };
+    const noButton = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: noButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12,
+      wait_ms: 3000
+    }, 30_000);
+
+    if (Number(noButton?.count) !== 1) {
+      throw new Error(`Go to Work card was found, but the recovery window exposed ${Number(noButton?.count) || 0} unambiguous No buttons.`);
+    }
+
+    await runHeaven2DesktopAction("uia_invoke", {
+      hwnd: openedHwnd,
+      selector: noButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12
+    }, 30_000);
+
+    await waitMs(700);
+    const remaining = await runHeaven2DesktopAction("uia_find", {
+      hwnd: openedHwnd,
+      selector: goButtonSelector,
+      scope: "descendants",
+      max_nodes: 1000,
+      max_depth: 12
+    }, 30_000);
+
+    if (Number(remaining?.count) > 0) {
+      throw new Error("Go to Work card remained visible after Agent Control invoked No.");
+    }
+
+    outcome = { dismissed: true, verified: true, reason: "no-invoked-and-card-cleared" };
+    return outcome;
+  } finally {
+    if (Number.isInteger(openedHwnd) && openedHwnd > 0) {
+      try {
+        await runHeaven2DesktopAction("window_close", { hwnd: openedHwnd }, 30_000);
+      } catch {}
+    }
+    goToWorkRecoveryOperations.delete(operationId);
+  }
+}
+
+async function recoverGoToWorkAgent(agentId, decision, config) {
+  const state = refreshState();
+  const live = state.federation?.agents?.find(item => item.agent_id === agentId);
+  if (!live) return null;
+  const metadata = live.source_metadata && typeof live.source_metadata === "object"
+    ? live.source_metadata
+    : (live.source_metadata = {});
+
+  const checkedAt = isoNow();
+  try {
+    const outcome = await dismissGoToWorkPrompt(live, decision, config);
+    const next = loadState();
+    const stored = next.federation?.agents?.find(item => item.agent_id === agentId);
+    if (!stored) return outcome;
+    stored.source_metadata = stored.source_metadata && typeof stored.source_metadata === "object"
+      ? stored.source_metadata
+      : {};
+    stored.source_metadata.go_to_work_recovery_last_checked_at = checkedAt;
+    stored.source_metadata.go_to_work_recovery_status = outcome?.dismissed ? "dismissed" : "not-present";
+    stored.source_metadata.go_to_work_recovery_reason = outcome?.reason || decision.reason;
+    stored.source_metadata.go_to_work_recovery_error_count = 0;
+    if (outcome?.dismissed) {
+      stored.source_metadata.go_to_work_pending = false;
+      stored.source_metadata.work_handoff_pending = false;
+      stored.source_metadata.handoff_pending = false;
+      stored.source_metadata.go_to_work_recovery_last_dismissed_at = checkedAt;
+      stored.source_metadata.go_to_work_recovery_dismiss_count =
+        Math.max(0, Number(stored.source_metadata.go_to_work_recovery_dismiss_count) || 0) + 1;
+      addEvent(next, "federation.go-to-work-dismissed", `${agentId} had its Go to Work handoff rejected automatically`, {
+        agentIds: [agentId],
+        reason: decision.reason,
+        evidence: { verified: outcome?.verified === true }
+      });
+    }
+    saveState(next);
+    return outcome;
+  } catch (error) {
+    const next = loadState();
+    const stored = next.federation?.agents?.find(item => item.agent_id === agentId);
+    if (stored) {
+      stored.source_metadata = stored.source_metadata && typeof stored.source_metadata === "object"
+        ? stored.source_metadata
+        : {};
+      stored.source_metadata.go_to_work_recovery_last_checked_at = checkedAt;
+      stored.source_metadata.go_to_work_recovery_status = "error";
+      stored.source_metadata.go_to_work_recovery_last_error = error?.message || String(error);
+      stored.source_metadata.go_to_work_recovery_error_count =
+        Math.max(0, Number(stored.source_metadata.go_to_work_recovery_error_count) || 0) + 1;
+      addEvent(next, "federation.go-to-work-recovery-error", `Automatic Go to Work dismissal failed for ${agentId}`, {
+        agentIds: [agentId],
+        reason: stored.source_metadata.go_to_work_recovery_last_error
+      });
+      if (stored.source_metadata.go_to_work_recovery_error_count >= 3) {
+        addNotification(next, {
+          severity: "warning",
+          title: "Go to Work auto-dismiss needs attention",
+          message: `${agentId}: ${stored.source_metadata.go_to_work_recovery_last_error}`,
+          action: { type: "inspect-agent", agentId },
+          dedupeKey: `go-to-work-recovery-error:${agentId}`
+        });
+      }
+      saveState(next);
+    }
+    return null;
+  }
+}
+
+async function reconcileGoToWorkRecoveries() {
+  if (goToWorkRecoveryTickRunning) return;
+  goToWorkRecoveryTickRunning = true;
+  try {
+    const state = refreshState();
+    const config = goToWorkRecoveryConfig(state);
+    if (!config.enabled || state.settings?.emergencyStop || state.settings?.readOnly) return;
+    const plan = planGoToWorkRecoveries(state.federation, config);
+    for (const item of plan) {
+      await recoverGoToWorkAgent(item.agent.agent_id, item.decision, config);
+    }
+  } finally {
+    goToWorkRecoveryTickRunning = false;
   }
 }
 
@@ -3946,6 +4184,12 @@ const noWorkRecoveryTimer = setInterval(() => {
 }, NO_WORK_RECOVERY_TICK_MS);
 noWorkRecoveryTimer.unref?.();
 void reconcileNoWorkRecoveries().then(() => reconcileSwarmTailRecoveries());
+
+const goToWorkRecoveryTimer = setInterval(() => {
+  void reconcileGoToWorkRecoveries();
+}, GO_TO_WORK_RECOVERY_TICK_MS);
+goToWorkRecoveryTimer.unref?.();
+void reconcileGoToWorkRecoveries();
 
 const branchCleanupTimer = setInterval(() => {
   void reconcileIntegratedBranchCleanup();
