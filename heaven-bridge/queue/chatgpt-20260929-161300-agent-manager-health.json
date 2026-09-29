@@ -1,0 +1,10 @@
+{
+  "id": "chatgpt-20260929-161300-agent-manager-health",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "health",
+  "params": {},
+  "created_at": "2026-09-29T16:13:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
