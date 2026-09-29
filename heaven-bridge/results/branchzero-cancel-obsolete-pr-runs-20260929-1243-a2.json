@@ -1,0 +1,21 @@
+{
+  "id": "branchzero-cancel-obsolete-pr-runs-20260929-1243-a2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T12:43:00Z",
+  "status": "failed",
+  "exit_code": 1,
+  "started_at": "2026-09-29T12:46:52.344442+00:00",
+  "finished_at": "2026-09-29T12:46:54.001482+00:00",
+  "stdout": "cancel-nonzero:36568275774:\ncancel-nonzero:36568557555:\ncancel-nonzero:36568584953:\n",
+  "stderr": "gh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:4 char:3\r\n+   gh run cancel $id --repo fengie/mhw-mods\r\n+   ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:4 char:3\r\n+   gh run cancel $id --repo fengie/mhw-mods\r\n+   ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:4 char:3\r\n+   gh run cancel $id --repo fengie/mhw-mods\r\n+   ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\ngh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the \r\nspelling of the name, or if a path was included, verify that the path is correct and try again.\r\nAt line:7 char:1\r\n+ gh run list --repo fengie/mhw-mods --limit 20\r\n+ ~~\r\n    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cancel-obsolete-pr-runs-20260929-1243-a2.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\branchzero-cancel-obsolete-pr-runs-20260929-1243-a2.stderr.log",
+    "stdout_bytes": 84,
+    "stderr_bytes": 1737,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "58dea7ed05494cc38c7117502e1a9bd940e435af987abbd37cc8878093d94218"
+}
