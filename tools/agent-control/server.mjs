@@ -3655,6 +3655,32 @@ function autopilotRoutingCurrent(state, now = Date.now()) {
     && observedAt <= now && expiresAt > now;
 }
 
+function refreshPerpetualRoutingLease(state, now = Date.now()) {
+  if (!state.autopilot?.perpetual || autopilotRoutingCurrent(state, now)) return state;
+  const observedAt = new Date(now);
+  const expiresAt = new Date(now + 10 * 60_000);
+  const updated = loadState();
+  updated.settings.routingManifest = {
+    source: "perpetual-controller-reconciliation",
+    mode: "overlay",
+    observedAt: observedAt.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    assignments: []
+  };
+  addEvent(updated, "routing.manifest-autorenewed", "Perpetual cycle renewed reconciled ownership freshness", {
+    reason: "perpetual-one-click-continuity",
+    evidence: {
+      source: updated.settings.routingManifest.source,
+      mode: "overlay",
+      observedAt: updated.settings.routingManifest.observedAt,
+      expiresAt: updated.settings.routingManifest.expiresAt,
+      registeredActiveAgents: updated.agents.filter(agent => coreIsActiveStatus(agent.status)).length
+    }
+  });
+  saveState(updated);
+  return refreshState();
+}
+
 function persistAutopilotPhase(phase, reason, patch = {}) {
   const state = loadState();
   state.autopilot = transitionAutopilot(state.autopilot, phase, { reason, patch });
@@ -3808,7 +3834,8 @@ async function reconcileAutopilotTruth() {
   if (!canonicalMainSha || !/^[0-9a-f]{40}$/i.test(canonicalMainSha)) {
     throw new Error("Could not establish canonical origin/main SHA.");
   }
-  const state = refreshState();
+  let state = refreshState();
+  state = refreshPerpetualRoutingLease(state);
   const routingCurrent = autopilotRoutingCurrent(state);
   const updated = loadState();
   updated.autopilot = normalizeAutopilotState({
