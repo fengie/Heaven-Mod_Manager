@@ -1,0 +1,21 @@
+{
+  "id": "chatgpt-20260929-0826-agentcontrol-worktree-claimcheck-h1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:26:00Z",
+  "status": "done",
+  "exit_code": 0,
+  "started_at": "2026-09-29T08:22:23.173471+00:00",
+  "finished_at": "2026-09-29T08:22:23.804223+00:00",
+  "stdout": "BRANCH=controller-agentcontrol-cycle4\r\nHEAD=b9685d2f2e32af99596dc90d46278a129106d8e2\r\nSTATUS\r\n## controller-agentcontrol-cycle4...origin/feature/agent-control-plane-v2-20260928 [ahead 57]\nRELATED_PROCESSES\r\n\r\n\r\nProcessId    : 8668\r\nCreationDate : 9/29/2026 4:22:23 AM\r\nName         : powershell.exe\r\nCommandLine  : powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Continue'; \r\n               Write-Output ('BRANCH='+(git branch --show-current).Trim()); Write-Output ('HEAD='+(git rev-parse \r\n               HEAD).Trim()); Write-Output 'STATUS'; git status --short --branch; Write-Output 'RELATED_PROCESSES'; \r\n               Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -like \r\n               '*mhw-agentcontrol-cycle4-wt*' -or $_.CommandLine -like '*feature/agent-control-plane-v2-20260928*') } \r\n               | Select-Object ProcessId,CreationDate,Name,CommandLine | Format-List; exit 0\"\r\n\r\n\r\n\r\n",
+  "stderr": "",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0826-agentcontrol-worktree-claimcheck-h1.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\chatgpt-20260929-0826-agentcontrol-worktree-claimcheck-h1.stderr.log",
+    "stdout_bytes": 972,
+    "stderr_bytes": 0,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "7e82a9bd9d39a016f61ef4cd0d1aae6b24e641d1152940203c298e64dcf660a5"
+}
