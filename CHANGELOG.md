@@ -1,3 +1,10 @@
+# v8.8.5 — Agent Control federation and release recovery
+
+- Integrated Agent Control 0.5.0 with federated agent identity, heartbeat freshness, ownership-aware planning, routing-manifest support, and governed autonomy permissions.
+- Preserved the heaven2 control/credential authority and heaven heavy-worker topology in control-plane policy.
+- Fixed a duplicate federation import introduced by concurrent Agent Control integration before promotion.
+- Advanced the shipped application/release identity from 8.8.4 to 8.8.5 while preserving the v8.8.4 product safety fixes.
+
 # v8.8.4 — Support recovery hardening
 
 - Reconcile `save_snapshots` retention with the SQLite index while limiting recursive deletion to verified direct children of the manager-owned snapshot root.

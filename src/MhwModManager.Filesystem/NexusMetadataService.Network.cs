@@ -45,7 +45,7 @@ public sealed partial class NexusMetadataService
         {
             Timeout = TimeSpan.FromSeconds(12)
         };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.4");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.5");
         return client;
     }
 
