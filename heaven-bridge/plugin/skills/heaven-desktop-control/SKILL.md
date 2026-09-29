@@ -36,6 +36,7 @@ Use the existing Heaven Local Bridge relay and worker. This skill extends, rathe
 - `window_state`: hide, normal, maximize, show, minimize, or restore.
 - `window_close`: request normal WM_CLOSE, not process termination.
 - `app_launch`: launch an executable with an argv list and no shell interpolation.
+- `desktop_shortcut_create`: create or replace a Windows `.lnk` on the target user's Desktop with structured target, args, working directory, description, icon, and overwrite controls. Prefer this over raw PowerShell/WScript for shortcut requests.
 - `clipboard_write`: write Unicode text to the interactive clipboard.
 - `clipboard_read`: only for an explicit user clipboard-read request and only with `params.allow_relay=true`.
 
