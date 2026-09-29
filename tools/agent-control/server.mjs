@@ -13,6 +13,7 @@ import {
   AUTONOMY_PROFILES,
   WORKFLOW_PRESETS,
   applyPreLaunchFailure,
+  agentExecutionModeDecision,
   autonomyPermissionDecision,
   canUseMachineForRepositoryWrite,
   classifyAuthoritativeExit,
@@ -1076,6 +1077,7 @@ async function deployOne({
   task,
   baseBranch,
   model,
+  executionMode = "",
   boundary,
   priority,
   machine,
@@ -1090,6 +1092,14 @@ async function deployOne({
 }) {
   if (!rolePresets[role]) throw new Error(`Unknown role: ${role}`);
   if (!task || !task.trim()) throw new Error("Task is required.");
+
+  const execution = agentExecutionModeDecision(executionMode);
+  if (!execution.allowed) {
+    const error = new Error(execution.reason);
+    error.code = execution.code;
+    error.statusCode = 409;
+    throw error;
+  }
 
   const state = refreshState();
   assertMutationsAllowed(state, { dispatch: true });
@@ -1155,6 +1165,7 @@ async function deployOne({
     objective: task.trim(),
     role,
     roleLabel: rolePresets[role].label,
+    executionMode: execution.mode,
     status: "reserved",
     priority: normalizedPriority,
     lane,
@@ -1365,6 +1376,7 @@ async function deployOne({
     id,
     role,
     roleLabel: rolePresets[role].label,
+    executionMode: execution.mode,
     taskId,
     task: task.trim(),
     targetAgentId,
@@ -2505,6 +2517,12 @@ async function deployReview(targetAgentId, body = {}) {
   assertAutonomyPermission(state, "request-review", "review dispatch");
   const target = state.agents.find(agent => agent.id === targetAgentId);
   if (!target) throw new Error("Target agent not found.");
+  if (target.status === "capacity-blocked") {
+    const error = new Error("The target agent is quota/capacity-blocked. Do not spawn a reviewer or takeover worker for a provider-capacity failure; keep the unfinished task visible and use normal Chat unless the user explicitly opts into Codex later.");
+    error.code = "REVIEW_TARGET_CAPACITY_BLOCKED";
+    error.statusCode = 409;
+    throw error;
+  }
 
   const task = body.task?.trim() || [
     `Review the work produced by agent ${target.id}.`,
@@ -2518,6 +2536,7 @@ async function deployReview(targetAgentId, body = {}) {
     task,
     baseBranch: target.branchName,
     model: body.model || "",
+    executionMode: body.executionMode || "",
     boundary: body.boundary || `review:${target.branchName}`,
     priority: body.priority ?? Math.max(60, Number(target.priority || 50)),
     machine: body.machine || "auto",
@@ -2593,6 +2612,7 @@ async function executeWorkflow(workflowId, body = {}) {
           task: work.task,
           baseBranch: body.baseBranch || plan.baseBranch || "main",
           model: body.model || "",
+          executionMode: body.executionMode || "",
           boundary: work.boundary,
           priority: work.priority,
           machine: work.machine || body.machine || "auto",
@@ -3541,6 +3561,7 @@ const server = http.createServer(async (req, res) => {
             task: body.task || "",
             baseBranch: body.baseBranch || "main",
             model: body.model || "",
+            executionMode: body.executionMode || "",
             boundary: effectiveBoundary,
             priority: body.priority,
             machine: body.machine || "auto",
