@@ -6,7 +6,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 **You → control plane → tasks/leasing → isolated Codex workers → review/integration queue → Git/CI**
 
-## What v0.5.0 does
+## What v0.5.1 does
 
 - Runs locally on `127.0.0.1:7331` by default.
 - Deploys Manager, Main Programmer, Support, Reviewer, Test, Integration, Recovery, and Release Codex roles.
@@ -23,7 +23,7 @@ This is the execution layer that sits above the repository's existing agent doct
   - integration candidates
   - observed `agent/*`, `support/*`, `feature/*`, `ui/*`, and `integration/*` branches
 - Tracks PID, machine, role, task, priority, branch, base branch, lease, timestamps, JSONL output, and final Codex output.
-- Enforces a local active-worker capacity.
+- Enforces local worker capacity from fresh managed liveness only; stale, disconnected, done, and failed records do not consume live slots.
 - Lets you stop a managed worker.
 - Lets you launch a reviewer against a completed agent branch with one click.
 - Exposes the same control plane through `agentctl.mjs`, which ChatGPT can operate through Heaven Local Bridge.
@@ -43,9 +43,9 @@ Normalized states are `working`, `tool_wait`, `blocked`, `idle`, `done`, `failed
 
 Identity reconciliation uses stable provider/source identities plus explicit correlation keys. Similar chat titles are display metadata only and never cause sessions to be merged. The same logical worker can be correlated across ChatGPT and GitHub when a shared strong correlation key is supplied.
 
-External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes, while local execution capacity is still calculated from controller-owned processes only.
+External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes. Exact task IDs are rejected when already owned by a live local or federated agent, while local execution capacity is calculated only from fresh controller-owned workers.
 
-Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration.
+Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration. Scheduler `auto` placement on `heaven2` prefers `heaven` for heavy work and fails closed when the authenticated Heaven Local Bridge is unavailable rather than silently falling back to `heaven2`.
 
 ## Start
 
