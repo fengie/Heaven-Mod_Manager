@@ -1,0 +1,20 @@
+{
+  "data": {
+    "mods": [
+      {
+        "name": "Fixture One",
+        "author": "AuthorOne",
+        "summary": "First deterministic trending fixture.",
+        "picture_url": "https://staticdelivery.nexusmods.com/fixture-one.jpg",
+        "mod_page_url": "https://www.nexusmods.com/monsterhunterworld/mods/101"
+      },
+      {
+        "name": "Fixture Two",
+        "author": "AuthorTwo",
+        "summary": "Second deterministic trending fixture.",
+        "picture_url": null,
+        "mod_page_url": "https://www.nexusmods.com/monsterhunterworld/mods/202"
+      }
+    ]
+  }
+}
