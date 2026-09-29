@@ -120,7 +120,7 @@ function Get-ProjectFingerprint([string]$ProjectPath){
         }
     }
     $builder=New-Object Text.StringBuilder
-    [void]$builder.Append("toolchain|dotnet=").Append([string]$sdk).Append("|os=").Append([string]$env:OS).Append("|arch=").Append([string]$env:PROCESSOR_ARCHITECTURE).Append("`n")
+    [void]$builder.Append("toolchain|dotnet=").Append([string]$sdk).Append("|os=").Append([string][Environment]::OSVersion.Platform).Append("|arch=").Append([string]$env:PROCESSOR_ARCHITECTURE).Append("`n")
     foreach($file in @($files | Sort-Object { $_.ToLowerInvariant() })){
         $rootPrefix=[IO.Path]::GetFullPath($Root).TrimEnd([char[]]@('\','/'))+[IO.Path]::DirectorySeparatorChar
         $fullFile=[IO.Path]::GetFullPath($file)
