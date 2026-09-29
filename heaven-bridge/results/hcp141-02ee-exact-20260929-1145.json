@@ -1,0 +1,21 @@
+{
+  "id": "hcp141-02ee-exact-20260929-1145",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T11:44:30Z",
+  "status": "failed",
+  "exit_code": 128,
+  "started_at": "2026-09-29T11:56:01.353759+00:00",
+  "finished_at": "2026-09-29T11:56:03.188854+00:00",
+  "stdout": "",
+  "stderr": "fatal: couldn't find remote ref refs/heads/agent/hcp-hardening-review-20260929-1137-a1\n",
+  "output": {
+    "stdout_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\hcp141-02ee-exact-20260929-1145.stdout.log",
+    "stderr_path": "C:\\Users\\Xxkan\\HeavenBridge\\outputs\\hcp141-02ee-exact-20260929-1145.stderr.log",
+    "stdout_bytes": 0,
+    "stderr_bytes": 87,
+    "tail_chars": 60000
+  },
+  "host": "heaven",
+  "action": "proc_run",
+  "job_hash": "1e4b2a3e04c99f4858b857f52a007ea1bc26a9a1d67c79d5b18a185c3b6f0630"
+}
