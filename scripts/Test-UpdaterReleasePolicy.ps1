@@ -231,6 +231,15 @@ Assert-Equal $true ($multiRefreshError -like 'Final updater publication main ref
 # post-publication verification and an already-immutable release retry must use
 # the authoritative Git REST ref. The one remaining local current-build tag
 # check is deliberately the pre-publication orphan-tag refusal.
+$releaseWorkflow=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\\.github\\workflows\\windows-release-gate.yml') -Raw
+Assert-Equal 1 ([regex]::Matches($releaseWorkflow,'- name: Ensure GitHub CLI for publication').Count) 'single GitHub CLI bootstrap step'
+Assert-Equal 1 ([regex]::Matches($releaseWorkflow,'- name: Publish immutable updater release').Count) 'single updater publish step'
+Assert-Equal 1 ([regex]::Matches($releaseWorkflow,'- name: Preserve verification, build, and promoted-cache evidence').Count) 'single release evidence upload step'
+Assert-Equal $true $releaseWorkflow.Contains('continue-on-error: true') 'release evidence upload quota tolerance'
+$bootstrapSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Ensure-GitHubCli.ps1') -Raw
+Assert-Equal $true $bootstrapSource.Contains('https://api.github.com/repos/cli/cli/releases/latest') 'bootstrap official GitHub CLI release API'
+Assert-Equal $true $bootstrapSource.Contains('SHA-256 digest') 'bootstrap verifies GitHub CLI SHA-256'
+
 $publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
 $restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
 Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
