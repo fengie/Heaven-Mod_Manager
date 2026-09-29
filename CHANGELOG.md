@@ -1,3 +1,10 @@
+# v8.8.9 — Updater manifest compatibility and Heaven release closure
+
+- Accept historical UTF-8 BOM-bearing updater manifests in the production GitHub update source while publishing all new updater manifests as BOM-free UTF-8.
+- Route Windows release verification/publication through the repaired Heaven self-hosted runner instead of depending on unavailable GitHub-hosted Windows allocation.
+- Make the final installed-client acceptance target the exact release just published by the gate, retaining immutable build 60 as the real source client and requiring both successful update/health confirmation and deterministic rollback with sentinel preservation.
+- Treat Codex capacity exhaustion and GitHub-hosted pre-allocation failures as routing signals so agents continue through Heaven Bridge instead of repeatedly retrying blocked infrastructure.
+
 # v8.8.8 — Atomic launch-observation persistence
 
 - Persist each observed launch-history row and all enabled-mod trust deltas in one SQLite transaction so partial trust/history evidence cannot escape a failed write.
