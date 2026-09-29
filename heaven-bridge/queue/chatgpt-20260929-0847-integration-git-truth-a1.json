@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0847-integration-git-truth-a1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$ErrorActionPreference='Stop'; $candidates=@(\"$env:USERPROFILE\\mhw-mods-work-canonical\",\"$env:USERPROFILE\\mhw-mods\"); $repo=$null; foreach($p in $candidates){ if(Test-Path (Join-Path $p '.git')){$repo=$p; break} }; if(-not $repo){ $repo=(Get-ChildItem -Path $env:USERPROFILE -Directory -ErrorAction SilentlyContinue | Where-Object { Test-Path (Join-Path $_.FullName '.git') } | Where-Object { (git -C $_.FullName remote get-url origin 2>$null) -match 'fengie/mhw-mods' } | Select-Object -First 1 -ExpandProperty FullName) }; if(-not $repo){ throw 'canonical repo checkout not found' }; git -C $repo fetch --prune origin; Write-Output \"REPO=$repo\"; Write-Output \"BRANCH=$(git -C $repo branch --show-current)\"; Write-Output \"HEAD=$(git -C $repo rev-parse HEAD)\"; Write-Output \"ORIGIN_MAIN=$(git -C $repo rev-parse origin/main)\"; Write-Output 'STATUS_BEGIN'; git -C $repo status --short --branch; Write-Output 'STATUS_END'; Write-Output 'REMOTE_BEGIN'; git -C $repo remote -v; Write-Output 'REMOTE_END'; Write-Output 'DIVERGENCE_BEGIN'; git -C $repo rev-list --left-right --count main...origin/main; Write-Output 'DIVERGENCE_END'; Write-Output 'STASH_BEGIN'; git -C $repo stash list; Write-Output 'STASH_END'; Write-Output 'WORKTREES_BEGIN'; git -C $repo worktree list --porcelain; Write-Output 'WORKTREES_END'; Write-Output 'BRANCHES_BEGIN'; git -C $repo for-each-ref --sort=-committerdate --format='%(refname:short)|%(objectname)|%(committerdate:iso8601)' refs/heads refs/remotes/origin | Select-Object -First 120; Write-Output 'BRANCHES_END'",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T08:47:00Z",
+  "ttl_seconds": 21600,
+  "priority": "highest"
+}
