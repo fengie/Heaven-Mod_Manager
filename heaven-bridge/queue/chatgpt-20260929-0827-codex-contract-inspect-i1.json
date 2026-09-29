@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-20260929-0827-codex-contract-inspect-i1",
+  "source": "chatgpt-heaven-bridge-v2",
+  "created_at": "2026-09-29T08:27:00Z",
+  "ttl_seconds": 3600,
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "cwd": "C:\\Users\\Xxkan",
+    "timeout_seconds": 300,
+    "command": "$ErrorActionPreference='Continue'; $c=(Get-Command codex -ErrorAction SilentlyContinue); if($c){Write-Output ('CODEX_SOURCE='+$c.Source)}; codex --version; Write-Output '=== CODEX EXEC HELP ==='; codex exec --help; Write-Output '=== CODEX HELP ==='; codex --help; exit 0"
+  },
+  "priority": "highest"
+}
