@@ -26,6 +26,7 @@ import {
   isIntegrationEligible,
   migrateControlState,
   planWorkflow,
+  providerCapacityActiveTerminationDecision,
   providerCapacityCircuit,
   recommendNextActions,
   roleCatalog,
@@ -695,6 +696,72 @@ function refreshState() {
       agent.lastProgressAt = isoNow();
       agent.updatedAt = isoNow();
       changed = true;
+    }
+
+    const capacityTermination = providerCapacityActiveTerminationDecision(agent);
+    if (capacityTermination.terminate) {
+      const detectedAt = isoNow();
+      const child = agent.ownerSessionId === SESSION_ID ? children.get(agent.id) : null;
+      const ownsLiveProcess = Boolean(
+        child
+        && child.pid === agent.pid
+        && child.exitCode === null
+        && child.signalCode === null
+        && isPidAlive(agent.pid)
+      );
+
+      agent.status = capacityTermination.status;
+      agent.failureClass = capacityTermination.failureClass;
+      agent.completionEvidence = capacityTermination.completionEvidence;
+      agent.providerCapacityDetectedAt ||= detectedAt;
+      agent.finishedAt ||= detectedAt;
+      agent.updatedAt = detectedAt;
+      agent.heartbeatAt = detectedAt;
+      releaseLeaseForAgent(state, agent, "provider-capacity-auto-termination");
+      updateTaskForAgent(state, agent);
+      addEvent(state, "agent.capacity-auto-terminated", `${agent.id} hit a hard provider usage limit and was removed from the active swarm`, {
+        agentId: agent.id,
+        taskId: agent.taskId,
+        reason: capacityTermination.reason,
+        evidence: {
+          pid: agent.pid || null,
+          ownedProcess: ownsLiveProcess,
+          executionProvider: agent.executionProvider || "local-control"
+        }
+      });
+      addNotification(state, {
+        severity: "warning",
+        title: "Usage limit reached · agent stopped",
+        message: `${agent.roleLabel || agent.id} hit a hard usage/credit limit. Agent Control removed it from the active swarm and will not treat it as healthy or auto-retry the same blocked provider.`,
+        action: { type: "inspect-agent", agentId: agent.id },
+        dedupeKey: `capacity-auto-terminated:${agent.id}`
+      });
+      changed = true;
+
+      if (ownsLiveProcess) {
+        void killProcessTree(agent.pid).catch(error => {
+          const failed = loadState();
+          const current = failed.agents.find(item => item.id === agent.id);
+          if (current) {
+            current.providerCapacityTerminationError = error?.message || String(error);
+            current.updatedAt = isoNow();
+            addEvent(failed, "agent.capacity-auto-termination-failed", `Could not prove process-tree termination for ${agent.id}`, {
+              agentId: agent.id,
+              taskId: agent.taskId,
+              reason: current.providerCapacityTerminationError
+            });
+            addNotification(failed, {
+              severity: "error",
+              title: "Quota-blocked agent termination failed",
+              message: `${current.roleLabel || current.id} is quota-blocked, but Agent Control could not terminate its owned process tree automatically.`,
+              action: { type: "inspect-agent", agentId: current.id },
+              dedupeKey: `capacity-auto-termination-failed:${current.id}`
+            });
+            saveState(failed);
+          }
+        });
+      }
+      continue;
     }
 
     if (!coreIsActiveStatus(agent.status)) continue;
