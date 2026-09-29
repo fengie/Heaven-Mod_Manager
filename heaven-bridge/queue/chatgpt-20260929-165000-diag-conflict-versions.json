@@ -1,0 +1,15 @@
+{
+  "id": "chatgpt-20260929-165000-diag-conflict-versions",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "$wt='C:\\Users\\fengc\\agent-worktrees\\finish-diagnostics-20260929'; foreach($f in @('CHANGELOG.md','Directory.Build.props','README.md','_AGENT_CONTEXT/CURRENT_REVISION.json','_AGENT_CONTEXT/handoff-manifest.json')) { Write-Output ('=== '+$f+' OURS ==='); git -C $wt show (':2:'+$f) | Select-Object -First 40; Write-Output ('=== '+$f+' THEIRS ==='); git -C $wt show (':3:'+$f) | Select-Object -First 40 }",
+    "cwd": "C:\\Users\\fengc",
+    "timeout_seconds": 90
+  },
+  "created_at": "2026-09-29T16:50:00Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
