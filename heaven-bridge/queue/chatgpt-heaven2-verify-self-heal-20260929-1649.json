@@ -1,0 +1,14 @@
+{
+  "id": "chatgpt-heaven2-verify-self-heal-20260929-1649",
+  "source": "chatgpt-heaven-bridge-v2",
+  "target_host": "heaven2",
+  "action": "proc_run",
+  "params": {
+    "shell": "powershell",
+    "command": "& (Join-Path $env:USERPROFILE 'HeavenBridgeRepo\\heaven-bridge\\manage.ps1') STATUS",
+    "timeout_seconds": 300
+  },
+  "created_at": "2026-09-29T16:48:50Z",
+  "ttl_seconds": 21600,
+  "priority": "high"
+}
