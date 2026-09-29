@@ -1,9 +1,10 @@
 {
   "id": "job-20260929T154720Z-recover-pr214-01",
-  "state": "running",
+  "state": "failed",
   "action": "powershell",
   "host": "heaven",
   "worker_version": 6,
   "protocol": "chatgpt-heaven-bridge-v2",
-  "updated_at": "2026-09-29T15:48:23.778878+00:00"
+  "updated_at": "2026-09-29T15:48:53.644943+00:00",
+  "exit_code": 1
 }
