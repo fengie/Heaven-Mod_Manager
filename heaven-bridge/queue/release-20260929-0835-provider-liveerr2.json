@@ -1,0 +1,14 @@
+{
+  "id": "release-20260929-0835-provider-liveerr2",
+  "source": "chatgpt-heaven-bridge-v2",
+  "action": "job_output_read",
+  "params": {
+    "job_id": "chatgpt-20260929-0832-agentcontrol-provider-implement-l2",
+    "stream": "stderr",
+    "offset": 120000,
+    "length": 120000
+  },
+  "created_at": "2026-09-29T08:35:00Z",
+  "ttl_seconds": 3600,
+  "priority": "highest"
+}
