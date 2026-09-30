@@ -1,3 +1,18 @@
+# v8.8.21 — Fail-closed override and dependency safety
+
+- Gate every normal modded deployment and launch path on the exact enabled set's dependency requirements and a uniquely safe conflict plan before game files are written or the game is started.
+- Validate enabled overlay-rule shape before graph resolution; malformed winner edges hard-block, and a non-blocking resolver result without a real candidate winner is never rescued by arbitrary priority.
+- Treat MHW structural model/material/physics siblings as atomic bundles even when filenames differ, blocking unrelated providers from creating partial mixed assets.
+- Require high-confidence revision/role/provenance evidence for texture precedence; same-family identity or configured priority alone is not overwrite authority.
+- Stop treating manager-owned live files as satisfying dependencies when their current provider is absent from the staged set and will be removed by the same deployment.
+- Reject stale/superseded staged mod identities instead of silently dropping them from dependency validation.
+- Remove the unsafe assumption that a smaller mostly-overlapping same-family package is automatically an optional component; unknown direction remains a blocking family choice.
+- Require explicit intent or high-trust same-source Nexus update/optional provenance before automatically overriding executable/plugin binaries.
+- Detect file-vs-directory destination topology collisions and block them regardless of priority because no ordering can make both meanings reliable.
+- Preserve automatic base/optional composition where overwrite direction is actually supported by semantic/provenance evidence, including verified Nexus update lineage.
+- Add regression coverage for staged dependency removal, vanished staged identities, binary override trust, same-family ambiguity, and file/directory collisions.
+- Add a research note connecting the policy to current dependency-resolution work, strict dependency-manager behavior, and established mod-manager conflict semantics.
+
 # v8.8.20 — One-click Auto Populate
 
 - Add lightweight, accessibility-aware transform/opacity transitions for page navigation, blocking-operation presentation, and shared button/sidebar interaction feedback.
