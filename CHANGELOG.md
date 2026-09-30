@@ -1,3 +1,12 @@
+# v8.8.37 — Agent Control current-presence registry retirement
+- Retire ordinary terminal managed failures only after active recovery, process ownership, remote-job termination, and durable-work preservation checks pass.
+- Preserve dirty/diverged, unowned-live-process, proof-pending, and cleanup-blocked rows as explicit attention instead of hiding uncertain ownership or work.
+- Stop mirroring completed terminal managed history into the federated live surface while retaining recovery-owned terminal rows.
+- Retire federated terminal or disconnect-expired presence into durable provider/source tombstones.
+- Preserve multiple correlated provider/source tombstones for one logical agent so stale alternate-source replay cannot resurrect retired presence.
+- Keep strictly-newer live-heartbeat reactivation, durable task/event history, and v8.8.36 notification/inspector semantics intact.
+- Advance product version to v8.8.37 and Agent Control/root/nested plugin identity to v0.6.15.
+
 # v8.8.36 — Agent Manager notification + stable inspector closure
 - Render backend Agent Control notifications with severity, message, timestamp, and supported inspection actions.
 - Route only `inspect-agent` and `inspect-federation` through shared stable-ID inspector helpers; unsupported backend action types remain informational.
