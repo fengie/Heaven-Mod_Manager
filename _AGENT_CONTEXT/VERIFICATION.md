@@ -1,3 +1,13 @@
+# v8.8.31 Agent Control durable retirement proof — verification scope
+
+This candidate changes retry-exhausted remote-job retirement authority, retired-source heartbeat freshness semantics, focused regressions, and Agent Control v0.6.9 release identity. Historical v8.8.30 UI evidence does not verify these changed bytes.
+
+Required source closure: exact-candidate Agent Control syntax/tests plus configured Security Supply Chain and Agent Control PR gates. A broader workflow/product gate may still expose unrelated baseline compiler/analyzer failures; report those separately rather than attributing them to this retirement patch.
+
+Required runtime closure when the machines are reachable: on heaven2→heaven1, prove uncertain/queued/unknown remote jobs fail closed, a running race is re-cancelled until terminal proof, stale heartbeat replay cannot resurrect a retired source, and a strictly newer live heartbeat can re-register it.
+
+---
+
 # v8.8.30 Agent Control card accessibility closure — verification scope
 
 PR #484 source head `b46e6bf49aa9369436fbc841c443636f08b5c6b8` carried the accessibility implementation and executable interaction tests; its prior Agent Control and Security runs were green. This follow-up commit adds only the required visible version/continuity identity for that same change set.
