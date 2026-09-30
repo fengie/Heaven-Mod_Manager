@@ -2,8 +2,9 @@
 
 1. Require exact-head `cd tools/agent-control && npm run check && npm test`, Agent Control PR Gate success, and Security Supply Chain Gate success.
 2. Verify `/api/status` uses `loadState()` and contains no `buildSnapshot`, `refreshState`, repository snapshot, worker/federation refresh, or Heaven Bridge inspection path.
-3. After merge, verify canonical `main` reports v8.8.33 / Agent Control v0.6.11; close superseded PRs and delete merged temporary branches where supported.
-4. Then complete the already-recorded live heaven2→heaven1 retirement/replay smoke and remaining Agent Manager P0 runtime closure; do not conflate that runtime evidence with this source health patch.
+3. Verify a full `/api/snapshot` performs one shared Heaven Bridge assessment across worker/federation views, while actual dispatch still performs authoritative provider validation.
+4. After merge, verify canonical `main` reports v8.8.33 / Agent Control v0.6.11; close superseded PRs and delete merged temporary branches where supported.
+5. Then complete the already-recorded live heaven2→heaven1 retirement/replay smoke and remaining Agent Manager P0 runtime closure; do not conflate that runtime evidence with this source health patch.
 
 ---
 
