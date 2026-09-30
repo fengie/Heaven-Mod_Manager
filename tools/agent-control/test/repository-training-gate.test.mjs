@@ -77,5 +77,5 @@ test("manager prompt requires manager-specific core training", () => {
 });
 
 test("prompt library version records bounded context navigation", () => {
-  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.3");
+  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.4");
 });
