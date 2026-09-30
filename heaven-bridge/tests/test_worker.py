@@ -1,4 +1,6 @@
 import base64
+import hashlib
+import hmac
 import shutil
 import tempfile
 import threading
@@ -124,6 +126,32 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         a = worker.job_hash(job)
         job["auth"] = {"signature": "0" * 64}
         self.assertEqual(a, worker.job_hash(job))
+
+    def test_hmac_auth_requires_and_verifies_signature(self):
+        job = self.make_job("health", job_id="signed-auth")
+        key = "unit-test-only-secret"
+        with unittest.mock.patch.dict("os.environ", {"HEAVEN_BRIDGE_HMAC_KEY": key}, clear=False):
+            with self.assertRaises(worker.BridgeError) as missing:
+                worker.verify_auth(job)
+            self.assertEqual(missing.exception.code, "AUTH_REQUIRED")
+
+            signed = dict(job)
+            signed["auth"] = {
+                "signature": hmac.new(
+                    key.encode("utf-8"),
+                    worker.canonical_job(job),
+                    hashlib.sha256,
+                ).hexdigest()
+            }
+            verified = worker.verify_auth(signed)
+            self.assertEqual(verified["mode"], "hmac-sha256")
+            self.assertTrue(verified["verified"])
+
+            tampered = dict(signed)
+            tampered["params"] = {"changed": True}
+            with self.assertRaises(worker.BridgeError) as invalid:
+                worker.verify_auth(tampered)
+            self.assertEqual(invalid.exception.code, "AUTH_INVALID")
 
     def test_payload_change_changes_replay_hash(self):
         job = self.make_job("health", job_id="replay-job")
