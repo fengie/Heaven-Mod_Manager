@@ -14,9 +14,16 @@ public sealed record AutoPopulateResult(
     int SkippedRequirements,
     string Summary);
 
+internal sealed record ModDependencyRequirement(
+    string Token,
+    bool Required = true,
+    string? ExactVersion = null,
+    string? MinVersion = null,
+    string? MaxVersion = null);
+
 internal sealed record ModRequirementSpec(
     string ModId,
-    IReadOnlyList<string> RequiredModTokens,
+    IReadOnlyList<ModDependencyRequirement> ModRequirements,
     IReadOnlyList<string> RequiredPaths,
     IReadOnlyList<string> RequiredTexturePaths,
     bool RequiresNativeLoader,
@@ -34,7 +41,7 @@ internal static class ModRequirementReader
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var requiredMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var modRequirements = new Dictionary<string,ModDependencyRequirement>(StringComparer.OrdinalIgnoreCase);
         var requiredPaths = new HashSet<string>(PathRules.Comparer);
         var requiredTextures = new HashSet<string>(PathRules.Comparer);
         var evidence = new List<string>();
@@ -57,16 +64,20 @@ internal static class ModRequirementReader
 
                 ReadPathArray(root, "files", requiredPaths, errors);
                 ReadPathArray(root, "textures", requiredTextures, errors);
-                ReadDependencyArray(root, "mods", requiredMods);
-                ReadDependencyArray(root, "dependencies", requiredMods);
-                ReadDependencyArray(root, "requires", requiredMods);
+                ReadDependencyArray(root, "mods", modRequirements, errors);
+                ReadDependencyArray(root, "dependencies", modRequirements, errors);
+                ReadDependencyArray(root, "requires", modRequirements, errors);
 
                 if (requiredPaths.Count > 0)
                     evidence.Add($"Explicit sidecar file requirements: {string.Join(", ", requiredPaths)}");
                 if (requiredTextures.Count > 0)
                     evidence.Add($"Explicit sidecar texture requirements: {string.Join(", ", requiredTextures)}");
-                if (requiredMods.Count > 0)
-                    evidence.Add($"Explicit sidecar mod requirements: {string.Join(", ", requiredMods)}");
+                var hardRequirements = modRequirements.Values.Where(x => x.Required).OrderBy(x => x.Token, StringComparer.OrdinalIgnoreCase).ToArray();
+                var optionalRequirements = modRequirements.Values.Where(x => !x.Required).OrderBy(x => x.Token, StringComparer.OrdinalIgnoreCase).ToArray();
+                if (hardRequirements.Length > 0)
+                    evidence.Add($"Explicit hard mod requirements: {string.Join(", ", hardRequirements.Select(DescribeRequirement))}");
+                if (optionalRequirements.Length > 0)
+                    evidence.Add($"Optional mod relationships: {string.Join(", ", optionalRequirements.Select(DescribeRequirement))}");
             }
             catch (JsonException ex)
             {
@@ -84,7 +95,7 @@ internal static class ModRequirementReader
 
         return new(
             mod.Id,
-            requiredMods.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+            modRequirements.Values.OrderBy(x => x.Token, StringComparer.OrdinalIgnoreCase).ToArray(),
             requiredPaths.Order(PathRules.Comparer).ToArray(),
             requiredTextures.Order(PathRules.Comparer).ToArray(),
             requiresLoader,
@@ -127,7 +138,8 @@ internal static class ModRequirementReader
         catch (ArgumentException) { return false; }
 
         return normalized.Equals(@"root\dinput8.dll", StringComparison.OrdinalIgnoreCase) ||
-               normalized.Equals(@"root\loader.dll", StringComparison.OrdinalIgnoreCase);
+               normalized.Equals(@"root\loader.dll", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ReadPathArray(JsonElement root, string propertyName, HashSet<string> output, List<string> errors)
@@ -169,7 +181,87 @@ internal static class ModRequirementReader
         return PathRules.Normalize(normalized);
     }
 
-    private static void ReadDependencyArray(JsonElement root, string propertyName, HashSet<string> output)
+    public static bool VersionSatisfies(ModDescriptor mod, ModDependencyRequirement requirement, out string reason)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        reason = string.Empty;
+        if (string.IsNullOrWhiteSpace(requirement.ExactVersion) &&
+            string.IsNullOrWhiteSpace(requirement.MinVersion) &&
+            string.IsNullOrWhiteSpace(requirement.MaxVersion))
+            return true;
+
+        var actualExact = NormalizeExactVersionText(mod.NexusVersion);
+        if (actualExact is null)
+        {
+            reason = $"Installed provider '{mod.DisplayName}' has no trustworthy version metadata for requirement {DescribeRequirement(requirement)}.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(requirement.ExactVersion) &&
+            !StringComparer.OrdinalIgnoreCase.Equals(actualExact, NormalizeExactVersionText(requirement.ExactVersion)))
+        {
+            reason = $"Installed provider '{mod.DisplayName}' is version '{mod.NexusVersion}', but {DescribeRequirement(requirement)} is required.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(requirement.MinVersion))
+        {
+            if (HasPrerelease(actualExact) || HasPrerelease(requirement.MinVersion!))
+            {
+                reason = $"Cannot safely evaluate prerelease version '{mod.NexusVersion}' against minimum version '{requirement.MinVersion}' for '{requirement.Token}'. Use an exact version requirement for prerelease builds.";
+                return false;
+            }
+            if (!TryParseComparableVersion(actualExact, out var actualVersion) ||
+                !TryParseComparableVersion(requirement.MinVersion!, out var minimum))
+            {
+                reason = $"Cannot safely compare installed version '{mod.NexusVersion}' with minimum version '{requirement.MinVersion}' for '{requirement.Token}'.";
+                return false;
+            }
+            if (actualVersion < minimum)
+            {
+                reason = $"Installed provider '{mod.DisplayName}' is version '{mod.NexusVersion}', below required minimum '{requirement.MinVersion}'.";
+                return false;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(requirement.MaxVersion))
+        {
+            if (HasPrerelease(actualExact) || HasPrerelease(requirement.MaxVersion!))
+            {
+                reason = $"Cannot safely evaluate prerelease version '{mod.NexusVersion}' against maximum version '{requirement.MaxVersion}' for '{requirement.Token}'. Use an exact version requirement for prerelease builds.";
+                return false;
+            }
+            if (!TryParseComparableVersion(actualExact, out var actualVersion) ||
+                !TryParseComparableVersion(requirement.MaxVersion!, out var maximum))
+            {
+                reason = $"Cannot safely compare installed version '{mod.NexusVersion}' with maximum version '{requirement.MaxVersion}' for '{requirement.Token}'.";
+                return false;
+            }
+            if (actualVersion > maximum)
+            {
+                reason = $"Installed provider '{mod.DisplayName}' is version '{mod.NexusVersion}', above supported maximum '{requirement.MaxVersion}'.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static string DescribeRequirement(ModDependencyRequirement requirement)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var clauses = new List<string>();
+        if (!string.IsNullOrWhiteSpace(requirement.ExactVersion)) clauses.Add($"version={requirement.ExactVersion}");
+        if (!string.IsNullOrWhiteSpace(requirement.MinVersion)) clauses.Add($"minVersion={requirement.MinVersion}");
+        if (!string.IsNullOrWhiteSpace(requirement.MaxVersion)) clauses.Add($"maxVersion={requirement.MaxVersion}");
+        return clauses.Count == 0 ? requirement.Token : $"{requirement.Token} ({string.Join(", ", clauses)})";
+    }
+
+    private static void ReadDependencyArray(
+        JsonElement root,
+        string propertyName,
+        Dictionary<string,ModDependencyRequirement> output,
+        List<string> errors)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
@@ -179,30 +271,117 @@ internal static class ModRequirementReader
         {
             if (item.ValueKind == JsonValueKind.String)
             {
-                var token = item.GetString();
-                if (!string.IsNullOrWhiteSpace(token))
-                    output.Add(token.Trim());
+                var stringToken = item.GetString();
+                if (!string.IsNullOrWhiteSpace(stringToken))
+                    MergeRequirement(output, new(stringToken.Trim()), errors);
                 continue;
             }
 
             if (item.ValueKind != JsonValueKind.Object)
+            {
+                errors.Add($"Requirement '{propertyName}' contains an unsupported dependency entry.");
                 continue;
-            if (item.TryGetProperty("required", out var required) &&
-                required.ValueKind is JsonValueKind.False)
-                continue;
+            }
 
+            string? token = null;
             foreach (var key in new[] { "modId", "id", "nexusModId", "nexusModUuid" })
             {
                 if (!item.TryGetProperty(key, out var tokenValue) || tokenValue.ValueKind != JsonValueKind.String)
                     continue;
-                var token = tokenValue.GetString();
+                token = tokenValue.GetString()?.Trim();
                 if (!string.IsNullOrWhiteSpace(token))
-                {
-                    output.Add(token.Trim());
                     break;
-                }
             }
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                errors.Add($"Requirement '{propertyName}' contains a dependency object without a supported mod identity.");
+                continue;
+            }
+
+            var required = !item.TryGetProperty("required", out var requiredValue) ||
+                           requiredValue.ValueKind != JsonValueKind.False;
+            var exactVersion = ReadString(item, "version") ?? ReadString(item, "exactVersion");
+            var minVersion = ReadString(item, "minVersion");
+            var maxVersion = ReadString(item, "maxVersion");
+            MergeRequirement(output, new(token, required, exactVersion, minVersion, maxVersion), errors);
         }
+    }
+
+    private static string? ReadString(JsonElement item, string propertyName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return item.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()?.Trim()
+            : null;
+    }
+
+    private static void MergeRequirement(
+        Dictionary<string,ModDependencyRequirement> output,
+        ModDependencyRequirement incoming,
+        List<string> errors)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!output.TryGetValue(incoming.Token, out var existing))
+        {
+            output[incoming.Token] = incoming;
+            return;
+        }
+
+        static string? MergeConstraint(string token, string label, string? left, string? right, List<string> targetErrors)
+        {
+            if (string.IsNullOrWhiteSpace(left)) return right;
+            if (string.IsNullOrWhiteSpace(right)) return left;
+            if (StringComparer.OrdinalIgnoreCase.Equals(left, right)) return left;
+            targetErrors.Add($"Dependency '{token}' declares conflicting {label} constraints '{left}' and '{right}'.");
+            return left;
+        }
+
+        output[incoming.Token] = new(
+            incoming.Token,
+            existing.Required || incoming.Required,
+            MergeConstraint(incoming.Token, "exact-version", existing.ExactVersion, incoming.ExactVersion, errors),
+            MergeConstraint(incoming.Token, "minimum-version", existing.MinVersion, incoming.MinVersion, errors),
+            MergeConstraint(incoming.Token, "maximum-version", existing.MaxVersion, incoming.MaxVersion, errors));
+    }
+
+    private static string? NormalizeExactVersionText(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var normalized = value.Trim();
+        if (normalized.StartsWith('v') || normalized.StartsWith('V')) normalized = normalized[1..];
+        return normalized.Trim();
+    }
+
+    private static bool HasPrerelease(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = NormalizeExactVersionText(value);
+        return normalized is not null && normalized.Contains('-', StringComparison.Ordinal);
+    }
+
+    private static string? NormalizeVersionText(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = NormalizeExactVersionText(value);
+        if (normalized is null) return null;
+        var separator = normalized.IndexOfAny(['-', '+']);
+        if (separator >= 0) normalized = normalized[..separator];
+        return normalized.Trim();
+    }
+
+    private static bool TryParseComparableVersion(string value, out Version version)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = NormalizeVersionText(value);
+        if (normalized is null)
+        {
+            version = new Version(0, 0);
+            return false;
+        }
+
+        return Version.TryParse(normalized, out version!);
     }
 }
 
@@ -317,7 +496,7 @@ public sealed class AutoPopulateService(
                 $"Auto Populate cannot safely fill around the current selection because the selected baseline conflicts: {blocker.Explanation} The current selection was left unchanged.");
         }
 
-        var protectedDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
+        var protectedDependencyStatus = await dependencies.ScanStageAsync(selected, protectedPlan, ct);
         var protectedFailure = protectedDependencyStatus.FirstOrDefault(x => !x.Ready);
         if (protectedFailure is not null)
             throw new InvalidOperationException(
@@ -326,6 +505,9 @@ public sealed class AutoPopulateService(
         // Everything in this set is required to preserve the user's selected anchors. Never remove it
         // during later fixed-point cleanup even if the environment changes while Auto Populate is running.
         var protectedSelection = new HashSet<string>(selected, PathRules.Comparer);
+        var protectedEffectiveProviders = protectedPlan.Conflicts
+            .Where(d => !d.Blocking && d.WinnerModId is not null && protectedSelection.Contains(d.WinnerModId))
+            .ToDictionary(d => d.Path, d => d.WinnerModId!, PathRules.Comparer);
 
         var ordered = mods
             .Where(m => !selected.Contains(m.Id))
@@ -394,6 +576,25 @@ public sealed class AutoPopulateService(
                 continue;
             }
 
+            var newlyAdded = closureResult.ModIds.Where(id => !selected.Contains(id)).ToHashSet(PathRules.Comparer);
+            var protectedOverlap = plan.Conflicts.FirstOrDefault(d =>
+                protectedEffectiveProviders.ContainsKey(d.Path) &&
+                d.Kind != ConflictKind.Identical &&
+                d.Confidence != Confidence.Explicit &&
+                newlyAdded.Any(id =>
+                    filesByMod.TryGetValue(id, out var addedFiles) &&
+                    addedFiles.Any(file => PathRules.Comparer.Equals(file.Path, d.Path))));
+            if (protectedOverlap is not null)
+            {
+                conflictSkips++;
+                skipped[candidate.Id] = new(
+                    candidate.Id,
+                    candidate.DisplayName,
+                    false,
+                    $"Skipped because it would introduce a non-identical overlap with the protected current selection at '{protectedOverlap.Path}'. Select the alternative explicitly if that overlap is intended.");
+                continue;
+            }
+
             selected.UnionWith(closureResult.ModIds);
         }
 
@@ -403,7 +604,10 @@ public sealed class AutoPopulateService(
         // baseline is never silently removed.
         while (true)
         {
-            var finalDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
+            var stagedPlan = BuildPlan(snapshot, selected);
+            if (stagedPlan.IsBlocked)
+                throw new InvalidOperationException("Auto Populate invariant failed: dependency revalidation encountered a blocking file conflict.");
+            var finalDependencyStatus = await dependencies.ScanStageAsync(selected, stagedPlan, ct);
             var failed = finalDependencyStatus.Where(x => !x.Ready).ToArray();
             if (failed.Length == 0)
                 break;
@@ -493,17 +697,20 @@ public sealed class AutoPopulateService(
             if (spec.Errors.Count > 0)
                 return ClosureResult.Fail($"'{mod.DisplayName}' has invalid requirements: {string.Join("; ", spec.Errors)}");
 
-            foreach (var token in spec.RequiredModTokens)
+            foreach (var requirement in spec.ModRequirements.Where(x => x.Required))
             {
                 var alreadySatisfied = alreadySelected.Concat(closure)
                     .Select(selectedId => modsById.GetValueOrDefault(selectedId))
-                    .Any(selectedMod => selectedMod is not null && ModRequirementReader.MatchesToken(selectedMod, token));
+                    .Any(selectedMod =>
+                        selectedMod is not null &&
+                        ModRequirementReader.MatchesToken(selectedMod, requirement.Token) &&
+                        ModRequirementReader.VersionSatisfies(selectedMod, requirement, out _));
                 if (alreadySatisfied)
                     continue;
 
-                var dependency = ChooseModTokenProvider(token, mods);
+                var dependency = ChooseModTokenProvider(requirement, mods);
                 if (dependency is null)
-                    return ClosureResult.Fail($"'{mod.DisplayName}' requires installed mod '{token}', but no matching package is installed.");
+                    return ClosureResult.Fail($"'{mod.DisplayName}' requires {ModRequirementReader.DescribeRequirement(requirement)}, but no installed package satisfies that constraint.");
                 queue.Enqueue(dependency.Id);
             }
 
@@ -570,7 +777,7 @@ public sealed class AutoPopulateService(
     private bool HasLiveLoader()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
+        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) &&
                File.Exists(Path.Combine(gameRoot, "loader.dll"));
     }
 
@@ -581,7 +788,7 @@ public sealed class AutoPopulateService(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return selected.Concat(closure).Any(id =>
-            filesByMod.TryGetValue(id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)));
+            filesByMod.TryGetValue(id, out var files) && ProvidesCompleteLoader(files));
     }
 
     private static ModDescriptor? ChooseLoaderProvider(
@@ -589,13 +796,20 @@ public sealed class AutoPopulateService(
         Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)))
+        return mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && ProvidesCompleteLoader(files))
             .OrderByDescending(m => m.Enabled)
             .ThenBy(RoleRank)
             .ThenByDescending(m => m.ProvenanceScore)
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
+
+    private static bool ProvidesCompleteLoader(IReadOnlyList<ModFileDescriptor> files)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return files.Any(f => PathRules.Comparer.Equals(f.Path, @"root\dinput8.dll")) &&
+               files.Any(f => PathRules.Comparer.Equals(f.Path, @"root\loader.dll"));
     }
 
     private static bool IsPathSatisfiedBySelection(
@@ -610,10 +824,13 @@ public sealed class AutoPopulateService(
             files.Any(f => PathRules.Comparer.Equals(f.Path, path)));
     }
 
-    private static ModDescriptor? ChooseModTokenProvider(string token, ModDescriptor[] mods)
+    private static ModDescriptor? ChooseModTokenProvider(ModDependencyRequirement requirement, ModDescriptor[] mods)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return mods.Where(m => ModRequirementReader.MatchesToken(m, token) && !m.IsSuperseded)
+        return mods.Where(m =>
+                ModRequirementReader.MatchesToken(m, requirement.Token) &&
+                !m.IsSuperseded &&
+                ModRequirementReader.VersionSatisfies(m, requirement, out _))
             .OrderBy(RoleRank)
             .ThenByDescending(m => m.Enabled)
             .ThenByDescending(m => m.ProvenanceScore)
