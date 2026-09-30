@@ -714,7 +714,7 @@ def auth_mode():
     if load_hmac_key():
         return "hmac-sha256"
     if repo_acl_only_enabled():
-        return "private-repo-acl-explicit-local"
+        return "private-repo-acl-explicit-insecure"
     return "hmac-required"
 
 
@@ -722,7 +722,7 @@ def verify_auth(job):
     keys = load_hmac_verification_keys()
     if not keys:
         if repo_acl_only_enabled():
-            return {"mode": "private-repo-acl-explicit-local", "verified": True}
+            return {"mode": "private-repo-acl-explicit-insecure", "verified": True}
         raise BridgeError(
             "AUTH_HMAC_NOT_CONFIGURED",
             "Heaven Bridge HMAC authentication is required; unsigned repository-relay execution is disabled by default",
