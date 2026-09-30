@@ -28,7 +28,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var mods = await provider.SearchModsAsync(new CatalogBrowseRequest(game, "elder dragon"));
+        var mods = await provider.SearchModsAsync(new CatalogBrowseRequest(game, "elder dragon"), TestContext.Current.CancellationToken);
         var mod = Assert.Single(mods);
 
         Assert.Equal("github-releases", mod.ProviderId);
@@ -56,7 +56,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var mod = await provider.GetModAsync(game, "someone/unknown-mod");
+        var mod = await provider.GetModAsync(game, "someone/unknown-mod", TestContext.Current.CancellationToken);
 
         Assert.Null(mod);
     }
@@ -74,11 +74,11 @@ public sealed class GitHubReleasesCatalogProviderTests
         using var client = new HttpClient(handler);
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
-        var mod = Assert.NotNull(await provider.GetModAsync(game, "example/mhw-mod"));
+        var mod = Assert.NotNull(await provider.GetModAsync(game, "example/mhw-mod", TestContext.Current.CancellationToken));
         var file = Assert.Single(mod.Files, candidate => candidate.ProviderFileId == "501");
 
         var resolution = await provider.ResolveAcquisitionAsync(
-            new CatalogAcquisitionRequest(game, mod, file));
+            new CatalogAcquisitionRequest(game, mod, file), TestContext.Current.CancellationToken);
 
         Assert.Equal(CatalogAcquisitionKind.Direct, resolution.Kind);
         Assert.Equal(
@@ -98,7 +98,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var mods = await provider.SearchModsAsync(new CatalogBrowseRequest(game));
+        var mods = await provider.SearchModsAsync(new CatalogBrowseRequest(game), TestContext.Current.CancellationToken);
 
         Assert.Empty(mods);
     }
@@ -113,7 +113,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         var transport = new GitHubReleasesTransport(client);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetLatestReleaseAsync("example", "mhw-mod"));
+            () => transport.GetLatestReleaseAsync("example", "mhw-mod", TestContext.Current.CancellationToken));
 
         Assert.Contains("html_url", exception.Message, StringComparison.Ordinal);
     }
@@ -139,7 +139,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         var transport = new GitHubReleasesTransport(client, new GitHubCatalogCredential(secret));
 
         var exception = await Assert.ThrowsAsync<GitHubReleaseTransportException>(
-            () => transport.GetLatestReleaseAsync("example", "mhw-mod"));
+            () => transport.GetLatestReleaseAsync("example", "mhw-mod", TestContext.Current.CancellationToken));
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
         Assert.Equal(0, exception.RateLimit?.HourlyRemaining);
@@ -165,7 +165,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         using var client = new HttpClient(handler);
         var provider = CreateProvider(client);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(CatalogProviderState.Connected, health.State);
         Assert.Equal(60, health.RateLimit?.HourlyLimit);
