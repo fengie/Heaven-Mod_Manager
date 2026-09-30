@@ -42,9 +42,9 @@ jobs:
           persist-credentials: false
 
       - name: Audit workflow security policy
-        shell: bash
+        shell: powershell
         run: |
-          python - <<'PY'
+          $policy = @'
           import pathlib
           import re
           import sys
@@ -89,4 +89,8 @@ jobs:
               print("\n".join(f"ERROR: {item}" for item in failures))
               sys.exit(1)
           print("Security workflow policy: PASS")
-          PY
+          '@
+          $policyPath = Join-Path $env:RUNNER_TEMP 'security-supply-chain-policy.py'
+          [IO.File]::WriteAllText($policyPath, $policy, [Text.UTF8Encoding]::new($false))
+          python $policyPath
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
