@@ -11,6 +11,7 @@ public sealed class NexusV3CatalogProviderTests
     [Fact]
     public async Task Trending_search_uses_provider_neutral_normalizer()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((request, _) =>
         {
             Assert.Equal(
@@ -24,19 +25,20 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var result = await provider.SearchModsAsync(
-            new CatalogBrowseRequest(game, Query: "fixture one", Limit: 10));
+            new CatalogBrowseRequest(game, Query: "fixture one", Limit: 10), ct);
 
         var mod = Assert.Single(result);
         Assert.Equal("nexus:101", mod.CanonicalId);
         Assert.Equal("101", mod.ProviderModId);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Limited, health.State);
     }
 
     [Fact]
     public async Task File_lookup_hydrates_global_mod_id_then_expands_exact_versions()
     {
+        var ct = TestContext.Current.CancellationToken;
         var requests = new List<string>();
         var handler = new RoutingHandler((request, _) =>
         {
@@ -61,7 +63,7 @@ public sealed class NexusV3CatalogProviderTests
             NexusV3Credential.ApiKey("fixture-key"));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var files = await provider.GetModFilesAsync(game, "101");
+        var files = await provider.GetModFilesAsync(game, "101", ct);
 
         Assert.Equal(
             [
@@ -76,13 +78,14 @@ public sealed class NexusV3CatalogProviderTests
         Assert.True(files[0].Recommended);
         Assert.Equal(CatalogFileCategory.Optional, files[1].Category);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Connected, health.State);
     }
 
     [Fact]
     public async Task Unavailable_mod_details_return_null_without_schema_drift()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((_, _) =>
             Task.FromResult(JsonResponse(
                 HttpStatusCode.OK,
@@ -103,31 +106,33 @@ public sealed class NexusV3CatalogProviderTests
             NexusV3Credential.ApiKey("fixture-key"));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var mod = await provider.GetModAsync(game, "303");
+        var mod = await provider.GetModAsync(game, "303", ct);
 
         Assert.Null(mod);
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Connected, health.State);
     }
 
     [Fact]
     public async Task Missing_credentials_mark_authentication_required()
     {
+        var ct = TestContext.Current.CancellationToken;
         using var client = new HttpClient(new RoutingHandler((_, _) =>
             Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("mod.json")))));
         var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => provider.GetModAsync(game, "101"));
+            () => provider.GetModAsync(game, "101", ct));
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.AuthenticationRequired, health.State);
     }
 
     [Fact]
     public async Task Auth_failure_marks_provider_authentication_required_without_secret_leak()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)));
 
@@ -138,16 +143,17 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var exception = await Assert.ThrowsAsync<NexusV3TransportException>(
-            () => provider.GetModAsync(game, "101"));
+            () => provider.GetModAsync(game, "101", ct));
 
         Assert.DoesNotContain("secret-that-must-not-leak", exception.Message, StringComparison.Ordinal);
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.AuthenticationRequired, health.State);
     }
 
     [Fact]
     public async Task Rate_limit_marks_health_and_preserves_retry_after_without_retrying()
     {
+        var ct = TestContext.Current.CancellationToken;
         var calls = 0;
         var handler = new RoutingHandler((_, _) =>
         {
@@ -165,10 +171,10 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<NexusV3TransportException>(
-            () => provider.GetModAsync(game, "101"));
+            () => provider.GetModAsync(game, "101", ct));
 
         Assert.Equal(1, calls);
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.RateLimited, health.State);
         Assert.NotNull(health.RateLimit?.RetryAfter);
     }
@@ -176,6 +182,7 @@ public sealed class NexusV3CatalogProviderTests
     [Fact]
     public async Task Malformed_inner_schema_fails_closed_and_marks_provider_limited()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((_, _) =>
             Task.FromResult(JsonResponse(
                 HttpStatusCode.OK,
@@ -186,9 +193,9 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<InvalidDataException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(game), ct));
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Limited, health.State);
         Assert.Contains("schema drift", health.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -196,6 +203,7 @@ public sealed class NexusV3CatalogProviderTests
     [Fact]
     public async Task Transport_timeout_marks_provider_offline()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((_, _) =>
             Task.FromException<HttpResponseMessage>(new TaskCanceledException("fixture timeout")));
 
@@ -204,9 +212,9 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<TaskCanceledException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(game), ct));
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Offline, health.State);
         Assert.Contains("timed out", health.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -214,6 +222,7 @@ public sealed class NexusV3CatalogProviderTests
     [Fact]
     public async Task Network_failure_marks_provider_offline()
     {
+        var ct = TestContext.Current.CancellationToken;
         var handler = new RoutingHandler((_, _) =>
             Task.FromException<HttpResponseMessage>(new HttpRequestException("fixture offline")));
 
@@ -222,15 +231,16 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<HttpRequestException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(game), ct));
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(ct);
         Assert.Equal(CatalogProviderState.Offline, health.State);
     }
 
     [Fact]
     public async Task Acquisition_remains_assisted_and_provider_scoped()
     {
+        var ct = TestContext.Current.CancellationToken;
         using var client = new HttpClient(new RoutingHandler((_, _) =>
             Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json")))));
         var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
@@ -267,7 +277,7 @@ public sealed class NexusV3CatalogProviderTests
             CatalogFileCategory.Main);
 
         var resolution = await provider.ResolveAcquisitionAsync(
-            new CatalogAcquisitionRequest(game, mod, file));
+            new CatalogAcquisitionRequest(game, mod, file), ct);
 
         Assert.Equal(CatalogAcquisitionKind.Assisted, resolution.Kind);
         Assert.Null(resolution.DownloadUri);
