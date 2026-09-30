@@ -722,3 +722,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; security supply-chain doctrine.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-042 — warnings-as-errors integration requires production-and-test analyzer closure
+
+- **Rule ID:** LR-042
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** C# strict builds, catalog/provider integration, test projects, release verification
+- **Rule:** When warnings are errors, integration readiness requires the affected production project and its affected test project to compile under the repository's pinned analyzer profile. If a build emits downstream missing-assembly/test-artifact errors, diagnose the earliest compiler/analyzer diagnostics first; do not treat cascade failures as separate defects.
+- **Trigger / evidence:** Windows Release Gate run `36669017493` failed on six Core analyzer diagnostics and then cascaded into missing artifacts. After those six were fixed, exact Heaven verification of `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2` produced a clean Core build (0 warnings / 0 errors) but then exposed four additional analyzer failures while compiling `MhwModManager.Tests`.
+- **Rationale:** A production-only green compile is insufficient when the test assembly itself participates in strict analyzer enforcement. Cascade diagnostics obscure the causal boundary and waste debugging effort if treated independently.
+- **Enforcement:** For Core/catalog changes, run the strict Core build plus affected test-project compile/tests or the full exact-candidate repository verifier before signaling integration-ready. Preserve public/API shape when an analyzer-only refactor would introduce needless external churn; use a narrowly justified suppression only when the design intentionally requires the shape.
+- **Regression/evidence:** production fix lineage through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2`; Heaven job `job-20260930T044200Z-bugfix-core-analyzers`; test repair PR #437.
+- **Related rules:** LR-002 compile-backed caller closure; exact-SHA verification doctrine; generic trainer lesson 33 on strict analyzer closure.
+- **Supersedes:** none
+- **Superseded by:** none
+
