@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.29 handoff validator — CURRENT
+
+1. Run `scripts/testing/Test-AgentHandoff.ps1` on the exact candidate and require PASS.
+2. Run `scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1`; the “AGENTS loses visible-progress versioning rule” fixture must now be rejected.
+3. Confirm the remaining negative fixtures still reject their intended continuity failures.
+4. After merge, return to Agent Manager P0: reconcile the stale heaven2 runtime-source startup fix onto current main, prove live heaven2→heaven1 dispatch, and close the remote-job-before-registry-retirement ownership gap.
+5. Keep historical verification attribution exact; do not relabel prior product evidence as v8.8.29 verification.
+
+---
+
 # 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
 
 1. Run exact-head `cd tools/agent-control && npm run check && npm test`; repair any source/test/version failure before integration.

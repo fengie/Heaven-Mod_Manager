@@ -1,4 +1,12 @@
-# v8.8.28 Universal Mod Manager
+# v8.8.29 Universal Mod Manager
+
+## v8.8.29 — Handoff visible-progress validator hardening
+
+The continuity gate now validates the **dedicated** `### Mandatory visible-progress versioning` section in `AGENTS.md` instead of accepting unrelated mentions of “README” and “patch” elsewhere in the file. The section must explicitly require the root README update, `VERSION.txt` patch advancement, `CHANGELOG.md`, and same-change-set coupling.
+
+This closes the broad Workflow Feature gate escape where the negative fixture could delete the entire visible-progress rule and still pass. The existing adversarial fixture now directly protects the section-scoped governance contract.
+
+## v8.8.28 — Agent Control Heaven relay execution repair
 
 ## v8.8.28 — Agent Control Heaven relay execution repair
 

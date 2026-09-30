@@ -1,3 +1,18 @@
+# v8.8.29 handoff visible-progress validator hardening — verification scope
+
+## v8.8.29 exact governance evidence — source eb83529835e1473e368b39ea9dc12c0adb5db23e
+
+GitHub Actions Workflow Feature PR Gate run **36687117414** checked the exact v8.8.29 source. The handoff baseline fixture passed and every adversarial negative fixture was rejected, including **AGENTS loses visible-progress versioning rule**, which had escaped on the prior v8.8.28 run.
+
+The same workflow later failed outside this governance change on pre-existing repository baseline defects: CA1822 warnings-as-errors in `CatalogSyncService` / benchmarks and the existing Core test failures. Those failures also occurred on the preceding v8.8.28 Agent Control candidate and are not attributed to this validator repair. Security Supply Chain Gate run **36687117364** passed.
+
+
+This change modifies repository governance verification only. Required closure is the exact-candidate handoff preflight plus the complete negative-fixture suite, with explicit evidence that removing the `### Mandatory visible-progress versioning` section is rejected. The broader Workflow Feature gate may still expose independent product/analyzer failures; those must be reported separately rather than attributed to this validator repair.
+
+Historical product and Agent Control verification does not transfer to this changed governance candidate.
+
+---
+
 # v8.8.28 Agent Control Heaven relay execution repair — verification scope
 
 This candidate changes Heaven Bridge execution-time relay resolution and Agent Control v0.6.7 release identity on top of v8.8.27 agent-card inspection. Historical evidence does not verify these changed bytes.
