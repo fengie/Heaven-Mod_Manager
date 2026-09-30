@@ -163,6 +163,11 @@ test("dashboard agent cards are inspectable without hijacking nested controls", 
   assert.match(html, /async function showLog\(id, button = null\)/);
   assert.match(html, /if \(button\) button\.textContent/);
   assert.match(html, /Federated agent is no longer in the live registry/);
+  assert.match(html, /function bindManagedAgentCardInteractions\(\)/);
+  assert.match(html, /function bindFederatedAgentCardInteractions\(\)/);
+  assert.equal((html.match(/bindManagedAgentCardInteractions\(\);/g) || []).length, 1, "managed cards must receive exactly one inspection-binding pass per render");
+  assert.equal((html.match(/bindFederatedAgentCardInteractions\(\);/g) || []).length, 1, "federated cards must receive exactly one inspection-binding pass per render");
+  assert.doesNotMatch(html, /function bindAgentCardInteractions\(\)/, "global rebinding would attach duplicate managed listeners after federation rendering");
 });
 
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
