@@ -28,6 +28,8 @@ import {
   planWorkflow,
   providerCapacityActiveTerminationDecision,
   providerCapacityCircuit,
+  isProviderCapacityErrorMessage,
+  selectAgentTerminalMessage,
   recommendNextActions,
   roleCatalog,
   takeoverContext,
@@ -396,20 +398,31 @@ function tailFile(file, maxChars = 18000) {
 
 function readLogSummary(file) {
   const lines = tailFile(file, 14000).split(/\r?\n/).filter(Boolean).reverse();
+  const candidates = [];
+  const pushCandidate = value => {
+    if (typeof value === "string" && value.trim()) candidates.push(value.trim());
+  };
   for (const line of lines) {
     try {
       const event = JSON.parse(line);
-      const candidates = [
-        event?.error?.message,
-        event?.message,
-        event?.item?.text,
-        event?.response?.output_text
-      ];
-      const message = candidates.find(value => typeof value === "string" && value.trim());
-      if (message) return message.trim();
-    } catch {}
+      pushCandidate(event?.error?.message);
+      if (typeof event?.error === "string") pushCandidate(event.error);
+      pushCandidate(event?.message);
+      pushCandidate(event?.item?.text);
+      pushCandidate(event?.response?.output_text);
+      pushCandidate(event?.detail);
+      pushCandidate(event?.reason);
+      pushCandidate(event?.stderr);
+      pushCandidate(event?.data?.stderr);
+      pushCandidate(event?.result?.message);
+      pushCandidate(event?.result?.error?.message);
+      pushCandidate(event?.result?.stderr);
+      pushCandidate(event?.result?.data?.stderr);
+    } catch {
+      pushCandidate(line);
+    }
   }
-  return "";
+  return candidates.find(isProviderCapacityErrorMessage) || candidates[0] || "";
 }
 
 function sanitizeFailureText(value, maxChars = 8000) {
@@ -835,7 +848,10 @@ function refreshState() {
   const now = Date.now();
 
   for (const agent of state.agents) {
-    const last = readTextIfExists(agent.lastMessagePath) || readLogSummary(agent.logPath);
+    const last = selectAgentTerminalMessage(
+      readTextIfExists(agent.lastMessagePath),
+      readLogSummary(agent.logPath)
+    );
     if (last && last !== agent.lastMessage) {
       agent.lastMessage = last;
       agent.lastProgressAt = isoNow();
@@ -858,6 +874,9 @@ function refreshState() {
       agent.status = capacityTermination.status;
       agent.failureClass = capacityTermination.failureClass;
       agent.completionEvidence = capacityTermination.completionEvidence;
+      agent.providerCapacityEvidence ||= agent.lastMessage || agent.error || null;
+      agent.recoveryStatus = "provider-capacity";
+      agent.recoveryNextAt = null;
       agent.providerCapacityDetectedAt ||= detectedAt;
       agent.finishedAt ||= detectedAt;
       agent.updatedAt = detectedAt;
@@ -1758,7 +1777,10 @@ async function deployOne({
     if (item && ownsExit) {
       item.exitCode = code;
       item.signal = signal || null;
-      item.lastMessage = readTextIfExists(item.lastMessagePath) || readLogSummary(item.logPath);
+      item.lastMessage = selectAgentTerminalMessage(
+        readTextIfExists(item.lastMessagePath),
+        readLogSummary(item.logPath)
+      );
       item.currentSha = currentSha || item.currentSha || null;
       if (worktreeStatus !== null) {
         item.worktreeClean = worktreeStatus.length === 0;
@@ -1767,6 +1789,12 @@ async function deployOne({
       }
       const authoritativeStatus = classifyAuthoritativeExit(item, code);
       item.status = authoritativeStatus;
+      if (authoritativeStatus === "capacity-blocked") {
+        item.failureClass = "provider-capacity";
+        item.providerCapacityEvidence = item.lastMessage || item.error || null;
+        item.recoveryStatus = "provider-capacity";
+        item.recoveryNextAt = null;
+      }
       item.finishedAt = isoNow();
       item.updatedAt = isoNow();
       item.heartbeatAt = item.finishedAt;

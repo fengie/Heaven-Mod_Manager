@@ -226,6 +226,24 @@ test("authoritative exit gathers async evidence before fresh state mutation", ()
 });
 
 
+test("provider-capacity evidence is selected before no-work recovery", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /return candidates\.find\(isProviderCapacityErrorMessage\) \|\| candidates\[0\] \|\| "";/);
+  const refreshStart = source.indexOf("function refreshState() {");
+  const refreshEnd = source.indexOf("\nasync function", refreshStart);
+  assert.ok(refreshStart >= 0 && refreshEnd > refreshStart);
+  const refresh = source.slice(refreshStart, refreshEnd);
+  assert.match(refresh, /selectAgentTerminalMessage\(\s*readTextIfExists\(agent\.lastMessagePath\),\s*readLogSummary\(agent\.logPath\)\s*\)/s);
+  assert.match(refresh, /recoveryStatus = "provider-capacity"/);
+  const exitStart = source.indexOf('child.on("exit", async (code, signal) => {');
+  const exitEnd = source.indexOf('child.on("error"', exitStart);
+  assert.ok(exitStart >= 0 && exitEnd > exitStart);
+  const handler = source.slice(exitStart, exitEnd);
+  assert.match(handler, /selectAgentTerminalMessage\(\s*readTextIfExists\(item\.lastMessagePath\),\s*readLogSummary\(item\.logPath\)\s*\)/s);
+  assert.ok(handler.indexOf("classifyAuthoritativeExit") < handler.indexOf("noWorkTerminationDecision"));
+  assert.match(handler, /failureClass = "provider-capacity"/);
+});
+
 test("pre-launch setup is completed before worker spawn and has convergence cleanup", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const start = source.indexOf("async function deployOne({");

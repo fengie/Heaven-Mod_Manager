@@ -407,3 +407,9 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Shared security invariants must be checked across sibling/legacy adapters whenever a stricter provider is added; URLs carrying userinfo are credential-bearing inputs.
 - **Regression coverage added/strengthened:** Legacy browser service test asserts embedded credentials are rejected and no bridge request is emitted.
 - **References:** fix `2b828af3ead99192009b644a87d6e156f8535658`.
+
+## 2026-09-30 — Reconcile terminal output channels before recovery classification
+
+- **Failure mode:** provider/auth/quota failures can land in JSONL or plain stderr while the final-message file is empty or contains only startup prose. Preferring the final-message file hides the stronger diagnostic and can misroute recovery.
+- **Prevention:** reconcile both output channels before exit classification. Provider-capacity evidence outranks benign/opening prose, is persisted on the agent record, and closes the provider-capacity circuit instead of entering no-work recovery.
+- **Regression requirement:** cover structured JSON errors, plain stderr, and persisted capacity evidence surviving later non-quota summaries.
