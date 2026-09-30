@@ -366,3 +366,8 @@ Security-sensitive automation is fail-closed:
 - Heaven Bridge execution authentication should use HMAC in hardened deployments. Secret key material stays machine-local and never enters Git queue/result/state files.
 - Treat updater hashes as integrity checks, not a complete publisher-authenticity root. Preserve a path toward independently signed releases/metadata and key rotation/recovery.
 
+## Required security verification must complete
+
+Required security verification on canonical `main` must be allowed to finish. Do not manually cancel, auto-cancel, or classify a Security Supply Chain Gate run as disposable merely because a newer `main` push exists. Pull-request runs may use ordinary supersession cancellation, but canonical-main security verification is continuity evidence, not queue noise.
+
+When security-relevant files change repeatedly, the acceptable end state is a **completed-successful security gate covering the final security-relevant head or a later descendant that contains it**. A chain of queued/cancelled runs is not verification. Integration/release/cleanup automation must not treat cancelled, skipped, queued, or never-allocated security checks as equivalent to success.
