@@ -4,6 +4,8 @@
 
 Agent Manager now defaults every high-volume operational surface to a compact collapsed summary card, so notifications, agent registries, leases, queues, branches, events, history, and machine details no longer create a giant vertical wall. The summaries remain visible together in a responsive two-column overview; opening one card expands it full-width with its own bounded internal scroll. Inspecting an agent or notification automatically opens the Inspector, and notification summaries surface critical/warning counts at a glance. Agent Control advances to **v0.6.24**.
 
+The same v8.8.51 pass adds restrained spring/opacity micro-interactions for cards, metrics, buttons, and toasts plus a one-time staggered overview entrance. Motion uses transform/opacity rather than continuously animating layout, respects `prefers-reduced-motion`, and skips metric animation while the page is hidden. A small **UI sound** control enables persisted, generated Web Audio feedback for direct clicks/section toggles; it starts off unless the operator previously opted in and background refreshes stay silent.
+
 ## v8.8.50 — consolidate training without weakening safeguards
 
 Compact indexed training and current handoffs replace duplicated prose. Pre-response training, full constitution startup reading, recursive propagation, raw-byte budgets and exact-source evidence remain enforced. Superseded PR #525 is preserved inside PR #528 and reconciled with v8.8.49 main without overwriting the merged UI fixes.
