@@ -19,6 +19,7 @@ public sealed class ManagerDatabase(string databasePath)
         Mode = SqliteOpenMode.ReadWriteCreate,
         Cache = SqliteCacheMode.Default,
         Pooling = true,
+        ForeignKeys = true,
         DefaultTimeout = BusyTimeoutSeconds
     }.ToString();
 
@@ -44,17 +45,7 @@ public sealed class ManagerDatabase(string databasePath)
     public async Task<SqliteConnection> OpenAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var c = await OpenRawAsync(ct);
-        try
-        {
-            await ExecAsync(c, "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=10000;", ct);
-            return c;
-        }
-        catch
-        {
-            await c.DisposeAsync();
-            throw;
-        }
+        return await OpenRawAsync(ct);
     }
 
     private async Task<SqliteConnection> OpenRawAsync(CancellationToken ct)
@@ -171,6 +162,18 @@ public sealed class ManagerDatabase(string databasePath)
                 r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)));
         }
         return list;
+    }
+
+    public async Task<IReadOnlySet<string>> GetModSourcePathsAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var c = await OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT source_path FROM mods";
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct)) paths.Add(r.GetString(0));
+        return paths;
     }
 
     public async Task SetEnabledAndPriorityAsync(IReadOnlyDictionary<string,(bool enabled,int priority)> state, CancellationToken ct = default)
