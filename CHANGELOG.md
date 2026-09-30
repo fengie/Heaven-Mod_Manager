@@ -1,3 +1,11 @@
+# v8.8.26 — Agent Control terminal-registry garbage collection
+- Retire dead managed agents from the live registry once no process or active recovery owns them.
+- Purge linked failed federated records so **failed / RETRY EXHAUSTED** tombstones do not persist in dashboard counts/cards.
+- Preserve retry-pending, retry-waiting, stream-checking, and durable-incomplete records until recovery/reconciliation is complete.
+- Keep task state, events, failure logs, branch/worktree evidence, and successor context durable after registry retirement.
+- Add focused regressions for managed/federated retirement and process/recovery retention boundaries.
+- Advance Agent Control runtime/plugin identity to v0.6.5 and repo progress metadata to v8.8.26.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.
