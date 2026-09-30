@@ -878,3 +878,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-046 installed-runtime/restart proof; LR-049 producer-specific text encoding.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-051 — provider preflight and execution must share configuration resolution
+
+- **Rule ID:** LR-051
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Provider relays, service discovery, runtime configuration, health checks, job submission, result polling
+- **Rule:** Any documented default or fallback accepted by provider health/preflight must be resolved through the same authoritative function when real execution submits work and waits for results. Do not validate one path and then re-read only one environment variable at execution time.
+- **Trigger / evidence:** Heaven Bridge health could discover `~/HeavenBridgeRepo`, but submit/result-wait bypassed that resolver and threw when `AGENT_CONTROL_HEAVEN_RELAY_DIR` was absent, deterministically failing both observed main and manager workers with exit code 1.
+- **Rationale:** Divergent configuration semantics create false-green health followed by guaranteed runtime failure; retry/recovery layers then amplify the original configuration bug into misleading lifecycle noise.
+- **Enforcement:** Centralize provider path/config resolution, regression-test the documented-default/no-explicit-env execution path, and diagnose the first authoritative runtime error before tuning retry policy.
+- **Regression/evidence:** v8.8.27; `tools/agent-control/lib/heaven-bridge-provider.mjs`; `tools/agent-control/test/heaven-bridge-provider.test.mjs`; worker evidence `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6`.
+- **Related rules:** LR-039 deterministic failure classification; LR-046 installed-runtime/restart proof; v8.8.26 retry-exhausted registry retirement.
+- **Supersedes:** none
+- **Superseded by:** none
