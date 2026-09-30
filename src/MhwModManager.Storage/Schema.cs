@@ -139,5 +139,122 @@ CREATE TABLE IF NOT EXISTS mod_issue_suspects(
     PRIMARY KEY(mod_id,issue_kind)
 );
 CREATE INDEX IF NOT EXISTS ix_mod_issue_active ON mod_issue_suspects(active,confirmed DESC,score DESC,last_seen DESC);
+
+
+CREATE TABLE IF NOT EXISTS catalog_sources(
+    provider_id TEXT PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    source_kind TEXT NOT NULL,
+    documentation_url TEXT NOT NULL,
+    terms_url TEXT NOT NULL,
+    terms_reviewed_on TEXT NOT NULL,
+    review_interval_days INTEGER NOT NULL,
+    allows_catalog_discovery INTEGER NOT NULL,
+    allows_direct_download INTEGER NOT NULL,
+    allows_html_parsing INTEGER NOT NULL,
+    attribution_required INTEGER NOT NULL,
+    robots_url TEXT NULL,
+    robots_reviewed_on TEXT NULL,
+    attribution_text TEXT NULL,
+    disabled_reason TEXT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS catalog_items(
+    canonical_id TEXT PRIMARY KEY,
+    provider_id TEXT NOT NULL REFERENCES catalog_sources(provider_id) ON DELETE CASCADE,
+    provider_mod_id TEXT NOT NULL,
+    game_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    description TEXT NOT NULL,
+    author TEXT NOT NULL,
+    version TEXT NULL,
+    category TEXT NULL,
+    tags_json TEXT NOT NULL,
+    screenshots_json TEXT NOT NULL,
+    thumbnail TEXT NULL,
+    created_at TEXT NULL,
+    updated_at TEXT NULL,
+    downloads INTEGER NULL,
+    endorsements INTEGER NULL,
+    rating REAL NULL,
+    dependencies_json TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    fetched_at TEXT NOT NULL,
+    expires_at TEXT NULL,
+    etag TEXT NULL,
+    last_modified TEXT NULL,
+    source_fingerprint TEXT NULL,
+    UNIQUE(provider_id,provider_mod_id,game_id)
+);
+CREATE INDEX IF NOT EXISTS ix_catalog_items_provider_game ON catalog_items(provider_id,game_id);
+CREATE INDEX IF NOT EXISTS ix_catalog_items_updated ON catalog_items(updated_at DESC);
+CREATE TABLE IF NOT EXISTS catalog_files(
+    provider_id TEXT NOT NULL,
+    provider_mod_id TEXT NOT NULL,
+    provider_file_id TEXT NOT NULL,
+    canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    version TEXT NULL,
+    size_bytes INTEGER NULL,
+    description TEXT NULL,
+    uploaded_at TEXT NULL,
+    required INTEGER NOT NULL,
+    recommended INTEGER NOT NULL,
+    dependencies_json TEXT NOT NULL,
+    PRIMARY KEY(provider_id,provider_mod_id,provider_file_id)
+);
+CREATE INDEX IF NOT EXISTS ix_catalog_files_item ON catalog_files(canonical_id);
+CREATE TABLE IF NOT EXISTS catalog_provenance(
+    canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    provider_id TEXT NOT NULL REFERENCES catalog_sources(provider_id) ON DELETE CASCADE,
+    source_url TEXT NOT NULL,
+    fetched_at TEXT NOT NULL,
+    etag TEXT NULL,
+    last_modified TEXT NULL,
+    source_fingerprint TEXT NULL,
+    PRIMARY KEY(canonical_id,provider_id)
+);
+CREATE TABLE IF NOT EXISTS catalog_links(
+    left_canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    right_canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    evidence_kind TEXT NOT NULL,
+    evidence_value TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY(left_canonical_id,right_canonical_id,evidence_kind,evidence_value),
+    CHECK(left_canonical_id <> right_canonical_id)
+);
+CREATE TABLE IF NOT EXISTS catalog_sync_state(
+    provider_id TEXT NOT NULL REFERENCES catalog_sources(provider_id) ON DELETE CASCADE,
+    scope_key TEXT NOT NULL,
+    cursor TEXT NULL,
+    last_success_at TEXT NULL,
+    last_attempt_at TEXT NULL,
+    last_failure_kind TEXT NOT NULL DEFAULT 'None',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY(provider_id,scope_key)
+);
+CREATE TABLE IF NOT EXISTS catalog_rate_state(
+    provider_id TEXT NOT NULL REFERENCES catalog_sources(provider_id) ON DELETE CASCADE,
+    scope_key TEXT NOT NULL,
+    hourly_limit INTEGER NULL,
+    hourly_remaining INTEGER NULL,
+    daily_limit INTEGER NULL,
+    daily_remaining INTEGER NULL,
+    retry_after TEXT NULL,
+    observed_at TEXT NULL,
+    PRIMARY KEY(provider_id,scope_key)
+);
+CREATE VIRTUAL TABLE IF NOT EXISTS catalog_items_fts USING fts5(
+    canonical_id UNINDEXED,
+    name,
+    author,
+    summary,
+    tags,
+    category,
+    description
+);
 """;
 }
