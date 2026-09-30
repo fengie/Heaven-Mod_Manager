@@ -54,8 +54,8 @@
 
 # v8.8.3 current next steps ? archive failure-cleanup candidate
 
-1. Run `scripts/Verify-Release.ps1` on exact candidate `5688fe91c03b56b651a3e9d94d7111b974693ab9` plus current continuity inputs with the Windows marker restored for Remote Desktop Commander.
-2. Run `scripts/Build-Release.ps1`; record exact artifact/build identity and SHA-256.
+1. Run `scripts/release/Verify-Release.ps1` on exact candidate `5688fe91c03b56b651a3e9d94d7111b974693ab9` plus current continuity inputs with the Windows marker restored for Remote Desktop Commander.
+2. Run `scripts/build/Build-Release.ps1`; record exact artifact/build identity and SHA-256.
 3. Commit/push verification and continuity evidence, integrate through the repository workflow, then inspect the exact-main hosted Windows gate before calling v8.8.3 closed.
 4. Keep LR-008 whole-import staging/publication separate. After this lane closes, re-query live ownership; absent a new owner, the strongest queued P1 candidate is persisted game-profile ID path containment.
 5. Preserve the permanent continuity constitution and active Learned Rules and require the successor to propagate them recursively.

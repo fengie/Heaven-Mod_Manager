@@ -228,12 +228,12 @@ A completed user-facing version must not sit unreleased. **Release-ready means r
 The canonical source repository is private `fengie/mhw-mods`; the credential-free updater feed is public `fengie/mhw-mod-manager-release`.
 
 - Every successful updater release published from the private repository must be mirrored to the public release repository as part of the same release operation.
-- The canonical automation is `.github/workflows/windows-release-gate.yml`: publish the immutable private updater release with `scripts/Publish-UpdaterRelease.ps1`, then mirror it with `scripts/Publish-PublicUpdaterRelease.ps1`.
+- The canonical automation is `.github/workflows/windows-release-gate.yml`: publish the immutable private updater release with `scripts/release/Publish-UpdaterRelease.ps1`, then mirror it with `scripts/release/Publish-PublicUpdaterRelease.ps1`.
 - A release-owning agent must not report **SHIPPED**, **DONE**, or release-complete until it verifies that the latest private and public updater releases have the same `updater-main-<build>` tag, expected ZIP + `update-manifest.json` assets, and matching server SHA-256 digests for both assets.
 - The public release body/source provenance must identify the private source SHA/build. Public updater assets must remain downloadable without private-repository credentials.
 - If private publication succeeds but public mirroring fails or is unconfigured, the release is **PARTIAL/BLOCKED**, not complete. Repair/retry the public mirror before closing the release task; do not silently leave clients on an older public feed.
 - Never commit or print `MHW_PUBLIC_RELEASE_TOKEN` or other credential values. Only the configured secret reference belongs in workflow/repository text.
-- `scripts/Test-UpdaterReleasePolicy.ps1` must keep a regression assertion that the release workflow invokes both private publication and public mirroring in that order and wires the public-release secret.
+- `scripts/testing/Test-UpdaterReleasePolicy.ps1` must keep a regression assertion that the release workflow invokes both private publication and public mirroring in that order and wires the public-release secret.
 
 ## Mandatory `main` integration rule
 
@@ -338,7 +338,7 @@ Security-sensitive automation is fail-closed:
 - Keep `GITHUB_TOKEN` permissions explicit and least-privilege. New `contents: write` workflows require a documented mutation need and security review.
 - Privileged release tooling must be immutable and independently verified before execution; do not trust arbitrary preinstalled tools or moving latest downloads.
 - Do not suppress NuGet/dependency vulnerability auditing to obtain a green build.
-- Run `scripts/Test-CiSecurityPolicy.ps1` when changing workflow/security/release infrastructure; `scripts/Verify-Release.ps1` runs it as an authoritative preflight.
+- Run `scripts/testing/Test-CiSecurityPolicy.ps1` when changing workflow/security/release infrastructure; `scripts/release/Verify-Release.ps1` runs it as an authoritative preflight.
 - Heaven Bridge execution authentication should use HMAC in hardened deployments. Secret key material stays machine-local and never enters Git queue/result/state files.
 - Treat updater hashes as integrity checks, not a complete publisher-authenticity root. Preserve a path toward independently signed releases/metadata and key rotation/recovery.
 

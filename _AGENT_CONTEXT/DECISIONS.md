@@ -34,7 +34,7 @@ First-chance notifications occur for handled as well as unhandled managed throws
 
 ## 9. Continuity is mechanically gated
 
-The project now contains `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PROTOCOL.md`, `scripts/Test-AgentHandoff.ps1`, and a source-handoff packager. Future agents must preserve/update these. Verification should fail if the continuity payload disappears, because the user explicitly requires project knowledge to travel with every future source zip.
+The project now contains `_AGENT_CONTEXT/handoff-manifest.json`, `CONTINUITY_PROTOCOL.md`, `scripts/testing/Test-AgentHandoff.ps1`, and a source-handoff packager. Future agents must preserve/update these. Verification should fail if the continuity payload disappears, because the user explicitly requires project knowledge to travel with every future source zip.
 
 ## 10. Generated build output is outside source verification
 
