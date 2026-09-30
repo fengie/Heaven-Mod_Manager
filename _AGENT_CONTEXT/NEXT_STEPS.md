@@ -330,3 +330,22 @@ Successor requirement: keep LR-040/LR-041 and the bug precedents active, leave u
 - Capacity evidence is persisted and keeps the provider circuit closed, preventing same-provider no-work/tail-recovery churn.
 - Verify the exact integrated revision with the Agent Control PR gate; the next quota failure should produce one capacity-blocked notice and no `agent.no-work-requeued` event for that lineage.
 - Follow-up: surface the preserved capacity diagnostic and blocked-until time directly on the dashboard failure card.
+
+## 2026-09-30 deep-browser bug-audit handoff
+
+Completed on canonical `main`:
+- `04e706ba2a8b7e0de5ab0461af3702b9db854a33` — failed initial navigation now unregisters the session and closes the owned context/browser; failed new-tab navigation closes/unregisters the new tab and restores prior active selection; direct closed-tab lookup repairs stale identity.
+- PR #438 (`b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620`) — public `tabs()` pruning now uses the same authoritative cleanup helper, and display URL reconstruction preserves IPv6 authority brackets while stripping query/fragment data.
+- Canonical-tree re-read after merge confirmed implementation and regression-test invariants are still present.
+
+Verification truth:
+- Plugin Toolbox Gate run `36670586010` for merge commit `b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620` was still queued when this handoff was written. Earlier exact-head plugin runs were cancelled/superseded; none should be called a pass.
+- The worker-side targeted-test fallback could not execute because the remote-command channel had reached its monthly usage limit. Do not treat that limitation as a test failure, and do not retry that channel until its usage resets.
+
+Ordered next steps:
+1. Re-read Plugin Toolbox Gate run `36670586010` (or a completed-successful descendant plugin run containing the same tree) and record the result without upgrading queued/cancelled evidence to green.
+2. Audit other resource-owning create/open paths for registration-before-fallible-operation leaks and multi-index cleanup drift; fix only reproduced cases and add injected-failure coverage.
+3. Audit URL/status display helpers that reconstruct parsed authorities for IPv6/userinfo/port syntax while preserving redaction requirements.
+4. Preserve LR-043 and generic lesson 40; successors must continue logging new defect classes and prevention mechanisms.
+
+Successor requirement: carry this verification gap and the transactional-cleanup rule into the next audit; do not rely on private chat history.
