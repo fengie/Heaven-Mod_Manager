@@ -839,13 +839,13 @@ function isTerminalStatus(status) {
 function shouldExposeManagedAgentInFederation(agent) {
   if (!agent || typeof agent !== "object") return false;
   if (!isTerminalStatus(agent.status)) return true;
+  if (agent.remoteTerminationPending) return true;
   return new Set([
     "retry-pending",
     "retry-waiting",
     "retry-blocked",
     "stream-lost-checking-work",
     "work-detected-incomplete",
-    "provider-capacity",
     "registry-retirement-blocked"
   ]).has(String(agent.recoveryStatus || "").trim().toLowerCase());
 }
