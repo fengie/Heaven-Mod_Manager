@@ -78,3 +78,7 @@ Binding an operator/control service to loopback is necessary but not sufficient 
 
 A security gate that is continuously cancelled by normal repository activity is not an effective control. For high-churn branches, allow superseded pending runs to collapse, but do not cancel the in-progress canonical-branch security verification merely because a newer push arrived. At least one canonical security run must be able to finish, followed by verification of the newest pending state.
 
+## Security gates need completion continuity
+A security gate on canonical integration state is evidence, not disposable CI noise. Do not continuously supersede or externally cancel canonical-main security verification such that no security-relevant descendant ever completes successfully. Cancellation can reduce duplicate pull-request work, but it must not erase the only executable proof that the final security policy and protected source parse and run together.
+
+Security-policy code is itself a protected artifact. Parse or compile the exact policy artifact independently before executing it, so corruption of the policy cannot disable the only check that would have detected the corruption.
