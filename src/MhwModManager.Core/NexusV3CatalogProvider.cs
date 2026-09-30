@@ -26,7 +26,6 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
     public string DisplayName => "Nexus Mods";
 
     public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Search |
         CatalogProviderCapabilities.Browse |
         CatalogProviderCapabilities.Metadata |
         CatalogProviderCapabilities.Images |
@@ -51,23 +50,18 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"game={request.Game.Id}; query={request.Query ?? "<empty>"}");
 
+        if (!string.IsNullOrWhiteSpace(request.Query))
+            throw new NotSupportedException("Nexus API v3 full-catalog search is not implemented yet.");
+
+        if (request.Mode != CatalogBrowseMode.Trending)
+            throw new NotSupportedException($"Nexus API v3 browse mode '{request.Mode}' is not implemented yet.");
+
         var domain = RequireGameDomain(request.Game);
         try
         {
             using var response = await transport.GetTrendingModsAsync(domain, ct: ct).ConfigureAwait(false);
             var mods = ParseTrending(response, request.Game);
-            var query = request.Query?.Trim();
-
-            IEnumerable<CatalogMod> filtered = mods;
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                filtered = filtered.Where(mod =>
-                    mod.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    mod.Author.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    mod.Summary.Contains(query, StringComparison.OrdinalIgnoreCase));
-            }
-
-            var result = filtered
+            var result = mods
                 .Take(Math.Clamp(request.Limit, 1, 500))
                 .ToArray();
 
@@ -444,7 +438,8 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!Uri.TryCreate(sourceUrl, UriKind.Absolute, out var uri) ||
             !uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-            !uri.Host.EndsWith("nexusmods.com", StringComparison.OrdinalIgnoreCase))
+            !(uri.Host.Equals("nexusmods.com", StringComparison.OrdinalIgnoreCase) ||
+              uri.Host.EndsWith(".nexusmods.com", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidDataException("Nexus trending mod_page_url is not a valid Nexus HTTPS URL.");
         }
