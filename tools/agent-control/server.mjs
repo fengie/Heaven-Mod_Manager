@@ -100,6 +100,43 @@ const LEASE_TTL_MS = Number(process.env.AGENT_CONTROL_LEASE_TTL_MS || 120000);
 const STALE_PROGRESS_MS = Number(process.env.AGENT_CONTROL_STALE_PROGRESS_MS || 900000);
 const HEAVEN_BRIDGE_RUNNER = path.join(HERE, "lib", "heaven-bridge-runner.mjs");
 const SESSION_ID = randomUUID();
+
+function readProcessStartVersion(file, transform = value => value.trim()) {
+  try {
+    return transform(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+const AGENT_CONTROL_VERSION = readProcessStartVersion(path.join(HERE, "package.json"), value => {
+  try { return String(JSON.parse(value)?.version || "").trim() || null; } catch { return null; }
+});
+const PRODUCT_VERSION = readProcessStartVersion(path.join(REPO, "VERSION.txt"));
+const EXPECTED_AGENT_CONTROL_VERSION = String(process.env.AGENT_CONTROL_EXPECTED_VERSION || "").trim() || null;
+const EXPECTED_PRODUCT_VERSION = String(process.env.AGENT_CONTROL_EXPECTED_PRODUCT_VERSION || "").trim() || null;
+if (EXPECTED_AGENT_CONTROL_VERSION && AGENT_CONTROL_VERSION !== EXPECTED_AGENT_CONTROL_VERSION) {
+  throw new Error(`Agent Control package identity mismatch: launcher expected ${EXPECTED_AGENT_CONTROL_VERSION}, runtime bytes report ${AGENT_CONTROL_VERSION || "unknown"}.`);
+}
+if (EXPECTED_PRODUCT_VERSION && PRODUCT_VERSION !== EXPECTED_PRODUCT_VERSION) {
+  throw new Error(`Product version identity mismatch: launcher expected ${EXPECTED_PRODUCT_VERSION}, runtime bytes report ${PRODUCT_VERSION || "unknown"}.`);
+}
+
+const PROCESS_SOURCE_IDENTITY = Object.freeze({
+  sourceBranch: String(process.env.AGENT_CONTROL_SOURCE_BRANCH || "").trim() || null,
+  sourceSha: String(process.env.AGENT_CONTROL_SOURCE_SHA || "").trim() || null,
+  remoteMainSha: String(process.env.AGENT_CONTROL_SOURCE_REMOTE_SHA || "").trim() || null,
+  sourceDisposition: String(process.env.AGENT_CONTROL_SOURCE_DISPOSITION || "").trim() || null,
+  agentControlVersion: AGENT_CONTROL_VERSION,
+  productVersion: PRODUCT_VERSION,
+  sourceVerified: (
+    ["verified-current", "verified-fast-forwarded"].includes(String(process.env.AGENT_CONTROL_SOURCE_DISPOSITION || "").trim())
+    && String(process.env.AGENT_CONTROL_SOURCE_BRANCH || "").trim() === "main"
+    && /^[0-9a-f]{40}$/i.test(String(process.env.AGENT_CONTROL_SOURCE_SHA || "").trim())
+    && String(process.env.AGENT_CONTROL_SOURCE_SHA || "").trim() === String(process.env.AGENT_CONTROL_SOURCE_REMOTE_SHA || "").trim()
+  )
+});
+
 const children = new Map();
 const stopOperations = new Map();
 let degradedReason = null;
@@ -3716,6 +3753,7 @@ function buildHealthSnapshot(state) {
       codex: codexStatus(),
       stateVersion: STATE_VERSION,
       sessionId: SESSION_ID,
+      ...PROCESS_SOURCE_IDENTITY,
       health: state.health
     },
     telemetry: telemetry(state, [], federation),
@@ -3766,6 +3804,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
       codex: codexStatus(),
       stateVersion: STATE_VERSION,
       sessionId: SESSION_ID,
+      ...PROCESS_SOURCE_IDENTITY,
       health: state.health
     },
     currentMission,
@@ -5803,7 +5842,8 @@ function writeControllerProcessIdentity() {
     startedAt: isoNow(),
     serverPath: fileURLToPath(import.meta.url),
     host: os.hostname(),
-    port: PORT
+    port: PORT,
+    ...PROCESS_SOURCE_IDENTITY
   }, null, 2), "utf8");
 }
 
