@@ -103,8 +103,8 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
         {
             CatalogBrowseMode.Latest => "-date_live",
             CatalogBrowseMode.RecentlyUpdated => "-date_updated",
-            CatalogBrowseMode.Popular => "-downloads",
-            CatalogBrowseMode.Trending => "-downloads",
+            CatalogBrowseMode.Popular => "-downloads_total",
+            CatalogBrowseMode.Trending => "-downloads_total",
             _ => "-date_updated"
         };
 
