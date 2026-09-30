@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.51",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.50 governance integration candidate PR #528 head 31307b621f3d58855389644c8c92c98022c47639",
+  "immediateParentRevision": "v8.8.50 governance integration candidate PR #528 latest head 1ea4b5d93d620f90c7e3d0a89d2d245bb2fd0433",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",

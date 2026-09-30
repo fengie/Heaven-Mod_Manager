@@ -6,12 +6,10 @@
 - Add regression coverage for default-collapsed structure, bounded expanded panels, responsive layout, and inspector auto-open behavior.
 - Advance product version to v8.8.51 and Agent Control/plugin identity to v0.6.24.
 
-# v8.8.50 — 2026-09-30
-
-- Consolidated agent training/governance into a compact mandatory core plus task-relevant indexed context while retaining the full continuity constitution at startup.
-- Restored explicit pre-response/dispatch training, authorized fallback, bug-prevention closure, recursive successor propagation, and manager-specific safeguards.
-- Hardened handoff validation with strict raw UTF-8 byte budgets and adversarial negative fixtures; synchronized Agent Control prompt/bootstrap contracts and tests.
-- Reconciled and preserved superseded PR #525 ancestry without overwriting v8.8.49 UI fixes from canonical main.
+# v8.8.50 — governance integration and enforcement repair
+- Reconcile superseded PR #525 compact operating standard, role deltas and current-state consolidation onto v8.8.49 main while preserving its repaired ancestry.
+- Preserve pre-response/global training and full constitution startup obligations; repair recursive successor validation and raw UTF-8 budget enforcement.
+- v8.8.49 UI exact-head gates remain historical source proof; v8.8.50 requires fresh exact-head verification. v8.8.48 source/build357 release closure is retained separately.
 
 # v8.8.49 — 2026-09-30
 

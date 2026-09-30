@@ -9,16 +9,16 @@
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.51-agent-manager-compact-overview-candidate",
   "nextMilestone": "Integrate the compact Agent Manager overview after the v8.8.50 governance baseline is accepted.",
-  "nextRequiredAction": "Verify the stacked v8.8.51 Agent Manager source against v8.8.50 governance, then retarget to fresh main after PR #528 merges, rerun exact-head gates, merge, and perform a live heaven2 browser smoke.",
-  "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-  "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-  "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.51 is presentation-only Agent Manager work stacked on v8.8.50 governance: high-volume sections default closed in a responsive overview, expanded content is internally bounded, notification severity is summarized, and Inspector auto-opens on selection. Existing control-plane lifecycle/action semantics are unchanged; exact-head Agent Control/security/workflow gates and live heaven2 browser smoke are required.",
+  "nextRequiredAction": "Verify the stacked v8.8.51 Agent Manager source against latest v8.8.50 governance, then retarget to fresh main after PR #528 merges, rerun exact-head gates, merge, and perform a live heaven2 browser smoke.",
+  "verificationAppliesToCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
+  "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
+  "lastClosedVerificationRun": "heaven-github-actions-36783706158",
+  "verificationScopeNote": "v8.8.51 is presentation-only Agent Manager work stacked on latest v8.8.50 governance: high-volume sections default closed in a responsive overview, expanded content is internally bounded, notification severity is summarized, and Inspector auto-opens on selection. Existing control-plane lifecycle/action semantics are unchanged; exact-head Agent Control/security/workflow gates and live heaven2 browser smoke are required.",
   "lastClosedVerification": {
-    "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-    "updaterBuild": 356,
-    "updaterReleaseTag": "updater-main-356",
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.47-existing-bug-integration.md"
+    "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
+    "updaterBuild": 357,
+    "updaterReleaseTag": "updater-main-357",
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
   "candidateSourceCommit": null,
   "agentManagerPriority": {
