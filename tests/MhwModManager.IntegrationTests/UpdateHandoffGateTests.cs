@@ -44,4 +44,41 @@ public sealed class UpdateHandoffGateTests
         Assert.True(gate.TryBeginForeground());
         gate.EndForeground();
     }
+
+    [Fact]
+    public void Safe_handoff_invalidates_prepared_request_when_staged_update_identity_changes()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Updater.cs"));
+        var start = source.IndexOf(
+            "private async Task ApplyStagedProgramUpdateWhenSafeAsync",
+            StringComparison.Ordinal);
+        var end = source.IndexOf("private bool HasActiveGameProcess()", start, StringComparison.Ordinal);
+
+        Assert.True(start >= 0 && end > start);
+        var method = source[start..end];
+        Assert.Contains("StagedUpdate? preparedFor = null;", method);
+        Assert.Contains("if (!ReferenceEquals(preparedFor, staged))", method);
+        Assert.Contains("preparedFor = staged;", method);
+        Assert.Contains("if (!ReferenceEquals(stagedProgramUpdate, staged))", method);
+        Assert.DoesNotContain("PrepareHandoffAsync(\n                    stagedProgramUpdate", method);
+
+        var launch = method.IndexOf("LaunchHelper(prepared)", StringComparison.Ordinal);
+        Assert.True(launch > 0);
+        var beforeLaunch = method[..launch];
+        Assert.Contains("!ReferenceEquals(stagedProgramUpdate, staged)", beforeLaunch);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "MhwModManager.sln"))) return current.FullName;
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository root from test base directory.");
+    }
 }
