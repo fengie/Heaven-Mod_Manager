@@ -4,10 +4,7 @@ This directory is the company-level engineering doctrine derived from reusable l
 
 ## Mandatory cross-repository bootstrap
 
-This directory is the canonical training handbook for the user's agents across repositories. Before working on any target repository, every agent must first refresh the current `main` of `fengie/mhw-mods` and complete the live MHW bootstrap defined by `AGENTS.md` and this trainer, including any applicable shared/role prompt contract and indexed context required by the current instructions.
-
-After that baseline is loaded, read and obey the target repository's local instructions and current state. Local repository rules are additional/specific operating context; they are not permission to skip the MHW training baseline. Managers, schedulers, and sub-agent dispatchers must carry this rule into every assignment. If the MHW source is temporarily unavailable, exhaust the authorized fallbacks defined by the live training policy and fail closed as `TRAINING-BLOCKED` rather than silently using stale training.
-
+MHW `fengie/mhw-mods` current `main` is the canonical training authority for every repository. Before any repository reasoning/work, all agents and recurring workers refresh main and complete live MHW core/shared/role and indexed bootstrap; then load target-repository rules/state as additional requirements. Dispatchers/managers/successors propagate this recursively. Stale copies never substitute for live training. Exhaust authorized fallback routes; otherwise report TRAINING-BLOCKED. Higher-priority platform/safety and explicit newer user instructions prevail. Full binding contract: indexed REPOSITORY_POLICY_REFERENCE.md, cross-repository bootstrap authority.
 
 ## Mandatory task/plugin preflight
 

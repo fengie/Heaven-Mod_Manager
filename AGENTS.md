@@ -2,15 +2,9 @@
 
 This repository is the canonical working state for MHW Manual Mod Manager: fengie/mhw-mods, branch main.
 
-## Global cross-repository training authority
+## Mandatory cross-repository bootstrap
 
-This repository is the user's canonical cross-repository agent training source, not only the operating guide for MHW work.
-
-Before any agent, sub-agent, manager, reviewer, recovery worker, scheduled worker, or automation performs repository-specific reasoning or work on **any repository**, it must first refresh the current `main` of `fengie/mhw-mods` and complete the current MHW bootstrap/training gate. At minimum, load the current `AGENTS.md`, `_AGENT_TRAINING/README.md`, and the applicable shared/role prompt rules; use the indexed/bootstrap tooling required by the live MHW instructions rather than relying on stale copies.
-
-Only after that global bootstrap may the agent load the target repository's own instructions, state, architecture, and task context. Target-repository rules add repository-specific requirements; they do not silently replace or skip the MHW training baseline. Higher-priority platform/safety instructions and an explicit newer user instruction still take precedence.
-
-Dispatchers and managers must propagate this requirement into every worker assignment, including work whose target repository is not `fengie/mhw-mods`. If the MHW training source cannot be reached, use the authorized fallback routes required by the live training policy; if those are exhausted, report `TRAINING-BLOCKED` instead of proceeding untrained.
+MHW `fengie/mhw-mods` current `main` is the canonical training authority for every repository. Before any repository reasoning/work, all agents and recurring workers refresh main and complete live MHW core/shared/role and indexed bootstrap; then load target-repository rules/state as additional requirements. Dispatchers/managers/successors propagate this recursively. Stale copies never substitute for live training. Exhaust authorized fallback routes; otherwise report TRAINING-BLOCKED. Higher-priority platform/safety and explicit newer user instructions prevail. Full binding contract: indexed REPOSITORY_POLICY_REFERENCE.md, cross-repository bootstrap authority.
 
 ## Mandatory pre-response repository training gate
 

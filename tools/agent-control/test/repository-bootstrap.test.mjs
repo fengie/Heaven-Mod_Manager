@@ -29,6 +29,16 @@ function fixture(t) {
 }
 const build = (root, options = {}) => buildRepositoryBootstrap({ root, now: NOW, git, ...options });
 
+test("canonical P0 completion contract remains retrievable through the bounded context index", () => {
+  const revision = JSON.parse(fs.readFileSync(path.join(REPO, "_AGENT_CONTEXT/CURRENT_REVISION.json"), "utf8"));
+  const document = revision.agentManagerPriority.completionContract.split("#")[0];
+  const row = repositoryManifest(REPO, "manager").context.find(item => item.path === document);
+  assert.ok(row, "full P0 acceptance contract must remain indexed");
+  const result = readRepositoryContext({ root: REPO, document, expectedSha256: row.sha256, startLine: 1, maxLines: 120 });
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= MAX_CONTEXT_BYTES);
+  assert.ok(fs.readFileSync(path.join(REPO, document), "utf8").includes("completionRequires"));
+});
+
 test("bootstrap separates exact source, historical verification and remote freshness", async t => {
   const root = fixture(t), packet = await build(root);
   assert.equal(packet.repository.head, HEAD);

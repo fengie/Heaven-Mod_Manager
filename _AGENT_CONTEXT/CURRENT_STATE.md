@@ -1,8 +1,20 @@
-# v8.8.45 maintenance consolidation — current candidate
+# v8.8.47 active integration
 
-User scope: no new features; consolidate existing work, fix reproduced bugs, prepare juniors. Read HANDOFFS/junior-maintenance-2026-09-30.md for verified baseline, preserved branch inventory, four bounded lanes, acceptance and escalation. No junior is dispatched/owns a lane yet. Base 681a433b, branch codex/junior-maintenance-handoff; Agent Control remains 0.6.21 and runtime behavior unchanged.
+Current candidate repairs failed v8.8.46 main4ba4832d: manager core budget and handoff45/version46 mismatch. Exact federation identity fix recovered from8f78d21d; regression first failed on wrong managed selection, then passes after removal. Exact-head CI/release/runtime remains pending. Preserve global cross-repository training rules. v8.8.45 closure below is historical exact proof, not current candidate verification.
 
-Next: verify handoff/budgets, exact PR gates and integration; immediately publish/parity/update/rollback this patch, then supersede candidate status. v8.8.44/source 45529dfa/build 353 proof is historical and cannot prove the new release. Actual operator last proven 352; authenticated P0 end-to-end work remains open. Preserve all unique/external work and do not broaden scope. Improvement opportunities and exact junior return contract are in the handoff. Preserve and recursively propagate the constitution to successors and the agent after them. Do not break the chain.
+Next: verify and merge this owned repair; inspect PR522 with actual loaded-window/VM proof (two styled probes did not reproduce collapse); keep broader issues open until accepted. Preserve external branch heads; no bulk deletion or feature expansion. Improvements: require real manager/bootstrap and handoff tests before governance integration; exercise linked records rather than stubbing final selection. Recursively propagate continuity.
+
+---
+# v8.8.45 closure — authoritative maintenance continuation
+
+PR521/source bbbe241a802fdea25bb4c74bbed1427aec6fb265 is integrated and immutable private/public build354 published with equal digests/provenance. Exact main controller273/273, Windows26/26, security and disposable update/rollback36778906116 pass. See EVIDENCE/v8.8.45-maintenance-consolidation.md and HANDOFFS/junior-maintenance-2026-09-30.md. Candidate wording below is historical. No runtime feature/plugin change; controller0.6.21 remains source45529dfa.
+
+1. User priority: finish existing issues, PRs and branch reconciliation before other work. No new features. Refresh main/PRs/leases and current version before claiming one boundary.
+2. Reconcile PR522 (Mods width) and existing exact federation inspector fix8f78d21d plus test branchb97fbc9f. Preserve original heads/external owners. Strengthen executable linked-record regression and actual UI proof; do not mistake regex checks or a generic WPF probe for runtime acceptance. Close #461 only when its full contract is proven.
+3. Preserve registry projection b0a8c5be pending a reproduced acceptance defect; inspector-notifications fc91c502 is behaviorally superseded by stronger main, not byte-equivalent. Read the current branch review packet before deleting/merging; no blind transplant of stale version/server metadata.
+4. Real installed latest proof remains352; normal updater/next launch evidence is separate from disposable build354 CI. Crypto/provider/signing issues411/350/354 remain open with their real external/trust requirements. Cached legacy plugin routing drift is deferred behind this user priority; canonical Agent Control skill is the selected route, no cache edits or account publication performed.
+
+Current chat owns evidence closure/integration; temporary read-only reviewers have no mutable lane. Ordered junior acceptance/escalation and improvements are in the handoff. Preserve and recursively propagate the constitution to successors and the agent after them. Do not break the chain.
 
 ---
 # v8.8.44 closure — authoritative continuation, 2026-09-30

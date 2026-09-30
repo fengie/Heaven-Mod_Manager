@@ -1,3 +1,10 @@
+# v8.8.47 — existing bug integration
+- Recover exact federation inspector fix from branch8f78d21d without stale server/version history. Linked managed identity remains lineage.
+- Add executable notification/direct-inspection regression with arbitrary IDs and retired records; existing card routes share the function.
+- Repair v8.8.46 handoff version mismatch and over-budget manager bootstrap; preserve all P0 criteria in required indexed history rather than raising the budget.
+- Persist v8.8.45 exact publication/rollback closure and branch/UI review limits.
+- Agent Control/runtime/plugin version0.6.22; no new features.
+
 # v8.8.46 — cross-repository agent training bootstrap
 - Make `fengie/mhw-mods` the canonical global training/bootstrap source before any agent works on any repository.
 - Require current MHW training first, then target-repository-specific instructions/state; stale copied training may not silently substitute for the live baseline.
