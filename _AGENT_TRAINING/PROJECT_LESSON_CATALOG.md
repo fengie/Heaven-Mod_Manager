@@ -61,3 +61,7 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 ## Capability declarations are executable boundaries
 
 When integrating an external provider, treat declared capabilities and compliance metadata as executable boundaries. Resolver/output code must not produce a stronger action than the provider contract permits. In particular, a browser-assisted flow must point to a provider-controlled user-facing page, not a direct asset endpoint discovered in metadata. Pair the declaration with an exact-target regression so policy drift and implementation drift fail together.
+
+34. **Cancelled CI is not integration evidence.** A branch may merge only after a successful verification run for the exact head being integrated. If a replacement/reconciled branch supersedes a failed branch, explicitly carry forward every known defect fix and prevention rule; a shorter history is not proof of equivalent correctness.
+35. **Pinned test-framework APIs are compile-time contracts.** Do not assume assertion return values from older framework versions; under xUnit v3, retrieve the value separately when the assertion returns void, then assert and continue with null-safe access. Pair this with the repository's strict analyzer profile before handoff.
+36. **Provider public members must satisfy entry-trace coverage.** Where the repository verifier fingerprints public call coverage, use explicit getter blocks and make `MasterDebugLog.BeginMethod()` the first executable statement rather than expression-bodied members.
