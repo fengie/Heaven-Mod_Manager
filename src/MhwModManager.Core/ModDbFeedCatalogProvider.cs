@@ -330,10 +330,30 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
         if (!source.FeedUri.IsAbsoluteUri
             || !string.Equals(source.FeedUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
             || !string.Equals(source.FeedUri.Host, "rss.moddb.com", StringComparison.OrdinalIgnoreCase)
-            || !string.IsNullOrEmpty(source.FeedUri.UserInfo))
+            || !source.FeedUri.IsDefaultPort
+            || !string.IsNullOrEmpty(source.FeedUri.UserInfo)
+            || !string.IsNullOrEmpty(source.FeedUri.Query)
+            || !string.IsNullOrEmpty(source.FeedUri.Fragment))
         {
             throw new ArgumentException(
-                "Mod DB feed sources must use credential-free HTTPS URLs on rss.moddb.com.",
+                "Mod DB feed sources must use credential-free HTTPS URLs on rss.moddb.com without custom ports, query strings, or fragments.",
+                nameof(source));
+        }
+
+        var segments = source.FeedUri.AbsolutePath
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var isGameScopedFeed = segments.Length == 5
+            && string.Equals(segments[0], "games", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(segments[1])
+            && (string.Equals(segments[2], "downloads", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(segments[2], "addons", StringComparison.OrdinalIgnoreCase))
+            && string.Equals(segments[3], "feed", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(segments[4], "rss.xml", StringComparison.OrdinalIgnoreCase);
+
+        if (!isGameScopedFeed)
+        {
+            throw new ArgumentException(
+                "Mod DB game catalog sources must use a game-scoped /games/{slug}/downloads|addons/feed/rss.xml feed. Site-wide and mod-scoped feeds cannot be assigned to a game.",
                 nameof(source));
         }
 
