@@ -234,6 +234,20 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             verified = worker.verify_auth(job)
         self.assertEqual(verified["mode"], "private-repo-acl-explicit-insecure")
 
+    def test_repo_acl_marker_persists_explicit_private_relay_mode(self):
+        job = self.make_job("health", job_id="repo-acl-marker")
+        with tempfile.TemporaryDirectory() as td:
+            state = Path(td)
+            marker = state / "auth" / worker.ALLOW_REPO_ACL_ONLY_MARKER
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            marker.write_text("enabled\n", encoding="utf-8")
+            with unittest.mock.patch.object(worker, "STATE", state):
+                with unittest.mock.patch.dict("os.environ", {}, clear=True):
+                    self.assertTrue(worker.repo_acl_only_enabled())
+                    self.assertEqual(worker.auth_mode(), "private-repo-acl-explicit-insecure")
+                    verified = worker.verify_auth(job)
+                    self.assertEqual(verified["mode"], "private-repo-acl-explicit-insecure")
+
     def test_hmac_key_rotation_accepts_previous_key_then_revokes_it(self):
         job = self.make_job("health", job_id="rotation-hmac")
         current = "current-0123456789abcdef-current-key"
