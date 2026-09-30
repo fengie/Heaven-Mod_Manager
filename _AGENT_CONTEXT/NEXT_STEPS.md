@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.26 terminal registry retirement — NEXT
+
+1. Run `npm run check` and `npm test` from `tools/agent-control` on the exact v8.8.26 candidate.
+2. On heaven2, restart/refresh Agent Control and prove any persisted clean **failed · RETRY EXHAUSTED** entries disappear from Managed agents and the federated registry without creating new retries.
+3. Force one bounded no-work exhaustion in an isolated test/state fixture and prove task/event/failure diagnostics remain available while the dead live card and its notification action are gone.
+4. Prove a failed worker with substantive durable work (dirty worktree or commit/PR evidence) is **not** retired and remains recoverable.
+5. Preserve the deterministic-failure ordering: authoritative runtime outcome → durable-work evidence → transport/output heuristics → bounded recovery → terminal registry retirement.
+6. Continue the active Agent Manager P0 completion gates from current `main`; do not reopen retired task branches.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.25 candidate.
