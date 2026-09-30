@@ -1,4 +1,10 @@
-# v8.8.32 Universal Mod Manager
+# v8.8.33 Universal Mod Manager
+
+## v8.8.33 — Agent Control lightweight health
+
+Controller liveness no longer depends on full dashboard/repository work. `GET /api/status` now reads persisted local control state and returns a lightweight health snapshot without repository scans, branch-divergence work, or Heaven Bridge synchronization, so the existing three-second startup/watchdog probe cannot be delayed by slow Git or relay inspection.
+
+Full dashboard snapshots also reuse one Heaven Bridge assessment across worker and federation views instead of inspecting the relay twice. Dispatch-time trust and bridge authorization remain unchanged and continue to revalidate on real execution. Regression coverage pins the lightweight status contract, shared bridge assessment, and startup/watchdog probe path. Agent Control advances to **v0.6.11**.
 
 ## v8.8.32 — Agent Control retirement identity fail-closed closure
 
