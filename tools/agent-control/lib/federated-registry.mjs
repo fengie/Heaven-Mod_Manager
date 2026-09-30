@@ -795,25 +795,42 @@ export function materializeAgent(agent, {
 export function federationSnapshot(federation, { now = Date.now() } = {}) {
   const staleAfterMs = Number(federation?.stale_after_ms) || DEFAULT_STALE_AFTER_MS;
   const disconnectedAfterMs = Number(federation?.disconnected_after_ms) || DEFAULT_DISCONNECTED_AFTER_MS;
-  const agents = (federation?.agents || []).map(agent => materializeAgent(agent, {
+  const materializedAgents = (federation?.agents || []).map(agent => materializeAgent(agent, {
     now,
     staleAfterMs,
     disconnectedAfterMs
   }));
+  const attentionRecoveryStates = new Set([
+    "retry-pending",
+    "retry-waiting",
+    "retry-blocked",
+    "stream-lost-checking-work",
+    "work-detected-incomplete",
+    "work-unverified"
+  ]);
+  const attentionAgents = materializedAgents.filter(agent =>
+    !agent.live && attentionRecoveryStates.has(String(agent.recovery_status || "").trim().toLowerCase())
+  );
+  const attentionIds = new Set(attentionAgents.map(agent => agent.agent_id));
+  const agents = materializedAgents.filter(agent => agent.live);
+  const historyAgents = materializedAgents.filter(agent =>
+    !agent.live && !attentionIds.has(agent.agent_id)
+  );
 
   const counts = {
-    live: agents.filter(agent => agent.live).length,
-    active: agents.filter(agent => agent.live && ["working", "tool_wait", "blocked"].includes(agent.effective_state)).length,
-    working: agents.filter(agent => agent.live && agent.effective_state === "working").length,
-    tool_wait: agents.filter(agent => agent.live && agent.effective_state === "tool_wait").length,
-    blocked: agents.filter(agent => agent.live && agent.effective_state === "blocked").length,
-    idle: agents.filter(agent => agent.live && agent.effective_state === "idle").length,
-    stale: agents.filter(agent => agent.freshness === "stale").length,
-    disconnected: agents.filter(agent => agent.freshness === "disconnected").length,
-    done: agents.filter(agent => agent.effective_state === "done").length,
-    failed: agents.filter(agent => agent.effective_state === "failed").length,
-    historical: agents.filter(agent => agent.historical).length,
-    total: agents.filter(agent => !agent.historical).length
+    live: agents.length,
+    active: agents.filter(agent => ["working", "tool_wait", "blocked"].includes(agent.effective_state)).length,
+    working: agents.filter(agent => agent.effective_state === "working").length,
+    tool_wait: agents.filter(agent => agent.effective_state === "tool_wait").length,
+    blocked: agents.filter(agent => agent.effective_state === "blocked").length,
+    idle: agents.filter(agent => agent.effective_state === "idle").length,
+    stale: materializedAgents.filter(agent => agent.freshness === "stale").length,
+    disconnected: materializedAgents.filter(agent => agent.freshness === "disconnected").length,
+    done: materializedAgents.filter(agent => agent.effective_state === "done").length,
+    failed: materializedAgents.filter(agent => agent.effective_state === "failed").length,
+    attention: attentionAgents.length,
+    historical: historyAgents.length,
+    total: agents.length
   };
 
   return {
@@ -822,6 +839,8 @@ export function federationSnapshot(federation, { now = Date.now() } = {}) {
     disconnected_after_ms: disconnectedAfterMs,
     counts,
     providers: (federation?.providers || []).map(provider => ({ ...provider })),
-    agents
+    agents,
+    attention_agents: attentionAgents,
+    history_agents: historyAgents
   };
 }
