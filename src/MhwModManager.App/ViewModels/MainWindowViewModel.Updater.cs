@@ -209,45 +209,70 @@ public sealed partial class MainWindowViewModel
                     await DelayForSafeUpdateRetryAsync(ct);
                     continue;
                 }
-                if (!programUpdateHandoffGate.TryArmHandoff())
-                {
-                    ProgramUpdateStatus =
-                        $"Verified update build {staged.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
-                    await DelayForSafeUpdateRetryAsync(ct);
-                    continue;
-                }
 
-                var keepHandoffArmed = false;
+                // Update checks use programUpdateGate while replacing stagedProgramUpdate.
+                // Hold the same gate across the final identity check and synchronous helper
+                // launch so a newer staged candidate cannot slip into that boundary.
+                await programUpdateGate.WaitAsync(ct);
                 try
                 {
+                    if (!IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                    {
+                        prepared = null;
+                        preparedFor = null;
+                        continue;
+                    }
                     if (CriticalOperation
                         || BusyVisibility == Visibility.Visible
-                        || HasActiveGameProcess()
-                        || !IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                        || HasActiveGameProcess())
                         continue;
 
-                    using var helper = s.Updater.LaunchHelper(prepared);
-                    keepHandoffArmed = true;
-                    ProgramUpdateStatus =
-                        $"Installing verified update build {staged.Manifest.BuildNumber}; restarting…";
-                    s.Log.Information(
-                        "Program updater helper launched for build {Build}; shutting down current PID {Pid}.",
-                        staged.Manifest.BuildNumber,
-                        Environment.ProcessId);
-                    Application.Current.Shutdown();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    ProgramUpdateStatus =
-                        $"Update build {staged.Manifest.BuildNumber} remains staged because the updater helper could not start ({ex.GetType().Name}).";
-                    s.Log.Warning(ex,"Program updater helper launch failed; current application remains active.");
-                    return;
+                    if (!programUpdateHandoffGate.TryArmHandoff())
+                    {
+                        ProgramUpdateStatus =
+                            $"Verified update build {staged.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
+                        continue;
+                    }
+
+                    var keepHandoffArmed = false;
+                    try
+                    {
+                        // No RunBusy operation can begin after the handoff gate is armed,
+                        // and no update check can replace stagedProgramUpdate while
+                        // programUpdateGate is held. Do not yield before helper launch.
+                        if (CriticalOperation
+                            || BusyVisibility == Visibility.Visible
+                            || HasActiveGameProcess()
+                            || !IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                            continue;
+
+                        using var helper = s.Updater.LaunchHelper(prepared);
+                        keepHandoffArmed = true;
+                        ProgramUpdateStatus =
+                            $"Installing verified update build {staged.Manifest.BuildNumber}; restarting…";
+                        s.Log.Information(
+                            "Program updater helper launched for build {Build}; shutting down current PID {Pid}.",
+                            staged.Manifest.BuildNumber,
+                            Environment.ProcessId);
+                        Application.Current.Shutdown();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        ProgramUpdateStatus =
+                            $"Update build {staged.Manifest.BuildNumber} remains staged because the updater helper could not start ({ex.GetType().Name}).";
+                        s.Log.Warning(ex,"Program updater helper launch failed; current application remains active.");
+                        return;
+                    }
+                    finally
+                    {
+                        if (!keepHandoffArmed)
+                            programUpdateHandoffGate.DisarmHandoff();
+                    }
                 }
                 finally
                 {
-                    if (!keepHandoffArmed)
-                        programUpdateHandoffGate.DisarmHandoff();
+                    programUpdateGate.Release();
                 }
             }
         }
