@@ -13,6 +13,19 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..");
 const T0 = Date.parse("2026-09-29T09:00:00.000Z");
 
+function extractInlineDeclaration(source, signature) {
+  const start = source.indexOf(signature);
+  assert.notEqual(start, -1, `inline function must exist: ${signature}`);
+  const openingBrace = source.indexOf("{", start);
+  assert.notEqual(openingBrace, -1, `inline function must have a body: ${signature}`);
+  let depth = 0;
+  for (let index = openingBrace; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    else if (source[index] === "}" && --depth === 0) return source.slice(start, index + 1);
+  }
+  assert.fail(`inline function body is unterminated: ${signature}`);
+}
+
 test("federation snapshot separates live lifecycle and freshness counts", () => {
   const federation = defaultFederationState();
   const observe = (source, state, heartbeatOffset = 0) => reconcileObservation(federation, {
@@ -181,6 +194,76 @@ test("dashboard agent cards are inspectable without hijacking nested controls", 
   assert.equal((html.match(/bindManagedAgentCardInteractions\(\);/g) || []).length, 1, "managed cards must receive exactly one inspection-binding pass per render");
   assert.equal((html.match(/bindFederatedAgentCardInteractions\(\);/g) || []).length, 1, "federated cards must receive exactly one inspection-binding pass per render");
   assert.doesNotMatch(html, /function bindAgentCardInteractions\(\)/, "global rebinding would attach duplicate managed listeners after federation rendering");
+});
+
+test("managed card click and keyboard inspection ignore nested action controls", async () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/i)?.[1] || "";
+  const declarations = [
+    "function eventTargetsControl(event)",
+    "async function inspectManagedAgentCard(event)",
+    "function bindManagedAgentCardInteractions()"
+  ].map(signature => extractInlineDeclaration(script, signature)).join("\n");
+  const card = {
+    dataset: { agentId: "managed%2F1" },
+    listeners: {},
+    addEventListener(type, handler) { this.listeners[type] = handler; }
+  };
+  const inspected = [];
+  const handlers = new Function("document", "showLog", `${declarations}\nreturn { bindManagedAgentCardInteractions };`)({
+    querySelectorAll: selector => selector === ".managed-agent-card" ? [card] : []
+  }, async id => { inspected.push(id); });
+  handlers.bindManagedAgentCardInteractions();
+
+  const activate = async (type, key, nestedControl = null) => {
+    let prevented = false;
+    await card.listeners[type]({
+      type, key, currentTarget: card,
+      target: { closest: () => nestedControl },
+      preventDefault() { prevented = true; }
+    });
+    return prevented;
+  };
+
+  await activate("click");
+  assert.equal(await activate("keydown", "Enter"), true);
+  assert.equal(await activate("keydown", " "), true);
+  await activate("click", null, { tagName: "BUTTON" });
+  await activate("keydown", "Enter", { tagName: "BUTTON" });
+  await activate("keydown", "Escape");
+  assert.deepEqual(inspected, ["managed%2F1", "managed%2F1", "managed%2F1"]);
+});
+
+test("federated card click and keyboard inspection expose external session details", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/i)?.[1] || "";
+  const declarations = [
+    "function eventTargetsControl(event)",
+    "function inspectFederatedAgentCard(event)",
+    "function bindFederatedAgentCardInteractions()"
+  ].map(signature => extractInlineDeclaration(script, signature)).join("\n");
+  const card = {
+    dataset: { federatedId: "external%2F1" },
+    listeners: {},
+    addEventListener(type, handler) { this.listeners[type] = handler; }
+  };
+  const box = { textContent: "", toggles: 0, classList: { toggle() { box.toggles += 1; } } };
+  const state = { snapshot: { agents: [], federation: { agents: [{
+    agent_id: "external/1", provider: "remote", effective_state: "running", freshness: "fresh",
+    heartbeat_at: "2026-09-30T12:00:00Z", last_action_summary: "Working on task"
+  }] } } };
+  const handlers = new Function("document", "state", "CSS", "toast", "recoveryLabel", `${declarations}\nreturn { bindFederatedAgentCardInteractions };`)({
+    querySelectorAll: selector => selector === ".federated-agent-card" ? [card] : [],
+    getElementById: id => id === "federated-log-external%2F1" ? box : null
+  }, state, { escape: value => value }, () => {}, value => value);
+  handlers.bindFederatedAgentCardInteractions();
+
+  card.listeners.click({ type: "click", currentTarget: card, target: { closest: () => null } });
+  card.listeners.keydown({ type: "keydown", key: "Enter", currentTarget: card, target: { closest: () => null }, preventDefault() {} });
+  assert.equal(box.toggles, 2);
+  assert.match(box.textContent, /State: running · fresh/);
+  assert.match(box.textContent, /Heartbeat: 2026-09-30T12:00:00Z/);
+  assert.match(box.textContent, /Last action: Working on task/);
 });
 
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
