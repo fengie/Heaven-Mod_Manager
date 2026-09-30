@@ -29,6 +29,148 @@ function Write-RestoreLog {
     Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8
 }
 
+function Sync-CanonicalRuntimeSource {
+    param([string]$Root)
+
+    $sync = [ordered]@{
+        attempted = $false
+        updated = $false
+        before_sha = $null
+        after_sha = $null
+        remote_sha = $null
+        warning = $null
+    }
+
+    try {
+        $git = (Get-Command git.exe -ErrorAction Stop).Source
+        $inside = (& $git -C $Root rev-parse --is-inside-work-tree 2>$null | Select-Object -First 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $inside -ne 'true') {
+            $sync.warning = "Runtime source is not a Git worktree: $Root"
+            return [pscustomobject]$sync
+        }
+
+        $branch = (& $git -C $Root branch --show-current 2>$null | Select-Object -First 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $branch -ne 'main') {
+            $sync.warning = "Runtime source is not on canonical main; observed branch '$branch'."
+            return [pscustomobject]$sync
+        }
+
+        $dirty = @(& $git -C $Root status --porcelain 2>$null)
+        if ($LASTEXITCODE -ne 0) {
+            $sync.warning = 'Could not inspect runtime source cleanliness.'
+            return [pscustomobject]$sync
+        }
+        if ($dirty.Count -gt 0) {
+            $sync.warning = 'Runtime source has local changes; refusing automatic update.'
+            return [pscustomobject]$sync
+        }
+
+        $sync.attempted = $true
+        $sync.before_sha = (& $git -C $Root rev-parse HEAD 2>$null | Select-Object -First 1).Trim()
+        & $git -C $Root fetch origin main --quiet 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            $sync.warning = 'Could not fetch canonical origin/main; preserving current runtime source.'
+            return [pscustomobject]$sync
+        }
+
+        $sync.remote_sha = (& $git -C $Root rev-parse origin/main 2>$null | Select-Object -First 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($sync.remote_sha)) {
+            $sync.warning = 'Could not resolve canonical origin/main after fetch.'
+            return [pscustomobject]$sync
+        }
+
+        if ($sync.before_sha -eq $sync.remote_sha) {
+            $sync.after_sha = $sync.before_sha
+            return [pscustomobject]$sync
+        }
+
+        & $git -C $Root merge-base --is-ancestor $sync.before_sha origin/main 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            $sync.warning = 'Runtime main has diverged from origin/main; refusing automatic rewrite.'
+            return [pscustomobject]$sync
+        }
+
+        & $git -C $Root merge --ff-only origin/main --quiet 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            $sync.warning = 'Fast-forward to origin/main failed; preserving current runtime source.'
+            return [pscustomobject]$sync
+        }
+
+        $sync.after_sha = (& $git -C $Root rev-parse HEAD 2>$null | Select-Object -First 1).Trim()
+        $sync.updated = $sync.after_sha -eq $sync.remote_sha -and $sync.after_sha -ne $sync.before_sha
+        if ($sync.updated) {
+            Write-RestoreLog ("Fast-forwarded Agent Control runtime source {0} -> {1}." -f $sync.before_sha, $sync.after_sha)
+        }
+    } catch {
+        $sync.warning = $_.Exception.Message
+    }
+
+    if ($sync.warning) {
+        Write-RestoreLog ("Runtime source sync warning: {0}" -f $sync.warning)
+    }
+    return [pscustomobject]$sync
+}
+
+function Get-AgentControlListenerPid {
+    param([int]$Port = 7331)
+    try {
+        if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+            $listener = Get-NetTCPConnection -LocalAddress '127.0.0.1' -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($listener -and $listener.OwningProcess) { return [int]$listener.OwningProcess }
+        }
+    } catch {}
+    return $null
+}
+
+function Stop-StaleOwnedAgentControl {
+    param(
+        [string]$Root,
+        [int]$Port = 7331
+    )
+
+    $listenerPid = Get-AgentControlListenerPid -Port $Port
+    if (-not $listenerPid) { return $true }
+
+    $dataDir = if ([string]::IsNullOrWhiteSpace($env:AGENT_CONTROL_DATA_DIR)) {
+        Join-Path $Root 'tools\agent-control\data'
+    } else {
+        $env:AGENT_CONTROL_DATA_DIR
+    }
+    $identityPath = Join-Path $dataDir 'controller-process.json'
+    if (-not (Test-Path -LiteralPath $identityPath)) {
+        Write-RestoreLog ("Runtime source updated but port {0} belongs to PID {1} without controller identity; refusing to kill it." -f $Port, $listenerPid)
+        return $false
+    }
+
+    try {
+        $identity = Get-Content -LiteralPath $identityPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ([int]$identity.pid -ne $listenerPid) {
+            Write-RestoreLog ("Runtime source updated but listener PID {0} does not match controller identity PID {1}; refusing to kill it." -f $listenerPid, $identity.pid)
+            return $false
+        }
+        if ($identity.port -and [int]$identity.port -ne $Port) {
+            Write-RestoreLog ("Runtime source updated but controller identity port {0} does not match {1}; refusing to kill it." -f $identity.port, $Port)
+            return $false
+        }
+
+        $process = Get-CimInstance Win32_Process -Filter "ProcessId = $listenerPid" -ErrorAction Stop
+        $command = [string]$process.CommandLine
+        if ($command -notmatch '(?i)node(?:\.exe)?' -or $command -notmatch '(?i)server\.mjs') {
+            Write-RestoreLog ("Runtime source updated but listener PID {0} is not a proven Agent Control Node process; refusing to kill it." -f $listenerPid)
+            return $false
+        }
+
+        Stop-Process -Id $listenerPid -Force -ErrorAction Stop
+        Write-RestoreLog ("Stopped stale proven-owned Agent Control PID {0} after runtime source update." -f $listenerPid)
+        Start-Sleep -Milliseconds 500
+        return $true
+    } catch {
+        Write-RestoreLog ("Could not replace stale Agent Control PID {0}: {1}" -f $listenerPid, $_.Exception.Message)
+        return $false
+    }
+}
+
 try {
     $lockStream = [System.IO.File]::Open(
         $lockPath,
@@ -70,9 +212,12 @@ try {
         exit 0
     }
 
+    $runtimeSync = Sync-CanonicalRuntimeSource -Root $RepoRoot
+
     $result = [ordered]@{
         timestamp_utc = (Get-Date).ToUniversalTime().ToString('o')
         repo = $RepoRoot
+        runtime_source = $runtimeSync
         heaven_bridge = [ordered]@{
             requested = $false
             scheduled_tasks_found = 0
@@ -214,6 +359,14 @@ try {
         $port = 7331
         $result.agent_control.already_listening = Test-LocalTcpPort -Port $port
 
+        if ($runtimeSync.updated -and $result.agent_control.already_listening) {
+            if (Stop-StaleOwnedAgentControl -Root $RepoRoot -Port $port) {
+                $result.agent_control.already_listening = Test-LocalTcpPort -Port $port
+            } else {
+                $result.agent_control.error = 'Runtime source updated, but the existing listener could not be proven safe to replace.'
+            }
+        }
+
         if (-not $result.agent_control.already_listening) {
             try {
                 $agentDir = Join-Path $RepoRoot 'tools\agent-control'
@@ -224,6 +377,12 @@ try {
                 $node = (Get-Command node.exe -ErrorAction Stop).Source
                 $env:AGENT_CONTROL_REPO = $RepoRoot
                 $env:AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP = '1'
+                if ([string]::IsNullOrWhiteSpace($env:AGENT_CONTROL_HEAVEN_RELAY_DIR)) {
+                    $defaultRelay = Join-Path $env:USERPROFILE 'HeavenBridgeRepo'
+                    if (Test-Path -LiteralPath $defaultRelay) {
+                        $env:AGENT_CONTROL_HEAVEN_RELAY_DIR = $defaultRelay
+                    }
+                }
                 Start-Process -FilePath $node -ArgumentList @('server.mjs') -WorkingDirectory $agentDir -WindowStyle Hidden
                 $result.agent_control.started = $true
                 Write-RestoreLog 'Started Agent Control server.'
