@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.37 live-registry truthfulness — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security gates and review broader repository-gate failures by attribution.
+2. Prove federated `counts.total` and rendered registry cards include only fresh live sessions while stale/disconnected/terminal records remain in attention/history.
+3. Prove failed/stopped/retry-exhausted managed records do not masquerade as live capacity; unresolved process ownership, retry/recovery, dirty work, and termination-proof gaps must stay visible under Needs Attention.
+4. Preserve v8.8.31+ remote-stop/tombstone protections: stale/equal provider replay must not reactivate retired identities; genuinely fresh heartbeat evidence may re-register.
+5. Merge only after exact-head checks pass, then delete the temporary branch when branch-deletion tooling is available.
+6. Live heaven2 UI smoke should confirm Managed agents, Needs Attention, Registry history, and Federated registry counts match the API snapshot before #458 is finally closed.
+
+---
+
 # 2026-09-30 v8.8.36 notification + stable inspector — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
