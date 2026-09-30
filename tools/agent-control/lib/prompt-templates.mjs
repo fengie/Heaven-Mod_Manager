@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.30.3";
+export const PROMPT_LIBRARY_VERSION = "2026.09.30.4";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -56,12 +56,13 @@ export const ROLE_TEMPLATES = Object.freeze({
 export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
   "AGENTS.md",
   "_AGENT_TRAINING/README.md",
-  "_AGENT_CONTEXT/CURRENT_REVISION.json",
-  "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md"
+  "_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md",
+  "_AGENT_CONTEXT/CURRENT_REVISION.json"
 ]);
 
 export const REPOSITORY_CONTEXT_INDEX_PATHS = Object.freeze([
   "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
+  "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
   "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json",
   "NEXT-AGENT-START-HERE.md",
@@ -76,73 +77,50 @@ export const REPOSITORY_CONTEXT_INDEX_PATHS = Object.freeze([
 ]);
 
 const REPOSITORY_TRAINING_GATE = [
-  "THIS GATE RUNS BEFORE THE TASK. Do not analyze, answer, summarize, plan, or act on the USER / MANAGER TASK until the compact repository bootstrap is complete.",
-  "Read every path in the CORE TRAINING MANIFEST in full. The controller has also hash-verified the INDEXED CONTEXT MANIFEST; do not reread those large historical files end-to-end by default.",
-  "Establish exact canonical repository truth before task reasoning: current origin/main SHA, assigned base/head, worktree status when available, recent relevant history, active branches/PRs, and live Agent Control ownership/leases when available.",
-  "Search/read the newest task-relevant sections of indexed continuity/training files, applicable BUG_PRECEDENTS/LEARNED_RULES entries, and task-relevant source/tests/architecture before forming a task answer. If compact evidence is insufficient, expand it; never guess from a summary.",
-  "Output truncation is recoverable: paginate/chunk remaining ranges or use search/find. A missing gh/CLI, one failed network route, or no local checkout is also recoverable: try authorized Git/GitHub connector/API, canonical heaven2/heaven worktrees, Heaven Local Bridge/Agent Control, or repository CI as applicable.",
-  "Managers must additionally read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt before responding to or dispatching work.",
-  "Report TRAINING-BLOCKED or EXECUTION-BLOCKED only after reasonable authorized fallback routes are exhausted; include the attempted routes and exact evidence. Truncation, missing gh, or no local checkout alone is never sufficient.",
-  "Senior/premium roles should spend scarce context on architecture, root-cause synthesis, review, integration, and verification decisions; delegate mechanical pagination, inventory, log extraction, and repetitive evidence gathering when practical.",
-  "Only after this gate is complete may you process the USER / MANAGER TASK. Preserve this same pre-response gate for every successor or sub-agent you create."
+  "Read the compact core manifest in full, then retrieve only task-relevant indexed policy, continuity, precedent, architecture, source, and tests.",
+  "Establish current canonical source/ownership before mutation. Refresh remote truth again before integration or destructive action.",
+  "Treat truncation or one failed execution route as recoverable; use another authorized route before declaring a blocker.",
+  "Managers additionally read the manager delta. Subagents receive the same compact bootstrap plus only their bounded task context.",
+  "Do not substitute summaries, stale hashes, or prior green evidence for current source and observed verification."
 ];
 
 const REPOSITORY_PROTOCOL = [
-  "Unless the user explicitly marks the assignment read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, treat it as an execution assignment: reading and planning are preparatory, make concrete progress with available authorized tools, and try another supported execution path before declaring a blocker.",
-  "NO WORK HANDOFF BY DEFAULT: never invoke, request, suggest, or hand off to ChatGPT Work mode unless the user explicitly requested Work mode for this current task. Complexity, file/computer work, a failed tool, or a missing preferred route is not permission.",
-  "Stay in the current ChatGPT conversation when it can execute the task. If a normal Chat session cannot be auto-created, continue through another authorized non-Work path such as the direct local worker, Heaven Local Bridge, or repository tooling. Do not stop solely to ask the operator to switch modes.",
-  "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
-  "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
-  "Read the compact core startup set in full, then use the indexed-context hashes to retrieve only task-relevant continuity/training sections and materially relevant precedent/rule entries before meaningful work.",
-  "A missing preferred CLI, one failed network path, or absence of a local checkout is a routing condition, not a blocker: use authorized GitHub connector/API, canonical worktrees, Heaven Local Bridge/Agent Control, or repository CI before declaring BLOCKED.",
-  "Managers must also read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt and operate as convergence owners, not passive status bots.",
-  "main is the canonical integration target. Finished work belongs on verified remote main, not parked on a completed task branch or PR.",
-  "The agent that creates or materially completes a change owns it through final diff inspection, focused verification, refresh against current origin/main, reconciliation, conflict resolution inside its owned boundary, rerun of affected checks, integration into main, push, and remote-main confirmation unless an explicit external gate prevents this.",
-  "A task is not DONE merely because code was written, tests passed on a side branch, a commit exists, a branch was pushed, a PR exists, or another agent was told to merge it later.",
-  "Before every merge/rebase/cherry-pick and immediately before pushing main, refresh canonical state again. If origin/main moved, reconcile again and rerun affected verification.",
-  "Use one primary owner per mutable boundary. Inspect active branches, PRs, routing, and shared files before editing; do not silently overwrite concurrent work.",
-  "Never force-push main, shared history, or another agent's branch. Do not blindly merge unrelated or unverified branches just to empty the queue.",
-  "If direct main delivery is genuinely impossible, record the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and the exact external action required. Report BLOCKED/PARTIAL rather than DONE.",
-  "Never claim tests, pushes, merges, fixes, agent liveness, releases, or publication without observed evidence. Distinguish implemented, tested, independently reviewed, integrated locally, pushed to remote main, and shipped.",
-  "Preserve the permanent recursive continuity constitution and require successors to propagate it again. Keep current revision, current state, next steps, verification evidence, ownership, remote-main status, unresolved risks, and reusable engineering lessons truthful.",
-  "BUG PREVENTION CLOSURE: every discovered bug, regression, false completion claim, broken integration, or process escape must be traced to root cause and violated invariant; recorded in _AGENT_CONTEXT/BUG_PRECEDENTS.md; converted into an applicable guideline/process hardening plus regression coverage or strongest durable verifier; checked across sibling cases; verified on the real risk surface; and propagated before DONE/FIXED/merge/release. Recurrence of a logged defect class means strengthen the prior prevention control itself.",
-  "Do not weaken tests, verification, authorization, process ownership, recovery semantics, or safety gates merely to obtain a green result."
-]
+  "Unless the user requests analysis/review only, planning is preparatory: implement the smallest coherent change and make concrete progress.",
+  "Current repository/runtime facts outrank stale factual claims; higher-priority platform/safety and current user instructions still govern authority and scope.",
+  "Inspect surrounding code/contracts/tests before editing; reproduce bugs when practical; prefer root-cause fixes over symptom patches.",
+  "Run the narrowest useful verification first and broaden by risk. Never weaken tests, analyzers, authorization, or safety gates to get green.",
+  "Use one primary owner per mutable boundary. Delegate only independent bounded work and synthesize/verify returned artifacts.",
+  "Finished owned work belongs on verified canonical main unless an explicit external gate blocks delivery. Branches/PRs are coordination tools, not completion.",
+  "Never claim tests, pushes, merges, fixes, liveness, releases, or publication without observed exact-input evidence.",
+  "Update only durable truth that changed; leave a concise successor handoff with exact revision, evidence, risks, integration state, and next action."
+];
 
 const MACHINE_POLICIES = {
   heaven: [
     "heaven is the preferred worker for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy or long-running execution.",
     "Keep secrets and credential authority on heaven2 unless runtime access on heaven is genuinely required. Never print, commit, or unnecessarily copy credentials.",
-    "Repository work may execute on heaven when the assignment and available tooling authorize it; keep mutation scoped to the owned boundary and preserve collision safety.",
-    "Work mode is deny-by-default. Never request or trigger a Work handoff unless the current user task explicitly opts into Work; otherwise keep executing through normal Chat or another authorized non-Work path."
+    "Repository mutation on heaven requires the assignment/tooling to authorize it; keep writes inside the owned boundary."
   ],
   heaven2: [
     "heaven2 is the control machine and credential authority.",
     "Keep secrets here by default and expose only the minimum runtime access genuinely required by an assigned task.",
-    "Preserve responsiveness by offloading builds, tests, scans, local swarms, indexing, and other resource-heavy work to heaven when practical.",
-    "Use heaven2 directly for credential-gated operations, control-plane work, MHW installation checks, Windows/UI/GPU validation, or other tasks that genuinely require the main machine.",
-    "Do not hand off to ChatGPT Work as a fallback. Stay in the current chat or use an authorized non-Work execution path unless this current task explicitly requests Work mode."
+    "Offload heavy builds/tests/scans/indexing to heaven when practical; use heaven2 for credential-gated control, MHW install, Windows/UI/GPU, or other main-machine validation."
   ]
 };
 
 const MANAGER_PROTOCOL = [
-  "Reconstruct reality before dispatch: exact origin/main SHA, open/recent PRs, active branches and unique commits, current Agent Manager implementation, continuity state, active ownership/routing, known blockers, latest verified SHAs, and agents that appear active, stale, failed, or done.",
-  "Maintain a live task graph containing task, owner, mutable boundary, status, base SHA, branch/PR, dependencies, required artifact, verification gate, and completion evidence.",
-  "Maintain the primary lanes when the repository needs them: Core Implementation; Reconciliation & Continuity; Federation & Registry; Liveness & Scheduler; UI & CLI; Security & Authorization; Verification & Reliability; Integration & Release; bounded Support Investigators; and a PR Queue Coordinator only when branch/PR volume genuinely requires it.",
-  "Every assignment must state the exact objective, mutable boundary, likely files/subsystem, dependencies, exclusions, acceptance criteria, required verification, branch/worktree expectations, and handoff format.",
-  "Track both BUILD OWNERSHIP and DELIVERY OWNERSHIP; by default they are the same agent. Do not accept PR open, branch pushed, ready for integration, or Integration Lead can merge it as completion when the owner has tools and permissions to finish delivery.",
-  "When several completed branches are queued, prioritize deliberate reconciliation and backlog drain before spawning more feature branches unless real P0/P1 evidence requires interruption.",
-  "Track agent health with evidence-based states such as assigned, working, tool_wait, blocked, reviewing, verifying, done, failed, stale, disconnected, and replaced. Do not infer liveness from prose alone.",
-  "If an agent stalls, preserve useful artifacts, calculate remaining scope, mark the old worker appropriately, assign a replacement with exact branch/SHA/context, and do not restart already completed work.",
-  "Prioritize P0 corruption/unsafe destructive behavior/auth exposure/repository damage; P1 broken Agent Manager correctness; P2 integration blockers; P3 polish.",
-  "Repeat: observe canonical state, reconcile ownership, detect completed/stalled/blocked work, update dependencies, dispatch or replace workers, inspect artifacts, request independent review, trigger exact-head verification, route repairs, require completed owners to integrate/push/confirm remote main, reconcile stranded work, run release-wide gates when needed, confirm remote main, update continuity.",
-  "Do not say shipped until canonical remote main contains the verified product and expected release/version state, with remote SHA confirmation observed."
+  "Maintain only the live task graph needed for current decisions: task, owner, mutable boundary, dependency, status, exact artifact/head, and completion gate.",
+  "Prefer one strong implementation owner plus bounded support/review/test lanes; do not maintain a fixed-size swarm when coordination overhead exceeds value.",
+  "Spend premium context on architecture, prioritization, difficult reasoning, review, integration, and verification; offload mechanical independent work when useful.",
+  "Inspect concrete artifacts/evidence, not status prose. Replace stalled work from the exact durable checkpoint instead of restarting completed scope.",
+  "Drive valid completed work to canonical convergence; do not accept PR-open/branch-pushed as completion and do not blindly merge to drain a queue.",
+  "Stop iterating when every valid boundary is integrated, explicitly deferred/blocked with evidence, or deliberately superseded and current handoff state is truthful."
 ];
 
 const INTEGRATION_PROTOCOL = [
-  "Handle cross-branch reconciliation, dependency chains, stranded or legacy branches, difficult semantic conflicts, release-wide assembly, version/update orchestration, and final release audits.",
-  "Do not become the routine merger for ordinary owner-complete work. The implementing owner remains responsible for delivery unless an explicit repository gate or ownership collision prevents it.",
-  "When converging existing branches, inspect unique work, preserve newer canonical behavior, integrate dependency-safe changes, verify after each meaningful integration, and retire superseded branches. Merge everything never means blindly replaying obsolete or harmful commits."
+  "Handle cross-boundary dependencies, semantic conflicts, stranded work, and release-wide assembly; routine owner-complete delivery stays with the implementation owner.",
+  "Refresh canonical state, preserve newer/unique work, verify the reconciled exact candidate, and prove the intended canonical tree survived before retiring source branches.",
+  "Merge everything never means replay obsolete or unverified work merely to reduce branch count."
 ]
 
 function normalizeLines(values) {
@@ -268,12 +246,9 @@ export function renderAgentPrompt({
     String(task || "").trim(),
     "",
     "HANDOFF CONTRACT",
-    "- End with: ROLE; STATUS (DONE / BLOCKED / PARTIAL); BASE origin/main SHA; BRANCH; FINAL HEAD SHA; FILES / SUBSYSTEMS TOUCHED; ARTIFACTS PRODUCED; VERIFICATION COMMANDS + RESULTS; REVIEW REQUIRED / COMPLETED; INTEGRATION DEPENDENCIES; REMAINING RISKS; NEXT EXACT ACTION.",
-    "- DONE requires the required artifact, relevant verification, and confirmation that the completed change is present on canonical remote main unless a documented external gate makes that impossible.",
-    "- If blocked or partial, include the exact attempted operation, exact error/evidence, execution paths tried, current branch/head, current origin/main, what remains possible, and exact external action required.",
-    "- If interrupted or incomplete, checkpoint recoverable work and leave concise takeover state instead of relying on chat history.",
-    "- Before finishing, if any bug/regression/process escape was encountered, confirm the canonical BUG_PRECEDENTS entry, preventive rule/process hardening, regression coverage/deterministic verifier, sibling-case review, and exact verification evidence are complete.",
-    "- Before finishing, consider whether a durable discovery belongs in project Learned Rules or the company trainer."
+    "- Return status, exact base/head or artifact, changed boundary, checks/results, unresolved risk/blocker, integration state, and next exact action.",
+    "- DONE requires the requested artifact/behavior, relevant verification, and canonical delivery when the task requires delivery; otherwise report PARTIAL/BLOCKED with exact evidence.",
+    "- Persist enough durable state for a fresh successor to continue without private chat history."
   ].join("\n");
 
   return {

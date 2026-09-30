@@ -183,6 +183,9 @@ test("canonical CLI and generated worker prompts retain bounded retrieval and co
   const { stdout } = await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--role", "manager"]);
   const packet = JSON.parse(stdout);
   assert.ok(packet.manifests.core.reduce((sum, row) => sum + row.bytes, 0) <= MAX_CORE_BYTES);
+  assert.ok(REQUIRED_REPOSITORY_TRAINING_PATHS.includes("_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md"));
+  assert.ok(!REQUIRED_REPOSITORY_TRAINING_PATHS.includes("_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md"));
+  assert.ok(REPOSITORY_CONTEXT_INDEX_PATHS.includes("_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md"));
   const row = packet.manifests.context.find(row => row.path === "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md");
   const page = JSON.parse((await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--lines", "4"])).stdout);
   assert.equal(page.endLine, 4);
@@ -198,6 +201,7 @@ test("canonical CLI and generated worker prompts retain bounded retrieval and co
   const prompt = renderAgentPrompt({ role: "manager", task: "Verify startup", machine: "heaven2", assignment: {}, repositoryBootstrap: packet }).rendered;
   assert.ok(prompt.indexOf("LIVE REPOSITORY BOOTSTRAP") < prompt.lastIndexOf("USER / MANAGER TASK"));
   assert.match(prompt, /Local-ref-only evidence does not prove fresh remote main/);
+  assert.ok(Buffer.byteLength(prompt) <= 24_576, "generated manager prompt must remain compact");
   await assert.rejects(execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--unsupported", "1"]), /Use --document/);
 });
 

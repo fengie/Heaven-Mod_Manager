@@ -33,20 +33,17 @@ The durable hierarchy is:
 
 Do not leave important project knowledge only in chat, private reasoning, terminal history, temporary logs, CI webpages, or unpushed files.
 
-## 2. Mandatory pre-change start order
+## 2. Progressive pre-change bootstrap
 
-Before modifying code or durable project state, every agent must:
+Before modifying code or durable project state, complete the compact bootstrap in `AGENTS.md`:
 
-1. inspect actual canonical `main` HEAD;
-2. inspect `git status` and preserve unexplained local work;
-3. inspect recent relevant Git history/diffs;
-4. read `NEXT-AGENT-START-HERE.md`;
-5. read `_AGENT_CONTEXT/CURRENT_REVISION.json`;
-6. read this constitution;
-7. read active `_AGENT_CONTEXT/LEARNED_RULES.md`;
-8. follow the remaining read order in `_AGENT_CONTEXT/README_FIRST.md`.
+1. establish current canonical `main`, assigned head/base, relevant status/history/diff, and ownership;
+2. read the compact core manifest in full;
+3. retrieve only the task-relevant sections of this constitution, active Learned Rules/precedents, architecture, verification, and other indexed context;
+4. inspect the actual source/tests/contracts around the changed boundary;
+5. refresh canonical state and ownership again before integration or destructive mutation.
 
-Repository state outranks stale prompt/chat descriptions.
+Repository/runtime evidence outranks stale factual claims. Large ledgers and historical continuity are reference material, not mandatory end-to-end startup reading.
 
 ## 3. Recursive propagation is immutable
 
@@ -70,22 +67,13 @@ If the chain is found broken or incomplete, repairing it becomes part of the cur
 
 ## 4. Propagation must be mechanically verifiable
 
-`scripts/testing/Test-AgentHandoff.ps1` must fail if the continuity system disappears or loses required invariants.
+`scripts/testing/Test-AgentHandoff.ps1` verifies the compact continuity contract and must fail when required semantic anchors disappear. The validator should test concepts and structure rather than force identical warning prose into multiple documents.
 
-It must verify concepts rather than brittle exact prose, including:
+At minimum it verifies: canonical repository identity; current version synchronization; compact-core and indexed-continuity references; exact-source verification semantics; Core Rule protection; visible patch/version reporting; a current chat-independent successor handoff; and bounded active training documents.
 
-- `AGENTS.md` exists and points to the permanent constitution;
-- `NEXT-AGENT-START-HERE.md` exists and passes the recursive obligation onward;
-- `_AGENT_CONTEXT/LEARNED_RULES.md` exists and is linked from the entry/read order;
-- the mandatory start/read sequence is represented;
-- the repository is identified as canonical;
-- a fresh next agent is told it must continue without previous chat history;
-- recursive successor propagation is explicit;
-- Core Rules are protected from weakening without explicit user authorization.
+`scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1` must mutate representative invariants and prove the real validator rejects them.
 
-The negative-fixture harness `scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1` must deliberately break key propagation invariants and confirm that the real validator rejects those broken fixtures.
-
-Changes to continuity validation are verification-infrastructure work. Test them independently and do not hide them inside unrelated refactors.
+Changes to continuity validation are verification-infrastructure work. Test them independently.
 
 ## 5. Continuity review before completion
 

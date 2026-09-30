@@ -7,7 +7,7 @@ import { ROLE_TEMPLATES, REQUIRED_REPOSITORY_TRAINING_PATHS, REPOSITORY_CONTEXT_
 export const BOOTSTRAP_SCHEMA = "agent-control/repository-bootstrap/v1";
 export const BOOTSTRAP_TTL_MS = 120_000;
 export const MAX_BOOTSTRAP_BYTES = 32_768;
-export const MAX_CORE_BYTES = 65_536;
+export const MAX_CORE_BYTES = 32_768;
 const MAX_SOURCE_BYTES = 2 * 1024 * 1024;
 export const MAX_CONTEXT_BYTES = 8_192;
 export const MAX_CONTEXT_RESULTS = 50;
