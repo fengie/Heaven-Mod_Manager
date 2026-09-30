@@ -47,11 +47,16 @@ Decision: never persist expiring binary URLs as durable source identity.
 
 ## Thunderstore
 
-Thunderstore is an open-source mod database with a REST API; its repository documents Swagger and package-list endpoints.
+Thunderstore is an open-source mod database with a public REST API. Re-verification on 2026-09-29 confirmed the community-scoped v1 package endpoints at `/c/{community}/api/v1/package/` and `/c/{community}/api/v1/package/{uuid}/`. The official serializer exposes package/version UUIDs, categories, dependencies, download counts, version metadata, and provider-generated `download_url` values; the package-list cache can be gzip encoded and supports `Last-Modified` / `If-Modified-Since`.
 
-Reference:
+The current public Thunderstore footer exposes API Documentation and a Privacy Policy. The Privacy Policy refers to Thunderstore's Terms of Services, but a distinct current public Terms of Service/API-terms URL was not discoverable during this review. The adapter therefore remains fail-closed behind a compliance disabled reason until that legal reference is confirmed; do not infer permission from the privacy notice or the open-source server license.
+
+References:
+- https://thunderstore.io/api/docs/
 - https://github.com/thunderstore-io/Thunderstore
+- https://pages.thunderstore.io/p/privacy-policy
 
+Decision: implement and test the official API transport/normalizer/provider boundary, but keep automated provider use disabled until the service/API terms reference is confirmed.
 ## CurseForge
 
 CurseForge publishes an official REST API for mod search/details/files and requires an `x-api-key`.
