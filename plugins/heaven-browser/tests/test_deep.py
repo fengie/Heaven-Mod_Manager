@@ -15,7 +15,7 @@ class DeepBrowserValidationTests(unittest.TestCase):
             _safe_url("javascript:alert(1)")
         with self.assertRaises(ValueError):
             _safe_url("https://user:pass@example.com/")
-        self.assertEqual("https://example.com/path?q=1","https://example.com/path?q=1")
+        self.assertEqual("https://example.com/path?q=1",_safe_url("https://example.com/path?q=1"))
 
     def test_display_url_strips_query_and_fragment(self):
         self.assertEqual("https://example.com/path",_display_url("https://example.com/path?token=secret#frag"))
