@@ -11,6 +11,7 @@ import {
   recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
   shouldRetireFromLiveRegistry,
+  retryExhaustedRetirementCandidateIds,
   terminationReconciliationDecision
 } from "../lib/no-work-recovery.mjs";
 
@@ -408,3 +409,52 @@ test("swarm-tail recovery still preserves deterministic failures that left subst
   assert.equal(batch[0].rootId, "failed-with-work");
 });
 
+
+test("retry-exhausted no-work retirement selects the whole dead retry lineage only", () => {
+  const agents = [
+    {
+      id: "root",
+      status: "failed",
+      failureClass: "no-work",
+      recoveryStatus: "retry-dispatched"
+    },
+    {
+      id: "retry-1",
+      status: "failed",
+      failureClass: "no-work",
+      recoveryStatus: "retry-dispatched",
+      recoveryRootAgentId: "root"
+    },
+    {
+      id: "retry-2",
+      status: "failed",
+      failureClass: "no-work",
+      recoveryStatus: "retry-exhausted",
+      recoveryRootAgentId: "root"
+    },
+    {
+      id: "other-root",
+      status: "failed",
+      failureClass: "no-work",
+      recoveryStatus: "retry-dispatched"
+    },
+    {
+      id: "deterministic-failure",
+      status: "failed",
+      failureClass: "runtime",
+      recoveryStatus: "retry-exhausted"
+    },
+    {
+      id: "blocked-needs-review",
+      status: "failed",
+      failureClass: "no-work",
+      recoveryStatus: "retry-blocked",
+      recoveryRootAgentId: "root"
+    }
+  ];
+
+  assert.deepEqual(
+    retryExhaustedRetirementCandidateIds(agents),
+    ["root", "retry-1", "retry-2"]
+  );
+});
