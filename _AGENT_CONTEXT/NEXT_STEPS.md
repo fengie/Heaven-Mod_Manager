@@ -1,6 +1,6 @@
-# v8.8.49 compact Agent Manager overview — next
+# v8.8.50 compact Agent Manager overview — next
 
-Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`, require configured Agent Control/security gates, reconcile against fresh main, merge with expected head, then smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without scrolling, notification severity summary correct, one opened card full-width/internal-scroll, and Inspect auto-opens Inspector. Preserve concurrent PR #525 governance work and do not close unrelated P0 issues from source-only evidence.
+Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`, require configured Agent Control/security gates, reconcile against fresh main, merge with expected head, then smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without scrolling, notification severity summary correct, one opened card full-width/internal-scroll, and Inspect auto-opens Inspector. Preserve active PR #526 as the v8.8.49 UI-fix owner and concurrent PR #525 governance work and do not close unrelated P0 issues from source-only evidence.
 
 ---
 # v8.8.48 current Mods PR integration
