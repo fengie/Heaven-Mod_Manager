@@ -1,3 +1,9 @@
+# v8.8.23 — Agent Manager one-click recovery
+- Fix START SWARM so a paused perpetual run resumes and advances immediately instead of being reported as already running.
+- Reject active non-perpetual autopilot runs with HTTP 409 rather than falsely labeling them as an existing perpetual swarm.
+- Reject an empty perpetual objective before changing autonomy, pause, read-only, drain, or emergency-stop state.
+- Advance Agent Control to v0.5.11 and add server/UI regression guards for one-click lifecycle truthfulness.
+
 # v8.8.22 — Strict analyzer repair
 - Repair six warnings-as-errors in Core/catalog code: preserve the installed-origin checker instance API with a narrow CA1822 justification, use direct indexing for indexable Thunderstore categories, and keep concrete collection types where the implementation is concrete.
 - Repair four strict analyzer failures in tests: use `Assert.Single` for collection cardinality, propagate xUnit cancellation, and remove repeated constant-array allocations.

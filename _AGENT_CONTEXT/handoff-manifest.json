@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.22",
+  "currentVersion": "8.8.23",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.21 visible-progress governance",
+  "immediateParentRevision": "v8.8.22 strict analyzer repair",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. Preserve v8.8.22 strict-analyzer closure: production and affected test projects must compile under warnings-as-errors before integration readiness; downstream missing-artifact errors remain cascade symptoms until earliest compiler/analyzer diagnostics are closed. Preserve the mandatory visible-progress rule and exact-SHA verification. Successors must keep the continuity constitution and recursively propagate it.",
+  "nextAgentObligation": "Start from live canonical main and re-query active Agent Manager work before selecting a lane. Preserve v8.8.23 one-click lifecycle truthfulness: START SWARM must resume paused perpetual work, must not mislabel non-perpetual autopilot as perpetual, and must not clear safety/control state for invalid empty starts. Run exact-head verification before release claims, then continue aggressively prioritizing Agent Manager core functionality. Preserve visible-progress versioning, bug precedents, and durable successor handoffs.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

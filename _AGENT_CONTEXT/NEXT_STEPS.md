@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.23 Agent Manager one-click recovery — CURRENT
+
+1. Run exact-head Agent Control syntax/tests and the Windows verification gate for v8.8.23; keep all verification exact-SHA scoped.
+2. Exercise the real heaven2 dashboard: pause a perpetual run, press **START SWARM**, and confirm it resumes/advances rather than remaining paused behind an “already running” message.
+3. Exercise an active non-perpetual autopilot and confirm **START SWARM** returns the explicit conflict without changing the existing run.
+4. Continue prioritizing Agent Manager core functionality over cosmetic work: reliable federation, worker launch/control, recovery, truthful state, and heaven2→heaven1 execution.
+5. Preserve the one-click lifecycle regression tests, bug precedent, visible-progress versioning, and successor handoff requirements.
+
+---
+
 # 2026-09-30 v8.8.21 visible-progress governance — CURRENT
 
 1. Preserve the new completion rule: every completed meaningful change set updates root `README.md`, increments the patch version, updates `CHANGELOG.md`, and synchronizes canonical version metadata in the same integration.

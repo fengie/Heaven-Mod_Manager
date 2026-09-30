@@ -852,9 +852,11 @@
             repositoryWriteAuthorized:true
           })
         });
-        const message = result.alreadyRunning
-          ? "Perpetual swarm is already running."
-          : "Perpetual swarm started. It will keep cycling until a genuine governed safety boundary.";
+        const message = result.resumed
+          ? "Perpetual swarm resumed and is advancing again."
+          : result.alreadyRunning
+            ? "Perpetual swarm is already running."
+            : "Perpetual swarm started. It will keep cycling until a genuine governed safety boundary.";
         $("startSwarmStatus").textContent = message;
         toast(message);
         await refresh();

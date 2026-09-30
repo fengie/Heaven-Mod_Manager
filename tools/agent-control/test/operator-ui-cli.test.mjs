@@ -93,6 +93,7 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(html, /\/api\/swarm\/start/);
   assert.match(html, /const defaultSwarmObjective = /);
   assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
+  assert.match(html, /Perpetual swarm resumed and is advancing again\./);
   assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
   assert.match(html, /overallGoal:\$\("overallGoal"\)\.value\.trim\(\)/);
   assert.match(html, /perpetual:true/);

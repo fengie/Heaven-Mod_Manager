@@ -3693,6 +3693,16 @@ async function startUsualSwarm(body = {}) {
 }
 
 async function startPerpetualSwarm(body = {}) {
+  const objective = String(body.objective || "").trim();
+  if (!objective) throw new Error("Perpetual swarm objective is required.");
+
+  const before = refreshState();
+  if (before.autopilot?.enabled && !before.autopilot.perpetual) {
+    const error = new Error("A non-perpetual autopilot run is active or paused. Stop it before starting Perpetual Swarm.");
+    error.statusCode = 409;
+    throw error;
+  }
+
   updateControlSettings({
     autonomyLevel: "engineering-autopilot",
     dispatchPaused: false,
@@ -3702,14 +3712,27 @@ async function startPerpetualSwarm(body = {}) {
     reason: "operator-start-perpetual-swarm"
   });
 
-  const objective = String(body.objective || "").trim();
-  if (!objective) throw new Error("Perpetual swarm objective is required.");
-
-  const before = refreshState();
   if (before.autopilot?.enabled) {
+    if (before.autopilot.paused) {
+      resumeAutopilot("operator-start-perpetual-swarm-resume");
+
+      // Match a fresh one-click start: resume should become productive immediately
+      // instead of waiting for background scheduler ticks after the button reports success.
+      await autopilotStep();
+      await autopilotStep();
+
+      return {
+        perpetual: true,
+        alreadyRunning: false,
+        resumed: true,
+        autopilot: refreshState().autopilot
+      };
+    }
+
     return {
       perpetual: true,
       alreadyRunning: true,
+      resumed: false,
       autopilot: before.autopilot
     };
   }
@@ -3728,6 +3751,7 @@ async function startPerpetualSwarm(body = {}) {
   return {
     perpetual: true,
     alreadyRunning: false,
+    resumed: false,
     autopilot: refreshState().autopilot
   };
 }

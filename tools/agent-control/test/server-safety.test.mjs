@@ -628,6 +628,25 @@ test("perpetual one-click path renews ownership freshness without reviving stale
   assert.doesNotMatch(block, /\.\.\.state\.settings\?\.routingManifest/);
 });
 
+test("one-click perpetual start resumes paused runs and rejects non-perpetual mode conflicts", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function startPerpetualSwarm");
+  const end = source.indexOf("function buildTakeoverForAgent", start);
+  assert.ok(start >= 0 && end > start);
+  const block = source.slice(start, end);
+
+  const validateAt = block.indexOf('if (!objective) throw new Error("Perpetual swarm objective is required.")');
+  const normalizeAt = block.indexOf("updateControlSettings({");
+  assert.ok(validateAt >= 0 && normalizeAt > validateAt, "invalid starts must not clear safety/control state");
+
+  assert.match(block, /before\.autopilot\?\.enabled && !before\.autopilot\.perpetual/);
+  assert.match(block, /error\.statusCode = 409/);
+  assert.match(block, /before\.autopilot\.paused/);
+  assert.match(block, /resumeAutopilot\("operator-start-perpetual-swarm-resume"\)/);
+  assert.match(block, /resumed: true/);
+  assert.match(block, /alreadyRunning: false/);
+});
+
 test("perpetual recovery preserves takeover before proven stop and persists replacement before redispatch", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const dispatchStart = source.indexOf("async function dispatchPerpetualReplacement");

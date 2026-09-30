@@ -1,3 +1,11 @@
+## 2026-09-30 — One-click control actions must reconcile lifecycle state, not just the enabled bit
+
+**Failure:** Agent Manager's primary **START SWARM** action treated any enabled autopilot as an already-running perpetual swarm. A paused perpetual run therefore produced a success-looking “already running” message while the scheduler intentionally did nothing; an enabled non-perpetual run was also mislabeled as perpetual. The function additionally normalized control/safety settings before validating an empty objective.
+
+**Prevention rule:** Primary one-click controls must classify the authoritative lifecycle state and mode before reporting success or mutating unrelated safety/control state. For start/resume controls, distinguish at minimum: invalid request, conflicting active mode, paused resumable run, already-running same mode, and fresh start. Regression coverage must prove both state-transition behavior and operator-visible messaging.
+
+**Guard:** `tools/agent-control/test/server-safety.test.mjs` asserts paused-run resume, explicit mode conflict, and validate-before-mutate ordering; `tools/agent-control/test/operator-ui-cli.test.mjs` protects the resumed-state dashboard message.
+
 # Bug Precedents
 
 This file is the canonical defect-prevention ledger for the MHW project. It is mandatory training material.

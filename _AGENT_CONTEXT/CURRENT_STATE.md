@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.23 Agent Manager one-click recovery — CURRENT
+
+The highest-priority Agent Manager startup path is repaired. **START SWARM** now resumes a paused perpetual controller and immediately advances it, leaves a genuinely running perpetual swarm idempotently alone, and rejects an active non-perpetual autopilot with a 409 conflict instead of lying about its mode. Empty objectives are rejected before control/safety settings are normalized.
+
+Agent Control is now **v0.5.11**. Regression guards cover the server decision path and the dashboard resumed-state message. The change is source-integrated from canonical main base `0e81e6a454594dd98116e97709ea5075714c09a4`; fresh exact-head Agent Control/Windows verification remains required before release-ready claims.
+
+---
+
 # 2026-09-30 v8.8.22 strict analyzer repair — CURRENT
 
 Canonical production analyzer fixes are present through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2`; PR #437 merge `7597b44892b613552bcec2b194f4f933cb4ccbf0` adds the four test-project analyzer repairs. Canonical-tree inspection confirmed all eight intended fixes survived subsequent integration.

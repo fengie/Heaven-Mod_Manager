@@ -1,4 +1,11 @@
-# v8.8.22 Universal Mod Manager
+# v8.8.23 Universal Mod Manager
+
+## v8.8.23 — Agent Manager one-click recovery
+
+Agent Manager's primary **START SWARM** path now recovers a paused perpetual run instead of falsely saying it is already running while no work advances. The same path now rejects an active non-perpetual autopilot with an explicit conflict, validates the objective before clearing control/safety friction, and reports a distinct resumed state in the dashboard.
+
+Agent Control advances to **v0.5.11** with server/UI regression guards for this lifecycle path. Fresh exact-head Agent Control/Windows verification is required before release-ready claims are transferred to the new patch.
+
 
 ## v8.8.22 — Strict analyzer repair
 
