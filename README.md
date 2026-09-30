@@ -1,4 +1,8 @@
-# v8.8.42 Universal Mod Manager
+# v8.8.43 Universal Mod Manager
+
+## v8.8.43 — bounded indexed-context navigation
+
+Agent Control v0.6.20 can jump directly to relevant indexed repository context with hash-checked literal search or Markdown-heading lookup instead of paginating blindly. Navigation stays inside the existing whitelist and exact SHA-256 boundary, returns line numbers for precise follow-up reads, caps queries/results/output, reports truncation explicitly, and keeps the no-persistent-cache startup design.
 
 ## v8.8.42 — current CI evidence and fail-closed release gates
 
