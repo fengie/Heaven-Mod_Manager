@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.51",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.50 governance integration candidate PR #528 latest head 1ea4b5d93d620f90c7e3d0a89d2d245bb2fd0433",
+  "immediateParentRevision": "v8.8.50 governance integration merged at 3e4ae104 after exact-head PR gates",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -96,8 +96,7 @@
     "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
     "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
     "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
-    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json",
-    "_AGENT_CONTEXT/HANDOFFS/agent-manager-compact-overview-v8.8.51.md"
+    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -106,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish stacked v8.8.51 compact Agent Manager overview: preserve PR #528 governance, reconcile onto fresh canonical main after #528 resolves, rerun exact Agent Control/security/workflow gates, merge/push/verify main, perform live heaven2 collapsed-overview/Inspector smoke, and recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.51 shortcut-icon integrity closure: require exact-head gates, verify the packaged EXE/resource and a freshly recreated Windows desktop shortcut, merge/push/verify canonical main, publish/update installed client, preserve independently owned UI branches for reconciliation, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

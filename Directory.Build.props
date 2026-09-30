@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <Version>8.8.51</Version>
-    <InformationalVersion>8.8.51-agent-manager-compact-overview</InformationalVersion>
+    <InformationalVersion>8.8.51-shortcut-icon-integrity</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

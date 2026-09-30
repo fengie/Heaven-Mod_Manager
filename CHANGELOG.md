@@ -1,13 +1,8 @@
-# v8.8.51 — compact Agent Manager overview
-- Add smoother compositor-friendly card/metric/toast micro-transitions, staggered one-time overview entry motion, and springier expand/press feedback without continuous animation or layout-dimension animation.
-- Add optional persisted UI sounds generated with lightweight Web Audio; sounds are off by default until the operator enables them and play only for direct interactions, never background refreshes.
-- Preserve reduced-motion handling and visibility guards so motion work stops when the page is hidden or the OS/browser requests less animation.
-- Convert Machine pool, Notifications, Inspector, Registry history, Managed agents, Federated registry, leases, integration queue, branches, and recent events into native collapsed summary cards.
-- Arrange collapsed cards in a responsive two-column overview; an opened card expands full-width and scrolls internally instead of pushing the rest of the dashboard off-screen.
-- Automatically open Inspector when a managed/federated record or supported notification action is inspected.
-- Add notification severity counts and a bounded newest-30 presentation for large notification sets.
-- Add regression coverage for default-collapsed structure, bounded expanded panels, responsive layout, and inspector auto-open behavior.
-- Advance product version to v8.8.51 and Agent Control/plugin identity to v0.6.24.
+# v8.8.51 — 2026-09-30
+
+- Fixed the corrupted Windows desktop shortcut icon by removing the malformed 48×48 PNG frame while preserving the valid 16×16, 24×24, and 32×32 application artwork.
+- Added deterministic ICO/PNG integrity coverage for frame bounds, image dimensions, per-chunk CRCs, and exact IEND termination.
+- Classified shell-visible binary assets as verified release inputs so a successful compile cannot silently ship structurally corrupt icon resources again.
 
 # v8.8.50 — governance integration and enforcement repair
 - Reconcile superseded PR #525 compact operating standard, role deltas and current-state consolidation onto v8.8.49 main while preserving its repaired ancestry.

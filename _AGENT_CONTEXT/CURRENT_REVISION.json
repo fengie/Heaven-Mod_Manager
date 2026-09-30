@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/agent-manager-compact-ui-v8.8.51-20260930",
+  "workingBranch": "fix/shortcut-icon-v8.8.51-20260930",
   "currentVersion": "8.8.51",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.51-agent-manager-compact-overview-candidate",
-  "nextMilestone": "Integrate the compact Agent Manager overview after the v8.8.50 governance baseline is accepted.",
-  "nextRequiredAction": "Verify the stacked v8.8.51 Agent Manager source against latest v8.8.50 governance, then retarget to fresh main after PR #528 merges, rerun exact-head gates, merge, and perform a live heaven2 browser smoke.",
+  "status": "v8.8.51-shortcut-icon-integrity-candidate",
+  "nextMilestone": "Close the user-reported Windows shortcut icon corruption, then resume existing branch reconciliation.",
+  "nextRequiredAction": "Run exact-head gates; verify the packaged EXE and a freshly recreated desktop shortcut render a clean icon on Windows; merge/push main; publish through the normal updater path; then reconcile any independently owned provisional v8.8.51 branches against the new main/version.",
   "verificationAppliesToCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "v8.8.51 is presentation-only Agent Manager work stacked on latest v8.8.50 governance: high-volume sections default closed in a responsive overview, expanded content is internally bounded, notification severity is summarized, and Inspector auto-opens on selection. Existing control-plane lifecycle/action semantics are unchanged; exact-head Agent Control/security/workflow gates and live heaven2 browser smoke are required.",
+  "verificationScopeNote": "v8.8.50 governance integration remains historical for this candidate. v8.8.51 changes the shell-visible application icon asset and adds binary-resource integrity coverage; exact-head CI plus real Windows shortcut rendering are required before closure.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
@@ -38,9 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "PR #528 must land or otherwise be reconciled before v8.8.51 can target canonical main.",
-    "Live heaven2 browser smoke for compact overview remains required after canonical integration.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open."
+    "v8.8.49 UI fixes are merged but actual operator visual confirmation remains outstanding.",
+    "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open.",
+    "Preserve unique external branches until semantic/ownership review."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",

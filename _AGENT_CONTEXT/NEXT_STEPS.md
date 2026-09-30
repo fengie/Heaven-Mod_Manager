@@ -1,11 +1,11 @@
-# v8.8.51 compact Agent Manager overview — next
+# v8.8.51 shortcut icon fix — current lane
 
-1. Verify the stacked candidate against PR #528 latest exact governance head with Agent Control syntax/tests plus required security gates available on the stacked base.
-2. After PR #528 is canonical, reconcile this v8.8.51 candidate onto fresh main and require exact-head Agent Control, Security Supply Chain, and Workflow Feature gates before merge.
-3. Smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without traversing content, notification severity summary correct, one opened card full-width with internal scrolling, managed/federated/notification Inspect automatically opens Inspector, interaction motion remains smooth under normal refresh, reduced-motion disables visible animation, and UI sound is silent until opt-in then persists without sounding on polling.
-4. Preserve existing P0/auth/signing risks; do not infer control-plane lifecycle completion from this presentation-only patch.
+- Root cause proven from canonical source: only the 48×48 PNG frame in the application ICO is structurally corrupt; 16/24/32 validate.
+- Candidate removes the corrupt frame, preserves existing artwork, and adds an integration regression that validates every remaining ICO/PNG frame.
+- Required closure: exact-head CI, packaged EXE/resource verification, fresh Windows desktop shortcut rendering, merge/push main, updater publication, installed-client confirmation.
+- Existing owned branches remain separate. If another lane advances main/version first, reconcile this candidate onto fresh main and re-version instead of overwriting either change set.
+- Improvement: establish a validated high-resolution source icon and deterministic multi-size generation path if sharper 48/64px shell rendering is desired later.
 
----
 # Next steps — v8.8.50 candidate
 
 1. Finish exact-head Security Supply Chain, Agent Control, and Workflow Feature checks applicable to PR #528. Repair failures without weakening tests, byte budgets, training timing, continuity, or security boundaries.

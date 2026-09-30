@@ -1,8 +1,8 @@
-# v8.8.51 compact Agent Manager overview
+# v8.8.51 Windows shortcut icon integrity — candidate
 
-Current UI lane is stacked on PR #528's latest v8.8.50 governance baseline. Product behavior change is limited to Agent Manager presentation: high-volume operational sections default closed, summarize state at a glance, expand full-width with internal scrolling, and automatically open Inspector when inspection is requested. Verify stacked exact head, then after #528 lands reconcile onto fresh main and rerun gates before integration. Live heaven2 browser acceptance remains required.
+User-reported desktop corruption is reproduced from canonical source: the 48×48 PNG frame embedded in `src/MhwModManager.App/Assets/MHWModManager.ico` has a bad IDAT CRC and malformed termination, while the 16/24/32 frames validate. This candidate removes only the corrupt 48px frame, preserving the existing artwork and allowing Windows to scale the intact 32px image. Integration coverage parses the real committed ICO so malformed frame bytes cannot silently pass verification again. Existing independently owned branches remain separate and must reconcile against this lane if it reaches main first.
 
-Canonical continuity pointers for v8.8.51: `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` remains the permanent constitution and `_AGENT_CONTEXT/LEARNED_RULES.md` remains the active learned-rules ledger. Every successor must read and preserve both.
+Next: require exact-head gates, then verify the packaged EXE and a freshly recreated desktop shortcut on Windows before merge/release. Improvement opportunity: later add a separately validated high-resolution source/master icon and generate the multi-size ICO deterministically during asset maintenance; do not reintroduce unvalidated frames. Preserve and recursively propagate the continuity constitution.
 
 ---
 # v8.8.50 governance reconciliation — current handoff

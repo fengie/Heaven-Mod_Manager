@@ -1,6 +1,8 @@
-# v8.8.51 compact Agent Manager overview — stacked candidate
+# v8.8.51 shortcut icon integrity — candidate
 
-UI-only candidate stacked on latest PR #528 / v8.8.50 governance. Ten high-volume operational surfaces now default collapsed in a responsive overview; opened surfaces expand full-width and scroll internally. Inspector auto-opens from managed/federated/notification inspection, and notification severity remains visible while collapsed. Short transform/opacity interaction motion and opt-in locally synthesized UI sounds are added with reduced-motion/hidden-page guards and no background-refresh audio. Agent Control v0.6.24 / product v8.8.51.
+Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48×48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.
+
+Exact-head CI, packaged executable/resource verification, and a freshly recreated Windows desktop shortcut smoke are required before closure. Draft Agent Manager PR #539 remains independently owned; if this urgent bug fix reaches main first, that lane must reconcile/re-version rather than overwrite v8.8.51.
 
 ---
 # Current state — v8.8.50 candidate

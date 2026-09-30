@@ -1,6 +1,6 @@
-# v8.8.51 compact Agent Manager overview — verification scope
+# v8.8.51 shortcut icon integrity — verification scope
 
-Required source evidence: inline dashboard JavaScript parses; operator UI tests cover 10 default-closed `<details>` cards, responsive two-column/full-width-open layout, bounded expanded scrolling, notification severity/newest-30 behavior, Inspector auto-open, opt-in/persisted Web Audio, reduced-motion handling, hidden-page guards, and avoidance of layout-dimension animation in the imperative motion helper. Run the complete Agent Control check/test suite plus required Security Supply Chain and Workflow Feature gates on the exact candidate. Source tests do not replace the post-integration live heaven2 browser smoke.
+Source proof: canonical v8.8.50 ICO contained four PNG frames; 16×16, 24×24, and 32×32 passed bounds/dimension/chunk-CRC/IEND validation, while 48×48 failed IDAT CRC and termination validation. Candidate must pass `ApplicationIconIntegrityTests`, full exact-head repository gates, packaged EXE/resource verification, and a fresh real Windows shortcut render before the icon is considered runtime-verified. Compilation alone is not sufficient evidence for shell-visible binary resources.
 
 ---
 # v8.8.49 UI regression integration candidate
