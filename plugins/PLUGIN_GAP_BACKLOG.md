@@ -141,7 +141,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 
 ## PG-007 — rollback, restore, and scheduled maintenance workflows
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** Medium
 - **Triggering use case:** Long-running autonomous development and machine administration need safe checkpoints before mutations plus recurring cleanup/health/recovery actions.
 - **Why reusable:** Git changes, service changes, package installs, updater operations, and distributed workers all benefit from a standard rollback receipt and bounded scheduler.
@@ -151,7 +151,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Rollback never invents inverse commands; only explicitly declared reversible actions are eligible. Scheduled privileged jobs require the same permission checks as interactive execution and may reference only opaque secret handles.
 - **Dependencies / reuse:** `heaven-state-store`, `heaven-workflows`, `heaven-process-services`, `heaven-git-ops`, `heaven-system-ops`.
 - **Acceptance tests:** failed multi-step mutation triggers only registered rollback steps in reverse order; idempotent rollback; scheduler cannot create duplicate ownership for same job; disabled jobs never execute; receipts include exact pre/post state identifiers.
-- **Owner / branch / PR:** unclaimed.
+- **Owner / branch / PR:** `heaven-workflows` rollback lane on canonical `main`; bounded scheduled-maintenance owner is still pending.
 - **Completion evidence:** pending.
 
 
