@@ -844,3 +844,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-049 — parser contracts must include producer-specific text encoding
+
+- **Rule ID:** LR-049
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Cross-platform JSON/text automation, PowerShell-generated files, manifests, installer/updater metadata
+- **Rule:** When one tool/runtime produces text that another runtime parses, test the producer's real encoding behavior. Windows PowerShell 5.1 UTF-8 output may include a BOM; consumers that promise UTF-8 compatibility should accept BOM and BOM-free forms unless the format explicitly forbids one.
+- **Trigger / evidence:** The plugin version pruner passed Python unit fixtures but skipped live PowerShell-written JSON manifests because plain `utf-8` decoding exposed the BOM to `json.loads`.
+- **Rationale:** Encoding is part of the serialization contract. Synthetic fixtures that use a different writer can create false confidence even when schema/content tests are otherwise complete.
+- **Enforcement:** Add producer-realistic fixtures or a live producer/consumer smoke for cross-runtime file boundaries; prefer `utf-8-sig` for JSON/text readers that must accept both common Windows UTF-8 forms; keep malformed-content handling fail-closed.
+- **Regression/evidence:** `test_windows_utf8_bom_manifests_are_supported`; failing live job `chatgpt-20260930-verify-plugin-pruner-heaven2-a1`; fix `ccff83a93c39233a0231456ac60b919cf003d8f9`.
+- **Related rules:** LR-044 copied-test destination validation; LR-046 installed-runtime/restart proof.
+- **Supersedes:** none
+- **Superseded by:** none
