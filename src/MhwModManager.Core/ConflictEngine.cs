@@ -77,6 +77,16 @@ public sealed class ConflictEngine
         if (candidates.All(c => StringComparer.OrdinalIgnoreCase.Equals(c.File.BlobSha256,firstHash)))
             return new(path, ConflictKind.Identical, false, candidates.MaxBy(c => c.Priority)!.ModId, "identical-bytes", "Every provider contains byte-identical content, so only one physical copy is needed.", Confidence.High, Inferred:true, ResolverScore:100, Evidence:"All SHA-256 hashes are identical.");
 
+        // Game-root bootstrap and loader files execute before ordinary nativePC content. A mismatched
+        // pair can stop the game before mod diagnostics are available, so never infer a winner for
+        // different bytes from family, naming, package priority, or generic overlap. Explicit exact-file
+        // intent and byte-identical duplicates were already handled above.
+        if (IsProtectedBootstrapPath(path))
+            return new(path, ConflictKind.HardGameData, true, null, "protected-bootstrap-collision",
+                "Different enabled packages provide the same protected loader/bootstrap path. Automatic overwrite is disabled because mixing loader generations can prevent the game from starting. Keep one provider or set an explicit exact-file winner after verifying compatibility.",
+                Confidence.High, Inferred:false, ResolverScore:100,
+                Evidence:"Protected MHW game-root loader/bootstrap path with different SHA-256 content.");
+
         var resourceNamespace = richMhwSemantics ? PathRules.ResourceNamespace(path) : null;
         if (resourceNamespace is not null && resourceProviders.TryGetValue(resourceNamespace, out var resourceWinner) && candidateIds.Contains(resourceWinner))
             return new(path, ConflictKind.SharedProvider, false, resourceWinner, "resource-provider", $"The shared resource namespace '{resourceNamespace}' has a pinned provider. All dependent mods remain enabled.", Confidence.Explicit);
@@ -339,6 +349,23 @@ public sealed class ConflictEngine
             ResolverScore:90,
             Evidence:"All colliding providers share one persisted logical family, but their overwrite direction is ambiguous.");
         return true;
+    }
+
+    private static bool IsProtectedBootstrapPath(string path)
+    {
+        string normalized;
+        try { normalized = PathRules.Normalize(path); }
+        catch (ArgumentException) { return false; }
+
+        if (normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var extension = Path.GetExtension(normalized);
+        return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".asi", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsCodeBearing(FileClass fileClass)
