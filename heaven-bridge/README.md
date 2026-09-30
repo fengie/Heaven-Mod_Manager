@@ -369,3 +369,12 @@ The credential value stays out-of-band:
 A claimed handle is single-use even if validation or input later fails. Re-create a fresh handle rather than retrying a consumed one. The envelope TTL is bounded (default helper TTL 120 seconds; worker maximum 300 seconds unless explicitly lowered/raised within the hard cap). Secret values are never copied to clipboard or passed through the UIA PowerShell environment.
 
 The bridge test suite includes canary checks ensuring the secret value is absent from canonical relay jobs and returned result payloads, plus expiry, destination-binding, target-binding, unavailable-channel, relay-value rejection, replay, live SMB-encryption verification, and a forced publication-failure regression proving no secret-bearing temp envelope survives a failed rename.
+
+## HMAC authentication hardening
+
+The private GitHub repository and branch ACL are a compatibility trust boundary, not the preferred production authentication boundary for an execution-capable bridge.
+
+For hardened deployments, set `HEAVEN_BRIDGE_HMAC_KEY` in each worker environment and the same value as `AGENT_CONTROL_HEAVEN_HMAC_KEY` on the heaven2 Agent Control host. Agent Control signs the canonical job payload before it reaches the relay; the worker rejects missing or invalid signatures when HMAC mode is enabled. Job TTL/replay validation remains in force, so a valid signature does not make stale or replayed work acceptable.
+
+The HMAC key must remain machine-local. Never commit it or write it into queue, result, status, log, or repository state files. The signature covers canonical JSON with `auth.signature` omitted, and `health` reports the active authentication mode. `private-repo-acl` is compatibility mode; `hmac-sha256` is the hardened mode.
+
