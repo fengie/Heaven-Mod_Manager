@@ -1,3 +1,15 @@
+### 2026-09-30 — Agent Control dashboard — agent cards were display-only despite interactive presentation
+- **Symptom:** Clicking the body of a managed or federated bot card appeared to do nothing. Operators had to discover a small nested action such as **View log**, while backend/notification inspection concepts suggested the card itself should be actionable.
+- **Root cause:** The dashboard rendered each bot as a plain `<article class="agent">` with nested buttons only. There was no card-level mouse/keyboard handler, and `showLog(id, button)` assumed a button object was always the caller.
+- **Violated invariant / wrong assumption:** An operator surface that visually presents an entity as an actionable card must provide a real, keyboard-accessible entity action; nested controls must remain independent and must not be the only discoverable path to inspection.
+- **Why prior defenses missed it:** Existing UI tests checked button markup, API routes, lifecycle state, and selected action wiring, but did not parse/pin card-body activation or keyboard behavior.
+- **Direct fix:** Add inspectable managed/federated card semantics, mouse + Enter/Space activation, optional-button log inspection, linked-managed focus for federated sessions, external-session detail expansion, and a guard that ignores nested controls.
+- **Preventive rule/process change:** For every clickable-looking entity/card, regression-test both the primary card action and nested control isolation. Generated inline JavaScript must parse as emitted, not only look valid in template source.
+- **Regression coverage added/strengthened:** `operator-ui-cli.test.mjs` parses the emitted inline script and requires managed/federated card handlers, keyboard keys, nested-control exclusion, and optional-button log inspection.
+- **Verification evidence/environment:** Exact-head Agent Control source gate and heaven2 live card-interaction smoke are required for v8.8.27; no live UI claim should be inferred from source alone.
+- **Sibling/adjacent cases checked:** Existing **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** actions remain nested controls and are excluded from card-level activation; retry-exhausted registry retirement remains owned by v8.8.26 lifecycle code.
+- **References (SHA/PR/issue/log):** follow-up branch `fix/agent-control-card-inspection-20260930`; final PR/SHA to be recorded after integration.
+
 ### 2026-09-30 — Agent Control registry — terminal retry state was treated as a label instead of retirement
 - **Symptom:** Agents remained visible as `failed · RETRY EXHAUSTED` after bounded recovery ended, and the federated registry could keep/recreate those dead entries on subsequent refreshes.
 - **Root cause:** Retry exhaustion only changed `recoveryStatus` / task status and returned. `refreshState()` then synchronized every managed agent, including terminal failures, back into federation. There was no terminal retirement lifecycle, tombstone, or replay suppression.
@@ -520,11 +532,11 @@ Every discovered bug/regression/process escape must produce or update an entry h
 
 
 ## 2026-09-30 — Agent Control health found Heaven relay but execution bypassed the resolver
-- **Symptom:** Clicking/dispatching created managed main/manager workers, but they exited almost immediately with authoritative exit code 1 and then entered the no-work recovery path.
+- **Symptom:** Clicking/dispatching created managed main/manager workers, but they exited almost immediately with authoritative exit code 1 and then entered recovery.
 - **Root cause:** `resolveHeavenRelayDir()` already supported the documented per-user `~/HeavenBridgeRepo` fallback and health inspection used it. `submitHeavenBridgeJob()` and `waitForHeavenBridgeResult()` instead defaulted directly to `process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR` and threw when that environment variable was absent.
-- **Authoritative evidence:** Runtime evidence for `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6` recorded `Error: AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.` before the exit-code-1 transition.
-- **Violated invariant / wrong assumption:** Provider preflight/health and actual execution must share the same configuration resolver; a green discovery path is not meaningful if submit/wait reimplements configuration differently.
-- **Why prior defenses missed it:** Existing tests covered relay discovery in isolation but did not bind execution submit/wait to the documented-default resolver.
-- **Direct fix:** Add `resolveExecutionRelayDir()`; make submit and result-wait resolve an explicit caller path first and otherwise use `resolveHeavenRelayDir()`.
+- **Authoritative evidence:** `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6` both recorded `Error: AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.` before authoritative exit code 1.
+- **Violated invariant / wrong assumption:** Provider health/preflight and real execution must share one configuration resolver; green discovery is meaningless if submit/wait reimplement it differently.
+- **Why prior defenses missed it:** Existing tests covered discovery in isolation but did not pin actual execution resolution to the documented fallback.
+- **Direct fix:** Add `resolveExecutionRelayDir()`; explicit caller paths remain authoritative, otherwise submit/result-wait reuse `resolveHeavenRelayDir()`.
 - **Preventive rule/process change:** LR-051 requires provider preflight and execution to share one authoritative resolution path.
-- **Regression coverage added/strengthened:** `tools/agent-control/test/heaven-bridge-provider.test.mjs` covers the no-explicit-env documented fallback; exact-head source checks plus a restarted heaven2→heaven1 live smoke remain required.
+- **Regression coverage added/strengthened:** `heaven-bridge-provider.test.mjs` now covers documented fallback, explicit override, and absent-fallback fail-closed behavior; live restarted heaven2→heaven1 proof remains required.
