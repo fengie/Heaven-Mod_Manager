@@ -27,6 +27,17 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
             list.Add(new(mod.Id, mod.Name, mod.Priority, file));
         }
 
+        // A file cannot safely coexist with a directory at the same virtual path. Priority cannot
+        // make this deterministic because different consumers can traverse the tree differently.
+        var topologyConflicts = FindFileDirectoryCollisions(providers);
+        if (topologyConflicts.Length > 0)
+            return new(
+                Guid.NewGuid().ToString("N"),
+                DateTimeOffset.UtcNow,
+                [],
+                topologyConflicts,
+                ["Resolve file/directory path collisions before deployment; priority is intentionally ignored for this unsafe topology."]);
+
         // Count every pair sharing a path, not only paths with exactly two providers. Shared skin
         // namespaces can have many providers; ignoring those pairs made family inference disappear as
         // soon as a third related mod was enabled.
@@ -137,5 +148,54 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         }
 
         return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, changes, decisions, ["Live managed files must still match their expected hashes at commit time."]);
+    }
+
+    private static ConflictDecision[] FindFileDirectoryCollisions(
+        IReadOnlyDictionary<string,List<ProviderCandidate>> providers)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (providers.Count < 2) return [];
+
+        var paths = providers.Keys.ToHashSet(PathRules.Comparer);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var decisions = new List<ConflictDecision>();
+
+        foreach (var path in paths.Order(StringComparer.OrdinalIgnoreCase))
+        {
+            var segments = path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 2; i < segments.Length; i++)
+            {
+                var ancestor = string.Join('\\', segments.Take(i));
+                if (!paths.Contains(ancestor))
+                    continue;
+
+                var key = ancestor + "\n" + path;
+                if (!seen.Add(key))
+                    continue;
+
+                var fileProviders = string.Join(", ", providers[ancestor]
+                    .Select(x => x.ModName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.OrdinalIgnoreCase));
+                var childProviders = string.Join(", ", providers[path]
+                    .Select(x => x.ModName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.OrdinalIgnoreCase));
+
+                decisions.Add(new(
+                    path,
+                    ConflictKind.HardUnknown,
+                    true,
+                    null,
+                    "file-directory-collision",
+                    $"Unsafe deployment topology: '{ancestor}' is a file from [{fileProviders}] but must also be a directory containing '{path}' from [{childProviders}]. No override order can make both meanings reliable.",
+                    Confidence.High,
+                    Inferred:false,
+                    ResolverScore:100,
+                    Evidence:"A destination path is simultaneously required to be a file and an ancestor directory."));
+            }
+        }
+
+        return decisions.ToArray();
     }
 }
