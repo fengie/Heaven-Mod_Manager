@@ -155,6 +155,21 @@ class DeepBrowserValidationTests(unittest.TestCase):
             self.assertTrue(context.created[-1].closed)
             provider.close_session(created["session_id"])
 
+    def test_tabs_forgets_externally_closed_active_tab(self):
+        with tempfile.TemporaryDirectory() as td:
+            context=_FakeContext()
+            browser=_FakeBrowser(context)
+            manager=_FakeManager(browser)
+            provider=PlaywrightDeepBrowser(td,playwright_factory=lambda:manager)
+            created=provider.create_session("https://example.com")
+            session=provider._sessions[created["session_id"]]
+            session.tabs[created["tab_id"]].closed=True
+            self.assertEqual([],provider.tabs(created["session_id"]))
+            self.assertIsNone(session.active_tab)
+            self.assertEqual({},session.tabs)
+            self.assertEqual({},session.page_ids)
+            provider.close_session(created["session_id"])
+
     def test_external_closed_active_tab_is_forgotten(self):
         with tempfile.TemporaryDirectory() as td:
             context=_FakeContext()

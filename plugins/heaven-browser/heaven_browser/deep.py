@@ -362,7 +362,7 @@ class PlaywrightDeepBrowser:
         result = []
         for tab_id, page in list(session.tabs.items()):
             if getattr(page, "is_closed", lambda: False)():
-                session.tabs.pop(tab_id, None)
+                self._forget_page(session, page, tab_id)
                 continue
             title = ""
             try:
