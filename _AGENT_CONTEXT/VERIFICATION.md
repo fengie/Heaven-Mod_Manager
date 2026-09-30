@@ -1,6 +1,6 @@
 # v8.8.51 compact Agent Manager overview — verification scope
 
-Required source evidence: inline dashboard JavaScript parses; operator UI tests cover 10 default-closed `<details>` cards, responsive two-column/full-width-open layout, bounded expanded scrolling, notification severity/newest-30 behavior, and Inspector auto-open. Run the complete Agent Control check/test suite plus required Security Supply Chain and Workflow Feature gates on the exact candidate. Source tests do not replace the post-integration live heaven2 browser smoke.
+Required source evidence: inline dashboard JavaScript parses; operator UI tests cover 10 default-closed `<details>` cards, responsive two-column/full-width-open layout, bounded expanded scrolling, notification severity/newest-30 behavior, Inspector auto-open, opt-in/persisted Web Audio, reduced-motion handling, hidden-page guards, and avoidance of layout-dimension animation in the imperative motion helper. Run the complete Agent Control check/test suite plus required Security Supply Chain and Workflow Feature gates on the exact candidate. Source tests do not replace the post-integration live heaven2 browser smoke.
 
 ---
 # v8.8.49 UI regression integration candidate
