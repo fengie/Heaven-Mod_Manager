@@ -97,8 +97,8 @@ public sealed class GameBananaTransport
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (gameId <= 0) throw new ArgumentOutOfRangeException(nameof(gameId));
-        if (page <= 0) throw new ArgumentOutOfRangeException(nameof(page));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gameId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
 
         return SendJsonAsync(
             "Core/List/New",
