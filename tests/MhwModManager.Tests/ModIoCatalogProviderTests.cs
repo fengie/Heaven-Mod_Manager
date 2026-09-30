@@ -25,6 +25,7 @@ public sealed class ModIoCatalogProviderTests
         Assert.True(compliance.AllowsCatalogDiscovery);
         Assert.True(compliance.AllowsDirectDownload);
         Assert.False(compliance.AllowsHtmlParsing);
+        Assert.Equal(new Uri("https://mod.io/apiterms"), compliance.TermsUri);
     }
 
     [Fact]
