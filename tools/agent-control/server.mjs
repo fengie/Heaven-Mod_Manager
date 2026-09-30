@@ -47,6 +47,7 @@ import {
   bridgeResultSucceeded,
   cancelHeavenBridgeJob,
   inspectHeavenBridge,
+  runHeavenBridgeAction,
   runHeaven2BridgeAction
 } from "./lib/heaven-bridge-provider.mjs";
 import { placementTransportDecision } from "./lib/liveness-scheduler.mjs";
@@ -2054,6 +2055,48 @@ function markRegistryRetirementBlocked(state, source, reason) {
   });
 }
 
+async function proveRetryExhaustedRemoteJobStopped(source) {
+  if (source?.executionProvider !== "heaven-bridge" || !source?.remoteJobId) {
+    return { required: false, stopped: true, state: null };
+  }
+
+  const remoteJobId = String(source.remoteJobId);
+  const cancellation = await cancelHeavenBridgeJob(remoteJobId, { reason: "retry-exhausted-retirement" });
+  if (!bridgeResultSucceeded(cancellation)) {
+    throw new Error(`Heaven Bridge retry-exhausted cancellation was not authoritative: ${cancellation?.status || "unknown"} / ${cancellation?.exit_code ?? "unknown"}.`);
+  }
+
+  if (String(cancellation?.data?.reason || "").toLowerCase() === "not_running") {
+    return { required: true, stopped: true, state: "not_running" };
+  }
+  if (cancellation?.data?.cancel_requested !== true) {
+    throw new Error(`Heaven Bridge did not confirm cancellation ownership for remote job ${remoteJobId}.`);
+  }
+
+  const deadline = Date.now() + 15_000;
+  let lastState = "running";
+  while (Date.now() < deadline) {
+    const status = await runHeavenBridgeAction({
+      id: `retire-status-${remoteJobId}-${Date.now()}`,
+      action: "job_status",
+      params: { job_id: remoteJobId },
+      timeoutMs: 30_000,
+      priority: "highest"
+    });
+    if (!bridgeResultSucceeded(status)) {
+      throw new Error(`Heaven Bridge job-status check failed: ${status?.status || "unknown"} / ${status?.exit_code ?? "unknown"}.`);
+    }
+
+    lastState = String(status?.data?.state || "unknown").toLowerCase();
+    if (lastState !== "running") {
+      return { required: true, stopped: true, state: lastState };
+    }
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+
+  throw new Error(`Remote Heaven Bridge job ${remoteJobId} remained running after cancellation request.`);
+}
+
 async function retireRetryExhaustedManagedAgent(agentId, {
   reason = "no-work-retry-exhausted"
 } = {}) {
@@ -2064,6 +2107,8 @@ async function retireRetryExhaustedManagedAgent(agentId, {
     let state = loadState();
     let source = state.agents.find(item => item.id === agentId);
     if (!source || !isRetryExhaustedManagedAgent(source)) return null;
+
+    await proveRetryExhaustedRemoteJobStopped(source);
 
     const pid = Number(source.pid);
     const child = source.ownerSessionId === SESSION_ID ? children.get(source.id) : null;
@@ -2083,12 +2128,6 @@ async function retireRetryExhaustedManagedAgent(agentId, {
         );
         saveState(state);
         return null;
-      }
-      if (source.executionProvider === "heaven-bridge" && source.remoteJobId) {
-        const cancellation = await cancelHeavenBridgeJob(source.remoteJobId, { reason: "retry-exhausted-retirement" });
-        if (!bridgeResultSucceeded(cancellation)) {
-          throw new Error(`Heaven Bridge retry-exhausted cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
-        }
       }
       await killProcessTree(pid);
       if (!await waitForPidExit(pid)) {
