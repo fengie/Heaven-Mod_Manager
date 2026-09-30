@@ -14,6 +14,7 @@ From 2026-09-29 forward:
 - Do not scatter plugin source under `tools/`, `scripts/`, `src/`, or unrelated feature folders merely for convenience.
 - Repository-wide scripts may invoke plugins, but the plugin implementation remains owned here.
 - Every plugin must include a README describing purpose, exposed capabilities, security boundary, local dependencies, validation commands, and ownership/migration notes.
+- Plugin upgrades are replacements, not side-by-side accumulation: after a newer version of the same plugin identity is installed and verified, remove older installed/runtime copies in the same change cycle. Keep canonical Git history/source and auth/config state; never delete unrelated plugins merely because names are similar.
 
 
 ## Plugin-first routing and gap capture
@@ -34,6 +35,17 @@ If the relevant plugin/connector/tool is **proven unavailable in the current run
 A gap entry must be implementation-ready enough for a future agent to pick up without the original conversation: triggering use case, proposed owner/plugin boundary, capability/API contract, security constraints, dependencies/reuse, acceptance tests, priority, and current status.
 
 The immediate user task should still proceed through the safest authorized fallback when possible. Local replacement work exists to remove recurring external-plugin dependency over time, not to create artificial blockers or to bypass provider quotas/authentication.
+
+## Installed-version cleanup
+
+Local/custom plugin updates must converge to one active installed version per plugin identity. After the new version passes its plugin-specific verification, run the repository pruner immediately; the scheduled maintenance task on both Heaven machines is a safety net, not a substitute for update-time cleanup.
+
+```powershell
+python .\plugins\_tooling\prune_outdated_plugins.py --apply --repo-root .
+powershell -NoProfile -ExecutionPolicy Bypass -File .\plugins\_tooling\Install-PluginVersionPruner.ps1 -RepoRoot .
+```
+
+The pruner groups copies by manifest `name`, compares strict SemVer versions, deletes only strictly older installed directories when a newer copy is present, skips non-SemVer versions, refuses paths outside managed plugin roots, and protects canonical repository source. ChatGPT-managed marketplace/connectors remain platform-managed and are not filesystem-pruned by this tooling.
 
 ## Existing Heaven Local Bridge compatibility
 
