@@ -81,6 +81,36 @@ public sealed class NexusV3CatalogProviderTests
     }
 
     [Fact]
+    public async Task Unavailable_mod_details_return_null_without_schema_drift()
+    {
+        var handler = new RoutingHandler((_, _) =>
+            Task.FromResult(JsonResponse(
+                HttpStatusCode.OK,
+                """
+                {
+                  "data": {
+                    "id": "fixture-hidden-global-id",
+                    "game_scoped_id": "303",
+                    "game_id": "fixture-game-global-id",
+                    "name": null
+                  }
+                }
+                """)));
+
+        using var client = new HttpClient(handler);
+        var provider = new NexusV3CatalogProvider(
+            new NexusV3Transport(client),
+            NexusV3Credential.ApiKey("fixture-key"));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var mod = await provider.GetModAsync(game, "303");
+
+        Assert.Null(mod);
+        var health = await provider.GetHealthAsync();
+        Assert.Equal(CatalogProviderState.Connected, health.State);
+    }
+
+    [Fact]
     public async Task Missing_credentials_mark_authentication_required()
     {
         using var client = new HttpClient(new RoutingHandler((_, _) =>
