@@ -32,10 +32,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## PLAN-001 — Centralized planning and progress governance
 
-**Priority:** P0  
-**Status:** ACTIVE  
-**Owner:** current planning-governance integration owner  
-**Dependencies:** canonical continuity/versioning rules  
+**Priority:** P0
+**Status:** ACTIVE
+**Owner:** current planning-governance integration owner
+**Dependencies:** canonical continuity/versioning rules
 **Design references:** this file; generic trainer planning rules
 
 **Acceptance criteria:** one authoritative plan ledger exists; all future feature planning routes through it; README exposes concise current goals/progress; legacy plan files stop acting as independent status authorities; handoff validation catches missing/drifted planning invariants.
@@ -51,10 +51,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## AGENT-001 — Agent Manager P0 reliability closure
 
-**Priority:** P0  
-**Status:** ACTIVE  
-**Owner:** Agent Manager / Agent Control primary owner  
-**Dependencies:** authenticated provider/Bridge health; canonical runtime freshness  
+**Priority:** P0
+**Status:** ACTIVE
+**Owner:** Agent Manager / Agent Control primary owner
+**Dependencies:** authenticated provider/Bridge health; canonical runtime freshness
 **Design references:** `_AGENT_CONTEXT/AGENT_CONTROL_PLANE_2026-09-29.md`, current Agent Control handoffs
 
 **Acceptance criteria:** the operator can trust Agent Manager to represent real live state and safely dispatch, observe, recover, stop, and retire work without stale ownership or false machine/provider claims.
@@ -70,10 +70,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## CATALOG-001 — In-app Mod Browser / federated catalog
 
-**Priority:** P0  
-**Status:** ACTIVE  
-**Owner:** catalog/mod-browser feature owner  
-**Dependencies:** provider compliance/auth boundaries; existing safe import pipeline  
+**Priority:** P0
+**Status:** ACTIVE
+**Owner:** catalog/mod-browser feature owner
+**Dependencies:** provider compliance/auth boundaries; existing safe import pipeline
 **Design reference:** `docs/catalog/PROJECT_PLAN.md`
 
 **Acceptance criteria:** users can browse/search useful mod sources directly in the manager with a polished responsive UI, inspect source-aware detail, and acquire only through supported provider flows into the existing safe import/install boundary.
@@ -89,10 +89,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## AGENT-002 — Agent Manager plan dashboard
 
-**Priority:** P1  
-**Status:** PLANNED  
-**Owner:** unclaimed  
-**Dependencies:** PLAN-001; Agent Manager P0 should be stable enough to avoid UI churn  
+**Priority:** P1
+**Status:** PLANNED
+**Owner:** unclaimed
+**Dependencies:** PLAN-001; Agent Manager P0 should be stable enough to avoid UI churn
 **Design reference:** `_AGENT_CONTEXT/PROJECT_PLAN.md`
 
 **Acceptance criteria:** Agent Manager shows the canonical plan at a glance without forcing long scrolling, with collapsed-by-default sections and drill-down for evidence/detail.
@@ -107,10 +107,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## AGENT-003 — Plan-aware scheduling, claims, and recovery
 
-**Priority:** P1  
-**Status:** PLANNED  
-**Owner:** unclaimed  
-**Dependencies:** PLAN-001; AGENT-001  
+**Priority:** P1
+**Status:** PLANNED
+**Owner:** unclaimed
+**Dependencies:** PLAN-001; AGENT-001
 **Design references:** generic multi-agent coordination and continuity rules
 
 **Acceptance criteria:** autonomous workers select ready work from the central plan, respect dependencies/ownership, and leave recoverable progress that another agent can resume without chat history.
@@ -126,10 +126,10 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## AUTO-001 — Auto Modder / Mod Builder
 
-**Priority:** P1  
-**Status:** ACTIVE  
-**Owner:** Auto Modder feature owner  
-**Dependencies:** safe import/deployment pipeline; verified format adapters  
+**Priority:** P1
+**Status:** ACTIVE
+**Owner:** Auto Modder feature owner
+**Dependencies:** safe import/deployment pipeline; verified format adapters
 **Design reference:** `docs/AUTO-MODDER-PLAN.md`
 
 **Acceptance criteria:** a user can choose a supported recipe, fill human-readable inputs, preview exact typed changes, build a provenance-rich mod package, and add it through the normal safe manager workflow.
@@ -144,9 +144,9 @@ Priority order is intentional: finish the planning-system integration, close the
 
 ## AGENT-004 — Plan hygiene, evidence, and metrics
 
-**Priority:** P2  
-**Status:** PLANNED  
-**Owner:** unclaimed  
+**Priority:** P2
+**Status:** PLANNED
+**Owner:** unclaimed
 **Dependencies:** PLAN-001; useful runtime history from AGENT-003
 
 **Acceptance criteria:** planning stays low-maintenance and honest while giving the operator useful signals rather than vanity metrics.
