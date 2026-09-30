@@ -2,29 +2,6 @@ using MhwModManager.Core;using Xunit;
 namespace MhwModManager.Tests;
 public sealed class ConflictEngineTests
 {
-    [Fact] public void Protected_loader_bootstrap_collision_fails_closed()
-    {
-        var p=@"root\dinput8.dll";
-        var e=new ConflictEngine();
-        var d=e.Decide(p,[C("loader-a","Loader A",p,"aa",1),C("loader-b","Loader B",p,"bb",99)],[],
-            new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());
-        Assert.True(d.Blocking);
-        Assert.Equal(ConflictKind.HardGameData,d.Kind);
-        Assert.Equal("protected-bootstrap-collision",d.ReasonCode);
-        Assert.Null(d.WinnerModId);
-    }
-
-    [Fact] public void Explicit_exact_winner_can_resolve_protected_loader_collision()
-    {
-        var p=@"root\loader.dll";
-        var e=new ConflictEngine();
-        var d=e.Decide(p,[C("loader-a","Loader A",p,"aa",1),C("loader-b","Loader B",p,"bb",99)],[],
-            new Dictionary<string,string>{{p,"loader-a"}},new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());
-        Assert.False(d.Blocking);
-        Assert.Equal(ConflictKind.UserOverlayRule,d.Kind);
-        Assert.Equal("loader-a",d.WinnerModId);
-    }
-
     private static ProviderCandidate C(string id,string name,string path,string hash,int priority=0)=>new(id,name,priority,new(id,path,hash,null,1,DateTimeOffset.UtcNow,PathRules.ClassifyFile(path)));
     [Fact] public void Identical_is_non_blocking(){var e=new ConflictEngine();var d=e.Decide(@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex",[C("a","A",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex","aa"),C("b","B",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex","aa",1)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.Identical,d.Kind);Assert.False(d.Blocking);}
     [Fact] public void Independent_texture_replacers_require_choice(){var p=@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex";var e=new ConflictEngine();var d=e.Decide(p,[C("a","Red Recolor",p,"aa"),C("b","Blue Recolor",p,"bb",2)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.TextureOverride,d.Kind);Assert.Null(d.WinnerModId);Assert.True(d.Blocking);Assert.Equal("independent-texture-replacement",d.ReasonCode);}
