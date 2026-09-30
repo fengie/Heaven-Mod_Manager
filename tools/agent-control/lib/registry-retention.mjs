@@ -2,6 +2,7 @@ const MANAGED_FAILURE_STATES = new Set(["failed", "interrupted", "orphaned", "ca
 const ACTIVE_RECOVERY_STATES = new Set([
   "retry-pending",
   "retry-waiting",
+  "retry-blocked",
   "stream-lost-checking-work",
   "work-detected-incomplete"
 ]);
@@ -10,7 +11,8 @@ const normalize = value => String(value || "").trim().toLowerCase();
 
 export function managedAgentRegistryDisposition(agent, {
   processAlive = false,
-  ownedChildAlive = false
+  ownedChildAlive = false,
+  durableWork = false
 } = {}) {
   const status = normalize(agent?.status);
   const recoveryStatus = normalize(agent?.recoveryStatus);
@@ -23,6 +25,9 @@ export function managedAgentRegistryDisposition(agent, {
   }
   if (ownedChildAlive || processAlive) {
     return { retire: false, reason: "process-still-alive" };
+  }
+  if (durableWork) {
+    return { retire: false, reason: "durable-work-pending-reconciliation" };
   }
 
   return {
