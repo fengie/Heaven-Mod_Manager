@@ -20,6 +20,7 @@
       "content_type": "application/zip",
       "size": 123456,
       "download_count": 42,
+      "digest": "sha256:2151b604e3429bff440b9fbc03eb3617bc2603cda96c95b9bb05277f9ddba255",
       "created_at": "2026-09-29T18:55:00Z",
       "browser_download_url": "https://github.com/example/mhw-mod/releases/download/v1.2.3/mhw-mod-v1.2.3.zip"
     },
