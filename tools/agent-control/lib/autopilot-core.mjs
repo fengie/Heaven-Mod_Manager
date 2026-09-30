@@ -23,6 +23,7 @@ export function defaultAutopilotState() {
     enabled: false,
     paused: false,
     objective: "",
+    overallGoal: "",
     phase: "waiting-for-direction",
     iteration: 0,
     repairLoops: 0,
@@ -68,6 +69,7 @@ export function normalizeAutopilotState(value = {}) {
     ...(value && typeof value === "object" ? value : {}),
     phase,
     objective: String(value?.objective || ""),
+    overallGoal: String(value?.overallGoal || "").trim(),
     iteration: Math.max(0, Number(value?.iteration || 0) || 0),
     repairLoops: Math.max(0, Number(value?.repairLoops || 0) || 0),
     maxRepairLoops: Number.isFinite(Number(value?.maxRepairLoops))
