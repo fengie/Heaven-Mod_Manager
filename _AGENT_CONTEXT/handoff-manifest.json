@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.28",
+  "currentVersion": "8.8.29",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.27 Agent Control agent-card inspection",
+  "immediateParentRevision": "v8.8.28 Agent Control Heaven relay execution repair",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and keep Agent Manager functionality P0. Preserve the v8.8.28 Heaven relay execution resolver invariant: health/preflight, submit, and result-wait must share documented relay discovery while explicit caller paths remain authoritative. Run exact-head Agent Control checks plus real heaven2→heaven1 no-env dispatch smoke, then continue the manager-sequenced #472 + #469 backend retirement-safety closure without weakening local ownership/worktree fail-closed guards. Re-query current main before integration, merge only verified work, clean temporary branches, and leave durable successor notes.",
+  "nextAgentObligation": "Run the exact v8.8.29 handoff preflight and negative fixtures and keep the visible-progress section-scoped invariant intact. Then return to the active Agent Manager P0 runtime lanes: stale heaven2 controller source synchronization/restart, live heaven2→heaven1 dispatch proof, and remote retry-exhausted stop proof. Reconcile against current main before integration, preserve exact-SHA evidence, and clean temporary branches after merge.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
