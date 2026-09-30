@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish exact-head v8.8.42 scoped CI evidence/fail-closed gate tests and actual API proof, integrate/publish and preserve truthful provider configuration, separate auth/install gaps, Agent Manager P0 and recursive continuity.",
+  "nextAgentObligation": "v8.8.42 CI evidence/gate hardening is integrated, verified and published as private/public build 351. Coordinate existing navigation/inspector work, continue actionable Agent Manager P0, preserve separate provider/auth/real-install gaps and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

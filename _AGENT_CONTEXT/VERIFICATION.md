@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.42 closure — authoritative continuation
+
+PR #514 integrated source `7e8e045cc7c89a8b7ff318c28b98d08b76443522`. Exact-head/main checks pass, immutable private/public build 351 is published with matching assets/provenance, and disposable updater success/rollback passes. The scoped adapter proves all four main gates with a 2.1 KB packet and correctly withheld success while release was running. Agent Control 0.6.19 is healthy on heaven2 from this source; startup savings/budgets remain enforced. See `_AGENT_CONTEXT/EVIDENCE/v8.8.42-ci-evidence.md`; candidate entries below are historical and superseded.
+
+1. Start from fresh canonical main, exact version, PRs/branches/leases and compact training. Agent Manager P0 remains active pending full dispatch/recovery/stop and authenticated provider proof.
+2. Coordinate existing `feature/bounded-context-navigation-v8.8.43-20260930` and inspector branches before new work; ownership is external/unknown in this chat, not assumed abandoned. Inspect their exact artifacts/PRs and preserve unique work. Do not duplicate navigation work suggested in v8.8.41.
+3. Next workflow improvement is authorized host-reader registration/health in existing consumers, plus explicit pending-vs-failed presentation and measured query latency. Provider configuration is a permission boundary; no new credential store/cache, auth bypass or quota retries. Broader PG-005 host integration remains separate from this verified adapter subtask.
+4. Preserve actual operator installation and authenticated/current Bridge worker/watchdog/SYSTEM-sentinel recovery as separate live tasks. Scheduled lanes defer unchanged blockers and select other actionable unowned work. Old inactive branches require ownership/unique-work proof before cleanup.
+
+Ownership: current chat owns closure evidence only; code is integrated and implementation branch removed. CI proof commits `60571348` (Windows) and `cccee190` (updater E2E) are canonical. Managed plugin pruner dry-run found no older installed copies; canonical Git source/history is preserved. Explicit provider injection was tested, not falsely advertised as automatic host registration. Preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` to the successor and the agent after them. Do not break the chain.
+
+---
 # 2026-09-30 v8.8.42 current CI evidence — active continuation
 
 Owner: current chat, branch `codex/ci-evidence-scaling`, base `c0637afae80adad95f0f3f291534d5f0da46890b`. Boundary: existing Heaven Workflows release-evidence adapter/verification and required version/training/continuity. v8.8.41 closure is integrated; its proof does not verify this candidate.
