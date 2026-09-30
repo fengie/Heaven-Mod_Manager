@@ -5,6 +5,7 @@ import {
   clearObservationRetirement,
   forgetFederatedAgent,
   isRetryExhaustedManagedAgent,
+  managedAgentRetirementDecision,
   recordAgentRetirement,
   retiredObservationDecision
 } from "../lib/registry-retirement.mjs";
@@ -22,6 +23,63 @@ test("only terminal retry-exhausted managed agents qualify for retirement", () =
     status: "done",
     recoveryStatus: "work-verified-complete"
   }), false);
+});
+
+test("dead retry-dispatched ancestors retire only after replacement ownership is known", () => {
+  const parent = {
+    id: "failed-parent",
+    status: "failed",
+    recoveryStatus: "retry-dispatched",
+    replacementAgentId: "replacement-agent"
+  };
+
+  assert.deepEqual(
+    managedAgentRetirementDecision(parent, {
+      managedAgentIds: ["failed-parent", "replacement-agent"],
+      retiredAgentIds: []
+    }),
+    {
+      retire: true,
+      reason: "retry-dispatched-superseded",
+      replacementAgentId: "replacement-agent"
+    }
+  );
+
+  assert.equal(
+    managedAgentRetirementDecision(parent, {
+      managedAgentIds: ["failed-parent"],
+      retiredAgentIds: ["replacement-agent"]
+    }).retire,
+    true
+  );
+
+  assert.equal(
+    managedAgentRetirementDecision(parent, {
+      managedAgentIds: ["failed-parent"],
+      retiredAgentIds: []
+    }).retire,
+    false
+  );
+
+  assert.equal(
+    managedAgentRetirementDecision({
+      ...parent,
+      recoveryStatus: "retry-waiting"
+    }, {
+      managedAgentIds: ["replacement-agent"]
+    }).retire,
+    false
+  );
+
+  assert.equal(
+    managedAgentRetirementDecision({
+      ...parent,
+      replacementAgentId: null
+    }, {
+      managedAgentIds: ["replacement-agent"]
+    }).retire,
+    false
+  );
 });
 
 test("retirement ledger deduplicates the same provider source while preserving durable summary", () => {
