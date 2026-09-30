@@ -118,6 +118,19 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void DashboardExposesManualProgramUpdateCheckThroughExistingUpdaterFlow()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var updater = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Updater.cs"));
+
+        Assert.Contains("Content=\"Check for updates\"", xaml);
+        Assert.Contains("Command=\"{Binding CheckForProgramUpdatesCommand}\"", xaml);
+        Assert.Contains("await CheckAndStageProgramUpdateAsync(manual: true, backgroundCts.Token);", updater);
+        Assert.Contains("await CheckAndStageProgramUpdateAsync(manual: false, ct);", updater);
+    }
+
+    [Fact]
     public void ComboBoxesUseMatchedSystemColorsForReadableSelectedText()
     {
         var root = FindRepositoryRoot();
