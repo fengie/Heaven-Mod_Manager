@@ -3,19 +3,19 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/agent-control-retry-parent-retirement-v8.8.38-20260930",
-  "currentVersion": "8.8.38",
+  "workingBranch": "fix/heaven-bridge-primary-reliability-v8.8.39-20260930",
+  "currentVersion": "8.8.39",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify and integrate v8.8.38 retry-parent retirement; then deploy/restart Agent Control on heaven2 and confirm the stale 27 tracked retry-parent rows drain from current registry presence",
+  "nextMilestone": "verify, merge, mirror canonical bridge source to transport branch, apply primary-control mode on heaven2/heaven, recover both bridge runtimes, and require healthy STATUS on both hosts",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.37 Agent Control registry lifecycle closure",
-  "status": "v8.8.38-agent-control-retry-parent-retirement",
+  "status": "v8.8.39-heaven-bridge-primary-reliability",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.38 removes retry-dispatched from unconditional managed retention so terminal superseded retry parents can pass through existing fail-closed process/branch/worktree retirement proof. Exact-head Agent Control + Security gates are required; live removal of the observed 27 requires the heaven2 runtime to load v0.6.16.",
+  "verificationScopeNote": "v8.8.39 adds persistent local repo-ACL authorization shared by bridge worker and Agent Control, makes RDC fallback-only, ignores Python runtime caches, and advances bridge worker/plugin plus Agent Control versions. Exact-head bridge tests + Agent Control tests + live dual-host RECOVER/STATUS are required.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.39 Heaven Local Bridge primary reliability: persistent machine-local repo-ACL marker, RDC on-demand fallback, Python cache ignore, worker v8, bridge plugin v0.8.3, Agent Control v0.6.17.",
     "2026-09-30 v8.8.38 Agent Control retry-parent retirement: terminal failed retry-dispatched parents with superseded tasks are no longer permanently retained; unresolved recovery/work remains fail-closed; Agent Control/plugin identity advances to v0.6.16.",
     "2026-09-30 v8.8.37 Agent Control registry lifecycle: safely retire ordinary terminal managed workers only after ownership/work preservation, archive terminal/disconnected-timeout federated presence with per-source tombstones, exclude historical rows from live-registry totals, expose forensic Registry history, and advance Agent Control/plugin identity to v0.6.15.",
     "2026-09-30 v8.8.36 Agent Manager notification/stable inspector: render backend notifications, route exact supported inspect actions, persist managed/federated selection across refresh, expose recovery context/valid actions, handle retirement races explicitly, replace fake keyboard card semantics with explicit Inspect controls, and advance Agent Control/plugin identity to v0.6.14.",
@@ -164,7 +165,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test and Security gate, merge to main, then restart/deploy v0.6.16 on heaven2 and verify Managed agents drops the stale retry-parent rows instead of preserving them as RETRY DISPATCHED.",
+  "nextRequiredAction": "Run exact-head bridge TEST and Agent Control check/test; merge only if green; sync the non-operational heaven-bridge source mirror from main; apply Set-PrimaryControlMode.ps1 on both hosts; run RECOVER; prove exactly one worker/watchdog/sentinel and fresh heartbeats on heaven2 and heaven.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
