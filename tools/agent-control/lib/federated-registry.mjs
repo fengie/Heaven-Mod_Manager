@@ -11,6 +11,8 @@ export const NORMALIZED_AGENT_STATES = new Set([
   "disconnected"
 ]);
 export const LIVE_AGENT_STATES = new Set(["working", "tool_wait", "blocked", "idle"]);
+export const RETIRED_MANAGED_AGENT_STATUSES = new Set(["failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
+export const TERMINAL_RECOVERY_STATUSES = new Set(["retry-exhausted", "retry-blocked", "retry-disabled"]);
 export const DEFAULT_STALE_AFTER_MS = 120_000;
 export const DEFAULT_DISCONNECTED_AFTER_MS = 300_000;
 export const PROVIDER_HEALTH_STATES = new Set([
@@ -738,6 +740,8 @@ export function syncManagedAgents(federation, managedAgents = [], {
       },
       source_metadata: {
         managed_agent_id: String(managed.id),
+        managed_status: managed.status || null,
+        managed_recovery_status: managed.recoveryStatus || null,
         pid: managed.pid || null,
         lease_id: managed.leaseId || null,
         boundary: managed.boundary || null,
@@ -788,14 +792,51 @@ export function materializeAgent(agent, {
   };
 }
 
-export function federationSnapshot(federation, { now = Date.now() } = {}) {
+export function shouldExposeFederatedAgent(agent, { managedAgents = null } = {}) {
+  if (!agent || typeof agent !== "object") return false;
+
+  const metadata = agent.source_metadata && typeof agent.source_metadata === "object"
+    ? agent.source_metadata
+    : {};
+  const recoveryStatus = String(
+    agent.recovery_status
+    || agent.recoveryStatus
+    || metadata.managed_recovery_status
+    || ""
+  ).trim().toLowerCase();
+
+  if (TERMINAL_RECOVERY_STATUSES.has(recoveryStatus)) return false;
+  if (agent.effective_state === "failed" || agent.state === "failed") return false;
+  if (agent.freshness === "disconnected" || agent.effective_state === "disconnected") return false;
+
+  const managedId = String(metadata.managed_agent_id || "").trim();
+  if (!managedId) return true;
+
+  const currentManaged = Array.isArray(managedAgents)
+    ? managedAgents.find(item => String(item?.id || "") === managedId)
+    : null;
+  if (Array.isArray(managedAgents) && !currentManaged) return false;
+
+  const managedStatus = String(currentManaged?.status || metadata.managed_status || "").trim().toLowerCase();
+  const managedRecoveryStatus = String(
+    currentManaged?.recoveryStatus
+    || metadata.managed_recovery_status
+    || ""
+  ).trim().toLowerCase();
+
+  if (TERMINAL_RECOVERY_STATUSES.has(managedRecoveryStatus)) return false;
+  return !RETIRED_MANAGED_AGENT_STATUSES.has(managedStatus);
+}
+
+export function federationSnapshot(federation, { now = Date.now(), managedAgents = null } = {}) {
   const staleAfterMs = Number(federation?.stale_after_ms) || DEFAULT_STALE_AFTER_MS;
   const disconnectedAfterMs = Number(federation?.disconnected_after_ms) || DEFAULT_DISCONNECTED_AFTER_MS;
-  const agents = (federation?.agents || []).map(agent => materializeAgent(agent, {
+  const materializedAgents = (federation?.agents || []).map(agent => materializeAgent(agent, {
     now,
     staleAfterMs,
     disconnectedAfterMs
   }));
+  const agents = materializedAgents.filter(agent => shouldExposeFederatedAgent(agent, { managedAgents }));
 
   const counts = {
     live: agents.filter(agent => agent.live).length,
