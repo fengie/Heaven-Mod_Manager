@@ -83,6 +83,16 @@ test("dashboard has unique DOM ids and required federated operator surfaces", ()
   assert.match(html, /coverage\.authoritative/);
 });
 
+test("dashboard preserves active lifecycle controls and rejects stale poll overwrites", () => {
+  const html = fs.readFileSync(path.join(HERE, "..", "public", "index.html"), "utf8");
+  assert.match(html, /stoppableManagedStatuses = new Set\(\["reserved","starting","running","waiting","blocked","stale","stopping"\]\)/);
+  assert.match(html, /stoppableManagedStatuses\.has\(a\.status\)/);
+  assert.match(html, /const selectedMachine = \$\("machine"\)\.value \|\| "auto"/);
+  assert.match(html, /refreshInFlight/);
+  assert.match(html, /requestId < state\.refreshAppliedId/);
+  assert.match(html, /requestId >= state\.refreshAppliedId/);
+});
+
 test("dashboard inline JavaScript parses cleanly", () => {
   const html = fs.readFileSync(path.join(HERE, "..", "public", "index.html"), "utf8");
   const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]);
