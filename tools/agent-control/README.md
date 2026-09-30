@@ -14,7 +14,9 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.5.11 does
+## What v0.6.2 does
+
+- Enforces the canonical **Agent Manager P0 functionality lock** whenever `_AGENT_CONTEXT/CURRENT_REVISION.json` marks it active: implementation and perpetual expansion stay on Agent Control reliability/orchestration/observability/routing/recovery/verification and unrelated product expansion is excluded until the completion gate is proven.
 
 - Makes dashboard lifecycle controls match the server's authoritative active-state model: reserved, starting, running, waiting, blocked, stale, and stopping managed workers can all be stopped from the UI. Polling is serialized and sequence-checked so slow older snapshots cannot overwrite newer operator state, and periodic refreshes preserve the selected worker target instead of silently resetting it to Auto.
 
