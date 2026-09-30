@@ -59,3 +59,5 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 
 30. **Programmatic source edits require emitted-source validation.** When an agent generates or rewrites source code, validate the final bytes as target-language source—not merely the edit template or diff—and run the narrowest native parser/compiler/build before handoff when execution is available. Escaped control characters, quoting artifacts, encoding damage, or templating residues are a recurring defect class; a source-producing workflow should not advertise readiness until syntax closure is proven.
 
+31. **Secret egress and artifact acquisition require complete identity binding.** A secret-bearing transport must bind credential emission to the canonical intended origin even when alternate endpoints are injectable for tests. Any direct-download/install/acquisition resolver must validate the complete provider + game + item + artifact identity before returning a usable artifact; partial identity matches are not authorization.
+
