@@ -614,11 +614,14 @@
       box.classList.toggle("show");
     }
 
-    function bindAgentCardInteractions() {
+    function bindManagedAgentCardInteractions() {
       document.querySelectorAll(".managed-agent-card").forEach(card => {
         card.addEventListener("click", inspectManagedAgentCard);
         card.addEventListener("keydown", inspectManagedAgentCard);
       });
+    }
+
+    function bindFederatedAgentCardInteractions() {
       document.querySelectorAll(".federated-agent-card").forEach(card => {
         card.addEventListener("click", inspectFederatedAgentCard);
         card.addEventListener("keydown", inspectFederatedAgentCard);
@@ -654,7 +657,7 @@
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
         </article>
       `).join("");
-      bindAgentCardInteractions();
+      bindManagedAgentCardInteractions();
     }
 
     function renderFederation(snapshot) {
@@ -699,7 +702,7 @@
           <div class="log" id="federated-log-${escapeHtml(encodeURIComponent(a.agent_id))}"></div>
         </article>
       `).join("") : '<div class="empty">No federated agent observations yet.</div>';
-      bindAgentCardInteractions();
+      bindFederatedAgentCardInteractions();
     }
 
     function renderLeases(snapshot) {
