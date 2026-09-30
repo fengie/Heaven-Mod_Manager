@@ -381,3 +381,37 @@ test("remote runner stages new files and pushes only from the control-side workt
   assert.match(source, /git\(spec\.localWorktree, \["push", "--set-upstream", "origin", spec\.branchName\]\)/);
   assert.doesNotMatch(source, /git -C \$\{psQuote\(remoteWorktree\)\} push/);
 });
+
+
+test("bridge submit and wait entry points stay routed through execution relay resolution", () => {
+  const providerPath = new URL("../lib/heaven-bridge-provider.mjs", import.meta.url);
+  const source = fs.readFileSync(providerPath, "utf8");
+
+  const submitStart = source.indexOf("export async function submitHeavenBridgeJob");
+  const submitEnd = source.indexOf("export async function waitForHeavenBridgeResult", submitStart);
+  assert.ok(submitStart >= 0 && submitEnd > submitStart, "submit implementation must be present");
+  const submit = source.slice(submitStart, submitEnd);
+  assert.match(submit, /relayDir = resolveExecutionRelayDir\(relayDir\)/);
+  assert.doesNotMatch(
+    submit,
+    /relayDir\s*=\s*process\.env\.AGENT_CONTROL_HEAVEN_RELAY_DIR/,
+    "submit must not bypass documented relay discovery by reading the env path directly"
+  );
+
+  const waitStart = submitEnd;
+  const waitEnd = source.indexOf("export async function runHeavenBridgeAction", waitStart);
+  assert.ok(waitEnd > waitStart, "wait implementation must be bounded before runHeavenBridgeAction");
+  const wait = source.slice(waitStart, waitEnd);
+  assert.match(wait, /relayDir = resolveExecutionRelayDir\(relayDir\)/);
+  assert.doesNotMatch(
+    wait,
+    /relayDir\s*=\s*process\.env\.AGENT_CONTROL_HEAVEN_RELAY_DIR/,
+    "wait must not bypass documented relay discovery by reading the env path directly"
+  );
+
+  const resolverStart = source.indexOf("export function resolveExecutionRelayDir");
+  const resolverEnd = source.indexOf("\nexport ", resolverStart + 1);
+  const resolver = source.slice(resolverStart, resolverEnd > resolverStart ? resolverEnd : source.length);
+  assert.match(resolver, /if \(explicit\) return explicit/);
+  assert.match(resolver, /return resolveHeavenRelayDir\(options\)/);
+});
