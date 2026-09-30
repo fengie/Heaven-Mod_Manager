@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.26 Agent Control terminal registry retirement — CURRENT
+
+The current candidate closes the stale-registry half of the no-work retry incident. Clean terminal workers are now retired from the live managed/federated registry after their task, event, and failure evidence is persisted. **failed · RETRY EXHAUSTED** no longer remains as a permanent live card, and refresh also sweeps legacy clean dead records so they cannot be re-synchronized.
+
+Safety is fail-closed around useful work: any dirty worktree, commit/SHA divergence, changed-file evidence, PR, artifact, verification result, or other substantive durable evidence prevents retirement and remains visible for preservation/recovery. Notification actions targeting retired IDs are stripped so the dashboard cannot keep dead click targets.
+
+The earlier deterministic-failure repair remains the causal first half: authoritative nonzero exits are not classified as no-work and therefore are not amplified into retry storms. v8.8.26 handles lifecycle retirement after a worker is definitively terminal.
+
+Agent Control/runtime plugin identity is **v0.6.5**. Exact-head `npm run check` + `npm test` and a heaven2 live dashboard/controller smoke are required before runtime closure is claimed.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
