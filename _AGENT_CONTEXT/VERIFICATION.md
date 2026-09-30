@@ -1,3 +1,9 @@
+# v8.8.43 bounded context navigation — verification scope
+
+Historical green evidence does not transfer. Exact-head acceptance requires Agent Control syntax/tests including the new repository-bootstrap/navigation regressions, Workflow Feature/handoff governance, and Security Supply Chain on the same candidate SHA. Required behavior: indexed-path and SHA binding; literal case-insensitive search; Markdown-heading-only lookup; line/level metadata; query/result/output/snippet bounds; explicit truncation; CLI flag-conflict rejection; unchanged symlink/path/source-size protections; no persistent cache.
+
+Integration is not release closure. If canonical v8.8.43 is created, repository release policy requires immediate immutable publication and post-publication/runtime evidence through an authorized release-capable path. This chat does not claim Heaven/local runtime or release creation capability.
+
 # 2026-09-30 v8.8.42 current CI evidence — active continuation
 
 Owner: current chat, branch `codex/ci-evidence-scaling`, base `c0637afae80adad95f0f3f291534d5f0da46890b`. Boundary: existing Heaven Workflows release-evidence adapter/verification and required version/training/continuity. v8.8.41 closure is integrated; its proof does not verify this candidate.
