@@ -39,10 +39,39 @@ public sealed class NexusV3CatalogNormalizerTests
             document);
 
         Assert.Equal("fixture-mod-global-id", normalized.GlobalModId);
-        Assert.Equal("nexus:101", normalized.Mod.CanonicalId);
-        Assert.NotNull(normalized.Mod.ProviderMetadata);
-        Assert.Contains("fixture-mod-global-id", normalized.Mod.ProviderMetadata!, StringComparison.Ordinal);
-        Assert.DoesNotContain("http", normalized.Mod.ProviderMetadata!, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("101", normalized.ProviderModId);
+        Assert.Equal("fixture-game-global-id", normalized.GlobalGameId);
+        Assert.NotNull(normalized.Mod);
+        var mod = normalized.Mod!;
+        Assert.Equal("nexus:101", mod.CanonicalId);
+        Assert.NotNull(mod.ProviderMetadata);
+        Assert.Contains("fixture-mod-global-id", mod.ProviderMetadata!, StringComparison.Ordinal);
+        Assert.DoesNotContain("http", mod.ProviderMetadata!, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Valid_unavailable_mod_with_null_name_normalizes_as_missing_catalog_item()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "data": {
+                "id": "fixture-hidden-global-id",
+                "game_scoped_id": "303",
+                "game_id": "fixture-game-global-id",
+                "name": null
+              }
+            }
+            """);
+
+        var normalized = NexusV3CatalogNormalizer.NormalizeModDetails(
+            "monster-hunter-world",
+            "monsterhunterworld",
+            document);
+
+        Assert.Equal("fixture-hidden-global-id", normalized.GlobalModId);
+        Assert.Equal("303", normalized.ProviderModId);
+        Assert.Null(normalized.Mod);
     }
 
     [Fact]
