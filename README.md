@@ -1,4 +1,9 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
+
+## v8.8.50 — UI state and updater handoff hardening
+
+Closes the remaining audit findings behind the visible UI regressions: Dashboard now stretches naturally inside its scroll viewport instead of self-binding its width, a failed demand-loaded metadata refresh returns to a retryable state, updater safe-handoff preparation is invalidated when a newer staged update replaces it, and updater-health token/file/attempt values are redacted from normal startup argument diagnostics. Focused regressions pin all four invariants. The v8.8.49 ComboBox contrast and Mods empty-overlay fixes remain intact.
+
 
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
