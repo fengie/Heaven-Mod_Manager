@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHmac } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -23,6 +24,40 @@ function delay(ms) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+function sortJsonValue(value) {
+  if (Array.isArray(value)) return value.map(sortJsonValue);
+  if (value && typeof value === "object") {
+    const sorted = {};
+    for (const key of Object.keys(value).sort()) sorted[key] = sortJsonValue(value[key]);
+    return sorted;
+  }
+  return value;
+}
+
+export function canonicalBridgeJob(job) {
+  const copy = JSON.parse(JSON.stringify(job ?? {}));
+  if (copy.auth && typeof copy.auth === "object" && !Array.isArray(copy.auth)) {
+    delete copy.auth.signature;
+    if (Object.keys(copy.auth).length === 0) delete copy.auth;
+  }
+  return JSON.stringify(sortJsonValue(copy));
+}
+
+export function signBridgeJob(job, key) {
+  const secret = clean(key);
+  if (!secret) return job;
+  const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
+    .update(Buffer.from(canonicalBridgeJob(job), "utf8"))
+    .digest("hex");
+  return {
+    ...job,
+    auth: {
+      ...(job?.auth && typeof job.auth === "object" && !Array.isArray(job.auth) ? job.auth : {}),
+      signature
+    }
+  };
 }
 
 export function resolveHeavenRelayDir({
@@ -433,6 +468,8 @@ export async function submitHeavenBridgeJob(job, {
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
   if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  const signingKey = process.env.AGENT_CONTROL_HEAVEN_HMAC_KEY || process.env.HEAVEN_BRIDGE_HMAC_KEY || "";
+  if (clean(signingKey)) job = signBridgeJob(job, signingKey);
   const targetHost = normalizeBridgeHost(job?.target_host || HEAVEN_BRIDGE_HOST);
   return withRelayLock(relayDir, async () => {
     await syncUnlocked(relayDir, { expectedRepository, pull: true });
