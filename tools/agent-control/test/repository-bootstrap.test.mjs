@@ -102,6 +102,10 @@ test("context navigation is hash-checked, literal, line-addressable and bounded"
   assert.equal(search.matches[1].line, 4);
   assert.equal(search.truncated, true);
 
+  const longSearch = findRepositoryContext({ root, document, expectedSha256, query: "needle", maxResults: 3 });
+  assert.equal(longSearch.matches[2].textTruncated, true);
+  assert.ok(Buffer.byteLength(longSearch.matches[2].text) <= 512);
+
   const headings = findRepositoryContext({ root, document, expectedSha256, query: "target", mode: "heading" });
   assert.deepEqual(headings.matches.map(match => [match.line, match.level]), [[3, 2], [6, 3]]);
   assert.equal(headings.totalMatches, 2);
@@ -152,6 +156,7 @@ test("canonical CLI and generated worker prompts retain bounded retrieval and co
   assert.ok(search.matches.every(match => Number.isInteger(match.line)));
   const heading = JSON.parse((await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--heading", "plugin", "--results", "3"])).stdout);
   assert.equal(heading.mode, "heading");
+  assert.ok(heading.matches.length > 0);
   assert.ok(heading.matches.every(match => Number.isInteger(match.level)));
   await assert.rejects(execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--search", "plugin", "--line", "1"]), /cannot be combined/);
   const prompt = renderAgentPrompt({ role: "manager", task: "Verify startup", machine: "heaven2", assignment: {}, repositoryBootstrap: packet }).rendered;
