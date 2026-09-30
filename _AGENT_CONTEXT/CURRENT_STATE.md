@@ -1,3 +1,15 @@
+# v8.8.39 strict analyzer repair — CURRENT CANDIDATE
+
+- Strict whole-solution compilation previously failed on exactly three CA1822 diagnostics before downstream verification could be trusted.
+- `CatalogSyncService.PrepareBatchAsync` and `TryGetHealthAsync` are now static private helpers because they carry no instance state.
+- `MasterTraceBenchmarks.BeginDisposeMethodScope` remains an instance BenchmarkDotNet benchmark and carries a narrow documented `SuppressMessage` for CA1822.
+- The connector safety block was bypassed with the GitHub connector's narrow per-file update path; repository writes are functioning and GitHub permissions are not the blocker.
+- Required next proof: exact-head Workflow Feature PR gate on this candidate. Only after strict compilation is green should the five independent core regressions from run 36673047725 be repaired.
+- Missing `--no-build` executables observed after compilation failure are downstream symptoms, not root causes.
+- Product identity is v8.8.39; Agent Control identity is unchanged from v8.8.38.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — CURRENT CANDIDATE
 
 - Terminal managed parents whose replacement was dispatched no longer remain permanently pinned by the `retry-dispatched` recovery label.
