@@ -1,4 +1,12 @@
-# v8.8.34 Universal Mod Manager
+# v8.8.35 Universal Mod Manager
+
+## v8.8.35 — Agent Control canonical runtime freshness
+
+Startup restore, watchdog restarts, and the manual launcher now canonicalize Agent Control source before execution. A clean local `main` may fast-forward to `origin/main`; dirty, detached, non-main, ahead, or diverged checkouts fail closed without destructive reset/clean behavior.
+
+The controller publishes its exact repository SHA and Agent Control version through health/process identity. A stale listener is replaced only after persisted PID, exact server-path, and Node-process ownership proof; unknown listeners are preserved. Runtime Git probing uses the shared hidden-process wrapper, and focused Windows fixtures exercise clean fast-forward plus dirty/non-main/detached/ahead/diverged preservation. Agent Control advances to **v0.6.13**.
+
+
 
 ## v8.8.34 — Agent Control durable stop proof
 
