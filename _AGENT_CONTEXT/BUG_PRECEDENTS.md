@@ -379,3 +379,31 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Tests cover nonzero exit suppression, stream-loss metadata not overriding authoritative failure, swarm-tail non-resurrection of clean crashes, preservation of dirty work, and implementation-phase gating.
 - **References:** `fe302e78c453dd4cfb1630402368cb0ac57da80b`, `dc6e2df967f68a67d8ae108ae1ebdd87071fc96c`, `d1def9486620f1cc3b9016227fd25f42e87b9b09`, `3d918342b5a7d4c7d3b9fa25ae989e826b5ebd1c`.
 
+
+
+## 2026-09-30 — tracked-secret scanner — literal test canary blocked valid security verification
+- **Symptom:** Security Supply Chain Gate failed on a control-plane regression test because a committed secret-rejection canary was itself a literal GitHub-token-shaped string.
+- **Root cause:** The runtime negative test and the source-level tracked-secret scanner were given the same literal credential-shaped fixture, so the scanner correctly could not distinguish a test canary from a committed credential.
+- **Violated invariant / wrong assumption:** Security tests must exercise credential patterns without requiring credential-shaped literals to live in tracked source.
+- **Direct fix:** Build the GitHub token canary from non-secret string fragments at runtime while preserving the exact value seen by the artifact-secret validator.
+- **Preventive rule/process change:** Credential-rejection regression fixtures must be source-scanner-safe by construction; synthesize high-risk canaries at runtime and keep the source scanner fail-closed.
+- **Regression coverage added/strengthened:** Existing artifact-secret rejection test still exercises the GitHub-token-shaped runtime value; Security Supply Chain Gate on descendant commit `ee428f106b3cff7f3a4f570a66666a5bfb70eb61` completed successfully in run `36669778319`.
+- **References:** failing run `36669264469`, job `109740579636`; fix `98c9d15a5b0aee8a34b86499c7545f41d83aa739`.
+
+## 2026-09-30 — rollback durability — read-then-unconditional-write could steal ownership and generic fields could persist credentials
+- **Symptom:** Two rollback plans using the same `change_id` could race between the initial read and checkpoint write, allowing the later unconditional upsert to replace the winner. Separately, credential-like values under innocuous field names such as `value` passed persistence validation even though rollback state claimed not to persist credentials.
+- **Root cause:** Plan creation used a time-of-check/time-of-use ownership check without create-only compare-and-swap semantics, and secret validation trusted key names more than value content.
+- **Violated invariant / wrong assumption:** Durable ownership is a storage-layer atomicity property, not a pre-write observation. Secret persistence policy must protect values as well as familiar secret field names.
+- **Direct fix:** Add `expected_revision=0` create-only checkpoint CAS semantics; make rollback plan creation use it and reconcile same-plan races idempotently; reject high-confidence credential-like values before durable persistence.
+- **Preventive rule/process change:** Any durable named owner/lease/plan creation must have an atomic create-only primitive. Any state store claiming secret exclusion must test both sensitive keys and credential-shaped values under generic keys.
+- **Regression coverage added/strengthened:** State-store create-only CAS regression, concurrent competing rollback-owner regression, generic-key credential-value rejection regression, plus the independently integrated transition regression that forbids committing after rollback has started.
+- **References:** fix `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`; current-main rollback transition test `test_partial_rollback_cannot_be_committed_and_can_resume`.
+
+## 2026-09-30 — browser URL validation — legacy relay path accepted embedded URL credentials
+- **Symptom:** The deep Playwright provider rejected `https://user:pass@host/`, but the legacy desktop-browser `open`/navigation URL validator accepted it and could forward embedded credentials through relay-visible parameters.
+- **Root cause:** Two browser surfaces implemented different URL-security invariants.
+- **Violated invariant / wrong assumption:** Equivalent entry points must enforce the same credential-egress boundary; scheme validation alone is not credential validation.
+- **Direct fix:** Reject parsed URL username/password components in the legacy browser validator before any bridge call.
+- **Preventive rule/process change:** Shared security invariants must be checked across sibling/legacy adapters whenever a stricter provider is added; URLs carrying userinfo are credential-bearing inputs.
+- **Regression coverage added/strengthened:** Legacy browser service test asserts embedded credentials are rejected and no bridge request is emitted.
+- **References:** fix `2b828af3ead99192009b644a87d6e156f8535658`.

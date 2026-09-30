@@ -292,3 +292,24 @@ Before every future handoff, update the durable repository context, report verif
 - Preserve thin compatibility wrappers only where an established root launcher/path is intentionally user-facing.
 - Verify each batch and search for stale old-path references before merging to `main`.
 - Other agents should place all newly created files according to the new canonical layout immediately, so cleanup does not regress while the migration is underway.
+
+
+## 2026-09-30 bug-audit handoff — rollback/state/browser security
+
+Completed fixes on canonical `main`:
+- `98c9d15a5b0aee8a34b86499c7545f41d83aa739` — tracked-secret-safe runtime token canary.
+- `ee428f106b3cff7f3a4f570a66666a5bfb70eb61` — rollback secret-value rejection plus create-only checkpoint ownership CAS.
+- `2b828af3ead99192009b644a87d6e156f8535658` — legacy browser embedded-credential URL rejection.
+- A concurrent agent also closed the rollback state-transition hole so a partially executed rollback cannot later be certified committed; current main contains `test_partial_rollback_cannot_be_committed_and_can_resume`.
+
+Canonical-tree verification at `cbe685ad770952c771cf129e2b39b1fc62de63af` confirmed every owned invariant above still existed after concurrent integration. Security Supply Chain Gate run `36669778319` passed on descendant `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`; exact-head gates for `cbe685ad770952c771cf129e2b39b1fc62de63af` were still queued/pending when this handoff was written, so do not promote that state to exact-head green without a fresh read.
+
+Ordered next steps:
+1. Re-read canonical `main` and verify the same product/test invariants in the tree, not merely ancestry.
+2. Require a completed-successful Security Supply Chain Gate and applicable plugin gate on the exact final head or a verified descendant that contains the same tree changes.
+3. Audit sibling durable-owner creation call sites for read-then-unconditional-upsert patterns and sibling URL validators for embedded-userinfo acceptance; add fixes only when reproduced.
+4. Keep updater publication PR #432 separate from this audit unless a directly overlapping defect is proven.
+
+Unresolved verification gap: fast concurrent pushes can supersede/cancel plugin runs. A cancelled older plugin run is not failure, but it is also not exact-head success. Preserve this distinction in any completion claim.
+
+Successor requirement: keep LR-040/LR-041 and the bug precedents active, leave updated exact-SHA evidence, and pass these notes to the next agent.
