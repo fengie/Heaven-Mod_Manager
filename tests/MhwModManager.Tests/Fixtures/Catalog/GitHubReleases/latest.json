@@ -1,0 +1,37 @@
+{
+  "url": "https://api.github.com/repos/example/mhw-mod/releases/9001",
+  "html_url": "https://github.com/example/mhw-mod/releases/tag/v1.2.3",
+  "id": 9001,
+  "tag_name": "v1.2.3",
+  "name": "Elder Dragon Rebalance 1.2.3",
+  "body": "Rebalances elder dragon armor and quest rewards.",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2026-09-28T18:00:00Z",
+  "published_at": "2026-09-29T19:00:00Z",
+  "author": {
+    "login": "fixture-author"
+  },
+  "assets": [
+    {
+      "id": 501,
+      "name": "mhw-mod-v1.2.3.zip",
+      "label": "Main archive",
+      "content_type": "application/zip",
+      "size": 123456,
+      "download_count": 42,
+      "created_at": "2026-09-29T18:55:00Z",
+      "browser_download_url": "https://github.com/example/mhw-mod/releases/download/v1.2.3/mhw-mod-v1.2.3.zip"
+    },
+    {
+      "id": 502,
+      "name": "checksums.txt",
+      "label": null,
+      "content_type": "text/plain",
+      "size": 128,
+      "download_count": 9,
+      "created_at": "2026-09-29T18:56:00Z",
+      "browser_download_url": "https://github.com/example/mhw-mod/releases/download/v1.2.3/checksums.txt"
+    }
+  ]
+}
