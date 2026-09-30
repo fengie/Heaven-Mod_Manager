@@ -8,6 +8,8 @@ v8.8.49 UI fixes are merged on main. Exact candidate `3bc8f6b` passed Security S
 
 Candidate v8.8.50 consolidates governance while preserving mandatory pre-response/dispatch training, full continuity-constitution startup reading, authorized fallback/blocker rules, bug-prevention closure, recursive successor propagation, strict raw UTF-8 byte budgets, and adversarial handoff validation. Historical green does not transfer to this changed candidate.
 
+Canonical continuity pointers for every successor: `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` is the permanent constitution, and `_AGENT_CONTEXT/LEARNED_RULES.md` is the active learned-rules ledger. Read and preserve both before continuing.
+
 ## Next ordered actions and risks
 
 1. Run exact-head PR #528 checks for the current v8.8.50 head; repair only real failures without weakening safeguards.
