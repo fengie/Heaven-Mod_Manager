@@ -2,7 +2,7 @@
 
 ## Scope and startup
 
-The user has frozen new features for this cycle. Consolidate existing work and fix reproduced bugs only. Do not start new plugin capabilities, redesign architecture, or expand product scope. This handoff prepares assignments; no junior has been launched or given ownership yet.
+The user has frozen new features for this cycle. Consolidate existing work and fix reproduced bugs only. Do not start new plugin capabilities, redesign architecture, or expand product scope. Current chat owns v8.8.47 exact-inspector/integration repair; read-only reviewers completed. External branches remain preserved.
 
 Refresh `origin/main`, PRs, branches and controller leases before claiming a lane. Complete the compact hash-verified training and task/plugin preflight. Read the permanent continuity constitution, active learned rules and applicable precedents. Repository truth supersedes this snapshot. Every successor must preserve and recursively propagate the same rules to the agent after them. Do not break the chain.
 
@@ -71,3 +71,7 @@ Before finishing, update authoritative current state/next steps and explicitly r
 ## Consolidation preflight and evidence
 
 PLUGIN-PREFLIGHT: live task is consolidation, bug fixing and junior handoff, with no new features. Current tools discovered: native GitHub repo/PR/CI/merge, local hidden execution and canonical Agent Control CLI/status. Existing Bridge/Agent Control instructions, plugin workspace/backlog and repository training were reviewed; selected existing canonical owners and verified self-hosted CI. No new plugin, credential store, worker dispatch or auth/Work/RDC bypass. Fresh canonical controller suite passed 273/273. The navigation precedent's pending candidate wording is reconciled with its already-persisted exact release closure. New consolidation patch verification is tracked separately in CURRENT_REVISION and VERIFICATION.
+
+## Consolidation closure
+
+v8.8.45/source bbbe241a/build354 is verified/published with update/rollback proof; see ../EVIDENCE/v8.8.45-maintenance-consolidation.md. User now prioritizes existing issues/PRs/branches before plugin work. No new features. The baseline above remains historical and must not be promoted to proof for a later patch.

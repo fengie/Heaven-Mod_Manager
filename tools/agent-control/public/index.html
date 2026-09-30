@@ -735,8 +735,7 @@
     function inspectFederatedAgentById(id, { scroll = true } = {}) {
       const agent = federatedAgentById(id);
       if (!agent) return inspectorMissing("federated", id);
-      const managedId = String(agent.source_metadata?.managed_agent_id || "");
-      if (managedId && managedAgentById(managedId)) return inspectManagedAgentById(managedId, { scroll });
+      // A managed link is lineage, not permission to replace the requested federation identity.
       selectInspector("federated", agent.agent_id);
       renderInspector(state.snapshot);
       if (scroll) $("inspectorSection").scrollIntoView({ behavior:"smooth", block:"start" });

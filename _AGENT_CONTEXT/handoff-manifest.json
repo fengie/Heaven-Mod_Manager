@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.45",
+  "currentVersion": "8.8.47",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.44 verified and published",
+  "immediateParentRevision": "v8.8.46 failed gates; v8.8.45 last verified",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -95,7 +95,8 @@
     "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log",
     "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
     "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
-    "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
+    "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
+    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -104,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Use junior-maintenance handoff: no new features; claim one existing bug-fix lane, preserve branch/auth/user data boundaries, verify exact source and recursively propagate continuity.",
+  "nextAgentObligation": "v8.8.45/build354 verified/published. Finish existing PR522 and inspector issue461 with exact regressions/runtime proof; preserve unique branches and deferred crypto/auth work, no new features, recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.46</Version>
-    <InformationalVersion>8.8.46-cross-repository-agent-training</InformationalVersion>
+    <Version>8.8.47</Version>
+    <InformationalVersion>8.8.47-existing-bug-integration</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

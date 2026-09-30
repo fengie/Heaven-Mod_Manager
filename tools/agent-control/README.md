@@ -1,3 +1,9 @@
+# v0.6.22 - exact federation inspector identity
+
+## What v0.6.22 does
+
+Federated inspection retains its requested logical identity even when linked to a managed record. Direct/card/notification routes share the fix; linked metadata remains lineage.
+
 # v0.6.21 — Windows-safe ownership state
 
 ## What v0.6.21 does

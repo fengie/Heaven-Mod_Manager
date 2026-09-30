@@ -1,4 +1,9 @@
-# v8.8.45 junior maintenance continuation
+# v8.8.47 existing bug integration — candidate
+
+Current priority: existing issues/PRs/branches, no new features. Read newest NEXT_STEPS and junior handoff; exact gates/publication pending. Inherit, preserve and recursively propagate the permanent continuity constitution to every successor.
+
+---
+# v8.8.45 verified maintenance continuation
 
 Current assignment: no new features; consolidate existing work and fix reproduced bugs. Start with `_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md` and newest NEXT_STEPS; verify canonical truth and inherit/preserve/recursively propagate the permanent continuity constitution to the agent after you. Do not break the chain.
 

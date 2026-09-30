@@ -363,6 +363,38 @@ test("notification action routing recognizes only exact inspect actions", () => 
   ]);
 });
 
+test("federated inspection preserves exact identity even when linked to a managed agent", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/i)?.[1] || "";
+  const declarations = ["function inspectFederatedAgentById(id,", "function runNotificationAction(action)"].map(signature => {
+    const start = script.indexOf(signature);
+    assert.notEqual(start, -1);
+    const body = script.indexOf(") {", start) + 2;
+    let depth = 0;
+    for (let index = body; index < script.length; index += 1) {
+      if (script[index] === "{") depth += 1;
+      else if (script[index] === "}" && --depth === 0) return script.slice(start, index + 1);
+    }
+    assert.fail("unterminated inspector declaration");
+  }).join("\n");
+  const id = "federated/'quoted%2F1", selections = [], missing = [], rendered = [];
+  const snapshot = { marker: "current" };
+  const inspect = new Function("federatedAgentById", "managedAgentById", "inspectManagedAgentById", "selectInspector", "renderInspector", "state", "$", "inspectorMissing", `${declarations}\nreturn { inspectFederatedAgentById, runNotificationAction };`)(
+    value => value === id ? { agent_id: id, source_metadata: { managed_agent_id: "managed-1" } } : null,
+    () => ({ id: "managed-1" }),
+    value => { selections.push(["managed", value]); return true; },
+    (kind, value) => selections.push([kind, value]),
+    value => rendered.push(value), { snapshot }, () => ({ scrollIntoView() {} }),
+    (kind, value) => { missing.push([kind, value]); return false; }
+  );
+  assert.equal(inspect.inspectFederatedAgentById(id, { scroll: false }), true);
+  assert.equal(inspect.runNotificationAction({ type: "inspect-federation", agentId: id }), true);
+  assert.deepEqual(selections, [["federated", id], ["federated", id]]);
+  assert.deepEqual(rendered, [snapshot, snapshot]);
+  assert.equal(inspect.inspectFederatedAgentById("retired", { scroll: false }), false);
+  assert.deepEqual(missing, [["federated", "retired"]]);
+});
+
 test("selected inspector survives refresh and missing or retired selections degrade deterministically", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   assert.match(html, /state\.snapshot = snapshot;\s*render\(snapshot\);/);

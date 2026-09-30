@@ -1,4 +1,8 @@
-# v8.8.46 Universal Mod Manager
+# v8.8.47 Universal Mod Manager
+
+## v8.8.47 — exact inspector identity and integration repair
+
+Agent Control v0.6.22 preserves the requested federated record even when it links to a managed agent. Executable regression coverage catches the prior redirect. Repairs concurrent handoff version drift and compacts current state within the existing manager training budget while preserving the full acceptance contract in indexed history. Existing issues/PRs take priority; new features remain frozen.
 
 ## v8.8.46 — cross-repository agent training bootstrap
 
