@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.38</Version>
-    <InformationalVersion>8.8.38-agent-control-retry-parent-retirement</InformationalVersion>
+    <Version>8.8.39</Version>
+    <InformationalVersion>8.8.39-strict-analyzer-repair</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
