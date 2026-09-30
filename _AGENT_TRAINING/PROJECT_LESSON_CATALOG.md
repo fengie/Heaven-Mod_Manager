@@ -62,6 +62,5 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 
 When integrating an external provider, treat declared capabilities and compliance metadata as executable boundaries. Resolver/output code must not produce a stronger action than the provider contract permits. In particular, a browser-assisted flow must point to a provider-controlled user-facing page, not a direct asset endpoint discovered in metadata. Pair the declaration with an exact-target regression so policy drift and implementation drift fail together.
 
-## CI supply-chain and runner trust
 
-Treat CI Actions as executable dependencies: pin them to immutable commit SHAs and update them through reviewed automation. Persistent self-hosted runners are trusted machines, not disposable sandboxes; never allocate them to fork PR code, avoid persisted checkout credentials, and prefer ephemeral isolation for less-trusted execution. Keep workflow permissions explicit and least-privilege, and make direct/transitive dependency vulnerability auditing a build invariant. See `_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md`.
+30. **Provider chains require exact-current-main analyzer closure between integrations.** Focused adapter tests do not prove the combined repository remains build/analyzer clean. Reconcile each provider candidate onto the latest canonical base, run the strict whole-solution gate on that exact SHA, repair inherited failures as canonical defects, and only then begin or integrate the next provider lane.
