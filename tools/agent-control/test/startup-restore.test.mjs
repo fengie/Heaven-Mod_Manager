@@ -1,5 +1,7 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
@@ -80,4 +82,107 @@ test("startup PowerShell avoids ambiguous variable-colon interpolation", () => {
       `${name} contains a PowerShell interpolation like $name: that must use ${name}: or a format expression`,
     );
   }
+});
+
+
+function run(command, args, { cwd, expectFailure = false } = {}) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: "utf8",
+    windowsHide: true
+  });
+  if (!expectFailure && result.status !== 0) {
+    throw new Error(`${command} ${args.join(" ")} failed (${result.status}): ${result.stderr || result.stdout}`);
+  }
+  if (expectFailure) assert.notEqual(result.status, 0, `expected ${command} to fail`);
+  return result;
+}
+
+function git(cwd, ...args) {
+  return run("git", args, { cwd });
+}
+
+function configureGit(cwd) {
+  git(cwd, "config", "user.email", "agent-control-test@example.invalid");
+  git(cwd, "config", "user.name", "Agent Control Test");
+}
+
+function runSyncGuard(repoRoot, expectFailure = false) {
+  const quote = value => String(value).replaceAll("'", "''");
+  return run("powershell.exe", [
+    "-NoProfile",
+    "-ExecutionPolicy", "Bypass",
+    "-Command",
+    `& '${quote(path.join(root, "Sync-AgentControlRuntime.ps1"))}' -RepoRoot '${quote(repoRoot)}' | Out-Null`
+  ], { expectFailure });
+}
+
+test("runtime freshness guard fast-forwards clean main and preserves unsafe checkouts", {
+  skip: process.platform !== "win32"
+}, t => {
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-runtime-sync-"));
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }));
+
+  const remote = path.join(sandbox, "remote.git");
+  const seed = path.join(sandbox, "seed");
+  run("git", ["init", "--bare", remote]);
+  run("git", ["init", "-b", "main", seed]);
+  configureGit(seed);
+  fs.writeFileSync(path.join(seed, "base.txt"), "base\n");
+  git(seed, "add", "base.txt");
+  git(seed, "commit", "-m", "base");
+  git(seed, "remote", "add", "origin", remote);
+  git(seed, "push", "-u", "origin", "main");
+  run("git", ["--git-dir", remote, "symbolic-ref", "HEAD", "refs/heads/main"]);
+
+  const clone = name => {
+    const target = path.join(sandbox, name);
+    run("git", ["clone", remote, target]);
+    configureGit(target);
+    return target;
+  };
+
+  const clean = clone("clean");
+  fs.writeFileSync(path.join(seed, "remote-1.txt"), "remote-1\n");
+  git(seed, "add", "remote-1.txt");
+  git(seed, "commit", "-m", "remote one");
+  git(seed, "push", "origin", "main");
+  runSyncGuard(clean);
+  assert.equal(git(clean, "rev-parse", "HEAD").stdout.trim(), git(seed, "rev-parse", "HEAD").stdout.trim());
+
+  const dirtyBefore = git(clean, "rev-parse", "HEAD").stdout.trim();
+  fs.writeFileSync(path.join(clean, "local-dirty.txt"), "preserve me\n");
+  runSyncGuard(clean, true);
+  assert.equal(git(clean, "rev-parse", "HEAD").stdout.trim(), dirtyBefore);
+  assert.equal(fs.readFileSync(path.join(clean, "local-dirty.txt"), "utf8"), "preserve me\n");
+
+  const nonMain = clone("non-main");
+  git(nonMain, "checkout", "-b", "feature/test");
+  runSyncGuard(nonMain, true);
+  assert.equal(git(nonMain, "branch", "--show-current").stdout.trim(), "feature/test");
+
+  const detached = clone("detached");
+  git(detached, "checkout", "--detach", "HEAD");
+  runSyncGuard(detached, true);
+  assert.equal(git(detached, "branch", "--show-current").stdout.trim(), "");
+
+  const ahead = clone("ahead");
+  fs.writeFileSync(path.join(ahead, "ahead.txt"), "ahead\n");
+  git(ahead, "add", "ahead.txt");
+  git(ahead, "commit", "-m", "local ahead");
+  const aheadSha = git(ahead, "rev-parse", "HEAD").stdout.trim();
+  runSyncGuard(ahead, true);
+  assert.equal(git(ahead, "rev-parse", "HEAD").stdout.trim(), aheadSha);
+
+  const diverged = clone("diverged");
+  fs.writeFileSync(path.join(diverged, "local.txt"), "local\n");
+  git(diverged, "add", "local.txt");
+  git(diverged, "commit", "-m", "local divergent");
+  const divergentSha = git(diverged, "rev-parse", "HEAD").stdout.trim();
+  fs.writeFileSync(path.join(seed, "remote-2.txt"), "remote-2\n");
+  git(seed, "add", "remote-2.txt");
+  git(seed, "commit", "-m", "remote two");
+  git(seed, "push", "origin", "main");
+  runSyncGuard(diverged, true);
+  assert.equal(git(diverged, "rev-parse", "HEAD").stdout.trim(), divergentSha);
 });
