@@ -40,7 +40,7 @@ test("federation snapshot separates live lifecycle and freshness counts", () => 
   assert.equal(counts.disconnected, 1);
 });
 
-test("dashboard makes Start Swarm the single normal startup action while keeping advanced controls available", () => {
+test("dashboard makes Start Swarm the only normal startup action and hides tuning behind diagnostics", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 
@@ -67,28 +67,30 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
 
   const composerStart = html.indexOf('<aside class="card composer start-card">');
   const composerEnd = html.indexOf("</aside>", composerStart);
-  const composer = html.slice(composerStart, composerEnd);
-  const advancedAt = composer.indexOf('<details class="advanced">');
-  assert.ok(composerStart >= 0 && composerEnd > composerStart && advancedAt > 0);
-  const primaryLaunch = composer.slice(0, advancedAt);
-  assert.match(primaryLaunch, /START PERPETUAL SWARM/);
-  const startSwarmAt = primaryLaunch.indexOf('id="startSwarm"');
-  const overallGoalAt = primaryLaunch.indexOf('id="overallGoal"');
-  assert.ok(overallGoalAt > startSwarmAt, "Overall Goal must sit directly below the primary swarm button");
-  assert.match(primaryLaunch, /Overall goal[\s\S]*optional/i);
+  assert.ok(composerStart >= 0 && composerEnd > composerStart);
+  const primaryLaunch = html.slice(composerStart, composerEnd);
+
+  assert.match(primaryLaunch, /id="startSwarm">START SWARM<\/button>/);
+  assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
+  assert.doesNotMatch(primaryLaunch, /<textarea\b|<input\b|<select\b/i);
+  assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role|custom objective|overall goal/i);
+  assert.match(primaryLaunch, /handles autonomy, read-only, drain, routing freshness, worker placement, and perpetual cycling automatically/i);
+
+  const diagnosticsAt = html.indexOf('<details class="card diagnostics">');
+  const overallGoalAt = html.indexOf('id="overallGoal"');
+  const taskAt = html.indexOf('id="task"');
+  const routingAt = html.indexOf('id="routingManifest"');
+  const readOnlyAt = html.indexOf('id="controlReadOnly"');
+  assert.ok(diagnosticsAt >= 0);
+  assert.ok(overallGoalAt > diagnosticsAt && taskAt > diagnosticsAt && routingAt > diagnosticsAt && readOnlyAt > diagnosticsAt);
+  assert.match(html, /Advanced \/ diagnostics/);
+  assert.match(html, /Optional launch customization/);
+  assert.match(html, /You never need to fill this in to start the swarm/);
+
   assert.match(html, /Control center[\s\S]*heaven2/);
   assert.match(html, /Resource worker center[\s\S]*heaven1/);
   assert.match(html, /runtime host: heaven/);
-  assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
-  assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role/i);
-
-  const diagnosticsAt = html.indexOf('<details class="card diagnostics">');
-  const routingAt = html.indexOf('id="routingManifest"');
-  const readOnlyAt = html.indexOf('id="controlReadOnly"');
-  assert.ok(diagnosticsAt >= 0 && routingAt > diagnosticsAt && readOnlyAt > diagnosticsAt);
-  assert.match(html, /Advanced \/ diagnostics/);
   assert.match(html, /\/api\/swarm\/start/);
-  assert.doesNotMatch(primaryLaunch, /Deploy Usual Swarm/);
   assert.match(html, /const defaultSwarmObjective = /);
   assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
   assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
@@ -122,8 +124,11 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
   assert.match(server, /bridgeMachineStatus\(heavenBridge\)/);
   assert.match(server, /pathname === "\/api\/swarm\/start"/);
-  assert.match(server, /reason: "operator-start-swarm"/);
-  assert.match(server, /operatorInitiated: true/);
+  assert.match(server, /reason: "operator-start-perpetual-swarm"/);
+  assert.match(server, /autonomyLevel: "engineering-autopilot"/);
+  assert.match(server, /readOnly: false/);
+  assert.match(server, /draining: false/);
+  assert.match(server, /clearEmergencyStop: true/);
 });
 
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
