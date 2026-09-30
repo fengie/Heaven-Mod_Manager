@@ -16,11 +16,11 @@ public static class AppLogging
         var version=typeof(AppLogging).Assembly.GetName().Version;
         var appIdentity=version is null?"UniversalModManager-vunknown":$"UniversalModManager-v{version.Major}.{version.Minor}.{version.Build}";
         return new LoggerConfiguration()
-            .MinimumLevel.Debug()
+            .MinimumLevel.Is(detailed ? LogEventLevel.Debug : LogEventLevel.Information)
             .Enrich.FromLogContext()
             .Enrich.WithProperty("app",appIdentity)
             .Enrich.WithProperty("pid",Environment.ProcessId)
-            .WriteTo.Sink(new UnifiedDebugLogSink(),LogEventLevel.Debug)
+            .WriteTo.Sink(new UnifiedDebugLogSink(),detailed ? LogEventLevel.Debug : LogEventLevel.Information)
             .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),Path.Combine(logDir,"manager-.jsonl"),restrictedToMinimumLevel:detailed?LogEventLevel.Debug:LogEventLevel.Information,rollingInterval:RollingInterval.Day,retainedFileCountLimit:14,fileSizeLimitBytes:50*1024*1024,rollOnFileSizeLimit:true,shared:false)
             .CreateLogger();
     }
