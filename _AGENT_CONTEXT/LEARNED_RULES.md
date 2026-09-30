@@ -635,3 +635,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-023 collision-safe rule IDs; LR-035 integration-ready ownership.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-037 — integration requires canonical tree proof, not ancestry alone
+
+- **Rule ID:** LR-037
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Multi-agent branch harvesting, branch-zero cleanup, record-only preservation merges, integration verification
+- **Rule:** Never classify a task branch as integrated solely because its commits are reachable from `main`, appear as a merge base, or are parents/ancestors of a preservation merge. Verify that the intended file/content delta actually survives in the canonical `main` tree after integration.
+- **Trigger / evidence:** A branch-zero preservation merge made the GitLab catalog implementation commits reachable from `main` while intentionally retaining the pre-existing main tree. Subsequent ancestry comparisons therefore looked integrated even though `GitLabReleasesCatalogPolicy.cs`, `GitLabReleasesTransport.cs`, `GitLabReleasesCatalogProvider.cs`, and their regression test were absent.
+- **Rationale:** Git history can preserve provenance independently of tree state. Reachability answers “is this commit recorded in history?”; it does not answer “did this commit's content survive into the canonical product tree?”
+- **Enforcement:** After every merge/fast-forward/harvest, inspect the canonical post-integration tree or an exact tree/diff invariant for the owned files and acceptance criteria. Mark record-only preservation merges as non-integrating metadata operations. Do not delete/retire a task branch until canonical tree proof and required exact-candidate verification are both recorded. Recovery logic must distinguish `ancestor-but-tree-delta-absent` from `integrated`.
+- **Regression:** Agent-control/integration tests should construct a task commit, then a merge/preservation commit that records that task as ancestry while keeping the base tree; discovery must report the task as preserved-but-unintegrated.
+- **Related rules:** LR-035 explicit integration-ready signal; verification exact-source semantics.
+- **Supersedes:** none
+- **Superseded by:** none
+

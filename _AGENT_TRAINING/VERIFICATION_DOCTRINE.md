@@ -66,3 +66,13 @@ When HTML embeds or generates JavaScript, verification must parse the **final as
 
 ## Multi-way inferred decision proof
 When an algorithm chooses one winner from three or more candidates using pairwise heuristics, do not assume the pairwise relation is transitive and do not use a sequential tournament as correctness evidence. Verify the global invariant directly: one candidate must satisfy the authoritative precedence/compatibility predicate against every other eligible candidate. If any pair is incomparable, the relation cycles, or no unique complete dominator exists, fail closed or require an explicit choice. Add a non-transitive/cyclic regression fixture so deterministic iteration order cannot masquerade as correctness. Apply this pattern to package/provider selection, override resolution, preference arbitration, reconciliation, and other N-way inferred winner systems.
+
+## Canonical tree proof after integration
+A commit being reachable from canonical history is not proof that its content survived integration. Merge commits, conflict resolutions, record-only branch-tip preservation, or later reverts can retain ancestry while dropping the intended tree delta.
+
+For integration verification, prove both:
+1. **provenance:** which implementation/test commits were considered; and
+2. **postcondition:** the canonical post-merge tree actually contains the intended paths/content/behavior.
+
+Use direct canonical-tree inspection, exact post-merge diffs, or an equivalent invariant. Never close a task, delete its branch, or inherit verification merely from ancestry/merge-base evidence.
+
