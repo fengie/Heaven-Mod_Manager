@@ -1,4 +1,4 @@
-# v8.8.49 compact Agent Manager overview — verification scope
+# v8.8.50 compact Agent Manager overview — verification scope
 
 Required evidence: inline dashboard JavaScript parses; operator UI tests cover 10 default-closed `<details>` cards, responsive two-column/full-width-open layout, bounded expanded panel scrolling, notification severity/newest-30 behavior, and Inspector auto-open. Then run the complete Agent Control check/test suite and configured gates on the exact candidate. Source tests do not replace a live heaven2 browser smoke.
 
