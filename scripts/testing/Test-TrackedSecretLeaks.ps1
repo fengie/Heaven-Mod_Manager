@@ -19,40 +19,38 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $errors = New-Object System.Collections.Generic.List[string]
-$forbiddenExtensions = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-foreach ($ext in @('.pfx', '.p12', '.jks', '.keystore', '.kdbx')) {
-    [void]$forbiddenExtensions.Add($ext)
-}
-$binarySkip = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-foreach ($ext in @('.zip', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.exe', '.dll', '.pdb', '.bin', '.7z')) {
-    [void]$binarySkip.Add($ext)
-}
+$forbiddenExtensions = @('.pfx', '.p12', '.jks', '.keystore', '.kdbx', '.snk')
+$binarySkip = @('.zip', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.exe', '.dll', '.pdb', '.bin', '.7z')
 
-# Build high-signal credential patterns from fragments so the scanner source does not match itself.
+# Build high-signal signatures from fragments so this scanner cannot match its own source.
 $patterns = @(
     [pscustomobject]@{
         Name = 'GitHub access token'
-        Regex = [regex]::new(('gh' + '[pousr]_' + '[A-Za-z0-9_]{20,}'), [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        Pattern = ('gh' + '[pousr]_' + '[A-Za-z0-9_]{20,}')
+    },
+    [pscustomobject]@{
+        Name = 'GitHub fine-grained token'
+        Pattern = ('github_' + 'pat_' + '[A-Za-z0-9_]{20,}')
     },
     [pscustomobject]@{
         Name = 'AWS access key id'
-        Regex = [regex]::new(('AKI' + 'A[0-9A-Z]{16}'), [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        Pattern = ('AKI' + 'A[0-9A-Z]{16}')
     },
     [pscustomobject]@{
         Name = 'Slack token'
-        Regex = [regex]::new(('xox' + '[baprs]-[0-9A-Za-z-]{10,}'), [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        Pattern = ('xox' + '[baprs]-[0-9A-Za-z-]{10,}')
     },
     [pscustomobject]@{
         Name = 'private key material'
-        Regex = [regex]::new(('-----BEGIN ' + '(?:(?:RSA|EC|DSA|OPENSSH) )?PRIVATE KEY-----'), [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        Pattern = ('-----BEGIN ' + '(?:(?:RSA|EC|DSA|OPENSSH) )?PRIVATE KEY-----')
     },
     [pscustomobject]@{
         Name = 'Heaven bridge HMAC key assignment'
-        Regex = [regex]::new(('HEAVEN_BRIDGE_' + 'HMAC_KEY\s*[:=]\s*["'']?[A-Za-z0-9+/_=-]{16,}'), [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        Pattern = ('(?i)HEAVEN_BRIDGE_' + 'HMAC_KEY\s*[:=]\s*[A-Za-z0-9+/_=-]{16,}')
     },
     [pscustomobject]@{
         Name = 'npm auth token'
-        Regex = [regex]::new(('_auth' + 'Token\s*=\s*(?!\$\{)[^\s#]+'), [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        Pattern = ('(?i)_auth' + 'Token\s*=\s*(?!\$\{)[^\s#]+')
     }
 )
 
@@ -64,18 +62,19 @@ foreach ($relative in $tracked) {
     $leaf = [IO.Path]::GetFileName($relative)
     $extension = [IO.Path]::GetExtension($relative)
 
-    if ($forbiddenExtensions.Contains($extension)) {
-        $errors.Add("$($relative): tracked credential-container extension '$extension' is forbidden.")
+    if ($forbiddenExtensions -contains $extension) {
+        $errors.Add("$($relative): tracked credential-container/signing-key extension '$extension' is forbidden.")
         continue
     }
 
-    if ($leaf -eq '.env' -or ($leaf.StartsWith('.env.', [StringComparison]::OrdinalIgnoreCase)
-        -and $leaf -notmatch '(?i)\.(example|sample|template)$')) {
+    $isEnvironmentFile = $leaf -eq '.env' -or $leaf.StartsWith('.env.', [StringComparison]::OrdinalIgnoreCase)
+    $isEnvironmentTemplate = $leaf -match '(?i)\.(example|sample|template)$'
+    if ($isEnvironmentFile -and -not $isEnvironmentTemplate) {
         $errors.Add("$($relative): tracked environment file is forbidden; commit a redacted example/template instead.")
         continue
     }
 
-    if ($binarySkip.Contains($extension)) { continue }
+    if ($binarySkip -contains $extension) { continue }
 
     try {
         $content = Get-Content -LiteralPath $full -Raw -ErrorAction Stop
@@ -85,7 +84,7 @@ foreach ($relative in $tracked) {
     }
 
     foreach ($pattern in $patterns) {
-        if ($pattern.Regex.IsMatch($content)) {
+        if ([regex]::IsMatch($content, [string]$pattern.Pattern)) {
             $errors.Add("$($relative): possible $($pattern.Name) detected.")
         }
     }
