@@ -188,6 +188,7 @@ HMAC_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_KEY_FILE"
 HMAC_PREVIOUS_KEY_ENV = "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY"
 HMAC_PREVIOUS_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY_FILE"
 ALLOW_REPO_ACL_ONLY_ENV = "HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY"
+ALLOW_REPO_ACL_ONLY_MARKER = "allow-repo-acl-only"
 ALLOW_LEGACY_HMAC_ENV = "HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL"
 MIN_HMAC_KEY_BYTES = 32
 SENSITIVE_ENV_RE = re.compile(r"(PASS(?:WORD)?|TOKEN|SECRET|HMAC[_-]?KEY|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH|CREDENTIAL|BEARER|CONNECTION[_-]?STRING)", re.I)
@@ -632,6 +633,14 @@ def env_flag(name):
     return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
 
 
+def repo_acl_only_marker_path():
+    return (STATE / "auth" / ALLOW_REPO_ACL_ONLY_MARKER).resolve()
+
+
+def repo_acl_only_enabled():
+    return env_flag(ALLOW_REPO_ACL_ONLY_ENV) or repo_acl_only_marker_path().is_file()
+
+
 def hmac_key_path(previous=False):
     env_name = HMAC_PREVIOUS_KEY_FILE_ENV if previous else HMAC_KEY_FILE_ENV
     configured = str(os.environ.get(env_name) or "").strip()
@@ -704,16 +713,16 @@ def validate_hmac_key_strength(value, source="environment"):
 def auth_mode():
     if load_hmac_key():
         return "hmac-sha256"
-    if env_flag(ALLOW_REPO_ACL_ONLY_ENV):
-        return "private-repo-acl-explicit-insecure"
+    if repo_acl_only_enabled():
+        return "private-repo-acl-explicit-local"
     return "hmac-required"
 
 
 def verify_auth(job):
     keys = load_hmac_verification_keys()
     if not keys:
-        if env_flag(ALLOW_REPO_ACL_ONLY_ENV):
-            return {"mode": "private-repo-acl-explicit-insecure", "verified": True}
+        if repo_acl_only_enabled():
+            return {"mode": "private-repo-acl-explicit-local", "verified": True}
         raise BridgeError(
             "AUTH_HMAC_NOT_CONFIGURED",
             "Heaven Bridge HMAC authentication is required; unsigned repository-relay execution is disabled by default",
