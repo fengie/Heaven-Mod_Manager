@@ -32,6 +32,15 @@ if not "%AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP%"=="1" (
   )
 )
 
-start "Heaven2 Agent Control" /min node server.mjs
-timeout /t 2 /nobreak >nul
+if not exist "%~dp0Start-AgentControlVerified.ps1" (
+  echo ERROR: Verified Agent Control launcher is missing.
+  exit /b 3
+)
+
+powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0Start-AgentControlVerified.ps1" -RepoRoot "%AGENT_CONTROL_REPO%" >nul
+if errorlevel 1 (
+  echo ERROR: Agent Control launch was blocked because canonical runtime freshness or listener ownership could not be proven.
+  exit /b 4
+)
+
 start "" http://127.0.0.1:7331
