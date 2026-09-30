@@ -404,6 +404,7 @@ async function syncUnlocked(relayDir, {
 export function bridgeMachineStatus(health) {
   if (health?.healthy) return "online";
   if (health?.configured === false) return "not-configured";
+  if (health?.reason === "heartbeat-auth-invalid") return "auth-required";
   return "presence-unknown";
 }
 
