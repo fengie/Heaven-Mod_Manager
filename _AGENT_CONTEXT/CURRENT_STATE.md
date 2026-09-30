@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution discovery — CURRENT
+
+Canonical v8.8.26 owns safe **failed · RETRY EXHAUSTED** retirement/tombstones and v8.8.27 owns agent-card inspection. The remaining dispatch failure was a separate transport-configuration split: Heaven Bridge health/inspection called `resolveHeavenRelayDir()` and could auto-discover `%USERPROFILE%\\HeavenBridgeRepo`, while job submission and result waiting defaulted directly to `AGENT_CONTROL_HEAVEN_RELAY_DIR`. A normal machine could therefore look healthy in Agent Manager yet fail before publishing delegated work.
+
+v8.8.28 makes submit/wait use the same resolver as inspection and adds a source regression pinning that symmetry. Agent Control/runtime/plugin identity is v0.6.7. Exact-head source checks and a live heaven2→heaven1 dispatch/result smoke remain required before runtime closure; do not infer deployment merely from source integration.
+
+---
+
 # 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
 
 Canonical v8.8.26 already contains the retry-exhausted retirement lifecycle: safe ownership-proven process cleanup, managed/federated live-registry removal, durable retirement tombstones, terminal replay suppression, and live-heartbeat reactivation. The remaining operator defect was independent: the dashboard rendered agent cards as visual containers with no card-level click or keyboard inspection path, so clicking a bot/card body appeared broken unless the operator happened to use a nested button.
