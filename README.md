@@ -1,6 +1,6 @@
 # v8.8.32 Universal Mod Manager
 
-## v8.8.32 ? Agent Control retirement identity fail-closed closure
+## v8.8.32 — Agent Control retirement identity fail-closed closure
 
 The v8.8.31 durable remote-stop proof is now enforced for every Heaven-backed persisted row, including legacy/migrated rows whose provider identity is stored in runtimeProvider or provider. A Heaven worker with a missing or blank durable remote job id can no longer bypass proof; retirement blocks, preserves live ownership/history, and records the retry-blocked condition.
 
