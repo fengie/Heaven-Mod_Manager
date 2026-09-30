@@ -13,6 +13,15 @@ on:
       - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
       - 'scripts/release/Verify-Release.ps1'
       - 'scripts/testing/Test-CiSecurityPolicy.ps1'
+      - 'src/**'
+      - 'tests/**'
+      - 'heaven-bridge/**'
+      - 'plugins/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - '*.sln'
+      - 'global.json'
+      - 'NuGet.config'
   pull_request:
     paths:
       - '.github/workflows/**'
@@ -22,6 +31,15 @@ on:
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
+      - 'src/**'
+      - 'tests/**'
+      - 'heaven-bridge/**'
+      - 'plugins/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - '*.sln'
+      - 'global.json'
+      - 'NuGet.config'
   workflow_dispatch:
 
 permissions:

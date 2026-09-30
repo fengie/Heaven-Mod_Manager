@@ -162,6 +162,27 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void ExpensiveMetadataAndConflictPreviewWorkIsDeferredOffInitialStartup()
+    {
+        var root = FindRepositoryRoot();
+        var app = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "App.xaml.cs"));
+        var mainViewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+
+        var startupStart = app.IndexOf("protected override async void OnStartup", StringComparison.Ordinal);
+        var windowConstruct = app.IndexOf("var window=startup.Run(\"ui.main-window.construct\"", startupStart, StringComparison.Ordinal);
+        Assert.True(startupStart >= 0 && windowConstruct > startupStart);
+        var blockingStartup = app[startupStart..windowConstruct];
+
+        Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
+        Assert.Contains("startup.intelligence.nexus.deferred", blockingStartup);
+        Assert.Contains("if(value==1&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
+        Assert.Contains("EnsureInitialMetadataLoadedAsync(backgroundCts.Token)", mainViewModel);
+        Assert.Contains("if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);", mainViewModel);
+        Assert.Contains("var shouldEnrich=SelectedTab==3;", mainViewModel);
+        Assert.Contains("var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;", mainViewModel);
+    }
+
+    [Fact]
     public void ModsPagePrioritizesWindowedLibraryViewport()
     {
         var root = FindRepositoryRoot();
