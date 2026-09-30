@@ -1,3 +1,11 @@
+# v8.8.50 — 2026-09-30
+
+- Removed the Dashboard ScrollViewer child Width-to-ViewportWidth binding and restored bounded horizontal Stretch.
+- Made the first demand-loaded metadata refresh retryable when RunBusy exits without completing the refresh.
+- Paired cached PreparedUpdateHandoff state with the exact StagedUpdate identity and invalidate it before helper launch if a later check replaces the staged update.
+- Redacted updater health token, health-file path, and attempt-id values from normal startup argument diagnostics while preserving non-sensitive arguments.
+- Added deterministic source/invariant and runtime-format regression coverage for the Dashboard, metadata retry latch, staged-update handoff race, and diagnostic redaction.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
