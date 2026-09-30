@@ -365,3 +365,9 @@ Successor requirement: carry this verification gap and the transactional-cleanup
 - PR #441 reconciled the updater transaction fix onto current `main` while preserving newer concurrent work.
 - The original updater branch was reset to the integrated `main` revision before this handoff commit so no stale release/CI tree can be reintroduced.
 - After this handoff merges, delete/auto-delete this temporary branch and keep only `main` plus the reserved `heaven-bridge` infrastructure relay.
+
+## 2026-09-30 Agent Manager P0 functionality integration
+
+- Integrated the exact functional head `9ceaa6284ffa821bbd4b80426e65ce944173a16f` onto current `main` without overwriting unrelated concurrent changes.
+- Scope: Agent Manager P0 priority enforcement in autopilot, stable-session registration guidance, and version alignment for Agent Control/plugin metadata.
+- Successor: verify the exact integrated revision through the Agent Control gate; continue remaining P0 work from `main`, not the retired task branch.
