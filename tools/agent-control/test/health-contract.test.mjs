@@ -11,8 +11,7 @@ test("status health avoids heavyweight controller work", () => {
   const source = fs.readFileSync(SERVER, "utf8");
   const start = source.indexOf('pathname === "/api/status"');
   assert.ok(start >= 0);
-  const end = source.indexOf("
-    if (req.method", start + 1);
+  const end = source.indexOf("\n    if (req.method", start + 1);
   const route = source.slice(start, end >= 0 ? end : source.length);
   assert.doesNotMatch(route, /buildSnapshot/);
   assert.doesNotMatch(route, /refreshState/);
