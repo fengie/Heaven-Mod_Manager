@@ -108,6 +108,7 @@ let swarmTailRecoveryTickRunning = false;
 const noWorkRecoveryOperations = new Set();
 const goToWorkRecoveryOperations = new Set();
 const swarmTailRecoveryOperations = new Set();
+const terminalCleanupOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
 const PERPETUAL_RECOVERY_WINDOW_MS = Math.max(60_000, Number(process.env.AGENT_CONTROL_PERPETUAL_RECOVERY_WINDOW_MS || 10 * 60_000));
 const PERPETUAL_MAX_RECOVERIES_PER_WINDOW = Math.max(1, Number(process.env.AGENT_CONTROL_PERPETUAL_MAX_RECOVERIES_PER_WINDOW || 6));
@@ -799,6 +800,73 @@ function isTerminalStatus(status) {
   return ["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"].includes(status);
 }
 
+function scheduleDeadRegistryTermination(agent) {
+  if (!agent?.id || terminalCleanupOperations.has(agent.id)) return false;
+  const child = agent.ownerSessionId === SESSION_ID ? children.get(agent.id) : null;
+  const ownsLiveProcess = Boolean(
+    child
+    && child.pid === agent.pid
+    && child.exitCode === null
+    && child.signalCode === null
+    && isPidAlive(agent.pid)
+  );
+  if (!ownsLiveProcess) return false;
+
+  terminalCleanupOperations.add(agent.id);
+  void (async () => {
+    try {
+      if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
+        const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "terminal-registry-cleanup" });
+        if (!bridgeResultSucceeded(cancellation)) {
+          throw new Error(`Heaven Bridge terminal cleanup was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
+        }
+      }
+      if (isPidAlive(agent.pid)) await killProcessTree(agent.pid);
+      const exited = await waitForPidExit(agent.pid);
+      if (!exited) throw new Error(`PID ${agent.pid} remained alive after terminal registry cleanup.`);
+
+      children.delete(agent.id);
+      const current = loadState();
+      const item = current.agents.find(candidate => candidate.id === agent.id);
+      if (item) {
+        item.registryTerminationVerifiedAt = isoNow();
+        item.updatedAt = isoNow();
+        addEvent(current, "agent.registry-process-terminated", `${agent.id} process tree terminated before registry retirement`, {
+          agentId: agent.id,
+          taskId: item.taskId || null,
+          reason: "terminal-registry-cleanup",
+          evidence: { pid: agent.pid || null, executionProvider: agent.executionProvider || "local-control" }
+        });
+        retireDeadRegistryEntries(current);
+        saveState(current);
+      }
+    } catch (error) {
+      const failed = loadState();
+      const item = failed.agents.find(candidate => candidate.id === agent.id);
+      if (item) {
+        item.registryTerminationError = error?.message || String(error);
+        item.updatedAt = isoNow();
+        addEvent(failed, "agent.registry-process-termination-failed", `Could not prove terminal process-tree cleanup for ${agent.id}`, {
+          agentId: agent.id,
+          taskId: item.taskId || null,
+          reason: item.registryTerminationError
+        });
+        addNotification(failed, {
+          severity: "error",
+          title: "Dead-agent cleanup could not terminate process",
+          message: `${item.roleLabel || item.id} is terminal but its owned process tree could not be proven stopped, so Agent Control kept the record instead of risking a zombie or unrelated PID kill.`,
+          action: { type: "inspect-agent", agentId: item.id },
+          dedupeKey: `registry-process-termination-failed:${item.id}`
+        });
+        saveState(failed);
+      }
+    } finally {
+      terminalCleanupOperations.delete(agent.id);
+    }
+  })();
+  return true;
+}
+
 function retireDeadRegistryEntries(state) {
   const retained = [];
   const retired = [];
@@ -819,12 +887,16 @@ function retireDeadRegistryEntries(state) {
     });
 
     if (!disposition.retire) {
+      if (disposition.reason === "process-still-alive" && ownedChildAlive) {
+        scheduleDeadRegistryTermination(agent);
+      }
       retained.push(agent);
       continue;
     }
 
     releaseLeaseForAgent(state, agent, `registry-retired:${disposition.reason}`);
     updateTaskForAgent(state, agent);
+    children.delete(agent.id);
     retired.push({
       id: agent.id,
       taskId: agent.taskId || null,
@@ -838,7 +910,7 @@ function retireDeadRegistryEntries(state) {
     addEvent(state, "agent.registry-retired", `Retired ${retired.length} dead terminal agent record${retired.length === 1 ? "" : "s"} from the live registry`, {
       agentIds: retired.map(item => item.id),
       reason: "terminal-agent-registry-gc",
-      evidence: { retired }
+      evidence: { retired, auditEvidence: "tasks+events+failures.jsonl" }
     });
   }
 
