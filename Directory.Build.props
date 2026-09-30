@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.30</Version>
-    <InformationalVersion>8.8.30-agent-control-card-accessibility</InformationalVersion>
+    <Version>8.8.31</Version>
+    <InformationalVersion>8.8.31-agent-control-retirement-safety</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

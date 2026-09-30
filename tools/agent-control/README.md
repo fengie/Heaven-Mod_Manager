@@ -14,8 +14,9 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.8 does
+## What v0.6.9 does
 
+- Proves durable Heaven Bridge jobs explicitly terminal before retry-exhausted registry retirement; ambiguous/queued/running races fail closed, missing durable remote IDs block retirement, and retired-source reactivation requires a strictly newer raw heartbeat.
 - Preserves click/Enter/Space inspection while restoring normal article semantics for managed/federated cards; nested action controls remain independent and executable interaction tests cover the accessibility boundary.
 - Uses one relay checkout resolver for Heaven Bridge health and real submit/result-wait execution. Without an explicit relay path, the documented `~/HeavenBridgeRepo` checkout is used instead of crashing dispatched workers because `AGENT_CONTROL_HEAVEN_RELAY_DIR` is absent.
 - Makes managed and federated agent cards directly inspectable by mouse and keyboard instead of leaving the card body display-only. Managed cards open their log; federated cards focus a linked managed worker or show federated session details.

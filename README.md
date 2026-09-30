@@ -1,4 +1,4 @@
-# v8.8.30 Universal Mod Manager
+# v8.8.31 Universal Mod Manager
 
 ## v8.8.30 — Agent Control card accessibility closure
 

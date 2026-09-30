@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.30",
+  "currentVersion": "8.8.31",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.29 handoff visible-progress validator",
+  "immediateParentRevision": "v8.8.30 Agent Control card accessibility closure",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Preserve v8.8.30 card-accessibility semantics and version identity, then continue the manager-owned #472 retirement-safety work as the next patch. Re-query current main before integration, require exact-candidate checks, keep #475→#477 sequencing, keep #482 blocked behind #472, and leave durable successor notes.",
+  "nextAgentObligation": "Verify and close v8.8.31 durable retirement safety on the exact candidate, including live heaven2?heaven1 proof; preserve v8.8.30 accessibility; then complete the lightweight /api/status health contract as the next meaningful patch. Re-query main before integration and leave durable successor notes.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

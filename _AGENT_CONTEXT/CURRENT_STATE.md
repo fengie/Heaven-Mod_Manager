@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.31 Agent Control durable retirement safety ? CURRENT
+
+The manager-owned retirement closure is rebuilt from canonical v8.8.30 main without stale release history. Retry-exhausted Heaven work cannot leave the live registry until the durable remote job reaches an explicit processed terminal state. Provider fallback and missing durable remote IDs fail closed, while retired-source reactivation requires a strictly newer raw heartbeat and migration preserves tombstones.
+
+Agent Control/runtime/plugin identity is v0.6.9. Exact-head gates and live heaven2?heaven1 proof remain required before runtime closure.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 PR #484 integrated the remaining clean card-accessibility behavior: managed/federated cards stay mouse/keyboard inspectable while status/task articles no longer masquerade as whole-card buttons for assistive technology. Nested controls remain independent and executable interaction coverage protects the boundary.

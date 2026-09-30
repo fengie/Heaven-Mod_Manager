@@ -1,3 +1,9 @@
+# v8.8.31 Agent Control durable retirement safety ? verification scope
+
+This candidate is rebuilt on v8.8.30 canonical main and owns only retirement implementation/tests plus coherent release/continuity metadata. It must not inherit verification from the former diverged #472/#486 heads. Required evidence is exact-head Agent Control syntax/tests, Security Supply Chain, handoff preflight/negative fixtures, and live heaven2?heaven1 retirement/replay smoke.
+
+---
+
 # v8.8.30 Agent Control card accessibility closure — verification scope
 
 PR #484 source head `b46e6bf49aa9369436fbc841c443636f08b5c6b8` carried the accessibility implementation and executable interaction tests; its prior Agent Control and Security runs were green. This follow-up commit adds only the required visible version/continuity identity for that same change set.

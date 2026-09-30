@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.31 Agent Control durable retirement safety ? NEXT
+
+1. Require exact-head Agent Control check/test plus handoff preflight and adversarial negative fixtures.
+2. Require Agent Control PR Gate and Security Supply Chain Gate on the frozen candidate.
+3. On heaven2?heaven1, prove queued/unknown and missing-ID retirement stay blocked, explicit terminal status permits retirement, running races re-cancel, and only a strictly newer raw heartbeat reactivates a tombstone.
+4. Merge only the exact verified candidate, then finish the lightweight /api/status health contract as the next patch.
+5. Clean the superseded retirement branches/PR state after canonical integration.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`.
