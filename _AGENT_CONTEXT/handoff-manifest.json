@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.48 verified and published build357",
+  "immediateParentRevision": "v8.8.49 UI regression fixes merged at be4615f after exact-head PR gates",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -105,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v48/de38/build357 exact main/release/update rollback verified;461 closed and522/524 merged. Finish candidate50 PR525 reconciliation/release before new bug PR review and paused plugin work. Preserve unique branches/security gaps, no new features; recursively propagate continuity.",
+  "nextAgentObligation": "Finish exact-head PR528 v8.8.50 governance verification/integration; then retire only fully preserved temporary branches. Keep issues411/350/354/281 and unique registry/catalog work open until acceptance evidence exists; recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

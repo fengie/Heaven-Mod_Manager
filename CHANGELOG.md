@@ -1,7 +1,7 @@
 # v8.8.50 — governance integration and enforcement repair
-- Reconcile PR525 compact operating standard, role deltas and current-state consolidation against completed v48.
+- Reconcile superseded PR #525 compact operating standard, role deltas and current-state consolidation onto v8.8.49 main while preserving its repaired ancestry.
 - Preserve pre-response/global training and full constitution startup obligations; repair recursive successor validation and raw UTF-8 budget enforcement.
-- Regression and exact-head verification evidence remain required; v48 source/build357 closure is retained separately.
+- v8.8.49 UI exact-head gates remain historical source proof; v8.8.50 requires fresh exact-head verification. v8.8.48 source/build357 release closure is retained separately.
 
 # v8.8.49 — 2026-09-30
 

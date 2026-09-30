@@ -9,11 +9,11 @@
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.50-governance-integration-candidate",
   "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Finish exact-head PR525 reconciliation, review, integration and release; then inspect newly arrived bug PRs before paused plugin work.",
+  "nextRequiredAction": "Finish exact-head PR #528 verification on the current v8.8.50 head, merge only if green, verify canonical main, then retire only fully preserved temporary branches.",
   "verificationAppliesToCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "v48 source de38/build357 main Windows/controller/security and packaged updater36784369277 pass. Candidate49 requires fresh verification. Operator installed latest proven352; populated Mods collapse root cause unproven. Concurrent UI49/sourcebe4615f6 merged526/527; main/release/runtime acceptance pending independently.",
+  "verificationScopeNote": "v8.8.48 source de38/build357 remains the last full release/update rollback closure. v8.8.49 UI exact candidate 3bc8f6b passed Security, Agent Control, and Workflow Feature gates and merged as be4615f; operator visual/runtime closure remains separate. v8.8.50 governance candidate requires fresh exact-head verification.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
@@ -38,9 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "Actual operator latest proven352; latest release install remains unverified.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open.",
-    "Preserve external branches until semantic/ownership review."
+    "v8.8.49 UI fixes are merged but actual operator visual confirmation remains outstanding.",
+    "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open.",
+    "Preserve unique external branches until semantic/ownership review."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
