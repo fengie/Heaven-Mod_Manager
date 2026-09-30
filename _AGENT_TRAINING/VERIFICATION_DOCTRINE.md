@@ -76,3 +76,7 @@ For integration verification, prove both:
 
 Use direct canonical-tree inspection, exact post-merge diffs, or an equivalent invariant. Never close a task, delete its branch, or inherit verification merely from ancestry/merge-base evidence.
 
+
+
+## Operator-control contract closure
+For control planes and administrative dashboards, verify the full action contract across layers. Server-generated recommendations must be visible or deliberately explained; UI buttons must be valid for the current authoritative lifecycle state; and recovery controls must prove the safety latch/state they claim to clear. Add regressions that fail when the UI exposes a server-rejected action, hides an actionable recommendation, or reports recovery while dispatch remains safety-blocked.

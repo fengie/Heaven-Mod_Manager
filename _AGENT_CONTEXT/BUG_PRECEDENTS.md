@@ -39,6 +39,18 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **References (SHA/PR/issue/log):** integration work begins at `942193747c66`; final PR/CI pending.
 
 
+## 2026-09-30 — Agent Control dashboard — operator affordances diverged from server contract
+- **Symptom:** Backend-ranked manager recommendations existed but were invisible in the dashboard; non-stoppable managed terminal/failure states could advertise Deploy reviewer even when review was invalid; and Resume left an active emergency-stop latch set.
+- **Root cause:** The dashboard duplicated server state/action semantics with hand-written presentation fallbacks instead of closing the UI contract over `suggestedActions`, review eligibility, and emergency-stop recovery state.
+- **Violated invariant / wrong assumption:** A control surface must not hide actionable authoritative decisions or offer an action the server will reject; a control labeled Resume must either restore dispatch or explicitly state why the safety latch remains.
+- **Why prior defenses missed it:** Backend tests pinned recommendation generation and capacity-blocked review refusal, while UI tests mostly checked route presence and broad lifecycle controls rather than state-valid affordances and end-to-end action reachability.
+- **Direct fix:** Render `suggestedActions` with supported action buttons, restrict reviewer deployment to `done` agents, and make emergency-stop clearing state-aware, explicit, and confirmed.
+- **Preventive rule/process change:** Treat operator action availability as a cross-layer contract: for every server-generated recommendation and state-dependent mutation, prove the UI either exposes the valid action or intentionally explains why no action exists.
+- **Regression coverage added/strengthened:** `operator-ui-cli.test.mjs` pins recommendation rendering/action routing, done-only review affordance, and emergency-stop-aware Resume semantics.
+- **Verification evidence/environment:** Canonical v8.8.24 tree contains the functional regression markers and its assembled inline JavaScript parses under V8; exact-head Node/Heaven runtime verification remains separately scoped.
+- **Sibling/adjacent cases checked:** Stop eligibility remains pinned by LR-045; capacity-blocked review remains rejected server-side; unsupported recommendation types remain informational rather than guessed.
+- **References (SHA/PR/issue/log):** PR #452 / merge `abafcda17e0614e2d8f0e095a802d1116bc751b2`.
+
 ## 2026-09-29 — repository-wide — escaped bugs require durable prevention controls
 - **Symptom:** User-facing and engineering bugs were still able to appear after agent-authored work, despite substantial verification rules.
 - **Root cause:** The governance model emphasized fixing and verifying individual tasks, but did not make every escaped bug automatically create a durable precedent, guideline update, and regression-prevention control.
