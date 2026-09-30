@@ -317,6 +317,50 @@ public sealed class NexusV3CatalogProviderTests
             resolution.AssistedUri?.AbsoluteUri);
     }
 
+    [Fact]
+    public async Task Acquisition_rejects_cross_provider_identity_mismatch()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json")))));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var mod = new CatalogMod(
+            "github:101",
+            "github",
+            "101",
+            game.Id,
+            "Wrong provider",
+            "",
+            "",
+            "Author",
+            null,
+            null,
+            [],
+            null,
+            [],
+            null,
+            null,
+            null,
+            null,
+            null,
+            [],
+            "https://example.invalid/mod",
+            []);
+
+        var file = new CatalogModFile(
+            "github",
+            "101",
+            "file-1",
+            "Wrong provider file",
+            "Wrong provider file",
+            CatalogFileCategory.Main);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.ResolveAcquisitionAsync(
+                new CatalogAcquisitionRequest(game, mod, file)));
+    }
+
     private static string ReadFixture(string name)
     {
         return File.ReadAllText(
