@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "fix/audit-hardening-20260930",
+  "currentVersion": "8.8.50",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
-  "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "status": "v8.8.50-audit-hardening-candidate",
+  "nextMilestone": "Finish exact-head verification/integration of the audit hardening patch, then continue existing issue/PR and branch reconciliation.",
+  "nextRequiredAction": "Run focused integration tests plus exact-head Security/Workflow/Agent Control gates; reconcile fresh main, merge if green, verify canonical main, then runtime-check Dashboard layout and updater handoff behavior.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 exact main/release closure remains historical; v8.8.49 UI regression candidate requires exact-head gates and runtime confirmation.",
+  "verificationScopeNote": "v8.8.49 UI fixes are merged at be4615f6; v8.8.50 audit hardening is a new unverified candidate. Last closed release evidence remains the recorded v8.8.47 source/build until newer exact evidence is persisted.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,9 +38,10 @@
     ]
   },
   "unresolvedRisks": [
-    "Actual operator latest proven352; latest release install remains unverified.",
+    "v8.8.50 requires exact-head CI and runtime UI/update confirmation before closure.",
+    "Actual operator latest and immutable updater release evidence must be refreshed after canonical integration.",
     "Bridge auth/provider registration and signing issues411/350/354 remain open.",
-    "Preserve external branches until semantic/ownership review."
+    "Preserve external branches/PR ownership and reconcile version metadata after this patch lands."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
