@@ -1,4 +1,6 @@
 import base64
+import hashlib
+import hmac
 import shutil
 import tempfile
 import threading
@@ -124,6 +126,61 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         a = worker.job_hash(job)
         job["auth"] = {"signature": "0" * 64}
         self.assertEqual(a, worker.job_hash(job))
+
+    def test_hmac_auth_requires_and_verifies_signature(self):
+        job = self.make_job("health", job_id="signed-auth")
+        key = "unit-test-only-secret"
+        with unittest.mock.patch.dict("os.environ", {"HEAVEN_BRIDGE_HMAC_KEY": key}, clear=False):
+            with self.assertRaises(worker.BridgeError) as missing:
+                worker.verify_auth(job)
+            self.assertEqual(missing.exception.code, "AUTH_REQUIRED")
+
+            signed = dict(job)
+            signed["auth"] = {
+                "signature": hmac.new(
+                    key.encode("utf-8"),
+                    worker.canonical_job(job),
+                    hashlib.sha256,
+                ).hexdigest()
+            }
+            verified = worker.verify_auth(signed)
+            self.assertEqual(verified["mode"], "hmac-sha256")
+            self.assertTrue(verified["verified"])
+
+            tampered = dict(signed)
+            tampered["params"] = {"changed": True}
+            with self.assertRaises(worker.BridgeError) as invalid:
+                worker.verify_auth(tampered)
+            self.assertEqual(invalid.exception.code, "AUTH_INVALID")
+
+    def test_hmac_v1_cross_language_fixture(self):
+        job = {
+            "id": "canonical-fixture",
+            "source": worker.PROTOCOL,
+            "target_host": "heaven2",
+            "action": "wait_for",
+            "params": {
+                "ratio": 1e-7,
+                "count": 3,
+                "large": 9007199254740992,
+                "ユ": "😀",
+            },
+            "created_at": "2026-09-29T09:00:00.000Z",
+            "ttl_seconds": 21600,
+            "priority": "highest",
+        }
+        key = "unit-test-only-secret"
+        expected = "30678ccd2b625f08422cd3da337913ac1e6240bec048a76ff1b72138067e851a"
+        self.assertEqual(
+            hmac.new(key.encode("utf-8"), worker.canonical_auth_job_v1(job), hashlib.sha256).hexdigest(),
+            expected,
+        )
+        signed = dict(job)
+        signed["auth"] = {"canonical": "mhw-bridge-canon-v1", "signature": expected}
+        with unittest.mock.patch.dict("os.environ", {"HEAVEN_BRIDGE_HMAC_KEY": key}, clear=False):
+            verified = worker.verify_auth(signed)
+        self.assertEqual(verified["canonical"], "mhw-bridge-canon-v1")
+        self.assertTrue(verified["verified"])
 
     def test_payload_change_changes_replay_hash(self):
         job = self.make_job("health", job_id="replay-job")
