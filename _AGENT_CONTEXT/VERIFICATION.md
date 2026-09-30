@@ -1,3 +1,11 @@
+# v8.8.24 Agent Manager operator actions — verification scope
+
+The operator-actions implementation was reconciled from exact source head `6c32c3f351a1950215e0a6702307384d0cefd59c` onto current main without replaying stale continuity state. Regression coverage lives in `tools/agent-control/test/operator-ui-cli.test.mjs`.
+
+Required closure is exact-candidate `npm run check` + `npm test`, followed by heaven2 dashboard/controller smoke. Historical Agent Control or Windows evidence does not verify this changed candidate.
+
+---
+
 # v8.8.7 canonical-main reconciliation — verification scope
 
 Canonical source audited before this continuity-only checkpoint: `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`.
