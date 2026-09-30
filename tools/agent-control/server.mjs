@@ -74,6 +74,7 @@ const STATE_FILE = path.join(DATA_DIR, "control-plane.json");
 const STATE_BACKUP_FILE = path.join(DATA_DIR, "control-plane.json.bak");
 const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
 const WORK_HANDOFF_SIGNATURES_FILE = path.join(DATA_DIR, "work-handoff-signatures.json");
+const CONTROLLER_PID_FILE = path.join(DATA_DIR, "controller-process.json");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
@@ -101,6 +102,10 @@ const noWorkRecoveryOperations = new Set();
 const goToWorkRecoveryOperations = new Set();
 const swarmTailRecoveryOperations = new Set();
 const AUTOPILOT_TICK_MS = Math.max(1000, Number(process.env.AGENT_CONTROL_AUTOPILOT_TICK_MS || 4000));
+const PERPETUAL_RECOVERY_WINDOW_MS = Math.max(60_000, Number(process.env.AGENT_CONTROL_PERPETUAL_RECOVERY_WINDOW_MS || 10 * 60_000));
+const PERPETUAL_MAX_RECOVERIES_PER_WINDOW = Math.max(1, Number(process.env.AGENT_CONTROL_PERPETUAL_MAX_RECOVERIES_PER_WINDOW || 6));
+const PERPETUAL_RETRY_BASE_MS = Math.max(5_000, Number(process.env.AGENT_CONTROL_PERPETUAL_RETRY_BASE_MS || 15_000));
+const PERPETUAL_RETRY_MAX_MS = Math.max(PERPETUAL_RETRY_BASE_MS, Number(process.env.AGENT_CONTROL_PERPETUAL_RETRY_MAX_MS || 15 * 60_000));
 const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
 const GO_TO_WORK_RECOVERY_TICK_MS = Math.max(5000, Number(process.env.AGENT_CONTROL_GO_TO_WORK_RECOVERY_TICK_MS || 10000));
 
@@ -3757,6 +3762,306 @@ function patchAutopilot(patch = {}) {
   return state.autopilot;
 }
 
+function perpetualPhaseWorkerRef(autopilot = {}) {
+  const fields = {
+    implement: "implementationAgentId",
+    verify: "verificationAgentId",
+    reverify: "verificationAgentId",
+    review: "reviewAgentId",
+    repair: "repairAgentId",
+    integrate: "integrationAgentId",
+    hygiene: "hygieneAgentId",
+    expand: "expansionAgentId"
+  };
+  const field = fields[String(autopilot.phase || "")] || null;
+  return field ? { phase: autopilot.phase, field, agentId: autopilot[field] || null } : null;
+}
+
+function perpetualSafetyHoldReason(state) {
+  if (!state.autopilot?.perpetual || !state.autopilot?.enabled) return null;
+  if (state.health?.mode === "degraded") return "state-degraded";
+  if (state.settings?.readOnly) return "read-only";
+  if (state.settings?.emergencyStop) return "emergency-stop";
+  if (state.settings?.dispatchPaused || state.settings?.draining) return "dispatch-paused";
+  if (String(state.settings?.autonomyLevel || "") !== "engineering-autopilot") return "engineering-autopilot-permission-required";
+  return null;
+}
+
+function perpetualRetryWaiting(autopilot, now = Date.now()) {
+  const retryAt = Date.parse(String(autopilot?.nextRetryAt || ""));
+  return Number.isFinite(retryAt) && retryAt > now
+    ? { waiting: true, retryAt: new Date(retryAt).toISOString(), remainingMs: retryAt - now }
+    : { waiting: false, retryAt: null, remainingMs: 0 };
+}
+
+function schedulePerpetualRetry(reason, {
+  error = null,
+  retryAt = null,
+  patch = {},
+  notify = false
+} = {}) {
+  const state = loadState();
+  if (!state.autopilot?.perpetual || !state.autopilot?.enabled) return state.autopilot;
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const history = (Array.isArray(state.autopilot.recoveryHistory) ? state.autopilot.recoveryHistory : [])
+    .filter(item => Number.isFinite(Date.parse(item)) && now - Date.parse(item) <= PERPETUAL_RECOVERY_WINDOW_MS);
+  history.push(nowIso);
+
+  const previousLevel = Math.max(0, Number(state.autopilot.recoveryCooldownLevel || 0));
+  const storm = history.length >= PERPETUAL_MAX_RECOVERIES_PER_WINDOW;
+  const baselineLevel = history.length <= 1 ? 0 : previousLevel;
+  const nextLevel = Math.min(12, storm ? baselineLevel + 1 : baselineLevel);
+  const automaticDelay = Math.min(
+    PERPETUAL_RETRY_MAX_MS,
+    PERPETUAL_RETRY_BASE_MS * Math.pow(2, Math.min(8, nextLevel))
+  );
+  const requestedAt = Date.parse(String(retryAt || ""));
+  const nextAt = Number.isFinite(requestedAt) && requestedAt > now
+    ? requestedAt
+    : now + automaticDelay;
+
+  state.autopilot = normalizeAutopilotState({
+    ...state.autopilot,
+    ...patch,
+    enabled: true,
+    paused: false,
+    recoveryHistory: history,
+    recoveryCooldownLevel: nextLevel,
+    nextRetryAt: new Date(nextAt).toISOString(),
+    lastRecoveryAt: nowIso,
+    lastRecoveryReason: String(reason || "perpetual-retry"),
+    lastError: error ? String(error.message || error) : state.autopilot.lastError,
+    updatedAt: nowIso
+  });
+  addEvent(state, "autopilot.perpetual-retry", "Perpetual cycle scheduled an automatic retry", {
+    reason,
+    evidence: {
+      retryAt: state.autopilot.nextRetryAt,
+      cooldownLevel: state.autopilot.recoveryCooldownLevel,
+      recentRecoveries: history.length,
+      pendingReplacement: state.autopilot.pendingReplacement?.sourceAgentId || null
+    }
+  });
+  if (notify) {
+    addNotification(state, {
+      severity: "warning",
+      title: "Perpetual cycle will retry automatically",
+      message: String(error?.message || error || reason || "Recoverable condition"),
+      action: { type: "inspect-autopilot" },
+      dedupeKey: `perpetual-retry:${state.autopilot.runId}:${reason}`
+    });
+  }
+  saveState(state);
+  return state.autopilot;
+}
+
+function clearPerpetualRetry(patch = {}) {
+  const state = loadState();
+  if (!state.autopilot?.perpetual) return state.autopilot;
+  const now = Date.now();
+  const recent = (Array.isArray(state.autopilot.recoveryHistory) ? state.autopilot.recoveryHistory : [])
+    .filter(item => Number.isFinite(Date.parse(item)) && now - Date.parse(item) <= PERPETUAL_RECOVERY_WINDOW_MS);
+  state.autopilot = normalizeAutopilotState({
+    ...state.autopilot,
+    ...patch,
+    nextRetryAt: null,
+    recoveryHistory: recent,
+    recoveryCooldownLevel: recent.length ? state.autopilot.recoveryCooldownLevel : 0,
+    lastError: null,
+    updatedAt: isoNow()
+  });
+  saveState(state);
+  return state.autopilot;
+}
+
+function perpetualRecoverableGatePatch(state, reason) {
+  const autopilot = state.autopilot || {};
+  if (reason === "worker-capacity-unavailable" || reason === "routing-ownership-stale") return {};
+  if (reason === "verification-evidence-missing") return { verificationAgentId: null };
+  if (reason === "review-verdict-missing") return { reviewAgentId: null };
+  if (reason === "candidate-missing") {
+    return {
+      phase: "sync-plan",
+      implementationAgentId: null,
+      candidateAgentId: null,
+      verificationAgentId: null,
+      reviewAgentId: null,
+      repairAgentId: null,
+      phaseRetries: 0,
+      repairLoops: 0
+    };
+  }
+  if (String(reason).startsWith("repair-budget-exhausted:")) {
+    return {
+      phase: "repair",
+      repairLoops: 0,
+      repairAgentId: null
+    };
+  }
+  if (String(reason).startsWith("phase-retry-budget-exhausted:")) {
+    const ref = perpetualPhaseWorkerRef(autopilot);
+    return {
+      phaseRetries: 0,
+      ...(ref?.field ? { [ref.field]: null } : {})
+    };
+  }
+  return null;
+}
+
+async function dispatchPerpetualReplacement(state, pending) {
+  const source = state.agents.find(agent => agent.id === pending.sourceAgentId) || null;
+  const task = state.tasks.find(item => item.id === (pending.sourceTaskId || source?.taskId)) || null;
+  if (!source || !task) throw new Error("Perpetual replacement source/task disappeared from durable state.");
+
+  const attempt = Math.max(1, Number(pending.attempt || 1));
+  const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
+  const role = rolePresets[source.role] ? source.role : "recovery";
+  return withDeployLock(() => deployOne({
+    role,
+    task: [
+      `Perpetual recovery replacement for stale/stuck agent ${source.id} in phase ${pending.phase}.`,
+      `Continue the original objective: ${task.objective || source.task || "unknown"}`,
+      `Original branch: ${source.branchName || task.branchName || "unknown"}.`,
+      pending.takeoverPath ? `Persisted takeover state: ${pending.takeoverPath}.` : null,
+      sourceWorktree ? `Preserved source worktree: ${sourceWorktree}. Inspect it for durable or uncommitted evidence before changing overlapping files.` : null,
+      "Inventory the preserved branch/worktree/takeover first. Continue only remaining work; do not restart completed work from scratch.",
+      "Respect newer canonical-main work and live ownership. Verify the recovered result before declaring completion.",
+      "Use direct non-Work execution. Never hand off to ChatGPT Work unless the user explicitly requested Work for this exact task."
+    ].filter(Boolean).join("\n"),
+    baseBranch: source.branchName || source.requestedBaseBranch || source.baseBranch || state.autopilot.baseBranch || "main",
+    model: source.model || "",
+    executionMode: "direct",
+    boundary: `autopilot:perpetual-recovery:${state.autopilot.runId}:${pending.phase}:${attempt}`,
+    priority: Math.max(95, Number(source.priority || task.priority || 0)),
+    machine: recoveryMachineTarget(source.machine || task.machine, state.settings?.machinePolicies),
+    dependencies: [],
+    targetAgentId: source.targetAgentId || null,
+    lane: `perpetual-recovery-${String(pending.phase || "phase")}`,
+    repositoryWriteAuthorized: Boolean(source.repositoryWriteAuthorized ?? task.repositoryWriteAuthorized ?? true),
+    acceptanceCriteria: Array.isArray(task.acceptanceCriteria) ? task.acceptanceCriteria : [],
+    verification: Array.isArray(task.verification) ? task.verification : [],
+    additionalConstraints: [
+      "This is a one-for-one recovery owner for a controller-proven stopped stale worker.",
+      "Preserve and reuse durable work; never duplicate an uncertain live owner."
+    ],
+    recoveryContext: {
+      attempt,
+      retryOfAgentId: source.id,
+      retryOfTaskId: source.taskId || null,
+      rootAgentId: source.recoveryRootAgentId || source.id
+    },
+    swarmContext: {
+      workflowId: task.workflowId || "perpetual-autopilot",
+      waveId: task.swarmWaveId || `perpetual:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
+      mission: state.autopilot.objective,
+      stepIndex: task.swarmStepIndex || 0,
+      totalSteps: task.swarmStepTotal || 1,
+      source: "perpetual-stale-replacement"
+    }
+  }));
+}
+
+async function reconcilePerpetualReplacement(state) {
+  if (!state.autopilot?.perpetual || !state.autopilot?.enabled) return null;
+  const capacity = providerCapacityCircuit(state);
+  if (capacity.blocked) {
+    const existingRetry = Date.parse(String(state.autopilot.nextRetryAt || ""));
+    const blockedUntil = Date.parse(String(capacity.blockedUntil || ""));
+    if (
+      state.autopilot.lastRecoveryReason !== "provider-capacity"
+      || !Number.isFinite(existingRetry)
+      || (Number.isFinite(blockedUntil) && existingRetry < blockedUntil)
+    ) {
+      schedulePerpetualRetry("provider-capacity", { retryAt: capacity.blockedUntil });
+    }
+    return { kind: "wait", reason: "provider-capacity", retryAt: capacity.blockedUntil };
+  }
+
+  const pending = state.autopilot.pendingReplacement;
+  if (pending) {
+    const waiting = perpetualRetryWaiting(state.autopilot);
+    if (waiting.waiting) return { kind: "wait", reason: "replacement-cooldown", retryAt: waiting.retryAt };
+    try {
+      const replacement = await dispatchPerpetualReplacement(state, pending);
+      const refreshed = loadState();
+      const refField = pending.agentField;
+      refreshed.autopilot = normalizeAutopilotState({
+        ...refreshed.autopilot,
+        ...(refField ? { [refField]: replacement.id } : {}),
+        pendingReplacement: null,
+        replacementCount: Number(refreshed.autopilot.replacementCount || 0) + 1,
+        nextRetryAt: null,
+        lastRecoveryAt: isoNow(),
+        lastRecoveryReason: "stale-worker-replaced",
+        lastError: null,
+        updatedAt: isoNow()
+      });
+      addEvent(refreshed, "autopilot.stale-replaced", `${pending.sourceAgentId} replaced by ${replacement.id}`, {
+        agentId: replacement.id,
+        taskId: replacement.taskId,
+        reason: pending.reason || "progress-timeout",
+        evidence: { sourceAgentId: pending.sourceAgentId, takeoverPath: pending.takeoverPath || null }
+      });
+      saveState(refreshed);
+      return { kind: "replaced", sourceAgentId: pending.sourceAgentId, replacementAgentId: replacement.id };
+    } catch (error) {
+      schedulePerpetualRetry("replacement-dispatch-failed", {
+        error,
+        patch: {
+          pendingReplacement: {
+            ...pending,
+            attempt: Math.max(1, Number(pending.attempt || 1)) + 1,
+            lastError: String(error.message || error)
+          }
+        },
+        notify: true
+      });
+      return { kind: "wait", reason: "replacement-dispatch-failed", error: error.message || String(error) };
+    }
+  }
+
+  const ref = perpetualPhaseWorkerRef(state.autopilot);
+  if (!ref?.agentId) return null;
+  const agent = state.agents.find(item => item.id === ref.agentId) || null;
+  if (!agent || agent.status !== "stale") return null;
+
+  const takeover = buildTakeoverForAgent(agent.id, { persist: true, safetyControl: true });
+  try {
+    await stopAgent(agent.id);
+  } catch (error) {
+    schedulePerpetualRetry("stale-stop-unproven", { error, notify: true });
+    return { kind: "wait", reason: "stale-stop-unproven", error: error.message || String(error) };
+  }
+
+  const stopped = loadState();
+  stopped.autopilot = normalizeAutopilotState({
+    ...stopped.autopilot,
+    pendingReplacement: {
+      sourceAgentId: agent.id,
+      sourceTaskId: agent.taskId || null,
+      agentField: ref.field,
+      phase: ref.phase,
+      reason: "progress-timeout",
+      takeoverPath: takeover.takeoverPath || null,
+      detectedAt: isoNow(),
+      attempt: 1
+    },
+    nextRetryAt: null,
+    lastRecoveryAt: isoNow(),
+    lastRecoveryReason: "perpetual-stale-replacement",
+    updatedAt: isoNow()
+  });
+  addEvent(stopped, "autopilot.stale-replacement-pending", `${agent.id} stopped after durable takeover preservation`, {
+    agentId: agent.id,
+    taskId: agent.taskId,
+    reason: "progress-timeout",
+    evidence: { takeoverPath: takeover.takeoverPath || null, phase: ref.phase }
+  });
+  saveState(stopped);
+  return reconcilePerpetualReplacement(refreshState());
+}
+
 function gateAutopilot(reason, error = null) {
   const state = loadState();
   state.autopilot = transitionAutopilot(state.autopilot, "safety-gate", {
@@ -4106,6 +4411,28 @@ async function autopilotStep() {
     let state = refreshState();
     if (!state.autopilot?.enabled || state.autopilot?.paused) return state.autopilot || null;
 
+    if (state.autopilot.perpetual) {
+      const holdReason = perpetualSafetyHoldReason(state);
+      if (holdReason) {
+        return {
+          autopilot: state.autopilot,
+          decision: { kind: "wait", reason: holdReason, perpetual: true }
+        };
+      }
+
+      const recovery = await reconcilePerpetualReplacement(state);
+      if (recovery) return { autopilot: refreshState().autopilot, decision: recovery };
+      state = refreshState();
+
+      const retry = perpetualRetryWaiting(state.autopilot);
+      if (retry.waiting) {
+        return {
+          autopilot: state.autopilot,
+          decision: { kind: "wait", reason: state.autopilot.lastRecoveryReason || "perpetual-cooldown", retryAt: retry.retryAt }
+        };
+      }
+    }
+
     const truth = await reconcileAutopilotTruth();
     state = refreshState();
     const capacityAvailable = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length < MAX_ACTIVE_AGENTS;
@@ -4117,9 +4444,28 @@ async function autopilotStep() {
     });
 
     if (decision.kind === "idle" || decision.kind === "wait") return { autopilot: state.autopilot, decision };
-    if (decision.kind === "gate") return { autopilot: gateAutopilot(decision.reason), decision };
+    if (decision.kind === "gate") {
+      if (state.autopilot?.perpetual) {
+        const recoverablePatch = perpetualRecoverableGatePatch(state, decision.reason);
+        const orphanHold = /reconciliation-required-orphaned$/.test(String(decision.reason || ""));
+        if (recoverablePatch !== null || orphanHold) {
+          const autopilot = schedulePerpetualRetry(decision.reason, {
+            patch: recoverablePatch || {},
+            notify: !["worker-capacity-unavailable", "routing-ownership-stale"].includes(decision.reason)
+          });
+          return {
+            autopilot,
+            decision: { ...decision, kind: "wait", perpetualRetry: true, retryAt: autopilot.nextRetryAt }
+          };
+        }
+      }
+      return { autopilot: gateAutopilot(decision.reason), decision };
+    }
     if (decision.kind === "transition") {
-      return { autopilot: persistAutopilotPhase(decision.phase, decision.reason, decision.patch || {}), decision };
+      const patch = state.autopilot?.perpetual
+        ? { ...(decision.patch || {}), nextRetryAt: null, lastError: null }
+        : (decision.patch || {});
+      return { autopilot: persistAutopilotPhase(decision.phase, decision.reason, patch), decision };
     }
     if (decision.kind === "integration-gate") {
       const candidate = autopilotCandidate(state);
@@ -4138,7 +4484,13 @@ async function autopilotStep() {
     else if (decision.kind === "dispatch-integration") agent = await dispatchAutopilotIntegration(state);
     else if (decision.kind === "dispatch-hygiene") agent = await dispatchAutopilotHygiene(state);
     else if (decision.kind === "dispatch-expansion") agent = await dispatchAutopilotExpansion(state);
-    else return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
+    else {
+      if (state.autopilot?.perpetual) {
+        const autopilot = schedulePerpetualRetry(`unknown-decision:${decision.kind}`, { notify: true });
+        return { autopilot, decision: { ...decision, kind: "wait", perpetualRetry: true } };
+      }
+      return { autopilot: gateAutopilot(`unknown-decision:${decision.kind}`), decision };
+    }
 
     const patch = {};
     if (decision.kind === "dispatch-implementation") patch.implementationAgentId = agent.id;
@@ -4148,9 +4500,22 @@ async function autopilotStep() {
     if (decision.kind === "dispatch-integration") patch.integrationAgentId = agent.id;
     if (decision.kind === "dispatch-hygiene") patch.hygieneAgentId = agent.id;
     if (decision.kind === "dispatch-expansion") patch.expansionAgentId = agent.id;
+    if (state.autopilot?.perpetual) {
+      patch.nextRetryAt = null;
+      patch.lastError = null;
+    }
     return { autopilot: patchAutopilot(patch), decision, agentId: agent.id };
   } catch (error) {
     try {
+      const state = loadState();
+      if (state.autopilot?.enabled && state.autopilot?.perpetual) {
+        const autopilot = schedulePerpetualRetry("autopilot-runtime-error", { error, notify: true });
+        return {
+          autopilot,
+          decision: { kind: "wait", reason: "autopilot-runtime-error", perpetualRetry: true, retryAt: autopilot.nextRetryAt },
+          error: error.message || String(error)
+        };
+      }
       return { autopilot: gateAutopilot("autopilot-runtime-error", error), error: error.message || String(error) };
     } catch {
       return { error: error.message || String(error) };
@@ -4608,7 +4973,29 @@ if (!LOOPBACK_HOSTS.has(String(HOST).trim().toLowerCase())) {
   throw new Error(`Refusing unauthenticated non-loopback bind host "${HOST}". Configure an authenticated remote-access boundary before exposing Agent Control beyond localhost.`);
 }
 
+function writeControllerProcessIdentity() {
+  fs.writeFileSync(CONTROLLER_PID_FILE, JSON.stringify({
+    pid: process.pid,
+    sessionId: SESSION_ID,
+    startedAt: isoNow(),
+    serverPath: fileURLToPath(import.meta.url),
+    host: os.hostname(),
+    port: PORT
+  }, null, 2), "utf8");
+}
+
+function clearControllerProcessIdentity() {
+  try {
+    if (!fs.existsSync(CONTROLLER_PID_FILE)) return;
+    const current = JSON.parse(fs.readFileSync(CONTROLLER_PID_FILE, "utf8"));
+    if (Number(current?.pid) === process.pid) fs.rmSync(CONTROLLER_PID_FILE, { force: true });
+  } catch {}
+}
+
+process.once("exit", clearControllerProcessIdentity);
+
 server.listen(PORT, HOST, () => {
+  writeControllerProcessIdentity();
   console.log(`Heaven Agent Control Plane listening on http://${HOST}:${PORT}`);
   console.log(`Repo: ${REPO}`);
   console.log(`Worktrees: ${WORKTREE_ROOT}`);
