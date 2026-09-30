@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.25",
+  "currentVersion": "8.8.26",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run exact-head Agent Control checks and heaven2 operator smoke for v8.8.25, then continue the active Agent Manager P0 completion gates",
+  "nextMilestone": "verify the exact v8.8.26 Agent Control retry-exhausted registry-retirement candidate, smoke stale-row cleanup on heaven2, then continue the active Agent Manager P0 completion gates",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.24 Agent Manager operator actions",
-  "status": "v8.8.25-agent-control-copy-branch-plugin-identity",
+  "status": "v8.8.26-agent-control-retry-exhausted-registry-retirement",
   "verificationAppliesToCommit": null,
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.25 repairs generated Copy branch operator markup and closes nested Codex-plugin version drift. Historical verification does not transfer; exact-head Agent Control check/test plus heaven2 dashboard/operator smoke are required before closure.",
+  "verificationScopeNote": "v8.8.26 retires dead no-work retry lineages from managed/federated registries after retry exhaustion, preserves durable task/failure/event evidence, and refuses to hide a current-session live owned child. Historical verification does not transfer; exact-head Agent Control check/test plus heaven2 runtime cleanup smoke are required before closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.26 Agent Control lifecycle: retry-exhausted no-work lineages retire from managed/federated registries after leases are released, while task/failure/event evidence remains durable and live current-session owned processes cannot be hidden by cleanup.",
     "2026-09-30 v8.8.25 Agent Control repair: URI-encode Copy branch values before generated inline-handler interpolation, align runtime/root/nested plugin identity at v0.6.4, and regression-pin both invariants.",
     "2026-09-30 v8.8.24 Agent Manager operator actions: surface/action backend recommendations, gate reviewer actions to completed agents, make emergency-stop recovery explicit and confirmed, advance Agent Control/plugin identity to v0.6.3, and add operator-contract regression coverage.",
     "2026-09-30 v8.8.23 Agent Manager P0: canonical continuity now locks autonomous implementation/expansion onto Agent Control until exact-head control-plane checks and heaven2→heaven1 runtime smoke pass; runtime/plugin identity is aligned at Agent Control 0.6.2 and stable ChatGPT sessions heartbeat by default when a real stable identity exists.",
@@ -151,7 +152,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test for the v8.8.25 candidate, smoke Copy branch and plugin identity on heaven2, then continue the active Agent Manager P0 completion gates from current main.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test for v8.8.26, then on heaven2 prove persisted RETRY EXHAUSTED rows disappear from managed/federated registry and integration queue while durable failure/event evidence remains available.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
