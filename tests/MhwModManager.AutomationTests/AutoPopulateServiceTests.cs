@@ -234,7 +234,7 @@ public sealed class AutoPopulateServiceTests : IDisposable
         var statuses = await new DependencyDoctorService(db, gameRoot, GameProfile.MonsterHunterWorld(gameRoot))
             .ScanStageAsync(new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "dependent" }, TestContext.Current.CancellationToken);
 
-        var failed = Assert.Single(statuses.Where(x => !x.Ready));
+        var failed = Assert.Single(statuses, x => !x.Ready);
         Assert.Equal("dependent", failed.ModId);
         Assert.Contains(failed.Missing, x => x.Contains("managed provider", StringComparison.OrdinalIgnoreCase));
     }
