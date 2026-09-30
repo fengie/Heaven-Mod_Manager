@@ -861,3 +861,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-044 copied-test destination validation; LR-046 installed-runtime/restart proof.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## LR-049 — live registries are not historical failure archives
+
+- **Rule ID:** LR-049
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent registries, worker lifecycle state, retries, federation, dashboards
+- **Rule:** Separate durable execution history from live registry membership. Every terminal state must define a retirement boundary. Failed/dead/retry-exhausted workers should leave the live registry after no process or active recovery owns them; preserve tasks, events, failure evidence, branches, and worktrees elsewhere. Never keep terminal tombstones in a live registry merely to retain history.
+- **Trigger / evidence:** Agent Control persisted failed/retry-exhausted records forever and re-synchronized them into federation, causing dead cards to accumulate and obscure whether new click/dispatch actions worked.
+- **Rationale:** live control-plane views must represent actionable/current workers; mixing historical failures into them corrupts counts, UI meaning, recovery decisions, and operator trust.
+- **Enforcement:** lifecycle code must have explicit retention tests for process-alive, retry-pending/waiting, incomplete durable work, retry-exhausted, deterministic failure, and linked federated records.
+- **Regression/evidence:** v8.8.26 registry-retention implementation and `registry-retention.test.mjs`.
+- **Related rules:** LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure; LR-048 whole-output closure.
+- **Supersedes:** none
+- **Superseded by:** none
