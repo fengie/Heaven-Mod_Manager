@@ -3,10 +3,14 @@ import { promisify } from "node:util";
 
 const nodeExecFileAsync = promisify(nodeExecFile);
 
+export function hiddenWindowsOptions(options = {}) {
+  return { ...options, windowsHide: true };
+}
+
 export function spawnHidden(command, args = [], options = {}) {
-  return nodeSpawn(command, args, { ...options, windowsHide: true });
+  return nodeSpawn(command, args, hiddenWindowsOptions(options));
 }
 
 export function execFileHidden(command, args = [], options = {}) {
-  return nodeExecFileAsync(command, args, { ...options, windowsHide: true });
+  return nodeExecFileAsync(command, args, hiddenWindowsOptions(options));
 }
