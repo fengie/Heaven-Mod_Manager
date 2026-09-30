@@ -219,8 +219,11 @@ public sealed class AutoPopulateService(
     string gameRoot,
     GameProfile game)
 {
-    public Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default) =>
-        BuildAsync(null, ct);
+    public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await BuildAsync(null, ct);
+    }
 
     public async Task<AutoPopulateResult> BuildAsync(
         IReadOnlyCollection<string>? preferredModIds,
@@ -369,6 +372,25 @@ public sealed class AutoPopulateService(
                     candidate.DisplayName,
                     false,
                     $"Skipped because enabling its complete requirement chain would conflict with the protected/current safe set: {blocker.Explanation}");
+                continue;
+            }
+
+            var protectedOverride = plan.Conflicts.FirstOrDefault(decision =>
+                !decision.Blocking &&
+                decision.WinnerModId is not null &&
+                !protectedSelection.Contains(decision.WinnerModId) &&
+                providersByPath.TryGetValue(decision.Path, out var providers) &&
+                providers.Any(provider =>
+                    proposed.Contains(provider.ModId) &&
+                    protectedSelection.Contains(provider.ModId)));
+            if (protectedOverride is not null)
+            {
+                conflictSkips++;
+                skipped[candidate.Id] = new(
+                    candidate.Id,
+                    candidate.DisplayName,
+                    false,
+                    $"Skipped because it would override protected selected content at '{protectedOverride.Path}' with '{protectedOverride.WinnerModId}'.");
                 continue;
             }
 
