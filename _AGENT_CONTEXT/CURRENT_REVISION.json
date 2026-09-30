@@ -11,11 +11,11 @@
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.27 Agent Control agent-card inspection",
   "status": "v8.8.28-agent-control-relay-execution",
-  "verificationAppliesToCommit": null,
+  "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.28 fixes execution-time Heaven relay resolution after v8.8.27 agent-card inspection. Historical verification does not prove these bytes. Exact-head Agent Control check/test plus a restarted heaven2→heaven1 dispatch smoke using only the documented per-user relay checkout are required.",
+  "verificationScopeNote": "v8.8.28 changes Heaven Bridge relay execution discovery so health, submit, and result-wait use the same documented checkout resolver. Current closed verification applies only to historical commit 5abe40304dfcb48f96e750bd7da3d0075315625b; it does not verify v8.8.28. Exact-head Agent Control check/test plus heaven2→heaven1 live dispatch smoke are required before closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
