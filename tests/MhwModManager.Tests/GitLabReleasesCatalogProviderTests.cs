@@ -269,6 +269,49 @@ public sealed class GitLabReleasesCatalogProviderTests
     }
 
     [Fact]
+    public async Task Cancellation_is_propagated_without_retry()
+    {
+        var calls = 0;
+        var handler = new RecordingHandler(async (_, cancellationToken) =>
+        {
+            calls++;
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return JsonResponse(HttpStatusCode.OK, ReleaseJson);
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new GitLabReleasesTransport(client);
+        using var cts = new CancellationTokenSource();
+
+        var task = transport.GetLatestReleaseAsync("example/mhw-mod", cts.Token);
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public async Task Declared_oversized_response_fails_closed_before_body_read()
+    {
+        var handler = new RecordingHandler((_, _) =>
+        {
+            var response = JsonResponse(HttpStatusCode.OK, ReleaseJson);
+            response.Content!.Headers.ContentLength = 2048;
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new GitLabReleasesTransport(client, maxResponseBytes: 1024);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => transport.GetLatestReleaseAsync(
+                "example/mhw-mod",
+                TestContext.Current.CancellationToken));
+
+        Assert.Contains("exceeded", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Compliance_record_is_current_api_only_and_direct_asset_capable()
     {
         var compliance = GitLabReleasesCatalogPolicy.Compliance;
