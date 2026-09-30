@@ -360,3 +360,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Supersession automation must distinguish required canonical security evidence from ordinary redundant checks.
 - **Regression coverage added/strengthened:** Security Supply Chain Gate now runs a standalone PowerShell parser preflight before the policy script; repository rules forbid treating cancelled/queued/skipped runs as successful evidence.
 - **Sibling/adjacent cases checked:** workflow concurrency, exact-head integration evidence, release verification, persistent self-hosted runner trust, and the prior duplicated/corrupted security-policy incidents.
+
+## 2026-09-30 — branch-preservation rollback silently removed Agent Control recovery hardening
+- **Symptom:** Perpetual swarm workers exited with code 1, were repeatedly auto-requeued, then landed in `RETRY EXHAUSTED`; the dashboard still reported the perpetual swarm as started while integration remained empty.
+- **Root cause:** Preservation commit `5471f80545a755dd049718fa6812fb890e6effa2` retained task ancestry while replacing the canonical Agent Control blobs with an older tree, removing stale-lane takeover, retry cooldown/jitter, dispatch-failure accounting, and the matching tests.
+- **Violated invariant / wrong assumption:** A “tree unchanged”/record-only preservation merge must never be allowed to change canonical product blobs, and commit ancestry is not proof that the intended controller tree survived.
+- **Direct fix:** Restored `no-work-recovery.mjs`, recovery defaults, targeted `server.mjs` supervised-recovery logic, and regression tests from the last known-good pre-preservation main state while preserving unrelated later server changes.
+- **Preventive rule/process change:** Enforce LR-037 canonical-tree proof for branch-zero/preservation operations; compare protected control-plane blobs before and after any record-only merge and fail closed on drift.
+- **Regression coverage added/strengthened:** Restored stale-lane candidate, phase-owner exclusion, retry cooldown/dispatch-budget, and jitter-bound tests; existing branch-lifecycle coverage rejects ancestry-only cleanup proof.
+- **References:** bad boundary `5471f80545a755dd049718fa6812fb890e6effa2`; restoration commits `9e7dfbb7373a22a994e7505fac7ce58cf2657ef5`, `21d4087086886c2ebf6725f18738c4fd23114f0f`, `fd249748d5d376943f7449f5e9753fd032a14d4d`, `1d09dbf43a5393f9beb56bf43d8f7db5a4fcbcdf`, `eaafc9d223fc4ca2465f6fc0f02fb55db00d29b1`.
+
