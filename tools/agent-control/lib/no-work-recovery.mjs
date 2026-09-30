@@ -180,6 +180,20 @@ function verificationArrayPassed(value) {
   });
 }
 
+export function shouldRetireFromLiveRegistry(agent) {
+  const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
+  const recoveryStatus = String(agent?.recoveryStatus || agent?.recovery_status || "").trim().toLowerCase();
+
+  if (["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(status)) return false;
+  if (hasSubstantiveWorkEvidence(agent)) return false;
+
+  if (["retry-dispatched", "retry-exhausted", "retry-disabled"].includes(recoveryStatus)) return true;
+  if (status === "capacity-blocked" || recoveryStatus === "provider-capacity") return true;
+  if (status === "failed" && hasDeterministicRuntimeFailure(agent)) return true;
+
+  return false;
+}
+
 export function hasVerifiedCompletionEvidence(agent) {
   const metadata = agent?.source_metadata && typeof agent.source_metadata === "object"
     ? agent.source_metadata
