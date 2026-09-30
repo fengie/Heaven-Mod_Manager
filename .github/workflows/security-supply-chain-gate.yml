@@ -1,0 +1,78 @@
+name: Security Supply Chain Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'SECURITY.md'
+      - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
+      - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'SECURITY.md'
+      - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
+      - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-supply-chain-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflow-policy:
+    name: Enforce immutable actions and runner trust boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Audit workflow security policy
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          failures = []
+          workflow_dir = pathlib.Path(".github/workflows")
+          immutable = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+          uses_re = re.compile(r"^\s*uses:\s*([^\s#]+)", re.MULTILINE)
+          pr_re = re.compile(r"^\s*pull_request\s*:", re.MULTILINE)
+          permissions_re = re.compile(r"^permissions:\s*$", re.MULTILINE)
+          guard = "github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository"
+
+          for path in sorted(workflow_dir.glob("*.y*ml")):
+              text = path.read_text(encoding="utf-8")
+              for match in uses_re.finditer(text):
+                  value = match.group(1)
+                  if value.startswith("./"):
+                      continue
+                  if not immutable.fullmatch(value):
+                      failures.append(f"{path}: action is not pinned to a full commit SHA: {value}")
+              if not permissions_re.search(text):
+                  failures.append(f"{path}: workflow must declare explicit top-level permissions")
+              if pr_re.search(text) and "self-hosted" in text and guard not in text:
+                  failures.append(f"{path}: persistent self-hosted PR workflow must reject fork PR code")
+              if "pull_request_target:" in text and "actions/checkout@" in text:
+                  failures.append(f"{path}: pull_request_target plus checkout requires explicit security design review")
+
+          if failures:
+              print("\n".join(f"ERROR: {item}" for item in failures))
+              sys.exit(1)
+          print("Security workflow policy: PASS")
+          PY
