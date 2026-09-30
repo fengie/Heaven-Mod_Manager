@@ -334,6 +334,11 @@
       clearTimeout(window.__toastTimer);
       window.__toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
     };
+    const federatedCount = (value, coverage) => {
+      const count = Number.isFinite(Number(value)) ? Number(value) : 0;
+      if (coverage?.authoritative === true) return String(count);
+      return count > 0 ? `${count}+` : "—";
+    };
 
     const federatedCount = (value, coverage) => {
       const count = Number.isFinite(Number(value)) ? Number(value) : 0;
