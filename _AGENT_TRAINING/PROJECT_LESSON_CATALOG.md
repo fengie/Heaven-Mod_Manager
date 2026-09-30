@@ -60,6 +60,9 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 35. **Pinned test-framework APIs are compile-time contracts.** Do not assume assertion return values from older framework versions; under xUnit v3, retrieve nullable values separately when assertions return void, assert them, and continue with null-safe access under the pinned analyzer profile.
 36. **New provider/capability getters must satisfy verifier tracing.** Where function coverage is fingerprinted, use explicit getter blocks with `MasterDebugLog.BeginMethod()` as the first executable statement rather than expression-bodied public members.
 
+
+38. **Whole-file source replay must use replacement semantics.** When recovering, replaying, or transplanting a complete source artifact, reconstruct the target file atomically from the intended bytes rather than applying it as an additive patch. Verify the emitted file matches the intended source state and run the target-language parser/compiler on the exact candidate before canonicalization; a replay commit or preserved ancestry is provenance, not proof of valid emitted source.
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
