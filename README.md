@@ -1,4 +1,11 @@
-# v8.8.29 Universal Mod Manager
+# v8.8.30 Universal Mod Manager
+
+## v8.8.30 — Agent Control card accessibility closure
+
+Agent Manager cards keep the existing click, Enter, and Space inspection behavior while restoring normal article semantics for assistive technology. Managed and federated cards no longer advertise the entire status/task container as a single button, and nested controls remain independent so View log, Stop, Deploy reviewer, Copy branch, and other actions do not double-trigger card inspection.
+
+Executable interaction coverage now exercises managed/federated card activation, keyboard handling, nested-control suppression, and federated detail expansion. This integrates the clean accessibility follow-up from PR #484 as its own visible patch and advances Agent Control/runtime plugin identity to **v0.6.8**.
+
 
 ## v8.8.29 — Handoff visible-progress validator hardening
 

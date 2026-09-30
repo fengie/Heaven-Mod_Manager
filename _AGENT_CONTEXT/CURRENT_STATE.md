@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
+
+PR #484 integrated the remaining clean card-accessibility behavior: managed/federated cards stay mouse/keyboard inspectable while status/task articles no longer masquerade as whole-card buttons for assistive technology. Nested controls remain independent and executable interaction coverage protects the boundary.
+
+Agent Control/runtime/plugin identity is v0.6.8. The retirement-safety work in #472 remains the next manager-owned backend patch and must not reuse v8.8.30.
+
+---
+
 # 2026-09-30 v8.8.29 handoff visible-progress validator hardening — CURRENT
 
 The broad Workflow Feature gate exposed a governance escape: the negative fixture removed the entire `### Mandatory visible-progress versioning` rule from `AGENTS.md`, yet `Test-AgentHandoff.ps1` still passed because it searched for “README” and “patch” anywhere in the document.

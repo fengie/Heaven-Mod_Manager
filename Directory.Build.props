@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.29</Version>
-    <InformationalVersion>8.8.29-handoff-visible-progress-validator</InformationalVersion>
+    <Version>8.8.30</Version>
+    <InformationalVersion>8.8.30-agent-control-card-accessibility</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

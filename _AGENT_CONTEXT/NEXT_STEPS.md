@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`.
+2. Run the handoff preflight and adversarial negative fixtures so v8.8.29 governance remains enforced after the patch bump.
+3. On heaven2, smoke managed/federated card click + Enter/Space inspection and confirm nested actions do not double-trigger card activation.
+4. Continue PR #472 from current main as the next app/Agent Control patch; do not collide with v8.8.30/v0.6.8.
+5. Keep #475 → #477 sequenced and #482 blocked behind the #472 remote-stop primitive.
+
+---
+
 # 2026-09-30 v8.8.29 handoff validator — CURRENT
 
 1. Run `scripts/testing/Test-AgentHandoff.ps1` on the exact candidate and require PASS.

@@ -1,3 +1,11 @@
+# v8.8.30 Agent Control card accessibility closure — verification scope
+
+PR #484 source head `b46e6bf49aa9369436fbc841c443636f08b5c6b8` carried the accessibility implementation and executable interaction tests; its prior Agent Control and Security runs were green. This follow-up commit adds only the required visible version/continuity identity for that same change set.
+
+Closure still requires exact-head Agent Control syntax/tests and handoff governance fixtures after the metadata/version update. Live heaven2 UI smoke remains useful evidence but is separate from source integration. Historical verification must not be relabeled as proving unrelated #472 retirement code.
+
+---
+
 # v8.8.29 handoff visible-progress validator hardening — verification scope
 
 ## v8.8.29 exact governance evidence — source eb83529835e1473e368b39ea9dc12c0adb5db23e

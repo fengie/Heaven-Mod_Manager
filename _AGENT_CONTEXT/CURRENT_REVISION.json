@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.29",
+  "currentVersion": "8.8.30",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run the exact v8.8.29 handoff preflight and negative fixtures, then continue Agent Manager P0 runtime closure on canonical main",
+  "nextMilestone": "verify the exact v8.8.30 card-accessibility/version candidate, then continue the manager-owned #472 remote-retirement safety lane on the next patch",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.28 Agent Control Heaven relay execution repair",
-  "status": "v8.8.29-handoff-visible-progress-validator",
+  "immediateParentRevision": "v8.8.29 handoff visible-progress validator",
+  "status": "v8.8.30-agent-control-card-accessibility",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.29 hardens the handoff governance validator and its adversarial visible-progress fixture. Current closed verification applies only to historical commit 5abe40304dfcb48f96e750bd7da3d0075315625b; it does not verify v8.8.29. Exact-head Test-AgentHandoff.ps1 and Test-AgentHandoff-NegativeFixtures.ps1 plus the workflow gate are required before closure.",
+  "verificationScopeNote": "v8.8.30 integrates the Agent Control card-accessibility follow-up from PR #484 and advances Agent Control/plugin identity to v0.6.8. The UI source head b46e6bf49aa9369436fbc841c443636f08b5c6b8 had green Agent Control and Security gates, but the final version/continuity commit still requires exact-head local checks before closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.30 Agent Control card accessibility closure: preserve card inspection while removing whole-card button semantics, keep nested controls independent, add executable interaction regressions, and advance Agent Control/plugin identity to v0.6.8.",
     "2026-09-30 v8.8.29 verification governance repair: scope AGENTS visible-progress validation to its dedicated section so deleting the rule cannot pass via unrelated README/patch mentions; preserve v8.8.28 Agent Control behavior unchanged.",
     "2026-09-30 v8.8.28 Agent Control repair: make Heaven Bridge submit/result-wait use the same documented relay resolver as health/preflight, preventing deterministic exit-code-1 dispatch failure when AGENT_CONTROL_HEAVEN_RELAY_DIR is absent; preserve v8.8.26 retirement and v8.8.27 card inspection; Agent Control v0.6.7.",
     "2026-09-30 v8.8.27 Agent Manager card inspection: managed/federated registry cards are mouse/keyboard inspectable without hijacking nested actions; managed cards open logs, federated cards focus linked managed workers or show session details; Agent Control/plugin identity v0.6.6.",
@@ -155,7 +156,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test for v8.8.28; restart/reload the exact candidate on heaven2; with %USERPROFILE%\\HeavenBridgeRepo present and no explicit AGENT_CONTROL_HEAVEN_RELAY_DIR, dispatch one heaven-targeted worker and prove it passes bridge submit/result waiting; then re-smoke retry-exhausted live-registry cleanup.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test plus handoff preflight/negative fixtures for v8.8.30, then continue #472 as the next patch without reusing v8.8.30.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

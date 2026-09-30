@@ -1,3 +1,10 @@
+# v8.8.30 — Agent Control card accessibility closure
+- Preserve mouse and Enter/Space card inspection while removing whole-card button semantics from managed/federated status articles.
+- Keep nested action controls independent so their clicks/keys do not double-trigger card inspection.
+- Add executable interaction regressions for managed/federated activation, keyboard behavior, nested controls, and federated detail expansion.
+- Integrate the PR #484 accessibility follow-up as its own visible patch and advance Agent Control/root/nested plugin identity to v0.6.8.
+- Preserve v8.8.29 handoff-validator hardening and all earlier Agent Control behavior.
+
 # v8.8.29 — Handoff visible-progress validator hardening
 - Scope AGENTS visible-progress validation to the named `### Mandatory visible-progress versioning` section instead of matching README/patch terms anywhere in the document.
 - Require that section to reference the root README, patch advancement in `VERSION.txt`, `CHANGELOG.md`, and same-change-set coupling.
