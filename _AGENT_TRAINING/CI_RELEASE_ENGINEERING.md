@@ -66,3 +66,6 @@ When project policy defines publication/deployment as part of version completion
 - Software-update integrity should ultimately authenticate publisher identity independently of the repository/release account. Hashes stored beside an artifact detect corruption but do not alone survive compromise of the publication authority.
 - Encode these invariants in executable CI policy tests so later workflow edits fail closed.
 
+## Consumer-feed-first multi-repository releases
+
+When one logical release is published across multiple repositories or distribution surfaces, order visibility by consumer dependency. The surface that production clients actually poll must become ready and verified before a secondary human-facing/canonical listing becomes visible. Do not wrap such a transaction in blanket `cancel-in-progress: true`; interruption between publication steps can create split-brain release state. Make retry idempotent by recovering automation-owned drafts, and finish with a parity gate that compares immutable identity and artifact digests across all release surfaces.
