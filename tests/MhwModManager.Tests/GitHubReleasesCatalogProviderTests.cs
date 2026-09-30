@@ -203,6 +203,48 @@ public sealed class GitHubReleasesCatalogProviderTests
     }
 
     [Fact]
+    public void Credential_cannot_be_bound_to_non_github_api_origin()
+    {
+        using var client = new HttpClient(new RecordingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Credential-origin validation must happen before any request.")));
+
+        Assert.Throws<ArgumentException>(
+            () => new GitHubReleasesTransport(
+                client,
+                new GitHubCatalogCredential("fixture-secret"),
+                new Uri("https://example.invalid/")));
+    }
+
+    [Fact]
+    public async Task Acquisition_rejects_mod_from_different_selected_game()
+    {
+        var calls = 0;
+        using var client = new HttpClient(new RecordingHandler((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("latest.json")));
+        }));
+        var provider = CreateProvider(client);
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var mod = Assert.NotNull(await provider.GetModAsync(
+            game,
+            "example/mhw-mod",
+            TestContext.Current.CancellationToken));
+        var file = Assert.Single(mod.Files, candidate => candidate.ProviderFileId == "501");
+
+        var resolution = await provider.ResolveAcquisitionAsync(
+            new CatalogAcquisitionRequest(
+                game,
+                mod with { GameId = "different-game" },
+                file),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(CatalogAcquisitionKind.Unavailable, resolution.Kind);
+        Assert.Null(resolution.DownloadUri);
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
     public void Non_https_transport_base_is_rejected()
     {
         using var client = new HttpClient(new RecordingHandler((_, _) =>
