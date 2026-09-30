@@ -173,6 +173,18 @@ public sealed class ManagerDatabase(string databasePath)
         return list;
     }
 
+    public async Task<IReadOnlySet<string>> GetModSourcePathsAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var c = await OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT source_path FROM mods";
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct)) paths.Add(r.GetString(0));
+        return paths;
+    }
+
     public async Task SetEnabledAndPriorityAsync(IReadOnlyDictionary<string,(bool enabled,int priority)> state, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
