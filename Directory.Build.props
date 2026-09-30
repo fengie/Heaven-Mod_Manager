@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.36</Version>
-    <InformationalVersion>8.8.36-agent-control-notification-inspector</InformationalVersion>
+    <Version>8.8.37</Version>
+    <InformationalVersion>8.8.37-agent-control-live-registry</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
