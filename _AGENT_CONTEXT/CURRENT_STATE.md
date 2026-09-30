@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
+
+The reconciled v8.8.24 candidate exposes backend `suggestedActions` in the dashboard, gates reviewer deployment to completed agents, and makes emergency-stop recovery explicit and confirmed. Agent Control/runtime plugin identity is v0.6.3.
+
+Verification is not inherited from earlier heads: exact-head Agent Control check/test plus heaven2 dashboard/controller smoke are required, and the broader Agent Manager P0 lock remains active until its completion gates close.
+
+---
+
 # 2026-09-30 v8.8.23 Agent Manager runtime reliability — CURRENT
 
 Agent Manager is the highest-priority functional lane. **START SWARM** now resumes a paused perpetual controller and immediately advances it, leaves a genuinely running perpetual swarm idempotently alone, rejects an active non-perpetual autopilot with a 409 conflict, and rejects empty objectives before changing control/safety settings.
