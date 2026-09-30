@@ -13,6 +13,7 @@ export const NORMALIZED_AGENT_STATES = new Set([
 export const LIVE_AGENT_STATES = new Set(["working", "tool_wait", "blocked", "idle"]);
 export const DEFAULT_STALE_AFTER_MS = 120_000;
 export const DEFAULT_DISCONNECTED_AFTER_MS = 300_000;
+export const DEFAULT_RETIRE_AFTER_MS = 1_800_000;
 export const PROVIDER_HEALTH_STATES = new Set([
   "unknown",
   "registration-available",
@@ -186,6 +187,7 @@ export function defaultFederationState() {
     version: FEDERATION_VERSION,
     stale_after_ms: DEFAULT_STALE_AFTER_MS,
     disconnected_after_ms: DEFAULT_DISCONNECTED_AFTER_MS,
+    retire_after_ms: DEFAULT_RETIRE_AFTER_MS,
     providers: DEFAULT_PROVIDER_DEFINITIONS.map(providerDefaults),
     agents: []
   };
@@ -361,11 +363,15 @@ export function migrateFederationState(value) {
   const disconnectedAfterMs = Number.isFinite(Number(value.disconnected_after_ms))
     ? Math.max(staleAfterMs, Number(value.disconnected_after_ms))
     : base.disconnected_after_ms;
+  const retireAfterMs = Number.isFinite(Number(value.retire_after_ms))
+    ? Math.max(disconnectedAfterMs, Number(value.retire_after_ms))
+    : Math.max(disconnectedAfterMs, base.retire_after_ms);
 
   return {
     version: FEDERATION_VERSION,
     stale_after_ms: staleAfterMs,
     disconnected_after_ms: disconnectedAfterMs,
+    retire_after_ms: retireAfterMs,
     providers: [...providerMap.values()],
     agents: [...agentMap.values()]
   };
@@ -795,6 +801,10 @@ export function materializeAgent(agent, {
 export function federationSnapshot(federation, { now = Date.now() } = {}) {
   const staleAfterMs = Number(federation?.stale_after_ms) || DEFAULT_STALE_AFTER_MS;
   const disconnectedAfterMs = Number(federation?.disconnected_after_ms) || DEFAULT_DISCONNECTED_AFTER_MS;
+  const retireAfterMs = Math.max(
+    disconnectedAfterMs,
+    Number(federation?.retire_after_ms) || DEFAULT_RETIRE_AFTER_MS
+  );
   const agents = (federation?.agents || []).map(agent => materializeAgent(agent, {
     now,
     staleAfterMs,
@@ -819,6 +829,7 @@ export function federationSnapshot(federation, { now = Date.now() } = {}) {
     version: federation?.version || FEDERATION_VERSION,
     stale_after_ms: staleAfterMs,
     disconnected_after_ms: disconnectedAfterMs,
+    retire_after_ms: retireAfterMs,
     counts,
     providers: (federation?.providers || []).map(provider => ({ ...provider })),
     agents
