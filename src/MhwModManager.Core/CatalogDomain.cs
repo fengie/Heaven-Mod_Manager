@@ -88,7 +88,8 @@ public sealed record CatalogModFile(
     bool Required = false,
     bool Recommended = false,
     IReadOnlyList<CatalogDependency>? Dependencies = null,
-    string? ProviderMetadata = null);
+    string? ProviderMetadata = null,
+    string? ContentDigest = null);
 
 public sealed record CatalogMod(
     string CanonicalId,
