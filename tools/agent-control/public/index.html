@@ -116,6 +116,8 @@
       transition:border-color var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
     }
     .agent:hover,.queue-item:hover,.lease:hover,.worker:hover,.branch-item:hover { border-color:#35445a; background:rgba(14,19,27,.72); }
+    .agent.inspectable { cursor:pointer; }
+    .agent.inspectable:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-color:#4b78b5; }
     .agent-top,.item-top { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; }
     .agent-name,.item-name { display:flex; gap:9px; align-items:center; font-weight:800; }
     .dot { width:9px; height:9px; border-radius:50%; background:var(--muted); box-shadow:0 0 0 4px rgba(141,153,168,.07); flex:0 0 auto; }
@@ -567,6 +569,65 @@
       }).join("");
     }
 
+    function eventTargetsControl(event) {
+      return Boolean(event?.target?.closest?.("button,a,input,select,textarea,summary"));
+    }
+
+    async function inspectManagedAgentCard(event) {
+      if (eventTargetsControl(event)) return;
+      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+      if (event.type === "keydown") event.preventDefault();
+      const id = event.currentTarget?.dataset?.agentId || "";
+      if (!id) return;
+      await showLog(id);
+    }
+
+    function inspectFederatedAgentCard(event) {
+      if (eventTargetsControl(event)) return;
+      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+      if (event.type === "keydown") event.preventDefault();
+
+      const encodedId = event.currentTarget?.dataset?.federatedId || "";
+      const rawId = decodeURIComponent(encodedId);
+      const agent = (state.snapshot?.federation?.agents || []).find(item => item.agent_id === rawId);
+      if (!agent) return toast("Federated agent is no longer in the live registry.");
+
+      const managedId = String(agent.source_metadata?.managed_agent_id || "");
+      if (managedId && (state.snapshot?.agents || []).some(item => item.id === managedId)) {
+        const encodedManagedId = encodeURIComponent(managedId);
+        const card = document.querySelector(`.managed-agent-card[data-agent-id="${CSS.escape(encodedManagedId)}"]`);
+        card?.scrollIntoView({ behavior:"smooth", block:"center" });
+        if (card) void showLog(encodedManagedId);
+        return;
+      }
+
+      const box = document.getElementById(`federated-log-${encodedId}`);
+      if (!box) return;
+      box.textContent = [
+        `Agent: ${agent.agent_id || "—"}`,
+        `Provider: ${agent.provider || (agent.providers || []).join(", ") || "—"}`,
+        `State: ${agent.effective_state || agent.state || "—"} · ${agent.freshness || "unknown"}`,
+        `Heartbeat: ${agent.heartbeat_at || "—"}`,
+        `Recovery: ${recoveryLabel(agent.recovery_status) || "none"}`,
+        `Last action: ${agent.last_action_summary || "—"}`
+      ].join("\n");
+      box.classList.toggle("show");
+    }
+
+    function bindManagedAgentCardInteractions() {
+      document.querySelectorAll(".managed-agent-card").forEach(card => {
+        card.addEventListener("click", inspectManagedAgentCard);
+        card.addEventListener("keydown", inspectManagedAgentCard);
+      });
+    }
+
+    function bindFederatedAgentCardInteractions() {
+      document.querySelectorAll(".federated-agent-card").forEach(card => {
+        card.addEventListener("click", inspectFederatedAgentCard);
+        card.addEventListener("keydown", inspectFederatedAgentCard);
+      });
+    }
+
     function renderAgents(snapshot) {
       const agents = snapshot.agents || [];
       $("agentSummary").textContent = `${agents.length} tracked`;
@@ -576,7 +637,7 @@
       }
 
       $("agents").innerHTML = agents.map(a => `
-        <article class="agent">
+        <article class="agent inspectable managed-agent-card" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}" tabindex="0" role="button" aria-label="Inspect ${escapeHtml(a.roleLabel || a.role || "agent")}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}${a.recoveryStatus ? ` · ${escapeHtml(recoveryLabel(a.recoveryStatus))}` : ""}</span></div>
@@ -596,6 +657,7 @@
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
         </article>
       `).join("");
+      bindManagedAgentCardInteractions();
     }
 
     function renderFederation(snapshot) {
@@ -625,7 +687,7 @@
       `).join("") : '<div class="empty">No providers registered.</div>';
 
       $("federatedAgents").innerHTML = agents.length ? agents.map(a => `
-        <article class="agent">
+        <article class="agent inspectable federated-agent-card" data-federated-id="${escapeHtml(encodeURIComponent(a.agent_id))}" tabindex="0" role="button" aria-label="Inspect federated agent ${escapeHtml(a.agent_id)}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}${a.recovery_status ? ` · ${escapeHtml(recoveryLabel(a.recovery_status))}` : ""}</span></div>
@@ -637,8 +699,10 @@
           <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
           <div class="meta">Last action: ${escapeHtml(a.last_action_summary || "—")} · lease ${escapeHtml(a.source_metadata?.lease_id || "—")} · boundary ${escapeHtml(a.source_metadata?.boundary || "—")}</div>
           ${a.recovery_status ? `<div class="meta"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(recoveryLabel(a.recovery_status))}${a.replacement_agent_id ? ` → ${escapeHtml(a.replacement_agent_id)}` : ""}${a.recovery_next_at ? ` · next ${fmt(a.recovery_next_at)}` : ""}</div>` : ""}
+          <div class="log" id="federated-log-${escapeHtml(encodeURIComponent(a.agent_id))}"></div>
         </article>
       `).join("") : '<div class="empty">No federated agent observations yet.</div>';
+      bindFederatedAgentCardInteractions();
     }
 
     function renderLeases(snapshot) {
@@ -1023,14 +1087,14 @@
       } catch (error) { toast(error.message); }
     }
 
-    async function showLog(id, button) {
+    async function showLog(id, button = null) {
       try {
         const data = await api(`/api/agents/${id}/log`);
         const rawId = decodeURIComponent(id);
         const box = document.getElementById(`log-${rawId}`);
         box.textContent = data.lastMessage ? `FINAL / LAST MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
         const open = box.classList.toggle("show");
-        button.textContent = open ? "Hide log" : "View log";
+        if (button) button.textContent = open ? "Hide log" : "View log";
       } catch (error) { toast(error.message); }
     }
 

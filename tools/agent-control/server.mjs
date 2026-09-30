@@ -2723,7 +2723,7 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
         severity: "warning",
         title: "Work handoff UI changed",
         message: `${agentId}: Agent Control captured the new accessible card signature but refused to guess between ambiguous actions.`,
-        action: { type: "inspect-agent", agentId },
+        action: { type: "inspect-federation", agentId },
         dedupeKey: `work-handoff-ui-drift:${agentId}:${outcome.registryVersion || "unknown"}`
       });
     }
@@ -2779,7 +2779,7 @@ async function recoverGoToWorkAgent(agentId, decision, config) {
           severity: "warning",
           title: "Work handoff auto-dismiss needs attention",
           message: `${agentId}: ${stored.source_metadata.go_to_work_recovery_last_error}`,
-          action: { type: "inspect-agent", agentId },
+          action: { type: "inspect-federation", agentId },
           dedupeKey: `go-to-work-recovery-error:${agentId}`
         });
       }
