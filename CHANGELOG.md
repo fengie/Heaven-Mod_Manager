@@ -1,3 +1,12 @@
+# v8.8.50 — 2026-09-30
+
+- Added a first-class Browse Mods page with search, source filtering, sorting, result cards, detail inspection, provenance/freshness cues, and safe source-page launch.
+- Wired the existing remote catalog repository/sync stack into the desktop composition root instead of duplicating scraper/provider logic.
+- Enabled out-of-box MHW discovery from public Nexus Mods v3 trending and GameBanana update feeds, with provider-specific browse modes and no file hydration during browsing.
+- Preserved stale-while-revalidate behavior: one provider failing never clears previously cached mods or blocks successful sources.
+- Added integration regressions for partial-provider failure, stale-cache retention, FTS search, source filtering, and result sorting.
+- Direct archive acquisition remains intentionally outside this slice; provider download restrictions and the existing safe import boundary are unchanged.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
