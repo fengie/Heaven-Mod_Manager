@@ -64,8 +64,11 @@ test("dashboard has unique DOM ids and required federated operator surfaces", ()
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(new Set(ids).size, ids.length, "duplicate DOM ids make federated rendering ambiguous");
   assert.match(html, /Federated agent registry/);
+  assert.match(html, /Control center[\s\S]*heaven2/);
+  assert.match(html, /Resource worker center[\s\S]*heaven1/);
+  assert.match(html, /runtime host: heaven/);
   assert.match(html, /Recent events/);
-  assert.match(html, /Auto \/ heaven/);
+  assert.match(html, /Auto \/ heaven1 \(runtime: heaven\)/);
   assert.match(html, /counts\.active/);
   assert.match(html, /counts\.tool_wait/);
   assert.match(html, /counts\.blocked/);

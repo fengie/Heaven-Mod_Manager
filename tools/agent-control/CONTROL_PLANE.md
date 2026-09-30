@@ -63,7 +63,13 @@ The current controller releases a lease when its managed process ends. Future ve
 
 ## Worker scheduling
 
-v0.5.0 models `heaven2` as the control/credential authority and `heaven` as the preferred heavy execution worker.
+Machine-role terminology is fixed:
+
+- **heaven2** is the **control center**: Agent Manager, orchestration, credentials, integration, operator controls, and canonical control-side Git actions.
+- **heaven1** is the **resource worker center**. The machine's existing runtime hostname remains `heaven`, so transport and routing identifiers continue to use `heaven` even when the UI displays heaven1.
+- A display-label change must never silently change bridge host identity or move control authority away from heaven2.
+
+v0.5.0 models `heaven2` as the control/credential authority and `heaven1` (runtime host identifier `heaven`) as the preferred heavy execution worker.
 
 The controller host is always exposed as a local worker with hostname, platform/architecture, CPU/memory, configured capacity, active slots, and heartbeat timestamp. When the controller runs on `heaven2`, `auto` placement prefers `heaven`.
 

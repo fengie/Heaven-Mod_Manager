@@ -16,8 +16,9 @@ The repository-wide `GLOBAL_GIT_DIRECTIVE.md` applies: this work is not complete
 
 ## Shipped architecture contract
 
-- `heaven2` is the control plane and credential authority.
-- `heaven` is the preferred heavy worker for builds, tests, Codex workers, indexing, worktrees, and automation.
+- `heaven2` is the control center / control plane and credential authority.
+- `heaven1` is the resource worker center. Its runtime host identifier remains `heaven` for bridge/routing compatibility.
+- `heaven1` / runtime host `heaven` is the preferred heavy worker for builds, tests, Codex workers, indexing, worktrees, and automation.
 - Authenticated cross-machine execution uses the private Heaven Local Bridge protocol `chatgpt-heaven-bridge-v2` and the dedicated `heaven-bridge` relay branch.
 - Agent Control fails closed if the authenticated bridge or a fresh `heaven` heartbeat cannot be proven. It must not silently run requested heavy work on `heaven2`.
 - The bridge-backed worker is represented as provider `heaven-bridge`; local controller-owned execution is provider `local-control`.

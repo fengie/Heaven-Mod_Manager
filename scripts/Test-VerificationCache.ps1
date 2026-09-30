@@ -9,6 +9,15 @@ foreach($name in @('Add-ProjectInputs','Get-ProjectFingerprint')){
     if($null -eq $definition){throw "Missing fingerprint function: $name"}
     . ([scriptblock]::Create($definition.Extent.Text))
 }
+$strictCompile=$ast.Find({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and
+        $node.GetCommandName() -eq 'Invoke-CachedDotnetStep' -and
+        $node.Extent.Text -match 'Strict compile/analyzers'
+},$true)
+if($null -eq $strictCompile -or $strictCompile.Extent.Text -notmatch "'--no-incremental'"){
+    throw 'Strict compile/analyzers must force recompilation after the relaxed build so incremental up-to-date checks cannot suppress diagnostics.'
+}
 $Root=Join-Path ([IO.Path]::GetTempPath()) ('mhw-cache-test-'+[guid]::NewGuid().ToString('N'))
 $sdk='fixture-toolchain'
 try{
@@ -37,7 +46,7 @@ try{
     if($after -ne (Get-ProjectFingerprint $integration)){throw 'Generated output invalidated the cache.'}
     Set-Content -LiteralPath (Join-Path $Root 'Directory.Build.targets') -Value '<Project />'
     if($coreBefore -eq (Get-ProjectFingerprint $core)){throw 'Common build targets did not invalidate Core.'}
-    Write-Host 'PASS: Verification cache regressions (XAML, scripts, generated files, unrelated Core, build targets).'
+    Write-Host 'PASS: Verification cache regressions (strict analyzer recompilation, XAML, scripts, generated files, unrelated Core, build targets).'
 }
 finally{
     if(Test-Path $Root){Remove-Item -LiteralPath $Root -Recurse -Force}

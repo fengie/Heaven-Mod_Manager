@@ -308,7 +308,7 @@ public sealed class NexusV3Transport
         if (!string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment))
             throw new ArgumentException("Nexus API base URI must not contain query or fragment components.", nameof(uri));
 
-        var text = uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal) ? uri.AbsoluteUri : uri.AbsoluteUri + "/";
+        var text = uri.AbsoluteUri.EndsWith('/') ? uri.AbsoluteUri : uri.AbsoluteUri + "/";
         return new Uri(text, UriKind.Absolute);
     }
 
