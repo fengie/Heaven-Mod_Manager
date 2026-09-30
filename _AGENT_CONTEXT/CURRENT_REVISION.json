@@ -13,7 +13,7 @@
   "verificationAppliesToCommit": "45529dfa3b6912d08f866227e9b2eea3e6632595",
   "lastClosedVerificationCommit": "45529dfa3b6912d08f866227e9b2eea3e6632595",
   "lastClosedVerificationRun": "heaven-github-actions-36775171161",
-  "verificationScopeNote": "Exact v8.8.44: 26/26 Windows, 273 controller tests, security, immutable private/public build 353 and disposable update/rollback. Live controller 0.6.21 smoke passes. Actual operator latest proven 351; build 353 remains separate.",
+  "verificationScopeNote": "Exact v8.8.44: 26/26 Windows, 273 controller tests, security, immutable private/public build 353 and disposable update/rollback. Live controller 0.6.21 smoke passes. Actual operator latest proven 352; build 353 remains separate.",
   "lastClosedVerification": {
     "sourceSha": "45529dfa3b6912d08f866227e9b2eea3e6632595",
     "windowsGate": "36775171161 success; 26/26",
@@ -50,7 +50,7 @@
     "releasePolicy": "Until status is changed to complete after exact-head runtime proof, implementation and expansion prompts must prioritize Agent Manager work and must not spend autonomous cycles on unrelated product features."
   },
   "unresolvedRisks": [
-    "Actual operator client reached build 351 through its real shortcut/update chain; latest 353 confirmation remains separate.",
+    "Actual operator client reached build 352 through its real shortcut/update chain; latest 353 confirmation remains separate.",
     "Bridge authentication/current persistence and automatic provider registration remain separate live P0 work.",
     "External catalog branch is preserved; its provisional v8.8.44 identity must reconcile to fresh main before integration."
   ],
