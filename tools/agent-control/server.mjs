@@ -75,6 +75,7 @@ const STATE_BACKUP_FILE = path.join(DATA_DIR, "control-plane.json.bak");
 const LEGACY_STATE_FILE = path.join(DATA_DIR, "agents.json");
 const WORK_HANDOFF_SIGNATURES_FILE = path.join(DATA_DIR, "work-handoff-signatures.json");
 const CONTROLLER_PID_FILE = path.join(DATA_DIR, "controller-process.json");
+const FAILURE_LOG_FILE = path.join(DATA_DIR, "failures.jsonl");
 
 const PORT = Number(process.env.AGENT_CONTROL_PORT || 7331);
 const HOST = process.env.AGENT_CONTROL_HOST || "127.0.0.1";
@@ -108,6 +109,7 @@ const PERPETUAL_RETRY_BASE_MS = Math.max(5_000, Number(process.env.AGENT_CONTROL
 const PERPETUAL_RETRY_MAX_MS = Math.max(PERPETUAL_RETRY_BASE_MS, Number(process.env.AGENT_CONTROL_PERPETUAL_RETRY_MAX_MS || 15 * 60_000));
 const NO_WORK_RECOVERY_TICK_MS = Math.max(2000, Number(process.env.AGENT_CONTROL_NO_WORK_RECOVERY_TICK_MS || 5000));
 const GO_TO_WORK_RECOVERY_TICK_MS = Math.max(5000, Number(process.env.AGENT_CONTROL_GO_TO_WORK_RECOVERY_TICK_MS || 10000));
+const WORKFLOW_STARTUP_GUARD_MS = Math.max(250, Number(process.env.AGENT_CONTROL_WORKFLOW_STARTUP_GUARD_MS || 2500));
 
 const rolePresets = roleCatalog();
 
@@ -404,6 +406,87 @@ function readLogSummary(file) {
     } catch {}
   }
   return "";
+}
+
+function sanitizeFailureText(value, maxChars = 8000) {
+  if (value === null || value === undefined) return null;
+  let text = String(value).replace(/\0/g, "");
+  if (!text) return null;
+  text = text
+    .replace(/(authorization\s*:\s*bearer\s+)[^\s"'<>]+/gi, "$1[REDACTED]")
+    .replace(/((?:api[_-]?key|token|secret|password)\s*[=:]\s*)[^\s"'<>]+/gi, "$1[REDACTED]")
+    .replace(/(AGENT_CONTROL_TASK_TOKEN\s*[=:]\s*)[^\s"'<>]+/gi, "$1[REDACTED]");
+  return text.slice(0, Math.max(0, Number(maxChars) || 0));
+}
+
+function appendFailureLog(entry = {}) {
+  const record = {
+    schema: "agent-control/failure/v1",
+    at: sanitizeFailureText(entry.at || isoNow(), 80),
+    category: sanitizeFailureText(entry.category || "agent-failure", 128),
+    phase: sanitizeFailureText(entry.phase || "unknown", 128),
+    reason: sanitizeFailureText(entry.reason || "unknown", 512),
+    agentId: sanitizeFailureText(entry.agentId, 256),
+    taskId: sanitizeFailureText(entry.taskId, 256),
+    workflowId: sanitizeFailureText(entry.workflowId, 256),
+    swarmWaveId: sanitizeFailureText(entry.swarmWaveId, 256),
+    role: sanitizeFailureText(entry.role, 128),
+    status: sanitizeFailureText(entry.status, 128),
+    executionMode: sanitizeFailureText(entry.executionMode, 128),
+    executionProvider: sanitizeFailureText(entry.executionProvider, 128),
+    machine: sanitizeFailureText(entry.machine, 256),
+    branchName: sanitizeFailureText(entry.branchName, 512),
+    exitCode: Number.isFinite(Number(entry.exitCode)) ? Number(entry.exitCode) : null,
+    signal: sanitizeFailureText(entry.signal, 128),
+    error: sanitizeFailureText(entry.error, 8000),
+    lastMessage: sanitizeFailureText(entry.lastMessage, 8000)
+  };
+  try {
+    fs.appendFileSync(FAILURE_LOG_FILE, `${JSON.stringify(record)}\n`, "utf8");
+    return record;
+  } catch {
+    return null;
+  }
+}
+
+function recordAgentFailure(agent, entry = {}) {
+  if (!agent || agent.failureLoggedAt) return null;
+  const record = appendFailureLog({
+    ...entry,
+    agentId: agent.id,
+    taskId: agent.taskId,
+    workflowId: agent.workflowId,
+    swarmWaveId: agent.swarmWaveId,
+    role: agent.role,
+    status: agent.status,
+    executionMode: agent.executionMode,
+    executionProvider: agent.executionProvider,
+    machine: agent.machine,
+    branchName: agent.branchName,
+    exitCode: entry.exitCode ?? agent.exitCode,
+    signal: entry.signal ?? agent.signal,
+    error: entry.error ?? agent.error,
+    lastMessage: entry.lastMessage ?? agent.lastMessage
+  });
+  if (record) {
+    agent.failureLoggedAt = record.at;
+    agent.failureLogReason = record.reason;
+  }
+  return record;
+}
+
+function readFailureLog(limit = 80) {
+  const bounded = Math.max(1, Math.min(500, Math.floor(Number(limit) || 80)));
+  const lines = tailFile(FAILURE_LOG_FILE, 512 * 1024).split(/\r?\n/).filter(Boolean).reverse();
+  const failures = [];
+  for (const line of lines) {
+    if (failures.length >= bounded) break;
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed && parsed.schema === "agent-control/failure/v1") failures.push(parsed);
+    } catch {}
+  }
+  return failures;
 }
 
 async function git(args, cwd = REPO, options = {}) {
@@ -733,6 +816,11 @@ function refreshState() {
       agent.heartbeatAt = detectedAt;
       releaseLeaseForAgent(state, agent, "provider-capacity-auto-termination");
       updateTaskForAgent(state, agent);
+      recordAgentFailure(agent, {
+        category: "provider-capacity",
+        phase: "runtime-capacity-detection",
+        reason: capacityTermination.reason
+      });
       addEvent(state, "agent.capacity-auto-terminated", `${agent.id} hit a hard provider usage limit and was removed from the active swarm`, {
         agentId: agent.id,
         taskId: agent.taskId,
@@ -1123,6 +1211,20 @@ function failReservedDeployment({ taskId, leaseId, error, reason, worktree = nul
     message: error?.message || String(error),
     action: { type: "inspect-task", taskId },
     dedupeKey: `prelaunch-failed:${taskId}`
+  });
+  appendFailureLog({
+    category: "deployment",
+    phase: "pre-launch",
+    reason,
+    taskId,
+    workflowId: converged.task?.workflowId || null,
+    swarmWaveId: converged.task?.swarmWaveId || null,
+    role: converged.task?.role || null,
+    status: "failed",
+    executionMode: converged.task?.executionMode || null,
+    machine: converged.task?.machine || null,
+    branchName: converged.task?.retainedBranch || converged.task?.branchName || branchName || null,
+    error: error?.message || String(error)
   });
   saveState(failed);
 }
@@ -1634,6 +1736,19 @@ async function deployOne({
         releaseLeaseForAgent(current, item, `authoritative-process-exit:${code ?? "unknown"}`);
         updateTaskForAgent(current, item);
       }
+      if (item.status === "failed" || item.status === "capacity-blocked" || noWorkDecision.noWork) {
+        recordAgentFailure(item, {
+          category: item.status === "capacity-blocked" ? "provider-capacity" : "agent-exit",
+          phase: "process-exit",
+          reason: noWorkDecision.noWork
+            ? noWorkDecision.reason
+            : item.status === "capacity-blocked"
+              ? "provider-capacity"
+              : "nonzero-or-failed-authoritative-exit",
+          exitCode: code,
+          signal: signal || null
+        });
+      }
       addEvent(current, "agent.exited", `${id} exited with ${code ?? "unknown"}`, {
         agentId: id,
         taskId,
@@ -1704,6 +1819,12 @@ async function deployOne({
       item.completionEvidence = "spawn-error";
       releaseLeaseForAgent(current, item, "spawn-error-no-owned-process");
       updateTaskForAgent(current, item);
+      recordAgentFailure(item, {
+        category: "spawn-error",
+        phase: "process-error",
+        reason: "spawn-error-no-owned-process",
+        error: error.message || String(error)
+      });
       addEvent(current, "agent.error", error.message, {
         agentId: id,
         taskId,
@@ -3162,6 +3283,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     improvements: state.improvements,
     observedBranches: branches,
     recentEvents: state.events.slice(-120).reverse(),
+    recentFailures: readFailureLog(80),
     roles: rolePresets
   };
 }
@@ -3221,6 +3343,43 @@ async function previewWorkflow(workflowId, body = {}) {
     requireReconciledOwnership: Boolean(body.requireReconciledOwnership),
     now: Date.now()
   });
+}
+
+async function waitForWorkflowStartupViability(agentId, {
+  timeoutMs = WORKFLOW_STARTUP_GUARD_MS,
+  pollMs = 100
+} = {}) {
+  const deadline = Date.now() + Math.max(0, Number(timeoutMs) || 0);
+  while (true) {
+    const state = refreshState();
+    const agent = state.agents.find(item => item.id === agentId) || null;
+    const capacity = providerCapacityCircuit(state);
+    if (capacity.blocked) {
+      return {
+        allowed: false,
+        reason: "provider-capacity",
+        status: agent?.status || null,
+        lastMessage: agent?.lastMessage || null,
+        blockedUntil: capacity.blockedUntil || null
+      };
+    }
+    if (!agent) {
+      return { allowed: false, reason: "launched-agent-missing", status: null, lastMessage: null };
+    }
+    const status = String(agent.status || "");
+    if (["failed", "capacity-blocked", "stopped", "interrupted", "orphaned", "retry-pending"].includes(status)) {
+      return {
+        allowed: false,
+        reason: agent.failureClass || `startup-terminal:${status}`,
+        status,
+        lastMessage: agent.lastMessage || agent.error || null
+      };
+    }
+    if (Date.now() >= deadline) {
+      return { allowed: true, reason: "startup-guard-passed", status, lastMessage: agent.lastMessage || null };
+    }
+    await waitMs(Math.min(Math.max(25, Number(pollMs) || 100), Math.max(25, deadline - Date.now())));
+  }
 }
 
 async function executeWorkflow(workflowId, body = {}, { operatorInitiated = false } = {}) {
@@ -3299,8 +3458,45 @@ async function executeWorkflow(workflowId, body = {}, { operatorInitiated = fals
           }
         });
         created.push(agent);
+        if (currentStepIndex < plan.steps.length - 1) {
+          const startup = await waitForWorkflowStartupViability(agent.id);
+          if (!startup.allowed) {
+            const error = `Workflow startup guard stopped fan-out after ${agent.id}: ${startup.reason}.`;
+            blocked.push({ work, error });
+            appendFailureLog({
+              category: "workflow-fanout",
+              phase: "startup-guard",
+              reason: startup.reason,
+              agentId: agent.id,
+              taskId: agent.taskId,
+              workflowId,
+              swarmWaveId: workflowWaveId,
+              role: agent.role,
+              status: startup.status || agent.status,
+              executionMode: agent.executionMode,
+              executionProvider: agent.executionProvider,
+              machine: agent.machine,
+              branchName: agent.branchName,
+              lastMessage: startup.lastMessage,
+              error
+            });
+            break;
+          }
+        }
       } catch (error) {
         blocked.push({ work, error: error.message || String(error) });
+        appendFailureLog({
+          category: "workflow-dispatch",
+          phase: "step-launch",
+          reason: error?.code || "workflow-step-dispatch-failed",
+          workflowId,
+          swarmWaveId: workflowWaveId,
+          role: work.role,
+          status: "failed",
+          executionMode: body.executionMode || "direct",
+          machine: work.machine || body.machine || "auto",
+          error: error.message || String(error)
+        });
         break;
       }
     }
@@ -4707,6 +4903,12 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && pathname === "/api/search") {
       return sendJson(res, 200, await searchControlPlane(url.searchParams.get("q") || ""));
+    }
+
+    if (req.method === "GET" && pathname === "/api/failures") {
+      return sendJson(res, 200, {
+        failures: readFailureLog(url.searchParams.get("limit") || 80)
+      });
     }
 
     if (req.method === "POST" && pathname === "/api/command/resolve") {
