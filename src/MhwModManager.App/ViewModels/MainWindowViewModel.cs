@@ -688,6 +688,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             SelectedTab=3;
             return;
         }
+
+        var previewEnabled=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToHashSet(PathRules.Comparer);
+        var previewDependencies=await s.Dependencies.ScanStageAsync(previewEnabled,analysis.plan,ct);
+        var previewDependencyFailures=previewDependencies.Where(x=>!x.Ready).ToArray();
+        if(previewDependencyFailures.Length>0)
+        {
+            var detail=string.Join(" • ",previewDependencyFailures.Select(x=>$"{x.ModName}: {string.Join("; ",x.Missing)}"));
+            PlanPreviewText=$"Blocked • dependency preflight failed for {previewDependencyFailures.Length} mod(s) • no files would be written";
+            StatusText=PlanPreviewText+". "+detail;
+            SelectedTab=1;
+            return;
+        }
+
         PlanPreviewText=$"Ready • {changes.Count} file change(s): {add} add • {replace} replace • {remove} remove • {restore} restore";
         StatusText="Dry run passed. "+PlanPreviewText+".";
         SelectedTab=0;
@@ -722,6 +735,17 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             SelectedTab=3;
             StatusText=$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written.";
+            return;
+        }
+
+        var enabledForPreflight=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToHashSet(PathRules.Comparer);
+        var dependencyStatus=await s.Dependencies.ScanStageAsync(enabledForPreflight,analysis.plan,ct);
+        var dependencyFailures=dependencyStatus.Where(x=>!x.Ready).ToArray();
+        if(dependencyFailures.Length>0)
+        {
+            var detail=string.Join(" • ",dependencyFailures.Select(x=>$"{x.ModName}: {string.Join("; ",x.Missing)}"));
+            StatusText=$"Dependency preflight blocked Apply for {dependencyFailures.Length} mod(s). Nothing was written. {detail}";
+            SelectedTab=1;
             return;
         }
 
