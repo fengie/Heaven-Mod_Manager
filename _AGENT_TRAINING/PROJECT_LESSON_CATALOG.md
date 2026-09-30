@@ -61,3 +61,6 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 ## Capability declarations are executable boundaries
 
 When integrating an external provider, treat declared capabilities and compliance metadata as executable boundaries. Resolver/output code must not produce a stronger action than the provider contract permits. In particular, a browser-assisted flow must point to a provider-controlled user-facing page, not a direct asset endpoint discovered in metadata. Pair the declaration with an exact-target regression so policy drift and implementation drift fail together.
+
+
+30. **Provider chains require exact-current-main analyzer closure between integrations.** Focused adapter tests do not prove the combined repository remains build/analyzer clean. Reconcile each provider candidate onto the latest canonical base, run the strict whole-solution gate on that exact SHA, repair inherited failures as canonical defects, and only then begin or integrate the next provider lane.
