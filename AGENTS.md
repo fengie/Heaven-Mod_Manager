@@ -1,60 +1,73 @@
 # Agent Instructions
 
-This repository is the canonical working state for MHW Manual Mod Manager: fengie/mhw-mods, branch main.
+This repository is the canonical working state for MHW Manual Mod Manager and the user's cross-repository programming-agent training baseline: `fengie/mhw-mods`, branch `main`.
 
-## Mandatory cross-repository bootstrap
+## Authority and truth
 
-MHW `fengie/mhw-mods` current `main` is the canonical training authority for every repository. Before any repository reasoning/work, all agents and recurring workers refresh main and complete live MHW core/shared/role and indexed bootstrap; then load target-repository rules/state as additional requirements. Dispatchers/managers/successors propagate this recursively. Stale copies never substitute for live training. Exhaust authorized fallback routes; otherwise report TRAINING-BLOCKED. Higher-priority platform/safety and explicit newer user instructions prevail. Full binding contract: indexed REPOSITORY_POLICY_REFERENCE.md, cross-repository bootstrap authority.
+Higher-priority platform/safety instructions and the current user's explicit request outrank repository guidance. Repository files define engineering workflow and current project facts; fresh repository/runtime evidence outranks stale hashes, branch names, status claims, or chat memory.
 
-## Mandatory pre-response repository training gate
+Generic training belongs under `_AGENT_TRAINING/`. MHW-specific state, hazards, and continuity belong under `_AGENT_CONTEXT/`. Do not copy the same rule into both layers unless a small entry-point reminder prevents a realistic mistake.
 
-Every agent and successor must complete a compact canonical bootstrap before task-specific reasoning or action. Repository truth overrides stale chat, summaries and old verification.
+## Compact bootstrap
 
-1. Establish exact current origin/main SHA, assigned base/head, git status, relevant history/diffs, branches/PRs, and live Agent Control ownership/leases when available. Never confuse a cached local ref with a refreshed remote.
-2. Read AGENTS.md, _AGENT_TRAINING/README.md, _AGENT_CONTEXT/CURRENT_REVISION.json and _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md in full; then read task-applicable _AGENT_CONTEXT/LEARNED_RULES.md entries. Managers additionally read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt.
-3. Use the hash-verified indexed manifest for NEXT-AGENT-START-HERE.md, _AGENT_CONTEXT/README_FIRST.md, CURRENT_STATE.md, NEXT_STEPS.md, VERIFICATION.md, BUG_PRECEDENTS.md, LEARNED_RULES.md, _AGENT_TRAINING/REPOSITORY_STRUCTURE.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt and _AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md. Expand relevant sections, source, tests and architecture; full historical rereads are unnecessary. Detailed policies in the reference remain binding and must be loaded before work in their domain.
-4. Retrieve a bounded live packet with node tools/agent-control/agentctl.mjs bootstrap, or a local packet with node tools/agent-control/repository-context.mjs. Packets expire, identify source hashes and explicitly distinguish fresh remote evidence from local refs. Use the indexed SHA-256 with the context CLI to paginate safely; changed source hashes require regeneration.
-5. Truncation means paginate/chunk. Missing gh, a failed network route or unavailable checkout means discover and try authorized GitHub connector/API, canonical heaven2/heaven worktree, Heaven Local Bridge, Agent Control or CI alternatives. TRAINING-BLOCKED/EXECUTION-BLOCKED requires exhausted reasonable authorized routes with exact evidence.
-6. The controller must verify non-empty bounded sources, exact manifest hashes and assigned source identity before launch. Never promote a summary to verification or permission. Recheck canonical state and leases before mutation/integration.
+Before repository-specific mutation or a completion claim:
 
-No untrained agent answers first and catches up afterward. Delegation inherits these obligations. Premium reasoning belongs on diagnosis, architecture, review, integration and difficult decisions; delegate/offload mechanical work when useful. Do not select a model or change user model preferences without authorization.
+1. Refresh canonical state: exact `origin/main`, assigned head/base, relevant diff/history, worktree status when available, and active ownership/PRs/leases that could collide.
+2. Read the current core manifest in full: this file, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json`.
+3. Use the hash-verified indexed manifest/search/pagination tooling for only the task-relevant sections of `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `BUG_PRECEDENTS.md`, `LEARNED_RULES.md`, architecture, verification, policy, and other large context files. Do not reread historical ledgers end to end by default.
+4. Inspect the source, tests, callers, contracts, and architecture around the boundary you will change. Discover/load task-relevant plugins or skills when they materially improve execution; do not enumerate unrelated capabilities as ceremony.
+5. Recheck canonical state and ownership immediately before integration or destructive mutation.
 
-## Mandatory task-review and plugin activation gate
+Truncation, one failed tool/network route, or a missing preferred CLI is a routing problem, not proof that the task is blocked. Use another authorized route when practical. Report a blocker only with exact evidence after reasonable alternatives are exhausted.
 
-Re-read the live task; identify actions, targets, machines, constraints and acceptance criteria. Discover the actual session capabilities, read relevant current skills and plugins/README.md plus plugins/PLUGIN_GAP_BACKLOG.md, honor user-named capabilities and select the narrowest applicable route. Persist PLUGIN-PREFLIGHT evidence before implementation. One failed lookup never proves absence. Proven outages require the existing local-replacement protocol, duplicate checks and a first concrete move in the natural owner; never bypass authentication, consent, quotas or safety controls. See the policy reference for enforcement details.
+## Execution contract
 
-## Mandatory bug-prevention and precedent protocol
+Default engineering flow:
 
-Before risky work, identify invariants, failure modes, state transitions, integration, restart/update/rollback boundaries and relevant BUG_PRECEDENTS entries. Reproduce defects when feasible. Closure requires bug -> root cause/violated invariant -> precedent log -> preventive rule/process change -> regression or deterministic verifier -> risk-matched exact evidence -> sibling checks -> propagation. Repeated escapes require stronger enforcement. Unit tests alone never establish integration/UI/runtime/process/update behavior. Do not weaken checks to get green.
+**inspect → understand → choose the smallest coherent task → implement → test → verify → integrate → document → hand off**
 
-### Mandatory visible-progress versioning
+Planning is preparation, not the deliverable, unless the user explicitly requests analysis/review only. Once the acceptance path is clear, implement rather than producing another audit or plan.
 
-Every meaningful change set must update root README.md, increment the patch component of VERSION.txt, synchronize Directory.Build.props and continuity/release metadata, and update CHANGELOG.md in the same change set before completion. One integrated change set gets one patch increment; evidence-only attestation/publication of that same change set stays on its version. Independent code, configuration, tests, documentation or governance changes advance again.
+While changing code:
 
-### Mandatory completion handoff
+- preserve separation of concerns and existing ownership boundaries;
+- solve the root cause with the smallest coherent change;
+- avoid speculative features, premature abstractions, compatibility junk, and unrelated cleanup;
+- validate assumptions against actual code and authoritative contracts;
+- reproduce a defect before fixing it when practical;
+- make failure states explicit and fail closed at destructive/security boundaries;
+- remove dead code when safe instead of layering permanent exceptions around it;
+- keep comments for intent, invariants, or non-obvious tradeoffs—not narration of obvious code;
+- treat warnings, flaky tests, ignored failures, and unexplained state as engineering signals.
 
-Before completion/termination leave ordered exact next actions, improvement opportunities, unresolved risks/debt/verification gaps, branch/revision/artifact evidence and ownership/integration status in authoritative continuity. Supersede stale notes. The next agent must continue without previous chat history.
+Detailed universal practice lives in `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`; risk-specific verification lives in `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md`.
 
-## Mandatory main integration rule
+## Verification and evidence
 
-GLOBAL_GIT_DIRECTIVE.md remains mandatory. Fetch/prune and inventory branches, PRs and leases before branch creation; reuse a safe compatible unowned branch. One mutable boundary has one owner. Preserve unique work and unexplained dirty files. The implementing owner finishes verification, reconciliation with fresh main, exact-head review/checks, authorized integration/push, remote-main confirmation and safe temporary-branch cleanup. No force pushes, blind merges or default/protected/unique-work branch deletion. PR-open or side-branch-pushed is incomplete. Publish eligible user-facing releases immediately through the immutable private updater and public mirror, verify tag/assets/digests/provenance and the actual installed-client identity. Never cancel required canonical-main security verification. Read reference release/integration sections before these operations.
+Run the narrowest useful check first, then broaden only as the risk, changed boundary, repository gate, or new evidence justifies. Behavior changes require appropriate test coverage; escaped bugs normally require a regression that fails on the old behavior.
 
-## Mandatory machine, process and safety boundaries
+Evidence belongs to exact inputs. Never claim a test, build, merge, push, release, runtime state, or fix that was not observed. Historical green evidence does not transfer across changed source unless an explicit fingerprint/cache rule proves equivalence. Never weaken tests, analyzers, security controls, or verification gates merely to get green.
 
-Recurring agents perform bounded recovery in the current iteration; if still blocked, preserve exact revision/branch/artifact/error/evidence and next live/manual action as DEFERRED-TO-LIVE. The next scheduled iteration must choose different actionable unowned work unless the user reassigns the task or durable evidence shows the blocker cleared. Managers prevent unchanged-blocker retry loops. Deferral never authorizes deletion, closure, merge, release or completion. This applies to every recurring role; detailed policy is in the indexed reference.
+## Collaboration and senior-agent efficiency
 
-heaven2 is operator/control/credential authority; heaven is delegated compute. Use Heaven Local Bridge for heaven, with explicit target_host; operator UI defaults to heaven2. Never use RDC without current-task authorization. A failed control path does not prove host absence. Bridge readiness requires current canonical worker, independent watchdog, separate SYSTEM sentinel and local recovery evidence. Read machine/recovery policies before deployment.
+Use one primary owner per mutable boundary. Delegate only work that is meaningfully independent, bounded, and cheaper to synthesize than to perform inline. Agents editing the same mutable surface must coordinate rather than race.
 
-Every agent-owned cmd/PowerShell/process helper runs hidden/background by default: forced windowsHide, CREATE_NO_WINDOW or -WindowStyle Hidden. A visible shell requires explicit user request; requested GUI applications may be visible. Process ownership must be proven before replacement/termination. Capacity and runner-allocation failures route to compatible authorized paths with bounded retries, never retry storms. Lost streams require durable-work reconciliation before replacement, never blind full-task restart.
+Senior/premium context is best spent on architecture, root-cause reasoning, difficult decisions, review, integration, and verification. Mechanical retrieval, repetitive scans, isolated research, and independent test work may be delegated when that actually saves context or wall time. Do not create agents merely to occupy roles.
 
-Never suggest or initiate Work/Codex handoffs unless the user explicitly requests that surface for the current task. Continue in the current chat using authorized capabilities. Do not relay or print credentials. Preserve least-privilege CI, full-SHA action pinning, same-repository secretless self-hosted PR guards, independently verified privileged tooling and dependency auditing. Signed/HMAC authorization boundaries remain fail-closed.
+Recurring workers get a bounded recovery attempt. If an unchanged blocker remains, preserve an exact checkpoint and route the next iteration to different actionable work until the blocker materially changes.
 
-Preserve transactional deployment/journals, CAS integrity, rollback, filesystem/reparse/TOCTOU protections, native replacement failure semantics, immutable source libraries, deterministic planning, SQLite atomicity and UI lifetime/cancellation. Mod grouping, precedence and dependency satisfaction are separate proofs: family/priority never alone authorizes overwrites, atomic structural siblings cannot mix unrelated providers, and deployment/launch fail closed without proven requirements and a unique winner. Development validation processes must be tracked/closed and never masquerade as the installed client. Load applicable reference and precedents before modifying these domains.
+## Git, integration, and visible progress
 
-## Repository organization and plugin lifecycle
+`GLOBAL_GIT_DIRECTIVE.md` is the canonical Git/integration policy. In short: finished owned work belongs on verified remote `main`; temporary branches/PRs are tools, not completion states. Preserve unique concurrent work, never force-push shared/canonical history, and verify the intended tree survived integration.
 
-Follow _AGENT_TRAINING/REPOSITORY_STRUCTURE.md: specific canonical domain homes, meaningful subfolders, root entrypoints only, moves update every consumer and verify old-path removal. New plugins belong under plugins/<owner>, shared code under plugins/_shared and tooling under plugins/_tooling; preserve the existing heaven-bridge compatibility boundary, avoid duplicate implementations. Verify replacement plugin versions and use plugins/_tooling/prune_outdated_plugins.py --apply to safely remove strictly older same-identity installed copies while preserving source/auth/config/ambiguous versions. Read reference lifecycle policies first.
+Every meaningful integrated change set updates the root `README.md`, `CHANGELOG.md`, and patch component in `VERSION.txt` with synchronized version metadata. Evidence-only persistence for the same change set does not recursively bump the patch.
 
-## Permanent recursive continuity
+## Safety and repository-specific invariants
 
-Read and preserve _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and active Learned Rules. Core Rules can be weakened only with explicit user authorization. Every successor must inherit, preserve and recursively propagate this constitution to the agent after them. Keep durable checkpoints and verification tied to exact source/fingerprints. When resources become low, enter preservation mode. Do not break the chain.
+Load `_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, and applicable precedents only when the task touches their domains. MHW's filesystem, transactional deployment, updater/release, plugin, security, process-ownership, dependency-resolution, UI-lifetime, and machine-routing invariants remain binding where relevant. Repository organization follows `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`.
+
+## Continuity and completion
+
+A completed task leaves one durable, current handoff that lets a fresh successor continue without private chat history. Record the exact revision/branch, what changed, verification actually run, integration status, unresolved risks or assumptions, and ordered next actions. Supersede stale current-state notes instead of stacking another active-looking snapshot above them.
+
+Preserve the permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`; changing a Core Rule requires explicit user authorization.
