@@ -612,8 +612,26 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rule:** Never infer that another agent's branch is ready to merge merely because it exists, contains production changes, or appears conflict-free. Integration automation must require an explicit readiness/ownership signal plus the task's required verification evidence; branch cleanup must preserve an active owner's branch until that signal or a terminal owner state exists.
 - **Trigger / evidence:** During the Mod DB RSS/Atom catalog tranche, production source commits were placed on `agent/moddb-feed-catalog-20260930-chatgpt` while regression fixtures/tests were still being authored. A concurrent cleanup/integration lane merged that active branch as PR #386 and deleted/reconciled it before the planned tests were committed, creating a source-only interval on canonical `main`. The missing tests were restored immediately and exact-SHA verification was re-queued.
 - **Rationale:** Branch presence and code completeness are not equivalent to task completeness. In multi-agent repositories, a partially implemented branch may intentionally precede tests, evidence, documentation, or final owner reconciliation. Premature harvesting can turn an in-progress checkpoint into canonical state and erase the owner's isolation boundary.
-- **Enforcement:** Managers/integration agents must check an explicit ready marker, PR readiness/owner handoff, or equivalent durable owner signal before harvesting another lane. Require applicable tests/gates to be attached to the candidate before merge. Cleanup agents must distinguish abandoned/terminal branches from live owned branches and must not delete or absorb the latter. If premature integration occurs, record the incident, restore missing verification immediately, and keep all evidence exact-SHA scoped.
+- **Enforcement:** Managers/integration agents must check an explicit ready marker, PR readiness/owner handoff, or equivalent durable owner signal before harvesting another lane. Require applicable tests/gates to be attached to the candidate before merge. Cleanup agents must distinguish abandoned/terminal branches from live owned branches and must not delete or absorb the latter. If premature integration occurs, record the incident, restore missing verification immediately, and keep all evidence exact-SHA scoped. A branch is not integration-ready until its owning task explicitly signals readiness and every required gate for that exact candidate has completed successfully; queued, skipped, cancelled, or failed required gates are not merge authorization.
 - **Relevant commit/PR:** PR #386; merge `559299767d26c4c20983f7e606dd8df4c786dd3a`; checkpoint `_AGENT_CONTEXT/MODDB_FEED_CATALOG_2026-09-30.md`.
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+---
+
+## LR-036 — multi-provider override inference requires a complete winner proof
+
+- **Rule ID:** LR-036
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Mod conflict resolution, file-provider precedence, dependency/override planners, any N-way inferred winner selection
+- **Rule:** Do not resolve three-or-more competing providers with a sequential pairwise tournament. Automatic resolution is allowed only when one candidate is proven, under the same authoritative precedence semantics, to dominate every other eligible provider. If any pair is incomparable, the relation is cyclic/non-transitive, or no unique complete dominator exists, fail closed and require an explicit choice/rule.
+- **Trigger / evidence:** The MHW texture resolver compared a provisional winner to each later provider in sequence. A later winner could replace the provisional winner without ever being compared against earlier providers, so three-way non-transitive evidence could yield an order-dependent final provider even though no globally consistent winner existed.
+- **Rationale:** Pairwise evidence is not automatically transitive. Deterministic iteration order only makes an unsafe tournament repeatable; it does not prove that the selected provider is compatible with all losers. Multi-provider overwrite decisions affect the final physical file tree and therefore need a global consistency proof.
+- **Enforcement:** For N>=3, evaluate the required pairwise precedence relations and require exactly one provider to beat all N-1 alternatives. Invalid pair winners, incomparability, cycles, and ties are blockers. Keep dependency satisfaction, family/group membership, and overwrite precedence as separate proofs; none substitutes for another. Add cyclic/non-transitive regression fixtures whenever pairwise heuristics can disagree.
+- **Regression:** `AutoCompatibilityTests.Multi_provider_texture_precedence_requires_one_complete_dominator` covers a three-provider non-transitive texture-precedence cycle and requires `ambiguous-texture-precedence` with no winner.
+- **Relevant implementation:** `src/MhwModManager.Core/AutoCompatibility.cs`; PR #394; merge `b90e79acc487366f475edf31916337d57bbea59d`.
+- **Related rules:** LR-021 defect-class closure; LR-023 collision-safe rule IDs; LR-035 integration-ready ownership.
+- **Supersedes:** none
+- **Superseded by:** none
