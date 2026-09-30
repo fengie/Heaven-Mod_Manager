@@ -1,3 +1,16 @@
+# 2026-09-30 v8.8.23 Agent Manager P0 — CURRENT CRITICAL PATH
+
+1. Treat Agent Manager / Agent Control functionality as **P0**. Do not spend autonomous implementation or expansion cycles on unrelated product work while `agentManagerPriority.status` is `active` in `CURRENT_REVISION.json`.
+2. On the exact candidate, run `cd tools/agent-control && npm run check && npm test`; fix any regression before integration.
+3. On **heaven2**, prove controller startup plus server/CLI/dashboard smoke. Agent Manager and all operator-facing control surfaces must stay on heaven2.
+4. Prove the delegated **heaven1** worker path through the runtime host `heaven`: provider health must be usable for worker execution, or fail closed with a specific visible reason rather than silently running heavy work on heaven2.
+5. Exercise START SWARM / perpetual orchestration far enough to prove dispatch, federated visibility, stale/provider-capacity recovery semantics, explicit stop control, and no duplicate mutable-boundary ownership.
+6. Keep ChatGPT coverage honest. Register/heartbeat a real stable ChatGPT session when the runtime exposes one; never synthesize an identity just to make counts look complete.
+7. Only after all completion requirements have exact-head evidence may a successor change `agentManagerPriority.status` from `active` to `complete` and release autonomous expansion to unrelated product work.
+8. Successor handoff must include exact branch/SHA, checks run, heaven2/heaven1 evidence, unresolved limits, and the next concrete Agent Manager improvement.
+
+---
+
 # 2026-09-30 v8.8.21 visible-progress governance — CURRENT
 
 1. Preserve the new completion rule: every completed meaningful change set updates root `README.md`, increments the patch version, updates `CHANGELOG.md`, and synchronizes canonical version metadata in the same integration.
