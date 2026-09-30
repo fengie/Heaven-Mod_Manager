@@ -265,3 +265,20 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Add `-WindowStyle Hidden` to bootstrap's scheduled watchdog arguments.
 - **Preventive rule/process change:** Hidden-console policy tests must enumerate bootstrap-created PowerShell scheduled actions as well as direct/fallback launchers. When one launch seam is fixed, sibling scheduled-task definitions are part of the mandatory defect-class audit.
 - **Regression coverage added/strengthened:** `background-process-policy.test.mjs` now fails if bootstrap's watchdog scheduled action loses `-WindowStyle Hidden`.
+
+
+## 2026-09-29 — repository reorganization — verification tests kept stale script paths
+- **Symptom:** The exact release gate failed after PowerShell scripts were organized into purpose-specific subfolders because integration tests still opened `scripts/Verify-Release.ps1`, `scripts/Test-AgentHandoff.ps1`, and other former root paths.
+- **Root cause:** The structural move updated launchers/workflows/docs but did not close all code/test references to moved files.
+- **Violated invariant / wrong assumption:** Repository organization is a functional change whenever tests or tooling treat paths as contracts; a move is not complete until every authoritative consumer resolves the new path.
+- **Direct fix:** Update integration tests to the canonical `scripts/release`, `scripts/build`, and `scripts/testing` paths.
+- **Preventive rule/process change:** Any file/folder move must include caller/reference closure across source, tests, workflows, launchers, docs, and verification scripts before merge. Exact release verification must finish green before structural changes are integrated.
+- **Regression coverage added/strengthened:** The existing fail-closed integration tests now read the organized canonical paths, so future drift fails immediately.
+
+## 2026-09-29 — Auto Populate protected anchors — physically shadowed alternatives were still enabled
+- **Symptom:** Auto Populate preserved the selected texture as the effective provider but still enabled an unrelated alternative whose entire closure contributed no effective file.
+- **Root cause:** The protection check only rejected cases where a non-protected provider became the winner. It did not reject a candidate that lost every path to the protected/current safe set and therefore added no effective content.
+- **Violated invariant / wrong assumption:** “The protected mod still wins” is weaker than “fill around the protected selection.” Auto-filled packages that contribute no effective output should not be enabled merely because the planner can resolve their collisions.
+- **Direct fix:** Before accepting a candidate closure, require at least one newly added mod to be the effective provider of a planned path; otherwise skip the fully shadowed candidate.
+- **Preventive rule/process change:** Auto Populate decisions must be judged on effective output, not only enabled-state conflict freedom. Protected anchors remain meaningful choices and should not accumulate inert/redundant alternatives around them.
+- **Regression coverage added/strengthened:** `AutoPopulateFillsAroundExplicitStagedPreference` is the authoritative regression for this case.
