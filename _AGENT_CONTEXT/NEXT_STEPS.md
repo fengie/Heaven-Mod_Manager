@@ -1,3 +1,10 @@
+# v8.8.45 maintenance consolidation — current candidate
+
+User scope: no new features; consolidate existing work, fix reproduced bugs, prepare juniors. Read HANDOFFS/junior-maintenance-2026-09-30.md for verified baseline, preserved branch inventory, four bounded lanes, acceptance and escalation. No junior is dispatched/owns a lane yet. Base 681a433b, branch codex/junior-maintenance-handoff; Agent Control remains 0.6.21 and runtime behavior unchanged.
+
+Next: verify handoff/budgets, exact PR gates and integration; immediately publish/parity/update/rollback this patch, then supersede candidate status. v8.8.44/source 45529dfa/build 353 proof is historical and cannot prove the new release. Actual operator last proven 352; authenticated P0 end-to-end work remains open. Preserve all unique/external work and do not broaden scope. Improvement opportunities and exact junior return contract are in the handoff. Preserve and recursively propagate the constitution to successors and the agent after them. Do not break the chain.
+
+---
 # v8.8.44 closure — authoritative continuation, 2026-09-30
 
 PR #519 integrated source 45529dfa3b6912d08f866227e9b2eea3e6632595. Exact main controller/security/Windows gates pass (273 tests; 26/26 Windows), immutable private/public updater-main-353 has identical assets/digests/provenance, and disposable update/rollback passes. Guarded canonical controller 0.6.21 runs on heaven2; actual bootstrap/search/heading/pagination/stale-hash smoke passes. See EVIDENCE/v8.8.44-agent-state-encoding.md. Earlier candidate/closure prose below is historical and superseded for current action.

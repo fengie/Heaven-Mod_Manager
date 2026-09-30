@@ -1,3 +1,8 @@
+# v8.8.45 junior maintenance continuation
+
+Current assignment: no new features; consolidate existing work and fix reproduced bugs. Start with `_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md` and newest NEXT_STEPS; verify canonical truth and inherit/preserve/recursively propagate the permanent continuity constitution to the agent after you. Do not break the chain.
+
+---
 # v8.8.44 verified continuation
 
 Use the newest `_AGENT_CONTEXT/NEXT_STEPS.md` and `EVIDENCE/v8.8.44-agent-state-encoding.md` for current verified continuation and remaining P0 work. Historical proof remains scoped to its own source. Read the compact core and expand indexed task-relevant policies; preserve the permanent continuity constitution and recursively pass it to each successor and the agent after them. Do not break the chain.

@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
-  "currentVersion": "8.8.44",
+  "workingBranch": "codex/junior-maintenance-handoff",
+  "currentVersion": "8.8.45",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.44-state-encoding-verified-and-published",
-  "nextMilestone": "State ownership protected; continue Agent Manager P0 with existing owners.",
-  "nextRequiredAction": "Use v8.8.44 evidence; preserve catalog owner and authenticated-provider/latest-installed-client gaps.",
+  "status": "v8.8.45-maintenance-consolidation-candidate",
+  "nextMilestone": "Consolidate current work; juniors fix reproduced bugs only.",
+  "nextRequiredAction": "Verify/integrate/release consolidation; use junior handoff with no new features.",
   "verificationAppliesToCommit": "45529dfa3b6912d08f866227e9b2eea3e6632595",
   "lastClosedVerificationCommit": "45529dfa3b6912d08f866227e9b2eea3e6632595",
   "lastClosedVerificationRun": "heaven-github-actions-36775171161",
-  "verificationScopeNote": "Exact v8.8.44: 26/26 Windows, 273 controller tests, security, immutable private/public build 353 and disposable update/rollback. Live controller 0.6.21 smoke passes. Actual operator latest proven 352; build 353 remains separate.",
+  "verificationScopeNote": "v8.8.44/build 353 proof remains historical. v8.8.45 consolidation requires fresh exact-source gates; no runtime/plugin behavior changed.",
   "lastClosedVerification": {
     "sourceSha": "45529dfa3b6912d08f866227e9b2eea3e6632595",
     "windowsGate": "36775171161 success; 26/26",
@@ -27,12 +27,7 @@
     "evidenceCommit": "e6790dc79993e2e83f20aa4a333597693709d886",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.44-agent-state-encoding.md"
   },
-  "candidateSourceCommit": "45529dfa3b6912d08f866227e9b2eea3e6632595",
-  "candidateChanges": [
-    "Single-leading-BOM strict state decoder for primary, backup, legacy and backup validation.",
-    "Real ownership precedence, interruption recovery and malformed-encoding regressions.",
-    "Agent Control/root+nested plugin 0.6.21; unchanged prompt contract."
-  ],
+  "candidateSourceCommit": null,
   "agentManagerPriority": {
     "status": "active",
     "priority": "P0",
@@ -55,5 +50,6 @@
     "External catalog branch is preserved; its provisional v8.8.44 identity must reconcile to fresh main before integration."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
-  "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md"
+  "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
+  "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
 }
