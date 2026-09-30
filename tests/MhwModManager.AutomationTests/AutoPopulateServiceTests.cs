@@ -194,6 +194,137 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.Contains("left unchanged", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+
+    [Fact]
+    public async Task AutoPopulateRejectsIncompatibleDependencyVersion()
+    {
+        var db = await CreateDbAsync("version-requirement.db");
+        var gameRoot = Path.Combine(root, "game-version");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "base", "Old Base", 50, nexusVersion: "1.5.0");
+        var addon = await AddModAsync(db, "addon", "Needs New Base", 100);
+        await File.WriteAllTextAsync(
+            Path.Combine(addon.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":[{"id":"base","minVersion":"2.0.0"}]}""",
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("base",
+            [ModFile("base", @"nativePC\version\base.bin", "base-v1", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("addon",
+            [ModFile("addon", @"nativePC\version\addon.bin", "addon", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(result.State["addon"].Enabled);
+        Assert.True(result.State["base"].Enabled);
+        Assert.Contains(result.Decisions, x => x.ModId == "addon" && x.Reason.Contains("2.0.0", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task OptionalDependencyDoesNotBlockWhenAbsent()
+    {
+        var db = await CreateDbAsync("optional-requirement.db");
+        var gameRoot = Path.Combine(root, "game-optional");
+        Directory.CreateDirectory(gameRoot);
+
+        var addon = await AddModAsync(db, "addon", "Standalone With Optional Integration", 100);
+        await File.WriteAllTextAsync(
+            Path.Combine(addon.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":[{"id":"optional-integration","required":false,"minVersion":"1.0"}]}""",
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("addon",
+            [ModFile("addon", @"nativePC\optional\addon.mod3", "addon", FileClass.Structural)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.True(result.State["addon"].Enabled);
+        Assert.Equal(0, result.SkippedRequirements);
+        var status = await dependencies.ScanStageAsync(
+            new HashSet<string>(["addon"], StringComparer.OrdinalIgnoreCase),
+            TestContext.Current.CancellationToken);
+        Assert.DoesNotContain(status, x => !x.Ready);
+        Assert.Contains(status.SelectMany(x => x.Evidence), x => x.Contains("Optional dependency not active", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task HardDependencyCycleIsDetectedAndValidatedAsAGroup()
+    {
+        var db = await CreateDbAsync("dependency-cycle.db");
+        var gameRoot = Path.Combine(root, "game-cycle");
+        Directory.CreateDirectory(gameRoot);
+
+        var a = await AddModAsync(db, "a", "Cycle A", 100);
+        var b = await AddModAsync(db, "b", "Cycle B", 90);
+        await File.WriteAllTextAsync(Path.Combine(a.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":["b"]}""", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(b.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":["a"]}""", TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("a",
+            [ModFile("a", @"nativePC\cycle\a.mod3", "a", FileClass.Structural)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("b",
+            [ModFile("b", @"nativePC\cycle\b.mod3", "b", FileClass.Structural)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.True(result.State["a"].Enabled);
+        Assert.True(result.State["b"].Enabled);
+        var enabled = result.State.Where(x => x.Value.Enabled).Select(x => x.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var snapshot = await snapshots.LoadAsync(TestContext.Current.CancellationToken);
+        var staged = snapshot.Mods.Select(m => m with { Enabled = enabled.Contains(m.Id) }).ToArray();
+        var plan = planner.Build(snapshot with { Mods = staged });
+        var status = await dependencies.ScanStageAsync(enabled, plan, TestContext.Current.CancellationToken);
+        Assert.DoesNotContain(status, x => !x.Ready);
+        Assert.Contains(status.SelectMany(x => x.Evidence), x => x.Contains("strongly connected group", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task PluginIsRejectedWhenTrackedNativeLoaderIsOnlyPartial()
+    {
+        var db = await CreateDbAsync("partial-loader.db");
+        var gameRoot = Path.Combine(root, "game-loader");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "plugin", "Native Plugin", 100);
+        await AddModAsync(db, "partial-loader", "Incomplete Loader", 90);
+        await db.ReplaceModFilesAsync("plugin",
+            [ModFile("plugin", @"nativePC\plugins\feature.dll", "plugin", FileClass.Plugin)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("partial-loader",
+            [ModFile("partial-loader", @"root\dinput8.dll", "proxy", FileClass.Plugin)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(result.State["plugin"].Enabled);
+        Assert.False(result.State["partial-loader"].Enabled);
+        Assert.Contains(result.Decisions, x => x.ModId == "plugin" && x.Reason.Contains("loader", StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));
@@ -201,11 +332,16 @@ public sealed class AutoPopulateServiceTests : IDisposable
         return db;
     }
 
-    private async Task<ModDescriptor> AddModAsync(ManagerDatabase db, string id, string name, int priority)
+    private async Task<ModDescriptor> AddModAsync(
+        ManagerDatabase db,
+        string id,
+        string name,
+        int priority,
+        string? nexusVersion = null)
     {
         var source = Path.Combine(root, id);
         Directory.CreateDirectory(source);
-        var mod = new ModDescriptor(id, name, name, source, false, priority);
+        var mod = new ModDescriptor(id, name, name, source, false, priority, NexusVersion: nexusVersion);
         await db.UpsertModAsync(mod, TestContext.Current.CancellationToken);
         return mod;
     }
