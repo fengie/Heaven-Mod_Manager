@@ -16,6 +16,7 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 
 ## What v0.6.5 does
 
+- Resolves the documented `~/HeavenBridgeRepo` checkout for bridge job submit/result-wait when `AGENT_CONTROL_HEAVEN_RELAY_DIR` is absent, matching health/preflight behavior instead of failing every Heaven-dispatched worker at startup.
 - Retires dead terminal agents from the live managed/federated registries once no owned process or active recovery still needs them, so failed / retry-exhausted tombstones do not accumulate indefinitely.
 - Preserves retry-pending/waiting and durable incomplete-work records until recovery or reconciliation owns the next action.
 - Fixes **Copy branch** so branch names are encoded before being embedded in the generated operator action, avoiding malformed inline-handler markup.
