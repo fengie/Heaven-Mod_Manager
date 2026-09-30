@@ -39,8 +39,8 @@ test("federation snapshot exposes active, waiting, blocked, idle, stale, and dis
   assert.equal(counts.stale, 1);
   assert.equal(counts.disconnected, 1);
   assert.equal(counts.total, 4, "live registry total must exclude stale/disconnected history");
-  assert.deepEqual(snapshot.agents.map(agent => agent.agent_id).sort(), ["blocked", "idle", "waiting", "working"]);
-  assert.deepEqual(snapshot.history_agents.map(agent => agent.agent_id).sort(), ["disconnected", "stale"]);
+  assert.deepEqual(snapshot.agents.map(agent => agent.source_id).sort(), ["blocked", "idle", "waiting", "working"]);
+  assert.deepEqual(snapshot.history_agents.map(agent => agent.source_id).sort(), ["disconnected", "stale"]);
 });
 
 test("quota-blocked managed agents are historical failures, not healthy live agents", () => {
@@ -80,8 +80,8 @@ test("recovery-owned historical records stay in attention while exhausted failur
 
   const snapshot = federationSnapshot(federation, { now: T0 });
   assert.deepEqual(snapshot.agents, []);
-  assert.deepEqual(snapshot.attention_agents.map(agent => agent.agent_id), ["dirty"]);
-  assert.deepEqual(snapshot.history_agents.map(agent => agent.agent_id), ["exhausted"]);
+  assert.deepEqual(snapshot.attention_agents.map(agent => agent.source_id), ["dirty"]);
+  assert.deepEqual(snapshot.history_agents.map(agent => agent.source_id), ["exhausted"]);
   assert.equal(snapshot.counts.total, 0);
   assert.equal(snapshot.counts.attention, 1);
   assert.equal(snapshot.counts.historical, 1);
@@ -97,7 +97,7 @@ test("fresh heartbeat deterministically re-registers a stale historical source",
   }, { now: T0 });
   let snapshot = federationSnapshot(federation, { now: T0 });
   assert.equal(snapshot.agents.length, 0);
-  assert.equal(snapshot.history_agents[0].agent_id, "session-1");
+  assert.equal(snapshot.history_agents[0].source_id, "session-1");
 
   reconcileObservation(federation, {
     provider: "chatgpt",
@@ -106,7 +106,7 @@ test("fresh heartbeat deterministically re-registers a stale historical source",
     heartbeat_at: new Date(T0 + 1_000).toISOString()
   }, { now: T0 + 1_000 });
   snapshot = federationSnapshot(federation, { now: T0 + 1_000 });
-  assert.equal(snapshot.agents[0].agent_id, "session-1");
+  assert.equal(snapshot.agents[0].source_id, "session-1");
   assert.equal(snapshot.history_agents.length, 0);
 });
 
