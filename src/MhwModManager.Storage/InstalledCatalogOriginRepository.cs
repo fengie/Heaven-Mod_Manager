@@ -126,7 +126,7 @@ public sealed class InstalledCatalogOriginRepository(ManagerDatabase db)
             DateTimeOffset.Parse(
                 reader.GetString(5),
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind),
+                DateTimeStyles.None),
             reader.GetString(6),
             reader.GetString(7),
             reader.IsDBNull(8) ? null : reader.GetString(8));
@@ -203,7 +203,7 @@ public sealed class InstalledCatalogOriginRepository(ManagerDatabase db)
             "token=", "access_token=", "apikey=", "api_key=", "signature=", "sig=",
             "expires=", "x-amz-", "x-goog-", "authorization=", "auth=", "jwt="
         ];
-        if (forbidden.Any(query.Contains))
+        if (forbidden.Any(token => query.Contains(token, StringComparison.Ordinal)))
             throw new InvalidDataException(
                 "Installed catalog source URL must not contain credentials or expiring signatures.");
 
@@ -249,7 +249,7 @@ public sealed class InstalledCatalogOriginRepository(ManagerDatabase db)
             "x-amz-signature", "x-goog-signature", "\"token\"", "\"secret\"",
             "signature=", "token=", "secret=", "jwt="
         ];
-        if (forbidden.Any(lower.Contains))
+        if (forbidden.Any(token => lower.Contains(token, StringComparison.Ordinal)))
             throw new InvalidDataException(
                 "Installed catalog provider metadata appears to contain secret or signed-request material.");
 
