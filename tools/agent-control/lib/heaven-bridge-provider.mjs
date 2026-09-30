@@ -615,10 +615,10 @@ export function bridgeResultSucceeded(result) {
 }
 
 export async function submitHeavenBridgeJob(job, {
-  relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  relayDir = resolveHeavenRelayDir(),
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  if (!relayDir) throw new Error("Heaven relay checkout is not configured. Set AGENT_CONTROL_HEAVEN_RELAY_DIR or provision the documented per-user HeavenBridgeRepo checkout.");
   const signingKey = resolveBridgeSigningKey();
   if (clean(signingKey)) {
     job = signBridgeJob(job, signingKey);
@@ -670,12 +670,12 @@ export async function waitForHeavenBridgeResult({
   id,
   action,
   targetHost = HEAVEN_BRIDGE_HOST,
-  relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  relayDir = resolveHeavenRelayDir(),
   timeoutMs = DEFAULT_RESULT_TIMEOUT_MS,
   pollMs = 1_500,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  if (!relayDir) throw new Error("Heaven relay checkout is not configured. Set AGENT_CONTROL_HEAVEN_RELAY_DIR or provision the documented per-user HeavenBridgeRepo checkout.");
   const deadline = Date.now() + Math.max(1_000, Number(timeoutMs) || DEFAULT_RESULT_TIMEOUT_MS);
   while (Date.now() < deadline) {
     const result = await withRelayLock(relayDir, async () => {
