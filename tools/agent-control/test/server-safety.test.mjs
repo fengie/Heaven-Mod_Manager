@@ -935,3 +935,40 @@ test("federated Go-to-Work notifications route to federated inspection", () => {
     "federated logical ids must never be routed to the managed-agent log inspector"
   );
 });
+
+
+test("retry-exhausted Heaven Bridge retirement proves remote termination before registry deletion", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+
+  const proofStart = source.indexOf("async function proveRetryExhaustedRemoteJobStopped");
+  const proofEnd = source.indexOf("async function retireRetryExhaustedManagedAgent", proofStart);
+  assert.ok(proofStart >= 0 && proofEnd > proofStart);
+  const proof = source.slice(proofStart, proofEnd);
+  assert.match(proof, /return proveRemoteJobStopped\(\{/);
+  assert.match(proof, /cancelJob: async jobId/);
+  assert.match(proof, /cancelHeavenBridgeJob\(jobId/);
+  assert.match(proof, /getStatus: async jobId/);
+  assert.match(proof, /action: "job_status"/);
+  assert.match(proof, /params: \{ job_id: jobId \}/);
+
+  const retireStart = source.indexOf("async function retireRetryExhaustedManagedAgent");
+  const retireEnd = source.indexOf("function retireFederatedRetryExhaustedAgent", retireStart);
+  assert.ok(retireStart >= 0 && retireEnd > retireStart);
+  const retire = source.slice(retireStart, retireEnd);
+  const proofCall = retire.indexOf("await proveRetryExhaustedRemoteJobStopped(source)");
+  const registryDelete = retire.indexOf("state.agents = state.agents.filter");
+  assert.ok(proofCall >= 0, "retirement must prove remote execution stopped");
+  assert.ok(registryDelete > proofCall, "registry deletion must happen only after remote stop proof");
+});
+
+test("retired observation decision runs on raw heartbeat evidence before federation reconciliation", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("function ingestFederatedObservations");
+  const end = source.indexOf("function heartbeatFederatedProvider", start);
+  assert.ok(start >= 0 && end > start);
+  const ingest = source.slice(start, end);
+  const decision = ingest.indexOf("retiredObservationDecision(state.retiredAgents, observation)");
+  const reconcile = ingest.indexOf("reconcileObservation(state.federation, observation");
+  assert.ok(decision >= 0, "retirement decision must inspect the raw observation");
+  assert.ok(reconcile > decision, "retirement freshness proof must run before normalization/reconciliation");
+});
