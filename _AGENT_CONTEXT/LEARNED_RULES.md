@@ -740,3 +740,6 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+
+## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
