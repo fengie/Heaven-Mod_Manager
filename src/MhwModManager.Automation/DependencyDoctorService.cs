@@ -47,10 +47,9 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         var filesByMod = files
             .GroupBy(x => x.ModId, PathRules.Comparer)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<ModFileDescriptor>)g.ToArray(), PathRules.Comparer);
-        var currentManifest = (await new PlannerSnapshotRepository(db).LoadAsync([], ct)).CurrentManifest;
 
-        // A staged identity that disappeared or became superseded is itself an unsatisfied
-        // dependency. Never silently drop stale profile entries from validation.
+        // A staged identity that no longer exists (or is superseded) is itself unsatisfied.
+        // Never silently drop stale profile entries from validation.
         var unavailable = enabledModIds
             .Where(id => !modsById.TryGetValue(id, out var mod) || mod.IsSuperseded)
             .Order(StringComparer.OrdinalIgnoreCase)
@@ -107,7 +106,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
                 missing.Add("Tracked native-loader package is incomplete: dinput8.dll and loader.dll must be supplied together by the same package.");
             }
             else if ((spec.RequiresNativeLoader || suppliesLoaderBinary) &&
-                     !HasEffectiveLoader(selected, filesByMod, effectivePlan, currentManifest, out loaderEvidence))
+                     !HasEffectiveLoader(selected, filesByMod, effectivePlan, out loaderEvidence))
             {
                 missing.Add(loaderEvidence);
             }
@@ -188,16 +187,6 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
 
                 if (SelectedProvidesPath(requiredPath, selected, filesByMod))
                     continue;
-
-                // A live manager-owned file cannot satisfy the staged configuration when its
-                // provider is not selected: this deployment is about to remove or restore it.
-                // Only unmanaged/base-game live content may satisfy the fallback.
-                if (currentManifest.ContainsKey(requiredPath))
-                {
-                    missing.Add(requiredPath + " (currently supplied only by a managed provider that is not enabled in the staged set)");
-                    continue;
-                }
-
                 if (File.Exists(ModRequirementReader.LivePath(gameRoot, requiredPath)))
                     continue;
                 missing.Add(requiredPath);
@@ -214,7 +203,6 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         HashSet<string> selected,
         Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod,
         DeploymentPlan? effectivePlan,
-        IReadOnlyDictionary<string,DeploymentManifestEntry> currentManifest,
         out string detail)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -222,7 +210,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
 
         if (effectivePlan is null)
         {
-            if (HasCompleteUnmanagedLiveLoader(currentManifest))
+            if (HasCompleteLiveLoader())
             {
                 detail = "A complete native loader pair is present in the game root.";
                 return true;
@@ -243,7 +231,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         var coreWinner = EffectiveWinner(effectivePlan, LoaderCorePath);
         if (proxyWinner is null && coreWinner is null)
         {
-            if (HasCompleteUnmanagedLiveLoader(currentManifest))
+            if (HasCompleteLiveLoader())
             {
                 detail = "Existing game-root dinput8.dll + loader.dll satisfy the native loader capability.";
                 return true;
@@ -290,13 +278,10 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         return true;
     }
 
-    private bool HasCompleteUnmanagedLiveLoader(
-        IReadOnlyDictionary<string,DeploymentManifestEntry> currentManifest)
+    private bool HasCompleteLiveLoader()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return !currentManifest.ContainsKey(LoaderProxyPath) &&
-               !currentManifest.ContainsKey(LoaderCorePath) &&
-               File.Exists(Path.Combine(gameRoot, "dinput8.dll")) &&
+        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) &&
                File.Exists(Path.Combine(gameRoot, "loader.dll"));
     }
 
