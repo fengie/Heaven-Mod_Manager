@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.39 bridge reliability — CURRENT CANDIDATE
+
+1. Run `heaven-bridge/manage.ps1 TEST` plus Agent Control `npm run check` / `npm test` on the exact candidate.
+2. Merge to current main only after exact-head gates pass.
+3. Mirror canonical non-operational `heaven-bridge/` source files from main to the transport branch so STATUS/recovery cannot compare against stale v6/v7 source.
+4. On heaven2 and heaven, run `Set-PrimaryControlMode.ps1`, then `manage.ps1 RECOVER`.
+5. Require `STATUS_EXIT=0` on both hosts with exactly one canonical worker/watchdog/sentinel and fresh heartbeats.
+6. Verify Agent Control can retire a terminal Heaven-backed record without the prior unsigned-bridge authorization error.
+7. Keep RDC paired but stopped/on-demand; do not use it automatically while the bridge is healthy.
+
+---
+
 # 2026-09-30 v8.8.38 retry-parent retirement — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the full Agent Control test suite; require configured Agent Control and Security gates.

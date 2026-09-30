@@ -29,3 +29,7 @@ id_rsa.*
 id_ed25519
 id_ed25519.*
 
+
+# Python runtime caches
+__pycache__/
+*.py[cod]

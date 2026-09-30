@@ -1,3 +1,11 @@
+# v8.8.39 — Heaven Local Bridge primary reliability
+- Make Heaven Local Bridge the explicit primary control path for heaven2/heaven and keep Remote Desktop Commander as an on-demand fallback.
+- Add a machine-local `HeavenBridge/auth/allow-repo-acl-only` marker consumed by worker v8 and Agent Control v0.6.17, eliminating restart-sensitive environment-only authorization for the private GitHub relay compatibility mode.
+- Add `Set-PrimaryControlMode.ps1` to persist the local ACL marker and convert the RDC scheduled task to triggerless/on-demand operation.
+- Ignore Python `__pycache__` / bytecode so bridge STATUS and recovery are not poisoned by harmless runtime caches.
+- Preserve HMAC as the secure default; repo-ACL-only execution still requires explicit local opt-in.
+- Add worker/provider regressions; advance Heaven Local Bridge plugin to v0.8.3 and product version to v8.8.39.
+
 # v8.8.38 — Retire superseded retry parents
 - Stop treating `retry-dispatched` as an unconditional managed-agent retention state after a replacement has taken ownership.
 - Allow terminal superseded retry parents to flow through the existing fail-closed retirement proof, branch/worktree safety checks, durable retirement archive, and registry removal.

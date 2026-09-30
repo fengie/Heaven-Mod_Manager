@@ -1,3 +1,11 @@
+# v8.8.39 Heaven Local Bridge primary reliability — verification scope
+
+The release is not complete until source-level tests and dual-host runtime recovery both pass. Required evidence: worker/provider marker regressions; bridge TEST; Agent Control check/test; exact main source identity; transport-source mirror agreement; one canonical worker/watchdog/SYSTEM sentinel per host; fresh local heartbeat, loop-progress, and relay heartbeat; RDC fallback task present with zero triggers and not running; and a successful privileged Agent Control bridge action using the explicit local private-repo ACL mode.
+
+Do not claim literal impossibility of future failure. The acceptance target is automatic recovery from process exit, stale/hung worker, task removal/disable, startup loss, source/runtime drift, and harmless Python cache creation without requiring RDC.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — verification scope
 
 This patch closes the remaining managed-registry tombstone leak: `retry-dispatched` must not permanently pin a terminal parent after its task has been superseded. Exact-head Agent Control syntax/tests plus configured Agent Control and Security gates are required.

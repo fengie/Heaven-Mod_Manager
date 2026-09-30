@@ -1,3 +1,13 @@
+# v8.8.39 Heaven Local Bridge primary reliability — CURRENT CANDIDATE
+
+- Heaven Local Bridge is the intended always-on primary control path on heaven2 and heaven.
+- Remote Desktop Commander remains paired as fallback but is converted to an on-demand scheduled task with no automatic trigger.
+- Worker v8 and Agent Control v0.6.17 share the machine-local `HeavenBridge/auth/allow-repo-acl-only` marker for the private-repo ACL compatibility mode; HMAC stays the default when signing material exists.
+- Python cache files are ignored so operator STATUS is not falsely unhealthy after tests.
+- Live acceptance requires exact source/runtime agreement, one canonical worker, one watchdog, one SYSTEM sentinel, fresh local/remote heartbeats, and successful Agent Control bridge actions on both hosts.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — CURRENT CANDIDATE
 
 - Terminal managed parents whose replacement was dispatched no longer remain permanently pinned by the `retry-dispatched` recovery label.

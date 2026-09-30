@@ -1,3 +1,11 @@
+# v0.6.17 — Heaven Bridge primary reliability
+
+## What v0.6.17 does
+
+Agent Control now shares the machine-local `%USERPROFILE%\HeavenBridge\auth\allow-repo-acl-only` authorization marker with Heaven Local Bridge. This makes the private-GitHub-relay compatibility mode survive controller/worker restarts without relying on inherited environment variables, while HMAC remains preferred whenever signing material exists.
+
+The runtime continues to fail closed when neither HMAC nor the explicit local marker is present. Remote Desktop Commander is treated as an operator-requested fallback rather than a dependency of Agent Control or Heaven Bridge recovery.
+
 # v0.6.16 — superseded retry-parent retirement
 
 ## What v0.6.16 does
