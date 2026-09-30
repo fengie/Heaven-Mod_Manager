@@ -1,3 +1,9 @@
+# v0.6.20 — bounded indexed-context navigation
+
+## What v0.6.20 does
+
+Agent Control's hash-checked repository context reader now supports bounded literal text search and Markdown-heading lookup in addition to line pagination. Both modes require the indexed SHA-256, stay inside the existing document whitelist/path protections, return line-addressable matches, cap query/results/output, and explicitly report result/snippet truncation. The bootstrap packet advertises the exact search/heading CLI forms so agents can jump to relevant policy/continuity sections without rereading large files or adding a persistent cache.
+
 # v0.6.19 — bounded live repository bootstrap
 
 ## What v0.6.19 does
