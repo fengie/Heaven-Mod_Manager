@@ -63,7 +63,7 @@ public sealed class NexusV3CatalogProviderTests
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
             () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
 
-        Assert.Contains("valid Nexus HTTPS URL", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("trusted Nexus source URL", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
