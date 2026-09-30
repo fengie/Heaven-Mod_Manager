@@ -53,6 +53,7 @@ import {
   noWorkTerminationDecision,
   planSwarmTailRecoveryBatch,
   recoveryBackoffMs,
+  recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
