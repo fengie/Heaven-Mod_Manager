@@ -26,8 +26,13 @@ function read(rel) {
 
 test("Agent Control runtime child processes must use the forced-hidden wrapper", () => {
   const helperSource = fs.readFileSync(HELPER, "utf8");
-  const forced = helperSource.match(/\{\s*\.\.\.options,\s*windowsHide:\s*true\s*\}/g) || [];
-  assert.equal(forced.length, 2, "both wrappers must force windowsHide after caller options");
+  assert.match(
+    helperSource,
+    /return\s*\{\s*\.\.\.options,\s*windowsHide:\s*true\s*\}/,
+    "shared hiddenWindowsOptions helper must force windowsHide after caller options"
+  );
+  assert.match(helperSource, /nodeSpawn\(command, args, hiddenWindowsOptions\(options\)\)/);
+  assert.match(helperSource, /nodeExecFileAsync\(command, args, hiddenWindowsOptions\(options\)\)/);
   for (const file of walkRuntimeMjs(AGENT_ROOT)) {
     if (path.resolve(file) === path.resolve(HELPER)) continue;
     const source = fs.readFileSync(file, "utf8");
