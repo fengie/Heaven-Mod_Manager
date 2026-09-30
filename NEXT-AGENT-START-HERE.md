@@ -15,11 +15,15 @@ v8.8.49 UI fixes are merged on main. Exact candidate `3bc8f6b` passed Security S
 
 Candidate v8.8.50 consolidates governance while preserving mandatory pre-response/dispatch training, full continuity-constitution startup reading, authorized fallback/blocker rules, bug-prevention closure, recursive successor propagation, strict raw UTF-8 byte budgets, and adversarial handoff validation. Historical green does not transfer to this changed candidate.
 
+Canonical continuity pointers for every successor: `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` is the permanent constitution, and `_AGENT_CONTEXT/LEARNED_RULES.md` is the active learned-rules ledger. Read and preserve both before continuing.
+
 ## Next ordered actions and risks
 
 1. Run exact-head PR #528 checks for the current v8.8.50 head; repair only real failures without weakening safeguards.
 2. Refresh main/head/ownership immediately before integration; merge only the exact verified head, then confirm remote main contains the intended v8.8.50 tree.
 3. Retire temporary governance branches only after ancestry and semantic preservation proof. Preserve unique registry/catalog branches until separately reviewed.
 4. Issues #411, #350, #354, and #281 remain unresolved. Resume paused cached-plugin routing work only after the existing queue is reconciled.
+
+Before continuing, read the permanent continuity constitution at `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and the active durable rules at `_AGENT_CONTEXT/LEARNED_RULES.md`.
 
 Each successor must inherit and preserve the constitution and recursively propagate it to the agent after them. Do not break the chain. Preserve exact source, evidence, unresolved risks, and ordered next actions without private chat history.
