@@ -11,6 +11,7 @@ public sealed partial class GameProfileRegistry
     private readonly string registryPath;
     private readonly string activePath;
     private readonly Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride;
+    private readonly object mutationGate=new();
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web){WriteIndented=true};
 
     public GameProfileRegistry(string stateRoot):this(stateRoot,null)
@@ -66,7 +67,10 @@ public sealed partial class GameProfileRegistry
 
     public GameProfile AddGenericFromExecutable(string executablePath)
     {
-        var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+        lock(mutationGate)
+        {
+            var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+        }
     }
 
     public GameProfile RepairFromExecutable(GameProfile existing,string executablePath)
@@ -92,8 +96,11 @@ public sealed partial class GameProfileRegistry
     public IReadOnlyList<GameProfile> DiscoverAndRegisterInstalledGames()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
-        return RegisterDiscoveredGames(candidates);
+        lock(mutationGate)
+        {
+            var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
+            return RegisterDiscoveredGames(candidates);
+        }
     }
 
     internal IReadOnlyList<GameProfile> RegisterDiscoveredGames(IEnumerable<GameDiscoveryCandidate> candidates)
@@ -149,15 +156,21 @@ public sealed partial class GameProfileRegistry
 
     public void Upsert(GameProfile profile)
     {
-        if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
-        var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
-        Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));
+        lock(mutationGate)
+        {
+            if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
+            var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
+            Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));
+        }
     }
 
     public void SetActive(string id)
     {
-        if(!Load().Any(x=>x.Id.Equals(id,StringComparison.OrdinalIgnoreCase)))throw new KeyNotFoundException($"Unknown game profile '{id}'.");
-        Directory.CreateDirectory(stateRoot);AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(id.Trim()+Environment.NewLine));
+        lock(mutationGate)
+        {
+            if(!Load().Any(x=>x.Id.Equals(id,StringComparison.OrdinalIgnoreCase)))throw new KeyNotFoundException($"Unknown game profile '{id}'.");
+            Directory.CreateDirectory(stateRoot);AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(id.Trim()+Environment.NewLine));
+        }
     }
 
     public static bool IsUsable(GameProfile profile)
