@@ -375,6 +375,23 @@ public sealed class AutoPopulateService(
                 continue;
             }
 
+            var newlyAdded = closureResult.ModIds
+                .Where(id => !selected.Contains(id))
+                .ToHashSet(PathRules.Comparer);
+            var contributesEffectiveFile = plan.Conflicts.Any(decision =>
+                decision.WinnerModId is not null &&
+                newlyAdded.Contains(decision.WinnerModId));
+            if (!contributesEffectiveFile)
+            {
+                conflictSkips++;
+                skipped[candidate.Id] = new(
+                    candidate.Id,
+                    candidate.DisplayName,
+                    false,
+                    "Skipped because the candidate and its requirement closure are fully shadowed by the protected/current safe set and would contribute no effective file.");
+                continue;
+            }
+
             var protectedOverride = plan.Conflicts.FirstOrDefault(decision =>
                 !decision.Blocking &&
                 decision.WinnerModId is not null &&
