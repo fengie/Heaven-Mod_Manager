@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Fixture Atom Feed</title>
+  <subtitle>Fixture updates</subtitle>
+  <entry>
+    <id>tag:example.test,2026:mhw-42</id>
+    <title>Atom Fixture Mod</title>
+    <summary type="html">&lt;p&gt;Atom &lt;strong&gt;summary&lt;/strong&gt;.&lt;/p&gt;</summary>
+    <author><name>Atom Author</name></author>
+    <published>2026-09-29T20:00:00Z</published>
+    <updated>2026-09-30T01:00:00Z</updated>
+    <category term="update" />
+    <link rel="alternate" href="https://example.test/mods/atom-fixture" />
+  </entry>
+</feed>
