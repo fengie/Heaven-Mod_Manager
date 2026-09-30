@@ -1,3 +1,16 @@
+# 2026-09-30 v8.8.27 Agent Control registry-card inspection — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate.
+2. Restart/reload Agent Control on heaven2 to the exact candidate before evaluating UI behavior.
+3. Click a managed agent card outside its nested buttons and verify its log toggles.
+4. Focus a managed card and press Enter/Space; verify the same inspection behavior.
+5. Click a federated card: if it mirrors a managed worker, verify the managed card/log is surfaced; otherwise verify the inline federated summary toggles.
+6. Click nested Stop/Review/Copy branch/View log controls and prove only that control fires—no card-level double action.
+7. Preserve v8.8.26 retirement semantics: failed · RETRY EXHAUSTED cleanup remains ownership-proven/fail-closed and must not be weakened by UI work.
+8. After exact-head verification, merge to current main and delete the temporary branch.
+
+---
+
 # 2026-09-30 v8.8.26 Agent Control exhausted-agent registry retirement — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.26 candidate and repair any syntax/state-migration/retirement regression before integration.
