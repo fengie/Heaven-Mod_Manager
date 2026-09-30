@@ -175,6 +175,213 @@ public sealed class CatalogRepository(ManagerDatabase db)
         return result;
     }
 
+    public async Task UpsertSyncStateAsync(CatalogSyncState state, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentException.ThrowIfNullOrWhiteSpace(state.ProviderId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(state.ScopeKey);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO catalog_sync_state(provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_error,updated_at)
+            VALUES($provider,$scope,$cursor,$success,$attempt,$error,$updated)
+            ON CONFLICT(provider_id,scope_key) DO UPDATE SET
+                cursor=excluded.cursor,
+                last_success_at=excluded.last_success_at,
+                last_attempt_at=excluded.last_attempt_at,
+                last_error=excluded.last_error,
+                updated_at=excluded.updated_at
+            """;
+        cmd.Parameters.AddWithValue("$provider", state.ProviderId);
+        cmd.Parameters.AddWithValue("$scope", state.ScopeKey);
+        cmd.Parameters.AddWithValue("$cursor", DbValue(state.Cursor));
+        cmd.Parameters.AddWithValue("$success", DbValue(Format(state.LastSuccessAt)));
+        cmd.Parameters.AddWithValue("$attempt", DbValue(Format(state.LastAttemptAt)));
+        cmd.Parameters.AddWithValue("$error", DbValue(state.LastError));
+        cmd.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<CatalogSyncState?> GetSyncStateAsync(
+        string providerId,
+        string scopeKey,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scopeKey);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            SELECT provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_error
+            FROM catalog_sync_state
+            WHERE provider_id=$provider AND scope_key=$scope
+            """;
+        cmd.Parameters.AddWithValue("$provider", providerId);
+        cmd.Parameters.AddWithValue("$scope", scopeKey);
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) return null;
+        return new(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
+            reader.IsDBNull(3) ? null : ParseDate(reader.GetString(3)),
+            reader.IsDBNull(4) ? null : ParseDate(reader.GetString(4)),
+            reader.IsDBNull(5) ? null : reader.GetString(5));
+    }
+
+    public async Task UpsertRateStateAsync(CatalogRateState state, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentException.ThrowIfNullOrWhiteSpace(state.ProviderId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(state.ScopeKey);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO catalog_rate_state(
+                provider_id,scope_key,hourly_limit,hourly_remaining,daily_limit,daily_remaining,retry_after,observed_at)
+            VALUES($provider,$scope,$hl,$hr,$dl,$dr,$retry,$observed)
+            ON CONFLICT(provider_id,scope_key) DO UPDATE SET
+                hourly_limit=excluded.hourly_limit,
+                hourly_remaining=excluded.hourly_remaining,
+                daily_limit=excluded.daily_limit,
+                daily_remaining=excluded.daily_remaining,
+                retry_after=excluded.retry_after,
+                observed_at=excluded.observed_at
+            """;
+        cmd.Parameters.AddWithValue("$provider", state.ProviderId);
+        cmd.Parameters.AddWithValue("$scope", state.ScopeKey);
+        cmd.Parameters.AddWithValue("$hl", DbValue(state.RateLimit.HourlyLimit));
+        cmd.Parameters.AddWithValue("$hr", DbValue(state.RateLimit.HourlyRemaining));
+        cmd.Parameters.AddWithValue("$dl", DbValue(state.RateLimit.DailyLimit));
+        cmd.Parameters.AddWithValue("$dr", DbValue(state.RateLimit.DailyRemaining));
+        cmd.Parameters.AddWithValue("$retry", DbValue(Format(state.RateLimit.RetryAfter)));
+        cmd.Parameters.AddWithValue("$observed", DbValue(Format(state.RateLimit.ObservedAt)));
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<CatalogRateState?> GetRateStateAsync(
+        string providerId,
+        string scopeKey,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scopeKey);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            SELECT provider_id,scope_key,hourly_limit,hourly_remaining,daily_limit,daily_remaining,retry_after,observed_at
+            FROM catalog_rate_state
+            WHERE provider_id=$provider AND scope_key=$scope
+            """;
+        cmd.Parameters.AddWithValue("$provider", providerId);
+        cmd.Parameters.AddWithValue("$scope", scopeKey);
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) return null;
+        return new(
+            reader.GetString(0),
+            reader.GetString(1),
+            new CatalogRateLimit(
+                reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                reader.IsDBNull(3) ? null : reader.GetInt32(3),
+                reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                reader.IsDBNull(6) ? null : ParseDate(reader.GetString(6)),
+                reader.IsDBNull(7) ? null : ParseDate(reader.GetString(7))));
+    }
+
+    public async Task UpsertLinkAsync(CatalogLink link, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(link);
+        ArgumentException.ThrowIfNullOrWhiteSpace(link.LeftCanonicalId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(link.RightCanonicalId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(link.EvidenceValue);
+        if (StringComparer.OrdinalIgnoreCase.Equals(link.LeftCanonicalId, link.RightCanonicalId))
+            throw new ArgumentException("A catalog item cannot link to itself.", nameof(link));
+
+        var ordered = string.Compare(link.LeftCanonicalId, link.RightCanonicalId, StringComparison.OrdinalIgnoreCase) <= 0
+            ? (left: link.LeftCanonicalId, right: link.RightCanonicalId)
+            : (left: link.RightCanonicalId, right: link.LeftCanonicalId);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO catalog_links(left_canonical_id,right_canonical_id,evidence_kind,evidence_value,created_at)
+            VALUES($left,$right,$kind,$value,$created)
+            ON CONFLICT(left_canonical_id,right_canonical_id,evidence_kind,evidence_value)
+            DO UPDATE SET created_at=excluded.created_at
+            """;
+        cmd.Parameters.AddWithValue("$left", ordered.left);
+        cmd.Parameters.AddWithValue("$right", ordered.right);
+        cmd.Parameters.AddWithValue("$kind", link.EvidenceKind.ToString());
+        cmd.Parameters.AddWithValue("$value", link.EvidenceValue);
+        cmd.Parameters.AddWithValue("$created", link.ObservedAt.ToString("O", CultureInfo.InvariantCulture));
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<CatalogLink>> GetLinksAsync(string canonicalId, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(canonicalId);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            SELECT left_canonical_id,right_canonical_id,evidence_kind,evidence_value,created_at
+            FROM catalog_links
+            WHERE left_canonical_id=$id OR right_canonical_id=$id
+            ORDER BY created_at DESC
+            """;
+        cmd.Parameters.AddWithValue("$id", canonicalId);
+        var result = new List<CatalogLink>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(new(
+                reader.GetString(0),
+                reader.GetString(1),
+                Enum.Parse<CatalogLinkEvidenceKind>(reader.GetString(2), true),
+                reader.GetString(3),
+                ParseRequiredDate(reader.GetString(4))));
+        }
+        return result;
+    }
+
+    public async Task<CatalogProvenance?> GetProvenanceAsync(string canonicalId, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(canonicalId);
+
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = """
+            SELECT canonical_id,provider_id,source_url,fetched_at,etag,last_modified,source_fingerprint
+            FROM catalog_provenance
+            WHERE canonical_id=$id
+            ORDER BY fetched_at DESC
+            LIMIT 1
+            """;
+        cmd.Parameters.AddWithValue("$id", canonicalId);
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) return null;
+        return new(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            ParseRequiredDate(reader.GetString(3)),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : ParseDate(reader.GetString(5)),
+            reader.IsDBNull(6) ? null : reader.GetString(6));
+    }
+
     private static async Task EnsureSourceExistsAsync(
         SqliteConnection c,
         SqliteTransaction tx,
