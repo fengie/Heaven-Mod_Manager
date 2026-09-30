@@ -12,7 +12,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
-        var current=(await db.GetModsAsync(ct)).ToDictionary(x=>x.SourcePath,StringComparer.OrdinalIgnoreCase);
+        var current=await db.GetModSourcePathsAsync(ct);
         var directories = await Task.Run(() => Directory.EnumerateDirectories(modsRoot).Order(StringComparer.OrdinalIgnoreCase).ToArray(), ct);
         var priority=100000;
         foreach(var dir in directories)
