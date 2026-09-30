@@ -17,7 +17,7 @@ public static class ModIoCatalogPolicy
                 TermsReviewedOn: new DateOnly(2026, 9, 29),
                 ReviewIntervalDays: 30,
                 AllowsCatalogDiscovery: true,
-                AllowsDirectDownload: false,
+                AllowsDirectDownload: true,
                 AllowsHtmlParsing: false,
                 AttributionRequired: false);
         }
