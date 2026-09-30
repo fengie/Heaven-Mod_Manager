@@ -44,6 +44,7 @@
 - If transport health is known-bad but resource presence is not independently known, use an explicit unknown/degraded state rather than `offline`.
 - Keep read-only presence checks distinct from mutation/write-readiness checks; local dirtiness, lock state, or replica divergence may block writes without invalidating remote presence.
 - Add regression tests for both evidence refresh and state mapping whenever a false offline/online classification escapes.
+- In operator/control UIs, treat background polling as observational: sequence concurrent responses, reject stale snapshots, preserve operator-edited controls across renders, and derive lifecycle actions from the server's authoritative state model.
 
 ## Long-running autonomy and supervision
 - Distinguish **process liveness** from **progress liveness**. A fresh heartbeat or live PID is not evidence that useful work is advancing.
