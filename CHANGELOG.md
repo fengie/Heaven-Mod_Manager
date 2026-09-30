@@ -1,3 +1,11 @@
+# v8.8.50 — 2026-09-30
+
+- Replaced the Dashboard ViewportWidth binding with normal stretch layout and added parsed-XAML coverage.
+- Split initial metadata refresh in-flight/completed state so failed, cancelled, or gate-skipped attempts can retry.
+- Bound prepared updater handoffs to the exact staged update object and invalidate/reprepare after candidate replacement.
+- Scrubbed updater health token/file/attempt arguments from normal startup diagnostics.
+- Refreshed stale continuity/version metadata and added defect-prevention precedents.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
