@@ -295,3 +295,11 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Before accepting a candidate closure, require at least one newly added mod to be the effective provider of a planned path; otherwise skip the fully shadowed candidate.
 - **Preventive rule/process change:** Auto Populate decisions must be judged on effective output, not only enabled-state conflict freedom. Protected anchors remain meaningful choices and should not accumulate inert/redundant alternatives around them.
 - **Regression coverage added/strengthened:** `AutoPopulateFillsAroundExplicitStagedPreference` is the authoritative regression for this case.
+
+## 2026-09-30 — Never expose canonical updater release before the client feed
+
+- **Incident:** updater build 218 / v8.8.20 became visible in `fengie/mhw-mods` at 2026-09-30 01:29:19Z, then Windows Release Gate run `36655045833` was cancelled at 01:30:39Z by the next `main` run while the public-feed mirror was still in progress. `fengie/mhw-mod-manager-release` was left with an abandoned draft `updater-main-218`, so installed clients still saw stable build 217 / v8.8.19 while GitHub already showed v8.8.20.
+- **Root cause:** the release workflow used `cancel-in-progress: true` around a cross-repository publication transaction and published the private/canonical release before the public client feed.
+- **Required prevention:** publish and verify the public client feed first, publish the canonical/private release second, disable in-progress cancellation for the release transaction, recover abandoned public drafts on retry, and assert exact public/private asset parity after publication.
+- **Regression:** `scripts/testing/Test-UpdaterReleasePolicy.ps1` must fail if the ordering, non-cancellable concurrency, exact workflow identity pinning, abandoned-draft recovery, or final parity check is removed.
+- **User-facing invariant:** once a new canonical GitHub updater release is visible, every unauthenticated installed client must already be able to discover that exact build from the public feed.
