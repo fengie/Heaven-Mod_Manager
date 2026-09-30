@@ -435,3 +435,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification/evidence:** Canonical code commits `04e706ba2a8b7e0de5ab0461af3702b9db854a33`, `339b4caf7fdd00eb0aa6d7b29c3149a9537d9f71`, and `db27ed786337529fa5674ff735c5d06038a9270f`; PR #438 merged as `b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620`. The exact post-merge Plugin Toolbox Gate was still queued at handoff; do not report it as passed until a completed-successful run exists.
 
 ## 2026-09-30 — Never expose canonical updater release before the client feed
+
+## 2026-09-30 — regression test copied the wrong module alias and failed before testing behavior
+- **Symptom:** Exact Heaven verification of the HMAC-rotation candidate stopped with two `NameError: name 'hb' is not defined` failures before the new rotation assertions could execute.
+- **Root cause:** The new test code copied the `hb` alias convention from a different bridge test file even though `heaven-bridge/tests/test_worker.py` imports the module as `worker`.
+- **Violated invariant / wrong assumption:** Regression tests are production changes for completion purposes: copied test snippets must be reconciled to the destination file's imports/names before integration, and a newly added regression must itself execute before the fix is considered complete.
+- **Direct fix:** Replaced every introduced `hb.*` reference with the destination file's canonical `worker.*` alias.
+- **Preventive rule/process change:** Before integrating copied/moved test logic, inspect the destination module's local import aliases/fixtures and run the exact affected test file; static-looking test additions are not exempt from execution-backed verification.
+- **Regression coverage added/strengthened:** Exact commit `b0b4bf2300efe347aada7e4b5e699cb4b89188c6` passed 19 Python worker tests and 17 Node Agent Control bridge tests, including rotation acceptance, revocation, key-id tamper rejection, and canonical signing fixtures.
+- **References:** failing Heaven job `chatgpt-20260930-045100-hmac-rotation-exact-verify`; fix `b0b4bf2300efe347aada7e4b5e699cb4b89188c6`; passing rerun `chatgpt-20260930-045500-hmac-rotation-main-rerun`.
