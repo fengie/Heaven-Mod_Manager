@@ -272,7 +272,7 @@ public sealed class GameBananaCatalogProviderTests
         Assert.Equal(CatalogAcquisitionKind.Assisted, resolution.Kind);
         Assert.Null(resolution.DownloadUri);
         Assert.Equal(
-            "https://gamebanana.com/mods/download/653359",
+            "https://gamebanana.com/dl/1625805",
             resolution.AssistedUri?.AbsoluteUri);
     }
 
