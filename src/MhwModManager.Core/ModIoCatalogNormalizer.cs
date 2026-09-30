@@ -128,7 +128,7 @@ public static class ModIoCatalogNormalizer
         var expiresAt = ReadOptionalEpoch(download, "date_expires");
 
         return new ModIoAcquisitionFile(
-            expectedProviderModId,
+            providerModId,
             providerFileId,
             downloadUri,
             expiresAt,
@@ -257,7 +257,7 @@ public static class ModIoCatalogNormalizer
 
         return new CatalogModFile(
             ProviderId,
-            providerModId,
+            expectedProviderModId,
             providerFileId,
             fileName,
             fileName,
