@@ -35,6 +35,9 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"]["worker_version"], 7)
         self.assertEqual(result["data"]["protocol"], "chatgpt-heaven-bridge-v2")
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
+        self.assertFalse(result["data"]["capabilities"]["optional_hmac"])
+        self.assertTrue(result["data"]["capabilities"]["hmac_required_by_default"])
+        self.assertTrue(result["data"]["capabilities"]["child_environment_secret_stripping"])
         self.assertEqual(result["data"]["resources"]["configured_max_workers"], worker.MAX_WORKERS)
         self.assertEqual(result["data"]["resources"]["logical_cpus"], worker.LOGICAL_CPUS)
         self.assertGreaterEqual(result["data"]["resources"]["auto_max_workers"], 8)
@@ -137,11 +140,12 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
 
             signed = dict(job)
             signed["auth"] = {
+                "canonical": "mhw-bridge-canon-v1",
                 "signature": hmac.new(
                     key.encode("utf-8"),
-                    worker.canonical_job(job),
+                    worker.canonical_auth_job_v1(job),
                     hashlib.sha256,
-                ).hexdigest()
+                ).hexdigest(),
             }
             verified = worker.verify_auth(signed)
             self.assertEqual(verified["mode"], "hmac-sha256")
@@ -182,12 +186,80 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(verified["canonical"], "mhw-bridge-canon-v1")
         self.assertTrue(verified["verified"])
 
+    def test_missing_hmac_fails_closed_unless_emergency_fallback_is_explicit(self):
+        job = self.make_job("health", job_id="missing-hmac")
+        missing_key = Path(tempfile.gettempdir()) / "heaven-bridge-test-missing-hmac.key"
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {worker.HMAC_KEY_FILE_ENV: str(missing_key)},
+            clear=True,
+        ):
+            with self.assertRaises(worker.BridgeError) as missing:
+                worker.verify_auth(job)
+            self.assertEqual(missing.exception.code, "AUTH_HMAC_NOT_CONFIGURED")
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                worker.HMAC_KEY_FILE_ENV: str(missing_key),
+                worker.ALLOW_REPO_ACL_ONLY_ENV: "1",
+            },
+            clear=True,
+        ):
+            verified = worker.verify_auth(job)
+        self.assertEqual(verified["mode"], "private-repo-acl-explicit-insecure")
+
+    def test_legacy_hmac_canonicalization_requires_explicit_opt_in(self):
+        job = self.make_job("health", job_id="legacy-hmac")
+        key = "unit-test-only-secret"
+        signed = dict(job)
+        signed["auth"] = {
+            "signature": hmac.new(
+                key.encode("utf-8"),
+                worker.canonical_job(job),
+                hashlib.sha256,
+            ).hexdigest(),
+        }
+        with unittest.mock.patch.dict("os.environ", {worker.HMAC_KEY_ENV: key}, clear=True):
+            with self.assertRaises(worker.BridgeError) as blocked:
+                worker.verify_auth(signed)
+            self.assertEqual(blocked.exception.code, "AUTH_CANONICAL_REQUIRED")
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                worker.HMAC_KEY_ENV: key,
+                worker.ALLOW_LEGACY_HMAC_ENV: "1",
+            },
+            clear=True,
+        ):
+            verified = worker.verify_auth(signed)
+        self.assertEqual(verified["canonical"], "legacy-json-sort")
+
+    def test_child_process_environment_strips_host_secrets(self):
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                "SAFE_FLAG": "visible",
+                "GH_TOKEN": "must-not-leak",
+                worker.HMAC_KEY_ENV: "must-not-leak",
+            },
+            clear=True,
+        ):
+            child = worker.build_env({})
+            self.assertEqual(child["SAFE_FLAG"], "visible")
+            self.assertNotIn("GH_TOKEN", child)
+            self.assertNotIn(worker.HMAC_KEY_ENV, child)
+            with self.assertRaises(worker.BridgeError) as blocked:
+                worker.build_env({"env_from_host": ["GH_TOKEN"]})
+            self.assertEqual(blocked.exception.code, "SENSITIVE_HOST_ENV_BLOCKED")
+
     def test_payload_change_changes_replay_hash(self):
         job = self.make_job("health", job_id="replay-job")
-        digest = worker.validate_job(job["id"], job)
+        digest = worker.job_hash(job)
         changed = dict(job)
         changed["priority"] = "changed"
-        changed_digest = worker.validate_job(changed["id"], changed)
+        changed_digest = worker.job_hash(changed)
         self.assertNotEqual(digest, changed_digest)
 
     def test_dangerous_root_delete_rejected(self):
