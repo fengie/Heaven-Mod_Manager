@@ -169,11 +169,11 @@ public sealed class ModIoTransport
 
     private async Task<ModIoTransportResponse> SendJsonAsync(
         string relativePath,
-        (string Key, string Value)[] query,
+        IReadOnlyList<(string Key, string Value)> query,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var parameters = new List<(string Key, string Value)>(query.Length + 1)
+        var parameters = new List<(string Key, string Value)>(query.Count + 1)
         {
             ("api_key", apiKey)
         };
@@ -188,6 +188,7 @@ public sealed class ModIoTransport
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
+        request.Headers.TryAddWithoutValidation("X-Modio-Platform", "windows");
 
         HttpResponseMessage response;
         try
@@ -201,43 +202,45 @@ public sealed class ModIoTransport
         {
             throw;
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
-            // The API key is a required query parameter. Never retain an
-            // exception that may echo the secret-bearing request URI.
-            throw new HttpRequestException("mod.io API request failed before a response was received.");
+            throw new HttpRequestException(
+                "mod.io API request failed before receiving a response.",
+                null,
+                ex.StatusCode);
         }
 
         using (response)
         {
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new ModIoTransportException(
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ModIoTransportException(
+                    response.StatusCode,
+                    ParseRetryAfter(response.Headers.RetryAfter),
+                    $"mod.io API request failed with HTTP {(int)response.StatusCode}.");
+            }
+
+            if (response.Content is null)
+                throw new InvalidDataException("mod.io API returned a successful response without a body.");
+
+            var bytes = await ReadBoundedContentAsync(response.Content, ct).ConfigureAwait(false);
+            JsonDocument document;
+            try
+            {
+                document = JsonDocument.Parse(bytes);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException("mod.io API returned malformed JSON.", ex);
+            }
+
+            return new ModIoTransportResponse(
                 response.StatusCode,
-                ParseRetryAfter(response.Headers.RetryAfter),
-                $"mod.io API request failed with HTTP {(int)response.StatusCode} ({response.ReasonPhrase ?? "unknown"}).");
+                document,
+                response.Headers.ETag?.ToString(),
+                response.Content.Headers.LastModified);
         }
 
-        if (response.Content is null)
-            throw new InvalidDataException("mod.io API returned a successful response without a body.");
-
-        var bytes = await ReadBoundedContentAsync(response.Content, ct).ConfigureAwait(false);
-        JsonDocument document;
-        try
-        {
-            document = JsonDocument.Parse(bytes);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidDataException("mod.io API returned malformed JSON.", ex);
-        }
-
-        return new ModIoTransportResponse(
-            response.StatusCode,
-            document,
-            response.Headers.ETag?.ToString(),
-            response.Content.Headers.LastModified);
-        }
     }
 
     private async Task<byte[]> ReadBoundedContentAsync(HttpContent content, CancellationToken ct)
