@@ -9,7 +9,7 @@ _BROWSERS={"edge":"msedge.exe","chrome":"chrome.exe","brave":"brave.exe","firefo
 
 class BrowserPlugin:
     """Desktop-browser automation using app/window/UIA primitives without claiming DOM/CDP support."""
-    def __init__(self,bridge:BridgeTransport): self.bridge=bridge
+    def __init__(self,bridge:BridgeTransport,deep:Any|None=None): self.bridge=bridge; self.deep=deep
 
     def _req(self,a:str,p:Mapping[str,Any],t:int=30)->Mapping[str,Any]:
         r=self.bridge.request(a,p,t)
@@ -67,3 +67,59 @@ class BrowserPlugin:
         if pid: params["pid"]=pid
         if not title and not pid: raise ValueError("title or pid is required")
         return self._req("wait_for",params,timeout_seconds+10)
+
+    def deep_status(self)->dict[str,Any]:
+        return {"available":self.deep is not None,"provider":type(self.deep).__name__ if self.deep is not None else None}
+
+    def _deep_provider(self)->Any:
+        if self.deep is None:
+            raise RuntimeError("deep browser provider is not configured")
+        return self.deep
+
+    def deep_create_session(self,url:str,*,headless:bool=True,timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().create_session(self._url(url),headless=headless,timeout_ms=timeout_ms)
+
+    def deep_attach_cdp(self,endpoint:str)->Mapping[str,Any]:
+        return self._deep_provider().attach_cdp(endpoint)
+
+    def deep_navigate(self,session_id:str,url:str,*,tab_id:str|None=None,timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().navigate(session_id,self._url(url),tab_id=tab_id,timeout_ms=timeout_ms)
+
+    def deep_query(self,session_id:str,selector:str,*,tab_id:str|None=None,limit:int=20)->Mapping[str,Any]:
+        return self._deep_provider().query(session_id,selector,tab_id=tab_id,limit=limit)
+
+    def deep_click(self,session_id:str,selector:str,*,tab_id:str|None=None,timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().click(session_id,selector,tab_id=tab_id,timeout_ms=timeout_ms)
+
+    def deep_fill(self,session_id:str,selector:str,text:str,*,tab_id:str|None=None,secret:bool=False,timeout_ms:int=30000)->Mapping[str,Any]:
+        if secret:
+            raise ValueError("secret form fill is not exposed through relay-safe browser APIs")
+        return self._deep_provider().fill(session_id,selector,text,tab_id=tab_id,secret=False,timeout_ms=timeout_ms)
+
+    def deep_wait(self,session_id:str,selector:str,*,tab_id:str|None=None,state:str="visible",timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().wait(session_id,selector,tab_id=tab_id,state=state,timeout_ms=timeout_ms)
+
+    def deep_tabs(self,session_id:str)->list[dict[str,Any]]:
+        return self._deep_provider().tabs(session_id)
+
+    def deep_open_tab(self,session_id:str,url:str,*,timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().open_tab(session_id,self._url(url),timeout_ms=timeout_ms)
+
+    def deep_close_tab(self,session_id:str,tab_id:str)->Mapping[str,Any]:
+        return self._deep_provider().close_tab(session_id,tab_id)
+
+    def deep_download(self,session_id:str,selector:str,*,tab_id:str|None=None,filename:str|None=None,timeout_ms:int=30000)->Mapping[str,Any]:
+        return self._deep_provider().download(session_id,selector,tab_id=tab_id,filename=filename,timeout_ms=timeout_ms)
+
+    def deep_screenshot(self,session_id:str,filename:str,*,tab_id:str|None=None,full_page:bool=False)->Mapping[str,Any]:
+        return self._deep_provider().screenshot(session_id,filename,tab_id=tab_id,full_page=full_page)
+
+    def deep_console_summary(self,session_id:str,*,limit:int=50)->Mapping[str,Any]:
+        return self._deep_provider().console_summary(session_id,limit=limit)
+
+    def deep_network_summary(self,session_id:str,*,limit:int=50)->Mapping[str,Any]:
+        return self._deep_provider().network_summary(session_id,limit=limit)
+
+    def deep_close_session(self,session_id:str)->Mapping[str,Any]:
+        return self._deep_provider().close_session(session_id)
+

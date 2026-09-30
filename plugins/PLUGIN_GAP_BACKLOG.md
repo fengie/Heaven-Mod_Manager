@@ -126,7 +126,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 
 ## PG-006 — deep browser automation adapter
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** Medium
 - **Triggering use case:** `heaven-browser` can launch/navigate via desktop/UIA, but DOM selectors, downloads, console/network inspection, multi-tab control, and deterministic page-state waits are still missing.
 - **Why reusable:** Browser-heavy workflows are safer and more reliable when semantic DOM/browser protocols replace coordinate/UIA fallbacks.
@@ -136,7 +136,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Restrict URL schemes and download roots; secret field fill requires PG-003 handles; do not bypass authentication, anti-bot systems, CAPTCHAs, or site permissions; clearly distinguish owned browser sessions from arbitrary user windows.
 - **Dependencies / reuse:** `heaven-browser`, `heaven-desktop`, process/services, file ops, visual preprocessing, optional Playwright/CDP runtime.
 - **Acceptance tests:** deterministic local fixture page exercises navigation/selectors/forms/tabs/downloads; path traversal rejected; owned-session cleanup verified; sensitive values absent from logs/screenshots where redaction is requested.
-- **Owner / branch / PR:** unclaimed.
+- **Owner / branch / PR:** `heaven-browser` deep-provider lane; implementation integrated on canonical `main`, live Playwright/Brave fixture verification pending.
 - **Completion evidence:** pending.
 
 ## PG-007 — rollback, restore, and scheduled maintenance workflows
