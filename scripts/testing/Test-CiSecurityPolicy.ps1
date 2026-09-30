@@ -179,6 +179,18 @@ if(!(Test-Path -LiteralPath $releasePath)){
     }
 }
 
+$secretLeakPolicy=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
+if(!(Test-Path -LiteralPath $secretLeakPolicy)){
+    $errors.Add('Tracked-secret leak policy is missing.')
+}else{
+    try {
+        & $secretLeakPolicy -Root $Root
+    }
+    catch {
+        $errors.Add("Tracked-secret leak policy failed: $($_.Exception.Message)")
+    }
+}
+
 if($errors.Count -gt 0){
     Write-Host "CI security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
     foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
