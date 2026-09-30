@@ -749,8 +749,10 @@ test("remote Heaven execution keeps an owned local runner and authoritative canc
   assert.match(deploy, /executionProvider: placement\.provider/);
   assert.match(deploy, /remoteJobId/);
   assert.match(deploy, /AGENT_CONTROL_TASK_TOKEN:\s*taskCapability\.token/);
-  assert.match(source, /cancelHeavenBridgeJob\(agent\.remoteJobId/);
+  assert.match(source, /async function proveManagedRemoteTermination/);
+  assert.match(source, /cancelHeavenBridgeJob\(jobId/);
   assert.match(source, /bridgeResultSucceeded\(cancellation\)/);
+  assert.match(source, /action: "job_status"/);
 });
 
 test("stop safety deduplicates concurrent termination and rejects exited child identities", () => {
@@ -763,6 +765,95 @@ test("stop safety deduplicates concurrent termination and rejects exited child i
   assert.match(block, /stopAgentOnce\(id\)/);
   assert.match(block, /child\.exitCode === null/);
   assert.match(block, /child\.signalCode === null/);
+});
+
+
+test("operator and capacity stop paths require the shared durable remote termination proof", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+
+  const proofStart = source.indexOf("async function proveManagedRemoteTermination");
+  const proofEnd = source.indexOf("function remoteTerminationOperationMatches", proofStart);
+  assert.ok(proofStart >= 0 && proofEnd > proofStart);
+  const proof = source.slice(proofStart, proofEnd);
+  assert.match(proof, /managedAgentProvider\(agent\)/);
+  assert.match(proof, /provider !== "heaven-bridge"/);
+  assert.match(proof, /Heaven Bridge termination requires a durable remote job id/);
+  assert.match(proof, /return proveRemoteJobStopped\(\{/);
+  assert.match(proof, /cancelHeavenBridgeJob\(jobId/);
+  assert.match(proof, /action: "job_status"/);
+  assert.match(proof, /params: \{ job_id: jobId \}/);
+
+  const stopStart = source.indexOf("async function stopAgentOnce(id)");
+  const stopEnd = source.indexOf("async function branchDivergence", stopStart);
+  const stop = source.slice(stopStart, stopEnd);
+  const markAt = stop.indexOf("markRemoteTerminationPending(agent");
+  const persistAt = stop.indexOf("saveState(state)", markAt);
+  const terminateAt = stop.indexOf("performManagedTermination(id, operationId)", markAt);
+  assert.ok(markAt >= 0, "operator Stop must persist a proof-pending marker");
+  assert.ok(persistAt > markAt, "proof-pending marker must be persisted before termination");
+  assert.ok(terminateAt > persistAt, "remote/local termination must start only after pending state is durable");
+  assert.doesNotMatch(stop, /agent\.executionProvider === "heaven-bridge"/);
+
+  const refreshStart = source.indexOf("function refreshState()");
+  const refreshEnd = source.indexOf("async function workerSnapshot", refreshStart);
+  const refresh = source.slice(refreshStart, refreshEnd);
+  const capacityAt = refresh.indexOf("providerCapacityActiveTerminationDecision(agent)");
+  const capacityMarkAt = refresh.indexOf("markRemoteTerminationPending(agent", capacityAt);
+  const scheduleAt = refresh.indexOf("terminateProviderCapacityAgent", capacityMarkAt);
+  assert.ok(capacityMarkAt > capacityAt, "capacity termination must enter proof-pending state");
+  assert.ok(scheduleAt > capacityMarkAt, "capacity termination must be scheduled after pending state is recorded");
+  const capacityBlock = refresh.slice(capacityAt, refresh.indexOf("if (!coreIsActiveStatus", capacityAt));
+  assert.doesNotMatch(capacityBlock, /releaseLeaseForAgent/);
+  assert.doesNotMatch(capacityBlock, /agent\.executionProvider === "heaven-bridge"/);
+});
+
+test("local wrapper exit cannot finalize or release ownership while remote proof is pending", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const handlerStart = source.indexOf('child.on("exit"');
+  const handlerEnd = source.indexOf("child.on(\"error\"", handlerStart);
+  assert.ok(handlerStart >= 0 && handlerEnd > handlerStart);
+  const handler = source.slice(handlerStart, handlerEnd);
+  const pendingAt = handler.indexOf("if (item.remoteTerminationPending)");
+  const classifyAt = handler.indexOf("classifyAuthoritativeExit(item, code)");
+  assert.ok(pendingAt >= 0 && classifyAt > pendingAt, "pending guard must run before final exit classification");
+  const pendingBlock = handler.slice(pendingAt, classifyAt);
+  assert.match(pendingBlock, /localExitAt/);
+  assert.match(pendingBlock, /saveState\(current\)/);
+  assert.match(pendingBlock, /children\.delete\(id\)/);
+  assert.match(pendingBlock, /return;/);
+  assert.doesNotMatch(pendingBlock, /releaseLeaseForAgent/);
+  assert.doesNotMatch(pendingBlock, /completionEvidence\s*=/);
+  assert.doesNotMatch(pendingBlock, /updateTaskForAgent/);
+});
+
+test("failed durable termination proof stays nonterminal and preserves the lease", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("function recordRemoteTerminationFailure");
+  const end = source.indexOf("function finalizeManagedTermination", start);
+  assert.ok(start >= 0 && end > start);
+  const failure = source.slice(start, end);
+  assert.match(failure, /agent\.status = "blocked"/);
+  assert.match(failure, /agent\.blocker = "termination-unproven"/);
+  assert.match(failure, /remoteTerminationProof/);
+  assert.doesNotMatch(failure, /releaseLeaseForAgent/);
+
+  const finalizeStart = source.indexOf("function finalizeManagedTermination");
+  const finalizeEnd = source.indexOf("async function performManagedTermination", finalizeStart);
+  const finalize = source.slice(finalizeStart, finalizeEnd);
+  const pendingClearAt = finalize.indexOf("agent.remoteTerminationPending = false");
+  const releaseAt = finalize.indexOf("releaseLeaseForAgent");
+  assert.ok(pendingClearAt >= 0 && releaseAt > pendingClearAt, "lease release must follow successful proof finalization");
+});
+
+test("pending termination survives refresh without orphaning and keeps its lease alive", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("function refreshState()");
+  const end = source.indexOf("const capacityTermination = providerCapacityActiveTerminationDecision(agent)", start);
+  const pending = source.slice(start, end);
+  assert.match(pending, /if \(agent\.remoteTerminationPending\)/);
+  assert.match(pending, /lease\.heartbeatAt = heartbeatAt/);
+  assert.match(pending, /lease\.expiresAt = new Date\(now \+ LEASE_TTL_MS\)/);
+  assert.match(pending, /continue;/);
 });
 
 
