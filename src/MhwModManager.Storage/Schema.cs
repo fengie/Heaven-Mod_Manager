@@ -217,6 +217,20 @@ CREATE TABLE IF NOT EXISTS catalog_provenance(
     source_fingerprint TEXT NULL,
     PRIMARY KEY(canonical_id,provider_id)
 );
+CREATE TABLE IF NOT EXISTS installed_catalog_origins(
+    mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
+    provider_id TEXT NOT NULL,
+    provider_mod_id TEXT NOT NULL,
+    provider_file_id TEXT NOT NULL,
+    installed_version TEXT NULL,
+    downloaded_at TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    archive_sha256 TEXT NOT NULL,
+    provider_metadata TEXT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_installed_catalog_origins_provider
+    ON installed_catalog_origins(provider_id,provider_mod_id,provider_file_id);
 CREATE TABLE IF NOT EXISTS catalog_links(
     left_canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
     right_canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
