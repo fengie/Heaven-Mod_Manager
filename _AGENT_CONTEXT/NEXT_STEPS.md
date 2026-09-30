@@ -1,11 +1,22 @@
-# 2026-09-30 v8.8.27 Agent Control Heaven relay execution repair — CURRENT
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
 
-1. Run exact-head `cd tools/agent-control && npm run check && npm test`; repair any source/test/version-identity failure before integration.
-2. Restart/reload Agent Control on **heaven2** from the exact candidate. Source changes alone do not prove the installed controller picked them up.
-3. With `%USERPROFILE%\HeavenBridgeRepo` present and no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`, dispatch one heaven-targeted worker and prove bridge submit/result waiting proceeds instead of exit code 1.
-4. Confirm v8.8.26 cleanup still works: a **failed · RETRY EXHAUSTED** worker is terminated/cleaned where ownership is provable and removed from managed + federated live registries.
-5. Confirm fail-closed preservation still works for uncertain PID ownership, dirty worktrees, or committed branch divergence.
-6. Merge only after current-main sync and exact-head verification; then re-read remote main and delete the temporary task branch.
+1. Run exact-head `cd tools/agent-control && npm run check && npm test`; repair any source/test/version failure before integration.
+2. Restart/reload Agent Control on **heaven2** from the exact candidate.
+3. With `%USERPROFILE%\HeavenBridgeRepo` present and no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`, dispatch one heaven-targeted worker and prove bridge submit/result waiting passes the former exit-code-1 crash point.
+4. Re-smoke v8.8.26 **failed · RETRY EXHAUSTED** retirement: provably owned dead work is terminated/cleaned and managed/federated live entries disappear, while uncertain PID ownership or dirty/diverged work stays preserved.
+5. Confirm v8.8.27 card inspection still works after reconciliation.
+6. Merge only after current-main sync and exact-head checks; confirm remote main, then delete the temporary branch.
+
+---
+
+# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate; the emitted dashboard script must parse and all Agent Control tests must pass.
+2. On heaven2, click the blank/body area of a managed agent card and prove its log opens; repeat with Enter/Space keyboard activation.
+3. Prove nested **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** controls execute only their own action and do not double-trigger card inspection.
+4. Click a federated card: linked controller sessions must focus/open the matching managed worker; external-only sessions must expose their federated details.
+5. Re-smoke v8.8.26 retirement behavior so a dead **failed · RETRY EXHAUSTED** worker disappears from managed/federated live registries while uncertain PID ownership, dirty worktrees, and divergent commits remain preserved.
+6. Confirm `package.json`, root plugin manifest, and nested Codex plugin manifest all report Agent Control v0.6.6, then leave exact-SHA evidence and successor notes.
 
 ---
 
