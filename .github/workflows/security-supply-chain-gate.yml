@@ -42,9 +42,9 @@ jobs:
           persist-credentials: false
 
       - name: Audit workflow security policy
-        shell: bash
+        shell: powershell
         run: |
-          python - <<'PY'
+          $code = @'
           import pathlib
           import re
           import sys
@@ -76,4 +76,11 @@ jobs:
               print("\n".join(f"ERROR: {item}" for item in failures))
               sys.exit(1)
           print("Security workflow policy: PASS")
-          PY
+          '@
+          $scriptPath = Join-Path $env:RUNNER_TEMP 'mhw-security-policy.py'
+          [System.IO.File]::WriteAllText(
+            $scriptPath,
+            $code,
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          python $scriptPath

@@ -494,3 +494,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant PR/fix:** PR #328 introduced the mismatch; PR #333 repairs it.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-029 — CI executable dependencies and persistent-runner PR trust must be fail-closed
+
+- **Rule ID:** LR-029
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** GitHub Actions, self-hosted runners, dependency supply chain, release engineering
+- **Rule:** Pin every non-local GitHub Action to a full commit SHA. A persistent self-hosted runner must never execute fork pull-request code. PR validation on such a runner rejects fork heads before allocation and does not persist checkout credentials. Every workflow declares explicit least-privilege permissions.
+- **Trigger / evidence:** A repository audit found movable Action tags and multiple pull-request workflows targeting the persistent Heaven Windows runner. GitHub documents both movable tags and self-hosted untrusted PR execution as supply-chain/host-compromise risks.
+- **Prevention:** The security supply-chain gate enforces immutable Action refs, explicit permissions, fork guards, and review of pull_request_target + checkout. Dependabot maintains pinned Action revisions.
+- **Related rules:** LR-021 defect-class closure; LR-027 shared-runner concurrency.
+- **Supersedes:** none
+- **Superseded by:** none

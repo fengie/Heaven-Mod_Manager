@@ -47,6 +47,19 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 
 29. **Long-running autonomy needs progress supervision plus an independent controller supervisor.** A live PID/heartbeat proves only process/channel liveness, not useful forward progress. Track progress separately, preserve durable work before one-for-one replacement, gate replacement on execution capacity, persist pending recovery across restarts, rate-limit restart storms, and place the controller itself under a recovery owner outside its process/failure domain.
 
+
+30. **Programmatic source edits require emitted-source validation.** When an agent generates or rewrites source code, validate the final bytes as target-language source—not merely the edit template or diff—and run the narrowest native parser/compiler/build before handoff when execution is available. Escaped control characters, quoting artifacts, encoding damage, or templating residues are a recurring defect class; a source-producing workflow should not advertise readiness until syntax closure is proven.
+
+31. **Secret egress and artifact acquisition require complete identity binding.** A secret-bearing transport must bind credential emission to the canonical intended origin even when alternate endpoints are injectable for tests. Any direct-download/install/acquisition resolver must validate the complete provider + game + item + artifact identity before returning a usable artifact; partial identity matches are not authorization.
+
+32. **Authoritative external budgets must gate fan-out between calls.** When a provider returns quota, retry, circuit, or remaining-capacity state, sequential/batched callers must re-observe that state before dispatching the next request. A successful final-budget response is not permission to exceed the reported budget on the next iteration.
+
+33. **Strict analyzer closure includes internal concrete-type choices.** In warnings-as-errors repositories, private fields should not retain a broader collection/interface type when construction always materializes one concrete type and polymorphism is not part of the design. Review new internal collections for CA1859-style regressions before integration handoff; analyzer failure cascades should be traced to the first compile diagnostic rather than misclassified as many downstream test failures.
+
+34. **Exact-head green is mandatory merge evidence.** A cancelled, pending, superseded, or older-SHA run is not verification. Immediately before canonical integration, bind the merge decision to the exact candidate SHA and a successful required gate; replacement branches must explicitly inherit every known defect fix from the lineage they supersede.
+35. **Pinned test-framework APIs are compile-time contracts.** Do not assume assertion return values from older framework versions; under xUnit v3, retrieve nullable values separately when assertions return void, assert them, and continue with null-safe access under the pinned analyzer profile.
+36. **New provider/capability getters must satisfy verifier tracing.** Where function coverage is fingerprinted, use explicit getter blocks with `MasterDebugLog.BeginMethod()` as the first executable statement rather than expression-bodied public members.
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
@@ -61,3 +74,7 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 ## Capability declarations are executable boundaries
 
 When integrating an external provider, treat declared capabilities and compliance metadata as executable boundaries. Resolver/output code must not produce a stronger action than the provider contract permits. In particular, a browser-assisted flow must point to a provider-controlled user-facing page, not a direct asset endpoint discovered in metadata. Pair the declaration with an exact-target regression so policy drift and implementation drift fail together.
+
+## CI supply-chain and runner trust
+
+Treat CI Actions as executable dependencies: pin them to immutable commit SHAs and update them through reviewed automation. Persistent self-hosted runners are trusted machines, not disposable sandboxes; never allocate them to fork PR code, avoid persisted checkout credentials, and prefer ephemeral isolation for less-trusted execution. Keep workflow permissions explicit and least-privilege, and make direct/transitive dependency vulnerability auditing a build invariant. See `_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md`.
