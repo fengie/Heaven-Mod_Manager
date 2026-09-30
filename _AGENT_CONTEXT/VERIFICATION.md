@@ -1,3 +1,11 @@
+# v8.8.27 Agent Manager card inspection — verification scope
+
+This candidate changes dashboard card interaction/keyboard semantics, generated inline JavaScript, focused UI regression coverage, and Agent Control v0.6.6 release identity. It intentionally does not replace the v8.8.26 retry-exhausted retirement implementation.
+
+Required source closure is exact-candidate `npm run check` + `npm test`. Required live heaven2 closure is: managed card body click and Enter/Space open inspection/logs; federated cards focus a linked managed worker or show external-session details; nested card controls do not double-activate; and a retry-exhausted dead record still disappears under the v8.8.26 retirement lifecycle. Historical v8.8.26 evidence does not verify these changed dashboard bytes.
+
+---
+
 # v8.8.26 Agent Control exhausted-agent registry retirement — verification scope
 
 This candidate changes terminal recovery cleanup, process/worktree retirement safety, managed/federated registry membership, external observation replay suppression/reactivation, state migration, and Agent Control v0.6.5 release identity. Historical v8.8.25 evidence does not verify these bytes.
