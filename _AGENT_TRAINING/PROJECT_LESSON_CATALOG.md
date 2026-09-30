@@ -56,3 +56,7 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 - Validate changed PowerShell startup, installer, watchdog, recovery, and generated scripts with the native PowerShell parser before registering or executing them.
 - Do not rely only on structural/string tests: PowerShell has lexical traps such as `$name:` inside double-quoted strings, where punctuation can be parsed as part of a scoped-variable token. Use `${name}:` or explicit formatting.
 - When one such defect escapes, add a source-level regression for the entire syntax class so non-Windows CI can still prevent recurrence.
+
+34. **Exact-head green is mandatory merge evidence.** A cancelled, pending, superseded, or older-SHA run is not verification. Immediately before canonical integration, bind the merge decision to the exact candidate SHA and a successful required gate; replacement branches must explicitly inherit every known defect fix from the lineage they supersede.
+35. **Pinned test-framework APIs are compile-time contracts.** Do not assume assertion return values from older framework versions; under xUnit v3, retrieve nullable values separately when assertions return void, assert them, and continue with null-safe access under the pinned analyzer profile.
+36. **New provider/capability getters must satisfy verifier tracing.** Where function coverage is fingerprinted, use explicit getter blocks with `MasterDebugLog.BeginMethod()` as the first executable statement rather than expression-bodied public members.
