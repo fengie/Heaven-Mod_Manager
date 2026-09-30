@@ -617,3 +617,16 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+## LR-036 — dependency safety is an effective-filesystem invariant
+
+- **Rule ID:** LR-036
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Mod conflict resolution, dependency solving, Auto Populate, deployment, launch/recovery safety
+- **Rule:** A mod dependency is satisfied only if a compatible provider survives as the effective deployment result. Validate dependency/version/resource requirements against the final per-path winner map, not only installed packages, selected source files, current live files, or package priority.
+- **Trigger / evidence:** Override/dependency hardening found that source-level checks could accept a managed live file scheduled for removal, a partial/mixed native loader, or a version-incompatible provider. Auto-selected packages could also be conflict-free yet fully shadowed or silently replace protected selected content.
+- **Enforcement:** Hard constraints fail closed; constrained versions require trustworthy compatible metadata; native loader binaries must survive together from one provider; root bootstrap/code collisions need explicit or high-trust provenance; every non-blocking path must name a concrete enabled winner; Auto Populate revalidates the effective plan; every mutation/launch/recovery entry point runs plan-aware dependency preflight.
+- **Regression:** Preserve version mismatch/prerelease/optional/cycle, stale identity, managed-live removal, partial loader, protected bootstrap, atomic bundle/topology, deterministic planning, and protected-selection tests.
+- **Related rules:** LR-021 defect-class closure; repository bug-prevention protocol.
+- **Supersedes:** none
+- **Superseded by:** none
