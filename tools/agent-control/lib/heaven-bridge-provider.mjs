@@ -26,23 +26,42 @@ function clean(value) {
   return String(value ?? "").trim();
 }
 
-function sortJsonValue(value) {
-  if (Array.isArray(value)) return value.map(sortJsonValue);
-  if (value && typeof value === "object") {
-    const sorted = {};
-    for (const key of Object.keys(value).sort()) sorted[key] = sortJsonValue(value[key]);
-    return sorted;
+function canonicalUtf8(value) {
+  return Buffer.from(String(value), "utf8");
+}
+
+function canonicalJsonValue(value) {
+  if (value === null) return ["n"];
+  if (typeof value === "boolean") return ["b", value ? 1 : 0];
+  if (typeof value === "string") return ["s", canonicalUtf8(value).toString("base64")];
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("Bridge canonical JSON contains a non-finite number.");
+    if (Number.isSafeInteger(value)) return ["i", String(value)];
+    const bytes = Buffer.allocUnsafe(8);
+    bytes.writeDoubleBE(value, 0);
+    return ["f", bytes.toString("hex")];
   }
-  return value;
+  if (Array.isArray(value)) return ["a", value.map(canonicalJsonValue)];
+  if (value && typeof value === "object") {
+    const entries = Object.keys(value)
+      .map(key => ({ key, bytes: canonicalUtf8(key) }))
+      .sort((left, right) => Buffer.compare(left.bytes, right.bytes))
+      .map(({ key, bytes }) => [bytes.toString("base64"), canonicalJsonValue(value[key])]);
+    return ["o", entries];
+  }
+  throw new Error(`Bridge canonical JSON contains unsupported type ${typeof value}.`);
 }
 
 export function canonicalBridgeJob(job) {
+  // Round-trip first so signing covers exactly the JSON-compatible value that will
+  // be written to the relay (for example NaN/Infinity become null in JSON.stringify).
   const copy = JSON.parse(JSON.stringify(job ?? {}));
   if (copy.auth && typeof copy.auth === "object" && !Array.isArray(copy.auth)) {
     delete copy.auth.signature;
+    delete copy.auth.canonical;
     if (Object.keys(copy.auth).length === 0) delete copy.auth;
   }
-  return JSON.stringify(sortJsonValue(copy));
+  return JSON.stringify(["mhw-bridge-canon-v1", canonicalJsonValue(copy)]);
 }
 
 export function signBridgeJob(job, key) {
@@ -55,6 +74,7 @@ export function signBridgeJob(job, key) {
     ...job,
     auth: {
       ...(job?.auth && typeof job.auth === "object" && !Array.isArray(job.auth) ? job.auth : {}),
+      canonical: "mhw-bridge-canon-v1",
       signature
     }
   };
