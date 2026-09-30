@@ -3,6 +3,7 @@
 - Dependency blocker remainder formatting now uses `DependencyStatus[].Length`, removing the WPF compiler error.
 - `ConflictEngine.IsProtectedBootstrapPath` and the DeploymentPlanner family-role helpers now enter `MasterDebugLog` tracing, closing explicit call-site coverage gaps.
 - `CatalogSyncService.PrepareBatchAsync` and `TryGetHealthAsync` are explicitly static, satisfying strict CA1822 analysis without changing behavior.
+- Remaining verifier/analyzer debt found by the first candidate run is repaired too: App/Automation/Core helper traces, strict xUnit `Assert.Single` predicates, invariant catalog fixture timestamps, and the BenchmarkDotNet CA1822 exception.
 - `_AGENT_CONTEXT/handoff-manifest.json` advances to v8.8.39 so continuity preflight matches `VERSION.txt`.
 - Agent Control remains v0.6.16; v8.8.38 retry-parent retirement semantics are unchanged.
 - Required integration evidence: exact-head Workflow Feature repository verification plus Security Supply Chain gate.
