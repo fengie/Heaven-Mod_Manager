@@ -76,7 +76,8 @@ test("bridge HMAC signing matches worker canonicalization rules", () => {
 
   const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "0123456789abcdef0123456789abcdef");
   assert.notEqual(changed.auth.signature, signed.auth.signature);
-  assert.throws(() => signBridgeJob(job, ""), /HMAC key is required/i);\n  assert.throws(() => signBridgeJob(job, "too-short"), /at least 32 UTF-8 bytes/i);
+  assert.throws(() => signBridgeJob(job, ""), /HMAC key is required/i);
+  assert.throws(() => signBridgeJob(job, "too-short"), /at least 32 UTF-8 bytes/i);
 });
 
 test("bridge signing key resolves from machine-local file when env is absent", () => {
