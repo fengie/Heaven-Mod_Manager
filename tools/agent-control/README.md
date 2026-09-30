@@ -14,6 +14,14 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
+## What v0.6.14 does
+
+- Renders backend notifications and exposes buttons only for the supported `inspect-agent` / `inspect-federation` actions.
+- Adds stable ID-based managed/federated inspection with a persistent Inspector surface that survives refresh while its target stays live and reports retirement/missing races explicitly.
+- Shows authoritative recovery context including provider/machine, lifecycle/recovery, task/boundary/lease, branch/PR, heartbeat/action, error/message, lineage, and valid managed actions.
+- Moves keyboard semantics to explicit Inspect buttons while keeping card-body mouse convenience and nested-control isolation.
+- Uses bound `data-*` actions instead of embedding arbitrary stable IDs in inline JavaScript handlers.
+
 ## What v0.6.13 does
 
 - Canonicalizes startup source before restore, watchdog restart, and manual launch: only clean local `main` may fast-forward to `origin/main`; dirty, detached, non-main, ahead, or diverged checkouts fail closed without reset/clean.

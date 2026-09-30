@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.35</Version>
-    <InformationalVersion>8.8.35-agent-control-runtime-freshness</InformationalVersion>
+    <Version>8.8.36</Version>
+    <InformationalVersion>8.8.36-agent-control-notification-inspector</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

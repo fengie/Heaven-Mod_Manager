@@ -61,7 +61,7 @@ test("quota-blocked managed agents are historical failures, not healthy live age
 
 test("dashboard has unique DOM ids and required federated operator surfaces", () => {
   const html = fs.readFileSync(path.join(HERE, "..", "public", "index.html"), "utf8");
-  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  const ids = [...html.matchAll(/(?:^|\s)id="([^"]+)"/gm)].map(match => match[1]);
   assert.equal(new Set(ids).size, ids.length, "duplicate DOM ids make federated rendering ambiguous");
   assert.match(html, /Federated agent registry/);
   assert.match(html, /Control center[\s\S]*heaven2/);
