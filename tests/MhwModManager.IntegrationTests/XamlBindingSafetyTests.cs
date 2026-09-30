@@ -183,6 +183,24 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void PreviewImagesDecodeNearTheirDisplayedSize()
+    {
+        var root = FindRepositoryRoot();
+        var converter = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "SafeImageSourceConverter.cs"));
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("image.DecodePixelWidth=decodeWidth;", converter);
+        Assert.Contains("MaximumDecodeWidth=2048", converter);
+        Assert.Contains("ConverterParameter=160", xaml);
+        Assert.Contains("ConverterParameter=224", xaml);
+        Assert.Contains("ConverterParameter=320", xaml);
+        Assert.Contains("ConverterParameter=384", xaml);
+        Assert.Contains("ConverterParameter=512", xaml);
+        Assert.DoesNotContain("Source=\"{Binding ThumbnailPath,Converter={StaticResource SafeImage}}\"", xaml);
+        Assert.DoesNotContain("Source=\"{Binding PreviewPath,Converter={StaticResource SafeImage}}\"", xaml);
+    }
+
+    [Fact]
     public void ModsPagePrioritizesWindowedLibraryViewport()
     {
         var root = FindRepositoryRoot();
