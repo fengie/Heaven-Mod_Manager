@@ -1,10 +1,16 @@
-# 2026-09-30 v8.8.27 Agent Control Heaven relay execution repair — CURRENT
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
 
-The remaining worker-click failure was traced to execution-time relay resolution, not the dashboard click handler. Agent Control health already discovered the documented `~/HeavenBridgeRepo` checkout, but bridge submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR` directly. Observed main and manager workers therefore exited code 1 before useful execution.
+The remaining worker-click failure is confirmed inside Heaven Bridge execution, not dashboard dispatch. Health already discovered `~/HeavenBridgeRepo`, while submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR`, causing observed main and manager workers to exit code 1.
 
-v8.8.27 routes execution through the same resolver while preserving explicit relay overrides and all bridge repository/signing/clean-checkout checks. v8.8.26 retry-exhausted registry retirement remains canonical and unchanged.
+v8.8.28 unifies execution resolution while preserving explicit relay overrides, bridge trust validation, v8.8.26 retry-exhausted retirement, and v8.8.27 agent-card inspection. Exact-head checks plus a restarted heaven2→heaven1 live dispatch smoke remain required.
 
-Exact-head source checks and a restarted heaven2→heaven1 live dispatch smoke are still required before closure.
+---
+
+# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+
+Canonical v8.8.26 already contains the retry-exhausted retirement lifecycle: safe ownership-proven process cleanup, managed/federated live-registry removal, durable retirement tombstones, terminal replay suppression, and live-heartbeat reactivation. The remaining operator defect was independent: the dashboard rendered agent cards as visual containers with no card-level click or keyboard inspection path, so clicking a bot/card body appeared broken unless the operator happened to use a nested button.
+
+v8.8.27 makes live managed/federated cards explicitly inspectable. Managed-card activation opens the worker log; federated-card activation focuses its linked managed worker when available or exposes the federated provider/state/heartbeat/recovery/action details. Nested controls are excluded from card activation to prevent double actions. Agent Control/runtime/plugin identity is v0.6.6. Exact-head Agent Control check/test and heaven2 UI smoke remain required before live closure; do not infer runtime deployment from source integration alone.
 
 ---
 
