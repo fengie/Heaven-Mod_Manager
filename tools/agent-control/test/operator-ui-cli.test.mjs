@@ -147,6 +147,29 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(server, /clearEmergencyStop: true/);
 });
 
+test("dashboard agent cards are inspectable without hijacking nested controls", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);
+  assert.ok(scriptMatch, "dashboard inline script must exist");
+  assert.doesNotThrow(() => new Function(scriptMatch[1]), "dashboard inline JavaScript must parse");
+
+  assert.match(html, /managed-agent-card/);
+  assert.match(html, /federated-agent-card/);
+  assert.match(html, /function eventTargetsControl\(event\)/);
+  assert.match(html, /closest\?\.\("button,a,input,select,textarea,summary"\)/);
+  assert.match(html, /async function inspectManagedAgentCard\(event\)/);
+  assert.match(html, /function inspectFederatedAgentCard\(event\)/);
+  assert.match(html, /\["Enter", " "\]\.includes\(event\.key\)/);
+  assert.match(html, /async function showLog\(id, button = null\)/);
+  assert.match(html, /if \(button\) button\.textContent/);
+  assert.match(html, /Federated agent is no longer in the live registry/);
+  assert.match(html, /function bindManagedAgentCardInteractions\(\)/);
+  assert.match(html, /function bindFederatedAgentCardInteractions\(\)/);
+  assert.equal((html.match(/bindManagedAgentCardInteractions\(\);/g) || []).length, 1, "managed cards must receive exactly one inspection-binding pass per render");
+  assert.equal((html.match(/bindFederatedAgentCardInteractions\(\);/g) || []).length, 1, "federated cards must receive exactly one inspection-binding pass per render");
+  assert.doesNotMatch(html, /function bindAgentCardInteractions\(\)/, "global rebinding would attach duplicate managed listeners after federation rendering");
+});
+
 test("CLI keeps JSON output and exposes matching operator controls with explicit failure semantics", () => {
   const cli = fs.readFileSync(path.join(ROOT, "agentctl.mjs"), "utf8");
 

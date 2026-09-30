@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate; the emitted dashboard script must parse and all Agent Control tests must pass.
+2. On heaven2, click the blank/body area of a managed agent card and prove its log opens; repeat with Enter/Space keyboard activation.
+3. Prove nested **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** controls execute only their own action and do not double-trigger card inspection.
+4. Click a federated card: linked controller sessions must focus/open the matching managed worker; external-only sessions must expose their federated details.
+5. Re-smoke v8.8.26 retirement behavior so a dead **failed · RETRY EXHAUSTED** worker disappears from managed/federated live registries while uncertain PID ownership, dirty worktrees, and divergent commits remain preserved.
+6. Confirm `package.json`, root plugin manifest, and nested Codex plugin manifest all report Agent Control v0.6.6, then leave exact-SHA evidence and successor notes.
+
+---
+
 # 2026-09-30 v8.8.26 Agent Control exhausted-agent registry retirement — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.26 candidate and repair any syntax/state-migration/retirement regression before integration.

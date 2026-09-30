@@ -1,3 +1,11 @@
+# v8.8.27 — Agent Manager card inspection
+- Make managed Agent Manager cards inspectable by clicking the card body or using Enter/Space; the interaction opens the worker log without requiring the small **View log** button.
+- Make federated cards inspectable: linked controller workers focus/open their managed card, while external-only sessions expose their current provider/state/heartbeat/recovery/action details.
+- Exclude nested buttons/links/form controls from card activation so **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** execute exactly their own action instead of double-triggering inspection.
+- Add keyboard focus semantics and a dashboard regression that parses the emitted inline script and pins the interaction handlers.
+- Preserve the v8.8.26 retry-exhausted retirement/tombstone semantics unchanged; this patch fixes the separate “click did nothing” operator path.
+- Advance Agent Control runtime/root plugin/nested Codex plugin identity to v0.6.6.
+
 # v8.8.26 — Agent Control exhausted-agent registry retirement
 - Retire terminal no-work agents when their bounded recovery budget reaches **RETRY EXHAUSTED** instead of leaving failed/dead cards in the live registry.
 - Prove controller ownership before terminating any still-live process; refuse destructive cleanup when PID ownership, worktree cleanliness, or branch divergence is uncertain.

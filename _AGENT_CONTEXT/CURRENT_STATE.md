@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+
+Canonical v8.8.26 already contains the retry-exhausted retirement lifecycle: safe ownership-proven process cleanup, managed/federated live-registry removal, durable retirement tombstones, terminal replay suppression, and live-heartbeat reactivation. The remaining operator defect was independent: the dashboard rendered agent cards as visual containers with no card-level click or keyboard inspection path, so clicking a bot/card body appeared broken unless the operator happened to use a nested button.
+
+v8.8.27 makes live managed/federated cards explicitly inspectable. Managed-card activation opens the worker log; federated-card activation focuses its linked managed worker when available or exposes the federated provider/state/heartbeat/recovery/action details. Nested controls are excluded from card activation to prevent double actions. Agent Control/runtime/plugin identity is v0.6.6. Exact-head Agent Control check/test and heaven2 UI smoke remain required before live closure; do not infer runtime deployment from source integration alone.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
