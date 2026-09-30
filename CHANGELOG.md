@@ -5,7 +5,8 @@
 - Make Resume explicitly clear an active emergency stop only after operator confirmation, with state-aware button text.
 - Advance Agent Control runtime/private-plugin identity to v0.6.3.
 - Record the escaped operator/server contract mismatch in the bug-precedent ledger, add LR-047, and promote the reusable operator-control closure rule into generic verification training.
-- Add regression assertions for recommendation visibility/action routing, reviewer affordances, and emergency-stop recovery semantics.\n- Repair the P0 verification regression to follow live repository/runtime version metadata and correct stale v0.6.2 documentation after Agent Control advanced to v0.6.3.
+- Add regression assertions for recommendation visibility/action routing, reviewer affordances, and emergency-stop recovery semantics.
+- Repair the P0 verification regression to follow live repository/runtime version metadata and correct stale v0.6.2 documentation after Agent Control advanced to v0.6.3.
 
 # v8.8.23 — Agent Manager runtime reliability
 - Fix START SWARM so a paused perpetual run resumes and advances immediately instead of being reported as already running.
