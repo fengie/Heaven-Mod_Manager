@@ -47,6 +47,8 @@ The snapshot combines managed local workers with the normalized federated regist
 
 Automatic enumeration of arbitrary ChatGPT project conversations is unavailable. When a stable ChatGPT session identity is available through the bridge, register/heartbeat it rather than inventing telemetry.
 
+**Registration is the default first step for this skill.** Whenever the current ChatGPT runtime exposes a real stable session/conversation identity, register or heartbeat that identity before reading or changing swarm state, and heartbeat it again after meaningful state transitions. This keeps the federated registry current without pretending that undiscoverable sessions are known. If no stable identity is exposed, continue normally and leave coverage explicitly partial; never synthesize one from a title.
+
 ## Execution mode
 
 Normal Chat is preferred. ChatGPT Work handoff is deny-by-default.
