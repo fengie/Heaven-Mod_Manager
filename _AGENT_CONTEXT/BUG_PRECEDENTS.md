@@ -130,3 +130,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change touches only the feature workflow plus governance/test files, which are release-irrelevant under `UpdaterReleasePolicy.ps1`; it does not trigger Windows Release Gate and does not invalidate exact-source updater E2E evidence.
 - **Sibling/adjacent cases checked:** Windows Release Gate and Updater Installed Client E2E retain their own concurrency groups; their source/evidence pinning is unchanged.
 - **References:** updater E2E run `36659154949`; competing feature-gate runs included `36659334396`, `36659186555`, `36659543467`, and `36659596149`.
+
+
+## 2026-09-29 — Catalog provider integration — next provider gate exposed strict-analyzer debt already present on canonical main
+- **Symptom:** Workflow Feature PR Gate run `36660565860` for the mod.io transport stopped in strict whole-solution analysis with six errors. Three were in the new mod.io tranche; three were inherited from already-integrated GameBanana/GitHub provider code.
+- **Root cause:** Provider work advanced across integration boundaries without requiring a fresh strict whole-solution analyzer pass on the exact reconciled current-main candidate. Focused provider tests did not prove the combined repository remained analyzer-clean.
+- **Violated invariant / wrong assumption:** A provider lane is not integration-ready merely because focused tests pass. The exact candidate including current main must pass the repository's strict analyzer/build gate before the next provider is layered on top.
+- **Direct fix:** Replaced simple manual range throws with analyzer-required guard helpers, specialized the stable GitHub source collection to its concrete array type, and repaired the corresponding mod.io analyzer findings before rerunning the gate.
+- **Preventive rule/process change:** Before merging or beginning the next external-provider lane, reconcile onto current main and require strict whole-solution analyzer/build closure on that exact SHA. Inherited analyzer failures are blocking canonical-main defects, not noise attributable only to the new PR.
+- **Regression coverage added/strengthened:** Workflow Feature PR Gate remains the mechanical enforcement point; provider handoff now explicitly requires exact-current-main analyzer closure.
+- **Verification evidence/environment:** Heaven Windows feature-gate run `36660565860` captured CA1512 and CA1859 failures before tests could run. Replacement current-main candidate must pass before integration.
+- **References:** PR #334; run `36660565860`.
