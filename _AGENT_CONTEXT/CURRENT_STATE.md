@@ -1,3 +1,16 @@
+# v8.8.37 Agent Control registry lifecycle — CURRENT CANDIDATE
+
+- Ordinary terminal managed rows are eligible for retirement only when their recovery/task state is no longer active, blocked-for-recovery, candidate, cleanup-required, or needs-attention.
+- Heaven-backed rows still require authoritative remote terminal proof; a live PID without current-controller ownership fails closed.
+- Tracked branches require completed cleanup proof or complete base/current provenance; divergence, dirty worktrees, and incomplete provenance stay visible as attention instead of being discarded.
+- External federated `done`/`failed` records and heartbeat presence beyond the disconnected timeout are archived from current registry state.
+- Retirement tombstones are stored independently for every correlated provider/source identity, preventing stale alternate-provider replay from recreating one logical retired session.
+- Historical rows do not inflate `counts.total`; bounded `retiredAgents` history is exposed separately in the snapshot and Agent Manager Registry history UI.
+- Agent Control/root/nested plugin identity is v0.6.15 / product v8.8.37.
+- Required integration evidence: exact-head Agent Control syntax/tests plus Security Supply Chain. Do not claim live heaven2 runtime deployment while the machine is unavailable.
+
+---
+
 # v8.8.36 Agent Manager notification + stable inspector — CURRENT CANDIDATE
 
 - Dashboard renders backend notifications with severity/message/time and exact supported inspection actions.

@@ -812,7 +812,8 @@ export function federationSnapshot(federation, { now = Date.now() } = {}) {
     disconnected: agents.filter(agent => agent.freshness === "disconnected").length,
     done: agents.filter(agent => agent.effective_state === "done").length,
     failed: agents.filter(agent => agent.effective_state === "failed").length,
-    total: agents.length
+    historical: agents.filter(agent => agent.historical).length,
+    total: agents.filter(agent => !agent.historical).length
   };
 
   return {

@@ -131,6 +131,8 @@ test("completed historical tasks do not inflate live counts", () => {
   const snapshot = federationSnapshot(federation, { now: Date.parse("2026-09-29T08:10:00.000Z") });
   assert.equal(snapshot.counts.live, 0);
   assert.equal(snapshot.counts.done, 1);
+  assert.equal(snapshot.counts.historical, 1);
+  assert.equal(snapshot.counts.total, 0);
   assert.equal(snapshot.agents[0].historical, true);
 });
 

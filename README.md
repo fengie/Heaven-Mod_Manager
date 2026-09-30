@@ -1,4 +1,10 @@
-# v8.8.36 Universal Mod Manager
+# v8.8.37 Universal Mod Manager
+
+## v8.8.37 — Agent registry lifecycle closure
+
+Agent Manager now treats the live registry as current presence instead of an audit log. Ordinary terminal managed agents can retire only after process ownership, branch provenance, worktree cleanliness, and task state are safe; unresolved recovery, candidate, cleanup, dirty, divergent, or otherwise uncertain work remains visible for attention instead of being silently discarded.
+
+External federated terminal records and records beyond the disconnected timeout are moved out of current presence into durable registry history. Every correlated provider/source identity receives its own retirement tombstone, stale replay remains suppressed until genuinely newer live heartbeat evidence appears, and historical rows no longer inflate the live-registry total. The dashboard exposes the retained forensic archive in a dedicated **Registry history** surface. Agent Control advances to **v0.6.15**.
 
 ## v8.8.36 — Agent Manager notification + stable inspector closure
 

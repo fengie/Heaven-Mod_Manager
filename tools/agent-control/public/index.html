@@ -399,6 +399,15 @@
           </div>
         </section>
 
+        <section class="card section" id="retiredAgentsSection">
+          <div class="section-title">
+            <h2>Registry history</h2>
+            <span class="pill" id="retiredAgentSummary">0 archived</span>
+          </div>
+          <div class="tiny">Terminal and timed-out registry presence is archived here after safe retirement. Attention/recovery records stay live until their work and ownership are resolved.</div>
+          <div class="branch-list" id="retiredAgents"></div>
+        </section>
+
         <section class="card section" id="managedAgentsSection">
           <div class="section-title">
             <h2>Managed agents</h2>
@@ -836,6 +845,30 @@
       bindNotificationActions();
     }
 
+    function renderRetiredAgents(snapshot) {
+      const rows = snapshot.retiredAgents || [];
+      $("retiredAgentSummary").textContent = `${rows.length} archived`;
+      if (!rows.length) {
+        $("retiredAgents").innerHTML = '<div class="empty">No retired registry records yet.</div>';
+        return;
+      }
+      $("retiredAgents").innerHTML = rows.slice(0,50).map(item => `
+        <div class="branch-item">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot"></span>${escapeHtml(item.role || item.agentId || "retired agent")}</div>
+              <div class="meta">${escapeHtml(item.agentId || "—")} · ${escapeHtml(item.provider || "—")} / ${escapeHtml(item.sourceId || "—")} · retired ${fmt(item.retiredAt)}</div>
+            </div>
+            <span class="tag">${escapeHtml(item.status || item.reason || "retired")}</span>
+          </div>
+          <div class="meta">Reason: ${escapeHtml(item.reason || "—")} · recovery ${escapeHtml(recoveryLabel(item.recoveryStatus) || "none")}</div>
+          <div class="meta">Branch: ${escapeHtml(item.branch || "—")} · PR ${escapeHtml(item.prNumber || "—")} · heartbeat ${fmt(item.heartbeatAt)}</div>
+          ${item.lastActionSummary ? `<div class="task">${escapeHtml(item.lastActionSummary)}</div>` : ""}
+          ${item.lastError ? `<div class="meta"><strong style="color:var(--bad)">Last error:</strong> ${escapeHtml(item.lastError)}</div>` : ""}
+        </div>
+      `).join("");
+    }
+
     function renderAgents(snapshot) {
       const agents = snapshot.agents || [];
       $("agentSummary").textContent = `${agents.length} tracked`;
@@ -1060,6 +1093,7 @@
       renderAgents(snapshot);
       renderFederation(snapshot);
       renderInspector(snapshot);
+      renderRetiredAgents(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);

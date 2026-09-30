@@ -10,6 +10,23 @@ const RETIRABLE_MANAGED_STATUSES = new Set([
 
 const LIVE_FEDERATED_STATES = new Set(["working", "tool_wait", "blocked", "idle"]);
 const PROVEN_REMOTE_TERMINAL_STATES = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
+const PRESERVED_MANAGED_RECOVERY_STATES = new Set([
+  "retry-pending",
+  "retry-dispatched",
+  "retry-blocked",
+  "work-detected-incomplete",
+  "work-unverified",
+  "stream-lost-checking-work"
+]);
+const PRESERVED_TASK_STATES = new Set([
+  "pending",
+  "queued",
+  "running",
+  "blocked",
+  "needs-attention",
+  "candidate",
+  "cleanup-required"
+]);
 
 function text(value) {
   return String(value ?? "").trim();
@@ -48,6 +65,91 @@ export function isRetryExhaustedManagedAgent(agent) {
   return recovery === "retry-exhausted" && RETIRABLE_MANAGED_STATUSES.has(status);
 }
 
+export function managedAgentRetirementDecision(agent, task = null) {
+  if (!agent || typeof agent !== "object") {
+    return { retire: false, reason: "missing-agent" };
+  }
+  const status = text(agent.status || agent.state).toLowerCase();
+  if (!RETIRABLE_MANAGED_STATUSES.has(status)) {
+    return { retire: false, reason: "non-terminal-status" };
+  }
+
+  const recovery = text(agent.recoveryStatus || agent.recovery_status).toLowerCase();
+  if (["done", "finished"].includes(status) && recovery !== "retry-exhausted") {
+    return { retire: false, reason: "completed-history" };
+  }
+  if (PRESERVED_MANAGED_RECOVERY_STATES.has(recovery)) {
+    return { retire: false, reason: `recovery-${recovery}` };
+  }
+
+  const taskStatus = text(task?.status).toLowerCase();
+  if (taskStatus && PRESERVED_TASK_STATES.has(taskStatus)) {
+    return { retire: false, reason: `task-${taskStatus}` };
+  }
+
+  return {
+    retire: true,
+    reason: recovery === "retry-exhausted" ? "retry-exhausted" : `terminal-${status}`
+  };
+}
+
+export function federatedAgentRetirementDecision(agent, {
+  now = Date.now(),
+  disconnectedAfterMs = 300_000
+} = {}) {
+  if (!agent || typeof agent !== "object") {
+    return { retire: false, reason: "missing-agent" };
+  }
+  const state = text(agent.state).toLowerCase();
+  const timeout = Math.max(1_000, Number(disconnectedAfterMs) || 300_000);
+  const correlatedPresence = [
+    { state: agent.state, heartbeat_at: agent.heartbeat_at },
+    ...(Array.isArray(agent.observations) ? agent.observations : [])
+  ];
+  const hasFreshLivePresence = correlatedPresence.some(item => {
+    const observedState = text(item?.state).toLowerCase();
+    if (!LIVE_FEDERATED_STATES.has(observedState)) return false;
+    const observedHeartbeatMs = Date.parse(text(item?.heartbeat_at ?? item?.heartbeatAt));
+    return Number.isFinite(observedHeartbeatMs)
+      && Math.max(0, Number(now) - observedHeartbeatMs) <= timeout;
+  });
+  if (hasFreshLivePresence) {
+    return { retire: false, reason: "correlated-live-presence" };
+  }
+
+  if (state === "done" || state === "failed") {
+    return { retire: true, reason: `terminal-${state}` };
+  }
+
+  const heartbeatRaw = agent.heartbeat_at ?? agent.last_action_at ?? agent.created_at;
+  const heartbeatMs = Date.parse(text(heartbeatRaw));
+  if (!Number.isFinite(heartbeatMs)) {
+    return { retire: false, reason: "heartbeat-unproven" };
+  }
+  const ageMs = Math.max(0, Number(now) - heartbeatMs);
+  if (ageMs > timeout) {
+    return { retire: true, reason: "disconnected-timeout" };
+  }
+  return { retire: false, reason: state === "disconnected" ? "disconnected-grace" : "current-presence" };
+}
+
+export function federatedRetirementSources(agent) {
+  if (!agent || typeof agent !== "object") return [];
+  const candidates = [
+    { provider: agent.provider, sourceId: agent.source_id },
+    ...(Array.isArray(agent.observations)
+      ? agent.observations.map(item => ({ provider: item?.provider, sourceId: item?.source_id }))
+      : [])
+  ];
+  const seen = new Set();
+  return candidates.filter(item => {
+    const key = retirementKey(item.provider, item.sourceId);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function recordAgentRetirement(state, {
   agentId = null,
   provider,
@@ -59,13 +161,18 @@ export function recordAgentRetirement(state, {
   status = null,
   recoveryStatus = "retry-exhausted",
   reason = "retry-exhausted",
+  prNumber = null,
+  heartbeatAt = null,
+  lastActionSummary = null,
+  lastError = null,
+  sourceMetadata = null,
   retiredAt = new Date().toISOString()
 } = {}) {
   if (!state || typeof state !== "object") throw new Error("control state is required");
   const key = retirementKey(provider, sourceId);
   if (!key) throw new Error("retirement provider and source id are required");
   const current = normalizeRetiredAgents(state.retiredAgents);
-  const next = current.filter(item => item.key !== key && (!agentId || item.agentId !== agentId));
+  const next = current.filter(item => item.key !== key);
   next.push({
     key,
     agentId: text(agentId) || null,
@@ -78,6 +185,13 @@ export function recordAgentRetirement(state, {
     status: text(status) || null,
     recoveryStatus: text(recoveryStatus) || null,
     reason: text(reason) || "retry-exhausted",
+    prNumber: text(prNumber) || null,
+    heartbeatAt: text(heartbeatAt) || null,
+    lastActionSummary: text(lastActionSummary) || null,
+    lastError: text(lastError) || null,
+    sourceMetadata: sourceMetadata && typeof sourceMetadata === "object" && !Array.isArray(sourceMetadata)
+      ? { ...sourceMetadata }
+      : null,
     retiredAt
   });
   state.retiredAgents = normalizeRetiredAgents(next);

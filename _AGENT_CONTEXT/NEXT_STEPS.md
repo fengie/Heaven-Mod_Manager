@@ -1,3 +1,16 @@
+# 2026-09-30 v8.8.37 registry lifecycle — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
+2. Verify ordinary terminal managed rows retire only after process ownership, branch/worktree, and task/recovery safety is proven.
+3. Verify dirty/divergent/incomplete-provenance or recovery/needs-attention rows remain visible and gain an explicit retirement blocker instead of disappearing.
+4. Verify terminal and disconnected-timeout external federated rows leave current registry presence, every correlated provider/source is tombstoned, and stale replay remains suppressed until a strictly newer live heartbeat.
+5. Verify `federation.counts.total` excludes historical rows and the bounded Registry history surface remains separately inspectable.
+6. Merge to current `main` only after exact-head gates pass; update #458 with merge/evidence and close it if the original source acceptance is satisfied.
+7. After #458, keep #475/#477/#461 open until their separately required live heaven2 runtime/browser evidence can be recorded; do not relabel source CI as live proof.
+8. Improvement path: if registry retention needs longer forensic depth later, persist a dedicated paged archive rather than reintroducing historical rows into current presence.
+
+---
+
 # 2026-09-30 v8.8.36 notification + stable inspector — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
