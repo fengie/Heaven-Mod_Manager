@@ -1,3 +1,12 @@
+# v8.8.26 — Agent Control terminal registry retirement
+- Retire clean terminal dead workers from the live managed and federated registry after durable task/event/failure evidence is persisted.
+- Clear **failed · RETRY EXHAUSTED** records immediately when bounded no-work recovery is exhausted instead of leaving dead cards indefinitely.
+- Sweep legacy retry-exhausted, deterministic clean failures, provider-capacity terminals, and superseded retry sources during state refresh so they cannot be re-synchronized into the live registry.
+- Preserve any terminal record with substantive durable work, including dirty worktrees, commits, PRs, artifacts, or verification evidence.
+- Remove notification actions that target retired agents so dead entries no longer expose invalid click targets.
+- Advance Agent Control runtime and both plugin manifests to v0.6.5 and add focused registry-retirement regression coverage.
+- Record the live-registry-vs-failure-archive invariant and successor verification steps.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.
