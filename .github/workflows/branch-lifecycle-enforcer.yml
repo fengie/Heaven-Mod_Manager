@@ -2,8 +2,6 @@
 name: Branch Lifecycle Enforcer
 
 on:
-  pull_request:
-    types: [closed]
   push:
     branches: [main]
   schedule:
@@ -23,7 +21,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     steps:
       - name: Enforce merged-branch setting and clean proven-safe branches
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const { owner, repo } = context.repo;

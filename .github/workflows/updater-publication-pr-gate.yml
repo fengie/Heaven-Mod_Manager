@@ -23,6 +23,7 @@ jobs:
   publication-policy:
     name: Verify updater publication exact source
     # GitHub-hosted Windows can fail before runner allocation; use the repaired Heaven runner.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
     env:
@@ -31,8 +32,9 @@ jobs:
 
     steps:
       - name: Check out exact pull request head
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
@@ -87,7 +89,7 @@ jobs:
       - name: Preserve PR verification evidence
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
           include-hidden-files: true
