@@ -47,6 +47,50 @@ export function isRetryExhaustedManagedAgent(agent) {
   return recovery === "retry-exhausted" && RETIRABLE_MANAGED_STATUSES.has(status);
 }
 
+export function managedAgentRetirementDecision(agent, {
+  managedAgentIds = [],
+  retiredAgentIds = []
+} = {}) {
+  if (!agent || typeof agent !== "object") {
+    return { retire: false, reason: null };
+  }
+
+  if (isRetryExhaustedManagedAgent(agent)) {
+    return { retire: true, reason: "no-work-retry-exhausted" };
+  }
+
+  const status = text(agent.status || agent.state).toLowerCase();
+  const recovery = text(agent.recoveryStatus || agent.recovery_status).toLowerCase();
+  if (!RETIRABLE_MANAGED_STATUSES.has(status) || recovery !== "retry-dispatched") {
+    return { retire: false, reason: null };
+  }
+
+  const replacementAgentId = text(
+    agent.replacementAgentId
+    || agent.replacement_agent_id
+    || agent.replacementId
+    || agent.replacement_id
+  );
+  if (!replacementAgentId || replacementAgentId === text(agent.id || agent.agent_id)) {
+    return { retire: false, reason: null };
+  }
+
+  const known = new Set([
+    ...(Array.isArray(managedAgentIds) ? managedAgentIds : []),
+    ...(Array.isArray(retiredAgentIds) ? retiredAgentIds : [])
+  ].map(text).filter(Boolean));
+
+  if (!known.has(replacementAgentId)) {
+    return { retire: false, reason: null };
+  }
+
+  return {
+    retire: true,
+    reason: "retry-dispatched-superseded",
+    replacementAgentId
+  };
+}
+
 export function recordAgentRetirement(state, {
   agentId = null,
   provider,
