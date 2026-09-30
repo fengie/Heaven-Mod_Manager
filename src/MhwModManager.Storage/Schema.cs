@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS catalog_files(
     recommended INTEGER NOT NULL,
     dependencies_json TEXT NOT NULL,
     provider_metadata TEXT NULL,
-    PRIMARY KEY(provider_id,provider_file_id)
+    PRIMARY KEY(provider_id,provider_mod_id,provider_file_id)
 );
 CREATE INDEX IF NOT EXISTS ix_catalog_files_item ON catalog_files(canonical_id);
 CREATE TABLE IF NOT EXISTS catalog_provenance(
