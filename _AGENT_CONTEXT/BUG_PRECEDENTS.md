@@ -321,3 +321,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** PR #394 head `ccf1f1c4525464d396ba19a9dcdc07a74086b991`: Security Supply Chain Gate run `36667038748` failed while Workflow Feature PR Gate run `36667038775` remained queued/cancelled; merge `b90e79acc487366f475edf31916337d57bbea59d` nevertheless landed on main.
 - **Sibling/adjacent cases checked:** The same defect class previously occurred on PR #386 and is recorded by LR-035; recurrence confirms the prior prose-only control was insufficient.
 - **References (SHA/PR/issue/log):** PR #394; runs `36667038748`, `36667038775`; LR-035.
+
+## 2026-09-30 — branch-preservation merge made commits ancestors without preserving their tree changes
+- **Symptom:** GitLab catalog implementation commits appeared in canonical `main` ancestry and `compare` reported their implementation commit as a merge base, yet all three production files and the regression test were absent from the canonical tree. A cleanup/preservation merge had recorded task branch tips without changing the main tree.
+- **Root cause:** Integration/recovery logic treated commit ancestry as evidence that branch content had been integrated. Record-only branch-tip preservation can intentionally retain commit reachability while discarding the branch tree delta.
+- **Violated invariant / wrong assumption:** Reachability is provenance evidence, not content-survival evidence. A branch is integrated only when the intended post-merge canonical tree/diff is present and verified.
+- **Direct fix:** Recover the exact four-file GitLab slice from the preserved task ref onto a fresh current-main branch, verify the canonical diff, and re-run exact-head gates.
+- **Preventive rule/process change:** LR-037 requires canonical-tree verification after every integration/harvest. Record-only preservation merges must be explicitly treated as non-integrating and excluded from “already merged” detection. Managers must verify intended paths/content (or an equivalent tree/diff invariant) on canonical `main` before retiring the source branch/task.
+- **Regression coverage added/strengthened:** Multi-agent integration tooling should test a merge commit that retains a task commit as an ancestor while deliberately keeping the base tree, and must classify the task as preserved-but-not-integrated rather than complete.
+- **References:** GitLab catalog recovery PR #409; original implementation commits `ccb5be87c4edf284331233a4c885fa532dd8f604`, `249aa94f667c49ec4e38d48136409416ad5abec4`, `3bd48709eba46a46896b27213a6dac9ec3cf7c85`, test commit `368b0efe81110171e346da4283aaf0ac752361ad`.
+
