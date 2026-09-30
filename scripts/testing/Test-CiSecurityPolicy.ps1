@@ -81,7 +81,7 @@ foreach($workflow in $workflows){
 # Source/runtime security invariants. Keep these checks deterministic and high-signal:
 # they run without sending source to a third-party scanner and block common credential
 # leaks and security-boundary bypasses before code reaches a release.
-$excludedPathParts=@('\\.git\\','\\bin\\','\\obj\\','\\artifacts\\','\\release\\','\\BuildLogs\\','\\StartupLogs\\')
+$excludedPathPattern='\\(?:\.git|bin|obj|artifacts|release|BuildLogs|StartupLogs)\\'
 $sourceExtensions=@('.cs','.py','.ps1','.psm1','.mjs','.js','.json','.yml','.yaml','.xml','.props','.targets','.config','.md','.bat','.cmd')
 $securityFiles=@(
     Get-ChildItem -LiteralPath $Root -Recurse -File -ErrorAction SilentlyContinue |
@@ -89,8 +89,8 @@ $securityFiles=@(
             $extension=$_.Extension.ToLowerInvariant()
             if($sourceExtensions -notcontains $extension){return $false}
             if($_.Length -gt 2MB){return $false}
-            $full=$_.FullName
-            foreach($part in $excludedPathParts){if($full -match [regex]::Escape($part)){return $false}}
+            $full=$_.FullName.Replace('/','\\')
+            if($full -match $excludedPathPattern){return $false}
             return $true
         }
 )
@@ -107,7 +107,7 @@ foreach($file in $securityFiles){
     $relative=[IO.Path]::GetRelativePath($Root,$file.FullName).Replace('\\','/')
     foreach($rule in $secretPatterns){
         if($text -match $rule.Pattern){
-            $errors.Add("$relative: possible $($rule.Name) committed to the repository. Use an OS/GitHub secret store and rotate any exposed credential.")
+            $errors.Add("${relative}: possible $($rule.Name) committed to the repository. Use an OS/GitHub secret store and rotate any exposed credential.")
         }
     }
 }
@@ -123,12 +123,12 @@ foreach($rule in $unsafePrimitiveRules){
     foreach($file in @(Get-ChildItem -LiteralPath $Root -Recurse -File -Filter $rule.Glob -ErrorAction SilentlyContinue)){
         $full=$file.FullName
         $skip=$false
-        foreach($part in $excludedPathParts){if($full -match [regex]::Escape($part)){$skip=$true;break}}
+        if($full.Replace('/','\\') -match $excludedPathPattern){$skip=$true}
         if($skip -or $file.Length -gt 2MB){continue}
         $text=Get-Content -LiteralPath $full -Raw -ErrorAction SilentlyContinue
         if($null -ne $text -and $text -match $rule.Pattern){
             $relative=[IO.Path]::GetRelativePath($Root,$full).Replace('\\','/')
-            $errors.Add("$relative: forbidden security primitive detected ($($rule.Name)). Use the repository's fail-closed security helpers or document a narrowly reviewed exception in this policy.")
+            $errors.Add("${relative}: forbidden security primitive detected ($($rule.Name)). Use the repository's fail-closed security helpers or document a narrowly reviewed exception in this policy.")
         }
     }
 }
@@ -139,10 +139,10 @@ if(Test-Path -LiteralPath $updaterRoot){
         $text=Get-Content -LiteralPath $file.FullName -Raw
         $relative=[IO.Path]::GetRelativePath($Root,$file.FullName).Replace('\\','/')
         if($text -match '(?i)http://'){
-            $errors.Add("$relative: updater network code must not contain plaintext HTTP endpoints.")
+            $errors.Add("${relative}: updater network code must not contain plaintext HTTP endpoints.")
         }
         if($text -match '\bZipFile\.ExtractToDirectory\s*\('){
-            $errors.Add("$relative: updater must use bounded path-safe extraction instead of ZipFile.ExtractToDirectory.")
+            $errors.Add("${relative}: updater must use bounded path-safe extraction instead of ZipFile.ExtractToDirectory.")
         }
     }
 }
