@@ -1,3 +1,8 @@
+# v8.8.51 shortcut icon integrity — verification scope
+
+Source proof: canonical v8.8.50 ICO contained four PNG frames; 16×16, 24×24, and 32×32 passed bounds/dimension/chunk-CRC/IEND validation, while 48×48 failed IDAT CRC and termination validation. Candidate must pass `ApplicationIconIntegrityTests`, full exact-head repository gates, packaged EXE/resource verification, and a fresh real Windows shortcut render before the icon is considered runtime-verified. Compilation alone is not sufficient evidence for shell-visible binary resources.
+
+---
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.

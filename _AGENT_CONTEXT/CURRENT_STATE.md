@@ -1,3 +1,10 @@
+# v8.8.51 shortcut icon integrity — candidate
+
+Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48×48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.
+
+Exact-head CI, packaged executable/resource verification, and a freshly recreated Windows desktop shortcut smoke are required before closure. Draft Agent Manager PR #539 remains independently owned; if this urgent bug fix reaches main first, that lane must reconcile/re-version rather than overwrite v8.8.51.
+
+---
 # Current state — v8.8.50 candidate
 
 Canonical main is `be4615f` at v8.8.49 with the ComboBox contrast and Mods empty-overlay fixes merged after all three exact-head PR gates passed. PR #525 is closed as superseded; PR #528 preserves its repaired work and reconciliation ancestry while carrying the newer governance integration.

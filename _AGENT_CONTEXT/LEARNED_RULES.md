@@ -1,5 +1,16 @@
 # Learned Rules — append-only agent ledger
 
+## LR-060 — shell-visible binary resources require structural release validation
+
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** application icons, cursors, manifests, packaged images, and other binary resources consumed by the OS shell or installer
+- **Rule:** A binary resource is not verified merely because the compiler embeds it or packaging succeeds. Validate its container structure and every embedded frame/chunk with deterministic parsers appropriate to the format, and exercise the real OS/user path for shell-visible behavior before release closure.
+- **Trigger / evidence:** the application ICO compiled and shipped even though its 48×48 PNG frame had a bad IDAT CRC and malformed termination, causing Windows desktop shortcuts to render static. Smaller frames remained valid.
+- **Enforcement:** keep format-level integrity checks in release-exercised tests; when a shell-visible resource changes, require risk-matched packaged/runtime validation. Do not silently accept malformed optional frames just because another size works.
+- **References:** `ApplicationIconIntegrityTests`; bug precedent “Windows application icon — malformed 48×48 PNG frame escaped into the desktop shortcut”.
+
+
 Core Rules live in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. This file records durable, incident-driven rules discovered while working on `fengie/mhw-mods`.
 
 ## Ledger discipline
