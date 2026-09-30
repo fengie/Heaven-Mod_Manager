@@ -370,11 +370,58 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Restored stale-lane candidate, phase-owner exclusion, retry cooldown/dispatch-budget, and jitter-bound tests; existing branch-lifecycle coverage rejects ancestry-only cleanup proof.
 - **References:** bad boundary `5471f80545a755dd049718fa6812fb890e6effa2`; restoration commits `9e7dfbb7373a22a994e7505fac7ce58cf2657ef5`, `21d4087086886c2ebf6725f18738c4fd23114f0f`, `fd249748d5d376943f7449f5e9753fd032a14d4d`, `1d09dbf43a5393f9beb56bf43d8f7db5a4fcbcdf`, `eaafc9d223fc4ca2465f6fc0f02fb55db00d29b1`.
 
-## 2026-09-30 — Never expose canonical updater release before the client feed
+## 2026-09-30 — authoritative nonzero agent exits were misclassified as retryable no-work
+- **Symptom:** Managed workers that exited authoritatively with code 1 and produced no durable work were classified as no-work/stream-loss candidates, automatically replaced, and then repeatedly replaced again until retry exhaustion.
+- **Root cause:** Recovery classification treated empty terminal output as evidence of no work without first distinguishing a proven nonzero process exit from an unknown/lost execution stream.
+- **Violated invariant / wrong assumption:** A deterministic runtime failure is not the same state as “execution may not have started.” Automatic no-work replacement is safe only when execution outcome is unknown and an authoritative durable-evidence scan proves no work; a proven nonzero exit must stop for diagnosis unless useful durable work exists to preserve/reconcile.
+- **Direct fix:** Added deterministic-runtime-failure classification for nonzero exit codes/spawn failures/provider-capacity evidence, excluded clean deterministic failures from no-work and swarm-tail retry, preserved deterministic failures that left substantive work, and made failed implementation ownership gate instead of spawning a meaningless repair lane.
+- **Preventive rule/process change:** Recovery state machines must classify process outcome before evaluating empty output. Unknown transport loss may use bounded no-work retry after evidence scan; authoritative nonzero exit may not.
+- **Regression coverage added/strengthened:** Tests cover nonzero exit suppression, stream-loss metadata not overriding authoritative failure, swarm-tail non-resurrection of clean crashes, preservation of dirty work, and implementation-phase gating.
+- **References:** `fe302e78c453dd4cfb1630402368cb0ac57da80b`, `dc6e2df967f68a67d8ae108ae1ebdd87071fc96c`, `d1def9486620f1cc3b9016227fd25f42e87b9b09`, `3d918342b5a7d4c7d3b9fa25ae989e826b5ebd1c`.
 
-- **Incident:** updater build 218 / v8.8.20 became visible in `fengie/mhw-mods` at 2026-09-30 01:29:19Z. Windows Release Gate run `36655045833` was cancelled at 01:30:39Z by a newer `main` run while the public-feed mirror was still in progress. `fengie/mhw-mod-manager-release` was left with an abandoned draft `updater-main-218`, so installed clients still saw stable build 217 / v8.8.19 while the canonical GitHub repository already showed v8.8.20.
-- **Primary root cause:** the cross-repository release transaction used `cancel-in-progress: true` and published the private/canonical release before the public feed consumed by installed clients.
-- **Recurrence during repair:** fix commit `b35be018f74e90c879f3d056186061add2755f9f` reached `main`, but older stale integrations later replaced the release files with their pre-fix versions. This proved a release-only regression test was insufficient when stale whole-file trees can be integrated.
-- **Required prevention:** publish/verify the public feed first; re-check canonical main after public asset upload; make the canonical/private publisher itself refuse visibility unless the exact public release already exists immutable with matching assets; publish canonical/private second; make the release transaction non-cancellable; recover automation-owned abandoned drafts; assert cross-repo parity; and independently enforce these invariants from the security-supply-chain policy.
-- **Integration prevention:** any branch touching protected release/CI files must be reconciled with current `main` before integration. A stale branch tree is never acceptable evidence that unchanged-looking files are safe to replace.
-- **User-facing invariant:** once a new canonical GitHub updater release is visible, every unauthenticated installed client must already be able to discover that exact build from the public feed.
+
+
+## 2026-09-30 — tracked-secret scanner — literal test canary blocked valid security verification
+- **Symptom:** Security Supply Chain Gate failed on a control-plane regression test because a committed secret-rejection canary was itself a literal GitHub-token-shaped string.
+- **Root cause:** The runtime negative test and the source-level tracked-secret scanner were given the same literal credential-shaped fixture, so the scanner correctly could not distinguish a test canary from a committed credential.
+- **Violated invariant / wrong assumption:** Security tests must exercise credential patterns without requiring credential-shaped literals to live in tracked source.
+- **Direct fix:** Build the GitHub token canary from non-secret string fragments at runtime while preserving the exact value seen by the artifact-secret validator.
+- **Preventive rule/process change:** Credential-rejection regression fixtures must be source-scanner-safe by construction; synthesize high-risk canaries at runtime and keep the source scanner fail-closed.
+- **Regression coverage added/strengthened:** Existing artifact-secret rejection test still exercises the GitHub-token-shaped runtime value; Security Supply Chain Gate on descendant commit `ee428f106b3cff7f3a4f570a66666a5bfb70eb61` completed successfully in run `36669778319`.
+- **References:** failing run `36669264469`, job `109740579636`; fix `98c9d15a5b0aee8a34b86499c7545f41d83aa739`.
+
+## 2026-09-30 — rollback durability — read-then-unconditional-write could steal ownership and generic fields could persist credentials
+- **Symptom:** Two rollback plans using the same `change_id` could race between the initial read and checkpoint write, allowing the later unconditional upsert to replace the winner. Separately, credential-like values under innocuous field names such as `value` passed persistence validation even though rollback state claimed not to persist credentials.
+- **Root cause:** Plan creation used a time-of-check/time-of-use ownership check without create-only compare-and-swap semantics, and secret validation trusted key names more than value content.
+- **Violated invariant / wrong assumption:** Durable ownership is a storage-layer atomicity property, not a pre-write observation. Secret persistence policy must protect values as well as familiar secret field names.
+- **Direct fix:** Add `expected_revision=0` create-only checkpoint CAS semantics; make rollback plan creation use it and reconcile same-plan races idempotently; reject high-confidence credential-like values before durable persistence.
+- **Preventive rule/process change:** Any durable named owner/lease/plan creation must have an atomic create-only primitive. Any state store claiming secret exclusion must test both sensitive keys and credential-shaped values under generic keys.
+- **Regression coverage added/strengthened:** State-store create-only CAS regression, concurrent competing rollback-owner regression, generic-key credential-value rejection regression, plus the independently integrated transition regression that forbids committing after rollback has started.
+- **References:** fix `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`; current-main rollback transition test `test_partial_rollback_cannot_be_committed_and_can_resume`.
+
+## 2026-09-30 — browser URL validation — legacy relay path accepted embedded URL credentials
+- **Symptom:** The deep Playwright provider rejected `https://user:pass@host/`, but the legacy desktop-browser `open`/navigation URL validator accepted it and could forward embedded credentials through relay-visible parameters.
+- **Root cause:** Two browser surfaces implemented different URL-security invariants.
+- **Violated invariant / wrong assumption:** Equivalent entry points must enforce the same credential-egress boundary; scheme validation alone is not credential validation.
+- **Direct fix:** Reject parsed URL username/password components in the legacy browser validator before any bridge call.
+- **Preventive rule/process change:** Shared security invariants must be checked across sibling/legacy adapters whenever a stricter provider is added; URLs carrying userinfo are credential-bearing inputs.
+- **Regression coverage added/strengthened:** Legacy browser service test asserts embedded credentials are rejected and no bridge request is emitted.
+- **References:** fix `2b828af3ead99192009b644a87d6e156f8535658`.
+
+## 2026-09-30 — Reconcile terminal output channels before recovery classification
+
+- **Failure mode:** provider/auth/quota failures can land in JSONL or plain stderr while the final-message file is empty or contains only startup prose. Preferring the final-message file hides the stronger diagnostic and can misroute recovery.
+- **Prevention:** reconcile both output channels before exit classification. Provider-capacity evidence outranks benign/opening prose, is persisted on the agent record, and closes the provider-capacity circuit instead of entering no-work recovery.
+- **Regression requirement:** cover structured JSON errors, plain stderr, and persisted capacity evidence surviving later non-quota summaries.
+
+## 2026-09-30 — strict analyzer debt — root compile failures cascaded into missing-artifact noise
+- **Symptom:** Windows Release Gate run `36669017493` failed first on six warnings-as-errors in `MhwModManager.Core`, then emitted many downstream missing-DLL/test failures. After the six production diagnostics were repaired, exact Heaven verification of `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2` built Core with 0 warnings / 0 errors and exposed four additional warnings-as-errors in `MhwModManager.Tests`.
+- **Root cause:** Rapid catalog/provider integration reached canonical history without exact warnings-as-errors closure across both the production project and its affected test project. The escaped diagnostics covered CA1822, CA1826, CA1859, CA1861, xUnit2013, and xUnit1051.
+- **Violated invariant / wrong assumption:** A warnings-as-errors repository is not integration-ready when only source inspection or a production-only compile is clean. The first compiler/analyzer diagnostic is the causal failure; missing downstream assemblies are cascade symptoms, not independent bugs.
+- **Why prior defenses missed it:** Multiple fast-moving integration lanes advanced `main` while exact verification lagged. Existing functional tests could not execute once analyzer compilation failed, and source review did not substitute for the pinned analyzer profile.
+- **Direct fix:** Preserve `InstalledCatalogOriginChecker`'s instance API with an explicit analyzer justification; use concrete/indexable collection semantics in Thunderstore/family/Mod DB internals; repair xUnit collection-size and cancellation-token usage; eliminate repeated constant-array analyzer violations in tests. Production fixes are canonical through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2`; remaining test fixes are PR #437.
+- **Preventive rule/process change:** Diagnose and repair the first compiler/analyzer failure before interpreting downstream build/test noise. For Core/catalog changes, require exact-candidate warnings-as-errors compilation of both `MhwModManager.Core` and `MhwModManager.Tests` (or the full repository verifier) before integration readiness.
+- **Regression coverage added/strengthened:** The strict compiler/analyzer profile is the deterministic regression gate; existing behavioral tests remain unchanged except analyzer-safe assertion/cancellation/fixture construction. Exact Heaven job `job-20260930T044200Z-bugfix-core-analyzers` proves the production slice builds 0 warnings / 0 errors and independently reproduced the four test-project diagnostics.
+- **Sibling/adjacent cases checked:** Thunderstore normalization, generic-family inference, Mod DB feed caching, installed-origin checking, Mod DB feed tests, logical-family tests, syndication transport tests, and GitLab catalog tests.
+- **Verification/evidence:** failing Windows run `36669017493`, job `109739811849`; production exact Heaven job `job-20260930T044200Z-bugfix-core-analyzers`; PR #437 head `8bb9702880e5b550a1492fc3c2b839d670e2cd03` queued for exact Heaven and PR-gate verification.
+

@@ -88,8 +88,8 @@ public sealed class ModDbFeedCatalogProviderTests
             request,
             TestContext.Current.CancellationToken);
 
-        Assert.Equal(1, first.Count);
-        Assert.Equal(first[0].CanonicalId, Assert.Single(second).CanonicalId);
+        var firstMod = Assert.Single(first);
+        Assert.Equal(firstMod.CanonicalId, Assert.Single(second).CanonicalId);
         Assert.Equal(2, calls);
     }
 

@@ -1,4 +1,12 @@
-# v8.8.20 Universal Mod Manager
+# v8.8.21 Universal Mod Manager
+
+## v8.8.21 — Visible progression + safer overrides
+
+This patch makes repository progress intentionally visible. Every completed meaningful change set must update this README with a concise versioned summary and advance the patch version in the same change set, so the top of the repository shows what changed and how the project is moving.
+
+Current main also carries the override/dependency safety work previously tracked as unreleased: overlay precedence must be valid and acyclic, non-blocking conflicts must name a real winner, ambiguous texture replacements fail closed instead of being guessed from priority, MHW structural sibling assets are treated as atomic bundles, and requirements are revalidated before Preview, Apply, modded launch, and last-known-good restore.
+
+The handoff validator now checks that `VERSION.txt`, `Directory.Build.props`, this README, `CHANGELOG.md`, and continuity metadata agree on the current version, and that the mandatory README + patch-progress rule remains present in repository governance. One patch increment represents one integrated meaningful change set; verification/evidence-only persistence or release publication that only attests that same change set stays on the same patch to avoid a recursive version-bump loop.
 
 ## v8.8.20 — One-click Auto Populate
 

@@ -53,6 +53,10 @@ try{
 
     $files=@(
         'VERSION.txt',
+        'Directory.Build.props',
+        'README.md',
+        'CHANGELOG.md',
+        'GLOBAL_GIT_DIRECTIVE.md',
         'AGENTS.md',
         'NEXT-AGENT-START-HERE.md',
         '_AGENT_CONTEXT/CURRENT_REVISION.json',
@@ -73,6 +77,22 @@ try{
 
     & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
     Write-Host 'PASS: Baseline handoff fixture accepted.' -ForegroundColor Green
+
+    Expect-Rejected 'AGENTS loses visible-progress versioning rule' 'AGENTS.md' {
+        param($text)
+        [regex]::Replace($text,'(?ms)^### Mandatory visible-progress versioning\s*.*?(?=^### Mandatory completion handoff)','')
+    }
+
+    Expect-Rejected 'README loses current-patch progress section' 'README.md' {
+        param($text)
+        $escaped=[regex]::Escape([string]$manifest.currentVersion)
+        [regex]::Replace($text,"(?m)^##\s+v$escaped\b.*$",'## previous-version progress only',1)
+    }
+
+    Expect-Rejected 'GLOBAL directive loses README patch rule' 'GLOBAL_GIT_DIRECTIVE.md' {
+        param($text)
+        [regex]::Replace($text,'(?ms)^# PROGRESS VISIBILITY / PATCH VERSION COORDINATION\s*.*?(?=^---\s*$)','')
+    }
 
     Expect-Rejected 'AGENTS loses learned-rules entry' 'AGENTS.md' {
         param($text)

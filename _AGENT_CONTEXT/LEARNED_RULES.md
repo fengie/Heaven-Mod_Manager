@@ -670,17 +670,73 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
-## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+---
 
-- Treat multi-repository updater publication as one logical transaction.
-- Publish and verify the production-client feed before any secondary/canonical human-facing release becomes visible.
-- Re-check the canonical source after upload immediately before publication; upload time is a race window.
-- Do not use blanket in-progress cancellation around a multi-surface publication transaction.
-- Retry must recover automation-owned abandoned drafts and fail closed when drift cannot be completely classified.
-- Protect critical release invariants from stale integration in an independent CI/security policy, not only in the release-specific test being protected.
+## LR-039 — deterministic runtime failure is not no-work
 
-## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
+- **Rule ID:** LR-039
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent Control termination reconciliation, no-work recovery, swarm-tail recovery, perpetual autopilot
+- **Rule:** Classify authoritative process outcome before deciding no-work recovery. A proven nonzero exit, spawn failure, or provider-capacity termination is a deterministic runtime failure and must not be auto-retried merely because terminal prose is empty or stream-loss metadata is also present. Preserve/reconcile substantive durable work if it exists; otherwise gate for diagnosis.
+- **Trigger / evidence:** Perpetual workers exited with code 1, were labeled retryable no-work, then repeatedly auto-requeued until `RETRY EXHAUSTED`.
+- **Rationale:** Empty output answers nothing about why a proven process failed. Treating deterministic failure as “probably never started” converts one diagnosable error into a restart storm and hides the original cause.
+- **Enforcement:** No-work retry requires an unknown/lost execution outcome plus authoritative evidence that no durable work exists. Recovery planners must exclude clean deterministic failures; implementation autopilot must gate on failed ownership rather than synthesize unrelated repair work.
+- **Regression:** `no-work-recovery.test.mjs` covers authoritative nonzero exit, stream-loss override resistance, clean-failure non-resurrection, and dirty-work preservation; `autopilot-core.test.mjs` covers failed implementation gating.
+- **Related rules:** LR-037 canonical tree proof; bug-prevention and evidence-first recovery doctrine.
+- **Supersedes:** none
+- **Superseded by:** none
 
-- A branch may contain commits authored before a safeguard but be integrated after it. Commit timestamps therefore do not prove integration order.
-- Before integrating a branch that touches shared governance, CI, release, security, or updater files, sync/rebase it onto current `main`, resolve against current content, rerun exact-head checks, and refuse stale whole-file replacement.
-- Required checks must validate the exact candidate that is merged; queued/failed/cancelled checks or checks from a pre-rebase SHA are not merge authorization.
+
+
+---
+
+## LR-040 — durable named ownership requires atomic create-only CAS
+
+- **Rule ID:** LR-040
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Durable plans, leases, task ownership, rollback checkpoints, idempotency keys, singleton jobs
+- **Rule:** Never establish ownership with “read missing, then unconditional write.” Creation of a uniquely named durable owner must use a storage-layer create-only compare-and-swap/insert-if-absent primitive. A racing identical plan may be reconciled idempotently only after re-reading authoritative state; a different winner must remain untouched.
+- **Trigger / evidence:** Rollback plan creation read a missing checkpoint and then called an unconditional upsert, allowing a competing plan with the same `change_id` to be overwritten between those operations.
+- **Rationale:** Process-local sequencing cannot close a cross-process TOCTOU window. Ownership correctness belongs at the atomic persistence boundary.
+- **Enforcement:** Durable stores must expose explicit create-only semantics (for this store, `expected_revision=0`); regression tests must inject a competing writer between observation and creation and prove the first durable winner cannot be replaced.
+- **Relevant implementation:** `plugins/heaven-state-store/heaven_state_store/store.py`; `plugins/heaven-workflows/heaven_workflows/rollback.py`; fix `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`.
+- **Related rules:** LR-021 defect-class closure; LR-037 canonical-tree proof.
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-041 — secret exclusion must validate credential-bearing values and sibling ingress paths
+
+- **Rule ID:** LR-041
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Durable state, logs/artifacts, relay payloads, URL validators, secret-rejection tests
+- **Rule:** A secret boundary cannot rely only on field names or one preferred adapter. Reject high-confidence credential-shaped values before persistence/relay, reject URL userinfo on every equivalent browser/network ingress path, and construct credential-rejection test canaries in a way that does not itself trip tracked-secret scanners.
+- **Trigger / evidence:** Rollback state accepted a GitHub-token-shaped value under a generic key; the legacy browser accepted embedded URL credentials while the deep provider rejected them; a literal token canary blocked the repository's own tracked-secret gate.
+- **Rationale:** Credentials can move through generic keys, URL authority components, legacy adapters, and test fixtures. Security invariants need boundary-wide semantic coverage rather than naming conventions.
+- **Enforcement:** Add negative tests for generic-key credential values, embedded URL userinfo, and no-side-effect rejection; scan sibling adapters when introducing a security check; synthesize scanner-sensitive test canaries at runtime from safe fragments.
+- **Relevant fixes:** `98c9d15a5b0aee8a34b86499c7545f41d83aa739`, `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`, `2b828af3ead99192009b644a87d6e156f8535658`.
+- **Related rules:** LR-021 defect-class closure; security supply-chain doctrine.
+- **Supersedes:** none
+- **Superseded by:** none
+
+---
+
+## LR-042 — warnings-as-errors integration requires production-and-test analyzer closure
+
+- **Rule ID:** LR-042
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** C# strict builds, catalog/provider integration, test projects, release verification
+- **Rule:** When warnings are errors, integration readiness requires the affected production project and its affected test project to compile under the repository's pinned analyzer profile. If a build emits downstream missing-assembly/test-artifact errors, diagnose the earliest compiler/analyzer diagnostics first; do not treat cascade failures as separate defects.
+- **Trigger / evidence:** Windows Release Gate run `36669017493` failed on six Core analyzer diagnostics and then cascaded into missing artifacts. After those six were fixed, exact Heaven verification of `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2` produced a clean Core build (0 warnings / 0 errors) but then exposed four additional analyzer failures while compiling `MhwModManager.Tests`.
+- **Rationale:** A production-only green compile is insufficient when the test assembly itself participates in strict analyzer enforcement. Cascade diagnostics obscure the causal boundary and waste debugging effort if treated independently.
+- **Enforcement:** For Core/catalog changes, run the strict Core build plus affected test-project compile/tests or the full exact-candidate repository verifier before signaling integration-ready. Preserve public/API shape when an analyzer-only refactor would introduce needless external churn; use a narrowly justified suppression only when the design intentionally requires the shape.
+- **Regression/evidence:** production fix lineage through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2`; Heaven job `job-20260930T044200Z-bugfix-core-analyzers`; test repair PR #437.
+- **Related rules:** LR-002 compile-backed caller closure; exact-SHA verification doctrine; generic trainer lesson 33 on strict analyzer closure.
+- **Supersedes:** none
+- **Superseded by:** none
+

@@ -14,6 +14,8 @@ import {
   planWorkflow,
   providerCapacityActiveTerminationDecision,
   providerCapacityCircuit,
+  isProviderCapacityErrorMessage,
+  selectAgentTerminalMessage,
   interpretCommand,
   supportLanesFor,
   canUseMachineForRepositoryWrite,
@@ -448,6 +450,39 @@ test("live hard-quota output is an immediate terminal termination decision", () 
     status: "done",
     lastMessage: "You've hit your usage limit."
   }).terminate, false);
+});
+
+test("terminal output reconciliation preserves provider-capacity evidence", () => {
+  const quotaLog = '{"type":"turn.failed","error":{"message":"You have hit your usage limit. Try again later."}}';
+  assert.equal(isProviderCapacityErrorMessage(quotaLog), true);
+  const selected = selectAgentTerminalMessage(
+    "I'm treating this as an execution assignment and will inspect the repository first.",
+    quotaLog
+  );
+  assert.match(selected, /usage limit/i);
+  assert.equal(classifyAuthoritativeExit({ status: "running", lastMessage: selected }, 1), "capacity-blocked");
+  assert.equal(selectAgentTerminalMessage(
+    "Implemented and verified the fix.",
+    "Unit tests failed before retry."
+  ), "Implemented and verified the fix.");
+});
+
+test("persisted provider-capacity evidence keeps the circuit closed", () => {
+  assert.equal(classifyAuthoritativeExit({
+    status: "running",
+    lastMessage: "Starting the assigned work now.",
+    providerCapacityEvidence: "429 insufficient_quota"
+  }, 1), "capacity-blocked");
+  const current = state();
+  current.agents.push({
+    id: "quota-persisted",
+    status: "failed",
+    exitCode: 1,
+    finishedAt: "2026-09-30T04:26:56.000Z",
+    lastMessage: "Starting the assigned work now.",
+    providerCapacityEvidence: "Usage quota exceeded. Try again later."
+  });
+  assert.equal(providerCapacityCircuit(current, { now: Date.parse("2026-09-30T04:27:30.000Z") }).blocked, true);
 });
 
 test("provider capacity circuit honors explicit reset and closes after a later successful worker", () => {

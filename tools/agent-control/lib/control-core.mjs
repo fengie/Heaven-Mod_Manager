@@ -270,9 +270,24 @@ export function isProviderCapacityErrorMessage(value) {
   ].some(pattern => pattern.test(text));
 }
 
+export function selectAgentTerminalMessage(finalMessage, logSummary) {
+  const finalText = String(finalMessage || "").trim();
+  const logText = String(logSummary || "").trim();
+  if (isProviderCapacityErrorMessage(logText)) return logText;
+  if (isProviderCapacityErrorMessage(finalText)) return finalText;
+  return finalText || logText;
+}
+
+function providerCapacityMessage(agent) {
+  for (const value of [agent?.providerCapacityEvidence, agent?.lastMessage, agent?.error]) {
+    if (isProviderCapacityErrorMessage(value)) return String(value).trim();
+  }
+  return "";
+}
+
 export function providerCapacityActiveTerminationDecision(agent) {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
-  const message = String(agent?.lastMessage || agent?.error || "").trim();
+  const message = providerCapacityMessage(agent);
   const active = ACTIVE_STATUSES.has(status);
   const capacityBlocked = isProviderCapacityErrorMessage(message);
 
@@ -320,7 +335,7 @@ export function providerCapacityCircuit(state, {
   const agents = Array.isArray(state?.agents) ? state.agents : [];
   const failures = agents
     .filter(agent => ["capacity-blocked", "failed"].includes(String(agent?.status || "")))
-    .filter(agent => isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error))
+    .filter(agent => Boolean(providerCapacityMessage(agent)))
     .map(agent => ({ agent, at: providerCapacityEventAt(agent) }))
     .filter(item => Number.isFinite(item.at))
     .sort((a, b) => b.at - a.at);
@@ -345,7 +360,7 @@ export function providerCapacityCircuit(state, {
     };
   }
 
-  const explicitReset = providerCapacityResetAt(latest.agent?.lastMessage || latest.agent?.error);
+  const explicitReset = providerCapacityResetAt(providerCapacityMessage(latest.agent));
   const fallback = latest.at + Math.max(60_000, Number(fallbackCooldownMs) || 15 * 60_000);
   const until = explicitReset ?? fallback;
   const blocked = until > Number(now);
@@ -363,7 +378,7 @@ export function classifyAuthoritativeExit(agent, exitCode) {
   if (agent?.stopRequestedAt || agent?.status === "stopping" || agent?.status === "stopped") {
     return "stopped";
   }
-  if (isProviderCapacityErrorMessage(agent?.lastMessage || agent?.error)) return "capacity-blocked";
+  if (providerCapacityMessage(agent)) return "capacity-blocked";
   if (exitCode === 0) return "done";
   return "failed";
 }

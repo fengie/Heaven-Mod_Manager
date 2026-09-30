@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.21 progress-visibility governance — CURRENT
+
+Canonical main at the start of this change set was `4a18e4c1da68210ba48abf892f853f2611b812db`. The repository now requires every completed meaningful change set to update root `README.md`, advance the patch version, update `CHANGELOG.md`, and synchronize canonical version metadata before completion. The handoff validator checks the current patch across `VERSION.txt`, `Directory.Build.props`, README, changelog, and continuity metadata and checks that the governance rule remains present.
+
+This change set advances the repository from v8.8.20 to **v8.8.21**. Evidence-only verification/cache/publication records that merely attest this same change set remain on v8.8.21; any independent source/config/test/doc/governance/automation/UX/behavior change must advance to the next patch.
+
+Fresh exact-head Windows verification is still required before v8.8.21 can inherit any release-ready claim. Historical exact-SHA evidence remains historical.
+
+---
+
 # 2026-09-30 live state reconciliation — CURRENT
 
 The repository's earlier updater handoff text is stale. Automatic-updater installed-client closure has already succeeded and is persisted at `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.20.log`.

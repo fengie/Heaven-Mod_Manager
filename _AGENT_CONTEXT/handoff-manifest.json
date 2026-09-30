@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.20",
+  "currentVersion": "8.8.21",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.19 Auto Modder foundation",
+  "immediateParentRevision": "v8.8.20 pre-visible-progress state",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.20 adds one-click Auto Populate: it builds and applies a deterministic maximal conflict-free installed setup, recursively includes required dependencies/files/textures/loaders/resource providers, and rejects candidates whose complete closure is unsafe. Treat all verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. Preserve the mandatory visible-progress rule: every completed meaningful change set must update root README.md, advance the patch version, update CHANGELOG.md, and synchronize canonical version metadata before completion; evidence-only attestation/publication for the same change set stays on that patch. v8.8.21 introduces and mechanically validates this rule. Treat all verification as exact-SHA scoped and require fresh exact-head Windows release evidence before calling the current version release-ready. Preserve the permanent continuity and plugin-preflight rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

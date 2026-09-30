@@ -231,10 +231,27 @@ function Ensure-RunnerLaunch {
     $cmdExe = Join-Path ([Environment]::SystemDirectory) 'cmd.exe'
     if (-not (Test-Path -LiteralPath $cmdExe)) { throw "Windows command processor missing: $cmdExe" }
 
+    # Never register cmd.exe directly as an interactive scheduled-task action.
+    # Task Scheduler can briefly surface the console and steal foreground focus.
+    # Keep both the task host and run.cmd child hidden, while -Wait preserves the
+    # long-running task lifetime/restart semantics expected by the runner.
+    $powershellExe = Join-Path ([Environment]::SystemDirectory) 'WindowsPowerShell\v1.0\powershell.exe'
+    if (-not (Test-Path -LiteralPath $powershellExe)) { throw "Windows PowerShell missing: $powershellExe" }
+    $hiddenLauncher = Join-Path $RunnerDirectory 'run-heaven-hidden.ps1'
+    $hiddenLauncherText = @'
+$ErrorActionPreference = 'Stop'
+$cmdExe = Join-Path ([Environment]::SystemDirectory) 'cmd.exe'
+$runCmd = Join-Path $PSScriptRoot 'run.cmd'
+$arguments = '/d /c ""{0}""' -f $runCmd
+Start-Process -FilePath $cmdExe -ArgumentList $arguments -WorkingDirectory $PSScriptRoot -WindowStyle Hidden -Wait | Out-Null
+'@
+    Set-Content -LiteralPath $hiddenLauncher -Value $hiddenLauncherText -Encoding UTF8
+    $taskArguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $hiddenLauncher
+
     try {
         Stop-RunnerTask -TaskName $taskName
         $identityName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        $action = New-ScheduledTaskAction -Execute $cmdExe -Argument ('/d /c ""{0}""' -f $runCmd) -WorkingDirectory $RunnerDirectory
+        $action = New-ScheduledTaskAction -Execute $powershellExe -Argument $taskArguments -WorkingDirectory $RunnerDirectory
         $trigger = New-ScheduledTaskTrigger -AtLogOn
         $settings = New-ScheduledTaskSettingsSet `
             -AllowStartIfOnBatteries `

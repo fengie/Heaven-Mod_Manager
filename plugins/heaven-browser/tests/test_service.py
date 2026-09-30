@@ -10,6 +10,10 @@ class B:
 class BrowserTests(unittest.TestCase):
     def test_blocks_non_http_scheme(self):
         with self.assertRaises(ValueError): BrowserPlugin(B()).open("javascript:alert(1)")
+    def test_blocks_embedded_credentials(self):
+        b=B()
+        with self.assertRaises(ValueError): BrowserPlugin(b).open("https://user:pass@example.com")
+        self.assertEqual([],b.calls)
     def test_open_uses_argument_not_shell(self):
         b=B(); BrowserPlugin(b).open("https://example.com",browser="edge")
         self.assertEqual(b.calls[0][0],"app_launch")

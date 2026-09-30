@@ -560,7 +560,17 @@ The repository should remember what conversations forget.
 
 **Do not break the chain.**
 
-## 31. Release-ready means release immediately
+## 31. Visible progress is part of the definition of done
+
+Every completed meaningful repository change set must update the root `README.md` with a concise versioned progress summary, advance the patch component in `VERSION.txt`, synchronize canonical version surfaces such as `Directory.Build.props` / `CHANGELOG.md` / continuity metadata, and preserve enough detail for the user and successor to understand what advanced.
+
+One integrated meaningful change set receives one patch increment. Verification/evidence-only persistence, generated verification caches, and release publication/mirroring that only attest the same already-versioned change set stay on that patch to avoid recursive self-bumping. An independent source, configuration, test, documentation, governance, automation, UX, workflow, or behavior change starts a new change set and must advance the patch again.
+
+Managers, reviewers, integration workers, recovery workers, and successors must treat a missing README progress entry, missing patch increment, or inconsistent canonical version identity as incomplete work.
+
+This is a Core Rule. Only explicit user authorization may weaken or remove it.
+
+## 32. Release-ready means release immediately
 
 For every user-facing version, successful completion of the required release gates creates an immediate publication obligation.
 

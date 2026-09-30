@@ -22,6 +22,8 @@ def _safe_url(value: Any) -> str:
 def _display_url(value: str) -> str:
     parsed = urllib.parse.urlsplit(value)
     host = parsed.hostname or ""
+    if ":" in host:
+        host = f"[{host}]"
     port = f":{parsed.port}" if parsed.port else ""
     path = parsed.path or "/"
     return urllib.parse.urlunsplit((parsed.scheme, host + port, path, "", ""))
@@ -127,6 +129,23 @@ class PlaywrightDeepBrowser:
             raise KeyError("unknown browser session")
         return self._sessions[session_id]
 
+    @staticmethod
+    def _forget_page(
+        session: _Session,
+        page: Any,
+        tab_id: str,
+        *,
+        preferred_active: str | None = None,
+    ) -> None:
+        session.tabs.pop(tab_id, None)
+        session.page_ids.pop(id(page), None)
+        if session.active_tab == tab_id:
+            session.active_tab = (
+                preferred_active
+                if preferred_active is not None and preferred_active in session.tabs
+                else next(iter(session.tabs), None)
+            )
+
     def _page(self, session_id: str, tab_id: str | None = None) -> tuple[_Session, Any, str]:
         session = self._session(session_id)
         resolved = tab_id or session.active_tab
@@ -134,7 +153,7 @@ class PlaywrightDeepBrowser:
             raise KeyError("unknown browser tab")
         page = session.tabs[resolved]
         if getattr(page, "is_closed", lambda: False)():
-            session.tabs.pop(resolved, None)
+            self._forget_page(session, page, resolved)
             raise RuntimeError("browser tab is closed")
         return session, page, resolved
 
@@ -215,12 +234,28 @@ class PlaywrightDeepBrowser:
             headless=headless,
             downloads_path=str(self.download_root),
         )
-        context = browser.new_context(accept_downloads=True)
-        session = self._build_session(browser, context, owned_browser=True)
-        page = context.new_page()
-        tab_id = self._register_page(session, page)
-        page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
-        return {"session_id": session.session_id, "tab_id": tab_id, "owned": True, "url": _display_url(page.url)}
+        context: Any | None = None
+        session: _Session | None = None
+        try:
+            context = browser.new_context(accept_downloads=True)
+            session = self._build_session(browser, context, owned_browser=True)
+            page = context.new_page()
+            tab_id = self._register_page(session, page)
+            page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            return {"session_id": session.session_id, "tab_id": tab_id, "owned": True, "url": _display_url(page.url)}
+        except Exception:
+            if session is not None:
+                self._sessions.pop(session.session_id, None)
+            if context is not None:
+                try:
+                    context.close()
+                except Exception:
+                    pass
+            try:
+                browser.close()
+            except Exception:
+                pass
+            raise
 
     def attach_cdp(self, endpoint: str) -> Mapping[str, Any]:
         endpoint = self._endpoint(endpoint)
@@ -329,7 +364,7 @@ class PlaywrightDeepBrowser:
         result = []
         for tab_id, page in list(session.tabs.items()):
             if getattr(page, "is_closed", lambda: False)():
-                session.tabs.pop(tab_id, None)
+                self._forget_page(session, page, tab_id)
                 continue
             title = ""
             try:
@@ -348,18 +383,24 @@ class PlaywrightDeepBrowser:
     ) -> Mapping[str, Any]:
         url = _safe_url(url)
         session = self._session(session_id)
+        previous_active = session.active_tab
         page = session.context.new_page()
         tab_id = self._register_page(session, page)
-        page.goto(url, wait_until="domcontentloaded", timeout=self._timeout(timeout_ms))
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=self._timeout(timeout_ms))
+        except Exception:
+            try:
+                page.close()
+            except Exception:
+                pass
+            self._forget_page(session, page, tab_id, preferred_active=previous_active)
+            raise
         return {"tab_id": tab_id, "url": _display_url(page.url)}
 
     def close_tab(self, session_id: str, tab_id: str) -> Mapping[str, Any]:
         session, page, resolved = self._page(session_id, tab_id)
         page.close()
-        session.tabs.pop(resolved, None)
-        session.page_ids.pop(id(page), None)
-        if session.active_tab == resolved:
-            session.active_tab = next(iter(session.tabs), None)
+        self._forget_page(session, page, resolved)
         return {"tab_id": resolved, "closed": True}
 
     def download(

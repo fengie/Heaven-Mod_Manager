@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.21 visible-progress governance — CURRENT
+
+1. Preserve the new completion rule: every completed meaningful change set updates root `README.md`, increments the patch version, updates `CHANGELOG.md`, and synchronizes canonical version metadata in the same integration.
+2. Treat v8.8.21 as the current patch for this integrated change set. Evidence-only verification/cache/publication persistence for this same change set stays on v8.8.21; an independent repository change must advance to the next patch.
+3. Run/inspect fresh exact-head Windows verification before making any release-ready or shipped claim for v8.8.21; historical exact-SHA evidence does not transfer.
+4. Managers/reviewers must reject completion if the README progress entry, patch bump, changelog entry, or version synchronization is missing.
+5. Preserve and recursively propagate the continuity constitution, plugin preflight, main-first delivery, and this visible-progress rule to successors.
+
+---
+
 # 2026-09-30 live reconciliation — CURRENT CRITICAL PATH
 
 1. **CLOSED:** automatic-updater installed-client E2E is no longer pending. Evidence `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.20.log` records Heaven run **36659154949** on exact source `c8eb6218130ac5e08a5a78ea954b58ad3069c022`: real packaged build 60 → build **222**, restarted health identity confirmed, journal `Confirmed`, and seeded `Mods`, `State`, and unknown-file SHA-256 values unchanged.
@@ -292,3 +302,31 @@ Before every future handoff, update the durable repository context, report verif
 - Preserve thin compatibility wrappers only where an established root launcher/path is intentionally user-facing.
 - Verify each batch and search for stale old-path references before merging to `main`.
 - Other agents should place all newly created files according to the new canonical layout immediately, so cleanup does not regress while the migration is underway.
+
+
+## 2026-09-30 bug-audit handoff — rollback/state/browser security
+
+Completed fixes on canonical `main`:
+- `98c9d15a5b0aee8a34b86499c7545f41d83aa739` — tracked-secret-safe runtime token canary.
+- `ee428f106b3cff7f3a4f570a66666a5bfb70eb61` — rollback secret-value rejection plus create-only checkpoint ownership CAS.
+- `2b828af3ead99192009b644a87d6e156f8535658` — legacy browser embedded-credential URL rejection.
+- A concurrent agent also closed the rollback state-transition hole so a partially executed rollback cannot later be certified committed; current main contains `test_partial_rollback_cannot_be_committed_and_can_resume`.
+
+Canonical-tree verification at `cbe685ad770952c771cf129e2b39b1fc62de63af` confirmed every owned invariant above still existed after concurrent integration. Security Supply Chain Gate run `36669778319` passed on descendant `ee428f106b3cff7f3a4f570a66666a5bfb70eb61`; exact-head gates for `cbe685ad770952c771cf129e2b39b1fc62de63af` were still queued/pending when this handoff was written, so do not promote that state to exact-head green without a fresh read.
+
+Ordered next steps:
+1. Re-read canonical `main` and verify the same product/test invariants in the tree, not merely ancestry.
+2. Require a completed-successful Security Supply Chain Gate and applicable plugin gate on the exact final head or a verified descendant that contains the same tree changes.
+3. Audit sibling durable-owner creation call sites for read-then-unconditional-upsert patterns and sibling URL validators for embedded-userinfo acceptance; add fixes only when reproduced.
+4. Keep updater publication PR #432 separate from this audit unless a directly overlapping defect is proven.
+
+Unresolved verification gap: fast concurrent pushes can supersede/cancel plugin runs. A cancelled older plugin run is not failure, but it is also not exact-head success. Preserve this distinction in any completion claim.
+
+Successor requirement: keep LR-040/LR-041 and the bug precedents active, leave updated exact-SHA evidence, and pass these notes to the next agent.
+
+## 2026-09-30 Agent Control terminal-evidence repair
+
+- The deterministic nonzero-exit retry-storm guard is complemented by terminal-output reconciliation: JSONL/plain stderr provider-capacity evidence is no longer discarded behind the final-message file.
+- Capacity evidence is persisted and keeps the provider circuit closed, preventing same-provider no-work/tail-recovery churn.
+- Verify the exact integrated revision with the Agent Control PR gate; the next quota failure should produce one capacity-blocked notice and no `agent.no-work-requeued` event for that lineage.
+- Follow-up: surface the preserved capacity diagnostic and blocked-until time directly on the dashboard failure card.
