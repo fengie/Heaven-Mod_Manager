@@ -68,11 +68,14 @@ import {
 } from "./lib/work-handoff-signatures.mjs";
 import {
   clearObservationRetirement,
+  federatedAgentRegistryDisposition,
   forgetFederatedAgent,
   isRetryExhaustedManagedAgent,
+  managedAgentRegistryDisposition,
   proveRemoteJobStopped,
   recordAgentRetirement,
-  retiredObservationDecision
+  retiredObservationDecision,
+  retirementSourcesForFederatedAgent
 } from "./lib/registry-retirement.mjs";
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
@@ -831,6 +834,74 @@ async function reconcileIntegratedBranchCleanup() {
 
 function isTerminalStatus(status) {
   return ["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"].includes(status);
+}
+
+function shouldExposeManagedAgentInFederation(agent) {
+  if (!agent || typeof agent !== "object") return false;
+  if (!isTerminalStatus(agent.status)) return true;
+  return new Set([
+    "retry-pending",
+    "retry-waiting",
+    "retry-blocked",
+    "stream-lost-checking-work",
+    "work-detected-incomplete",
+    "provider-capacity"
+  ]).has(String(agent.recoveryStatus || "").trim().toLowerCase());
+}
+
+function recordedManagedDurableWork(agent) {
+  const currentSha = String(agent?.currentSha || "").trim();
+  const baseSha = String(agent?.baseSha || "").trim();
+  return agent?.worktreeDirty === true
+    || agent?.worktreeClean === false
+    || agent?.completionEvidence === "durable-work-detected"
+    || (Boolean(currentSha) && (!baseSha || currentSha !== baseSha));
+}
+
+function retireInactiveFederatedAgents(state, { now = Date.now() } = {}) {
+  const federation = state?.federation;
+  if (!federation || !Array.isArray(federation.agents)) return 0;
+  const disconnectedAfterMs = Number(federation.disconnected_after_ms) || 300_000;
+  let retired = 0;
+
+  for (const source of [...federation.agents]) {
+    const disposition = federatedAgentRegistryDisposition(source, { now, disconnectedAfterMs });
+    if (!disposition.retire) continue;
+
+    const sources = retirementSourcesForFederatedAgent(source);
+    if (!sources.length && source.provider && source.source_id) {
+      sources.push({ provider: source.provider, sourceId: source.source_id });
+    }
+    for (const identity of sources) {
+      recordAgentRetirement(state, {
+        agentId: source.agent_id,
+        provider: identity.provider,
+        sourceId: identity.sourceId,
+        taskId: source.task_id,
+        role: source.role,
+        machine: source.machine,
+        branch: source.branch,
+        status: source.state,
+        recoveryStatus: source.recovery_status,
+        reason: disposition.reason
+      });
+    }
+
+    const removed = forgetFederatedAgent(federation, { agentId: source.agent_id });
+    if (!removed) continue;
+    retired += removed;
+    addEvent(state, "federation.registry-retired", `${source.agent_id} left current federation presence`, {
+      agentId: source.agent_id,
+      taskId: source.task_id || null,
+      reason: disposition.reason,
+      evidence: {
+        sourceKeys: sources.map(item => item.key || `${item.provider}:${item.sourceId}`),
+        heartbeatAt: source.heartbeat_at || null
+      }
+    });
+  }
+
+  return retired;
 }
 
 function releaseLeaseForAgent(state, agent, reason) {
