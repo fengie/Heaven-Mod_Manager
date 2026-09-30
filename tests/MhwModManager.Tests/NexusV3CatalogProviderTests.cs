@@ -9,6 +9,64 @@ namespace MhwModManager.Tests;
 public sealed class NexusV3CatalogProviderTests
 {
     [Fact]
+    public void Capabilities_do_not_claim_full_search_before_transport_support_exists()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json")))));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+
+        Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Browse));
+        Assert.False(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search));
+    }
+
+    [Fact]
+    public async Task Query_and_non_trending_modes_fail_closed_instead_of_returning_partial_results()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Unsupported discovery must not reach transport.")));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(game, Query: "weapon")));
+
+        await Assert.ThrowsAsync<NotSupportedException>(
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(
+                game,
+                Mode: CatalogBrowseMode.RecentlyUpdated)));
+    }
+
+    [Fact]
+    public async Task Trending_rejects_lookalike_nexus_hostname()
+    {
+        const string payload =
+            """
+            {
+              "data": {
+                "mods": [
+                  {
+                    "name": "Lookalike",
+                    "author": "Fixture",
+                    "summary": "Must not be trusted.",
+                    "mod_page_url": "https://evilnexusmods.com/monsterhunterworld/mods/999"
+                  }
+                ]
+              }
+            }
+            """;
+
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.OK, payload))));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+
+        Assert.Contains("valid Nexus HTTPS URL", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Trending_entries_are_normalized_with_stable_game_scoped_identity()
     {
         var handler = new RoutingHandler((request, _) =>
