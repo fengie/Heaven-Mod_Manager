@@ -1,3 +1,12 @@
+# v8.8.36 — Agent Manager notification inspector closure
+- Render active backend notifications with severity, message, timestamp, and supported operator actions.
+- Route `inspect-agent` and `inspect-federation` notification actions to the exact managed/federated record.
+- Replace transient card-only inspection with one stable hash-backed inspector that survives refresh and supports deep links.
+- Expose identity, provider/machine, state/freshness, task, boundary/lease, branch/PR, heartbeat/start, last action/message, last error, and replacement/retry lineage.
+- Restrict inspector controls to actions valid for the record's current lifecycle state and report retired/missing selections explicitly.
+- Add operator UI regressions for card routing, notification routing, deep-link persistence, retirement degradation, and nested-control isolation.
+- Advance Agent Control runtime/root/nested plugin identity to v0.6.14 and product version to v8.8.36.
+
 # v8.8.35 — Agent Control canonical runtime freshness
 - Add a checkout-independent runtime sync guard used before startup restore, watchdog restart, and manual launch.
 - Fast-forward only clean local `main` to canonical `origin/main`; dirty, detached, non-main, ahead, and diverged checkouts fail closed without reset/clean.
