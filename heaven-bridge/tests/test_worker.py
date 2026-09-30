@@ -132,7 +132,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
 
     def test_hmac_auth_requires_and_verifies_signature(self):
         job = self.make_job("health", job_id="signed-auth")
-        key = "unit-test-only-secret"
+        key = "0123456789abcdef0123456789abcdef"
         with unittest.mock.patch.dict("os.environ", {"HEAVEN_BRIDGE_HMAC_KEY": key}, clear=False):
             with self.assertRaises(worker.BridgeError) as missing:
                 worker.verify_auth(job)
@@ -173,8 +173,8 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             "ttl_seconds": 21600,
             "priority": "highest",
         }
-        key = "unit-test-only-secret"
-        expected = "30678ccd2b625f08422cd3da337913ac1e6240bec048a76ff1b72138067e851a"
+        key = "0123456789abcdef0123456789abcdef"
+        expected = "8fddef1c6127fb6d98149e16f9823379408b4a8e563fe60c0524f2231bd59252"
         self.assertEqual(
             hmac.new(key.encode("utf-8"), worker.canonical_auth_job_v1(job), hashlib.sha256).hexdigest(),
             expected,
@@ -185,6 +185,30 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             verified = worker.verify_auth(signed)
         self.assertEqual(verified["canonical"], "mhw-bridge-canon-v1")
         self.assertTrue(verified["verified"])
+
+    def test_weak_hmac_key_is_rejected(self):
+        job = self.make_job("health", job_id="weak-hmac")
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {worker.HMAC_KEY_ENV: "too-short"},
+            clear=True,
+        ):
+            with self.assertRaises(worker.BridgeError) as weak:
+                worker.verify_auth(job)
+        self.assertEqual(weak.exception.code, "AUTH_KEY_WEAK")
+
+    def test_relay_document_is_hmac_authenticated(self):
+        key = "0123456789abcdef0123456789abcdef"
+        document = {"id": "result-1", "status": "completed", "exit_code": 0}
+        with unittest.mock.patch.dict("os.environ", {worker.HMAC_KEY_ENV: key}, clear=True):
+            signed = worker.sign_relay_document(document)
+        self.assertEqual(signed["auth"]["canonical"], "mhw-bridge-canon-v1")
+        expected = hmac.new(
+            key.encode("utf-8"),
+            worker.canonical_auth_job_v1(signed),
+            hashlib.sha256,
+        ).hexdigest()
+        self.assertTrue(hmac.compare_digest(signed["auth"]["signature"], expected))
 
     def test_missing_hmac_fails_closed_unless_emergency_fallback_is_explicit(self):
         job = self.make_job("health", job_id="missing-hmac")
@@ -211,7 +235,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
 
     def test_legacy_hmac_canonicalization_requires_explicit_opt_in(self):
         job = self.make_job("health", job_id="legacy-hmac")
-        key = "unit-test-only-secret"
+        key = "0123456789abcdef0123456789abcdef"
         signed = dict(job)
         signed["auth"] = {
             "signature": hmac.new(
