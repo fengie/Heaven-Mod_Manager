@@ -1,3 +1,12 @@
+# v8.8.37 — Agent registry lifecycle closure
+- Generalize managed retirement beyond retry-exhausted rows while preserving unresolved recovery/attention/candidate/cleanup states.
+- Fail closed on live unowned PIDs, incomplete branch provenance, committed divergence, or dirty worktrees; preserve the affected task as needs-attention rather than hiding work.
+- Archive terminal and disconnected-timeout external federated presence out of the current registry.
+- Tombstone every correlated provider/source identity so stale alternate-provider replay cannot recreate a retired logical session.
+- Exclude historical records from the live-registry total while retaining explicit historical counts.
+- Expose bounded durable retirement history through the Agent Manager snapshot and a read-only Registry history dashboard surface.
+- Add focused policy/count/UI regressions; advance Agent Control/root/nested plugin identity to v0.6.15 and product version to v8.8.37.
+
 # v8.8.36 — Agent Manager notification + stable inspector closure
 - Render backend Agent Control notifications with severity, message, timestamp, and supported inspection actions.
 - Route only `inspect-agent` and `inspect-federation` through shared stable-ID inspector helpers; unsupported backend action types remain informational.
