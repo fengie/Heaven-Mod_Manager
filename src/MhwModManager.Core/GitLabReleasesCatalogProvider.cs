@@ -415,6 +415,7 @@ public sealed class GitLabReleasesCatalogProvider : IModCatalogProvider
 
         static string NormalizeSearchSeparators(string text)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             var chars = text
                 .Select(character => character is '-' or '_' ? ' ' : character)
                 .ToArray();
