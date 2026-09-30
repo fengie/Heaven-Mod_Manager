@@ -1,4 +1,10 @@
-# v8.8.30 Universal Mod Manager
+# v8.8.31 Universal Mod Manager
+
+## v8.8.31 — Agent Control durable retirement proof
+
+Retry-exhausted Heaven Bridge workers now require authoritative remote-job terminal proof before Agent Control removes them from the live registry. Cancellation/status failures, queued/unclaimed, unknown, and other unproven states fail closed; a job that races into running is cancelled again and polled until an explicit terminal state is observed.
+
+Retired federated observations also require a raw heartbeat strictly newer than the retirement timestamp before tombstones can clear, preventing stale cached "working" payloads from resurrecting dead sessions. Focused regressions cover terminal-state whitelisting, queued/unknown/running races, authority failures, and heartbeat monotonicity. Agent Control/runtime plugin identity advances to **v0.6.9** while preserving v8.8.30 card accessibility.
 
 ## v8.8.30 — Agent Control card accessibility closure
 
