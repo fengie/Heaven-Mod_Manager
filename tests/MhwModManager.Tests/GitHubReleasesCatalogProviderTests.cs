@@ -42,15 +42,11 @@ public sealed class GitHubReleasesCatalogProviderTests
         Assert.Equal(2, mod.Files.Count);
         Assert.Equal("501", mod.Files[0].ProviderFileId);
         Assert.Null(mod.ProviderMetadata);
-        Assert.Contains(
+        Assert.All(mod.Files, file => Assert.Null(file.ProviderMetadata));
+        Assert.Equal(
             "sha256:2151b604e3429bff440b9fbc03eb3617bc2603cda96c95b9bb05277f9ddba255",
-            mod.Files[0].ProviderMetadata!,
-            StringComparison.Ordinal);
-        Assert.Null(mod.Files[1].ProviderMetadata);
-        Assert.DoesNotContain(
-            "browser_download_url",
-            mod.Files[0].ProviderMetadata!,
-            StringComparison.OrdinalIgnoreCase);
+            mod.Files[0].ContentDigest);
+        Assert.Null(mod.Files[1].ContentDigest);
         Assert.Equal(1, calls);
     }
 
