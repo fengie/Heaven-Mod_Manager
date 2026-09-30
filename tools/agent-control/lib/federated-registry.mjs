@@ -714,8 +714,21 @@ export function syncManagedAgents(federation, managedAgents = [], {
   now = Date.now()
 } = {}) {
   let changed = 0;
-  for (const managed of managedAgents) {
-    if (!managed?.id) continue;
+  const retainedManagedAgents = managedAgents.filter(managed => {
+    if (!managed?.id) return false;
+    const status = String(managed.status || "").trim().toLowerCase();
+    const recoveryStatus = String(managed.recoveryStatus || "").trim().toLowerCase();
+    return !(status === "failed" && recoveryStatus === "retry-exhausted");
+  });
+  const retainedManagedIds = new Set(retainedManagedAgents.map(managed => String(managed.id)));
+  const beforePrune = federation.agents.length;
+  federation.agents = federation.agents.filter(agent => {
+    const managedId = String(agent?.source_metadata?.managed_agent_id || "").trim();
+    return !managedId || retainedManagedIds.has(managedId);
+  });
+  changed += beforePrune - federation.agents.length;
+
+  for (const managed of retainedManagedAgents) {
     const provider = String(managed.executionProvider || managed.runtimeProvider || managed.provider || "local-control").trim().toLowerCase() || "local-control";
     reconcileObservation(federation, {
       provider,
@@ -748,7 +761,7 @@ export function syncManagedAgents(federation, managedAgents = [], {
     changed += 1;
   }
 
-  const localManaged = managedAgents.filter(managed => !managed?.executionProvider || managed.executionProvider === "local-control").length;
+  const localManaged = retainedManagedAgents.filter(managed => !managed?.executionProvider || managed.executionProvider === "local-control").length;
   recordProviderHeartbeat(federation, "local-control", {
     status: "online",
     at: now,

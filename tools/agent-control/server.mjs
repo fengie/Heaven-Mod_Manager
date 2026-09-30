@@ -842,6 +842,101 @@ function markNoWorkRecoveryPending(state, agent, decision, leaseReason = "no-wor
   }
 }
 
+function isRetryExhaustedManagedFailure(agent) {
+  return String(agent?.status || "").trim().toLowerCase() === "failed"
+    && String(agent?.recoveryStatus || "").trim().toLowerCase() === "retry-exhausted";
+}
+
+async function retireRetryExhaustedManagedAgent(agentId) {
+  let state = refreshState();
+  let agent = state.agents.find(item => item.id === agentId);
+  if (!isRetryExhaustedManagedFailure(agent)) return false;
+
+  if (isPidAlive(agent.pid)) {
+    const child = agent.ownerSessionId === SESSION_ID ? children.get(agent.id) : null;
+    const ownsLiveProcess = Boolean(
+      child
+      && child.pid === agent.pid
+      && child.exitCode === null
+      && child.signalCode === null
+      && isPidAlive(agent.pid)
+    );
+    if (!ownsLiveProcess) {
+      agent.recoveryRetirementStatus = "termination-unproven";
+      agent.recoveryRetirementError = `PID ${agent.pid} is still alive but controller ownership could not be proven; registry retirement is blocked.`;
+      agent.updatedAt = isoNow();
+      addEvent(state, "agent.retry-exhausted-retirement-blocked", `Refused to retire live unproven process for ${agent.id}`, {
+        agentId: agent.id,
+        taskId: agent.taskId,
+        reason: agent.recoveryRetirementError
+      });
+      saveState(state);
+      return false;
+    }
+
+    try {
+      if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
+        const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "retry-exhausted-retirement" });
+        if (!bridgeResultSucceeded(cancellation)) {
+          throw new Error(`Heaven Bridge cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
+        }
+      }
+      if (isPidAlive(agent.pid)) await killProcessTree(agent.pid);
+      const exited = await waitForPidExit(agent.pid);
+      if (!exited) throw new Error(`PID ${agent.pid} remained alive after retry-exhausted termination.`);
+    } catch (error) {
+      const failed = loadState();
+      const current = failed.agents.find(item => item.id === agentId);
+      if (current && isRetryExhaustedManagedFailure(current)) {
+        current.recoveryRetirementStatus = "termination-failed";
+        current.recoveryRetirementError = error?.message || String(error);
+        current.updatedAt = isoNow();
+        addEvent(failed, "agent.retry-exhausted-retirement-failed", `Could not prove termination for ${agentId}`, {
+          agentId,
+          taskId: current.taskId,
+          reason: current.recoveryRetirementError
+        });
+        saveState(failed);
+      }
+      return false;
+    }
+  }
+
+  state = loadState();
+  agent = state.agents.find(item => item.id === agentId);
+  if (!isRetryExhaustedManagedFailure(agent)) return false;
+
+  releaseLeaseForAgent(state, agent, "retry-exhausted-retirement");
+  const task = state.tasks.find(item => item.id === agent.taskId);
+  if (task) {
+    task.status = "failed";
+    task.finishedAt ||= isoNow();
+    task.updatedAt = isoNow();
+    task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-retry-exhausted"]));
+    task.nextAction = "Retry-exhausted execution was retired from the live registry. Inspect the durable failure ledger before an explicit redispatch.";
+  }
+
+  for (const notification of state.notifications || []) {
+    if (notification?.action?.agentId === agentId) notification.action = null;
+  }
+  state.agents = state.agents.filter(item => item.id !== agentId);
+  syncManagedAgents(state.federation, state.agents, { hostname: os.hostname(), now: Date.now() });
+  addEvent(state, "agent.retry-exhausted-retired", `${agentId} was terminated/proven dead and removed from the managed + federated registries`, {
+    agentId,
+    taskId: agent.taskId,
+    reason: "no-work-retry-exhausted",
+    evidence: {
+      exitCode: agent.exitCode ?? null,
+      pid: agent.pid || null,
+      executionProvider: agent.executionProvider || "local-control",
+      failureLoggedAt: agent.failureLoggedAt || null
+    }
+  });
+  saveState(state);
+  children.delete(agentId);
+  return true;
+}
+
 function refreshState() {
   const state = loadState();
   let changed = false;
@@ -2065,11 +2160,12 @@ async function recoverNoWorkAgent(agentId) {
       addNotification(state, {
         severity: "error",
         title: "No-work retry limit reached",
-        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts.`,
-        action: { type: "inspect-agent", agentId: source.id },
+        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts. The dead execution is being retired from the live registry.`,
+        action: null,
         dedupeKey: `no-work-exhausted:${source.id}`
       });
       saveState(state);
+      await retireRetryExhaustedManagedAgent(source.id);
       return null;
     }
 
@@ -2247,12 +2343,18 @@ async function recoverFederatedNoWorkAgent(agentId) {
     const attempt = Math.max(0, Math.floor(Number(source.recovery_attempt) || 0));
     if (attempt >= config.maxRetries) {
       source.recovery_status = "retry-exhausted";
+      const retiredId = source.agent_id;
       addNotification(state, {
         severity: "error",
         title: "Federated no-work retry limit reached",
-        message: `${source.role || source.agent_id} exhausted ${config.maxRetries} automatic replacement attempts.`,
-        action: { type: "inspect-federation", agentId: source.agent_id },
+        message: `${source.role || source.agent_id} exhausted ${config.maxRetries} automatic replacement attempts and was removed from the live registry.`,
+        action: null,
         dedupeKey: `federated-no-work-exhausted:${source.agent_id}`
+      });
+      state.federation.agents = state.federation.agents.filter(item => item.agent_id !== retiredId);
+      addEvent(state, "federation.retry-exhausted-retired", `${retiredId} was removed after exhausting bounded no-work recovery`, {
+        agentId: retiredId,
+        reason: "federated-no-work-retry-exhausted"
       });
       saveState(state);
       return null;
@@ -2589,7 +2691,30 @@ async function reconcileNoWorkRecoveries() {
   if (noWorkRecoveryTickRunning) return;
   noWorkRecoveryTickRunning = true;
   try {
-    const state = refreshState();
+    let state = refreshState();
+
+    const exhaustedManaged = state.agents.filter(isRetryExhaustedManagedFailure).slice(0, 8);
+    for (const agent of exhaustedManaged) await retireRetryExhaustedManagedAgent(agent.id);
+
+    state = refreshState();
+    const exhaustedFederatedIds = new Set(
+      (state.federation?.agents || [])
+        .filter(agent => String(agent.recovery_status || "").toLowerCase() === "retry-exhausted")
+        .map(agent => agent.agent_id)
+        .filter(Boolean)
+    );
+    if (exhaustedFederatedIds.size) {
+      state.federation.agents = state.federation.agents.filter(agent => !exhaustedFederatedIds.has(agent.agent_id));
+      for (const agentId of exhaustedFederatedIds) {
+        addEvent(state, "federation.retry-exhausted-retired", `${agentId} was removed during retry-exhausted registry reconciliation`, {
+          agentId,
+          reason: "federated-no-work-retry-exhausted-reconcile"
+        });
+      }
+      saveState(state);
+      state = refreshState();
+    }
+
     const now = Date.now();
     const managed = state.agents.filter(agent => {
       if (agent.failureClass !== "no-work") return false;

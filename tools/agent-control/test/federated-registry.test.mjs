@@ -526,3 +526,32 @@ test("migration preserves unsupported persisted providers without treating them 
     state: "working"
   }), /no installed adapter/);
 });
+
+
+test("managed retry-exhausted failures are purged instead of persisting as historical registry rows", () => {
+  const federation = defaultFederationState();
+  const failed = {
+    id: "support-retry-exhausted",
+    role: "support",
+    machine: "heaven",
+    status: "failed",
+    recoveryStatus: "retry-exhausted",
+    executionProvider: "heaven-bridge",
+    startedAt: "2026-09-30T07:00:00.000Z",
+    finishedAt: "2026-09-30T07:00:01.000Z"
+  };
+  const running = {
+    id: "support-running",
+    role: "support",
+    machine: "heaven",
+    status: "running",
+    executionProvider: "heaven-bridge",
+    startedAt: "2026-09-30T07:00:00.000Z"
+  };
+
+  syncManagedAgents(federation, [failed, running], { hostname: "heaven2", now: Date.parse("2026-09-30T07:00:02.000Z") });
+  assert.deepEqual(federation.agents.map(agent => agent.agent_id), ["support-running"]);
+
+  syncManagedAgents(federation, [], { hostname: "heaven2", now: Date.parse("2026-09-30T07:00:03.000Z") });
+  assert.equal(federation.agents.length, 0, "managed observations missing from the authoritative managed set must be pruned");
+});
