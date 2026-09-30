@@ -346,7 +346,7 @@ try {
 
     $watchdogAction = New-ScheduledTaskAction `
         -Execute $powershell `
-        -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
+        -Argument ('-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
     Register-ScheduledTask `
         -TaskName $WatchdogTaskName `
         -Action $watchdogAction `
