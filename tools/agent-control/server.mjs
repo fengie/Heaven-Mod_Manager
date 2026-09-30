@@ -859,14 +859,35 @@ function recordedManagedDurableWork(agent) {
     || (Boolean(currentSha) && (!baseSha || currentSha !== baseSha));
 }
 
+function managedAgentIdForFederatedSource(source) {
+  const metadata = source?.source_metadata && typeof source.source_metadata === "object"
+    ? source.source_metadata
+    : {};
+  const direct = String(metadata.managed_agent_id || "").trim();
+  if (direct) return direct;
+  for (const key of Array.isArray(source?.correlation_keys) ? source.correlation_keys : []) {
+    const normalized = String(key || "").trim();
+    if (normalized.startsWith("controller-agent:")) return normalized.slice("controller-agent:".length);
+  }
+  return String(source?.agent_id || "").trim() || null;
+}
+
 function retireInactiveFederatedAgents(state, { now = Date.now() } = {}) {
   const federation = state?.federation;
   if (!federation || !Array.isArray(federation.agents)) return 0;
   const disconnectedAfterMs = Number(federation.disconnected_after_ms) || 300_000;
+  const retirementAfterMs = Math.max(
+    disconnectedAfterMs,
+    Number(federation.retire_after_ms) || 1_800_000
+  );
   let retired = 0;
 
   for (const source of [...federation.agents]) {
-    const disposition = federatedAgentRegistryDisposition(source, { now, disconnectedAfterMs });
+    const managedAgentId = managedAgentIdForFederatedSource(source);
+    if (managedAgentId && state.agents.some(agent => agent.id === managedAgentId)) {
+      continue;
+    }
+    const disposition = federatedAgentRegistryDisposition(source, { now, retirementAfterMs });
     if (!disposition.retire) continue;
 
     const sources = retirementSourcesForFederatedAgent(source);
