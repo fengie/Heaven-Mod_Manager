@@ -409,9 +409,7 @@ test("bridge submit and wait entry points stay routed through execution relay re
     "wait must not bypass documented relay discovery by reading the env path directly"
   );
 
-  const resolverStart = source.indexOf("export function resolveExecutionRelayDir");
-  const resolverEnd = source.indexOf("\nexport ", resolverStart + 1);
-  const resolver = source.slice(resolverStart, resolverEnd > resolverStart ? resolverEnd : source.length);
-  assert.match(resolver, /const explicit = clean\(relayDir\)/);
-  assert.match(resolver, /return explicit \|\| resolveHeavenRelayDir\(options\)/);
+  // Resolver precedence/fallback semantics are covered behaviorally above.
+  // Keep this regression focused on the submit/wait call path so equivalent
+  // resolver implementations do not fail CI solely because of source spelling.
 });
