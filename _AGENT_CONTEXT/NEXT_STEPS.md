@@ -267,3 +267,16 @@ Historical failed planner runs `36335255922` and `36335692754` remain useful evi
 Before every future handoff, update the durable repository context, report verification only for exact inputs actually checked, commit/push meaningful checkpoints, and explicitly require your **successor** to inherit and recursively propagate the permanent continuity constitution to the **agent after them**.
 
 **Do not break the chain.**
+
+
+## Repository library reorganization coordination
+
+- Active objective: convert the repository into a predictable organized library while preserving all runtime/build/test/release behavior.
+- Follow `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`.
+- Coordinate with any in-flight organizer before bulk moves; do not create a competing folder taxonomy.
+- First classify root items into: true required root entrypoints/toolchain metadata vs. scripts/docs/tools that should migrate.
+- Move coherent groups only after searching all old-path consumers. Update source/project references, CI, scripts, docs, tests, packaging/updater/release logic, shortcuts, and verification in the same batch.
+- Prefer folders such as `scripts/<purpose>/<platform>/`, `docs/<topic>/`, `tools/<tool>/`, and source/test domain subfolders. Create further subfolders when multiple closely related files form a durable category.
+- Preserve thin compatibility wrappers only where an established root launcher/path is intentionally user-facing.
+- Verify each batch and search for stale old-path references before merging to `main`.
+- Other agents should place all newly created files according to the new canonical layout immediately, so cleanup does not regress while the migration is underway.
