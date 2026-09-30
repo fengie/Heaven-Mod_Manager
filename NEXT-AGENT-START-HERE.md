@@ -1,3 +1,11 @@
+# v8.8.50 installed-game discovery — current candidate
+
+Start with `_AGENT_CONTEXT/EVIDENCE/v8.8.50-installed-game-discovery.md` and the newest `_AGENT_CONTEXT/NEXT_STEPS.md`. The candidate fixes the MHW-only default Games list by composing the specialized MHW bootstrap with automatic bounded general discovery. Exact-head CI/main/release proof is not inherited from prior versions. Preserve PR #534's separate catalog-browser ownership and reconcile patch identity against fresh main before integration.
+
+The successor must preserve and recursively propagate the continuity constitution, LR-060, and the installed-game discovery defect precedent. Do not replace bounded launcher/install-root discovery with whole-drive executable scanning.
+
+---
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
