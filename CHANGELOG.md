@@ -1,4 +1,4 @@
-# v8.8.50 — 2026-09-30
+# v8.8.52 — 2026-09-30
 
 - Replaced the Dashboard ViewportWidth binding with normal stretch layout and added parsed-XAML coverage.
 - Split initial metadata refresh in-flight/completed state so failed, cancelled, or gate-skipped attempts can retry.
