@@ -130,3 +130,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** Focused deterministic regressions are committed on PR #318. Exact-head Workflow Feature PR Gate verification is required before merge; no passing-gate claim is made in this entry until that run completes.
 - **Sibling/adjacent cases checked:** The shared normalizer now owns Nexus source-origin parsing; authenticated detail/file endpoints retain their existing transport boundary; assisted acquisition remains browser-only and does not expose direct-download claims.
 - **References (SHA/PR/issue/log):** PR #318; issue #281; branch `agent/nexus-v3-normalizer-20260929`.
+
+
+## 2026-09-29 — test analyzers — cancellation warning enforcement covered only one test project
+- **Symptom:** A new Nexus provider unit regression called a cancellation-aware async API without passing `TestContext.Current.CancellationToken` even after the same xUnit1051 defect class had been hardened in the integration-test project.
+- **Root cause:** The mechanical `WarningsAsErrors` policy for xUnit1051 was scoped to the integration-test project; the unit-test project still relied on review/CI diagnostics.
+- **Violated invariant / wrong assumption:** A reusable analyzer-backed invariant must be enforced across every sibling project where the same defect class can occur, not only the project where the first escape was observed.
+- **Why prior defenses missed it:** The earlier sibling scan fixed existing unit-test call sites, but the severity policy itself did not follow the defect class into `MhwModManager.Tests`, so a later concurrent test addition remained source-valid until review.
+- **Direct fix:** Passed the test cancellation token in the cross-provider acquisition regression and added xUnit1051 to `WarningsAsErrors` in `MhwModManager.Tests.csproj`.
+- **Preventive rule/process change:** When an analyzer rule represents a repository-wide invariant, audit all applicable sibling projects and apply the hard-error policy at the widest safe scope instead of stopping at the first affected project.
+- **Regression coverage added/strengthened:** The unit-test build now fails mechanically on future xUnit1051 occurrences; the Nexus provider suite itself is cancellation-aware.
+- **Verification evidence/environment:** Exact-head Workflow Feature PR Gate on stable integration PR #320 is required before merge; no green claim is made until that run completes.
+- **Sibling/adjacent cases checked:** Existing Nexus transport unit tests were already repaired on current main; provider async calls were rescanned on the frozen integration branch.
+- **References (SHA/PR/issue/log):** PR #320; prior cancellation precedent tied to PR #272; unit-test enforcement commit `17db3a1c5674ae782501abe950044266b69a5a4c`.
