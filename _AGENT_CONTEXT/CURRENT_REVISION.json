@@ -27,10 +27,11 @@
     "evidenceCommit": "6a1db2153604c7054fa59623ea232ab3cbdd6d10",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.41-scalable-bootstrap.md"
   },
-  "candidateSourceCommit": "b5c8cacd1e34d11ff7366f5e9949692085f95851",
+  "candidateSourceCommit": "01b15c50e029047241909b770bccba5b44320815",
   "candidateChanges": [
-    "SHA-256-bound literal text and Markdown-heading navigation for indexed repository context.",
+    "SHA-256-bound literal text and Markdown-heading navigation for indexed repository context, with explicit indexed-subset authorization.",
     "Bounded query/results/output with line-addressable matches and explicit result/snippet truncation.",
+    "Regression protection against valid-hash core documents crossing the indexed-context reader boundary (LR-057).",
     "Agent Control/plugin identity v0.6.20 and prompt library 2026.09.30.3."
   ],
   "agentManagerPriority": {
