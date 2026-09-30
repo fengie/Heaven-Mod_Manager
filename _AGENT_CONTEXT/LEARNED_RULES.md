@@ -740,3 +740,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-043 — resource-owning open/create operations must be transactional
+
+- **Rule ID:** LR-043
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Browser/session/tab creation, host resources, multi-index registries, connection/session factories
+- **Rule:** When an operation acquires host resources or registers identity before a later fallible step, success must be all-or-nothing. On failure, undo every newly acquired resource and every registry/index/active-pointer mutation. Use one authoritative removal helper for objects represented in multiple indexes.
+- **Trigger / evidence:** Deep-browser initial navigation could fail after browser/context/session creation and leak the owned session; failed new-tab navigation and externally closed tabs could leave stale tab identity/active selection behind.
+- **Rationale:** Partial construction turns a single recoverable failure into durable leaked resources and poisoned future state. Duplicated cleanup paths drift and repair only part of the state graph.
+- **Enforcement:** Failure-path tests must inject an exception after registration and assert resource closure plus complete registry restoration. Public enumeration/pruning paths must use the same cleanup primitive as explicit close. Structured URL/status renderers must preserve authority syntax while redacting sensitive components.
+- **Regression/evidence:** `04e706ba2a8b7e0de5ab0461af3702b9db854a33`, `339b4caf7fdd00eb0aa6d7b29c3149a9537d9f71`, `db27ed786337529fa5674ff735c5d06038a9270f`, merged via PR #438 as `b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620`.
+- **Related rules:** LR-021 defect-class closure; LR-037 canonical-tree proof; LR-041 boundary-wide URL/secret validation.
+- **Supersedes:** none
+- **Superseded by:** none
