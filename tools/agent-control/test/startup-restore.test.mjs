@@ -129,7 +129,12 @@ test("runtime freshness guard fast-forwards clean main and preserves unsafe chec
   run("git", ["init", "-b", "main", seed]);
   configureGit(seed);
   fs.writeFileSync(path.join(seed, "base.txt"), "base\n");
-  git(seed, "add", "base.txt");
+  fs.mkdirSync(path.join(seed, "tools", "agent-control"), { recursive: true });
+  fs.writeFileSync(path.join(seed, "tools", "agent-control", "package.json"), JSON.stringify({
+    name: "heaven-agent-control",
+    version: "0.6.12"
+  }, null, 2));
+  git(seed, "add", ".");
   git(seed, "commit", "-m", "base");
   git(seed, "remote", "add", "origin", remote);
   git(seed, "push", "-u", "origin", "main");
