@@ -913,3 +913,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-017 independent recovery ownership; LR-039 deterministic failure classification; LR-051 provider resolution parity.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-053 — canonical bootstrap proof is progressive, not full-corpus rereading
+
+- **Rule ID:** LR-053
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Programming-agent startup, continuity retrieval, premium-token efficiency, and blocker classification
+- **Rule:** Prove canonical repository truth from a compact full-read core plus hash-verified indexed context, then expand only task-relevant history, precedents, and source. Truncation must be paginated/chunked. A missing preferred CLI, one failed network route, or no local checkout must trigger authorized GitHub/connector/canonical-worktree/Heaven/CI fallbacks. TRAINING-BLOCKED or EXECUTION-BLOCKED is valid only after reasonable authorized fallbacks are exhausted with evidence.
+- **Trigger / evidence:** A senior agent stopped before task execution because large mandated files were truncated and a preferred GitHub CLI was missing despite other repository access paths being available.
+- **Rationale:** Full historical rereads waste scarce premium context and create false fail-closed states without increasing correctness. Hash-pinned indexing plus targeted expansion preserves provenance and relevant safeguards while improving throughput.
+- **Enforcement:** Agent Control prompt generation separates core and indexed manifests; startup-gate regressions pin large-ledger indexing, truncation recovery, missing-tool fallback, and blocker criteria. Senior roles should delegate mechanical evidence gathering where practical.
+- **Relevant commit/run:** v8.8.40 efficient-bootstrap candidate; exact-head verification required before closure.
+- **Supersedes:** none
+- **Superseded by:** none
