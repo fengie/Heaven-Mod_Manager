@@ -30,7 +30,7 @@ public sealed class ModIoCredential
         return new ModIoCredential(apiKey, accessToken);
     }
 
-    internal void AddApiKey(ICollection<(string Key, string Value)> query)
+    internal void AddApiKey(List<(string Key, string Value)> query)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(query);
@@ -115,7 +115,7 @@ public sealed class ModIoTransport
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(credential);
-        if (gameId <= 0) throw new ArgumentOutOfRangeException(nameof(gameId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gameId);
         if (maxResponseBytes is < 1024 or > 64 * 1024 * 1024)
             throw new ArgumentOutOfRangeException(nameof(maxResponseBytes));
 
@@ -135,7 +135,7 @@ public sealed class ModIoTransport
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
 
         var sort = mode switch
         {
@@ -179,7 +179,7 @@ public sealed class ModIoTransport
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var modId = NormalizePositiveId(providerModId, nameof(providerModId));
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
 
         return SendJsonAsync(
             $"games/{gameId}/mods/{modId}/files",
@@ -208,7 +208,7 @@ public sealed class ModIoTransport
 
     private async Task<ModIoTransportResponse> SendJsonAsync(
         string relativePath,
-        IReadOnlyList<(string Key, string Value)> query,
+        (string Key, string Value)[] query,
         bool requireDataArray,
         CancellationToken ct)
     {
