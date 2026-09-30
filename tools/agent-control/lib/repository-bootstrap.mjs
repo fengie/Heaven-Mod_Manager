@@ -9,7 +9,10 @@ export const BOOTSTRAP_TTL_MS = 120_000;
 export const MAX_BOOTSTRAP_BYTES = 32_768;
 export const MAX_CORE_BYTES = 65_536;
 const MAX_SOURCE_BYTES = 2 * 1024 * 1024;
-const MAX_CONTEXT_BYTES = 8_192;
+export const MAX_CONTEXT_BYTES = 8_192;
+export const MAX_CONTEXT_RESULTS = 50;
+const MAX_CONTEXT_QUERY_BYTES = 256;
+const MAX_CONTEXT_MATCH_BYTES = 512;
 const MANAGER_PATH = "_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt";
 const DOCUMENTS = new Set([...REQUIRED_REPOSITORY_TRAINING_PATHS, ...REPOSITORY_CONTEXT_INDEX_PATHS, MANAGER_PATH]);
 const sha256 = value => createHash("sha256").update(value).digest("hex");
@@ -92,7 +95,7 @@ export async function buildRepositoryBootstrap({ root, role = "support", leases 
     current: { version: bounded(revision.currentVersion), status: bounded(revision.status), nextAction: bounded(revision.nextMilestone, 1_024), verificationSource: bounded(revision.verificationAppliesToCommit), verificationScope: bounded(revision.verificationScopeNote, 1_024) },
     ownership: compactOwnership(leases),
     manifests,
-    contextRetrieval: { command: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --line 1", maxBytes: MAX_CONTEXT_BYTES, hashRequired: true },
+    contextRetrieval: { command: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --line 1", searchCommand: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --search TEXT [--results N]", headingCommand: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --heading TEXT [--results N]", maxBytes: MAX_CONTEXT_BYTES, maxResults: MAX_CONTEXT_RESULTS, hashRequired: true },
     obligations: ["Read core files in full; expand task-relevant indexed policies, precedents and source.", "Remote refs and leases can change: refresh canonical truth before mutation/integration; expand truncated ownership.", "This bounded packet is evidence, not permission, task completion or inherited verification."]
   };
   if (Buffer.byteLength(JSON.stringify(packet)) > MAX_BOOTSTRAP_BYTES) throw new Error("Bootstrap packet exceeded its bounded output contract.");
@@ -118,14 +121,18 @@ export function verifyRepositoryBootstrap(packet, { root, head, now = Date.now()
   return true;
 }
 
-export function readRepositoryContext({ root, document, expectedSha256, startLine = 1, maxLines = 120, maxBytes = MAX_CONTEXT_BYTES }) {
+function verifiedContextLines({ root, document, expectedSha256 }) {
   if (!/^[a-f0-9]{64}$/.test(String(expectedSha256 || ""))) throw new Error("Context retrieval requires the indexed source SHA-256.");
+  const bytes = documentBytes(root, document);
+  if (sha256(bytes) !== expectedSha256) throw new Error("Indexed context hash changed; refresh bootstrap before reading.");
+  return bytes.toString("utf8").split(/\r?\n/);
+}
+
+export function readRepositoryContext({ root, document, expectedSha256, startLine = 1, maxLines = 120, maxBytes = MAX_CONTEXT_BYTES }) {
   for (const [value, maximum] of [[startLine, 1_000_000], [maxLines, 500], [maxBytes, MAX_CONTEXT_BYTES]]) {
     if (!Number.isSafeInteger(value) || value < 1 || value > maximum) throw new Error("Context pagination bounds are invalid.");
   }
-  const bytes = documentBytes(root, document);
-  if (sha256(bytes) !== expectedSha256) throw new Error("Indexed context hash changed; refresh bootstrap before reading.");
-  const lines = bytes.toString("utf8").split(/\r?\n/);
+  const lines = verifiedContextLines({ root, document, expectedSha256 });
   if (startLine > lines.length) throw new Error("Context start line is beyond the document.");
   const selected = [];
   let length = 0;
@@ -137,4 +144,39 @@ export function readRepositoryContext({ root, document, expectedSha256, startLin
   if (!selected.length) throw new Error("A context line exceeds the byte bound; use a direct local read with an authorized tool.");
   const nextLine = startLine + selected.length;
   return { document, sha256: expectedSha256, startLine, endLine: nextLine - 1, totalLines: lines.length, nextLine: nextLine <= lines.length ? nextLine : null, text: selected.join("\n") };
+}
+
+export function findRepositoryContext({ root, document, expectedSha256, query, mode = "search", maxResults = 20, maxBytes = MAX_CONTEXT_BYTES }) {
+  const normalizedQuery = String(query ?? "").trim();
+  if (!normalizedQuery || /[\r\n\u0000]/.test(normalizedQuery) || Buffer.byteLength(normalizedQuery) > MAX_CONTEXT_QUERY_BYTES) {
+    throw new Error("Context navigation query must be one non-empty bounded line.");
+  }
+  if (!["search", "heading"].includes(mode)) throw new Error("Context navigation mode must be search or heading.");
+  if (!Number.isSafeInteger(maxResults) || maxResults < 1 || maxResults > MAX_CONTEXT_RESULTS) throw new Error("Context navigation result bound is invalid.");
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 512 || maxBytes > MAX_CONTEXT_BYTES) throw new Error("Context navigation byte bound is invalid.");
+
+  const lines = verifiedContextLines({ root, document, expectedSha256 });
+  const needle = normalizedQuery.toLowerCase();
+  const matches = [];
+  let totalMatches = 0;
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    const heading = mode === "heading" ? /^(#{1,6})\s+(.+?)\s*$/.exec(line) : null;
+    const haystack = mode === "heading" ? heading?.[2] : line;
+    if (haystack == null || !haystack.toLowerCase().includes(needle)) continue;
+    totalMatches++;
+    if (matches.length >= maxResults) continue;
+    const match = { line: index + 1, text: bounded(line, MAX_CONTEXT_MATCH_BYTES) };
+    if (heading) match.level = heading[1].length;
+    matches.push(match);
+  }
+
+  const result = { document, sha256: expectedSha256, mode, query: normalizedQuery, totalLines: lines.length, totalMatches, truncated: totalMatches > matches.length, matches };
+  while (matches.length && Buffer.byteLength(JSON.stringify(result)) > maxBytes) {
+    matches.pop();
+    result.truncated = true;
+  }
+  if (Buffer.byteLength(JSON.stringify(result)) > maxBytes) throw new Error("Context navigation metadata exceeds the byte bound.");
+  return result;
 }
