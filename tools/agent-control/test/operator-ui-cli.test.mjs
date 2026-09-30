@@ -55,7 +55,7 @@ test("federation snapshot separates live lifecycle and freshness counts", () => 
 
 test("dashboard makes Start Swarm the only normal startup action and hides tuning behind diagnostics", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
-  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  const ids = [...html.matchAll(/(?:^|\\s)id="([^"]+)"/gm)].map(match => match[1]);
 
   assert.equal(new Set(ids).size, ids.length, "dashboard DOM ids must remain unique");
   for (const id of [
