@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.38 dependency blocker compile repair — CURRENT CANDIDATE
+
+1. Run the exact-head repository verification/build gate and confirm `MhwModManager.App` compiles past `MainWindowViewModel.cs:519`.
+2. Confirm Automation, Integration, and SelfTest binaries are produced instead of failing downstream because the application build aborted.
+3. Preserve the existing dependency blocker UX: first three missing dependencies per mod, first three blocker mods, then a remainder count.
+4. Merge to current `main` only after exact-head verification; then return to live heaven2 acceptance for #475/#461 and remaining open issues.
+5. Improvement path: add a focused view-model formatting regression if this summary logic becomes independently testable without pulling the full WPF surface into unit tests.
+
+---
+
 # 2026-09-30 v8.8.37 registry lifecycle — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
