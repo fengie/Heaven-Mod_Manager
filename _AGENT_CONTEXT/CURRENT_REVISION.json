@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.31",
+  "currentVersion": "8.8.32",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify and integrate v8.8.31 durable remote retirement proof, then continue #475/#477/#461 Agent Manager P0 runtime closure",
+  "nextMilestone": "verify v8.8.32 retirement identity fail-closed closure, then complete the lightweight /api/status health contract",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.30 Agent Control card accessibility closure",
-  "status": "v8.8.31-agent-control-retirement-safety",
+  "immediateParentRevision": "v8.8.31 Agent Control durable retirement safety",
+  "status": "v8.8.32-agent-control-retirement-identity-safety",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.31 changes retry-exhausted Heaven remote-job terminal proof, retired-source heartbeat monotonicity, and Agent Control v0.6.9 identity. Historical v8.8.30 accessibility evidence does not verify these bytes. Exact-head Agent Control check/test and Security gate are required for source integration; live heaven2/heaven1 retirement/replay smoke remains required for runtime closure.",
+  "verificationScopeNote": "v8.8.32 closes the remaining v8.8.31 fail-open identity gap: canonical provider fallback now governs retirement and Heaven rows without a durable remote job ID are blocked/preserved. Exact-head Agent Control, Security, and handoff gates verify source integration; live heaven2?heaven1 smoke remains runtime evidence.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.32 Agent Control retirement identity closure: canonical provider fallback applies before retirement, Heaven rows with missing durable remoteJobId fail closed and remain retry-blocked, migrated tombstones preserve retiredAt, and Agent Control/plugin identity advances to v0.6.10.",
     "2026-09-30 v8.8.31 Agent Control durable retirement safety: require explicit processed-terminal Heaven job proof before retry-exhausted registry deletion and a raw heartbeat strictly newer than retiredAt before federated tombstone reactivation; preserve v8.8.30 card accessibility; Agent Control/plugin identity v0.6.9.",
     "2026-09-30 v8.8.30 Agent Control card accessibility closure: preserve card inspection while removing whole-card button semantics, keep nested controls independent, add executable interaction regressions, and advance Agent Control/plugin identity to v0.6.8.",
     "2026-09-30 v8.8.29 verification governance repair: scope AGENTS visible-progress validation to its dedicated section so deleting the rule cannot pass via unrelated README/patch mentions; preserve v8.8.28 Agent Control behavior unchanged.",
@@ -157,7 +158,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test and Security gate for v8.8.31, integrate only if green, then separately complete live heaven2→heaven1 queued/unknown fail-closed, explicit-terminal retirement, running-race re-cancellation, and retired-heartbeat monotonicity smoke.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test, handoff preflight/negative fixtures, and configured PR gates. Then complete the lightweight /api/status health contract as the next patch; live heaven2?heaven1 retirement smoke remains required runtime evidence.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

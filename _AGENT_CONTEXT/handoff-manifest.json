@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.31",
+  "currentVersion": "8.8.32",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.30 Agent Control card accessibility closure",
+  "immediateParentRevision": "v8.8.31 Agent Control durable retirement safety",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Verify exact v8.8.31 Agent Control retirement-safety source with npm check/test and Security gate; preserve v8.8.30 accessibility; then complete live heaven2→heaven1 queued/unknown fail-closed, explicit-terminal retirement, running re-cancellation, and retired-heartbeat monotonicity smoke. Keep #477 lightweight health as a separate implementation lane rather than merging its standalone red test seed.",
+  "nextAgentObligation": "Preserve the v8.8.32 fail-closed retirement identity boundary; verify exact-head source gates and obtain live heaven2?heaven1 runtime smoke when available. Then finish the lightweight /api/status health contract as the next meaningful patch and leave durable successor notes.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

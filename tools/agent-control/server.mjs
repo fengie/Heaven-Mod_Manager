@@ -2056,11 +2056,15 @@ function markRegistryRetirementBlocked(state, source, reason) {
 }
 
 async function proveRetryExhaustedRemoteJobStopped(source) {
-  if (source?.executionProvider !== "heaven-bridge" || !source?.remoteJobId) {
+  const provider = managedAgentProvider(source);
+  if (provider !== "heaven-bridge") {
     return { required: false, stopped: true, state: null };
   }
 
-  const remoteJobId = String(source.remoteJobId);
+  const remoteJobId = String(source?.remoteJobId || "").trim();
+  if (!remoteJobId) {
+    throw new Error("Heaven Bridge retirement requires a durable remote job id.");
+  }
   return proveRemoteJobStopped({
     remoteJobId,
     cancelJob: async jobId => {

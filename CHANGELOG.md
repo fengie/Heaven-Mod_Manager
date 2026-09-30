@@ -1,3 +1,11 @@
+# v8.8.32 ? Agent Control retirement identity fail-closed closure
+- Resolve persisted worker ownership through the canonical executionProvider/runtimeProvider/provider fallback before remote retirement.
+- Block and preserve Heaven-backed retry-exhausted rows whose durable remoteJobId is missing or blank instead of treating proof as unnecessary.
+- Add a real-server regression proving missing-ID/provider-fallback retirement becomes retry-blocked before any registry deletion or tombstone creation.
+- Add migration coverage that preserves existing retired-source tombstones and retiredAt monotonic comparison boundaries.
+- Preserve v8.8.31 processed-terminal proof, running-race re-cancel, and raw-heartbeat reactivation semantics.
+- Advance Agent Control runtime/root/nested plugin identity to v0.6.10.
+
 # v8.8.31 — Agent Control durable retirement safety
 - Require explicit processed-terminal Heaven Bridge job proof before retry-exhausted live-registry deletion.
 - Fail closed for queued/unclaimed, `not_running`, `unknown`, cancellation/status authority failure, and unrecognized remote job states.
