@@ -8,6 +8,7 @@ import {
   noWorkTerminationDecision,
   planSwarmTailRecoveryBatch,
   recoveryBackoffMs,
+  recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
   terminationReconciliationDecision
 } from "../lib/no-work-recovery.mjs";
@@ -199,6 +200,69 @@ test("mid-swarm recovery treats orphaned lanes as unfinished", () => {
   });
   assert.equal(batch.length, 1);
   assert.equal(batch[0].rootId, "orphaned");
+});
+
+test("mid-swarm recovery treats stale-progress lanes as unfinished", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{ id: "stale-support", status: "stale", taskId: "t-stale", task: "resume me" }],
+    tasks: [{ id: "t-stale", status: "stale", objective: "resume me" }]
+  });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "stale-support");
+});
+
+test("recovery planner can exclude the phase-owned stale worker to prevent duplicate recovery", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [
+      { id: "phase-main", status: "stale", taskId: "t-main", task: "phase owned" },
+      { id: "support-stale", status: "stale", taskId: "t-support", task: "support owned" }
+    ],
+    tasks: [
+      { id: "t-main", status: "stale", objective: "phase owned" },
+      { id: "t-support", status: "stale", objective: "support owned" }
+    ]
+  }, { excludeAgentIds: ["phase-main"] });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "support-stale");
+});
+
+test("recovery planner respects retry cooldown and dispatch-failure budget", () => {
+  const base = {
+    agents: [{
+      id: "stale-root",
+      status: "interrupted",
+      taskId: "t-stale",
+      task: "resume me",
+      swarmTailRecoveryCause: "stale-progress-timeout",
+      stopRequestedAt: "2026-09-29T20:00:00.000Z",
+      swarmTailRecoveryDispatchFailures: 1,
+      swarmTailRecoveryNextAt: "2026-09-29T20:02:00.000Z"
+    }],
+    tasks: [{ id: "t-stale", status: "retry-pending", objective: "resume me" }]
+  };
+  assert.deepEqual(planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:01:00.000Z")
+  }), []);
+  const retry = planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:03:00.000Z")
+  });
+  assert.equal(retry.length, 1);
+  assert.equal(retry[0].attempt, 2);
+
+  base.agents[0].swarmTailRecoveryDispatchFailures = 2;
+  assert.deepEqual(planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:03:00.000Z")
+  }), []);
+});
+
+test("jittered recovery backoff remains bounded and spreads retries", () => {
+  const low = recoveryBackoffWithJitterMs(3, { baseMs: 1000, maxMs: 8000, jitterUnit: 0 });
+  const high = recoveryBackoffWithJitterMs(3, { baseMs: 1000, maxMs: 8000, jitterUnit: 1 });
+  assert.equal(low, 2000);
+  assert.equal(high, 4000);
 });
 
 test("recovery pool subtracts already-running recovery workers from its worker budget", () => {
