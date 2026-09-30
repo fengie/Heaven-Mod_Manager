@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.23</Version>
-    <InformationalVersion>8.8.23-agent-manager-one-click-resume</InformationalVersion>
+    <Version>8.8.24</Version>
+    <InformationalVersion>8.8.24-agent-manager-operator-actions</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

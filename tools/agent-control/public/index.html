@@ -235,6 +235,15 @@
           <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
         </div>
 
+        <section class="card section" id="managerRecommendationsSection">
+          <div class="section-title">
+            <h2>Manager recommendations</h2>
+            <span class="pill" id="recommendationSummary">loading</span>
+          </div>
+          <div class="tiny">Agent Control ranks recovery, review, capacity, and dispatch decisions from current controller state. Actions appear only when the server contract says they are applicable.</div>
+          <div class="branch-list" id="recommendations"></div>
+        </section>
+
         <details class="card diagnostics">
           <summary>Advanced / diagnostics</summary>
           <div class="diagnostics-body">
@@ -370,7 +379,7 @@
           <div id="workers"></div>
         </section>
 
-        <section class="card section">
+        <section class="card section" id="managedAgentsSection">
           <div class="section-title">
             <h2>Managed agents</h2>
             <span class="pill" id="agentSummary">0</span>
@@ -486,6 +495,44 @@
       return labels[status] || status || "";
     }
 
+    function recommendationActionButton(item, index) {
+      const action = item?.action;
+      if (!action) return "";
+      if (action.type === "resume-dispatch") {
+        return `<button class="good recommendation-action" onclick="runRecommendation(${index})">Clear stop + resume</button>`;
+      }
+      if (action.type === "workflow" && action.workflowId) {
+        const label = action.workflowId === "review" ? "Run review" : (action.workflowId === "usual-swarm" ? "Start swarm" : `Run ${action.workflowId}`);
+        return `<button class="good recommendation-action" onclick="runRecommendation(${index})">${escapeHtml(label)}</button>`;
+      }
+      if (action.type === "inspect-workers") {
+        return `<button class="recommendation-action" onclick="focusManagedAgents()">Inspect workers</button>`;
+      }
+      return "";
+    }
+
+    function renderRecommendations(snapshot) {
+      const items = snapshot.suggestedActions || [];
+      const actionable = items.filter(item => item?.action).length;
+      $("recommendationSummary").textContent = `${items.length} recommendation${items.length === 1 ? "" : "s"} · ${actionable} actionable`;
+      if (!items.length) {
+        $("recommendations").innerHTML = '<div class="empty">No manager recommendation is currently required.</div>';
+        return;
+      }
+      $("recommendations").innerHTML = items.slice(0,8).map((item, index) => `
+        <div class="branch-item">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot ${item.kind === "safety" || item.kind === "runtime" ? "failed" : (item.kind === "recovery" ? "stopping" : "running")}"></span>${escapeHtml(item.title || "Manager recommendation")}</div>
+              <div class="meta">${escapeHtml(item.kind || "status")} · priority ${escapeHtml(item.priority ?? "—")}</div>
+            </div>
+            <div class="actions">${recommendationActionButton(item, index)}</div>
+          </div>
+          <div class="task">${escapeHtml(item.reason || "")}</div>
+        </div>
+      `).join("");
+    }
+
     function renderWorkers(snapshot) {
       const workers = snapshot.workers || [];
       const selectedMachine = $("machine").value || "auto";
@@ -543,7 +590,7 @@
           ${a.recoveryStatus ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(recoveryLabel(a.recoveryStatus))}${a.replacementAgentId ? ` → ${escapeHtml(a.replacementAgentId)}` : ""}${a.recoveryNextAt ? ` · next ${fmt(a.recoveryNextAt)}` : ""}</div>` : ""}
           <div class="actions">
             <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${stoppableManagedStatuses.has(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
+            ${stoppableManagedStatuses.has(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : (a.status === "done" ? `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>` : "")}
             <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
           </div>
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
@@ -675,6 +722,7 @@
       $("controlSummary").textContent = level;
       $("controlState").textContent = flags.join(" · ") + " · server-side authorization remains authoritative";
       $("controlReadOnly").textContent = settings.readOnly ? "Disable read-only" : "Enable read-only";
+      $("controlResume").textContent = settings.emergencyStop ? "Clear emergency stop + resume" : "Resume";
       if (document.activeElement !== $("routingManifest")) {
         $("routingManifest").value = settings.routingManifest ? JSON.stringify(settings.routingManifest, null, 2) : "";
       }
@@ -725,6 +773,7 @@
       if (autopilot.enabled || autopilot.objective) $("autopilotPerpetual").checked = Boolean(autopilot.perpetual);
 
       renderControl(snapshot);
+      renderRecommendations(snapshot);
       renderWorkers(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
@@ -785,7 +834,10 @@
         if (!endpoint) throw new Error("Unsupported control action.");
         let body = { reason: "ui-" + action };
         if (action === "read-only") body.enabled = !settings.readOnly;
-        if (action === "resume") body.clearEmergencyStop = false;
+        if (action === "resume") {
+          body.clearEmergencyStop = Boolean(settings.emergencyStop);
+          if (body.clearEmergencyStop && !window.confirm("Clear the emergency stop and resume Agent Control dispatch?")) return;
+        }
         if (action === "emergency-stop" && !window.confirm("Emergency stop all controller-owned active workers?")) return;
         await api(endpoint, { method:"POST", body:JSON.stringify(body) });
         toast("Control action applied: " + action + ".");
@@ -827,7 +879,61 @@
     }
 
     function setDeployControlsDisabled(disabled) {
-      document.querySelectorAll(".deploy, #startSwarm").forEach(button => button.disabled = disabled);
+      document.querySelectorAll(".deploy, #startSwarm, .recommendation-action").forEach(button => button.disabled = disabled);
+    }
+
+    function focusManagedAgents() {
+      $("managedAgentsSection")?.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    async function runRecommendation(index) {
+      const item = state.snapshot?.suggestedActions?.[index];
+      const action = item?.action;
+      if (!action || state.busy) return;
+
+      if (action.type === "resume-dispatch") {
+        const settings = state.snapshot?.settings || {};
+        const clearEmergencyStop = Boolean(settings.emergencyStop);
+        if (clearEmergencyStop && !window.confirm("Clear the emergency stop and resume Agent Control dispatch?")) return;
+        try {
+          await api("/api/control/resume", {
+            method:"POST",
+            body:JSON.stringify({ clearEmergencyStop, reason:"ui-manager-recommendation-resume" })
+          });
+          toast(clearEmergencyStop ? "Emergency stop cleared; dispatch resumed." : "Dispatch resumed.");
+          await refresh();
+        } catch (error) { toast(error.message); }
+        return;
+      }
+
+      if (action.type === "workflow" && action.workflowId === "usual-swarm") {
+        return startSwarm(state.snapshot?.currentMission || "");
+      }
+
+      if (action.type === "workflow" && action.workflowId) {
+        state.busy = true;
+        setDeployControlsDisabled(true);
+        try {
+          await api(`/api/workflows/${encodeURIComponent(action.workflowId)}/execute`, {
+            method:"POST",
+            body:JSON.stringify({
+              objective:state.snapshot?.currentMission || $("task").value.trim() || defaultSwarmObjective,
+              baseBranch:$("baseBranch").value.trim() || "main",
+              machine:$("machine").value || "auto",
+              repositoryWriteAuthorized:true
+            })
+          });
+          toast(`Manager recommendation started: ${action.workflowId}.`);
+          await refresh();
+        } catch (error) { toast(error.message); }
+        finally {
+          state.busy = false;
+          setDeployControlsDisabled(false);
+        }
+        return;
+      }
+
+      if (action.type === "inspect-workers") focusManagedAgents();
     }
 
     async function startSwarm(objectiveOverride="") {

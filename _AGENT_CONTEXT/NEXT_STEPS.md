@@ -1,3 +1,12 @@
+# 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
+
+1. Run `npm run check` and `npm test` from `tools/agent-control` on the exact v8.8.24 candidate.
+2. On heaven2, smoke recommendation rendering/actions, done-only reviewer affordance, and emergency-stop-aware Resume behavior.
+3. Continue the active Agent Manager P0 completion gates from `main`; do not reopen retired task branches.
+4. Preserve exact-SHA verification discipline and keep dashboard operator actions consistent with authoritative server state.
+
+---
+
 # 2026-09-30 v8.8.23 Agent Manager P0 — CURRENT CRITICAL PATH
 
 1. Treat Agent Manager / Agent Control functionality as **P0** while `agentManagerPriority.status` is `active`.

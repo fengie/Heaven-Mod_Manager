@@ -14,7 +14,10 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.2 does
+## What v0.6.3 does
+
+- Surfaces backend-ranked manager recommendations directly in the dashboard and turns supported recommendations into explicit recovery/review/swarm/inspection actions.
+- Restricts **Deploy reviewer** to completed managed agents and makes emergency-stop recovery an explicit confirmed Resume action.
 
 - Enforces the repository-driven **Agent Manager P0 functionality lock**: while `_AGENT_CONTEXT/CURRENT_REVISION.json` marks it active, implementation prompts and next-cycle planning stay on Agent Control reliability/orchestration/observability/recovery/routing/verification, and the expansion lane runs at priority 100 instead of selecting unrelated product work.
 - Keeps the runtime package and private ChatGPT plugin on the same v0.6.2 release identity; stable ChatGPT sessions register/heartbeat by default when the runtime exposes a real stable identity, while undiscoverable sessions remain explicitly partial coverage.
