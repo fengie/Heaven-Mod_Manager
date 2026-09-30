@@ -80,3 +80,8 @@ Use direct canonical-tree inspection, exact post-merge diffs, or an equivalent i
 
 ## Operator-control contract closure
 For control planes and administrative dashboards, verify the full action contract across layers. Server-generated recommendations must be visible or deliberately explained; UI buttons must be valid for the current authoritative lifecycle state; and recovery controls must prove the safety latch/state they claim to clear. Add regressions that fail when the UI exposes a server-rejected action, hides an actionable recommendation, or reports recovery while dispatch remains safety-blocked.
+
+
+## Live-registry retirement closure
+
+For agent/session managers, verify terminal cleanup as a separate lifecycle contract. A terminal status is not sufficient if the identity still appears in the live registry or exposes dead controls. After durable task/event/failure evidence is persisted, clean non-recoverable terminal identities should leave the live registry; useful dirty/committed/PR/artifact evidence must remain preserved. Regression coverage should include both legacy persisted debris and newly terminalized records, and should prove stale notification/action references are removed.
