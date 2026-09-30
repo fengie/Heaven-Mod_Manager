@@ -445,7 +445,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             .ToArray();
     }
 
-    private static string DescribeDependencyBlockers(IReadOnlyList<DependencyStatus> blockers)
+    private static string DescribeDependencyBlockers(DependencyStatus[] blockers)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var details = blockers.Take(3).Select(x =>
