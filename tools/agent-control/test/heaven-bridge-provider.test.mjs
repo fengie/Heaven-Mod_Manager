@@ -66,6 +66,12 @@ test("bridge execution uses the documented relay fallback when the env-specific 
     homeDir,
     existsSync: () => false
   }), explicit);
+
+  assert.equal(resolveExecutionRelayDir("", {
+    configuredPath: "",
+    homeDir,
+    existsSync: () => false
+  }), "");
 });
 
 test("bridge jobs normalize ids and preserve bounded execution metadata", () => {
