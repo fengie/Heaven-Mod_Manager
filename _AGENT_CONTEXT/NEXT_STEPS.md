@@ -1,3 +1,22 @@
+# 2026-09-30 v8.8.50 catalog browser candidate
+
+Current owner: `feat/catalog-browser-v8.8.50-20260930`. Base at assignment start: `be4615f61b91e7fbefc82e0520513cf17a6c3f6f` (v8.8.49). The user explicitly authorized continuing the mod scraper/catalog feature and integrating it to main, superseding the older maintenance-only feature freeze for this task.
+
+Implemented: desktop composition of CatalogRepository/CatalogSyncService; public MHW Nexus v3 + GameBanana provider set; Browse tab with cached FTS search, source filter, sort, detail pane, freshness/provenance cues and HTTPS source-page launch; stale-cache preservation and partial-provider isolation regressions. Browse uses no file hydration, credential bypass, HTML scraping, or direct live-game writes.
+
+Next actions:
+1. Require exact-head Workflow Feature, Security and applicable WPF/build checks for the candidate.
+2. Refresh canonical main immediately before integration; if main advanced, reconcile on the temporary branch and rerun affected exact-head checks.
+3. Merge/push main, verify remote main ancestry/state, then delete the temporary branch when no unique work remains.
+4. Record live operator acceptance for Browse refresh/search/filter/detail interactions when an authorized Windows execution path is available.
+5. Future acquisition work must resolve provider-authorized Direct/AuthenticatedDirect/Assisted results into the existing safe archive/import pipeline; never let catalog code write directly to the live game directory.
+
+Improvement opportunities: add thumbnails only through the existing bounded/trusted preview network boundary rather than raw WPF remote image loads; add credentials through an existing secure user-secret boundary before enabling Nexus file hydration; broaden provider composition only when source configuration/compliance is explicit. Preserve recursive continuity.
+
+PLUGIN-PREFLIGHT: task and live repository rules were reread. This runtime exposes the authenticated GitHub connector for repository/PR/CI work but no Heaven Local Bridge or local-machine execution connector. Existing catalog source/storage/app layers are the natural owners; no duplicate scraper/plugin was created. GitHub connector plus repository CI is the authorized execution/verification path; no credential, quota, provider-policy, Work-mode, or anti-bot bypass is used.
+
+---
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
