@@ -62,6 +62,8 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 
 42. **Generated operator output and mirrored manifests need whole-output validation.** Template fragments are not the final artifact: never place raw serialized data inside an already quoted executable attribute/handler without an explicit encoding or DOM-binding boundary, and regression-check the emitted structure. Likewise, when one runtime is represented by multiple package/plugin manifests, enumerate every distributable manifest in a single release-identity invariant so stale nested metadata cannot ship.
 
+43. **Live registries are not historical failure archives.** A control-plane registry should contain current/actionable entities. Once a failed/dead/retry-exhausted worker has no live process or active recovery owner, retire it from live registry views while preserving task/event/failure/branch/worktree evidence in durable history. Pin the retention boundary with tests so retry-pending and incomplete-work cases are not garbage-collected early.
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
