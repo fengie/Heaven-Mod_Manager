@@ -502,7 +502,7 @@
 
     function statusClass(status) {
       if (["running","starting","working","tool_wait","idle","online"].includes(status)) return "running";
-      if (["failed","blocked","disconnected","unhealthy","not-connected"].includes(status)) return "failed";
+      if (["failed","blocked","disconnected","unhealthy","not-connected","auth-required"].includes(status)) return "failed";
       if (["stopping","stale","presence-unknown"].includes(status)) return "stopping";
       if (status === "candidate") return "candidate";
       return "";
