@@ -1,4 +1,10 @@
-# v8.8.37 Universal Mod Manager
+# v8.8.38 Universal Mod Manager
+
+## v8.8.38 — Agent live-registry projection closure
+
+Agent Manager now cleanly separates **current live presence**, **Needs Attention / recovery**, and **Registry history**. Managed completed/terminal records can remain durably persisted for workflow authorization and audit without appearing as live cards; unresolved ownership, recovery, dirty/divergent work, and cleanup blockers move to the dedicated attention surface instead of being hidden.
+
+Federated snapshots now expose only live records through the live registry array, while stale/disconnected/terminal history and unresolved recovery are projected separately and remain inspectable. This preserves the stronger v8.8.37 retirement/tombstone safety while closing the remaining #458 UI/count truthfulness gap. Agent Control advances to **v0.6.16**.
 
 ## v8.8.37 — Agent registry lifecycle closure
 
