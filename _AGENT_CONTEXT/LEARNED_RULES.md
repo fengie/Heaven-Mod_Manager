@@ -863,9 +863,9 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Superseded by:** none
 
 
-## LR-001 — transport configuration and terminal registry membership must close as one lifecycle contract
+## LR-050 — transport configuration and terminal registry membership must close as one lifecycle contract
 
-- **Rule ID:** LR-001
+- **Rule ID:** LR-050
 - **Status:** Active
 - **Date:** 2026-09-30
 - **Scope:** Agent Control providers, retry/recovery lifecycle, managed/federated registry
