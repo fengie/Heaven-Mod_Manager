@@ -122,6 +122,10 @@ test("context navigation is hash-checked, literal, line-addressable and bounded"
   assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", mode: "regex" }), /search or heading/);
   assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", maxResults: MAX_CONTEXT_RESULTS + 1 }), /result bound/);
   assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", maxBytes: 511 }), /byte bound/);
+  const coreDocument = REQUIRED_REPOSITORY_TRAINING_PATHS[0];
+  const coreSha256 = repositoryManifest(root).core[0].sha256;
+  assert.throws(() => readRepositoryContext({ root, document: coreDocument, expectedSha256: coreSha256 }), /not an indexed context document/);
+  assert.throws(() => findRepositoryContext({ root, document: coreDocument, expectedSha256: coreSha256, query: "policy" }), /not an indexed context document/);
   assert.equal(MAX_CONTEXT_BYTES, 8_192);
 });
 
