@@ -33,8 +33,10 @@ test("Agent Control injects the live P0 directive into implementation and expans
 test("Agent Control runtime, documentation, and private plugin use one release identity", () => {
   const runtime = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "agent-control", "package.json"), "utf8"));
   const plugin = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "agent-control", "chatgpt-plugin", "plugin.json"), "utf8"));
+  const codexPlugin = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "agent-control", "chatgpt-plugin", ".codex-plugin", "plugin.json"), "utf8"));
   const readme = fs.readFileSync(path.join(ROOT, "tools", "agent-control", "README.md"), "utf8");
   assert.equal(plugin.version, runtime.version);
+  assert.equal(codexPlugin.version, runtime.version, "nested Codex plugin manifest must match the Agent Control runtime version");
   assert.ok(readme.includes(`What v${runtime.version} does`), "Agent Control README must describe the live runtime version");
 });
 
