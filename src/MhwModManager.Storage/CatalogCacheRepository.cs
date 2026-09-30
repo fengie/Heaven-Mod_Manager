@@ -94,7 +94,7 @@ public sealed class CatalogCacheRepository(ManagerDatabase db)
             cmd.Parameters.AddWithValue("$summary", mod.Summary);
             cmd.Parameters.AddWithValue("$description", mod.Description);
             cmd.Parameters.AddWithValue("$category", (object?)mod.Category ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("$tags", string.Join(' ', mod.Tags));
+            cmd.Parameters.AddWithValue("$tags", string.Join(" ", mod.Tags));
             cmd.Parameters.AddWithValue("$url", mod.SourceUrl);
             cmd.Parameters.AddWithValue("$updated", Format(mod.UpdatedAt));
             cmd.Parameters.AddWithValue("$json", JsonSerializer.Serialize(mod, JsonOptions));
@@ -324,7 +324,7 @@ public sealed class CatalogCacheRepository(ManagerDatabase db)
     private static DateTimeOffset ParseRequired(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
     }
 
     private static DateTimeOffset? ParseNullable(SqliteDataReader reader, int ordinal)
