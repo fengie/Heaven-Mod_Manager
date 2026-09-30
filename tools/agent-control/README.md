@@ -14,6 +14,13 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
+## What v0.6.15 does
+
+- Makes the live managed/federated registry describe current presence rather than historical audit state.
+- Keeps stale, disconnected, failed, stopped, and completed records queryable in Registry history without inflating live registry totals.
+- Keeps unresolved retry/recovery, dirty-work, orphaned/interrupted, still-owned, and termination-proof cases visible in a dedicated **Needs Attention / recovery** surface.
+- Preserves retry-exhausted retirement tombstones and strictly-newer-heartbeat reactivation so stale provider replay cannot resurrect retired terminal sessions.
+
 ## What v0.6.14 does
 
 - Renders backend notifications and exposes buttons only for the supported `inspect-agent` / `inspect-federation` actions.
