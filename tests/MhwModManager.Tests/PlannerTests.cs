@@ -67,4 +67,23 @@ public sealed class PlannerTests
         Assert.Contains(plan.Changes,x=>x.ProviderAfter=="option");
     }
 
+
+    [Fact]
+    public void File_directory_collision_is_always_blocking()
+    {
+        var now=DateTimeOffset.UnixEpoch;
+        var mods=new[]{new ModDescriptor("file","File Provider","File Provider","file",true,10),new ModDescriptor("child","Child Provider","Child Provider","child",true,20)};
+        var files=new[]{
+            new ModFileDescriptor("file",@"nativePC\plugins\collision","aa",null,1,now,FileClass.Other),
+            new ModFileDescriptor("child",@"nativePC\plugins\collision\child.bin","bb",null,1,now,FileClass.GameData)
+        };
+        var snapshot=new PlannerSnapshot(mods,files,[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<string,DeploymentManifestEntry>(),new Dictionary<string,string?>());
+
+        var plan=new DeploymentPlanner(new ConflictEngine()).Build(snapshot);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts,x=>x.ReasonCode=="file-directory-collision");
+        Assert.Empty(plan.Changes);
+    }
+
 }
