@@ -22,6 +22,21 @@ public sealed class GameBananaCatalogProviderTests
     }
 
     [Fact]
+    public async Task Provider_exposes_Monster_Hunter_World_GameBanana_identity()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromResult(JsonResponse(HttpStatusCode.OK, "[]"))));
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+
+        var games = await provider.GetGamesAsync(TestContext.Current.CancellationToken);
+
+        var game = Assert.Single(games);
+        Assert.Equal("monster-hunter-world", game.Id);
+        Assert.Equal("Monster Hunter: World", game.DisplayName);
+        Assert.Equal("9081", game.ProviderGameId);
+    }
+
+    [Fact]
     public async Task Latest_browse_is_game_scoped_and_hydrates_details()
     {
         var listCalls = 0;
@@ -133,7 +148,7 @@ public sealed class GameBananaCatalogProviderTests
             TestContext.Current.CancellationToken);
 
         var file = Assert.Single(files);
-        Assert.Equal("6020", file.ProviderFileId);
+        Assert.Equal("1625805", file.ProviderFileId);
         Assert.Equal("653359", file.ProviderModId);
     }
 
