@@ -46,3 +46,20 @@ On the Heaven Windows startup gate (three cold-state and three warm-state runs, 
 Package size remained 62.6 MB.
 
 These numbers are evidence for the direction, not a substitute for exact-head verification. The final current-main replay must pass the startup comparison and exact release gate before integration.
+
+
+## Follow-up: right-size WPF preview decoding — 2026-09-30
+
+Microsoft's WPF `BitmapImage` guidance recommends setting `DecodePixelWidth` or `DecodePixelHeight` close to the rendered image size rather than decoding a large source image at full resolution. The documentation specifically notes that this can significantly reduce memory usage. This matters here because the app renders cached screenshots and thumbnails in fixed containers ranging from roughly 76 to 250 device-independent pixels while source artwork can be much larger.
+
+Implementation:
+- Preview bindings now pass bounded decode widths sized above their logical display widths to preserve DPI/headroom without decoding the full source resolution.
+- `SafeImageSourceConverter` clamps requested decode widths to 64–2048 pixels and applies `BitmapImage.DecodePixelWidth` before decode.
+- `BitmapCacheOption.OnLoad` and `BitmapCreateOptions.IgnoreImageCache` remain unchanged so files are fully loaded/unlocked and changed source images are not hidden behind WPF's URI cache.
+- No custom process-wide bitmap cache was added. The application-level caching literature cited above supports caching when workload evidence justifies it, but also highlights invalidation/configuration cost; an unbounded strong image cache would work against the lightweight-memory goal.
+
+Primary WPF references:
+- https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/how-to-use-a-bitmapimage
+- https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/how-to-use-the-image-element
+
+This change is deliberately treated as a preview-heavy UI memory/CPU optimization rather than a claimed startup-time win: preview work is already demand-loaded off the initial startup path. A regression guard verifies that every current preview binding supplies a bounded decode width.
