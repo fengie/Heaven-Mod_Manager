@@ -845,7 +845,8 @@ function shouldExposeManagedAgentInFederation(agent) {
     "retry-blocked",
     "stream-lost-checking-work",
     "work-detected-incomplete",
-    "provider-capacity"
+    "provider-capacity",
+    "registry-retirement-blocked"
   ]).has(String(agent.recoveryStatus || "").trim().toLowerCase());
 }
 
