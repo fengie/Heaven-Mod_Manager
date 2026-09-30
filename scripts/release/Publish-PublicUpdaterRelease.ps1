@@ -2,12 +2,15 @@ param(
   [string]$ManifestPath='',
   [string]$ArtifactPath='',
   [string]$SourceRepository=$env:GITHUB_REPOSITORY,
-  [string]$PublicRepository='fengie/mhw-mod-manager-release'
+  [string]$PublicRepository='fengie/mhw-mod-manager-release',
+  [string]$ExpectedSourceSha=$env:GITHUB_SHA,
+  [long]$ExpectedBuildNumber=0
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 
 $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot 'UpdaterReleasePolicy.ps1')
 if([string]::IsNullOrWhiteSpace($ManifestPath)){
   $ManifestPath=Join-Path $Root 'artifacts\update-manifest.json'
 }
@@ -25,8 +28,22 @@ if([string]$manifest.channel -ne 'main'){throw "Refusing to mirror updater chann
 if([long]$manifest.buildNumber -le 0){throw 'Updater manifest build number must be positive.'}
 if([string]$manifest.sourceSha -notmatch '^[0-9a-fA-F]{40}$'){throw 'Updater manifest source SHA must be a full 40-character Git SHA.'}
 
-$expectedBuild=[long]$manifest.buildNumber
-$expectedSource=([string]$manifest.sourceSha).ToLowerInvariant()
+if([string]::IsNullOrWhiteSpace($ExpectedSourceSha)){$ExpectedSourceSha=[string]$manifest.sourceSha}
+if($ExpectedBuildNumber -le 0){
+  $runNumber=$env:GITHUB_RUN_NUMBER
+  if(-not [string]::IsNullOrWhiteSpace($runNumber)){
+    [long]$parsed=0
+    if(-not [long]::TryParse($runNumber,[ref]$parsed)){throw "Invalid GITHUB_RUN_NUMBER: $runNumber"}
+    $ExpectedBuildNumber=$parsed
+  } else {
+    $ExpectedBuildNumber=[long]$manifest.buildNumber
+  }
+}
+if([string]$manifest.sourceSha -ne $ExpectedSourceSha){throw 'Public updater manifest source SHA does not match the exact workflow source.'}
+if([long]$manifest.buildNumber -ne $ExpectedBuildNumber){throw 'Public updater manifest build number does not match the exact workflow build.'}
+
+$expectedBuild=$ExpectedBuildNumber
+$expectedSource=$ExpectedSourceSha.ToLowerInvariant()
 $tag="updater-main-$expectedBuild"
 
 & (Join-Path $PSScriptRoot '..\testing\Test-UpdaterPackage.ps1') -ArtifactPath $artifact -ManifestPath $manifestFile -ExpectedSourceSha $expectedSource -ExpectedBuildNumber $expectedBuild
@@ -159,25 +176,43 @@ function Remove-PublicDraftAndTag {
   }catch{Write-Host "::warning::Failed to delete public updater tag during cleanup: $($_.Exception.Message)"}
 }
 
-$canonical=Get-ReleaseByTag -Repository $SourceRepository -Tag $tag -Headers $sourceHeaders
-if([bool]$canonical.draft -or [bool]$canonical.prerelease -or -not [bool]$canonical.immutable){
-  throw "Canonical private updater release $tag is not a published immutable release."
+# Publish the client-visible feed before the canonical/private release becomes visible.
+# Trust the exact verified package + workflow identity, and reject release-relevant main drift.
+$mainRef=Invoke-ReleaseApi -Method GET -Uri "https://api.github.com/repos/$SourceRepository/branches/main" -Headers $sourceHeaders
+$remoteMain=([string]$mainRef.commit.sha).ToLowerInvariant()
+if($remoteMain -notmatch '^[0-9a-f]{40}$'){throw 'Canonical main branch returned a malformed source SHA.'}
+if($remoteMain -ne $expectedSource){
+  $compare=Invoke-ReleaseApi -Method GET -Uri "https://api.github.com/repos/$SourceRepository/compare/$expectedSource...$remoteMain" -Headers $sourceHeaders
+  if([string]$compare.status -notin @('ahead','identical')){
+    throw "Updater source $expectedSource is not an ancestor of current main $remoteMain."
+  }
+  $changed=@($compare.files | ForEach-Object {[string]$_.filename})
+  if([long]$compare.total_commits -gt 0 -and $changed.Count -eq 0){
+    throw 'Canonical main drift could not be classified before public updater publication.'
+  }
+  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $expectedSource -RemoteMainSha $remoteMain -ChangedPaths $changed
+  if(-not $drift.Publish){
+    Write-Host "::notice::Skipping public updater publication: $($drift.Reason) (remote main $remoteMain)."
+    exit 0
+  }
 }
-if(([string]$canonical.target_commitish).ToLowerInvariant() -ne $expectedSource){
-  throw "Canonical private updater release $tag targets $($canonical.target_commitish) instead of $expectedSource."
-}
-Assert-ExactAssets -Release $canonical -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
 
 $publicRepo=Invoke-ReleaseApi -Method GET -Uri "https://api.github.com/repos/$PublicRepository" -Headers $publicHeaders
 if([bool]$publicRepo.private){throw "Public updater repository $PublicRepository is private; refusing to create a credential-dependent client feed."}
 
 $existing=Get-ReleaseByTag -Repository $PublicRepository -Tag $tag -Headers $publicHeaders -AllowNotFound
 if($null -ne $existing){
-  if([bool]$existing.draft -or [bool]$existing.prerelease){throw "Public updater release $tag exists but is not published stable."}
-  if(-not [bool]$existing.immutable){throw "Public updater release $tag exists but is not immutable."}
-  Assert-ExactAssets -Release $existing -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
-  Write-Host "PASS: public updater mirror $tag already exists with exact immutable assets." -ForegroundColor Green
-  exit 0
+  if([bool]$existing.draft -and -not [bool]$existing.prerelease -and -not [bool]$existing.immutable){
+    Write-Host "::notice::Recovering abandoned public updater draft $tag before retry."
+    Remove-PublicDraftAndTag -ReleaseId ([long]$existing.id) -Tag $tag
+    $existing=$null
+  } else {
+    if([bool]$existing.draft -or [bool]$existing.prerelease){throw "Public updater release $tag exists but is not published stable."}
+    if(-not [bool]$existing.immutable){throw "Public updater release $tag exists but is not immutable."}
+    Assert-ExactAssets -Release $existing -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+    Write-Host "PASS: public updater mirror $tag already exists with exact immutable assets." -ForegroundColor Green
+    exit 0
+  }
 }
 
 $notes=@(

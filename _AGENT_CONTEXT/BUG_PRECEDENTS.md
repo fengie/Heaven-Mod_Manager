@@ -341,3 +341,11 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Process-launcher review must verify the effective child environment, not merely the API shape used to add variables.
 - **Regression coverage added/strengthened:** Tests assert token/HMAC variables do not propagate and CI rejects reintroduction of full `os.environ.copy()`.
 - **Sibling/adjacent cases checked:** raw shell fallback, persistent sessions, Git helpers, taskkill, UIA, screenshot/display helpers, shortcut creation, process listing, and app launch.
+
+## 2026-09-30 — Never expose canonical updater release before the client feed
+
+- **Incident:** updater build 218 / v8.8.20 became visible in `fengie/mhw-mods` at 2026-09-30 01:29:19Z. Windows Release Gate run `36655045833` was then cancelled at 01:30:39Z by a newer `main` run while the public-feed mirror was still in progress. `fengie/mhw-mod-manager-release` was left with an abandoned draft `updater-main-218`, so installed clients still saw stable build 217 / v8.8.19 while the canonical GitHub repository already showed v8.8.20.
+- **Root cause:** a cross-repository release transaction used `cancel-in-progress: true` and published the private/canonical release before the public feed consumed by installed clients.
+- **Required prevention:** publish and verify the public client feed first, publish the canonical/private release second, disable in-progress cancellation for the release transaction, recover automation-owned abandoned public drafts on retry, and assert exact public/private asset parity after publication.
+- **Regression:** `scripts/testing/Test-UpdaterReleasePolicy.ps1` must fail if public-first ordering, non-cancellable concurrency, exact workflow identity pinning, abandoned-draft recovery, or final parity verification is removed.
+- **User-facing invariant:** once a new canonical GitHub updater release is visible, every unauthenticated installed client must already be able to discover that exact build from the public feed.

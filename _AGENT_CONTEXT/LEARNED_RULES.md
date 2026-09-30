@@ -635,3 +635,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-023 collision-safe rule IDs; LR-035 integration-ready ownership.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+
+- Treat multi-repository updater publication as one logical transaction.
+- Never make a secondary/canonical human-facing release visible before the distribution surface that production clients actually poll is published and verified.
+- Do not use blanket in-progress cancellation around a multi-surface publication transaction unless cancellation has explicit compensating semantics.
+- Retry paths must recover automation-owned abandoned drafts instead of turning an interrupted publication into a permanent blocker.
+- Release completion requires automated parity checks for build identity, exact asset names, sizes, and server digests across every updater surface.
