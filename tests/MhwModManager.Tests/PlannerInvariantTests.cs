@@ -7,7 +7,7 @@ namespace MhwModManager.Tests;
 public sealed class PlannerInvariantTests
 {
     [Fact]
-    public void Randomized_texture_graphs_are_deterministic_and_have_one_winner_per_path()
+    public void Randomized_ambiguous_family_texture_graphs_are_deterministic_and_never_guess_winners()
     {
         var random = new Random(0x51A7);
         var planner = new DeploymentPlanner(new ConflictEngine());
@@ -17,7 +17,11 @@ public sealed class PlannerInvariantTests
             var modCount = random.Next(2, 24);
             var pathCount = random.Next(4, 80);
             var mods = Enumerable.Range(0, modCount)
-                .Select(i => new ModDescriptor($"m{i}", $"Fixture Texture {i}", $"Fixture Texture {i}", $"M{i}", true, i, FamilyId: "fixture-shared-texture"))
+                .Select(i =>
+                {
+                    var label = ((char)('A' + i)).ToString();
+                    return new ModDescriptor($"m{i}", $"Fixture Texture {label}", $"Fixture Texture {label}", $"M{i}", true, i, FamilyId: "fixture-shared-texture");
+                })
                 .ToArray();
             var files = new List<ModFileDescriptor>();
             var now = DateTimeOffset.UnixEpoch;
@@ -39,19 +43,23 @@ public sealed class PlannerInvariantTests
             var a = planner.Build(snapshot);
             var b = planner.Build(snapshot);
 
-            Assert.False(a.IsBlocked);
+            var collisions = files.GroupBy(x => x.Path, StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Select(x => x.ModId).Distinct(PathRules.Comparer).Count() > 1)
+                .ToArray();
+            Assert.NotEmpty(collisions);
+            Assert.True(a.IsBlocked);
             Assert.Equal(
-                a.Conflicts.Select(x => (x.Path,x.Kind,x.WinnerModId,x.ReasonCode)),
-                b.Conflicts.Select(x => (x.Path,x.Kind,x.WinnerModId,x.ReasonCode)));
-            Assert.Equal(
-                a.Changes.Select(x => (x.Path,x.AfterBlobSha256,x.ProviderAfter,x.Kind)),
-                b.Changes.Select(x => (x.Path,x.AfterBlobSha256,x.ProviderAfter,x.Kind)));
+                a.Conflicts.Select(x => (x.Path,x.Kind,x.WinnerModId,x.ReasonCode,x.Blocking)),
+                b.Conflicts.Select(x => (x.Path,x.Kind,x.WinnerModId,x.ReasonCode,x.Blocking)));
+            Assert.Empty(a.Changes);
+            Assert.Empty(b.Changes);
 
-            foreach (var group in files.GroupBy(x => x.Path, StringComparer.OrdinalIgnoreCase))
+            foreach (var group in collisions)
             {
                 var decision = a.Conflicts.Single(x => PathRules.Comparer.Equals(x.Path, group.Key));
-                Assert.NotNull(decision.WinnerModId);
-                Assert.Contains(group, x => PathRules.Comparer.Equals(x.ModId, decision.WinnerModId));
+                Assert.True(decision.Blocking);
+                Assert.Null(decision.WinnerModId);
+                Assert.Equal("family-texture-choice", decision.ReasonCode);
             }
         }
     }
