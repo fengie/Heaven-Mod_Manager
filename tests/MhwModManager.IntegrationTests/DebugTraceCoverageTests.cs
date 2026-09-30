@@ -154,6 +154,27 @@ public sealed class DebugTraceCoverageTests
     }
 
     [Fact]
+    public void WpfInternalTracingIsDiagnosticOnly()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "WpfMasterTraceListener.cs"));
+        Assert.Contains("MasterDebugLog.DetailedDiagnosticsEnabled", text, StringComparison.Ordinal);
+        Assert.Contains("MHW_WPF_TRACE_DETAIL", text, StringComparison.Ordinal);
+        Assert.Contains("disabled in normal mode", text, StringComparison.Ordinal);
+        Assert.Contains("SourceLevels.All", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NormalApplicationLoggingDoesNotBuildDebugEvents()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Diagnostics", "AppLogging.cs"));
+        Assert.Contains("var detailed=MasterDebugLog.DetailedDiagnosticsEnabled;", text, StringComparison.Ordinal);
+        Assert.Contains("MinimumLevel.Is(detailed ? LogEventLevel.Debug : LogEventLevel.Information)", text, StringComparison.Ordinal);
+        Assert.Contains("detailed ? LogEventLevel.Debug : LogEventLevel.Information", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void MainWindowIsShownBeforeStartupAnalysisFinishes()
     {
         var root = FindRepositoryRoot();
