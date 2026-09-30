@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { execFileHidden as execFileAsync } from "./background-process.mjs";
@@ -28,23 +28,55 @@ function envFlag(value) {
   return ["1", "true", "yes", "on"].includes(clean(value).toLowerCase());
 }
 
-export function resolveBridgeSigningKey({
+function resolveBridgeKeySlot({
   env = process.env,
   homeDir = os.homedir(),
   existsSync = fs.existsSync,
-  readFileSync = fs.readFileSync
+  readFileSync = fs.readFileSync,
+  previous = false
 } = {}) {
-  const fromEnv = clean(env.AGENT_CONTROL_HEAVEN_HMAC_KEY || env.HEAVEN_BRIDGE_HMAC_KEY);
-  if (fromEnv) return fromEnv;
+  const inlineNames = previous
+    ? ["AGENT_CONTROL_HEAVEN_HMAC_PREVIOUS_KEY", "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY"]
+    : ["AGENT_CONTROL_HEAVEN_HMAC_KEY", "HEAVEN_BRIDGE_HMAC_KEY"];
+  for (const name of inlineNames) {
+    const value = clean(env[name]);
+    if (value) return value;
+  }
 
-  const configured = clean(env.AGENT_CONTROL_HEAVEN_HMAC_KEY_FILE || env.HEAVEN_BRIDGE_HMAC_KEY_FILE);
-  const file = configured || path.join(homeDir, "HeavenBridge", "auth", "hmac.key");
+  const fileNames = previous
+    ? ["AGENT_CONTROL_HEAVEN_HMAC_PREVIOUS_KEY_FILE", "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY_FILE"]
+    : ["AGENT_CONTROL_HEAVEN_HMAC_KEY_FILE", "HEAVEN_BRIDGE_HMAC_KEY_FILE"];
+  let configured = "";
+  for (const name of fileNames) {
+    configured = clean(env[name]);
+    if (configured) break;
+  }
+  const file = configured || path.join(
+    homeDir,
+    "HeavenBridge",
+    "auth",
+    previous ? "hmac.previous.key" : "hmac.key"
+  );
   try {
     if (!existsSync(file)) return "";
     return clean(readFileSync(file, "utf8"));
   } catch {
     return "";
   }
+}
+
+export function resolveBridgeSigningKey(options = {}) {
+  return resolveBridgeKeySlot({ ...options, previous: false });
+}
+
+export function resolveBridgePreviousSigningKey(options = {}) {
+  return resolveBridgeKeySlot({ ...options, previous: true });
+}
+
+export function bridgeKeyId(key) {
+  const secret = clean(key);
+  if (!secret) return "";
+  return createHash("sha256").update(Buffer.from(secret, "utf8")).digest("hex").slice(0, 16);
 }
 
 function canonicalUtf8(value) {
@@ -96,14 +128,21 @@ function requireStrongBridgeKey(key) {
 
 export function signBridgeJob(job, key) {
   const secret = requireStrongBridgeKey(key);
-  const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
-    .update(Buffer.from(canonicalBridgeJob(job), "utf8"))
-    .digest("hex");
-  return {
+  const body = {
     ...job,
     auth: {
       ...(job?.auth && typeof job.auth === "object" && !Array.isArray(job.auth) ? job.auth : {}),
       canonical: "mhw-bridge-canon-v1",
+      key_id: bridgeKeyId(secret)
+    }
+  };
+  const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
+    .update(Buffer.from(canonicalBridgeJob(body), "utf8"))
+    .digest("hex");
+  return {
+    ...body,
+    auth: {
+      ...body.auth,
       signature
     }
   };
@@ -270,13 +309,14 @@ function heartbeatAssessment(heartbeat, {
   maxAgeMs = DEFAULT_HEARTBEAT_MAX_AGE_MS,
   expectedHost = HEAVEN_BRIDGE_HOST,
   signingKey = resolveBridgeSigningKey(),
+  previousSigningKey = resolveBridgePreviousSigningKey(),
   allowUnsigned = envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)
 } = {}) {
   if (!heartbeat || typeof heartbeat !== "object") {
     return { healthy: false, reason: "heartbeat-malformed", heartbeat: null };
   }
   try {
-    verifyBridgeDocument(heartbeat, signingKey, { allowUnsigned });
+    verifyBridgeDocument(heartbeat, signingKey, { allowUnsigned, previousKey: previousSigningKey });
   } catch (error) {
     return {
       healthy: false,
@@ -506,14 +546,19 @@ export function buildBridgeJob({
   };
 }
 
-export function verifyBridgeDocument(document, key, { allowUnsigned = false } = {}) {
+export function verifyBridgeDocument(document, key, {
+  allowUnsigned = false,
+  previousKey = resolveBridgePreviousSigningKey()
+} = {}) {
   if (!document || typeof document !== "object") throw new Error("Bridge document is missing or malformed.");
-  const secret = clean(key);
-  if (!secret) {
+  const current = clean(key);
+  const previous = clean(previousKey);
+  if (!current) {
     if (allowUnsigned) return document;
     throw new Error("Heaven Bridge HMAC key is not configured for relay-document verification.");
   }
-  requireStrongBridgeKey(secret);
+  requireStrongBridgeKey(current);
+  if (previous) requireStrongBridgeKey(previous);
   const auth = document.auth && typeof document.auth === "object" && !Array.isArray(document.auth)
     ? document.auth
     : {};
@@ -525,15 +570,30 @@ export function verifyBridgeDocument(document, key, { allowUnsigned = false } = 
   if (!/^[0-9a-f]{64}$/.test(actualHex)) {
     throw new Error("Bridge document HMAC signature is missing or malformed.");
   }
-  const expectedHex = createHmac("sha256", Buffer.from(secret, "utf8"))
-    .update(Buffer.from(canonicalBridgeJob(document), "utf8"))
-    .digest("hex");
-  const actual = Buffer.from(actualHex, "hex");
-  const expected = Buffer.from(expectedHex, "hex");
-  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
-    throw new Error("Bridge document HMAC signature verification failed.");
+
+  const requestedKeyId = clean(auth.key_id).toLowerCase();
+  const candidates = [{ slot: "current", key: current, keyId: bridgeKeyId(current) }];
+  if (previous && previous !== current) {
+    candidates.push({ slot: "previous", key: previous, keyId: bridgeKeyId(previous) });
   }
-  return document;
+  const selected = requestedKeyId
+    ? candidates.filter(candidate => candidate.keyId === requestedKeyId)
+    : candidates.filter(candidate => candidate.slot === "current");
+  if (requestedKeyId && selected.length === 0) {
+    throw new Error(`Bridge document HMAC key id ${requestedKeyId} is not accepted.`);
+  }
+
+  const actual = Buffer.from(actualHex, "hex");
+  for (const candidate of selected) {
+    const expectedHex = createHmac("sha256", Buffer.from(candidate.key, "utf8"))
+      .update(Buffer.from(canonicalBridgeJob(document), "utf8"))
+      .digest("hex");
+    const expected = Buffer.from(expectedHex, "hex");
+    if (actual.length === expected.length && timingSafeEqual(actual, expected)) {
+      return document;
+    }
+  }
+  throw new Error("Bridge document HMAC signature verification failed.");
 }
 
 export function validateBridgeResult(result, { id, action, requireHost = HEAVEN_BRIDGE_HOST } = {}) {
@@ -625,8 +685,10 @@ export async function waitForHeavenBridgeResult({
     });
     if (result) {
       const signingKey = resolveBridgeSigningKey();
+      const previousSigningKey = resolveBridgePreviousSigningKey();
       verifyBridgeDocument(result, signingKey, {
-        allowUnsigned: envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)
+        allowUnsigned: envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE),
+        previousKey: previousSigningKey
       });
       return validateBridgeResult(result, { id, action, requireHost: normalizeBridgeHost(targetHost) });
     }

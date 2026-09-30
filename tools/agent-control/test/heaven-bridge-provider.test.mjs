@@ -9,6 +9,7 @@ import {
   HEAVEN2_BRIDGE_HOST,
   HEAVEN_BRIDGE_PROTOCOL,
   assessRelayLock,
+  bridgeKeyId,
   bridgeMachineStatus,
   bridgeResultSucceeded,
   buildBridgeJob,
@@ -16,6 +17,7 @@ import {
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
   resolveHeavenRelayDir,
+  resolveBridgePreviousSigningKey,
   resolveBridgeSigningKey,
   signBridgeJob,
   shouldRefreshHeartbeat,
@@ -70,9 +72,12 @@ test("bridge HMAC signing matches worker canonicalization rules", () => {
     targetHost: HEAVEN2_BRIDGE_HOST,
     createdAt: "2026-09-29T09:00:00.000Z"
   });
-  const signed = signBridgeJob(job, "0123456789abcdef0123456789abcdef");
+  const key = "0123456789abcdef0123456789abcdef";
+  const signed = signBridgeJob(job, key);
   assert.match(signed.auth.signature, /^[0-9a-f]{64}$/);
-  assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
+  assert.equal(signed.auth.key_id, bridgeKeyId(key));
+  assert.notEqual(canonicalBridgeJob(signed), canonicalBridgeJob(job));
+  assert.equal(verifyBridgeDocument(signed, key), signed);
 
   const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "0123456789abcdef0123456789abcdef");
   assert.notEqual(changed.auth.signature, signed.auth.signature);
@@ -96,6 +101,48 @@ test("bridge signing key resolves from machine-local file when env is absent", (
   }
 });
 
+test("bridge HMAC rotation accepts the previous key only while explicitly configured", () => {
+  const current = "current-0123456789abcdef-current-key";
+  const previous = "previous-0123456789abcdef-old-key";
+  const document = signBridgeJob({
+    id: "rotated-result",
+    source: HEAVEN_BRIDGE_PROTOCOL,
+    host: HEAVEN_BRIDGE_HOST,
+    action: "health",
+    status: "done",
+    exit_code: 0
+  }, previous);
+
+  assert.equal(verifyBridgeDocument(document, current, { previousKey: previous }), document);
+  assert.throws(
+    () => verifyBridgeDocument(document, current, { previousKey: "" }),
+    /key id .* is not accepted/i
+  );
+
+  const relabeled = {
+    ...document,
+    auth: { ...document.auth, key_id: bridgeKeyId(current) }
+  };
+  assert.throws(
+    () => verifyBridgeDocument(relabeled, current, { previousKey: previous }),
+    /signature verification failed/i
+  );
+});
+
+test("previous bridge signing key resolves only from its dedicated local slot", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-hmac-rotation-test-"));
+  try {
+    const authDir = path.join(tmp, "HeavenBridge", "auth");
+    fs.mkdirSync(authDir, { recursive: true });
+    fs.writeFileSync(path.join(authDir, "hmac.key"), "current-key-value\n", "utf8");
+    fs.writeFileSync(path.join(authDir, "hmac.previous.key"), "previous-key-value\n", "utf8");
+    assert.equal(resolveBridgeSigningKey({ env: {}, homeDir: tmp }), "current-key-value");
+    assert.equal(resolveBridgePreviousSigningKey({ env: {}, homeDir: tmp }), "previous-key-value");
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("cross-language HMAC fixture is byte-stable", () => {
   const job = buildBridgeJob({
     id: "canonical-fixture",
@@ -109,13 +156,15 @@ test("cross-language HMAC fixture is byte-stable", () => {
     targetHost: HEAVEN2_BRIDGE_HOST,
     createdAt: "2026-09-29T09:00:00.000Z"
   });
-  const signed = signBridgeJob(job, "0123456789abcdef0123456789abcdef");
+  const key = "0123456789abcdef0123456789abcdef";
+  const signed = signBridgeJob(job, key);
   assert.equal(signed.auth.canonical, "mhw-bridge-canon-v1");
+  assert.equal(signed.auth.key_id, "3eb1bd439947eb76");
   assert.equal(
     signed.auth.signature,
-    "8fddef1c6127fb6d98149e16f9823379408b4a8e563fe60c0524f2231bd59252"
+    "06e2ae87d3c7d145764ff918ea0789220edc5a654edc2cc8dadaa74f6cc26bf2"
   );
-  assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
+  assert.equal(verifyBridgeDocument(signed, key), signed);
 });
 
 test("bridge jobs can explicitly target heaven2 while preserving heaven legacy default", () => {
