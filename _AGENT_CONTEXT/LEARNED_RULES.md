@@ -477,3 +477,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-026 shared-provider fan-out health gating.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-028 — provider capability declarations must constrain generated acquisition targets
+
+- **Rule ID:** LR-028
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Provider integrations, acquisition routing, capability/compliance contracts
+- **Rule:** When a provider declares direct download unsupported or disallowed, every acquisition resolver must generate only browser-assisted/provider-authorized page targets. Never derive or expose a direct file/download endpoint merely because the provider payload contains one.
+- **Trigger / evidence:** The GameBanana adapter declared `AllowsDirectDownload: false` and `BrowserAssistedDownload`, while its merged acquisition resolver constructed `https://gamebanana.com/dl/{fileId}`. The existing regression expected the provider's mod download page `/mods/download/{modId}`, exposing a contract/implementation mismatch immediately after integration.
+- **Rationale:** Capability metadata is a safety and product contract, not descriptive decoration. A resolver that emits a stronger acquisition path than its declared policy silently bypasses the provider boundary even when no HTTP download is performed inside the app.
+- **Enforcement:** Review provider capabilities/compliance and resolver outputs together; add a regression that asserts the exact assisted target; fail closed when identities are malformed; and never merge provider acquisition code while declared capabilities and generated targets disagree.
+- **Relevant PR/fix:** PR #328 introduced the mismatch; PR #333 repairs it.
+- **Supersedes:** none
+- **Superseded by:** none

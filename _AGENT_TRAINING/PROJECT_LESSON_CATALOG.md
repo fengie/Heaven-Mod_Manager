@@ -56,3 +56,8 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 - Validate changed PowerShell startup, installer, watchdog, recovery, and generated scripts with the native PowerShell parser before registering or executing them.
 - Do not rely only on structural/string tests: PowerShell has lexical traps such as `$name:` inside double-quoted strings, where punctuation can be parsed as part of a scoped-variable token. Use `${name}:` or explicit formatting.
 - When one such defect escapes, add a source-level regression for the entire syntax class so non-Windows CI can still prevent recurrence.
+
+
+## Capability declarations are executable boundaries
+
+When integrating an external provider, treat declared capabilities and compliance metadata as executable boundaries. Resolver/output code must not produce a stronger action than the provider contract permits. In particular, a browser-assisted flow must point to a provider-controlled user-facing page, not a direct asset endpoint discovered in metadata. Pair the declaration with an exact-target regression so policy drift and implementation drift fail together.
