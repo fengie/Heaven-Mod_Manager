@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.20",
+  "currentVersion": "8.8.21",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.19 Auto Modder foundation",
+  "immediateParentRevision": "v8.8.20 One-click Auto Populate",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.20 adds one-click Auto Populate: it builds and applies a deterministic maximal conflict-free installed setup, recursively includes required dependencies/files/textures/loaders/resource providers, and rejects candidates whose complete closure is unsafe. Treat all verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.21 hardens conflict/dependency safety across four independent proofs: staged dependency satisfaction, exact-path precedence, atomic MHW structural-bundle coherence, and launch-time revalidation. Malformed overlay rules, missing resolver winners, ambiguous texture priority, untrusted code overlays, stale managed dependencies, file/directory topology conflicts, and mixed structural bundles fail closed. Require fresh exact-head Windows verification before publication.",
   "requiredToolingFiles": [
     "scripts/Test-AgentHandoff.ps1",
     "scripts/Build-Source-Handoff.ps1",
