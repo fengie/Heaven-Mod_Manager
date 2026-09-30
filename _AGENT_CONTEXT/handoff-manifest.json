@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.44 exact-source state-encoding gates, integrate/release/restore; preserve catalog ownership and auth/operator-client gaps, then recursively propagate continuity.",
+  "nextAgentObligation": "v8.8.44 verified/published build 353; controller 0.6.21 live. Continue authenticated Agent Manager P0, preserve external catalog ownership/reconcile provisional version, verify actual operator latest (proven 352), and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

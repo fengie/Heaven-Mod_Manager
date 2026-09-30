@@ -1,12 +1,13 @@
-# v8.8.44 agent-state encoding — current candidate
+# v8.8.44 closure — authoritative continuation, 2026-09-30
 
-Owner current chat, branch codex/agent-state-encoding, fresh base 7607906b. Scope is strict Windows JSON state decoding, preserving authoritative newer ownership and shared backup validation. External fix/catalog-compliance-future-review-v8.8.44 is preserved and not modified; provisional branch versions must reconcile against exact canonical main before integration. See EVIDENCE/v8.8.44-agent-state-encoding.md for PLUGIN-PREFLIGHT and acceptance; no extra plugin/auth path.
+PR #519 integrated source 45529dfa3b6912d08f866227e9b2eea3e6632595. Exact main controller/security/Windows gates pass (273 tests; 26/26 Windows), immutable private/public updater-main-353 has identical assets/digests/provenance, and disposable update/rollback passes. Guarded canonical controller 0.6.21 runs on heaven2; actual bootstrap/search/heading/pagination/stale-hash smoke passes. See EVIDENCE/v8.8.44-agent-state-encoding.md. Earlier candidate/closure prose below is historical and superseded for current action.
 
-1. Reproduce and verify focused/full controller, syntax, handoff/negative fixtures and exact-head CI. Preserve corruption read-only/paused behavior, migration/orphaning, atomic writes and history.
-2. Fetch main/PRs/leases, reconcile version/continuity, integrate only green exact candidate, then immediately verify immutable private/public publication and update/rollback; restore only clean canonical source and smoke current controller state/CLI.
-3. Persist exact closure and safely remove only merged owned branches. Actual operator latest build currently proven 351; future manual check/launch to latest is separate from disposable CI. Bridge auth/persistence and P0 dispatch/recovery/stop remain separate.
+1. Refresh canonical main, PRs/branches/leases and compact core before mutation. P0 remains active: prove full dispatch/observe/recover/stop with authenticated providers before marking Agent Manager complete. Preserve lower-bound coverage and historical recovery diagnostics.
+2. Preserve external fix/catalog-compliance-future-review-v8.8.44 and inspector/recovery work; coordinate owner and inspect unique ancestry before integration/deletion. Its branch version is provisional: reconcile against canonical 8.8.44, using a new patch for an independent change.
+3. Confirm actual installed latest build 353 through normal Check for program updates or next launch. The real operator shortcut path reached build 352; disposable CI is separate. Do not force-stop busy user work, overwrite install/data, or substitute a validation app.
+4. Continue existing Bridge auth/worker-watchdog-SYSTEM sentinel readiness and provider registration using their canonical owner. No unchanged auth/quota retry storms, auth bypass or duplicate plugin. Measure context navigation use before caching; audit supported external Windows JSON producers when their ownership boundary is next changed.
 
-Improvement: encoding fixtures must cover every supported Windows producer at durable ownership boundaries. Do not strip arbitrary content or broaden network JSON; preserve prior incident history. No repeated fallback/retry on unchanged auth blockers. Preserve and recursively propagate the constitution to every successor and the agent after them. Do not break the chain.
+Ownership: implementation merged and owned branch safely removed; current chat owns same-version evidence closure only. Existing BOM precedent is propagated through shared decoder, real PS5 producer and lifecycle regressions. Historical recovered-mode warning is retained; it is not a new failed recovery. Preserve and recursively propagate the continuity constitution to every successor and the agent after them. Do not break the chain.
 
 ---
 # v8.8.43 closure — authoritative continuation, 2026-09-30
