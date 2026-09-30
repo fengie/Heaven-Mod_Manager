@@ -10,6 +10,7 @@ on:
       - 'scripts/release/UpdaterReleasePublication.ps1'
       - 'scripts/release/UpdaterReleasePolicy.ps1'
       - 'scripts/testing/Test-UpdaterReleasePolicy.ps1'
+      - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/updater-publication-pr-gate.yml'
 
 permissions:
