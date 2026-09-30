@@ -97,7 +97,7 @@ if(!(Test-Path -LiteralPath $releasePath)){
         $errors.Add('windows-release-gate.yml: privileged release tooling must not trust a moving latest release or arbitrary preinstalled gh.exe.')
     }
     foreach($required in @(
-        "$" + "version = '2.101.0'",
+        '$version = ''2.101.0''',
         'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794',
         'Get-FileHash',
         'https://github.com/cli/cli/releases/download/v${version}/${assetName}'
