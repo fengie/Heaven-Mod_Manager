@@ -174,11 +174,27 @@ public sealed class ModIoTransport
         request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
         request.Headers.TryAddWithoutValidation("X-Modio-Platform", "WINDOWS");
 
-        using var response = await client.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
-            ct).ConfigureAwait(false);
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (HttpRequestException)
+        {
+            // The API key is carried in the required query parameter. Never retain the
+            // original exception because HttpClient may include the request URI in it.
+            throw new HttpRequestException("mod.io API request failed before a response was received.");
+        }
 
+        using (response)
+        {
         if (!response.IsSuccessStatusCode)
         {
             throw new ModIoTransportException(
@@ -198,6 +214,7 @@ public sealed class ModIoTransport
         catch (JsonException ex)
         {
             throw new InvalidDataException("mod.io API returned malformed JSON.", ex);
+        }
         }
     }
 
