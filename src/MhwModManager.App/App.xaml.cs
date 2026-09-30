@@ -30,7 +30,7 @@ public sealed partial class App:Application, IDisposable
         WpfMasterTracing.Install();
         var appVersion=typeof(App).Assembly.GetName().Version;
         var appVersionText=appVersion is null?"unknown":$"{appVersion.Major}.{appVersion.Minor}.{appVersion.Build}";
-        MasterDebugLog.Write("TRACE-COVERAGE", $"v{appVersionText} call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, detailed ViewModel changes when diagnostics are enabled, runtime telemetry, startup/build/test logs.");
+        MasterDebugLog.Write("TRACE-COVERAGE", $"v{appVersionText} call verification enabled: lightweight method/error scopes, processes, database transactions, filesystem/deployment activity, runtime telemetry, startup/build/test logs. Detailed WPF internals and ViewModel churn are diagnostic opt-in.");
         UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v{appVersionText} | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
         try
         {
