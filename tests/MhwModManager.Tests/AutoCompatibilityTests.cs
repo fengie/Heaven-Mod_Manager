@@ -491,6 +491,36 @@ public sealed class AutoCompatibilityTests
         Assert.Contains("no single provider", result.Explanation, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Multi_provider_texture_precedence_accepts_unique_complete_dominator()
+    {
+        var path = @"nativePC\pl\f_equip\mod_series\f_skin_NM.tex";
+        var candidates = new[]
+        {
+            new ProviderCandidate("v1", "Series Texture v1", 10, new("v1", path, "11", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("v2", "Series Texture v2", 20, new("v2", path, "22", null, 100, Now.AddHours(1), FileClass.Texture)),
+            new ProviderCandidate("v3", "Series Texture v3", 30, new("v3", path, "33", null, 100, Now.AddHours(2), FileClass.Texture))
+        };
+        var mods = new Dictionary<string,ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["v1"] = new("v1", "Series Texture v1", "Series Texture v1", "v1", true, 10, FamilyId:"manual:series"),
+            ["v2"] = new("v2", "Series Texture v2", "Series Texture v2", "v2", true, 20, FamilyId:"manual:series"),
+            ["v3"] = new("v3", "Series Texture v3", "Series Texture v3", "v3", true, 30, FamilyId:"manual:series")
+        };
+        var stats = new Dictionary<string,ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["v1"] = new(1, 1, 0, 0, Now),
+            ["v2"] = new(1, 1, 0, 0, Now.AddHours(1)),
+            ["v3"] = new(1, 1, 0, 0, Now.AddHours(2))
+        };
+
+        var result = AutoCompatibility.SelectTextureProvider(path, candidates, mods, stats);
+
+        Assert.Equal("v3", result.WinnerModId);
+        Assert.Equal("texture-complete-dominance", result.ReasonCode);
+        Assert.Equal(Confidence.High, result.Confidence);
+    }
+
     private static PlannerSnapshot Snapshot(
         IReadOnlyList<ModDescriptor> mods,
         IReadOnlyList<ModFileDescriptor> files,
