@@ -74,7 +74,7 @@ jobs:
                       failures.append(f"{path}: persistent self-hosted PR workflow must reject fork PR code")
                   if len(safe_checkout_re.findall(text)) < len(checkout_re.findall(text)):
                       failures.append(f"{path}: self-hosted PR checkout must set persist-credentials: false")
-              if "pull_request_target:" in text and "actions/checkout@" in text:
+              if re.search(r"^\s*pull_request_target\s*:", text, re.MULTILINE) and "actions/checkout@" in text:
                   failures.append(f"{path}: pull_request_target plus checkout requires explicit security design review")
 
           release_path = workflow_dir / "windows-release-gate.yml"

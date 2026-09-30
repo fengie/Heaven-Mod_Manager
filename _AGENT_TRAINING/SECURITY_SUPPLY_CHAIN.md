@@ -33,3 +33,7 @@ A workflow runner migration is also a shell/runtime migration. When changing run
 ## Privileged release tools must be pinned and verified
 
 Do not trust an arbitrary preinstalled executable or a moving `latest` download inside a privileged publication job. Pin the tool version and immutable asset URL, verify its cryptographic digest against independently reviewed release metadata before execution, and machine-enforce those invariants in the security gate.
+
+## Policy scanners must be self-safe
+
+When a security scanner is embedded in the configuration it scans, assume its own source text, comments, and diagnostics will be part of the input. Match structured configuration with anchored/parsed rules rather than raw substring presence, and include the scanner file itself in regression coverage so policy text cannot trigger false positives.

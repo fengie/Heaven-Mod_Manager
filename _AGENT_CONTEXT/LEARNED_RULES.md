@@ -524,3 +524,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-029 CI executable dependency trust.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-031 — security policy scanners must not match their own rule text
+
+- **Rule ID:** LR-031
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Security gates, static policy scanners, CI verification
+- **Rule:** Security policy checks for structured configuration must match actual structural positions (for example an anchored YAML key), not an unanchored substring that can appear inside comments, diagnostics, or the scanner's own embedded source.
+- **Trigger / evidence:** The initial Security Supply Chain Gate searched for the raw substring `pull_request_target:`; because that literal appeared inside the gate's embedded Python policy, the gate falsely reported itself as a dangerous workflow.
+- **Prevention:** Anchor configuration-key detection to line structure and add self-scan coverage whenever a policy scanner is embedded inside the files it scans.
+- **Related rules:** LR-021 defect-class closure; LR-029 CI supply-chain trust; LR-030 privileged release tooling.
+- **Supersedes:** none
+- **Superseded by:** none
