@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Complete the v8.8.43 integration/release path with exact-head proof; preserve v8.8.42 closure, Agent Manager P0 and separate auth/install gaps; recursively propagate continuity.",
+  "nextAgentObligation": "v8.8.43 is verified and published as build 352; controller 0.6.20 live. Preserve active v8.8.44 owner, continue Agent Manager P0, verify actual operator latest build (currently proven 351), and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
