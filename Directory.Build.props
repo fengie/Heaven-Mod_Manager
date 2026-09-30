@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <Version>8.8.50</Version>
-    <InformationalVersion>8.8.50-ui-regression-fixes</InformationalVersion>
+    <InformationalVersion>8.8.50-governance-integration</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
