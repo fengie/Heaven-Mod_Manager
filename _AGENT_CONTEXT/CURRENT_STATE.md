@@ -1,8 +1,10 @@
-# 2026-09-30 v8.8.23 Agent Manager one-click recovery — CURRENT
+# 2026-09-30 v8.8.23 Agent Manager runtime reliability — CURRENT
 
-The highest-priority Agent Manager startup path is repaired. **START SWARM** now resumes a paused perpetual controller and immediately advances it, leaves a genuinely running perpetual swarm idempotently alone, and rejects an active non-perpetual autopilot with a 409 conflict instead of lying about its mode. Empty objectives are rejected before control/safety settings are normalized.
+Agent Manager is the highest-priority functional lane. **START SWARM** now resumes a paused perpetual controller and immediately advances it, leaves a genuinely running perpetual swarm idempotently alone, rejects an active non-perpetual autopilot with a 409 conflict, and rejects empty objectives before changing control/safety settings.
 
-Agent Control is now **v0.5.11**. Regression guards cover the server decision path and the dashboard resumed-state message. The change is source-integrated from canonical main base `0e81e6a454594dd98116e97709ea5075714c09a4`; fresh exact-head Agent Control/Windows verification remains required before release-ready claims.
+The dashboard also matches the server lifecycle and preserves operator intent: every server-active managed state (reserved, starting, running, waiting, blocked, stale, stopping) exposes Stop; normal polling is serialized and stale responses cannot overwrite newer applied snapshots; stale request failures cannot flip a newer healthy view offline; and periodic machine-pool renders keep the operator-selected worker target.
+
+Agent Control is now **v0.5.11**. Source regressions cover one-click resume/conflict behavior, active-state controls, polling sequence guards, worker-target persistence, and inline JavaScript parsing. LR-045 plus the defect precedent and generic trainer guidance preserve this failure class. The local Remote Desktop Commander channel is quota-paused, so fresh exact-head Agent Control execution plus real heaven2→heaven1 dashboard/runtime verification remains required before release-ready claims.
 
 ---
 
