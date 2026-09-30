@@ -156,8 +156,8 @@ public sealed partial class App:Application, IDisposable
             if(paths.Game.IsMonsterHunterWorld)
                 await startup.RunAsync("startup.armor-index.import",async ct=>await telemetry.TrackAsync("startup.armor-index.import",async(_,innerCt)=>await ArmorCatalogLoader.ImportAsync(db,Path.Combine(AppContext.BaseDirectory,"data","Armor Database.csv"),innerCt),ct:ct));
 
-            splash.SetDetail("Learning mod lineage and checking the game build…");
-            await startup.RunAsync("startup.intelligence.nexus",async ct=>await telemetry.TrackAsync("startup.intelligence.nexus",async(_,innerCt)=>await nexus.RefreshAsync(innerCt),ct:ct));
+            splash.SetDetail("Checking the game build…");
+            startup.Info("startup.intelligence.nexus.deferred","Nexus metadata, artwork, and update refresh is demand-loaded from the Mods page so optional network/file work cannot delay the first window.");
             var buildResult=await startup.RunAsync("startup.intelligence.game-build",async ct=>await telemetry.TrackAsync("startup.intelligence.game-build",async(_,innerCt)=>await gameBuild.CheckAsync(innerCt),ct:ct));
             startup.Info("startup.intelligence.game-build.result",$"Changed={buildResult.Changed}");
             var impact=await startup.RunAsync("startup.intelligence.game-impact",ct=>gameImpact.BuildAsync(buildResult.Changed,ct));
