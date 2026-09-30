@@ -319,8 +319,11 @@ public sealed class ConflictEngine
         return true;
     }
 
-    private static bool IsCodeBearing(FileClass fileClass) =>
-        fileClass is FileClass.Plugin or FileClass.Executable;
+    private static bool IsCodeBearing(FileClass fileClass)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return fileClass is FileClass.Plugin or FileClass.Executable;
+    }
 
     public static (string,string) PairKey(string a, string b)
     {
