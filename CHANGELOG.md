@@ -1,3 +1,12 @@
+# v8.8.26 — Agent Control exhausted-agent registry retirement
+- Retire terminal no-work agents when their bounded recovery budget reaches **RETRY EXHAUSTED** instead of leaving failed/dead cards in the live registry.
+- Prove controller ownership before terminating any still-live process; refuse destructive cleanup when PID ownership, worktree cleanliness, or branch divergence is uncertain.
+- Release clean retry-exhausted worktrees and leases, remove retired logical agents from managed/federated live state, and preserve durable task/event/tombstone history.
+- Suppress replayed terminal observations from retired federated sources so dead sessions cannot immediately resurrect themselves; a real live heartbeat clears the tombstone.
+- Keep successful/done integration candidates intact; retirement is scoped to retry-exhausted terminal recovery failures.
+- Advance Agent Control runtime/root plugin/nested Codex plugin identity to v0.6.5 and add retirement/anti-resurrection/state-migration regression coverage.
+- Record the defect precedent and portable rule that terminal lifecycle state must include registry retirement, not only a status-label transition.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.
