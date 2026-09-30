@@ -441,7 +441,8 @@ test("explicit Start Swarm normalizes operator friction without weakening automa
   assert.equal(stopped.status, 200);
 
   const started = await postJson(port, "/api/swarm/start", {
-    objective: "Continue the highest-value unfinished project work"
+    objective: "Continue the highest-value unfinished project work",
+    overallGoal: "Make Agent Manager autonomous, resilient, and easy to operate"
   });
   assert.equal(started.status, 201);
   assert.equal(started.body.created.length, 0);
@@ -450,6 +451,7 @@ test("explicit Start Swarm normalizes operator friction without weakening automa
   const snapshot = await getJson(port);
   assert.equal(snapshot.status, 200);
   assert.equal(snapshot.body.settings.autonomyLevel, "coordinate");
+  assert.equal(snapshot.body.autopilot.overallGoal, "Make Agent Manager autonomous, resilient, and easy to operate");
   assert.equal(snapshot.body.settings.dispatchPaused, false);
   assert.equal(snapshot.body.settings.readOnly, false);
   assert.equal(snapshot.body.settings.draining, false);
