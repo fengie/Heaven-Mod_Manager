@@ -436,3 +436,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-022 primary data surfaces; LR-023 collision-safe rule IDs.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+## LR-026 — shared-provider batch launch must gate fan-out on observed startup health
+
+- **Rule ID:** LR-026
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** multi-agent swarms, batch worker launch, shared execution providers, quota/capacity circuits, controller diagnostics
+- **Rule:** A batch launcher must not treat successful process creation as successful provider startup. Between launches against a shared execution provider, re-observe the just-started worker and shared provider circuit for immediate terminal/capacity failure; stop the remaining fan-out when that shared failure appears. Persist a bounded, secret-redacted structured failure record for every terminal controller-owned failure path.
+- **Trigger / evidence:** Agent Control could launch an entire swarm before the first spawned worker's asynchronous provider-capacity failure reached durable state, so every lane could fail together even though a capacity circuit existed.
+- **Rationale:** Preflight checks only know the state before launch. Shared-provider failures can become knowable milliseconds later, and burst fan-out can outrun the circuit that is supposed to suppress doomed work. Without a durable failure ledger, the temporal common cause is also easy to lose after the UI/process turns over.
+- **Enforcement:** Multi-step workflow tests must assert an inter-launch startup-health checkpoint after spawn and before the next spawn. Capacity/quota tests must cover the temporal race, not only already-blocked state. Failure logging must whitelist bounded diagnostic fields, redact common credentials/tokens, exclude prompt/capability/environment secrets, and expose recent records for diagnosis.
+- **Relevant implementation:** `tools/agent-control/server.mjs`, `tools/agent-control/test/server-safety.test.mjs`, and the 2026-09-29 Agent Control swarm fan-out bug precedent.
+- **Related rules:** provider-capacity retry suppression; LR-021 defect-class closure; LR-023 collision-safe rule IDs.
+- **Supersedes:** none
+- **Superseded by:** none
