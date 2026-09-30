@@ -36,6 +36,12 @@ internal static class WpfMasterTracing
     public static void Install()
     {
         if (Interlocked.Exchange(ref installed, 1) != 0) return;
+        if (!MasterDebugLog.DetailedTracingEnabled && !IsEnabled(Environment.GetEnvironmentVariable("MHW_WPF_TRACE_DETAIL")))
+        {
+            MasterDebugLog.Write("WPF-TRACE", "WPF internal PresentationTraceSources are disabled in normal mode; set MHW_WPF_TRACE_DETAIL=1 or enable diagnostic tracing to collect them.");
+            return;
+        }
+
         try
         {
             Configure(PresentationTraceSources.AnimationSource, Listener);
@@ -62,4 +68,10 @@ internal static class WpfMasterTracing
         source.Switch.Level = SourceLevels.All;
         source.Listeners.Add(listener);
     }
+
+    private static bool IsEnabled(string? value) =>
+        value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("on", StringComparison.OrdinalIgnoreCase));
 }
