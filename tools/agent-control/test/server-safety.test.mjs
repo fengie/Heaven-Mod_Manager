@@ -1034,8 +1034,8 @@ test("federated Go-to-Work notifications route to federated inspection", () => {
 test("retry-exhausted Heaven Bridge retirement proves remote termination before registry deletion", () => {
   const source = fs.readFileSync(SERVER, "utf8");
 
-  const proofStart = source.indexOf("async function proveRetryExhaustedRemoteJobStopped");
-  const proofEnd = source.indexOf("async function retireRetryExhaustedManagedAgent", proofStart);
+  const proofStart = source.indexOf("async function proveManagedRegistryRemoteJobStopped");
+  const proofEnd = source.indexOf("async function retireManagedRegistryAgent", proofStart);
   assert.ok(proofStart >= 0 && proofEnd > proofStart);
   const proof = source.slice(proofStart, proofEnd);
   assert.match(proof, /return proveRemoteJobStopped\(\{/);
@@ -1045,14 +1045,21 @@ test("retry-exhausted Heaven Bridge retirement proves remote termination before 
   assert.match(proof, /action: "job_status"/);
   assert.match(proof, /params: \{ job_id: jobId \}/);
 
-  const retireStart = source.indexOf("async function retireRetryExhaustedManagedAgent");
-  const retireEnd = source.indexOf("function retireFederatedRetryExhaustedAgent", retireStart);
+  const retireStart = source.indexOf("async function retireManagedRegistryAgent");
+  const retireEnd = source.indexOf("async function retireRetryExhaustedManagedAgent", retireStart);
   assert.ok(retireStart >= 0 && retireEnd > retireStart);
   const retire = source.slice(retireStart, retireEnd);
-  const proofCall = retire.indexOf("await proveRetryExhaustedRemoteJobStopped(source)");
+  const proofCall = retire.indexOf("await proveManagedRegistryRemoteJobStopped(source");
   const registryDelete = retire.indexOf("state.agents = state.agents.filter");
   assert.ok(proofCall >= 0, "retirement must prove remote execution stopped");
   assert.ok(registryDelete > proofCall, "registry deletion must happen only after remote stop proof");
+
+  const wrapperStart = source.indexOf("async function retireRetryExhaustedManagedAgent", retireEnd);
+  const wrapperEnd = source.indexOf("function retireFederatedRetryExhaustedAgent", wrapperStart);
+  assert.ok(wrapperStart >= 0 && wrapperEnd > wrapperStart);
+  const wrapper = source.slice(wrapperStart, wrapperEnd);
+  assert.match(wrapper, /return retireManagedRegistryAgent\(agentId/);
+  assert.match(wrapper, /requireRetryExhausted: true/);
 });
 
 test("retired observation decision runs on raw heartbeat evidence before federation reconciliation", () => {
