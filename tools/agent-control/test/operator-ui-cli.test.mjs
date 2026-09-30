@@ -235,12 +235,12 @@ test("managed card convenience click and explicit Inspect control share the ID i
   ].map(signature => extractInlineDeclaration(script, signature)).join("\n");
 
   const card = {
-    dataset: { agentId: "managed%2F1" },
+    dataset: { agentKey: "managed%2F1" },
     listeners: {},
     addEventListener(type, handler) { this.listeners[type] = handler; }
   };
   const inspectButton = {
-    dataset: { agentAction: "inspect", agentId: "managed%2F1", branch: "" },
+    dataset: { agentAction: "inspect", agentKey: "managed%2F1", branch: "" },
     listeners: {},
     addEventListener(type, handler) { this.listeners[type] = handler; }
   };
@@ -289,12 +289,12 @@ test("federated card convenience click and explicit Inspect control use the shar
   ].map(signature => extractInlineDeclaration(script, signature)).join("\n");
 
   const card = {
-    dataset: { federatedId: "external%2F1" },
+    dataset: { federatedKey: "external%2F1" },
     listeners: {},
     addEventListener(type, handler) { this.listeners[type] = handler; }
   };
   const inspectButton = {
-    dataset: { federatedId: "external%2F1" },
+    dataset: { federatedKey: "external%2F1" },
     listeners: {},
     addEventListener(type, handler) { this.listeners[type] = handler; }
   };
