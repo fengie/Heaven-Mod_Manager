@@ -1,4 +1,5 @@
 # v8.8.26 — Agent Control terminal-registry garbage collection
+- Fix Heaven worker dispatch when `AGENT_CONTROL_HEAVEN_RELAY_DIR` is unset by routing job submit/result-wait through the same documented `~/HeavenBridgeRepo` resolver used by health inspection.
 - Retire dead managed agents from the live registry once no process or active recovery owns them.
 - Purge linked failed federated records so **failed / RETRY EXHAUSTED** tombstones do not persist in dashboard counts/cards.
 - Preserve retry-pending, retry-waiting, stream-checking, and durable-incomplete records until recovery/reconciliation is complete.
