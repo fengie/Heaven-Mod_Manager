@@ -108,6 +108,9 @@ class DeepBrowserValidationTests(unittest.TestCase):
     def test_display_url_strips_query_and_fragment(self):
         self.assertEqual("https://example.com/path",_display_url("https://example.com/path?token=secret#frag"))
 
+    def test_display_url_preserves_ipv6_brackets(self):
+        self.assertEqual("http://[::1]:9222/a",_display_url("http://[::1]:9222/a?token=secret"))
+
     def test_cdp_attach_is_loopback_only(self):
         with tempfile.TemporaryDirectory() as td:
             provider=PlaywrightDeepBrowser(td)
