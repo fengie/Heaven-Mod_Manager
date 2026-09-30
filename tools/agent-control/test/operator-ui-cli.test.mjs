@@ -134,6 +134,8 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(html, /\$\("controlResume"\)\.textContent = settings\.emergencyStop \? "Clear emergency stop \+ resume" : "Resume"/);
   assert.match(html, /body\.clearEmergencyStop = Boolean\(settings\.emergencyStop\)/);
   assert.doesNotMatch(html, /if \(action === "resume"\) body\.clearEmergencyStop = false/);
+  assert.match(html, /copyText\(decodeURIComponent\(\'\$\{encodeURIComponent\(String\(a\.branchName \?\? ""\)\)\}\'\)\)/);
+  assert.doesNotMatch(html, /onclick="copyText\(\$\{JSON\.stringify\(a\.branchName\)\}\)"/);
 
   const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
   assert.match(server, /bridgeMachineStatus\(heavenBridge\)/);

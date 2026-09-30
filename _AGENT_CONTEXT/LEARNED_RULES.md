@@ -826,3 +826,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-017 independent recovery owner; LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-048 — generated operator surfaces and mirrored manifests require whole-output closure
+
+- **Rule ID:** LR-048
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Generated HTML/operator controls, inline handlers, plugin/package manifests, mirrored release metadata
+- **Rule:** Treat generated executable markup and mirrored release metadata as whole outputs. Never nest raw serialization inside an already quoted handler/attribute; cross an explicit encoding or DOM-binding boundary. When one component has multiple distributable manifests, regression-check every manifest against the authoritative runtime release identity.
+- **Trigger / evidence:** Agent Control's Copy branch action nested a JSON-quoted branch value inside a double-quoted onclick attribute, while the nested Codex plugin manifest remained v0.6.1 after runtime/root plugin advanced to v0.6.3.
+- **Rationale:** Template source can look locally valid while the emitted markup is structurally invalid, and partial version checks permit stale package identities to ship unnoticed.
+- **Enforcement:** Add emitted-output/source-pattern regressions for generated controls and maintain an explicit identity set for every package/plugin manifest that represents the same component.
+- **Regression/evidence:** v8.8.25 Agent Control repair; `tools/agent-control/test/operator-ui-cli.test.mjs`; `tools/agent-control/test/agent-manager-priority.test.mjs`.
+- **Related rules:** LR-021 defect-class closure; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure.
+- **Supersedes:** none
+- **Superseded by:** none

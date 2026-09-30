@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.24",
+  "currentVersion": "8.8.25",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run exact-head Agent Control tests and heaven2 dashboard/operator smoke for v8.8.24, then continue only with the next highest-impact Agent Manager P0 completion gate",
+  "nextMilestone": "run exact-head Agent Control checks and heaven2 operator smoke for v8.8.25, then continue the active Agent Manager P0 completion gates",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.23 Agent Manager runtime reliability + P0 lock",
-  "status": "v8.8.24-agent-manager-operator-actions",
+  "immediateParentRevision": "v8.8.24 Agent Manager operator actions",
+  "status": "v8.8.25-agent-control-copy-branch-plugin-identity",
   "verificationAppliesToCommit": null,
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.24 adds operator-contract closure on top of the active Agent Manager P0 lock: backend suggestedActions are rendered/actionable, reviewer affordances are restricted to completed agents, and emergency-stop recovery is explicit/confirmed. Historical verification does not transfer; exact-head Agent Control tests plus heaven2 dashboard/controller and heaven1 worker-path smoke are required.",
+  "verificationScopeNote": "v8.8.25 repairs generated Copy branch operator markup and closes nested Codex-plugin version drift. Historical verification does not transfer; exact-head Agent Control check/test plus heaven2 dashboard/operator smoke are required before closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.25 Agent Control repair: URI-encode Copy branch values before generated inline-handler interpolation, align runtime/root/nested plugin identity at v0.6.4, and regression-pin both invariants.",
     "2026-09-30 v8.8.24 Agent Manager operator actions: surface/action backend recommendations, gate reviewer actions to completed agents, make emergency-stop recovery explicit and confirmed, advance Agent Control/plugin identity to v0.6.3, and add operator-contract regression coverage.",
     "2026-09-30 v8.8.23 Agent Manager P0: canonical continuity now locks autonomous implementation/expansion onto Agent Control until exact-head control-plane checks and heaven2→heaven1 runtime smoke pass; runtime/plugin identity is aligned at Agent Control 0.6.2 and stable ChatGPT sessions heartbeat by default when a real stable identity exists.",
     "2026-09-30 v8.8.23 Agent Manager priority: Agent Control v0.5.11 combines truthful one-click perpetual resume/conflict handling with full active-state Stop controls, stale-response-safe polling, preserved operator worker targeting, and LR-045 defect prevention.",
@@ -150,7 +151,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test plus heaven2 dashboard smoke for the v8.8.24 candidate, then continue the active Agent Manager P0 completion gates from main; preserve the operator-action regression rules for successors.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test for the v8.8.25 candidate, smoke Copy branch and plugin identity on heaven2, then continue the active Agent Manager P0 completion gates from current main.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

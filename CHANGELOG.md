@@ -1,3 +1,10 @@
+# v8.8.25 — Agent Control operator-markup + plugin identity repair
+- Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
+- Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.
+- Synchronize Agent Control runtime, root ChatGPT plugin, and nested Codex plugin identities at v0.6.4.
+- Extend the release-identity regression to include the nested `.codex-plugin/plugin.json` manifest so package drift fails tests.
+- Record the escaped defect class and promote the reusable whole-output/mirrored-manifest validation rule.
+
 # v8.8.24 — Agent Manager operator actions
 - Surface backend-ranked Agent Manager recommendations in the dashboard instead of leaving `suggestedActions` invisible.
 - Add explicit dashboard actions for resume/clear-stop, review workflow launch, usual-swarm continuation, and worker inspection.
