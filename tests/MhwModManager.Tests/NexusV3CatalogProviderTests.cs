@@ -217,6 +217,64 @@ public sealed class NexusV3CatalogProviderTests
     }
 
     [Fact]
+    public async Task Timeout_marks_provider_offline()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromException<HttpResponseMessage>(
+                new TaskCanceledException("fixture timeout"))));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        await Assert.ThrowsAsync<TaskCanceledException>(
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                TestContext.Current.CancellationToken));
+
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.Offline, health.State);
+        Assert.Contains("timed out", health.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Network_failure_marks_provider_offline()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            Task.FromException<HttpResponseMessage>(
+                new HttpRequestException("fixture offline"))));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        await Assert.ThrowsAsync<HttpRequestException>(
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                TestContext.Current.CancellationToken));
+
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.Offline, health.State);
+        Assert.Contains("unreachable", health.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_does_not_reclassify_provider_health()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        using var client = new HttpClient(new RoutingHandler((_, ct) =>
+            Task.FromCanceled<HttpResponseMessage>(ct)));
+        var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                cancellation.Token));
+
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.Limited, health.State);
+    }
+
+    [Fact]
     public async Task Rate_limit_marks_health_and_keeps_retry_after_without_retrying()
     {
         var calls = 0;
