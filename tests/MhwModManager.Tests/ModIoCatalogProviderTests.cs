@@ -128,6 +128,24 @@ public sealed class ModIoCatalogProviderTests
     }
 
     [Fact]
+    public async Task Network_failure_does_not_retain_secret_bearing_request_uri()
+    {
+        using var client = new HttpClient(new RoutingHandler((request, _) =>
+            Task.FromException<HttpResponseMessage>(
+                new HttpRequestException($"failed {request.RequestUri}"))));
+        var provider = CreateProvider(client);
+
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(CreateGame()),
+                TestContext.Current.CancellationToken));
+
+        Assert.DoesNotContain(ApiKey, exception.ToString(), StringComparison.Ordinal);
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.Offline, health.State);
+    }
+
+    [Fact]
     public async Task Authentication_failure_does_not_leak_api_key_and_updates_health()
     {
         using var client = new HttpClient(new RoutingHandler((_, _) =>
