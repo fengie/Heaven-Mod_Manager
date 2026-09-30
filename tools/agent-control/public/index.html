@@ -407,6 +407,23 @@
           <div class="agent-list" id="agents"></div>
         </section>
 
+        <section class="card section" id="attentionSection">
+          <div class="section-title">
+            <h2>Needs Attention / recovery</h2>
+            <span class="pill" id="attentionSummary">0</span>
+          </div>
+          <div class="tiny">Terminal or disconnected work remains here while process ownership, recovery, or durable work still needs reconciliation. These records are not counted as live registry presence.</div>
+          <div class="agent-list" id="attentionAgents"></div>
+        </section>
+
+        <details class="card diagnostics" id="registryHistorySection">
+          <summary>Registry history · <span class="pill" id="registryHistorySummary">0 archived</span></summary>
+          <div class="diagnostics-body">
+            <div class="tiny">Historical terminal, stale, and disconnected records stay inspectable here without inflating live registry counts.</div>
+            <div class="branch-list" id="registryHistory"></div>
+          </div>
+        </details>
+
         <section class="card section">
           <div class="section-title">
             <h2>Federated agent registry</h2>
@@ -598,12 +615,23 @@
 
     function managedAgentById(id, snapshot = state.snapshot) {
       const rawId = decodeStableId(id);
-      return (snapshot?.agents || []).find(item => String(item.id || "") === rawId) || null;
+      const candidates = [
+        ...(snapshot?.agents || []),
+        ...(snapshot?.attentionAgents || []),
+        ...(snapshot?.managedHistory || [])
+      ];
+      return candidates.find(item => String(item.id || "") === rawId) || null;
     }
 
     function federatedAgentById(id, snapshot = state.snapshot) {
       const rawId = decodeStableId(id);
-      return (snapshot?.federation?.agents || []).find(item => String(item.agent_id || "") === rawId) || null;
+      const federation = snapshot?.federation || {};
+      const candidates = [
+        ...(federation.agents || []),
+        ...(federation.attention_agents || []),
+        ...(federation.history_agents || [])
+      ];
+      return candidates.find(item => String(item.agent_id || "") === rawId) || null;
     }
 
     function inspectorMissing(kind, id) {
@@ -836,6 +864,81 @@
       bindNotificationActions();
     }
 
+    function renderAttention(snapshot) {
+      const managed = snapshot.attentionAgents || [];
+      const federated = snapshot.federation?.attention_agents || [];
+      const total = managed.length + federated.length;
+      $("attentionSummary").textContent = `${total} item${total === 1 ? "" : "s"}`;
+      if (!total) {
+        $("attentionAgents").innerHTML = '<div class="empty">No unresolved registry ownership or recovery items.</div>';
+        return;
+      }
+      const managedHtml = managed.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.id || "")));
+        return `
+          <article class="agent inspectable managed-agent-card" data-agent-key="${encodedId}" aria-label="Managed recovery item ${escapeHtml(a.roleLabel || a.role || "agent")}">
+            <div class="agent-top">
+              <div>
+                <div class="agent-name"><span class="dot stopping"></span>${escapeHtml(a.roleLabel || a.role || "agent")} <span class="meta">· ${escapeHtml(a.status || "unknown")}</span></div>
+                <div class="meta">${escapeHtml(a.id || "—")} · recovery ${escapeHtml(recoveryLabel(a.recoveryStatus) || "none")} · ${escapeHtml(machineLabel(a.machine))}</div>
+              </div>
+              <button class="managed-agent-action" data-agent-action="inspect" data-agent-key="${encodedId}">Inspect</button>
+            </div>
+            <div class="task">${escapeHtml(a.lastMessage || a.task || a.blocker || "Reconciliation required")}</div>
+          </article>`;
+      }).join("");
+      const federatedHtml = federated.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.agent_id || "")));
+        return `
+          <article class="agent inspectable federated-agent-card" data-federated-key="${encodedId}" aria-label="Federated recovery item ${escapeHtml(a.role || "agent")}">
+            <div class="agent-top">
+              <div>
+                <div class="agent-name"><span class="dot stopping"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state || "unknown")}</span></div>
+                <div class="meta">${escapeHtml(a.agent_id || "—")} · ${escapeHtml(a.freshness || "unknown")} · recovery ${escapeHtml(recoveryLabel(a.recovery_status) || "none")}</div>
+              </div>
+              <button class="federated-agent-action" data-federated-key="${encodedId}">Inspect</button>
+            </div>
+            <div class="task">${escapeHtml(a.last_action_summary || a.task || a.last_error || "Reconciliation required")}</div>
+          </article>`;
+      }).join("");
+      $("attentionAgents").innerHTML = managedHtml + federatedHtml;
+    }
+
+    function renderRegistryHistory(snapshot) {
+      const managed = snapshot.managedHistory || [];
+      const retired = snapshot.retiredAgents || [];
+      const federated = snapshot.federation?.history_agents || [];
+      const total = managed.length + retired.length + federated.length;
+      $("registryHistorySummary").textContent = `${total} archived`;
+      if (!total) {
+        $("registryHistory").innerHTML = '<div class="empty">No archived registry records yet.</div>';
+        return;
+      }
+      const managedHtml = managed.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.id || "")));
+        return `<div class="branch-item">
+          <div class="item-top">
+            <div><div class="item-name">${escapeHtml(a.roleLabel || a.role || "managed agent")} · ${escapeHtml(a.status || "historical")}</div><div class="meta">${escapeHtml(a.id || "—")} · ${fmt(a.finishedAt || a.updatedAt)}</div></div>
+            <button class="managed-agent-action" data-agent-action="inspect" data-agent-key="${encodedId}">Inspect</button>
+          </div>
+        </div>`;
+      }).join("");
+      const retiredHtml = retired.map(a => `<div class="branch-item">
+        <div class="item-name">${escapeHtml(a.role || "retired managed agent")} · retired</div>
+        <div class="meta">${escapeHtml(a.agentId || a.sourceId || "—")} · ${escapeHtml(a.reason || a.status || "retired")} · ${fmt(a.retiredAt)}</div>
+      </div>`).join("");
+      const federatedHtml = federated.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.agent_id || "")));
+        return `<div class="branch-item">
+          <div class="item-top">
+            <div><div class="item-name">${escapeHtml(a.role || "federated agent")} · ${escapeHtml(a.effective_state || a.state || "historical")}</div><div class="meta">${escapeHtml(a.agent_id || "—")} · ${escapeHtml(a.freshness || "historical")} · heartbeat ${fmt(a.heartbeat_at)}</div></div>
+            <button class="federated-agent-action" data-federated-key="${encodedId}">Inspect</button>
+          </div>
+        </div>`;
+      }).join("");
+      $("registryHistory").innerHTML = managedHtml + retiredHtml + federatedHtml;
+    }
+
     function renderAgents(snapshot) {
       const agents = snapshot.agents || [];
       $("agentSummary").textContent = `${agents.length} tracked`;
@@ -1057,6 +1160,8 @@
       renderRecommendations(snapshot);
       renderWorkers(snapshot);
       renderNotifications(snapshot);
+      renderAttention(snapshot);
+      renderRegistryHistory(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
       renderInspector(snapshot);
