@@ -69,3 +69,8 @@ For a bridge that can run arbitrary commands or mutate files, transport membersh
 
 ## Secret-bearing parent environments are not child-process defaults
 General-purpose child processes must start from a scrubbed environment rather than inheriting the controller/worker environment wholesale. An `env_from_host` or similar allowlist is meaningless if the implementation first copies every host variable. Block secret-like variable names both from implicit inheritance and explicit forwarding; use a dedicated secret broker/envelope for credentials that genuinely need to cross a process boundary.
+
+## Loopback services validate both Host and Origin
+
+Binding an operator/control service to loopback is necessary but not sufficient for browser-adjacent local services. Validate the HTTP Host header against the expected loopback names/port and reject foreign browser Origin values before routing requests. Keep mutation APIs on loopback unless a separately authenticated remote boundary is intentionally designed, and add regression tests for hostile Host/Origin requests.
+
