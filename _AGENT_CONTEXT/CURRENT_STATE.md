@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.26 Agent Control terminal-registry GC — CURRENT
+
+The current candidate fixes the stale-dead-agent registry leak. Managed agents in failed/interrupted/orphaned/capacity-blocked terminal states are retired once no live process or active recovery still owns them. Linked failed federated records are purged at the same boundary. Retry-pending/waiting, stream-checking, and durable incomplete-work records are deliberately retained until recovery/reconciliation is resolved.
+
+Registry retirement removes only live control-plane tombstones. Task state, failure/event evidence, branches, and worktrees remain durable, so cleanup does not erase work or debugging evidence.
+
+Exact-head `npm run check` + `npm test` and a heaven2 live one-click dispatch/terminal cleanup smoke are still required before closure.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
