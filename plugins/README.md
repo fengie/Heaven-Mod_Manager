@@ -54,6 +54,7 @@ For Heaven plugin work:
 
 ## Implemented packages
 
+- `_tooling/` — generated capability index/resolver plus schema-safe plugin-gap planning and validation.
 - `heaven-control-plane/` — stable structured execution, filesystem, Git verification, build/test plans, indexing, and observability over the existing Heaven Local Bridge.
 - `heaven-workflows/` — reusable repository verification/snapshot workflows and bounded parallel structured-capability execution.
 - `heaven-task-queue/` — SQLite dependency queue with worker leases, retries, heartbeats, and named resource locks.

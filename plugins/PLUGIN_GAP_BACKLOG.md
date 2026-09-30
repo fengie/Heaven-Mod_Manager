@@ -50,7 +50,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 
 ## PG-001 — toolbox capability index and task router
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** High
 - **Triggering use case:** Agents sometimes reach for generic shell/manual control even though a purpose-built repository or ChatGPT plugin already exists. Correct routing currently depends too much on remembering package names and reading scattered documentation.
 - **Why reusable:** Every engineering/computer-control task benefits from fast deterministic discovery of the narrowest existing capability before a fallback is chosen.
@@ -60,12 +60,12 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Discovery is read-only. Do not expose secrets, plugin credentials, connector tokens, or hidden runtime configuration. Resolver output may describe required permissions but must not grant them.
 - **Dependencies / reuse:** Reuse existing manifests/capability registries where available. Add validation that detects stale/missing manifest entries and duplicate providers without declared precedence.
 - **Acceptance tests:** every implemented plugin package is represented; missing/stale entries fail verification; resolver selects the expected narrow capability for representative shell/filesystem/Git/build/browser/desktop/queue/indexing tasks; ambiguity is explicit rather than guessed; representative preflight output records current-runtime discovery plus required activation/read-instructions steps; no secrets appear in generated index/output.
-- **Owner / branch / PR:** unclaimed.
+- **Owner / branch / PR:** current plugin-tooling lane; canonical-main integration.
 - **Completion evidence:** pending.
 
 ## PG-002 — plugin-gap capture helper
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** Medium
 - **Triggering use case:** The standing rule requires agents to preserve useful missing-plugin ideas in this repository, but hand-writing consistent entries is easy to skip during a busy implementation task.
 - **Why reusable:** Every newly discovered toolbox gap needs the same duplicate checks, schema fields, and durable planning evidence.
@@ -75,7 +75,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Repository-text only; no credentials or external account data. It may write only the canonical backlog (or a generated draft file) after normal repository authorization.
 - **Dependencies / reuse:** Prefer PG-001's toolbox index when available; until then parse repository manifests/README metadata conservatively.
 - **Acceptance tests:** deterministic ID/schema validation; duplicate candidate detection; refusal to overwrite an existing ID; generated entry contains every required field; repository verification fails malformed backlog entries.
-- **Owner / branch / PR:** unclaimed.
+- **Owner / branch / PR:** current plugin-tooling lane; canonical-main integration.
 - **Completion evidence:** pending.
 
 
