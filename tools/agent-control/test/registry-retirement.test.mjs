@@ -57,6 +57,24 @@ test("ordinary terminal managed agents retire only after attention and cleanup s
   ), { retire: true, reason: "terminal-stopped" });
 });
 
+
+test("superseded retry-dispatched terminal parents retire while unresolved recovery remains protected", () => {
+  assert.deepEqual(managedAgentRetirementDecision(
+    {
+      status: "failed",
+      recoveryStatus: "retry-dispatched",
+      replacementAgentId: "replacement-1",
+      replacementTaskId: "task-replacement-1"
+    },
+    { status: "superseded" }
+  ), { retire: true, reason: "terminal-failed" });
+
+  assert.deepEqual(managedAgentRetirementDecision(
+    { status: "failed", recoveryStatus: "retry-pending" },
+    { status: "retry-pending" }
+  ), { retire: false, reason: "recovery-retry-pending" });
+});
+
 test("federated retirement is terminal immediately and timeout-based for abandoned presence", () => {
   const now = Date.parse("2026-09-30T12:00:00.000Z");
   assert.equal(federatedAgentRetirementDecision(

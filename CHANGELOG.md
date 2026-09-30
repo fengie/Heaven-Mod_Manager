@@ -1,3 +1,9 @@
+# v8.8.38 — Retire superseded retry parents
+- Stop treating `retry-dispatched` as an unconditional managed-agent retention state after a replacement has taken ownership.
+- Allow terminal superseded retry parents to flow through the existing fail-closed retirement proof, branch/worktree safety checks, durable retirement archive, and registry removal.
+- Keep unresolved `retry-pending`, retry-blocked, work-incomplete, work-unverified, active task, candidate, cleanup-required, dirty, divergent, and unproven ownership states visible.
+- Add regression coverage for the exact failed + retry-dispatched + superseded tombstone leak; advance Agent Control to v0.6.16 and product version to v8.8.38.
+
 # v8.8.37 — Agent registry lifecycle closure
 - Generalize managed retirement beyond retry-exhausted rows while preserving unresolved recovery/attention/candidate/cleanup states.
 - Fail closed on live unowned PIDs, incomplete branch provenance, committed divergence, or dirty worktrees; preserve the affected task as needs-attention rather than hiding work.

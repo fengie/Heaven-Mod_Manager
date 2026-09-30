@@ -1,3 +1,11 @@
+# v8.8.38 Agent Control retry-parent retirement — verification scope
+
+This patch closes the remaining managed-registry tombstone leak: `retry-dispatched` must not permanently pin a terminal parent after its task has been superseded. Exact-head Agent Control syntax/tests plus configured Agent Control and Security gates are required.
+
+Regression evidence must prove the exact failed + retry-dispatched + superseded case becomes retirement-eligible while unresolved retry-pending/blocked/unverified work remains preserved. Existing destructive cleanup stays fail-closed for live unowned PIDs, missing branch provenance, committed divergence, dirty worktrees, and unresolved durable work. Source verification does not substitute for the final heaven2 runtime restart/deployment smoke that proves the observed stale cards drain.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — verification scope
 
 This patch changes registry lifecycle truthfulness and therefore requires exact-head Agent Control syntax/tests plus the configured Agent Control and Security PR gates. Historical product or runtime evidence does not verify these changed bytes.

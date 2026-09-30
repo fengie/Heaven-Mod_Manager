@@ -1,3 +1,14 @@
+# v8.8.38 Agent Control retry-parent retirement — CURRENT CANDIDATE
+
+- Terminal managed parents whose replacement was dispatched no longer remain permanently pinned by the `retry-dispatched` recovery label.
+- Superseded failed parents now enter the existing retirement path; process ownership, Heaven remote-stop proof, branch provenance, committed divergence, and dirty-worktree checks remain fail-closed.
+- Pending/blocked/unverified recovery and active/blocked/needs-attention/candidate/cleanup-required task state remains visible.
+- Durable retirement history remains separate from current managed-agent presence.
+- Agent Control/root/nested plugin identity is v0.6.16 / product v8.8.38.
+- Live acceptance: after deployment/restart on heaven2, the stale failed `RETRY DISPATCHED` parent cards should drain from **Managed agents** and no longer inflate the tracked/current count.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — CURRENT CANDIDATE
 
 - Ordinary terminal managed rows are eligible for retirement only when their recovery/task state is no longer active, blocked-for-recovery, candidate, cleanup-required, or needs-attention.
