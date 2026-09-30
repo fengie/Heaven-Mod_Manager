@@ -32,7 +32,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
     def test_health_capabilities(self):
         result = self.run_job(self.make_job("health", job_id="health-capabilities"))
         self.assertEqual(result["status"], "completed")
-        self.assertEqual(result["data"]["worker_version"], 7)
+        self.assertEqual(result["data"]["worker_version"], 8)
         self.assertEqual(result["data"]["protocol"], "chatgpt-heaven-bridge-v2")
         self.assertTrue(result["data"]["capabilities"]["uia_set_value_requires_relay_opt_in"])
         self.assertFalse(result["data"]["capabilities"]["optional_hmac"])
