@@ -370,3 +370,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Restored stale-lane candidate, phase-owner exclusion, retry cooldown/dispatch-budget, and jitter-bound tests; existing branch-lifecycle coverage rejects ancestry-only cleanup proof.
 - **References:** bad boundary `5471f80545a755dd049718fa6812fb890e6effa2`; restoration commits `9e7dfbb7373a22a994e7505fac7ce58cf2657ef5`, `21d4087086886c2ebf6725f18738c4fd23114f0f`, `fd249748d5d376943f7449f5e9753fd032a14d4d`, `1d09dbf43a5393f9beb56bf43d8f7db5a4fcbcdf`, `eaafc9d223fc4ca2465f6fc0f02fb55db00d29b1`.
 
+## 2026-09-30 — authoritative nonzero agent exits were misclassified as retryable no-work
+- **Symptom:** Managed workers that exited authoritatively with code 1 and produced no durable work were classified as no-work/stream-loss candidates, automatically replaced, and then repeatedly replaced again until retry exhaustion.
+- **Root cause:** Recovery classification treated empty terminal output as evidence of no work without first distinguishing a proven nonzero process exit from an unknown/lost execution stream.
+- **Violated invariant / wrong assumption:** A deterministic runtime failure is not the same state as “execution may not have started.” Automatic no-work replacement is safe only when execution outcome is unknown and an authoritative durable-evidence scan proves no work; a proven nonzero exit must stop for diagnosis unless useful durable work exists to preserve/reconcile.
+- **Direct fix:** Added deterministic-runtime-failure classification for nonzero exit codes/spawn failures/provider-capacity evidence, excluded clean deterministic failures from no-work and swarm-tail retry, preserved deterministic failures that left substantive work, and made failed implementation ownership gate instead of spawning a meaningless repair lane.
+- **Preventive rule/process change:** Recovery state machines must classify process outcome before evaluating empty output. Unknown transport loss may use bounded no-work retry after evidence scan; authoritative nonzero exit may not.
+- **Regression coverage added/strengthened:** Tests cover nonzero exit suppression, stream-loss metadata not overriding authoritative failure, swarm-tail non-resurrection of clean crashes, preservation of dirty work, and implementation-phase gating.
+- **References:** `fe302e78c453dd4cfb1630402368cb0ac57da80b`, `dc6e2df967f68a67d8ae108ae1ebdd87071fc96c`, `d1def9486620f1cc3b9016227fd25f42e87b9b09`, `3d918342b5a7d4c7d3b9fa25ae989e826b5ebd1c`.
+
