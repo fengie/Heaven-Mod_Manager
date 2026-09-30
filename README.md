@@ -1,11 +1,17 @@
-# v8.8.27 Universal Mod Manager
+# v8.8.28 Universal Mod Manager
 
-## v8.8.27 — Agent Control Heaven relay execution repair
+## v8.8.28 — Agent Control Heaven relay execution repair
 
-Agent Control now uses the same documented Heaven relay checkout resolver for **real job submission/result waiting** that it already used for provider health. With `~/HeavenBridgeRepo` installed, a normal heaven2 controller no longer requires a separately injected `AGENT_CONTROL_HEAVEN_RELAY_DIR` just to dispatch a worker to heaven1.
+Agent Control now uses the same documented Heaven relay checkout resolver for **real job submission/result waiting** that it already uses for provider health. With `~/HeavenBridgeRepo` installed, heaven2 no longer needs a separately injected `AGENT_CONTROL_HEAVEN_RELAY_DIR` just to dispatch a worker to heaven1.
 
-This closes the confirmed “click creates an agent, then it immediately fails” chain: both observed main/manager workers exited code 1 because execution bypassed relay discovery and threw on the missing environment variable. The v8.8.26 retry-exhausted retirement remains intact, so terminal failed workers are terminated/cleaned where ownership is provable and removed from managed/federated live registries instead of accumulating as **failed · RETRY EXHAUSTED** cards. Agent Control advances to **v0.6.6** with a regression for the documented execution fallback.
+This closes the confirmed “click creates a worker, then it immediately dies” chain: observed main and manager workers both exited code 1 because execution bypassed relay discovery and threw on the absent environment variable. The v8.8.26 retry-exhausted retirement remains intact, so terminal failed workers are terminated/cleaned where ownership is provable and removed from managed/federated live registries instead of accumulating as **failed · RETRY EXHAUSTED** cards. The v8.8.27 agent-card inspection work is preserved unchanged. Agent Control advances to **v0.6.7** with positive/override/fail-closed relay-resolution regression coverage.
 
+
+## v8.8.27 — Agent Manager card inspection
+
+The v8.8.26 lifecycle fix removes **failed · RETRY EXHAUSTED** workers from the live registry once safe retirement is proven. This follow-up closes the separate operator bug that made the remaining live agent cards look interactive while clicks on the card body did nothing.
+
+Managed and federated agent cards are now inspectable by mouse and keyboard. Clicking a managed card opens its log; clicking a federated card focuses its linked managed worker when one exists or shows the federated session details otherwise. Nested actions such as **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** remain independent and do not double-trigger the card. The dashboard regression parses the emitted inline JavaScript and pins the mouse/keyboard interaction contract. Agent Control advances to **v0.6.6**.
 
 ## v8.8.26 — Agent Control exhausted-agent registry retirement
 
