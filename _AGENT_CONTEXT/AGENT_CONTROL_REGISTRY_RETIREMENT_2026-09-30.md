@@ -28,6 +28,12 @@ The candidate integrates retry-exhausted lineage cleanup and deterministic dead-
 - `git diff --check` — passed; working tree clean after push.
 - The npm launcher failed because its configured global npm CLI path is missing; equivalent direct Node syntax checks and tests passed. GitHub's combined status and workflow-run lookup currently returned no checks for the final commit.
 
+## Plugin preflight evidence for this continuation
+
+- **Available and used:** GitHub connector methods were callable and were used to search for an existing PR, query commit status, query workflow runs, and open/attach draft PR #471. Status/workflow lookup for `ba14430b3cb8c8704ef1a5fdd068ee19113603fb` returned empty; later docs-only head `ed36e27ff2a673cac572e7b7d046cd260667b6e5` also returned empty.
+- **Instructions available, operations unavailable:** the installed `heaven-local-bridge:heaven-bridge` skill was read and specifies explicit `target_host` routing (`heaven2` for control/UI, `heaven` for heavy work). This runtime exposed no callable tool method matching Heaven/bridge/proc execution in its tool inventory, so no bridge job or remote host action could be dispatched from this session.
+- **Safe route used:** continued source, local integration tests, release/handoff, and GitHub review work locally. Heaven2/heaven1 smoke remains a concrete external runtime gate, not an inferred host outage. Capability-discovery gap is recorded under PG-001 in `plugins/PLUGIN_GAP_BACKLOG.md`.
+
 ## Durable regression and rule
 
 - `tools/agent-control/test/no-work-recovery.test.mjs`: retry state remains until exhaustion/disablement.

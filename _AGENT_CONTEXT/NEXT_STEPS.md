@@ -3,8 +3,9 @@
 1. Obtain hosted verification on exact candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb` (draft PR #471); current GitHub lookup reports no status checks/workflow runs.
 2. Run exact-head Agent Control `npm run check && npm test` where npm is available; local equivalent direct Node syntax checks and tests passed 225/225 because this environment's global npm CLI path is missing.
 3. On heaven2, smoke controller startup, server/CLI/dashboard, registry cleanup visibility, and plugin v0.6.5 identity.
-4. Continue all active Agent Manager P0 runtime gates below: heaven1 worker path or explicit fail-closed health, START SWARM/perpetual dispatch/recovery/stop/unique ownership, and real stable ChatGPT session heartbeat if exposed.
-5. Keep P0 active until exact-head evidence closes every gate; use `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md` for implementation and regression detail.
+4. Restore/expose callable Heaven Local Bridge operations in the runtime before claiming host tests; the skill instructions are present, but this session's callable tool inventory had no Heaven Bridge/proc execution method. See PG-001 for the plugin-discovery gap.
+5. Continue all active Agent Manager P0 runtime gates below: heaven1 worker path or explicit fail-closed health, START SWARM/perpetual dispatch/recovery/stop/unique ownership, and real stable ChatGPT session heartbeat if exposed.
+6. Keep P0 active until exact-head evidence closes every gate; use `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md` for implementation, plugin preflight evidence, and regression detail.
 
 ---
 
