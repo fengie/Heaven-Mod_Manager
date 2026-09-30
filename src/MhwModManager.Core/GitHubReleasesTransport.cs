@@ -34,6 +34,7 @@ public sealed record GitHubReleaseAssetSnapshot(
     string ContentType,
     long SizeBytes,
     long DownloadCount,
+    string? Digest,
     DateTimeOffset? CreatedAt,
     Uri BrowserDownloadUri);
 
@@ -268,6 +269,7 @@ public sealed class GitHubReleasesTransport
             OptionalString(asset, "content_type") ?? "application/octet-stream",
             RequireInt64(asset, "size", "GitHub release asset"),
             RequireInt64(asset, "download_count", "GitHub release asset"),
+            OptionalString(asset, "digest"),
             OptionalDateTimeOffset(asset, "created_at"),
             browserDownload);
     }
