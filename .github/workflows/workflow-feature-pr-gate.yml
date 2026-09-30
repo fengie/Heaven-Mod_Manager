@@ -19,6 +19,8 @@ on:
       - 'src/MhwModManager.Storage/LegacyV7Migrator.cs'
       - 'src/MhwModManager.Storage/ManagerDatabaseModLifecycleExtensions.cs'
       - 'src/MhwModManager.Storage/Schema.cs'
+      - 'src/MhwModManager.Storage/CatalogSyncService.cs'
+      - 'src/MhwModManager.Storage/CatalogDiscoveryService.cs'
       - 'src/MhwModManager.Filesystem/DeploymentExecutor.cs'
       - 'tests/MhwModManager.IntegrationTests/SupportBundlePrivacyTests.cs'
       - 'src/MhwModManager.App/App.xaml.cs'
@@ -28,6 +30,8 @@ on:
       - 'tests/MhwModManager.AutomationTests/WorkflowTests.cs'
       - 'tests/MhwModManager.IntegrationTests/LegacyMigrationTests.cs'
       - 'tests/MhwModManager.IntegrationTests/DeploymentTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/CatalogSyncServiceTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/CatalogDiscoveryServiceTests.cs'
       - 'tests/MhwModManager.AutomationTests/AutomationServiceTests.cs'
       - 'tests/MhwModManager.Tests/**'
       - '_AGENT_CONTEXT/handoff-manifest.json'
@@ -106,6 +110,12 @@ jobs:
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~DeploymentTests"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run catalog sync regressions
+        shell: powershell
+        run: |
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~CatalogSyncServiceTests|FullyQualifiedName~CatalogDiscoveryServiceTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused workflow regressions
