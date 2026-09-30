@@ -105,7 +105,13 @@ Assert-Match $agents '(?i)agent after' 'AGENTS.md must require the successor to 
 Assert-Match $agents '(?i)without previous chat history' 'AGENTS.md must require chat-independent continuation.'
 Assert-Match $agents '(?i)explicit user authorization' 'AGENTS.md must protect Core Rules from unauthorized weakening.'
 Assert-Match $agents '(?i)Do not break the chain' 'AGENTS.md must preserve the continuity invariant.'
-Assert-Match $agents '(?is)README\.md.{0,700}patch|patch.{0,700}README\.md' 'AGENTS.md must require README progress reporting and patch advancement.'
+$visibleProgressMatch=[regex]::Match($agents,'(?ms)^### Mandatory visible-progress versioning\s*(?<body>.*?)(?=^###\s|^##\s|\z)')
+if(-not $visibleProgressMatch.Success){throw 'AGENTS.md must contain the Mandatory visible-progress versioning section.'}
+$visibleProgress=$visibleProgressMatch.Groups['body'].Value
+Assert-Match $visibleProgress '(?i)root\s+\x60?README\.md\x60?' 'AGENTS.md visible-progress rule must require updating the root README.md.'
+Assert-Match $visibleProgress '(?is)VERSION\.txt.{0,240}patch|patch.{0,240}VERSION\.txt' 'AGENTS.md visible-progress rule must require patch advancement in VERSION.txt.'
+Assert-Match $visibleProgress '(?i)CHANGELOG\.md' 'AGENTS.md visible-progress rule must require updating CHANGELOG.md.'
+Assert-Match $visibleProgress '(?i)same change set' 'AGENTS.md visible-progress rule must bind progress reporting to the same meaningful change set.'
 Assert-NoMatch $agents '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' 'AGENTS.md must not negate successor continuity propagation.'
 Assert-NoMatch $agents '(?i)(?:Core continuity rules|Core Rules?).{0,100}(?:without explicit user authorization|do not require explicit user authorization)' 'AGENTS.md must not weaken Core Rules while retaining authorization keywords.'
 
