@@ -24,7 +24,6 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
     public string DisplayName => "Nexus Mods";
 
     public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Search |
         CatalogProviderCapabilities.Browse |
         CatalogProviderCapabilities.Metadata |
         CatalogProviderCapabilities.Images |
@@ -50,6 +49,12 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
             $"game={request.Game.Id}; query={request.Query ?? "<empty>"}");
         ArgumentNullException.ThrowIfNull(request);
 
+        if (!string.IsNullOrWhiteSpace(request.Query))
+            throw new NotSupportedException("Nexus API v3 full-catalog search is not implemented yet.");
+
+        if (request.Mode != CatalogBrowseMode.Trending)
+            throw new NotSupportedException($"Nexus API v3 browse mode '{request.Mode}' is not implemented yet.");
+
         var domain = RequireGameDomain(request.Game);
         try
         {
@@ -64,18 +69,8 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
                 domain,
                 document);
 
-            IEnumerable<CatalogMod> filtered = mods;
-            var query = request.Query?.Trim();
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                filtered = filtered.Where(mod =>
-                    mod.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    mod.Author.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    mod.Summary.Contains(query, StringComparison.OrdinalIgnoreCase));
-            }
-
             MarkConnected(publicOnly: credential is null);
-            return filtered.Take(Math.Clamp(request.Limit, 1, 500)).ToArray();
+            return mods.Take(Math.Clamp(request.Limit, 1, 500)).ToArray();
         }
         catch (Exception ex)
         {
@@ -165,8 +160,9 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         ct.ThrowIfCancellationRequested();
 
         var domain = RequireGameDomain(request.Game);
+        var encodedDomain = Uri.EscapeDataString(domain);
         var modId = Uri.EscapeDataString(request.Mod.ProviderModId);
-        var assisted = new Uri($"https://www.nexusmods.com/{domain}/mods/{modId}?tab=files");
+        var assisted = new Uri($"https://www.nexusmods.com/{encodedDomain}/mods/{modId}?tab=files");
 
         return Task.FromResult(new CatalogAcquisitionResolution(
             CatalogAcquisitionKind.Assisted,
