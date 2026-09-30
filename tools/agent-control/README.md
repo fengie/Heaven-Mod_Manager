@@ -14,7 +14,10 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.10 does
+## What v0.6.11 does
+
+- Makes `GET /api/status` a lightweight local-state liveness endpoint so watchdog/startup health is independent of repository scans and relay synchronization.
+- Reuses one Heaven Bridge assessment per full dashboard snapshot while preserving authoritative dispatch-time bridge checks.
 
 - Fails closed when a Heaven-backed retry-exhausted row lacks a durable remote job id, including runtimeProvider/provider fallback identities, and preserves retirement tombstones across state migration.
 - Requires a retry-exhausted Heaven Bridge worker's durable remote job to reach an explicit processed-terminal state before live-registry retirement; ambiguous, queued, `not_running`, `unknown`, cancellation/status authority failure, and unrecognized states fail closed.

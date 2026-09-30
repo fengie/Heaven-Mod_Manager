@@ -1,3 +1,10 @@
+# v8.8.33 — Agent Control lightweight health
+- Make `GET /api/status` a local-state-only health path instead of calling heavyweight `buildSnapshot()`.
+- Keep startup restore and the watchdog on their existing `/api/status` probe while removing repository scans and Heaven Bridge synchronization from controller liveness.
+- Reuse one Heaven Bridge assessment per full dashboard snapshot across worker and federation views.
+- Preserve dispatch-time bridge trust/authorization checks; only advisory snapshot/health work is deduplicated or skipped.
+- Add focused health-contract regressions and advance Agent Control runtime/root/nested plugin identity to v0.6.11 and root product version to v8.8.33.
+
 # v8.8.32 — Agent Control retirement identity fail-closed closure
 - Resolve persisted worker ownership through the canonical executionProvider/runtimeProvider/provider fallback before remote retirement.
 - Block and preserve Heaven-backed retry-exhausted rows whose durable remoteJobId is missing or blank instead of treating proof as unnecessary.

@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.33 lightweight health — CURRENT
+
+1. Run exact-head Agent Control `npm run check && npm test` and configured Security/Agent Control PR gates.
+2. Before integration, resync with canonical `main` and preserve any newer Agent Control safety changes.
+3. On heaven2, issue repeated local `GET /api/status` probes and record p50/p95 comfortably below the three-second watchdog timeout, including while Git/origin/relay work is slow or unavailable.
+4. Confirm the watchdog and startup restore remain healthy on `/api/status` and do not false-restart a responsive controller.
+5. Confirm a full dashboard snapshot performs one Heaven Bridge assessment while real dispatch still revalidates bridge trust normally.
+6. After integration, continue P0 #475 startup/runtime freshness, #482 sibling Heaven stop-path proof, and #461 notification/inspector closure.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? NEXT
 
 1. Require exact-head Agent Control check/test, Security Supply Chain, and handoff preflight/negative fixtures.

@@ -1136,7 +1136,7 @@ function refreshState() {
   return state;
 }
 
-async function workerSnapshot(state = refreshState()) {
+async function workerSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   const hostname = os.hostname();
   const currentId = hostname.toLowerCase();
@@ -1144,7 +1144,7 @@ async function workerSnapshot(state = refreshState()) {
   const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
   configured.add(currentId);
   const heavenBridge = currentId === "heaven2" && configured.has("heaven")
-    ? await inspectHeavenBridge({ sync: false })
+    ? (heavenBridgeAssessment === undefined ? await inspectHeavenBridge({ sync: false }) : heavenBridgeAssessment)
     : null;
 
   return [...configured].map(id => {
@@ -1213,12 +1213,14 @@ function federationCountCoverage(snapshot) {
   };
 }
 
-async function runtimeFederationSnapshot(state = refreshState()) {
+async function runtimeFederationSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
   const snapshot = federationSnapshot(state.federation, { now: Date.now() });
   snapshot.coverage = federationCountCoverage(snapshot);
   if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
 
-  const health = await inspectHeavenBridge({ sync: false });
+  const health = heavenBridgeAssessment === undefined
+    ? await inspectHeavenBridge({ sync: false })
+    : heavenBridgeAssessment;
   const provider = snapshot.providers.find(item => item.id === "heaven-bridge");
   if (provider) {
     provider.status = health.healthy ? "online" : (health.configured ? "unhealthy" : "not-configured");
@@ -3648,6 +3650,85 @@ function heartbeatFederatedProvider(providerId, body = {}) {
   return provider;
 }
 
+function lightweightWorkerSnapshot(state) {
+  const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
+  const hostname = os.hostname();
+  const currentId = hostname.toLowerCase();
+  const policies = state.settings?.machinePolicies || {};
+  const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
+  configured.add(currentId);
+
+  return [...configured].map(id => {
+    const policy = policies[id] || null;
+    if (id !== currentId) {
+      const bridgeBacked = id === "heaven" && currentId === "heaven2";
+      return {
+        id,
+        name: policy?.label || id,
+        kind: bridgeBacked ? "remote-provider" : "configured",
+        provider: bridgeBacked ? "heaven-bridge" : null,
+        status: "unknown",
+        controller: false,
+        lastHeartbeat: null,
+        running: null,
+        capacity: null,
+        availableSlots: null,
+        providerHealth: null,
+        policy
+      };
+    }
+
+    return {
+      id,
+      name: hostname,
+      kind: "local",
+      provider: "local-control",
+      status: "online",
+      controller: true,
+      lastHeartbeat: isoNow(),
+      running,
+      capacity: MAX_ACTIVE_AGENTS,
+      availableSlots: Math.max(0, MAX_ACTIVE_AGENTS - running),
+      cpus: os.cpus()?.length || null,
+      totalMemoryBytes: os.totalmem(),
+      freeMemoryBytes: os.freemem(),
+      platform: process.platform,
+      arch: process.arch,
+      policy
+    };
+  });
+}
+
+function buildHealthSnapshot(state) {
+  const federation = federationSnapshot(state.federation, { now: Date.now() });
+  federation.coverage = federationCountCoverage(federation);
+
+  return {
+    ok: true,
+    lightweight: true,
+    generatedAt: isoNow(),
+    controller: {
+      host: os.hostname(),
+      bindHost: HOST,
+      port: PORT,
+      repo: REPO,
+      worktreeRoot: WORKTREE_ROOT,
+      codex: codexStatus(),
+      stateVersion: STATE_VERSION,
+      sessionId: SESSION_ID,
+      health: state.health
+    },
+    telemetry: telemetry(state, [], federation),
+    federation: {
+      counts: federation.counts,
+      providers: federation.providers,
+      coverage: federation.coverage
+    },
+    workers: lightweightWorkerSnapshot(state),
+    roles: rolePresets
+  };
+}
+
 async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = false } = {}) {
   if (fetchRemote) {
     const beforeSync = loadState();
@@ -3665,8 +3746,11 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     observedBranches(state),
     repositorySnapshot()
   ]);
-  const workers = await workerSnapshot(state);
-  const federation = await runtimeFederationSnapshot(state);
+  const heavenBridgeAssessment = os.hostname().toLowerCase() === "heaven2"
+    ? await inspectHeavenBridge({ sync: false })
+    : null;
+  const workers = await workerSnapshot(state, heavenBridgeAssessment);
+  const federation = await runtimeFederationSnapshot(state, heavenBridgeAssessment);
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
 
@@ -5338,19 +5422,8 @@ const server = http.createServer(async (req, res) => {
     if (!allowedOrigin(req)) return sendJson(res, 403, { error: "Origin not allowed." });
 
     if (req.method === "GET" && pathname === "/api/status") {
-      const snapshot = await buildSnapshot();
-      return sendJson(res, 200, {
-        ok: true,
-        generatedAt: snapshot.generatedAt,
-        controller: snapshot.controller,
-        telemetry: snapshot.telemetry,
-        federation: {
-          counts: snapshot.federation.counts,
-          providers: snapshot.federation.providers
-        },
-        workers: snapshot.workers,
-        roles: snapshot.roles
-      });
+      const state = loadState();
+      return sendJson(res, 200, buildHealthSnapshot(state));
     }
 
     if (req.method === "GET" && pathname === "/api/snapshot") {
