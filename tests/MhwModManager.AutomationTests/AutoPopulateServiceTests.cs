@@ -228,6 +228,37 @@ public sealed class AutoPopulateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task PrereleaseDoesNotSatisfyReleaseMinimumByGuessing()
+    {
+        var db = await CreateDbAsync("prerelease-requirement.db");
+        var gameRoot = Path.Combine(root, "game-prerelease");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "base", "Prerelease Base", 50, nexusVersion: "2.0.0-beta");
+        var addon = await AddModAsync(db, "addon", "Needs Stable Base", 100);
+        await File.WriteAllTextAsync(
+            Path.Combine(addon.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":[{"id":"base","minVersion":"2.0.0"}]}""",
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("base",
+            [ModFile("base", @"nativePC\version\pre-base.bin", "pre", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("addon",
+            [ModFile("addon", @"nativePC\version\stable-addon.bin", "addon", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.False(result.State["addon"].Enabled);
+        Assert.Contains(result.Decisions, x => x.ModId == "addon" && x.Reason.Contains("2.0.0", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task OptionalDependencyDoesNotBlockWhenAbsent()
     {
         var db = await CreateDbAsync("optional-requirement.db");
