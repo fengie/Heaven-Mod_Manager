@@ -23,6 +23,7 @@ class BrowserPlugin:
         if not isinstance(value,str) or len(value)>8192: raise ValueError("invalid URL")
         u=urllib.parse.urlsplit(value)
         if u.scheme not in {"http","https"} or not u.netloc: raise ValueError("only http/https URLs are allowed")
+        if u.username or u.password: raise ValueError("URLs must not contain embedded credentials")
         return value
 
     def open(self,url:str,*,browser:str="edge")->Mapping[str,Any]:
