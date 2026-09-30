@@ -207,4 +207,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Root cause:** The constructor assigned the `baseUri` field to itself after an unqualified assignment, and `GetModsAsync` passed a mutable `List<(string Key,string Value)>` into a helper requiring an array.
 - **Direct fix:** Assign `this.baseUri = NormalizeBaseUri(apiBaseUri)` directly and convert the query list with `ToArray()` at the helper boundary.
 - **Prevention:** Treat strict compile/analyzer failures as primary errors; fix the first compiler/type errors before interpreting cascaded analyzer or missing-binary test failures. Prefer direct field assignment and explicit collection-shape conversion at stable API boundaries.
+## 2026-09-29 — Mod.io transport rebase — constructor self-assignment broke strict build
 
+- **Symptom:** Exact-head verification for PR #359 failed in the strict whole-solution build with `CS1717` at `ModIoTransport.cs:82`: the normalized base URI field was assigned to itself.
+- **Root cause:** Integration/transplant code split normalization into `baseUri = NormalizeBaseUri(apiBaseUri)` followed by `this.baseUri = baseUri`; because no local `baseUri` existed, both references resolved to the field and the second statement became a self-assignment.
+- **Violated invariant / wrong assumption:** Constructor field initialization must be unambiguous under the repository's warnings-as-errors analyzer profile; visual similarity to a local-variable handoff is not evidence that a local exists.
+- **Direct fix:** Assign the normalized value directly with `this.baseUri = NormalizeBaseUri(apiBaseUri);`.
+- **Preventive rule/process change:** After source transplants/rebases, run the exact strict compile/analyzer gate before merge and inspect constructor/member assignments for field/local shadowing or self-assignment. Treat the first compiler/analyzer diagnostic as the root failure; downstream missing binaries/tests are cascade noise until it is fixed.
+- **Regression/verification:** The corrected transport implementation is present on canonical `main`; future merges remain blocked on exact-head required gates.
+- **Reference:** PR #359, Heaven Workflow Feature PR Gate run 36662934090.
