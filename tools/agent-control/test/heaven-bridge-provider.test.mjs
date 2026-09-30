@@ -12,9 +12,11 @@ import {
   bridgeMachineStatus,
   bridgeResultSucceeded,
   buildBridgeJob,
+  canonicalBridgeJob,
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
   resolveHeavenRelayDir,
+  signBridgeJob,
   shouldRefreshHeartbeat,
   validateBridgeResult
 } from "../lib/heaven-bridge-provider.mjs";
@@ -56,6 +58,45 @@ test("bridge jobs normalize ids and preserve bounded execution metadata", () => 
   assert.equal(job.action, "proc_run");
   assert.equal(job.ttl_seconds, 60);
   assert.equal(job.params.command, "echo ok");
+});
+
+test("bridge HMAC signing matches worker canonicalization rules", () => {
+  const job = buildBridgeJob({
+    id: "signed-job",
+    action: "proc_run",
+    params: { z: 2, a: { y: true, x: "value" } },
+    targetHost: HEAVEN2_BRIDGE_HOST,
+    createdAt: "2026-09-29T09:00:00.000Z"
+  });
+  const signed = signBridgeJob(job, "unit-test-only-secret");
+  assert.match(signed.auth.signature, /^[0-9a-f]{64}$/);
+  assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
+
+  const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "unit-test-only-secret");
+  assert.notEqual(changed.auth.signature, signed.auth.signature);
+  assert.equal(signBridgeJob(job, ""), job);
+});
+
+test("cross-language HMAC fixture is byte-stable", () => {
+  const job = buildBridgeJob({
+    id: "canonical-fixture",
+    action: "wait_for",
+    params: {
+      ratio: 1e-7,
+      count: 3,
+      large: 9007199254740992,
+      "ユ": "😀"
+    },
+    targetHost: HEAVEN2_BRIDGE_HOST,
+    createdAt: "2026-09-29T09:00:00.000Z"
+  });
+  const signed = signBridgeJob(job, "unit-test-only-secret");
+  assert.equal(signed.auth.canonical, "mhw-bridge-canon-v1");
+  assert.equal(
+    signed.auth.signature,
+    "30678ccd2b625f08422cd3da337913ac1e6240bec048a76ff1b72138067e851a"
+  );
+  assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
 });
 
 test("bridge jobs can explicitly target heaven2 while preserving heaven legacy default", () => {
