@@ -1,3 +1,14 @@
+# v8.8.34 Agent Control durable stop proof — CURRENT CANDIDATE
+
+- Operator Stop and provider-capacity termination now enter a persisted proof-pending state before any process termination begins.
+- Heaven-backed workers resolve provider identity through the canonical executionProvider/runtimeProvider/provider fallback and require a durable remote job id plus an explicit processed-terminal Bridge state.
+- Local wrapper exit while proof is pending records exit/Git evidence only; it cannot classify final status, stamp completion evidence, close the task, or release the lease.
+- Successful finalization requires both remote proof (when Heaven-backed) and local exit proof; ambiguous or failed proof leaves the row blocked and ownership preserved.
+- Agent Control/root/nested plugin identity is v0.6.12 / product v8.8.34.
+- Exact-head Agent Control and Security gates are required before integration. Live heaven2→heaven1 operator/capacity smoke remains separate runtime evidence.
+
+---
+
 # v8.8.33 Agent Control lightweight health — INTEGRATED
 
 - PR #495 integrated the lightweight-health source onto canonical `main` as squash commit `4ffff561a05e7f4d9f2a47b2af49927ca086cee2`.
