@@ -203,6 +203,9 @@ if(!(Test-Path -LiteralPath $bridgeWorkerPath)){
         'AUTH_HMAC_NOT_CONFIGURED',
         'HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY',
         'HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL',
+        'MIN_HMAC_KEY_BYTES = 32',
+        'def sign_relay_document(document):',
+        'signed_body = sign_relay_document(body)',
         'def safe_process_env():',
         'SENSITIVE_HOST_ENV_BLOCKED',
         'env=env if env is not None else safe_process_env()'
@@ -226,6 +229,8 @@ if(!(Test-Path -LiteralPath $bridgeProviderPath)){
     $bridgeProvider=Get-Content -LiteralPath $bridgeProviderPath -Raw
     foreach($required in @(
         'resolveBridgeSigningKey',
+        'verifyBridgeDocument',
+        'timingSafeEqual',
         'AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE',
         'unsigned privileged relay jobs are disabled by default'
     )){
