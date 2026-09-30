@@ -278,10 +278,10 @@ public sealed class ManagerDatabase(string databasePath)
         var aComponent = armor.Parameters.Add("$component", SqliteType.Text);
         armor.Prepare();
 
+        var capturedAt = DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture);
         foreach (var f in files)
         {
             ct.ThrowIfCancellationRequested();
-            var capturedAt = DateTimeOffset.UtcNow.ToString("O");
             bHash.Value = f.BlobSha256;
             bSize.Value = f.Length;
             bUtc.Value = capturedAt;
@@ -521,7 +521,8 @@ public sealed class ManagerDatabase(string databasePath)
         await ExecAsync(c,"DELETE FROM mod_supersession",ct,tx);
         await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText="INSERT INTO mod_supersession(older_mod_id,newer_mod_id,confidence_score,reason,created_at) VALUES($o,$n,$s,$r,$t)";
         var po=cmd.Parameters.Add("$o",SqliteType.Text);var pn=cmd.Parameters.Add("$n",SqliteType.Text);var ps=cmd.Parameters.Add("$s",SqliteType.Integer);var pr=cmd.Parameters.Add("$r",SqliteType.Text);var pt=cmd.Parameters.Add("$t",SqliteType.Text);cmd.Prepare();
-        foreach(var link in links){po.Value=link.older;pn.Value=link.newer;ps.Value=link.score;pr.Value=link.reason;pt.Value=DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture);await cmd.ExecuteNonQueryAsync(ct);}
+        var createdAt=DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture);
+        foreach(var link in links){po.Value=link.older;pn.Value=link.newer;ps.Value=link.score;pr.Value=link.reason;pt.Value=createdAt;await cmd.ExecuteNonQueryAsync(ct);}
         await tx.CommitAsync(ct);
     }
 
@@ -531,7 +532,8 @@ public sealed class ManagerDatabase(string databasePath)
         await using var c=await OpenAsync(ct);await using var tx=(SqliteTransaction)await c.BeginTransactionAsync(ct);
         await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText="INSERT INTO resolver_audit(time,path,winner_mod_id,score,reason_code,explanation,evidence) VALUES($t,$p,$w,$s,$r,$x,$e)";
         var pt=cmd.Parameters.Add("$t",SqliteType.Text);var pp=cmd.Parameters.Add("$p",SqliteType.Text);var pw=cmd.Parameters.Add("$w",SqliteType.Text);var ps=cmd.Parameters.Add("$s",SqliteType.Integer);var pr=cmd.Parameters.Add("$r",SqliteType.Text);var px=cmd.Parameters.Add("$x",SqliteType.Text);var pe=cmd.Parameters.Add("$e",SqliteType.Text);cmd.Prepare();
-        foreach(var a in audits){pt.Value=DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture);pp.Value=a.Path;pw.Value=(object?)a.WinnerModId??DBNull.Value;ps.Value=a.Score;pr.Value=a.ReasonCode;px.Value=a.Explanation;pe.Value=a.Evidence;await cmd.ExecuteNonQueryAsync(ct);}
+        var auditTime=DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture);
+        foreach(var a in audits){pt.Value=auditTime;pp.Value=a.Path;pw.Value=(object?)a.WinnerModId??DBNull.Value;ps.Value=a.Score;pr.Value=a.ReasonCode;px.Value=a.Explanation;pe.Value=a.Evidence;await cmd.ExecuteNonQueryAsync(ct);}
         await tx.CommitAsync(ct);
     }
 
