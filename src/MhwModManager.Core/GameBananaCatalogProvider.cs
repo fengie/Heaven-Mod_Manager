@@ -21,19 +21,47 @@ public sealed class GameBananaCatalogProvider : IModCatalogProvider
         this.transport = transport;
     }
 
-    public string ProviderId => GameBananaCatalogNormalizer.ProviderId;
-    public string DisplayName => "GameBanana";
+    public string ProviderId
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GameBananaCatalogNormalizer.ProviderId;
+        }
+    }
 
-    public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Browse |
-        CatalogProviderCapabilities.Metadata |
-        CatalogProviderCapabilities.Images |
-        CatalogProviderCapabilities.FileList |
-        CatalogProviderCapabilities.FileVariants |
-        CatalogProviderCapabilities.BrowserAssistedDownload |
-        CatalogProviderCapabilities.Updates;
+    public string DisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return "GameBanana";
+        }
+    }
 
-    public CatalogProviderCompliance Compliance => GameBananaCatalogPolicy.Compliance;
+    public CatalogProviderCapabilities Capabilities
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogProviderCapabilities.Browse |
+                CatalogProviderCapabilities.Metadata |
+                CatalogProviderCapabilities.Images |
+                CatalogProviderCapabilities.FileList |
+                CatalogProviderCapabilities.FileVariants |
+                CatalogProviderCapabilities.BrowserAssistedDownload |
+                CatalogProviderCapabilities.Updates;
+        }
+    }
+
+    public CatalogProviderCompliance Compliance
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GameBananaCatalogPolicy.Compliance;
+        }
+    }
 
     public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct = default)
     {
