@@ -167,7 +167,7 @@ export function findRepositoryContext({ root, document, expectedSha256, query, m
     if (haystack == null || !haystack.toLowerCase().includes(needle)) continue;
     totalMatches++;
     if (matches.length >= maxResults) continue;
-    const match = { line: index + 1, text: bounded(line, MAX_CONTEXT_MATCH_BYTES) };
+    const match = { line: index + 1, text: bounded(line, MAX_CONTEXT_MATCH_BYTES), textTruncated: Buffer.byteLength(line) > MAX_CONTEXT_MATCH_BYTES };
     if (heading) match.level = heading[1].length;
     matches.push(match);
   }
