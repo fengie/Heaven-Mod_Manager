@@ -862,9 +862,9 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
-## LR-049 — live registries are not historical failure archives
+## LR-050 — live registries are not historical failure archives
 
-- **Rule ID:** LR-049
+- **Rule ID:** LR-050
 - **Status:** Active
 - **Date:** 2026-09-30
 - **Scope:** Agent registries, worker lifecycle state, retries, federation, dashboards
@@ -874,5 +874,23 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Enforcement:** lifecycle code must have explicit retention tests for process-alive, retry-pending/waiting, incomplete durable work, retry-exhausted, deterministic failure, and linked federated records.
 - **Regression/evidence:** v8.8.26 registry-retention implementation and `registry-retention.test.mjs`.
 - **Related rules:** LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure; LR-048 whole-output closure.
+- **Supersedes:** none
+- **Superseded by:** none
+
+
+---
+
+## LR-051 — provider preflight and execution must share configuration resolution
+
+- **Rule ID:** LR-051
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent/provider relays, service discovery, runtime configuration, health checks, job submission/result polling
+- **Rule:** Any documented default or fallback accepted by provider health/preflight must be resolved through the same authoritative function when real execution submits work and waits for results. Do not validate one configuration path and then re-read only an environment variable at execution time.
+- **Trigger / evidence:** Heaven Bridge health could auto-discover `~/HeavenBridgeRepo`, but Agent Control submit/wait bypassed that resolver and threw when `AGENT_CONTROL_HEAVEN_RELAY_DIR` was absent, causing deterministic exit-code-1 worker failures.
+- **Rationale:** Divergent resolution creates false-green health and guaranteed runtime failure, which recovery layers may amplify into misleading retry noise.
+- **Enforcement:** Centralize provider path/config resolution; regression-test the documented-default/no-explicit-env execution path; when an execution failure escapes, trace the first authoritative runtime error before tuning retry policy.
+- **Regression/evidence:** v8.8.26; `tools/agent-control/lib/heaven-bridge-provider.mjs`; `tools/agent-control/test/heaven-bridge-provider.test.mjs`.
+- **Related rules:** LR-039 deterministic failure classification; LR-046 installed-runtime/restart proof; LR-050 live-registry retirement.
 - **Supersedes:** none
 - **Superseded by:** none
