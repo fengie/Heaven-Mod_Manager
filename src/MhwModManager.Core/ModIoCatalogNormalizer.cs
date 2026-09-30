@@ -44,8 +44,15 @@ public static class ModIoCatalogNormalizer
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(document);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedGameId);
-        var providerModId = NormalizePositiveId(expectedProviderModId, nameof(expectedProviderModId));
+        if (!TryParseProviderModId(expectedProviderModId, out var providerGameId, out var rawModId)
+            || providerGameId != expectedGameId)
+        {
+            throw new ArgumentException(
+                "mod.io provider mod id must match the expected game and mod identity.",
+                nameof(expectedProviderModId));
+        }
 
+        var providerModId = BuildProviderModId(providerGameId, rawModId);
         var mod = NormalizeModElement(game, expectedGameId, document.RootElement);
         if (!mod.ProviderModId.Equals(providerModId, StringComparison.Ordinal))
             throw new InvalidDataException("mod.io mod detail returned an unexpected mod identity.");
@@ -58,13 +65,15 @@ public static class ModIoCatalogNormalizer
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(document);
-        var providerModId = NormalizePositiveId(expectedProviderModId, nameof(expectedProviderModId));
+        if (!TryParseProviderModId(expectedProviderModId, out var providerGameId, out var rawModId))
+            throw new ArgumentException("mod.io provider mod id must include game and mod ids.", nameof(expectedProviderModId));
+        var providerModId = BuildProviderModId(providerGameId, rawModId);
         var root = RequireObject(document.RootElement, "mod.io modfile list response");
         var data = RequireArray(root, "data");
 
         var result = new List<CatalogModFile>(data.GetArrayLength());
         foreach (var item in data.EnumerateArray())
-            result.Add(NormalizeFileElement(providerModId, item, recommended: false));
+            result.Add(NormalizeFileElement(providerModId, rawModId, item, recommended: false));
 
         return result;
     }
@@ -76,14 +85,16 @@ public static class ModIoCatalogNormalizer
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(document);
-        var providerModId = NormalizePositiveId(expectedProviderModId, nameof(expectedProviderModId));
+        if (!TryParseProviderModId(expectedProviderModId, out var providerGameId, out var rawModId))
+            throw new ArgumentException("mod.io provider mod id must include game and mod ids.", nameof(expectedProviderModId));
+        var providerModId = BuildProviderModId(providerGameId, rawModId);
         var providerFileId = NormalizePositiveId(expectedProviderFileId, nameof(expectedProviderFileId));
         var root = RequireObjectValue(document.RootElement, "mod.io modfile response");
 
         var actualFileId = ReadRequiredPositiveId(root, "id");
         var actualModId = ReadRequiredPositiveId(root, "mod_id");
         if (!actualFileId.Equals(providerFileId, StringComparison.Ordinal)
-            || !actualModId.Equals(providerModId, StringComparison.Ordinal))
+            || !actualModId.Equals(rawModId, StringComparison.Ordinal))
         {
             throw new InvalidDataException("mod.io modfile response returned an unexpected identity.");
         }
@@ -132,10 +143,12 @@ public static class ModIoCatalogNormalizer
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var root = RequireObjectValue(element, "mod.io mod");
 
-        var providerModId = ReadRequiredPositiveId(root, "id");
+        var rawModId = ReadRequiredPositiveId(root, "id");
         var gameId = ReadRequiredInt64(root, "game_id");
         if (gameId != expectedGameId)
             throw new InvalidDataException("mod.io mod belongs to a different game.");
+
+        var providerModId = BuildProviderModId(expectedGameId, rawModId);
 
         var status = ReadRequiredInt64(root, "status");
         var visible = ReadRequiredInt64(root, "visible");
@@ -165,7 +178,7 @@ public static class ModIoCatalogNormalizer
             && modfile.ValueKind == JsonValueKind.Object
             && modfile.TryGetProperty("id", out _))
         {
-            var normalized = NormalizeFileElement(providerModId, modfile, recommended: true);
+            var normalized = NormalizeFileElement(providerModId, rawModId, modfile, recommended: true);
             files = [normalized];
             version = normalized.Version;
         }
@@ -211,15 +224,16 @@ public static class ModIoCatalogNormalizer
 
     private static CatalogModFile NormalizeFileElement(
         string expectedProviderModId,
+        string expectedRawModId,
         JsonElement element,
         bool recommended)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var root = RequireObjectValue(element, "mod.io modfile");
         var providerFileId = ReadRequiredPositiveId(root, "id");
-        var providerModId = ReadRequiredPositiveId(root, "mod_id");
+        var rawModId = ReadRequiredPositiveId(root, "mod_id");
 
-        if (!providerModId.Equals(expectedProviderModId, StringComparison.Ordinal))
+        if (!rawModId.Equals(expectedRawModId, StringComparison.Ordinal))
             throw new InvalidDataException("mod.io modfile belongs to a different mod.");
 
         var fileName = ReadRequiredString(root, "filename");
@@ -243,7 +257,7 @@ public static class ModIoCatalogNormalizer
 
         return new CatalogModFile(
             ProviderId,
-            providerModId,
+            expectedProviderModId,
             providerFileId,
             fileName,
             fileName,
@@ -448,6 +462,55 @@ public static class ModIoCatalogNormalizer
         {
             throw new InvalidDataException($"mod.io field '{propertyName}' contains an invalid Unix timestamp.", ex);
         }
+    }
+
+    public static bool TryParseProviderModId(
+        string providerModId,
+        out int gameId,
+        out string rawModId)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        gameId = 0;
+        rawModId = string.Empty;
+        if (string.IsNullOrWhiteSpace(providerModId))
+            return false;
+
+        var split = providerModId.IndexOf(':', StringComparison.Ordinal);
+        if (split <= 0 || split == providerModId.Length - 1
+            || providerModId.IndexOf(':', split + 1) >= 0)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(
+            providerModId[..split],
+            NumberStyles.None,
+            CultureInfo.InvariantCulture,
+            out gameId)
+            || gameId <= 0)
+        {
+            gameId = 0;
+            return false;
+        }
+
+        try
+        {
+            rawModId = NormalizePositiveId(providerModId[(split + 1)..], nameof(providerModId));
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            gameId = 0;
+            rawModId = string.Empty;
+            return false;
+        }
+    }
+
+    private static string BuildProviderModId(int gameId, string rawModId)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gameId);
+        return $"{gameId.ToString(CultureInfo.InvariantCulture)}:{NormalizePositiveId(rawModId, nameof(rawModId))}";
     }
 
     private static string NormalizePositiveId(string value, string parameterName)
