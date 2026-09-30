@@ -1,3 +1,9 @@
+# v8.8.50 audit hardening candidate
+
+Current owner: `fix/audit-hardening-20260930`, based on canonical main `be4615f6` after v8.8.49 UI-fix integration. This patch closes four audit-confirmed defects: Dashboard viewport-width binding, non-retryable first metadata refresh, stale prepared-updater handoff reuse after staged candidate replacement, and raw updater-health arguments in startup diagnostics. Focused regressions are included. No prior release/verification evidence is promoted to this source.
+
+Next: run focused integration tests and exact-head Security/Workflow/Agent Control gates; re-read fresh main/PR ownership before merge; merge only if green and reconcilable; verify canonical main; then perform authorized runtime checks for Dashboard sizing and updater handoff identity. PR #529 owns an independent Agent Manager UX lane and must rebase/reversion if this v8.8.50 patch lands first. Preserve recursive continuity and all unresolved security/provider/signing work.
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
