@@ -1,4 +1,7 @@
 # v8.8.51 — compact Agent Manager overview
+- Add smoother compositor-friendly card/metric/toast micro-transitions, staggered one-time overview entry motion, and springier expand/press feedback without continuous animation or layout-dimension animation.
+- Add optional persisted UI sounds generated with lightweight Web Audio; sounds are off by default until the operator enables them and play only for direct interactions, never background refreshes.
+- Preserve reduced-motion handling and visibility guards so motion work stops when the page is hidden or the OS/browser requests less animation.
 - Convert Machine pool, Notifications, Inspector, Registry history, Managed agents, Federated registry, leases, integration queue, branches, and recent events into native collapsed summary cards.
 - Arrange collapsed cards in a responsive two-column overview; an opened card expands full-width and scrolls internally instead of pushing the rest of the dashboard off-screen.
 - Automatically open Inspector when a managed/federated record or supported notification action is inspected.
