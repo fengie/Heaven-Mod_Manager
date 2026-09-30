@@ -27,6 +27,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private bool profilesLoaded;
     private bool activityLoaded;
     private bool overlapsLoaded;
+    private bool initialMetadataRefreshStarted;
+    private int conflictPreviewGeneration;
+    private int conflictPreviewLoadedGeneration=-1;
     private bool suppressChanged;
     private bool disposed;
 
@@ -230,6 +233,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
+        if(value==1&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
+        {
+            initialMetadataRefreshStarted=true;
+            _=EnsureInitialMetadataLoadedAsync(backgroundCts.Token);
+        }
+        if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
         if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
     }
 
@@ -263,6 +272,48 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         catch(Exception ex)
         {
             MasterDebugLog.Write("DEFERRED-PAGE",$"Deferred tab load failed. tab={tab}",ex);
+        }
+    }
+
+    private async Task EnsureInitialMetadataLoadedAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(ct.IsCancellationRequested)return;
+        await RunBusy("metadata.initial-refresh","Refreshing mod information","Checking lineage, artwork, and update metadata now that the Mods page is in use…",true,async innerCt=>
+        {
+            await metadataGate.WaitAsync(innerCt);
+            try
+            {
+                var result=await s.Nexus.RefreshAsync(false,innerCt);
+                await ReloadMods(innerCt);
+                await RefreshAnalysis(innerCt);
+                MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
+            }
+            finally{metadataGate.Release();}
+        });
+    }
+
+    private async Task EnsureConflictPreviewsLoadedAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var generation=conflictPreviewGeneration;
+        if(conflictPreviewLoadedGeneration==generation||Conflicts.Count==0)return;
+        var rows=Conflicts.ToArray();
+        try
+        {
+            var enriched=await EnrichConflictPreviewsAsync(rows,ct);
+            if(ct.IsCancellationRequested||SelectedTab!=3||generation!=conflictPreviewGeneration)return;
+            await Application.Current.Dispatcher.InvokeAsync(()=>
+            {
+                if(SelectedTab!=3||generation!=conflictPreviewGeneration)return;
+                Conflicts.ReplaceAll(enriched);
+                conflictPreviewLoadedGeneration=generation;
+            });
+        }
+        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
+        catch(Exception ex)
+        {
+            MasterDebugLog.Write("CONFLICT-PREVIEWS","Deferred conflict preview loading failed; conflict decisions remain available without artwork.",ex);
         }
     }
 
@@ -583,12 +634,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshAnalysis(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var generation=unchecked(++conflictPreviewGeneration);
         var stage=CaptureStage();
         var analysis=await BuildAnalysisAsync(stage,ct);
-        var displayRows=await EnrichConflictPreviewsAsync(analysis.rows,ct);
+        var shouldEnrich=SelectedTab==3;
+        var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
             Conflicts.ReplaceAll(displayRows);
+            conflictPreviewLoadedGeneration=shouldEnrich?generation:-1;
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);
             ModsView.Refresh();
