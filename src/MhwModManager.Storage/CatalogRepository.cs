@@ -762,7 +762,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         }
     }
 
-    private static IReadOnlyList<CatalogImage> SanitizeImages(IReadOnlyList<CatalogImage> images)
+    private static CatalogImage[] SanitizeImages(IReadOnlyList<CatalogImage> images)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return images
@@ -772,7 +772,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
             .ToArray();
     }
 
-    private static IReadOnlyList<CatalogDependency> SanitizeDependencies(IReadOnlyList<CatalogDependency> dependencies)
+    private static CatalogDependency[] SanitizeDependencies(IReadOnlyList<CatalogDependency> dependencies)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return dependencies
