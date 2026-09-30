@@ -1,6 +1,6 @@
-# v8.8.49 compact Agent Manager overview — candidate
+# v8.8.50 compact Agent Manager overview — candidate
 
-High-volume dashboard sections now default to collapsed native details cards in a responsive overview. Open panels expand full-width with bounded internal scrolling; Inspector opens automatically from managed/federated/notification inspection. Agent Control v0.6.23 / product v8.8.49. Backend control semantics are intentionally unchanged.
+High-volume dashboard sections now default to collapsed native details cards in a responsive overview. Open panels expand full-width with bounded internal scrolling; Inspector opens automatically from managed/federated/notification inspection. Agent Control v0.6.23 / product v8.8.50. Backend control semantics are intentionally unchanged.
 
 ---
 # v8.8.48 current Mods PR integration
