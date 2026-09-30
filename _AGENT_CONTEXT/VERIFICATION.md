@@ -1,3 +1,18 @@
+# v8.8.26 Agent Control terminal registry retirement — verification scope
+
+Changed behavior is in `tools/agent-control/server.mjs` and `lib/no-work-recovery.mjs`, with focused regressions in `test/no-work-recovery.test.mjs` and `test/operator-ui-cli.test.mjs`.
+
+Required closure:
+- exact-candidate `npm run check`;
+- exact-candidate `npm test`;
+- heaven2 controller/dashboard smoke showing legacy clean retry-exhausted/dead records are swept from live views;
+- evidence that task/event/failure history remains inspectable after retirement;
+- evidence that substantive/dirty terminal work is preserved rather than retired.
+
+At this checkpoint the remote desktop endpoints for heaven and heaven2 were offline, so no new local runtime test result is claimed. Historical Agent Control evidence does not verify this candidate.
+
+---
+
 # v8.8.25 Agent Control operator-markup + plugin identity repair — verification scope
 
 This candidate changes dashboard-generated operator markup, release identity across all private-plugin manifests, and focused regression coverage. Historical v8.8.24 evidence does not verify these bytes.
