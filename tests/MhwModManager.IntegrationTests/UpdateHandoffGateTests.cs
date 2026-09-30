@@ -67,7 +67,11 @@ public sealed class UpdateHandoffGateTests
         var launch = method.IndexOf("LaunchHelper(prepared)", StringComparison.Ordinal);
         Assert.True(launch > 0);
         var beforeLaunch = method[..launch];
-        Assert.Contains("!ReferenceEquals(stagedProgramUpdate, staged)", beforeLaunch);
+        var updateGateAcquire = beforeLaunch.LastIndexOf("await programUpdateGate.WaitAsync(ct);", StringComparison.Ordinal);
+        var identityGuard = beforeLaunch.LastIndexOf("!ReferenceEquals(stagedProgramUpdate, staged)", StringComparison.Ordinal);
+        Assert.True(updateGateAcquire >= 0);
+        Assert.True(identityGuard > updateGateAcquire);
+        Assert.Contains("programUpdateGate.Release();", method[launch..]);
     }
 
     private static string FindRepositoryRoot()
