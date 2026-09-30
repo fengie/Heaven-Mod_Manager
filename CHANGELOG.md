@@ -1,3 +1,9 @@
+# v8.8.29 — Handoff visible-progress validator hardening
+- Scope AGENTS visible-progress validation to the named `### Mandatory visible-progress versioning` section instead of matching README/patch terms anywhere in the document.
+- Require that section to reference the root README, patch advancement in `VERSION.txt`, `CHANGELOG.md`, and same-change-set coupling.
+- Make the existing adversarial fixture fail closed when the entire visible-progress rule is removed.
+- Preserve current v8.8.28 Agent Control relay behavior unchanged.
+
 # v8.8.28 — Agent Control Heaven relay execution repair
 - Route Heaven Bridge job submission and result waiting through the same documented relay resolver used by health/preflight.
 - Allow normal execution to use `~/HeavenBridgeRepo` when no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR` is supplied, while preserving explicit relay paths as authoritative.
