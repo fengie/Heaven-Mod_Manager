@@ -1,5 +1,7 @@
 # v8.8.20 — One-click Auto Populate
 
+- Add lightweight, accessibility-aware transform/opacity transitions for page navigation, blocking-operation presentation, and shared button/sidebar interaction feedback.
+- Respect Windows client-area animation preferences and avoid layout-dimension animation so virtualized mod lists retain performance.
 - Add an **Auto Populate** button to the Mods toolbar that computes and immediately applies a deterministic maximal conflict-free installed setup.
 - Preserve currently enabled choices first, then fill remaining compatible packages without blindly enabling direct replacements.
 - Recursively include explicit mod dependencies, inferred main/base family packages, required file and texture providers, tracked native plugin-loader packages, and pinned shared-resource providers.
