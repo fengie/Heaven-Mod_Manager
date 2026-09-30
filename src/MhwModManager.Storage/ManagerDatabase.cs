@@ -35,10 +35,10 @@ public sealed class ManagerDatabase(string databasePath)
         if (version < 2)
             await RebuildArmorIndexAsync(c, ct);
 
-        if (version < 5)
-            await SetSchemaVersionAsync(c, 5, ct);
+        if (version < 6)
+            await SetSchemaVersionAsync(c, 6, ct);
         else
-            await ExecAsync(c, "INSERT OR IGNORE INTO schema_info(key,value) VALUES('version','5');", ct);
+            await ExecAsync(c, "INSERT OR IGNORE INTO schema_info(key,value) VALUES('version','6');", ct);
     }
 
     public async Task<SqliteConnection> OpenAsync(CancellationToken ct = default)
