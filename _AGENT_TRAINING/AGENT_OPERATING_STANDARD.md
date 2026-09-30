@@ -80,6 +80,8 @@ A task is not complete until:
 - durable state is updated;
 - intended commits are pushed according to repository policy;
 - the next agent can resume safely;
+- actionable ordered next-step notes and concrete improvement opportunities are left in durable handoff state for the successor;
+- unresolved risks, assumptions, debt, and verification gaps are explicit rather than silently dropped;
 - reusable lessons have been considered for promotion into company doctrine.
 
 ## Defect-class closure
