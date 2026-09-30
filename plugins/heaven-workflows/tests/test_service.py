@@ -118,6 +118,20 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             plugin.release_verify_artifacts(plan, ({"name":"app.zip","sha256":"b"*64,"size":10,"version":"1.2.3","channel":"stable"},))
 
+    def test_gate_does_not_promote_old_success_over_conflicting_same_commit_result(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip"},))
+        for outcome in ("failure", "cancelled", "queued"):
+            with self.subTest(outcome=outcome):
+                result = plugin.release_verify_gates(plan, ({"name":"gate","sha":"a"*40,"conclusion":"success"}, {"name":"gate","sha":"a"*40,"status":outcome}))
+                self.assertFalse(result["ok"])
+
+    def test_gate_cannot_be_successful_while_authoritative_status_is_in_progress(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip"},))
+        result = plugin.release_verify_gates(plan, ({"name":"gate","sha":"a"*40,"status":"in_progress","conclusion":"success"},))
+        self.assertFalse(result["ok"])
+
 
 if __name__ == "__main__":
     unittest.main()

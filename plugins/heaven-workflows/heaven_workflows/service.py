@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Protocol, Sequence
 
 from .rollback import RollbackCoordinator
+from .github_evidence import collect_commit_runs, validate_commit_evidence
 
 
 class ControlPlaneLike(Protocol):
@@ -55,8 +56,9 @@ class WorkflowResult:
 class HeavenWorkflowPlugin:
     """Reusable high-level workflows composed from Heaven Control Plane capabilities."""
 
-    def __init__(self, control_plane: ControlPlaneLike, state_store: Any | None = None, capability_executor: Any | None = None):
+    def __init__(self, control_plane: ControlPlaneLike, state_store: Any | None = None, capability_executor: Any | None = None, github_reader: Any | None = None):
         self.control_plane = control_plane
+        self._github_reader = github_reader
         self._rollback = RollbackCoordinator(state_store, capability_executor or control_plane) if state_store is not None else None
 
     @staticmethod
@@ -240,11 +242,24 @@ class HeavenWorkflowPlugin:
             exact = [row for row in rows if str(row.get("sha") or "").lower() == candidate_sha]
             if not exact:
                 failures.append({"gate":gate,"reason":"wrong_commit" if rows else "missing"}); continue
-            success = [row for row in exact if str(row.get("conclusion") or row.get("result") or row.get("status") or "").lower() in {"success","passed","ok"}]
-            if not success:
+            if len(exact) != 1:
+                failures.append({"gate":gate,"reason":"ambiguous"}); continue
+            row = exact[0]
+            status = str(row.get("status") or "").lower()
+            successful = str(row.get("conclusion") or row.get("result") or status).lower() in {"success","passed","ok"}
+            if not successful or (status and status not in {"completed","success","passed","ok"}):
                 failures.append({"gate":gate,"reason":"not_successful"}); continue
             passed.append(gate)
         return {"ok":not failures,"plan_id":plan.get("plan_id"),"candidate_sha":candidate_sha,"passed":passed,"failures":failures}
+
+    def release_fetch_gates(self, repository: str, candidate_sha: str, *, event: str = "push", branch: str = "main") -> dict[str, Any]:
+        return collect_commit_runs(repository, candidate_sha, self._github_reader, event=event, branch=branch)
+
+    def release_verify_github_gates(self, plan: Mapping[str, Any], evidence: Mapping[str, Any], *, event: str = "push", branch: str = "main") -> dict[str, Any]:
+        statuses = validate_commit_evidence(evidence, plan.get("repo"), plan.get("candidate_sha"), event=event, branch=branch)
+        result = self.release_verify_gates(plan, statuses)
+        result["github_evidence"] = dict(evidence)
+        return result
 
     def release_verify_artifacts(self, plan: Mapping[str, Any], artifacts: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         version = self._require_release_text(plan.get("version"), "version", max_length=64)
@@ -289,6 +304,14 @@ class HeavenWorkflowPlugin:
         return {"ok":not failures,"plan_id":plan.get("plan_id"),"version":version,"channel":channel,"artifacts":sorted(verified,key=lambda x:x["name"]),"failures":failures}
 
     def release_authorize_publish(self, plan: Mapping[str, Any], gate_verification: Mapping[str, Any], artifact_verification: Mapping[str, Any], *, confirmation: str) -> dict[str, Any]:
+        if "github_evidence" in gate_verification:
+            evidence = gate_verification["github_evidence"]
+            if not isinstance(evidence, Mapping) or not isinstance(evidence.get("scope"), Mapping):
+                raise ValueError("GitHub publication evidence is invalid.")
+            scope = evidence["scope"]
+            fresh = self.release_verify_github_gates(plan, evidence, event=scope.get("event"), branch=scope.get("branch"))
+            if not fresh["ok"]:
+                raise ValueError("GitHub publication gates are no longer successful.")
         plan_id = self._require_release_text(plan.get("plan_id"), "plan_id", max_length=64)
         candidate_sha = self._require_hex(plan.get("candidate_sha"), 40, "candidate_sha")
         required_gates = set(plan.get("required_gates") or [])

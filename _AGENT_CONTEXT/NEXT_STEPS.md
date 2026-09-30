@@ -1,3 +1,17 @@
+# 2026-09-30 v8.8.42 current CI evidence — active continuation
+
+Owner: current chat, branch `codex/ci-evidence-scaling`, base `c0637afae80adad95f0f3f291534d5f0da46890b`. Boundary: existing Heaven Workflows release-evidence adapter/verification and required version/training/continuity. v8.8.41 closure is integrated; its proof does not verify this candidate.
+
+1. Run unified toolbox, handoff/negative fixtures and Agent Control core-budget checks. Inspect exact diff and actual API proof in EVIDENCE/v8.8.42-ci-evidence.md; preserve confirmation and auth boundaries.
+2. Refresh main/PRs/leases, commit/push and attach one PR. Require exact-head Plugin Toolbox, Security, Workflow Feature and Agent Control checks before integration.
+3. Verify exact-main release/security/toolbox, immediately publish and independently verify private/public immutable assets/provenance and disposable updater success/rollback. Re-run scoped adapter against the new release source and persist closure.
+4. If replacing installed plugin copies, verify the new runtime then invoke the canonical strict-version pruner. Source registration alone configures no provider/authentication. Continue safely through the authorized injected reader; keep Bridge auth fail-closed.
+
+Improvement opportunities: wire an existing authorized host reader with truthful provider health into workflow consumers; measure query latency before caching; narrow high-volume queries instead of treating truncation as complete. Existing release state machine remains the owner; no second credential store or transport. P0 Agent Manager remains active pending full dispatch/recovery/stop proof. Preserve real installation and Bridge readiness as separate live work; recurring lanes rotate unchanged blockers. Preserve and recursively propagate the constitution to the successor and the agent after them.
+
+PLUGIN-PREFLIGHT: Re-reviewed scaling assignment and current c0637afa/PR/lease state; no competing workflow-adapter owner was active. Discovered native GitHub commit/run tools, authorized REST, existing Heaven Workflows/GitOps/control-plane packages and PG-005. Read canonical manifests/README/services/tests, LOCAL_REPLACEMENT_PROTOCOL, plugin update skill/local-source guidance and official repository Actions parameters. Selected existing Heaven Workflows owner and injected authorized reader; connector main-query omission is proven by empty results versus four source-bound API runs. PG-005 plan/contract/executable adapter captures the outage; no duplicate plugin, auth/quota bypass, RDC or Work handoff. Python command absent locally: discovered bundled Python and ran the existing verifier directly, with Heaven CI authoritative for final source.
+
+---
 # 2026-09-30 v8.8.41 closure — authoritative current continuation
 
 PR #512 integrated source `7edcd03f58cffbcdfd6a14f1c627533d20b9fd35`; exact PR/main gates pass, immutable private/public updater build 350 is published with identical assets/digests, and disposable installed updater success/rollback passes. Agent Control 0.6.19 is healthy on heaven2; live bootstrap/context CLI and main/manager/verification prompts pass. Evidence and exact checks are in `_AGENT_CONTEXT/EVIDENCE/v8.8.41-scalable-bootstrap.md`. The candidate notes below are historical and superseded.

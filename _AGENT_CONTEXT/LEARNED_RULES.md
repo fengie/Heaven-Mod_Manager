@@ -955,3 +955,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rule:** Bound aggregate core bytes, preserve historical knowledge in explicit indexed archives, and provide hash-checked bounded retrieval. Expiring packets label cached refs and incomplete ownership honestly; neither a summary nor a fresh timestamp grants permission or inherited verification.
 - **Enforcement:** repository-bootstrap.mjs core/packet budgets, exact hash/source checks and repository-bootstrap.test.mjs real Git/CLI/HTTP plus negative fixtures. Generic trainer README startup doctrine carries the lesson forward.
 - **Related rules:** LR-053 progressive canonical bootstrap; permanent continuity constitution and exact-input verification.
+
+## LR-056 — release gates need current scoped evidence, never any historical success
+- **Rule ID:** LR-056
+- **Status:** Active
+- **Trigger / evidence:** Heaven Workflows any-success check accepted contradictory same-commit histories; GitHub connector query omitted healthy main-branch runs.
+- **Rule:** Bind repository, source, event, branch and workflow identity; choose only a provable newest result, reject conflicting/partial/running/expired observations, and recheck snapshot validity before publication authorization. Provider/query failures are explicit unavailable evidence, never an empty success.
+- **Enforcement:** github_evidence.py scoped/bounded collection and validation; release_verify_gates unique-result/lifecycle checks; snapshot freshness revalidated at authorize_publish; behavioral regression fixtures and exact-head plugin gates.
+- **Related rules:** LR-054 weakest-evidence aggregation; LR-055 bounded evidence; permanent exact-input verification.

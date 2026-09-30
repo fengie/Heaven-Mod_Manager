@@ -1,0 +1,13 @@
+{
+  "schema": "heaven-workflows/github-commit-evidence-contract/v1",
+  "owner": "heaven-workflows",
+  "status": "implemented-reader-injected-adapter; host-provider-required",
+  "upstream": "GitHub commit-workflow query incomplete for canonical main; repository Actions REST read verified healthy",
+  "capabilities": ["workflow.release.fetch_gates", "workflow.release.verify_github_gates"],
+  "reader": {"method": "GET", "host": "api.github.com", "path": "/repos/OWNER/REPO/actions/runs", "authentication": "existing authorized machine-local provider; never payload credentials", "required_bounds": "fresh responses, request timeout, response bytes, authorized repositories"},
+  "scope": ["repository", "exact source SHA", "event", "branch", "workflow identity"],
+  "bounds": {"per_page": 50, "max_pages": 4, "max_response_bytes": 2097152, "max_packet_bytes": 262144, "expiry_seconds": 120},
+  "failure_policy": "explicit unavailable, partial, ambiguous, expired or non-successful evidence fails closed",
+  "mutations": [],
+  "validation": "python plugins/heaven-workflows/verify.py"
+}

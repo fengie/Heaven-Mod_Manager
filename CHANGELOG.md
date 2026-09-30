@@ -1,3 +1,10 @@
+# v8.8.42 — current CI evidence and fail-closed release gates
+- Extend Heaven Workflows to v0.4.0 with exact repo/SHA/event/branch Actions evidence through an injected authorized reader, bounded pages/responses/output and explicit provider/partial errors.
+- Retain the newest provable workflow result, reject ambiguous ordering/identities and changing counts, and expire snapshots after two minutes.
+- Reject conflicting same-gate histories and authoritative running states; revalidate snapshot status/freshness at publication authorization while retaining exact source/artifact/plan/confirmation rules.
+- Capture the connector main-run omission in the existing PG-005 owner/plan/contract; no duplicate credentials, transport, publication or cancellation implementation.
+- Add behavioral regression/pagination/provider/scope/freshness tests, precedent, LR-056 and generic training propagation.
+
 # v8.8.41 — bounded startup and scalable context retrieval
 - Add read-only Agent Control bootstrap CLI/API with exact HEAD/main identities, two-minute expiry, hash manifests, current verification scope and bounded/truncation-marked ownership.
 - Add whitelisted SHA-256-checked context pagination with UTF-8 byte/line bounds, linked-path refusal, stale-source rejection and clear recovery errors.
