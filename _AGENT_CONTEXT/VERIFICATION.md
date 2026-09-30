@@ -1,3 +1,11 @@
+# v8.8.28 Agent Control Heaven relay execution discovery — verification scope
+
+This candidate changes only the Heaven Bridge execution relay default for submit/wait, its regression coverage, release identity, and continuity/docs. The runtime invariant is that inspection, submission, and result waiting resolve the same dedicated relay checkout.
+
+Required source closure is exact-candidate `npm run check` + `npm test`. Required live heaven2 closure is a dispatch/result smoke with `AGENT_CONTROL_HEAVEN_RELAY_DIR` unset and the documented `%USERPROFILE%\\HeavenBridgeRepo` checkout present. Re-smoke v8.8.26 retry-exhausted cleanup and v8.8.27 card inspection. Historical evidence does not verify these changed transport bytes.
+
+---
+
 # v8.8.27 Agent Manager card inspection — verification scope
 
 This candidate changes dashboard card interaction/keyboard semantics, generated inline JavaScript, focused UI regression coverage, and Agent Control v0.6.6 release identity. It intentionally does not replace the v8.8.26 retry-exhausted retirement implementation.
