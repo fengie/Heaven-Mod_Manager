@@ -184,3 +184,29 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression/verification:** The atomic repair PR must pass the exact Heaven feature gate across the fully integrated provider set before merge.
 - **Sibling/adjacent cases checked:** SQLite/FTS #325 did pass run 36659776837 before merge. GameBanana assisted-page fix #333 is preserved. Nexus provider entrypoints already contain first-statement traces on current main.
 - **Reference:** #327, #330; cancelled runs 36660058628 and 36660257258; successful storage run 36659776837.
+
+
+## 2026-09-29 — CI security policy — partial text edit corrupted the security verifier itself
+- **Symptom:** Canonical `main` contained a malformed `scripts/Test-CiSecurityPolicy.ps1`: a regex/string was truncated, later statements were spliced into it, and a duplicate block appeared after the final PASS line.
+- **Root cause:** A security-policy edit was integrated as fragile partial text surgery without proving the final script parsed and executed as one coherent file.
+- **Violated invariant / wrong assumption:** Security controls are production code. A scanner that cannot parse is not protection, even if the intended rules are correct.
+- **Why prior defenses missed it:** The policy script changed concurrently with related workflow hardening, and integration evidence did not prove the exact final canonical file passed a syntax/runtime gate before merge.
+- **Direct fix:** Replace the file from a clean complete implementation, preserve all intended action/runner/permission/NuGet/release-tool invariants, and make the dedicated supply-chain workflow run that reusable script.
+- **Preventive rule/process change:** Never patch security-policy source by unverified substring splicing. Parse/execute the exact final policy artifact and trigger its gate when the policy file itself changes.
+- **Regression coverage added/strengthened:** Security Supply Chain Gate includes the policy script in both push and pull-request path triggers and executes it directly; authoritative release verification also runs it.
+- **Verification evidence/environment:** Branch `security/hardening-20260929-r4`; exact workflow/policy verification is required before integration.
+- **Sibling/adjacent cases checked:** `Verify-Release.ps1`, the security workflow path filters, workflow action pins, self-hosted PR guards, persisted checkout credentials, write scopes, NuGet audit properties/overrides, and pinned GitHub CLI bootstrap invariants.
+- **References:** issue #350 tracks the independent updater-signing follow-up.
+
+
+## 2026-09-29 — dependency auditing — command-line flags silently overrode secure repository defaults
+- **Symptom:** `Directory.Build.props` enabled direct/transitive NuGet auditing, but several workflows still passed `-p:NuGetAudit=false`, disabling the control on the exact CI paths meant to validate releases/features/performance.
+- **Root cause:** Secure project defaults were treated as authoritative without scanning command-line/property overrides in workflow code.
+- **Violated invariant / wrong assumption:** A security property is only enforced if no higher-precedence invocation can disable it.
+- **Why prior defenses missed it:** The first supply-chain gate verified the project-level audit settings but did not reject contradictory workflow flags.
+- **Direct fix:** Remove every CI `NuGetAudit=false` override and make `Test-CiSecurityPolicy.ps1` fail on future reintroduction.
+- **Preventive rule/process change:** Security configuration review must include override precedence: CLI flags, environment variables, job-local settings, and generated config can defeat repository defaults.
+- **Regression coverage added/strengthened:** Reusable CI policy scans every workflow for `NuGetAudit=false` in addition to asserting `NuGetAudit=true`, `NuGetAuditMode=all`, and `NuGetAuditLevel=low` in `Directory.Build.props`.
+- **Verification evidence/environment:** Branch `security/hardening-20260929-r4`; security workflow plus release verifier must pass before merge.
+- **Sibling/adjacent cases checked:** startup-performance, installed-client updater E2E, workflow-feature PR verification, and authoritative release restore.
+
