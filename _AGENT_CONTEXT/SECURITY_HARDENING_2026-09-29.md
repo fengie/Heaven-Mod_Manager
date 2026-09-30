@@ -41,3 +41,10 @@ The Heaven control-plane/plugin layer uses opaque secret handles, scoped purpose
 - self-hosted PR checkouts do not persist Git credentials;
 - transitive dependency auditing remains enabled;
 - changes to these rules are machine-gated.
+
+## Follow-up: bridge fail-closed authentication and child-process secret isolation
+Current secure-by-default guidance and the live elevated bridge state exposed two high-impact trust-boundary gaps: missing HMAC silently fell back to repository ACL authorization, and the child-process environment allowlist was defeated by copying the complete parent environment first.
+
+The bridge now requires HMAC by default, requires the versioned cross-language canonical format, supports a machine-local `~/HeavenBridge/auth/hmac.key`, and puts repo-ACL-only/legacy behavior behind explicit emergency switches. Agent Control independently refuses unsigned submissions by default. General-purpose child processes now receive a secret-scrubbed environment, with secret-like `env_from_host` requests rejected.
+
+Verification requires missing-key rejection, legacy-canonical rejection, cross-language HMAC stability, child-environment secret stripping, and a reusable CI policy gate that prevents those protections from silently disappearing.
