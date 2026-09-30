@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.37 current-presence registry retirement — CURRENT CANDIDATE
+
+1. Run exact-head npm --prefix tools/agent-control run check and complete Agent Control tests; require Agent Control and Security gates.
+2. Verify ordinary terminal managed rows retire only when recovery is inactive, process ownership/remote termination is proven where required, and worktree/branch evidence is clean.
+3. Verify dirty/diverged, unowned-live-process, proof-pending, and registry-retirement-blocked rows remain visible and are never silently discarded.
+4. Verify terminal and disconnect-expired federated rows retire, live/grace-period rows remain, and every correlated provider/source identity receives a tombstone.
+5. Verify stale replay remains suppressed and only a strictly newer live heartbeat can reactivate the same retired source.
+6. After integration, re-audit #458 against its original acceptance and close only if current-main tests/evidence cover ordinary terminal cleanup, stale/disconnected retirement, live counts, history, and attention preservation.
+7. Keep #475/#477/#461 live heaven2 acceptance separate; do not relabel source CI as machine-runtime proof.
+
+---
 # 2026-09-30 v8.8.36 notification + stable inspector — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
