@@ -54,6 +54,9 @@ public static class CatalogProviderComplianceValidator
         if (!compliance.TermsUri.IsAbsoluteUri)
             errors.Add("TermsUri must be absolute.");
 
+        if (compliance.TermsReviewedOn > today)
+            errors.Add("Terms review date cannot be in the future.");
+
         if (compliance.ReviewIntervalDays <= 0)
             errors.Add("ReviewIntervalDays must be positive.");
         else if (compliance.TermsReviewedOn.AddDays(compliance.ReviewIntervalDays) < today)
@@ -70,6 +73,10 @@ public static class CatalogProviderComplianceValidator
             if (compliance.RobotsReviewedOn is null)
             {
                 errors.Add("HTML source requires a robots review date.");
+            }
+            else if (compliance.RobotsReviewedOn.Value > today)
+            {
+                errors.Add("Robots review date cannot be in the future.");
             }
             else if (compliance.ReviewIntervalDays > 0 &&
                      compliance.RobotsReviewedOn.Value.AddDays(compliance.ReviewIntervalDays) < today)
