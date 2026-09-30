@@ -38,4 +38,4 @@ A symptom is not considered repaired by adding sleeps, increasing timeouts, swal
 
 ## Runtime verification still required
 
-Run `scripts/Verify-Release.ps1` on Windows with the .NET 10.0.401-or-newer SDK. Runtime proof must include clean build/analyzers, unit tests, integration/fault-injection tests, database integrity check, benchmark collection, and a WPF responsiveness/soak pass. See `VALIDATION.md` and `docs/DIAGNOSTICS.md`.
+Run `scripts/release/Verify-Release.ps1` on Windows with the .NET 10.0.401-or-newer SDK. Runtime proof must include clean build/analyzers, unit tests, integration/fault-injection tests, database integrity check, benchmark collection, and a WPF responsiveness/soak pass. See `VALIDATION.md` and `docs/DIAGNOSTICS.md`.

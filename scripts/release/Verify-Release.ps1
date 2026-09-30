@@ -1,7 +1,7 @@
 param([switch]$RunBenchmarks)
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-. (Join-Path $PSScriptRoot 'Master-Debug.ps1')
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 $MasterDebug=Get-MhwMasterDebugPath -Root $Root
 Start-MhwMasterDebugSession -Root $Root -Area 'VERIFY' -Title 'Full verification run'
 $dotnet=(Get-Command dotnet -ErrorAction Stop).Source
@@ -304,9 +304,9 @@ function Invoke-AgentHandoffPreflight {
     $log=Join-Path $BuildLogs ("agent-handoff-preflight-{0}.log" -f $Stamp)
     $sw=[System.Diagnostics.Stopwatch]::StartNew()
     try {
-        & (Join-Path $PSScriptRoot 'Test-AgentHandoff.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
-        & (Join-Path $PSScriptRoot 'Test-AgentHandoff-NegativeFixtures.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
-        & (Join-Path $PSScriptRoot 'Test-VerificationCache.ps1') *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff-NegativeFixtures.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1') *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
         Add-Result 'Harness' 'Agent handoff continuity preflight' $true 0 $sw.Elapsed.TotalSeconds $log 'Required continuity context/manifest is present and propagates to the next agent.'
         Write-Host 'PASS: Agent handoff continuity preflight' -ForegroundColor Green
@@ -328,7 +328,7 @@ function Invoke-CiSecurityPolicyPreflight {
     $log=Join-Path $BuildLogs ("ci-security-policy-{0}.log" -f $Stamp)
     $sw=[System.Diagnostics.Stopwatch]::StartNew()
     try {
-        & (Join-Path $PSScriptRoot 'Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
         $sw.Stop()
         Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'Workflow actions, permissions, self-hosted PR trust, remote bootstrap, and dependency-audit invariants passed.'
         Write-Host 'PASS: CI supply-chain policy' -ForegroundColor Green

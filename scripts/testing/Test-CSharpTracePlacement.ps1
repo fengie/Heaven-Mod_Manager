@@ -1,7 +1,7 @@
 param([switch]$Quiet)
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-. (Join-Path $PSScriptRoot 'Master-Debug.ps1')
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 $errors=New-Object System.Collections.Generic.List[string]
 $files=@(Get-ChildItem (Join-Path $Root 'src') -Filter '*.cs' -File -Recurse | Sort-Object FullName)
 foreach($file in $files){

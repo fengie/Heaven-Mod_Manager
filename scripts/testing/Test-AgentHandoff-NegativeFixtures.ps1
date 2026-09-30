@@ -2,7 +2,7 @@ param([string]$Root)
 $ErrorActionPreference='Stop'
 
 if([string]::IsNullOrWhiteSpace($Root)){
-    $Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 }else{
     $Root=(Resolve-Path $Root).Path
 }
@@ -37,7 +37,7 @@ function Expect-Rejected {
         Set-Content -LiteralPath $path -Value $changed -Encoding UTF8
         $rejected=$false
         try{
-            & (Join-Path $fixture 'scripts\Test-AgentHandoff.ps1') -Root $fixture *> $null
+            & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
         }catch{
             $rejected=$true
         }
@@ -71,7 +71,7 @@ try{
         Copy-FixtureFile $relative
     }
 
-    & (Join-Path $fixture 'scripts\Test-AgentHandoff.ps1') -Root $fixture *> $null
+    & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
     Write-Host 'PASS: Baseline handoff fixture accepted.' -ForegroundColor Green
 
     Expect-Rejected 'AGENTS loses learned-rules entry' 'AGENTS.md' {

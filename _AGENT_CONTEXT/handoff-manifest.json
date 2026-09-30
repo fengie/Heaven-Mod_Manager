@@ -103,11 +103,11 @@
   ],
   "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. v8.8.20 adds one-click Auto Populate: it builds and applies a deterministic maximal conflict-free installed setup, recursively includes required dependencies/files/textures/loaders/resource providers, and rejects candidates whose complete closure is unsafe. Treat all verification as exact-SHA scoped. Require a fresh exact-head Windows release gate, then publish the eligible user-facing release immediately through the canonical private publisher and required public mirror; verify matching tags, assets, digests, and exact source provenance before reporting SHIPPED. Preserve the permanent continuity and plugin-preflight rules.",
   "requiredToolingFiles": [
-    "scripts/Test-AgentHandoff.ps1",
-    "scripts/Build-Source-Handoff.ps1",
+    "scripts/testing/Test-AgentHandoff.ps1",
+    "scripts/build/Build-Source-Handoff.ps1",
     "Build Source Handoff.bat",
-    "scripts/Test-VerificationCache.ps1",
-    "scripts/Test-AgentHandoff-NegativeFixtures.ps1"
+    "scripts/testing/Test-VerificationCache.ps1",
+    "scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1"
   ],
   "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
 }

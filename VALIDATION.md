@@ -185,7 +185,7 @@ Static packaging validation also checks that `GenericFamilyInference.cs` contain
 
 ## v8.8.0 post-re-audit continuity and verifier hardening
 
-The source-handoff revision adds a fail-closed continuity preflight and source packager. `scripts/Test-AgentHandoff.ps1` validates the handoff manifest, version alignment, required context/verification/tooling files, and the recursive "Do not break the chain" instruction. `scripts/Build-Source-Handoff.ps1` creates a source-focused archive and a per-file SHA-256 manifest while excluding generated/output folders.
+The source-handoff revision adds a fail-closed continuity preflight and source packager. `scripts/testing/Test-AgentHandoff.ps1` validates the handoff manifest, version alignment, required context/verification/tooling files, and the recursive "Do not break the chain" instruction. `scripts/build/Build-Source-Handoff.ps1` creates a source-focused archive and a per-file SHA-256 manifest while excluding generated/output folders.
 
 Function verification now excludes generated `bin`/`obj` C# files, validates the embedded trusted v8.7 source archive against all 73 expected SHA-256 hashes before using it, rejects duplicate stable function IDs, distinguishes explicit-interface implementations, and records explicit call-site coverage. Nested local-function bodies are counted by their own function identities rather than double-counted in the containing function.
 

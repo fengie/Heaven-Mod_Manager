@@ -1,13 +1,14 @@
 param([switch]$VerifierOnly)
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-. (Join-Path $PSScriptRoot 'Master-Debug.ps1')
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 $Area='PS-SYNTAX'
 Write-MhwMasterDebug -Root $Root -Area $Area -Message ("Syntax preflight begin. VerifierOnly={0}" -f $VerifierOnly)
 if($VerifierOnly){
-    $Targets=@(Get-Item (Join-Path $PSScriptRoot 'Verify-Release.ps1'))
+    $Targets=@(Get-Item (Join-Path $PSScriptRoot '..\release\Verify-Release.ps1'))
 }else{
-    $Targets=@(Get-ChildItem $PSScriptRoot -Filter '*.ps1' -File | Sort-Object FullName)
+    $ScriptsRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    $Targets=@(Get-ChildItem $ScriptsRoot -Filter '*.ps1' -File -Recurse | Sort-Object FullName)
 }
 $ErrorsFound=New-Object System.Collections.Generic.List[string]
 foreach($Target in $Targets){

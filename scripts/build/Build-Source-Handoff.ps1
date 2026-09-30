@@ -1,7 +1,7 @@
 param([string]$OutputPath)
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-& (Join-Path $PSScriptRoot 'Test-AgentHandoff.ps1') -Root $Root
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+& (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root
 
 $version=(Get-Content -Raw -Path (Join-Path $Root 'VERSION.txt')).Trim()
 if([string]::IsNullOrWhiteSpace($OutputPath)){
