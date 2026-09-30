@@ -6,6 +6,8 @@
 - Expanded content is bounded and scrolls internally instead of pushing the rest of Agent Manager off-screen.
 - Managed/federated/notification inspection automatically opens Inspector.
 - Notification summary exposes critical/warning counts while the list stays bounded to the newest 30 rendered entries.
+- Interaction polish adds short compositor-friendly card/metric/toast/button motion, one-time staggered card entry, OS/browser reduced-motion handling, and hidden-page guards rather than continuous animation.
+- Optional UI audio is local Web Audio synthesis, off until the operator enables it (or retains a previous opt-in), persisted in localStorage, and limited to direct clicks/toggles so refresh polling stays silent.
 - Backend lifecycle, ownership, routing, recovery, and action semantics are intentionally unchanged.
 
 ## Lineage / coordination
