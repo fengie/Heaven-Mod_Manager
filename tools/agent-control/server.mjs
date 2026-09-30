@@ -2397,7 +2397,8 @@ async function terminateProviderCapacityAgent(agentId, operationId) {
 }
 
 function markRegistryRetirementBlocked(state, source, reason) {
-  source.recoveryStatus = "retry-blocked";
+  const retryExhausted = isRetryExhaustedManagedAgent(source);
+  source.recoveryStatus = retryExhausted ? "retry-blocked" : "registry-retirement-blocked";
   source.recoveryLastError = reason;
   source.recoveryNextAt = null;
   const task = state.tasks.find(item => item.id === source.taskId);
@@ -2405,18 +2406,18 @@ function markRegistryRetirementBlocked(state, source, reason) {
     task.status = "blocked";
     task.finishedAt ||= isoNow();
     task.blockers = Array.from(new Set([...(task.blockers || []), "registry-retirement-blocked"]));
-    task.nextAction = "Preserve the exhausted worker until Agent Control can prove process/worktree cleanup, then retire it from the live registry.";
+    task.nextAction = "Preserve the terminal worker until Agent Control can prove process/worktree cleanup, then retire it from current registry presence.";
   }
-  addEvent(state, "agent.registry-retirement-blocked", `Could not safely retire ${source.id} from the live registry`, {
+  addEvent(state, "agent.registry-retirement-blocked", `Could not safely retire ${source.id} from current registry presence`, {
     agentId: source.id,
     taskId: source.taskId,
     reason
   });
   addNotification(state, {
     severity: "error",
-    title: "Exhausted agent cleanup is blocked",
-    message: `${source.roleLabel || source.id} could not be safely terminated/cleaned, so Agent Control preserved it instead of hiding uncertain ownership.`,
-    action: null,
+    title: "Terminal agent cleanup is blocked",
+    message: `${source.roleLabel || source.id} could not be safely terminated/cleaned, so Agent Control preserved it instead of hiding uncertain ownership or durable work.`,
+    action: { type: "inspect-agent", agentId: source.id },
     dedupeKey: `registry-retirement-blocked:${source.id}`
   });
 }
