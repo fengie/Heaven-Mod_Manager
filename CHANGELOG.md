@@ -1,3 +1,11 @@
+# v8.8.27 — Agent Control Heaven relay execution repair
+- Route Heaven Bridge job submission and result waiting through the same documented relay resolver used by health/preflight.
+- Allow normal execution to use `~/HeavenBridgeRepo` when no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR` is supplied, while preserving explicit relay paths as authoritative.
+- Close the confirmed exit-code-1 dispatch failure observed in both main and manager workers when the env var was absent.
+- Preserve v8.8.26 retry-exhausted process/worktree cleanup, managed/federated registry retirement, anti-resurrection tombstones, and fail-closed ownership/evidence rules unchanged.
+- Advance Agent Control runtime/root plugin/nested Codex plugin identity to v0.6.6 and add a regression for execution-time relay fallback.
+- Record the provider resolver-parity bug precedent, reusable rule, generic training lesson, verification scope, and successor handoff.
+
 # v8.8.26 — Agent Control exhausted-agent registry retirement
 - Retire terminal no-work agents when their bounded recovery budget reaches **RETRY EXHAUSTED** instead of leaving failed/dead cards in the live registry.
 - Prove controller ownership before terminating any still-live process; refuse destructive cleanup when PID ownership, worktree cleanliness, or branch divergence is uncertain.
