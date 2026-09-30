@@ -123,6 +123,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         var decisions = new List<ConflictDecision>(providers.Count);
         var decisionByPath = new Dictionary<string,ConflictDecision>(providers.Count, StringComparer.OrdinalIgnoreCase);
         var desired = new Dictionary<string,ProviderCandidate>(providers.Count, StringComparer.OrdinalIgnoreCase);
+        var atomicBundleBlockers = new Dictionary<string,ConflictDecision>(PathRules.Comparer);
 
         // MHW model/material/physics siblings are one atomic asset bundle even when filenames differ.
         // Exact-path-only planning can otherwise create a Frankenstein bundle from unrelated mods
@@ -145,7 +146,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
 
                 var representative = paths[0];
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
-                decisions.Add(new(
+                atomicBundleBlockers[representative] = new(
                     representative,
                     ConflictKind.HardStructural,
                     true,
@@ -155,12 +156,19 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                     Confidence.High,
                     Inferred:false,
                     ResolverScore:100,
-                    Evidence:$"Atomic bundle {bundle.Key} contains {paths.Length} path(s) from {memberIds.Length} enabled provider(s) without a complete overlay chain or one-main/dependent-family proof."));
+                    Evidence:$"Atomic bundle {bundle.Key} contains {paths.Length} path(s) from {memberIds.Length} enabled provider(s) without a complete overlay chain or one-main/dependent-family proof.");
             }
         }
 
         foreach (var (path,list) in providers.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
         {
+            if (atomicBundleBlockers.TryGetValue(path, out var bundleBlocker))
+            {
+                decisions.Add(bundleBlocker);
+                decisionByPath[path] = bundleBlocker;
+                continue;
+            }
+
             var d = conflictEngine.Decide(path,list,ruleIndex,snapshot.ExactWinners,snapshot.ResourceProviders,pairStats,enabled,contentStats);
             if (!d.Blocking)
             {
