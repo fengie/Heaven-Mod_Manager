@@ -1,3 +1,17 @@
+# v8.8.38 Agent Control live-registry projection — CURRENT CANDIDATE
+
+- v8.8.37 safe retirement, remote-stop proof, per-provider/source tombstones, and correlated-live-provider protection remain unchanged.
+- Persisted managed records are projected into three views: current live `agents`, `attentionAgents`, and `managedHistory`.
+- Successful completed managed evidence remains durable for capability/evidence/review authorization but no longer appears as current live presence.
+- Orphaned/interrupted, retirement-blocked, dirty/divergent, unresolved recovery, and cleanup/attention task states appear under **Needs Attention / recovery**.
+- Federated `agents` now contains only live records; unresolved recovery is exposed through `attention_agents`; stale/disconnected/terminal records are exposed through `history_agents`.
+- Stable managed/federated inspector lookup spans live, attention, and history projections so non-live records remain inspectable.
+- Dashboard now has dedicated **Needs Attention / recovery** and **Registry history** surfaces; current agent cards/counts cannot be inflated by historical rows.
+- Agent Control/root/nested plugin identity is v0.6.16 / product v8.8.38.
+- Required closure: exact-head Agent Control syntax/tests + Security Supply Chain, followed by review that the three #504 HOLD points are resolved before #458 is closed.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — CURRENT CANDIDATE
 
 - Ordinary terminal managed rows are eligible for retirement only when their recovery/task state is no longer active, blocked-for-recovery, candidate, cleanup-required, or needs-attention.
