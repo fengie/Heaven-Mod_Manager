@@ -94,7 +94,7 @@ public sealed class ModIoTransport
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ValidatePositiveId(gameId, nameof(gameId));
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
         var normalizedSort = NormalizeSort(sort);
 
@@ -138,7 +138,7 @@ public sealed class ModIoTransport
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ValidatePositiveId(gameId, nameof(gameId));
         var modId = NormalizePositiveId(providerModId, nameof(providerModId));
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
 
         return SendJsonAsync(
