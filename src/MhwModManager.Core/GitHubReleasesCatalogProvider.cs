@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Text.Json;
 
 namespace MhwModManager.Core;
 
@@ -268,9 +267,8 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
                 false,
                 false,
                 Array.Empty<CatalogDependency>(),
-                string.IsNullOrWhiteSpace(asset.Digest)
-                    ? null
-                    : JsonSerializer.Serialize(new { digest = asset.Digest })))
+                ProviderMetadata: null,
+                ContentDigest: asset.Digest))
             .ToArray();
 
         return new CatalogMod(
