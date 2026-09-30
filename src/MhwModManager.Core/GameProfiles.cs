@@ -36,7 +36,15 @@ public sealed record GameProfile(
     [JsonIgnore] public string LiveModRoot => string.IsNullOrWhiteSpace(ModRootRelativePath) ? Path.GetFullPath(GameRoot) : Path.GetFullPath(Path.Combine(GameRoot, ModRootRelativePath));
     [JsonIgnore] public bool IsMonsterHunterWorld => AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase);
     [JsonIgnore] public bool HasNexusIntegration => !string.IsNullOrWhiteSpace(NexusGameDomain);
-    [JsonIgnore] public bool HasGameBananaIntegration => GameBananaGameId is > 0;
+    [JsonIgnore]
+    public bool HasGameBananaIntegration
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GameBananaGameId is > 0;
+        }
+    }
     [JsonIgnore] public string ManagedDescription => string.IsNullOrWhiteSpace(ModRootRelativePath) ? "Game root" : ModRootRelativePath;
     [JsonIgnore] public string StorageKey
     {
@@ -48,21 +56,25 @@ public sealed record GameProfile(
         }
     }
 
-    public static GameProfile MonsterHunterWorld(string root) => new(
-        "monster-hunter-world",
-        "Monster Hunter: World",
-        Path.GetFullPath(root),
-        "MonsterHunterWorld.exe",
-        "MonsterHunterWorld",
-        "mhw",
-        "nativePC",
-        GameSupportTier.AdapterEnhanced,
-        "monsterhunterworld",
-        null,
-        true,
-        "582010",
-        "Steam",
-        9081);
+    public static GameProfile MonsterHunterWorld(string root)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new(
+            "monster-hunter-world",
+            "Monster Hunter: World",
+            Path.GetFullPath(root),
+            "MonsterHunterWorld.exe",
+            "MonsterHunterWorld",
+            "mhw",
+            "nativePC",
+            GameSupportTier.AdapterEnhanced,
+            "monsterhunterworld",
+            null,
+            true,
+            "582010",
+            "Steam",
+            9081);
+    }
 
     public static GameProfile Generic(
         string id,
@@ -74,21 +86,25 @@ public sealed record GameProfile(
         string? steamAppId=null,
         string? nexusGameDomain=null,
         string? store=null,
-        int? gameBananaGameId=null) => new(
-        NormalizeId(id),
-        string.IsNullOrWhiteSpace(displayName) ? Path.GetFileNameWithoutExtension(executableRelativePath) : displayName.Trim(),
-        Path.GetFullPath(root),
-        NormalizeRelative(executableRelativePath, allowEmpty:false),
-        Path.GetFileNameWithoutExtension(executableRelativePath),
-        string.IsNullOrWhiteSpace(adapterId)?"generic-folder":adapterId.Trim(),
-        NormalizeRelative(modRootRelativePath, allowEmpty:true),
-        string.Equals(adapterId,"generic-folder",StringComparison.OrdinalIgnoreCase)?GameSupportTier.GenericFolder:GameSupportTier.AdapterEnhanced,
-        string.IsNullOrWhiteSpace(nexusGameDomain)?null:nexusGameDomain.Trim().Trim('/'),
-        null,
-        false,
-        string.IsNullOrWhiteSpace(steamAppId)?null:steamAppId.Trim(),
-        string.IsNullOrWhiteSpace(store)?null:store.Trim(),
-        gameBananaGameId is > 0 ? gameBananaGameId : null);
+        int? gameBananaGameId=null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new(
+            NormalizeId(id),
+            string.IsNullOrWhiteSpace(displayName) ? Path.GetFileNameWithoutExtension(executableRelativePath) : displayName.Trim(),
+            Path.GetFullPath(root),
+            NormalizeRelative(executableRelativePath, allowEmpty:false),
+            Path.GetFileNameWithoutExtension(executableRelativePath),
+            string.IsNullOrWhiteSpace(adapterId)?"generic-folder":adapterId.Trim(),
+            NormalizeRelative(modRootRelativePath, allowEmpty:true),
+            string.Equals(adapterId,"generic-folder",StringComparison.OrdinalIgnoreCase)?GameSupportTier.GenericFolder:GameSupportTier.AdapterEnhanced,
+            string.IsNullOrWhiteSpace(nexusGameDomain)?null:nexusGameDomain.Trim().Trim('/'),
+            null,
+            false,
+            string.IsNullOrWhiteSpace(steamAppId)?null:steamAppId.Trim(),
+            string.IsNullOrWhiteSpace(store)?null:store.Trim(),
+            gameBananaGameId is > 0 ? gameBananaGameId : null);
+    }
 
     public static string NormalizeId(string value)
     {
