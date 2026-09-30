@@ -1193,7 +1193,7 @@ function federationCountCoverage(snapshot) {
 }
 
 async function runtimeFederationSnapshot(state = refreshState()) {
-  const snapshot = federationSnapshot(state.federation, { now: Date.now() });
+  const snapshot = federationSnapshot(state.federation, { now: Date.now(), managedAgents: state.agents });
   snapshot.coverage = federationCountCoverage(snapshot);
   if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
 
@@ -3114,7 +3114,7 @@ async function observedBranches(state = refreshState()) {
   }
 }
 
-function telemetry(state, queue, federation = federationSnapshot(state.federation)) {
+function telemetry(state, queue, federation = federationSnapshot(state.federation, { managedAgents: state.agents })) {
   const managedAgents = state.agents;
   const done = managedAgents.filter(agent => agent.status === "done").length;
   const failed = managedAgents.filter(agent => agent.status === "failed").length;
@@ -3350,7 +3350,7 @@ function ingestFederatedObservations(body = {}) {
   return {
     accepted: accepted.length,
     agents: accepted,
-    federation: federationSnapshot(state.federation)
+    federation: federationSnapshot(state.federation, { managedAgents: state.agents })
   };
 }
 
