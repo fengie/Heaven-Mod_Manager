@@ -14,7 +14,10 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.4 does
+## What v0.6.5 does
+
+- Retires dead, retry-exhausted no-work agents from the live registry while preserving retry attempt lineage until exhaustion/disablement, process ownership safety, task history, events, and substantive work evidence.
+- Keeps the runtime package and both private plugin manifests on the same v0.6.5 release identity.
 
 - Fixes **Copy branch** so branch names are encoded before being embedded in the generated operator action, avoiding malformed inline-handler markup.
 - Keeps the runtime, root ChatGPT plugin manifest, and nested Codex plugin manifest on one enforced release identity.
