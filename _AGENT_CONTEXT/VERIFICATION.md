@@ -1,3 +1,12 @@
+# v8.8.37 Agent Control current-presence registry retirement — verification scope
+
+This candidate broadens #458 beyond the already-integrated retry-exhausted path. Source acceptance must prove that ordinary terminal managed failures are removed from current presence only after fail-closed process ownership, Heaven remote-stop authority, and durable-work checks. Recovery-owned or unsafe rows must remain inspectable. Federated terminal and disconnect-expired rows must leave current presence while durable tombstones preserve every provider/source identity that could replay the same logical agent.
+
+Focused regressions must cover ordinary terminal disposition, process/durable-work preservation, proof-pending/block states, terminal/disconnect federation retirement, grace-period retention, correlated multi-provider tombstones, and strictly-newer-heartbeat reactivation. Exact-head Agent Control syntax/tests plus Security Supply Chain are required before merge.
+
+No heaven2 live-runtime evidence is claimed by this source patch. #475 runtime freshness, #477 health timing, and #461 live browser acceptance remain separate gates.
+
+---
 # v8.8.36 Agent Manager notification + stable inspector — verification scope
 
 This candidate is a UI/test-only functional closure layered on canonical v8.8.35. Required source evidence is exact-head Agent Control syntax/tests plus configured Agent Control/Security gates. Focused regressions must pin notification rendering/action filtering, shared managed/federated ID routing, explicit Inspect controls, nested-control isolation, refresh-persistent selection, arbitrary stable IDs, and deterministic missing/retired behavior including the async managed-log race.
