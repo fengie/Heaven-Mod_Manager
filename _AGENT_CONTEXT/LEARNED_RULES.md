@@ -792,3 +792,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-039 deterministic runtime failure classification; operator-control and liveness doctrine.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-046 — persistent supervisor fixes require installed-runtime and restart proof
+
+- **Rule ID:** LR-046
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Windows scheduled tasks, watchdogs/sentinels, startup recovery, background agent services, hidden-console guarantees
+- **Rule:** Do not treat a corrected source file or scheduled-task definition as proof that a persistent supervisor is fixed. Verify the **installed runtime copy** that actually owns reconciliation, then perform a controlled restart and inspect the relaunched process/task postconditions. Self-healing code must be treated as an active writer that can revert manual repairs when its installed runtime is stale.
+- **Trigger / evidence:** On `heaven`, canonical bridge source already required `-WindowStyle Hidden`, but the installed `.mhw-local-tools\heaven-bridge-sentinel.ps1` was stale and re-registered both Sentinel and Watchdog without the hidden flag. A manual task-action repair initially succeeded, then a restart caused the stale Sentinel to overwrite it; the Watchdog relaunched with a visible PowerShell window. After synchronizing the canonical Sentinel/Watchdog runtime files, reapplying the hidden task actions, and restarting both supervisors, the live processes reported `MainWindowHandle = 0` and both task actions retained `-WindowStyle Hidden`.
+- **Rationale:** Persistent recovery owners are not passive configuration. Source/runtime drift lets old reconciliation logic defeat otherwise-correct repairs, so source inspection and pre-restart task state can produce false confidence.
+- **Enforcement:** For persistent-agent/startup fixes, identify every reconciliation owner, compare or synchronize installed runtime artifacts with the intended canonical source, apply configuration changes, restart the actual owner, then verify live process/window/task state. Regression policy must cover both the desired launcher arguments and the deployment/reconciliation path that preserves them.
+- **Relevant commits/evidence:** runner hardening `118ca31d9a272232506930589c6e317208e9cc0a`; regression `1b2cfe7ba110d54f6c4531ac5c458272405c7daf`; live bridge verification job `chatgpt-20260930-0458-finalize-hidden-supervisors`.
+- **Supersedes:** none
+- **Superseded by:** none
