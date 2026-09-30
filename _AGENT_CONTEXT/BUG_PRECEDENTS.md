@@ -618,3 +618,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** Exact-head PR #510 Workflow Feature gate must pass after this repair; Agent Control and Security gates were already green on the immediately preceding head.
 - **Sibling/adjacent cases checked:** two-provider medium-confidence family texture handling, 3+ genuine revision dominance, dedicated texture-provider dominance, and explicit resource-provider precedence.
 - **References:** PR #510; failed Workflow Feature run 36749989372.
+
+
+## 2026-09-30 — repository context navigation — union whitelist widened the indexed-reader contract
+- **Symptom:** Pre-merge review showed that a caller holding the valid SHA-256 for a mandatory core training file could pass that core path to the context pagination/navigation helper even though the bootstrap surface describes the capability as indexed-context retrieval.
+- **Root cause:** `documentBytes` correctly used one union set for all bootstrap-manifest documents, and the retrieval helper reused it without applying the narrower `REPOSITORY_CONTEXT_INDEX_PATHS` authority class.
+- **Violated invariant / wrong assumption:** Exact hashes and path containment prove identity/safety, not that a document belongs to the capability's authorized subset. A union whitelist must not be treated as a narrower whitelist.
+- **Why prior defenses missed it:** Existing pagination tests rejected paths outside the union but did not attempt a valid-hash core document. The new navigation acceptance language made the narrower contract explicit and exposed the gap during review before integration.
+- **Direct fix:** Add a dedicated indexed-context set and reject non-indexed documents before hash/file reads in the shared retrieval path, covering both pagination and search/heading modes.
+- **Preventive rule/process change:** LR-057 requires subset-specific authorization whenever a manifest/registry union contains multiple authority classes.
+- **Regression coverage added/strengthened:** `repository-bootstrap.test.mjs` now proves both `readRepositoryContext` and `findRepositoryContext` reject a core document even with its correct manifest SHA-256.
+- **Verification evidence/environment:** Exact-head PR #515 Agent Control, Workflow Feature and Security gates are required after this repair; the earlier PR runs are stale and cannot authorize merge.
+- **Sibling/adjacent cases checked:** indexed path containment, linked-source refusal, source-size bounds, stale-hash rejection, core manifest construction, manager-only core training, and navigation query/result/byte limits.
+- **References:** PR #515; v8.8.43 bounded context-navigation candidate.
