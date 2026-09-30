@@ -1,3 +1,16 @@
+# v8.8.37 Agent Control current-presence registry retirement — CURRENT CANDIDATE
+
+- Ordinary managed failed / stopped / interrupted / orphaned / capacity-blocked rows are retirement candidates only after active recovery has ended and durable-work checks are clear.
+- Heaven-backed retirement still requires authoritative processed-terminal Bridge proof; live local processes require positive controller-session ownership before termination.
+- Dirty/diverged work, proof-pending termination, unowned live PIDs, and cleanup failures remain visible as attention/recovery instead of being hidden.
+- Completed/terminal managed history is no longer mirrored into federated current presence unless recovery still owns the row.
+- Federated done / failed rows and disconnect-expired presence retire into durable tombstones.
+- Tombstones are preserved per provider/source identity, including correlated observations, so stale alternate-source replay cannot resurrect a retired logical agent.
+- Strictly-newer heartbeat reactivation remains the only same-source reentry path.
+- Product identity is v8.8.37; Agent Control/root/nested plugin identity is v0.6.15.
+- Exact-head Agent Control + Security gates are required before integration. Live heaven2 runtime evidence for #475/#477/#461 remains separate.
+
+---
 # v8.8.36 Agent Manager notification + stable inspector — CURRENT CANDIDATE
 
 - Dashboard renders backend notifications with severity/message/time and exact supported inspection actions.
