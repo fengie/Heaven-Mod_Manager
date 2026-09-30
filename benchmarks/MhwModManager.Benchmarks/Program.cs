@@ -100,3 +100,14 @@ public class FamilyInferenceBenchmarks
     public IReadOnlyDictionary<string, string> InferFamilies() =>
         GenericFamilyInference.InferKeys(mods, files, out _);
 }
+
+
+[MemoryDiagnoser]
+public class MasterTraceBenchmarks
+{
+    [Benchmark]
+    public void BeginDisposeMethodScope()
+    {
+        using var scope = MasterDebugLog.BeginMethod();
+    }
+}
