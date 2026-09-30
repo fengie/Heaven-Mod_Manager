@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish exact-head v8.8.43 bounded context-navigation verification on PR #515; refresh/reconcile main, integrate only with an available publication path, immediately complete immutable release/runtime closure if merged, preserve Agent Manager P0/separate Bridge-auth and operator-install gaps, and recursively propagate continuity.",
+  "nextAgentObligation": "Complete the v8.8.43 integration/release path with exact-head proof; preserve v8.8.42 closure, Agent Manager P0 and separate auth/install gaps; recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

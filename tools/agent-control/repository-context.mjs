@@ -36,7 +36,7 @@ try {
           maxLines: Number(flags["--lines"] || 120)
         })
     : await buildRepositoryBootstrap({ root, role: flags["--role"] || "support" });
-  console.log(JSON.stringify(result, null, 2));
+  console.log(JSON.stringify(result));
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

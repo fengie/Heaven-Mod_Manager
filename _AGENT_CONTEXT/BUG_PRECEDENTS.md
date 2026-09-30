@@ -631,3 +631,15 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** Exact-head PR #515 Agent Control, Workflow Feature and Security gates are required after this repair; the earlier PR runs are stale and cannot authorize merge.
 - **Sibling/adjacent cases checked:** indexed path containment, linked-source refusal, source-size bounds, stale-hash rejection, core manifest construction, manager-only core training, and navigation query/result/byte limits.
 - **References:** PR #515; v8.8.43 bounded context-navigation candidate.
+
+## 2026-09-30 — context retrieval — serialization exceeded the advertised output budget
+- Symptom: actual navigation CLI on LEARNED_RULES with literal `rule` and 50 results emitted 9,368 bytes although compact helper JSON was 8,141 bytes under the advertised 8,192-byte ceiling.
+- Root cause: helper measured compact JSON but CLI added pretty-print whitespace. Sibling pagination measured raw text without JSON envelope/escaping, allowing quotes/control characters to expand beyond the ceiling.
+- Violated invariant: an output budget applies at the final observable serialization boundary, including envelope, escaping and newline.
+- Missed prevention: tests measured helper objects/strings, not actual maximum-result CLI stdout; pagination UTF-8 tests did not exercise serialization expansion.
+- Direct fix: compact CLI JSON; navigation includes newline in byte accounting; pagination reduces whole lines until its JSON envelope/newline fits the global ceiling and preserves exact continuation.
+- Preventive rule: LR-058 and generic trainer require actual emitted-byte tests, escaped/Unicode fixtures and lossless continuation. No larger limit or weakened check.
+- Regression: actual CLI maximum-result test plus quote/emoji pagination walk proving every line is retrieved exactly once, with each emitted page <=8,192 bytes.
+- Evidence: reproduction on PR #515 source 2031c405, hidden local Node on heaven2; focused integration tests 12/12 pass after repair. Exact candidate/full gates remain required before integration.
+- Siblings: pagination raw-text/envelope expansion, navigation query/result/snippet bounds, indexed whitelist, stale hashes, bootstrap budget and CLI formatting; bootstrap packet unchanged in structure and still bounded.
+- References: v8.8.43 integration evidence; integration branch codex/context-navigation-integration.

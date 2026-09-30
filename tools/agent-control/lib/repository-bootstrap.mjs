@@ -144,8 +144,14 @@ export function readRepositoryContext({ root, document, expectedSha256, startLin
     selected.push(line); length += nextLength;
   }
   if (!selected.length) throw new Error("A context line exceeds the byte bound; use a direct local read with an authorized tool.");
-  const nextLine = startLine + selected.length;
-  return { document, sha256: expectedSha256, startLine, endLine: nextLine - 1, totalLines: lines.length, nextLine: nextLine <= lines.length ? nextLine : null, text: selected.join("\n") };
+  const result = () => {
+    const nextLine = startLine + selected.length;
+    return { document, sha256: expectedSha256, startLine, endLine: nextLine - 1, totalLines: lines.length, nextLine: nextLine <= lines.length ? nextLine : null, text: selected.join("\n") };
+  };
+  // Bound the emitted JSON too: quotes/control characters expand on serialization.
+  while (selected.length && Buffer.byteLength(JSON.stringify(result())) + 1 > MAX_CONTEXT_BYTES) selected.pop();
+  if (!selected.length) throw new Error("A serialized context line exceeds the byte bound; use a direct local read with an authorized tool.");
+  return result();
 }
 
 export function findRepositoryContext({ root, document, expectedSha256, query, mode = "search", maxResults = 20, maxBytes = MAX_CONTEXT_BYTES }) {
@@ -175,10 +181,10 @@ export function findRepositoryContext({ root, document, expectedSha256, query, m
   }
 
   const result = { document, sha256: expectedSha256, mode, query: normalizedQuery, totalLines: lines.length, totalMatches, truncated: totalMatches > matches.length, matches };
-  while (matches.length && Buffer.byteLength(JSON.stringify(result)) > maxBytes) {
+  while (matches.length && Buffer.byteLength(JSON.stringify(result)) + 1 > maxBytes) {
     matches.pop();
     result.truncated = true;
   }
-  if (Buffer.byteLength(JSON.stringify(result)) > maxBytes) throw new Error("Context navigation metadata exceeds the byte bound.");
+  if (Buffer.byteLength(JSON.stringify(result)) + 1 > maxBytes) throw new Error("Context navigation metadata exceeds the byte bound.");
   return result;
 }

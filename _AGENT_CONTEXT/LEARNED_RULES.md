@@ -975,3 +975,13 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rationale:** Hash correctness proves source identity, not authorization class. A union whitelist can preserve path safety while still violating least-authority or cost/usage contracts.
 - **Enforcement:** Keep manifest unions for manifest construction only; gate retrieval against `REPOSITORY_CONTEXT_INDEX_PATHS` specifically. Regression-test valid-hash attempts against a core document for both pagination and navigation.
 - **Related rules:** LR-053 progressive canonical bootstrap; LR-055 startup byte budgets and operational retrieval.
+
+## LR-058 — enforce budgets at the emitted serialization boundary
+- Rule ID: LR-058
+- Status: Active
+- Date: 2026-09-30
+- Scope: bounded context, JSON/CLI/API output and pagination
+- Rule: Include envelope, escaping, formatting and terminator in final output budgets. Test actual stdout/wire output at scale; whole-line reduction must retain exact continuation with no omitted or repeated content.
+- Trigger/evidence: v8.8.43 review reproduced 9,368-byte CLI output from an 8,141-byte compact helper; sibling pagination only counted raw text.
+- Enforcement: compact repository-context CLI, emitted-byte accounting and actual maximum-result/escaped Unicode pagination regressions; generic trainer propagation.
+- Related: LR-055 bounded evidence and operational retrieval; LR-057 subset authority.

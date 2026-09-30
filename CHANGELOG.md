@@ -1,4 +1,5 @@
 # v8.8.43 — bounded indexed-context navigation
+- Enforce actual compact CLI output, escaping and newline within the 8 KiB envelope; preserve pagination continuation without dropped lines when serialization expands content.
 - Add hash-checked literal `--search` and Markdown `--heading` modes to the canonical repository-context CLI.
 - Keep navigation inside indexed repository documents and existing symlink/path/source-size protections; exact indexed SHA-256 remains mandatory.
 - Bound queries to one 256-byte line, results to 50, output to 8 KiB, snippets to 512 bytes, and disclose result-set/snippet truncation.

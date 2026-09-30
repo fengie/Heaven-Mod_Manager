@@ -129,6 +129,28 @@ test("context navigation is hash-checked, literal, line-addressable and bounded"
   assert.equal(MAX_CONTEXT_BYTES, 8_192);
 });
 
+test("pagination includes escaped JSON and newline in its emitted byte budget", t => {
+  const root = fixture(t), document = REPOSITORY_CONTEXT_INDEX_PATHS[0];
+  fs.writeFileSync(path.join(root, document), Array.from({ length: 40 }, () => '"'.repeat(180) + "😀").join("\n"));
+  const expectedSha256 = repositoryManifest(root).context[0].sha256;
+  let line = 1, count = 0;
+  do {
+    const page = readRepositoryContext({ root, document, expectedSha256, startLine: line });
+    assert.ok(Buffer.byteLength(JSON.stringify(page) + "\n") <= MAX_CONTEXT_BYTES);
+    count += page.endLine - page.startLine + 1;
+    line = page.nextLine;
+  } while (line !== null);
+  assert.equal(count, 40);
+});
+
+test("actual context CLI output stays bounded at maximum results", async () => {
+  const document = "_AGENT_CONTEXT/LEARNED_RULES.md";
+  const expectedSha256 = repositoryManifest(REPO).context.find(row => row.path === document).sha256;
+  const { stdout } = await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", document, "--sha256", expectedSha256, "--search", "rule", "--results", "50"]);
+  assert.ok(Buffer.byteLength(stdout) <= MAX_CONTEXT_BYTES);
+  assert.ok(JSON.parse(stdout).matches.length > 0);
+});
+
 test("context refuses unindexed paths, empty sources and linked ancestors", async t => {
   const root = fixture(t), document = REPOSITORY_CONTEXT_INDEX_PATHS[0];
   assert.throws(() => readRepositoryContext({ root, document: "../outside", expectedSha256: "a".repeat(64) }), /not an indexed/);
