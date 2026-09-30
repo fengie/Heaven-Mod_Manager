@@ -9,7 +9,7 @@ Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, 
 Before the first task-facing response or action, the agent must:
 
 1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
-2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
+2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
 3. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` before responding or dispatching work.
 4. Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming an answer or plan.
 5. Treat the repository itself as the source of truth. Stale chat context, old SHAs, filenames, summaries, or prior-agent prose do not satisfy this gate.
@@ -150,6 +150,18 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Use GitHub-hosted runners only when the task genuinely requires their clean image, operating system, or runner-scoped environment and no equivalent authorized Heaven path exists.
 - Never report the repository as blocked solely because Codex capacity or GitHub-hosted allocation is unavailable while the Heaven execution path is healthy.
 
+
+
+## Mandatory repository organization / library layout rule
+
+The repository must remain an organized library. Every new file belongs in the most specific relevant folder, and closely related files must be grouped into meaningful subfolders instead of accumulating in the root or a broad catch-all directory.
+
+- Follow `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md` for canonical homes, folder/subfolder decisions, migration safety, and verification.
+- Root-level additions require a real repository/toolchain/discoverability reason; convenience is not sufficient.
+- Reuse or refine existing folder taxonomy before inventing overlapping categories.
+- File moves must update every consumer and verify old-path removal, builds/tests/scripts/CI/packaging/launch paths as applicable.
+- When another agent is already reorganizing the repository, coordinate with and extend that work rather than launching a conflicting bulk move.
+- Reviewers/integrators must treat misplaced files, avoidable root clutter, duplicate folder concepts, and stale path references as integration defects.
 
 ## Canonical plugin workspace
 
