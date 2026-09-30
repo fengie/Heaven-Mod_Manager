@@ -1,3 +1,15 @@
+# v8.8.50 installed-game discovery candidate
+
+Owner: current chat on `fix/installed-game-discovery-20260930`, based on canonical main `eedbe9fb3304eeab1a2d7a7e40422c327afac6a3`. This is a bounded defect repair: the ordinary Games path auto-discovers supported installed games once, Steam discovery covers all configured libraries with bounded nested executable resolution, Xbox Games installs are included, and source failures are isolated. Manual rescan/Add Game remain explicit fallbacks; no whole-drive executable crawl was added.
+
+Next: open/verify the exact candidate through required Windows/PR gates, inspect failures rather than weakening checks, refresh main and active ownership, then merge only from a fresh current-main reconciliation. If PR #534 lands first, rebase and advance this branch to the next patch; if this branch lands first, #534 must rebase/re-version. After main integration, require canonical-main/release/updater evidence appropriate to the shipped patch and delete the temporary branch only after proving no unique work remains.
+
+Improvement/risk: launcher coverage can later add other stores only from authoritative local metadata with deterministic fixtures; do not broaden into uninstall-registry guessing or unbounded disk scanning. Runtime validation on the operator's real installed games is valuable after source/CI closure but must not be substituted by a development window. Preserve and recursively propagate the continuity constitution.
+
+PLUGIN-PREFLIGHT: live repo rules/training, relevant multi-game source/docs/tests, bug precedents, learned rules, Git directive, plugin README/backlog, and installed Heaven Bridge/code-execution skills were refreshed. This runtime exposes GitHub repo/Actions mutation but no callable Heaven/Agent Control execution surface, so authorized GitHub/CI fallback is in use; no Work/RDC/auth bypass.
+
+---
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
