@@ -4078,6 +4078,68 @@ function buildHealthSnapshot(state) {
   };
 }
 
+function managedRegistryViews(state) {
+  const attentionRecoveryStates = new Set([
+    "retry-pending",
+    "retry-waiting",
+    "retry-blocked",
+    "retry-exhausted",
+    "stream-lost-checking-work",
+    "work-detected-incomplete",
+    "work-unverified"
+  ]);
+  const terminalRegistryStates = new Set(["done", "failed", "finished", "stopped", "capacity-blocked"]);
+  const taskById = new Map((state.tasks || []).map(task => [task.id, task]));
+  const live = [];
+  const attention = [];
+  const history = [];
+
+  for (const agent of state.agents || []) {
+    const status = String(agent?.status || "").trim().toLowerCase();
+    const recovery = String(agent?.recoveryStatus || agent?.recovery_status || "").trim().toLowerCase();
+    const retirementStatus = String(agent?.registryRetirementStatus || "").trim().toLowerCase();
+    const task = taskById.get(agent?.taskId) || null;
+    const taskStatus = String(task?.status || "").trim().toLowerCase();
+    const pid = Number(agent?.pid);
+    const processAlive = Number.isInteger(pid) && pid > 0 && isPidAlive(pid);
+    const unresolvedWork = agent?.worktreeDirty === true
+      || agent?.worktreeClean === false
+      || agent?.completionEvidence === "durable-work-detected"
+      || recovery === "work-detected-incomplete"
+      || (
+        !["done", "finished"].includes(status)
+        && Boolean(agent?.baseSha)
+        && Boolean(agent?.currentSha)
+        && agent.baseSha !== agent.currentSha
+        && String(task?.branchCleanup?.status || "").toLowerCase() !== "done"
+      );
+    const unresolvedOwnership = Boolean(
+      agent?.remoteTerminationPending
+      || agent?.blocker === "termination-unproven"
+      || retirementStatus === "blocked"
+      || ["interrupted", "orphaned"].includes(status)
+      || processAlive
+    );
+    const recoveryNeedsAttention = attentionRecoveryStates.has(recovery);
+    const taskNeedsAttention = ["needs-attention", "blocked", "cleanup-required"].includes(taskStatus);
+
+    if (terminalRegistryStates.has(status) || recovery === "retry-exhausted") {
+      if (unresolvedWork || unresolvedOwnership || recoveryNeedsAttention || taskNeedsAttention) attention.push(agent);
+      else history.push(agent);
+      continue;
+    }
+
+    if (["interrupted", "orphaned"].includes(status) || unresolvedWork || recoveryNeedsAttention || retirementStatus === "blocked") {
+      attention.push(agent);
+      continue;
+    }
+
+    live.push(agent);
+  }
+
+  return { live, attention, history };
+}
+
 async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = false } = {}) {
   if (fetchRemote) {
     const beforeSync = loadState();
@@ -4102,6 +4164,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
   const federation = await runtimeFederationSnapshot(state, heavenBridgeAssessment);
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
+  const managedRegistry = managedRegistryViews(state);
 
   return {
     ok: true,
@@ -4135,7 +4198,9 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     workers,
     taskGraph: buildTaskGraph(state.tasks),
     tasks: state.tasks,
-    agents: state.agents,
+    agents: managedRegistry.live,
+    attentionAgents: managedRegistry.attention,
+    managedHistory: managedRegistry.history,
     retiredAgents: normalizeRetiredAgents(state.retiredAgents).slice(-100).reverse(),
     leases: state.leases,
     integrationQueue: queue,
