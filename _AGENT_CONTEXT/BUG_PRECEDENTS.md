@@ -433,3 +433,5 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Treat resource-owning constructors/open operations as transactions: either return a fully usable registered object or undo every acquired resource and registry mutation. Centralize multi-index removal, and add round-trip/shape tests for structured metadata renderers.
 - **Regression coverage added/strengthened:** Tests cover failed initial navigation cleanup, failed new-tab cleanup with active-tab restoration, externally closed active-tab pruning through both direct lookup and public `tabs()`, and IPv6 display URL reconstruction with query stripping.
 - **Verification/evidence:** Canonical code commits `04e706ba2a8b7e0de5ab0461af3702b9db854a33`, `339b4caf7fdd00eb0aa6d7b29c3149a9537d9f71`, and `db27ed786337529fa5674ff735c5d06038a9270f`; PR #438 merged as `b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620`. The exact post-merge Plugin Toolbox Gate was still queued at handoff; do not report it as passed until a completed-successful run exists.
+
+## 2026-09-30 — Never expose canonical updater release before the client feed
