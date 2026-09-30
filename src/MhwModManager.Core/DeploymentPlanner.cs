@@ -103,8 +103,22 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
             decisionByPath[path] = d;
             if (!d.Blocking)
             {
-                var chosen = list.FirstOrDefault(x => d.WinnerModId is not null && PathRules.Comparer.Equals(x.ModId,d.WinnerModId))
-                             ?? list.MaxBy(x => x.Priority)!;
+                var chosen = d.WinnerModId is null
+                    ? null
+                    : list.FirstOrDefault(x => PathRules.Comparer.Equals(x.ModId,d.WinnerModId));
+                if (chosen is null)
+                {
+                    // A non-blocking decision without a concrete provider is a resolver contract
+                    // violation. Never silently fall back to package priority: that would turn an
+                    // inference bug into a real filesystem overwrite.
+                    d = new(path, ConflictKind.HardUnknown, true, null, "resolver-missing-winner",
+                        "The resolver did not produce a valid effective provider for this path. Deployment is blocked instead of guessing by priority.",
+                        Confidence.High, Inferred:false, ResolverScore:100,
+                        Evidence:"Fail-closed planner invariant: every non-blocking path decision must name one enabled provider.");
+                    decisions[^1] = d;
+                    decisionByPath[path] = d;
+                    continue;
+                }
                 desired[path] = chosen;
             }
         }
