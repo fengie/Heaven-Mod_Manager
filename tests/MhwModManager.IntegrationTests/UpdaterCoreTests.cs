@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using MhwModManager.App.ViewModels;
 using MhwModManager.Updater;
 using Xunit;
 
@@ -383,6 +384,22 @@ public sealed class UpdaterCoreTests : IDisposable
             () => UpdatePackageVerifier.VerifyAsync(payload, productHash, TestToken));
 
         Assert.Contains("file set", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Prepared_handoff_identity_is_invalidated_when_staged_update_is_replaced()
+    {
+        var method=typeof(MainWindowViewModel).GetMethod(
+            "IsPreparedHandoffCurrent",
+            System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var first=new StagedUpdate(null!,"stage-a","manifest-a");
+        var replacement=new StagedUpdate(null!,"stage-b","manifest-b");
+
+        Assert.True((bool)method!.Invoke(null,[first,first])!);
+        Assert.False((bool)method.Invoke(null,[first,replacement])!);
+        Assert.False((bool)method.Invoke(null,[first,null])!);
     }
 
     [Fact]
