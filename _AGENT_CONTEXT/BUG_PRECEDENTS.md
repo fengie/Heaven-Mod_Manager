@@ -503,3 +503,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** every terminal lifecycle state must define an explicit retention/retirement disposition; live registries must not double as historical failure archives.
 - **Regression coverage added/strengthened:** `tools/agent-control/test/registry-retention.test.mjs` pins failure retirement, active recovery retention, process-alive retention, linked federation purge, and bulk failed-federated GC.
 - **Verification/evidence:** v8.8.26 candidate; exact-head Agent Control tests plus heaven2 live dispatch/cleanup smoke required.
+
+
+## 2026-09-30 — Agent Control health found the relay but execution bypassed the resolver
+- **Symptom:** Main/manager workers were created by the control plane but exited almost immediately with code 1; the dashboard then showed failure/retry churn and eventually **failed · RETRY EXHAUSTED** cards.
+- **Root cause:** `resolveHeavenRelayDir()` already supported the documented per-user `~/HeavenBridgeRepo` fallback and health inspection used it, but `submitHeavenBridgeJob()` and `waitForHeavenBridgeResult()` defaulted directly to `process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR` and threw when that env var was absent.
+- **Authoritative evidence:** Runtime logs for `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6` both recorded `Error: AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.` before the authoritative exit-code-1 transition.
+- **Violated invariant / wrong assumption:** Health/preflight and execution must share one provider-configuration resolver. A green discovery path is meaningless if the actual submit/wait path reimplements configuration differently.
+- **Why prior defenses missed it:** Existing tests exercised `resolveHeavenRelayDir()` in isolation but did not pin the execution entry point to that resolver.
+- **Direct fix:** Add `resolveExecutionRelayDir()` and route both job submission and result waiting through it; keep explicit paths authoritative while falling back to the documented checkout when no explicit path is supplied.
+- **Preventive rule/process change:** LR-051 requires provider preflight and execution to share configuration resolution.
+- **Regression coverage added/strengthened:** `tools/agent-control/test/heaven-bridge-provider.test.mjs` now proves execution resolution uses the documented checkout when the env-specific path is absent.
