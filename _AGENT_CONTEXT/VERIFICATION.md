@@ -1,3 +1,9 @@
+# v8.8.53 dark ComboBox visual-regression candidate
+
+PLUGIN-PREFLIGHT: refreshed canonical repository training/state and used the authenticated GitHub connector as the narrow repository mutation/verification route. No Work/RDC route is used.
+
+The v8.8.49 readability repair used Windows system control brushes, which made the GAME selector visibly white in the dark shell. This candidate replaces native chrome with an app-owned dark ComboBox/ComboBoxItem template, strengthens the regression to reject SystemColors light-control fallback, and preserves the existing game binding/commands. Exact-head gates and installed-client visual confirmation are required before declaring the visual bug closed. Reconcile concurrent v8.8.50-v8.8.52 work before integration; preserve unique work and recursive continuity.
+
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.
