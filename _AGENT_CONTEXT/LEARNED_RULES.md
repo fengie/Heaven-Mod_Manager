@@ -580,3 +580,12 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - Executable/plugin collisions require explicit human intent or strong verified source lineage; names, timestamps, priority, and overlap ratios do not authorize binary-code replacement.
 - Detect file-vs-directory destination collisions as hard topology errors. Priority cannot make a path safely be both a file and a directory.
 - Preserve deterministic explanations for every automatic winner and keep ambiguity blocking rather than silently guessing.
+
+
+## 2026-09-30 — Conflict proof separation and atomic assets
+
+- Mod identity/grouping, overwrite precedence, dependency satisfaction, and atomic-asset coherence are separate proofs. Passing one never implies the others.
+- A configured priority is never an emergency safety fallback. Every non-blocking multi-provider decision must name an actual provider from that collision.
+- Same-family texture identity does not prove overwrite direction; require high-confidence revision/role/provenance evidence or surface a choice.
+- For MHW structural model/material/physics bundles, distinct filenames can still be runtime-coupled. Do not mix unrelated providers across one atomic bundle.
+- Revalidate the current dependency set and conflict plan at the normal modded-launch boundary, not only during installation/apply.
