@@ -111,7 +111,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 
 ## PG-005 — CI and release orchestrator
 
-- **Status:** PLANNED
+- **Status:** CLAIMED
 - **Priority:** High
 - **Triggering use case:** Agents repeatedly need to identify the exact candidate commit, run the correct release gates, wait for self-hosted/hosted checks, publish artifacts, verify release identity, and clean superseded runs/branches.
 - **Why reusable:** This is a recurring repository workflow with high consequences when commit identity, artifact provenance, or release ordering is wrong.
@@ -121,7 +121,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Never embeds tokens; uses PG-003 secret handles/authorized connectors. Cannot bypass branch protection, workflow permissions, signing policy, or platform quotas.
 - **Dependencies / reuse:** `heaven-git-ops`, `heaven-workflows`, `heaven-state-store`, GitHub connector/actions, updater/release repository conventions.
 - **Acceptance tests:** rejects status from wrong commit; refuses publish without confirmed candidate; artifact hash/version mismatch blocks completion; idempotent rerun recognizes already-published identical release; receipt records exact commit and artifact hashes.
-- **Owner / branch / PR:** unclaimed.
+- **Owner / branch / PR:** heaven-workflows release orchestration lane; branch `plugin-release-orchestrator-20260929`.
 - **Completion evidence:** pending.
 
 ## PG-006 — deep browser automation adapter
