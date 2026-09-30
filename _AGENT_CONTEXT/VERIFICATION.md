@@ -1,3 +1,13 @@
+# v8.8.36 Agent Manager notification + stable inspector — verification scope
+
+This candidate is a UI/test-only functional closure layered on canonical v8.8.35. Required source evidence is exact-head Agent Control syntax/tests plus configured Agent Control/Security gates. Focused regressions must pin notification rendering/action filtering, shared managed/federated ID routing, explicit Inspect controls, nested-control isolation, refresh-persistent selection, arbitrary stable IDs, and deterministic missing/retired behavior including the async managed-log race.
+
+The inspector must expose current recovery context without inventing actions for terminal/dead rows. Unsupported backend notification action types stay informational. Backend registry retirement, startup freshness, and durable stop semantics are intentionally unchanged.
+
+Live closure for #461 remains separate: after #475 proves heaven2 is running the intended canonical source, exercise notification inspection, explicit keyboard Inspect controls, normal 4-second refresh persistence, and retirement/missing degradation in the live dashboard. Source CI alone must not be relabeled as that browser evidence.
+
+---
+
 # v8.8.35 Agent Control canonical runtime freshness — verification scope
 
 This candidate is transplanted onto canonical v8.8.34 so the durable stop-proof fix remains intact. Required source closure is exact-head Agent Control syntax/tests and Security Supply Chain. The Windows runtime-sync fixture must prove clean-main fast-forward and preservation/fail-closed behavior for dirty, detached, non-main, ahead, and diverged checkouts; background-process policy must confirm the runtime SHA probe uses the forced-hidden wrapper.
