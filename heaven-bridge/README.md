@@ -68,7 +68,7 @@ Core capabilities:
 - job cancellation and status
 - adaptive high-concurrency job execution with CPU-derived default capacity, RAM headroom admission control, and bounded start bursts
 - TTL/replay/idempotency checks
-- optional HMAC-SHA256 authentication
+- HMAC-SHA256 job authentication with control-side signing support
 - structured error codes
 - atomic result writes
 - Git retry/backoff and serialized Git mutations
@@ -144,9 +144,11 @@ If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a s
 
 ## Authentication and integrity
 
-The private GitHub repository and branch ACL are the baseline trust boundary.
+The private GitHub repository and branch ACL are the compatibility trust boundary. Because this bridge can execute commands and control the desktop, repository write access alone should not be treated as sufficient production authentication.
 
-For stronger per-job authentication, set `HEAVEN_BRIDGE_HMAC_KEY` in the worker environment. When configured, every new job must contain an HMAC-SHA256 signature in:
+For execution-capable deployments, configure per-job HMAC authentication. Set `HEAVEN_BRIDGE_HMAC_KEY` in each worker environment and set the same value as `AGENT_CONTROL_HEAVEN_HMAC_KEY` on the heaven2 Agent Control host. Agent Control signs the canonical job payload before it reaches the relay; the worker rejects missing, invalid, expired, replayed, or payload-mismatched jobs. The key itself must stay machine-local and must never be committed or sent through queue/result files.
+
+When HMAC is configured, every new job contains an HMAC-SHA256 signature in:
 
 ```json
 {
@@ -156,7 +158,7 @@ For stronger per-job authentication, set `HEAVEN_BRIDGE_HMAC_KEY` in the worker 
 }
 ```
 
-The signature is computed over canonical JSON for the job with `auth.signature` omitted. `health` reports the active auth mode.
+New Agent Control submissions declare `auth.canonical: mhw-bridge-canon-v1` and sign a versioned typed canonical form designed to be byte-stable across Node.js and Python, including Unicode keys and binary64 numeric values. Workers retain verification support for legacy signed jobs that do not carry a canonical-format marker. `health` reports the active auth mode. A health response of `private-repo-acl` is a compatibility state, not the preferred hardened deployment state.
 
 Never put passwords, access tokens, API keys, cookies, private keys, or other credentials into queue files or result files.
 
@@ -369,12 +371,3 @@ The credential value stays out-of-band:
 A claimed handle is single-use even if validation or input later fails. Re-create a fresh handle rather than retrying a consumed one. The envelope TTL is bounded (default helper TTL 120 seconds; worker maximum 300 seconds unless explicitly lowered/raised within the hard cap). Secret values are never copied to clipboard or passed through the UIA PowerShell environment.
 
 The bridge test suite includes canary checks ensuring the secret value is absent from canonical relay jobs and returned result payloads, plus expiry, destination-binding, target-binding, unavailable-channel, relay-value rejection, replay, live SMB-encryption verification, and a forced publication-failure regression proving no secret-bearing temp envelope survives a failed rename.
-
-## HMAC authentication hardening
-
-The private GitHub repository and branch ACL are a compatibility trust boundary, not the preferred production authentication boundary for an execution-capable bridge.
-
-For hardened deployments, set `HEAVEN_BRIDGE_HMAC_KEY` in each worker environment and the same value as `AGENT_CONTROL_HEAVEN_HMAC_KEY` on the heaven2 Agent Control host. Agent Control signs the canonical job payload before it reaches the relay; the worker rejects missing or invalid signatures when HMAC mode is enabled. Job TTL/replay validation remains in force, so a valid signature does not make stale or replayed work acceptable.
-
-The HMAC key must remain machine-local. Never commit it or write it into queue, result, status, log, or repository state files. The signature covers canonical JSON with `auth.signature` omitted, and `health` reports the active authentication mode. `private-repo-acl` is compatibility mode; `hmac-sha256` is the hardened mode.
-
