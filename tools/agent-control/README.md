@@ -1,3 +1,9 @@
+# v0.6.15 — registry lifecycle closure
+
+Agent Control now removes safely resolved ordinary terminal managed workers from current registry presence instead of limiting retirement to retry-exhausted rows. Retirement remains fail-closed for unresolved recovery/task state, live unowned processes, missing branch provenance, committed divergence, and dirty worktrees.
+
+Federated terminal and disconnected-timeout presence is archived with tombstones for every correlated provider/source identity. Historical records remain inspectable through the snapshot/dashboard Registry history surface but no longer inflate the live-registry total.
+
 # Heaven Agent Control Plane
 
 A zero-dependency local control plane for the MHW programming-agent swarm.
