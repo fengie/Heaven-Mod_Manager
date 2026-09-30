@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "codex/ci-evidence-scaling",
-  "currentVersion": "8.8.42",
+  "workingBranch": "feature/bounded-context-navigation-v8.8.43-20260930",
+  "currentVersion": "8.8.43",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.42-current-ci-evidence-candidate",
-  "nextMilestone": "Verify scoped current CI adapter and fail-closed release gates; integrate, publish and attest exact proof.",
-  "nextRequiredAction": "Run plugin/full gates and actual Actions metadata proof; preserve Agent Manager P0 and separate auth/install limitations.",
+  "status": "v8.8.43-bounded-context-navigation-candidate",
+  "nextMilestone": "Verify bounded SHA-checked context search/heading navigation on the exact candidate; integrate and publish only when all required gates and release path are available.",
+  "nextRequiredAction": "Require exact-head Agent Control/Workflow Feature/Security gates on PR #515, refresh main before integration, then complete authorized publication/runtime closure or preserve exact blocker evidence.",
   "verificationAppliesToCommit": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
   "lastClosedVerificationCommit": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
   "lastClosedVerificationRun": "heaven-github-actions-36759646889",
-  "verificationScopeNote": "Prior v8.8.41 source 7edcd03f passed 26/26, Agent Control/security, immutable build 350, disposable updater success/rollback and controller smoke. v8.8.42 candidate has no inherited proof.",
+  "verificationScopeNote": "Last closed product verification remains v8.8.41 source 7edcd03f. v8.8.42/current main and this v8.8.43 candidate do not inherit that proof; exact-head candidate checks are required.",
   "lastClosedVerification": {
     "sourceSha": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
     "windowsGate": "36759646889 success; 26/26",
@@ -27,10 +27,11 @@
     "evidenceCommit": "6a1db2153604c7054fa59623ea232ab3cbdd6d10",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.41-scalable-bootstrap.md"
   },
-  "candidateSourceCommit": null,
+  "candidateSourceCommit": "b5c8cacd1e34d11ff7366f5e9949692085f95851",
   "candidateChanges": [
-    "Reader-injected bounded exact repo/SHA/event/branch CI evidence in existing Heaven Workflows owner.",
-    "Reject historical-success masking, ambiguous/running/partial/expired gate evidence; revalidate snapshot at publish authorization."
+    "SHA-256-bound literal text and Markdown-heading navigation for indexed repository context.",
+    "Bounded query/results/output with line-addressable matches and explicit result/snippet truncation.",
+    "Agent Control/plugin identity v0.6.20 and prompt library 2026.09.30.3."
   ],
   "agentManagerPriority": {
     "status": "active",
