@@ -4089,6 +4089,7 @@ function gateAutopilot(reason, error = null) {
 
 function startAutopilot(body = {}) {
   const objective = String(body.objective || "").trim();
+  const overallGoal = String(body.overallGoal || "").trim();
   if (!objective) throw new Error("Autopilot objective is required.");
   if (os.hostname().toLowerCase() !== "heaven2") {
     const error = new Error("Engineering autopilot must run from heaven2, the control/credential authority.");
@@ -4109,6 +4110,7 @@ function startAutopilot(body = {}) {
     enabled: true,
     paused: false,
     objective,
+    overallGoal,
     phase: "sync-plan",
     iteration: 0,
     repairLoops: 0,
@@ -4137,6 +4139,7 @@ function startAutopilot(body = {}) {
     evidence: {
       runId: state.autopilot.runId,
       objective,
+      overallGoal: overallGoal || null,
       perpetual: state.autopilot.perpetual,
       cycleNumber: state.autopilot.cycleNumber
     }
@@ -4214,16 +4217,25 @@ function autopilotCandidate(state) {
   return state.agents.find(agent => agent.id === state.autopilot?.candidateAgentId) || null;
 }
 
+function autopilotOverallGoalLine(state) {
+  const overallGoal = String(state.autopilot?.overallGoal || "").trim();
+  return overallGoal ? `Overall goal: ${overallGoal}` : null;
+}
+
 function autopilotImplementationObjective(state) {
-  if (!state.autopilot?.perpetual) return state.autopilot?.objective || "";
+  const overallGoalLine = autopilotOverallGoalLine(state);
+  if (!state.autopilot?.perpetual) {
+    return [overallGoalLine, state.autopilot?.objective || ""].filter(Boolean).join("\n");
+  }
   const cycle = Number(state.autopilot?.cycleNumber || 0) + 1;
   return [
     `Perpetual engineering cycle #${cycle}.`,
+    overallGoalLine,
     "Stabilize before expanding: inspect current canonical main and active ownership, then fix the highest-impact reproducible bug/regression or reliability weakness first.",
     "If no actionable bug remains, implement the highest-value bounded planned improvement instead.",
     "Do the work rather than only audit it; add prevention/regression coverage; keep the repository releasable and leave exact evidence for verification/review.",
     `Standing direction: ${state.autopilot?.objective || "Continuously improve the project."}`
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 }
 
 async function dispatchAutopilotImplementation(state) {
@@ -4265,10 +4277,11 @@ async function dispatchAutopilotVerification(state) {
     role: "test",
     task: [
       `Independently verify candidate ${candidate.id} on branch ${candidate.branchName}.`,
+      autopilotOverallGoalLine(state),
       "Run the strongest targeted check/test/lint/type/build gates applicable to the change.",
       "Record structured task evidence with type=verification, exact sourceSha, command, and result=pass or fail before exiting.",
       `Use the task id in your assignment and POST that evidence to http://127.0.0.1:${PORT}/api/tasks/<task-id>/evidence with header X-Agent-Control-Task-Token set from AGENT_CONTROL_TASK_TOKEN. Never print that token.`
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
     baseBranch: candidate.branchName,
     boundary: `autopilot:verify:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
     priority: 92,
@@ -4285,10 +4298,11 @@ async function dispatchAutopilotReview(state) {
   if (!candidate) throw new Error("Autopilot candidate is missing before review.");
   const task = [
     `Independently review candidate ${candidate.id} on branch ${candidate.branchName}.`,
+    autopilotOverallGoalLine(state),
     "Inspect implementation, verification evidence, safety, regressions, ownership, docs and version consistency.",
     `Before exiting, record an explicit review verdict for candidate ${candidate.id}: approved, changes-requested, or rejected, with structured evidence.`,
     `POST the verdict to http://127.0.0.1:${PORT}/api/integration/${encodeURIComponent(candidate.id)}/review-verdict as JSON with verdict, reason, and evidence, using header X-Agent-Control-Task-Token from AGENT_CONTROL_TASK_TOKEN. Never print that token.`
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   return withDeployLock(() => deployReview(candidate.id, {
     task,
     boundary: `autopilot:review:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
@@ -4307,10 +4321,11 @@ async function dispatchAutopilotRepair(state) {
     role: "main",
     task: [
       `Repair candidate ${candidate.id} on branch ${candidate.branchName}.`,
+      autopilotOverallGoalLine(state),
       `Review verdict: ${candidate.reviewVerdict || "verification failure"}.`,
       `Structured review evidence: ${evidence}`,
       "Keep the repair bounded, rerun focused checks, update docs/version when required, and do not merge or publish."
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
     baseBranch: candidate.branchName,
     boundary: `autopilot:repair:${state.autopilot.runId}:${state.autopilot.repairLoops + 1}`,
     priority: 96,
@@ -4329,6 +4344,7 @@ async function dispatchAutopilotIntegration(state) {
     role: "integration",
     task: [
       `Integrate ONLY approved candidate ${candidate.id} from branch ${candidate.branchName} into canonical origin/main.`,
+      autopilotOverallGoalLine(state),
       candidateSha ? `Expected candidate tip: ${candidateSha}.` : "Resolve and record the exact candidate tip before integration.",
       "Fetch/prune immediately, refresh origin/main, inspect the candidate diff and approval evidence, and preserve newer canonical behavior.",
       "Reconcile conflicts deliberately inside this candidate's scope, rerun the strongest affected checks, then merge/fast-forward the verified candidate into main and push main.",
@@ -4336,7 +4352,7 @@ async function dispatchAutopilotIntegration(state) {
       "After push, fetch origin/main again and prove the candidate tip is contained. Delete local/remote temporary branches only when that containment proof makes deletion safe.",
       "Close a directly tied PR only after remote-main proof. Do not merge unrelated branches or publish a release unless the repository's standing release rules independently require it.",
       "If anything prevents safe integration, stop with exact branch/SHA/error evidence rather than forcing history."
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
     baseBranch: "main",
     boundary: `autopilot:integrate:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
     priority: 99,
@@ -4357,11 +4373,12 @@ async function dispatchAutopilotHygiene(state) {
     role: "cleanup",
     task: [
       `Perpetual engineering cycle #${Number(state.autopilot?.cycleNumber || 0) + 1} repository hygiene.`,
+      autopilotOverallGoalLine(state),
       "Refresh canonical main, open PRs/issues, observed temporary branches, task/agent state, and continuity files.",
       "Finish or close evidence-backed completed work; delete only branches whose unique work is proven integrated; preserve anything unique, ambiguous, active, or newer than canonical behavior.",
       "Resolve stale PR/branch/issue bookkeeping, update durable continuity and bug-prevention lessons when applicable, and leave main/repository state easy for a fresh agent to understand.",
       "Do not create cleanup toil merely to make counts reach zero, and do not touch another active owner's mutable boundary."
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
     baseBranch: "main",
     boundary: `autopilot:hygiene:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
     priority: 88,
@@ -4381,11 +4398,12 @@ async function dispatchAutopilotExpansion(state) {
     role: "research",
     task: [
       `Prepare the next bounded work unit after perpetual engineering cycle #${Number(state.autopilot?.cycleNumber || 0) + 1}.`,
+      autopilotOverallGoalLine(state),
       "Inspect current origin/main, open plans/issues, recent failures, verification gaps, user-facing friction, performance/reliability debt, and relevant external/current technical information when it materially improves the decision.",
       "Choose the highest-value unblocked next unit using this priority: correctness/data-loss/security risks; integration/release blockers; user-facing bugs; planned capability; toil/performance/polish.",
       "Update durable project planning/continuity with a concise next action, acceptance criteria, likely ownership boundary, and required verification. Do not implement product code in this expansion phase.",
       `Keep the standing direction in scope: ${state.autopilot?.objective || "Continuously improve the project."}`
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
     baseBranch: "main",
     boundary: `autopilot:expand:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
     priority: 72,
