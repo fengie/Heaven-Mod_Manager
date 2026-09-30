@@ -321,7 +321,7 @@ public sealed class ModIoTransport
     private static void ValidatePositiveId(int value, string parameterName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value, parameterName);
     }
 
     private static TimeSpan? ParseRetryAfter(RetryConditionHeaderValue? header)
