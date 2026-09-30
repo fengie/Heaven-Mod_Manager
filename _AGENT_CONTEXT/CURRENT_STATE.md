@@ -1,3 +1,13 @@
+# v8.8.31 Agent Control durable retirement proof — CURRENT CANDIDATE
+
+- Rebuilt the unique #486 remote-retirement safety work directly on current main so v8.8.30 card accessibility is preserved.
+- Retry-exhausted Heaven Bridge workers may leave the live registry only after authoritative terminal job proof; uncertain cancellation/status or non-terminal states fail closed.
+- Retired federated observations reactivate only from raw heartbeats strictly newer than retirement, preventing stale cached live-state replay.
+- Exact-head Agent Control/Security gates are required before merge; live heaven2→heaven1 retirement/replay smoke remains pending when runtime access is available.
+- Successor: after integration, continue P0 startup freshness (#475), lightweight health (#477), and notification/inspector (#461) without reopening superseded retirement branches.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 PR #484 integrated the remaining clean card-accessibility behavior: managed/federated cards stay mouse/keyboard inspectable while status/task articles no longer masquerade as whole-card buttons for assistive technology. Nested controls remain independent and executable interaction coverage protects the boundary.
