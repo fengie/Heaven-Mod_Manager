@@ -1,0 +1,27 @@
+# Security and supply-chain doctrine
+
+These rules are reusable across projects unless a stronger project-specific control supersedes them.
+
+## CI dependencies are executable dependencies
+
+Treat every GitHub Action as executable third-party code. Pin non-local Actions to a full immutable commit SHA, keep the readable release tag as a comment, and use automated dependency tooling to propose reviewed SHA refreshes. A movable major-version tag is not a security boundary.
+
+## Persistent self-hosted runners are trusted machines
+
+Do not execute fork pull-request code on a persistent self-hosted runner. A read-only `GITHUB_TOKEN` does not protect the host filesystem, cached credentials, other repositories, or later jobs if arbitrary PR code can persist on the machine. Prefer ephemeral isolated runners. If a persistent runner is unavoidable, reject untrusted/fork PRs before allocation and do not persist checkout credentials.
+
+## Least privilege must be visible in source
+
+Every workflow declares explicit top-level `permissions:`. Write scopes belong only in workflows/jobs that genuinely publish or mutate repository state, and should not be combined with untrusted source execution.
+
+## Vulnerability auditing is a build invariant
+
+Enable known-vulnerability auditing for direct and transitive dependencies. Treat unsuppressed findings at the chosen severity threshold as build failures. Any suppression must name the advisory, document reason/owner/expiry, and be removed when a fixed dependency is available.
+
+## Integrity and identity are different controls
+
+Hashes verify content integrity relative to trusted metadata; they do not identify the publisher if an attacker can replace metadata and payload together. User-distributed executables should pair hash verification with an appropriate publisher-signing mechanism whose signing identity is isolated from ordinary build execution.
+
+## Security defects create regression rules
+
+When a security weakness is found, fix the immediate defect, add a machine-enforced regression for the defect class, document the trust boundary/root cause, and promote the general lesson into reusable project/agent guidance.
