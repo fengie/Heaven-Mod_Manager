@@ -1,4 +1,10 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control exhausted-agent registry retirement
+
+Agent Control no longer leaves **failed · RETRY EXHAUSTED** workers sitting in the live Agent Manager registry. Bounded no-work recovery now ends with an explicit retirement lifecycle: controller-owned live processes are terminated with proof, clean worktrees and leases are released, the dead logical worker is removed from managed/federated live state, and durable task/event/tombstone history remains available without a dead clickable card.
+
+The registry also rejects replayed terminal observations from already-retired federated sessions, preventing dead sessions from reappearing on the next heartbeat. A genuine live heartbeat clears the tombstone and re-admits the recovered source. Safety stays fail-closed: uncertain PID ownership, dirty worktrees, or committed branch divergence blocks retirement rather than killing or deleting evidence. Agent Control advances to **v0.6.5** with regression coverage for retirement, anti-resurrection sync, tombstone reactivation, and state migration.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 
