@@ -2,7 +2,6 @@ const MANAGED_FAILURE_STATES = new Set(["failed", "interrupted", "orphaned", "ca
 const ACTIVE_RECOVERY_STATES = new Set([
   "retry-pending",
   "retry-waiting",
-  "retry-blocked",
   "stream-lost-checking-work",
   "work-detected-incomplete"
 ]);
