@@ -276,6 +276,11 @@ test("transport failure never becomes a false host-offline status", () => {
     healthy: false,
     reason: "Dedicated Heaven relay checkout is dirty"
   }), "presence-unknown");
+  assert.equal(bridgeMachineStatus({
+    configured: true,
+    healthy: false,
+    reason: "heartbeat-auth-invalid"
+  }), "auth-required");
   assert.equal(bridgeMachineStatus({ configured: false, healthy: false }), "not-configured");
 });
 
