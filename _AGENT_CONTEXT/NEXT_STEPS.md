@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.27 Agent Control Heaven relay execution repair — CURRENT
+
+1. Run exact-head `cd tools/agent-control && npm run check && npm test`; repair any source/test/version-identity failure before integration.
+2. Restart/reload Agent Control on **heaven2** from the exact candidate. Source changes alone do not prove the installed controller picked them up.
+3. With `%USERPROFILE%\HeavenBridgeRepo` present and no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`, dispatch one heaven-targeted worker and prove bridge submit/result waiting proceeds instead of exit code 1.
+4. Confirm v8.8.26 cleanup still works: a **failed · RETRY EXHAUSTED** worker is terminated/cleaned where ownership is provable and removed from managed + federated live registries.
+5. Confirm fail-closed preservation still works for uncertain PID ownership, dirty worktrees, or committed branch divergence.
+6. Merge only after current-main sync and exact-head verification; then re-read remote main and delete the temporary task branch.
+
+---
+
 # 2026-09-30 v8.8.26 Agent Control exhausted-agent registry retirement — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.26 candidate and repair any syntax/state-migration/retirement regression before integration.
