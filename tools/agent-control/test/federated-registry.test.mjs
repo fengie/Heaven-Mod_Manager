@@ -117,7 +117,9 @@ test("heartbeat freshness excludes stale and disconnected records from live coun
   const snapshot = federationSnapshot(federation, { now: Date.parse("2026-09-29T08:10:00.000Z") });
   assert.equal(snapshot.counts.live, 1);
   assert.equal(snapshot.counts.stale, 1);
-  assert.equal(snapshot.counts.disconnected, 1);
+  assert.equal(snapshot.counts.disconnected, 0);
+  assert.equal(snapshot.counts.total, 2);
+  assert.equal(federation.agents.length, 3, "disconnected history stays durable even when it leaves the live registry");
 });
 
 test("completed historical tasks do not inflate live counts", () => {
@@ -159,7 +161,8 @@ test("reconnect preserves stable identity and returns a stale worker to live", (
     heartbeat_at: "2026-09-29T08:00:00.000Z"
   });
   const before = federationSnapshot(federation, { now: Date.parse("2026-09-29T08:10:00.000Z") });
-  assert.equal(before.counts.disconnected, 1);
+  assert.equal(before.counts.disconnected, 0);
+  assert.equal(before.agents.length, 0, "disconnected worker is retired from the live registry without deleting its identity");
 
   const reconnected = reconcileObservation(federation, {
     provider: "chatgpt",
@@ -208,6 +211,28 @@ test("mixed runtime swarm includes managed local and external agents in one coun
   assert.deepEqual(new Set(snapshot.agents.map(item => item.provider)), new Set(["local-control", "chatgpt", "github"]));
 });
 
+
+test("live federation registry retires failed, exhausted, and untracked managed mirrors without deleting durable history", () => {
+  const federation = defaultFederationState();
+  const managed = [
+    { id: "managed-running", role: "support", status: "running", heartbeatAt: "2026-09-29T08:10:00.000Z" },
+    { id: "managed-done", role: "reviewer", status: "done", heartbeatAt: "2026-09-29T08:10:00.000Z", finishedAt: "2026-09-29T08:10:00.000Z" },
+    { id: "managed-failed", role: "support", status: "failed", heartbeatAt: "2026-09-29T08:10:00.000Z", finishedAt: "2026-09-29T08:10:00.000Z" },
+    { id: "managed-exhausted", role: "support", status: "failed", recoveryStatus: "retry-exhausted", heartbeatAt: "2026-09-29T08:10:00.000Z", finishedAt: "2026-09-29T08:10:00.000Z" },
+    { id: "managed-untracked", role: "support", status: "running", heartbeatAt: "2026-09-29T08:10:00.000Z" }
+  ];
+  syncManagedAgents(federation, managed, { hostname: "heaven2", now: Date.parse("2026-09-29T08:10:00.000Z") });
+  const currentManaged = managed.filter(item => ["managed-running", "managed-done"].includes(item.id));
+  const snapshot = federationSnapshot(federation, {
+    now: Date.parse("2026-09-29T08:10:01.000Z"),
+    managedAgents: currentManaged
+  });
+  assert.deepEqual(new Set(snapshot.agents.map(item => item.agent_id)), new Set(["managed-running", "managed-done"]));
+  assert.equal(snapshot.counts.failed, 0);
+  assert.equal(snapshot.counts.disconnected, 0);
+  assert.equal(snapshot.counts.total, 2);
+  assert.equal(federation.agents.length, 5, "registry cleanup must not destroy durable reconciliation history");
+});
 
 test("migration normalizes malformed nested collections and freshness thresholds", () => {
   const migrated = migrateFederationState({
