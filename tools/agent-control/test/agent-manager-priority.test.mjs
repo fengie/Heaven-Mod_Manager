@@ -10,7 +10,8 @@ const SERVER = path.join(ROOT, "tools", "agent-control", "server.mjs");
 
 test("canonical continuity keeps Agent Manager P0 active until runtime proof closes it", () => {
   const current = JSON.parse(fs.readFileSync(path.join(ROOT, "_AGENT_CONTEXT", "CURRENT_REVISION.json"), "utf8"));
-  assert.equal(current.currentVersion, "8.8.23");
+  const repoVersion = fs.readFileSync(path.join(ROOT, "VERSION.txt"), "utf8").trim();
+  assert.equal(current.currentVersion, repoVersion, "P0 continuity must track the live repository version");
   assert.equal(current.agentManagerPriority?.status, "active");
   assert.equal(current.agentManagerPriority?.priority, "P0");
   assert.match(current.agentManagerPriority?.goal || "", /Agent Manager|Agent Control/i);
@@ -33,9 +34,8 @@ test("Agent Control runtime, documentation, and private plugin use one release i
   const runtime = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "agent-control", "package.json"), "utf8"));
   const plugin = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "agent-control", "chatgpt-plugin", "plugin.json"), "utf8"));
   const readme = fs.readFileSync(path.join(ROOT, "tools", "agent-control", "README.md"), "utf8");
-  assert.equal(runtime.version, "0.6.2");
   assert.equal(plugin.version, runtime.version);
-  assert.match(readme, /What v0\.6\.2 does/);
+  assert.ok(readme.includes(`What v${runtime.version} does`), "Agent Control README must describe the live runtime version");
 });
 
 test("ChatGPT control skill heartbeats real stable sessions without inventing identities", () => {
