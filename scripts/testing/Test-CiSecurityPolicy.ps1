@@ -78,6 +78,76 @@ foreach($workflow in $workflows){
 }
 
 
+# Source/runtime security invariants. Keep these checks deterministic and high-signal:
+# they run without sending source to a third-party scanner and block common credential
+# leaks and security-boundary bypasses before code reaches a release.
+$excludedPathParts=@('\\.git\\','\\bin\\','\\obj\\','\\artifacts\\','\\release\\','\\BuildLogs\\','\\StartupLogs\\')
+$sourceExtensions=@('.cs','.py','.ps1','.psm1','.mjs','.js','.json','.yml','.yaml','.xml','.props','.targets','.config','.md','.bat','.cmd')
+$securityFiles=@(
+    Get-ChildItem -LiteralPath $Root -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object {
+            $extension=$_.Extension.ToLowerInvariant()
+            if($sourceExtensions -notcontains $extension){return $false}
+            if($_.Length -gt 2MB){return $false}
+            $full=$_.FullName
+            foreach($part in $excludedPathParts){if($full -match [regex]::Escape($part)){return $false}}
+            return $true
+        }
+)
+
+$secretPatterns=@(
+    @{Name='GitHub classic token'; Pattern='(?<![A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{20,}'},
+    @{Name='GitHub fine-grained token'; Pattern='(?<![A-Za-z0-9])github_pat_[A-Za-z0-9_]{20,}'},
+    @{Name='AWS access key id'; Pattern='(?<![A-Z0-9])AKIA[0-9A-Z]{16}(?![A-Z0-9])'},
+    @{Name='private key material'; Pattern='-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'}
+)
+foreach($file in $securityFiles){
+    $text=Get-Content -LiteralPath $file.FullName -Raw -ErrorAction SilentlyContinue
+    if($null -eq $text){continue}
+    $relative=[IO.Path]::GetRelativePath($Root,$file.FullName).Replace('\\','/')
+    foreach($rule in $secretPatterns){
+        if($text -match $rule.Pattern){
+            $errors.Add("$relative: possible $($rule.Name) committed to the repository. Use an OS/GitHub secret store and rotate any exposed credential.")
+        }
+    }
+}
+
+$unsafePrimitiveRules=@(
+    @{Glob='*.cs'; Name='TLS certificate validation bypass'; Pattern='DangerousAcceptAnyServerCertificateValidator|ServerCertificateCustomValidationCallback\s*=\s*[^;\r\n]*=>\s*true'},
+    @{Glob='*.cs'; Name='unsafe legacy formatter'; Pattern='\b(?:BinaryFormatter|NetDataContractSerializer|LosFormatter)\b'},
+    @{Glob='*.py'; Name='Python shell=True command execution'; Pattern='\bshell\s*=\s*True\b'},
+    @{Glob='*.py'; Name='unsafe Python deserialization'; Pattern='\bpickle\.(?:loads?|Unpickler)\b'},
+    @{Glob='*.py'; Name='dynamic Python code execution'; Pattern='(?m)^\s*(?:eval|exec)\s*\('}
+)
+foreach($rule in $unsafePrimitiveRules){
+    foreach($file in @(Get-ChildItem -LiteralPath $Root -Recurse -File -Filter $rule.Glob -ErrorAction SilentlyContinue)){
+        $full=$file.FullName
+        $skip=$false
+        foreach($part in $excludedPathParts){if($full -match [regex]::Escape($part)){$skip=$true;break}}
+        if($skip -or $file.Length -gt 2MB){continue}
+        $text=Get-Content -LiteralPath $full -Raw -ErrorAction SilentlyContinue
+        if($null -ne $text -and $text -match $rule.Pattern){
+            $relative=[IO.Path]::GetRelativePath($Root,$full).Replace('\\','/')
+            $errors.Add("$relative: forbidden security primitive detected ($($rule.Name)). Use the repository's fail-closed security helpers or document a narrowly reviewed exception in this policy.")
+        }
+    }
+}
+
+$updaterRoot=Join-Path $Root 'src\MhwModManager.Updater'
+if(Test-Path -LiteralPath $updaterRoot){
+    foreach($file in @(Get-ChildItem -LiteralPath $updaterRoot -Recurse -File -Filter '*.cs')){
+        $text=Get-Content -LiteralPath $file.FullName -Raw
+        $relative=[IO.Path]::GetRelativePath($Root,$file.FullName).Replace('\\','/')
+        if($text -match '(?i)http://'){
+            $errors.Add("$relative: updater network code must not contain plaintext HTTP endpoints.")
+        }
+        if($text -match '\bZipFile\.ExtractToDirectory\s*\('){
+            $errors.Add("$relative: updater must use bounded path-safe extraction instead of ZipFile.ExtractToDirectory.")
+        }
+    }
+}
+
+
 $propsPath=Join-Path $Root 'Directory.Build.props'
 if(!(Test-Path -LiteralPath $propsPath)){
     $errors.Add('Directory.Build.props is missing.')
