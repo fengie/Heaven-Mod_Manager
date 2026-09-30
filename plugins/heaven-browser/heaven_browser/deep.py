@@ -22,6 +22,8 @@ def _safe_url(value: Any) -> str:
 def _display_url(value: str) -> str:
     parsed = urllib.parse.urlsplit(value)
     host = parsed.hostname or ""
+    if ":" in host:
+        host = f"[{host}]"
     port = f":{parsed.port}" if parsed.port else ""
     path = parsed.path or "/"
     return urllib.parse.urlunsplit((parsed.scheme, host + port, path, "", ""))
@@ -362,7 +364,7 @@ class PlaywrightDeepBrowser:
         result = []
         for tab_id, page in list(session.tabs.items()):
             if getattr(page, "is_closed", lambda: False)():
-                session.tabs.pop(tab_id, None)
+                self._forget_page(session, page, tab_id)
                 continue
             title = ""
             try:
