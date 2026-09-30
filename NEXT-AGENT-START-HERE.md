@@ -1,3 +1,10 @@
+# v8.8.48 current Mods PR integration
+
+v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
+
+Next: focused UX/build, review and expected-head merge; verify main/private-public release/update rollback; confirm PR522 original head ancestry and safe branch cleanup. Close461 only against recorded complete inspector acceptance. Preserve unique registry projections and security/signing gaps; no new features or blind bulk merge/delete. Existing cached plugin routing drift remains deferred behind queue priority. Improvement: verify real populated Mods window through authorized operator route before declaring reported collapse fixed. Recursively propagate continuity.
+
+---
 # v8.8.47 existing bug integration — candidate
 
 Current priority: existing issues/PRs/branches, no new features. Read newest NEXT_STEPS and junior handoff; exact gates/publication pending. Inherit, preserve and recursively propagate the permanent continuity constitution to every successor.

@@ -1,4 +1,8 @@
-# v8.8.47 Universal Mod Manager
+# v8.8.48 Universal Mod Manager
+
+## v8.8.48 - automatic Mods page stretch
+
+Reconciles existing PR522 with current main, removes the redundant ancestor ActualWidth dependency from the Mods root and strengthens the actual wrapper contract using parsed XAML. Existing styles, margins, library and toolbar behavior stay intact. Styled probes resize both old/new layouts correctly; the reported populated-window collapse remains a separate verification gap. No new features.
 
 ## v8.8.47 — exact inspector identity and integration repair
 
