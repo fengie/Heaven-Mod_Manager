@@ -555,3 +555,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-033 — generated policy source must be syntax-safe across the generator language boundary
+
+- **Rule ID:** LR-033
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Code generation, CI policy scripts, cross-language automation
+- **Rule:** When one language generates another language's source, replacement-string metacharacters and interpolation semantics are part of the correctness/security boundary. Never feed source containing `$`-style syntax through a replacement API that interprets replacement tokens unless a callback/literal-safe path is used.
+- **Trigger / evidence:** The first generated `Test-CiSecurityPolicy.ps1` passed PowerShell regex text containing `$'` through JavaScript `String.replace` replacement-string semantics. JavaScript expanded `$'` as “text after the match,” truncating the PowerShell statement and duplicating the script tail, causing Security Supply Chain Gate run 36662225529 to fail parsing.
+- **Prevention:** Use replacement callbacks or AST/literal-safe construction for cross-language source generation, run a syntax/parse check on the generated artifact before promotion, and keep the generated policy inside normal release verification.
+- **Related rules:** LR-021 defect-class closure; LR-031 policy scanners must be self-safe.
+- **Supersedes:** none
+- **Superseded by:** none
+
