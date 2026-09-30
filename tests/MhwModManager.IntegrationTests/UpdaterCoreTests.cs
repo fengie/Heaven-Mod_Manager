@@ -394,12 +394,14 @@ public sealed class UpdaterCoreTests : IDisposable
             System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static);
         Assert.NotNull(method);
 
+        var prepared=new PreparedUpdateHandoff(null!,"request.json","helper.exe");
         var first=new StagedUpdate(null!,"stage-a","manifest-a");
         var replacement=new StagedUpdate(null!,"stage-b","manifest-b");
 
-        Assert.True((bool)method!.Invoke(null,[first,first])!);
-        Assert.False((bool)method.Invoke(null,[first,replacement])!);
-        Assert.False((bool)method.Invoke(null,[first,null])!);
+        Assert.True((bool)method!.Invoke(null,[prepared,first,first])!);
+        Assert.False((bool)method.Invoke(null,[prepared,first,replacement])!);
+        Assert.False((bool)method.Invoke(null,[prepared,first,null])!);
+        Assert.False((bool)method.Invoke(null,[null,first,first])!);
     }
 
     [Fact]
