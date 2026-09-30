@@ -502,6 +502,9 @@ public sealed class AutoPopulateService(
         // Everything in this set is required to preserve the user's selected anchors. Never remove it
         // during later fixed-point cleanup even if the environment changes while Auto Populate is running.
         var protectedSelection = new HashSet<string>(selected, PathRules.Comparer);
+        var protectedEffectiveProviders = protectedPlan.Conflicts
+            .Where(d => !d.Blocking && d.WinnerModId is not null && protectedSelection.Contains(d.WinnerModId))
+            .ToDictionary(d => d.Path, d => d.WinnerModId!, PathRules.Comparer);
 
         var ordered = mods
             .Where(m => !selected.Contains(m.Id))
@@ -548,6 +551,22 @@ public sealed class AutoPopulateService(
                     candidate.DisplayName,
                     false,
                     $"Skipped because enabling its complete requirement chain would conflict with the protected/current safe set: {blocker.Explanation}");
+                continue;
+            }
+
+            var displacedProtected = plan.Conflicts.FirstOrDefault(d =>
+                protectedEffectiveProviders.TryGetValue(d.Path, out var expectedProvider) &&
+                d.Kind != ConflictKind.Identical &&
+                d.Confidence != Confidence.Explicit &&
+                (d.WinnerModId is null || !PathRules.Comparer.Equals(d.WinnerModId, expectedProvider)));
+            if (displacedProtected is not null)
+            {
+                conflictSkips++;
+                skipped[candidate.Id] = new(
+                    candidate.Id,
+                    candidate.DisplayName,
+                    false,
+                    $"Skipped because it would silently replace the effective bytes of a protected selected mod at '{displacedProtected.Path}'. Select this alternative explicitly if that replacement is intended.");
                 continue;
             }
 
