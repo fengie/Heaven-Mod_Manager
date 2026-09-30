@@ -36,7 +36,8 @@ public sealed class GitHubReleasesCatalogProviderTests
         Assert.Equal("github-releases:example/mhw-mod", mod.CanonicalId);
         Assert.Equal("Fixture MHW Mod", mod.Name);
         Assert.Equal("v1.2.3", mod.Version);
-        Assert.NotNull(mod.Downloads);\n        Assert.Equal(51L, mod.Downloads.Value);
+        Assert.NotNull(mod.Downloads);
+        Assert.Equal(51L, mod.Downloads.Value);
         Assert.Equal("https://github.com/example/mhw-mod/releases/tag/v1.2.3", mod.SourceUrl);
         Assert.Equal(2, mod.Files.Count);
         Assert.Equal("501", mod.Files[0].ProviderFileId);
