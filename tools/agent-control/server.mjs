@@ -68,8 +68,12 @@ import {
 } from "./lib/work-handoff-signatures.mjs";
 import {
   clearObservationRetirement,
+  federatedAgentRetirementDecision,
+  federatedRetirementSources,
   forgetFederatedAgent,
   isRetryExhaustedManagedAgent,
+  managedAgentRetirementDecision,
+  normalizeRetiredAgents,
   proveRemoteJobStopped,
   recordAgentRetirement,
   retiredObservationDecision
@@ -1109,8 +1113,11 @@ function refreshState() {
     changed = true;
   }
 
-  const exhaustedAgentIds = state.agents
-    .filter(isRetryExhaustedManagedAgent)
+  const retirementAgentIds = state.agents
+    .filter(agent => managedAgentRetirementDecision(
+      agent,
+      state.tasks.find(task => task.id === agent.taskId) || null
+    ).retire)
     .map(agent => agent.id);
   const federationBefore = JSON.stringify(state.federation);
   syncManagedAgents(
@@ -1118,6 +1125,7 @@ function refreshState() {
     state.agents.filter(agent => !isRetryExhaustedManagedAgent(agent)),
     { hostname: os.hostname(), now }
   );
+  if (retireExpiredFederatedPresence(state, { now })) changed = true;
   if (JSON.stringify(state.federation) !== federationBefore) changed = true;
 
   if (changed && !degradedReason) saveState(state);
@@ -1126,9 +1134,9 @@ function refreshState() {
       setImmediate(() => void terminateProviderCapacityAgent(request.agentId, request.operationId));
     }
   }
-  if (exhaustedAgentIds.length && !degradedReason) {
-    for (const exhaustedAgentId of exhaustedAgentIds) {
-      setImmediate(() => void retireRetryExhaustedManagedAgent(exhaustedAgentId));
+  if (retirementAgentIds.length && !degradedReason) {
+    for (const retirementAgentId of retirementAgentIds) {
+      setImmediate(() => void retireManagedTerminalAgent(retirementAgentId));
     }
   }
   return state;
