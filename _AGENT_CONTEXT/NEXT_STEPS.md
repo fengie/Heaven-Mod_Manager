@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.39 strict analyzer repair — CURRENT CANDIDATE
+
+1. Run the exact-head Workflow Feature PR gate on `fix/ca1822-strict-gate-20260930`.
+2. Confirm strict whole-solution compilation no longer reports CA1822 for `PrepareBatchAsync`, `TryGetHealthAsync`, or `BeginDisposeMethodScope`.
+3. Do not spend time on missing `--no-build` test/self-test executables unless compilation has already succeeded; those were cascade failures in run 36673047725.
+4. Once compilation is green, isolate and repair the five independent core regressions from run 36673047725 one by one, preserving exact attribution.
+5. Re-run the exact-head gate after those regressions are fixed; merge to current `main` only after the changed candidate is verified, then delete the temporary branch.
+6. Improvement opportunity: prefer the narrow `fetch_file` -> `update_file` connector path for small source edits when broad source-write/comment payloads trip connector safety preflight; keep mutations scoped and independently verifiable.
+
+---
+
 # 2026-09-30 v8.8.38 retry-parent retirement — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the full Agent Control test suite; require configured Agent Control and Security gates.
