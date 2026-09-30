@@ -483,3 +483,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** URI-encode branch values before inline-handler interpolation and decode them only on invocation; align runtime, root plugin, and nested Codex plugin at v0.6.4.
 - **Preventive rule/process change:** Validate emitted operator markup rather than only template source, and enumerate every mirrored/distributable manifest in release-identity tests.
 - **Regression coverage added/strengthened:** `operator-ui-cli.test.mjs` requires the encoded Copy branch form and rejects the raw JSON.stringify handler; `agent-manager-priority.test.mjs` now requires the nested Codex manifest to match the runtime version.
+
+
+## 2026-09-30 — Agent Control terminal failures remained forever in live registries
+- **Symptom:** failed, dead, capacity-blocked, interrupted/orphaned, and especially **RETRY EXHAUSTED** workers stayed visible in Managed agents / Federated agent registry indefinitely, making new clicks/dispatches look broken amid stale tombstones.
+- **Root cause:** lifecycle code wrote terminal/retry-exhausted status durably but had no authoritative registry-retirement pass. `refreshState()` then called `syncManagedAgents(...)`, re-materializing those terminal records into federation, while dashboard renderers displayed every stored entry.
+- **Violated invariant / wrong assumption:** durable failure evidence and live registry membership are separate concerns. A terminal worker can leave durable task/event/failure/branch evidence without remaining a live registry entity.
+- **Direct fix:** add process/recovery-aware terminal registry GC; retire failed managed records only after no process or active recovery owns them, purge linked failed federation records, and preserve retry-pending/waiting plus durable incomplete work.
+- **Preventive rule/process change:** every terminal lifecycle state must define an explicit retention/retirement disposition; live registries must not double as historical failure archives.
+- **Regression coverage added/strengthened:** `tools/agent-control/test/registry-retention.test.mjs` pins failure retirement, active recovery retention, process-alive retention, linked federation purge, and bulk failed-federated GC.
+- **Verification/evidence:** v8.8.26 candidate; exact-head Agent Control tests plus heaven2 live dispatch/cleanup smoke required.
