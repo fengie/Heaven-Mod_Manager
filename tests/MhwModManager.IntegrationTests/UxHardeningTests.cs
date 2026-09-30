@@ -145,6 +145,27 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Updater_launch_boundary_serializes_staged_candidate_replacement()
+    {
+        var root=FindRepositoryRoot();
+        var source=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.Updater.cs"));
+        var start=source.IndexOf("private async Task ApplyStagedProgramUpdateWhenSafeAsync",StringComparison.Ordinal);
+        var end=source.IndexOf("private static bool IsPreparedHandoffCurrent",start,StringComparison.Ordinal);
+        Assert.True(start>=0&&end>start);
+        var method=source[start..end];
+
+        var launch=method.IndexOf("LaunchHelper(prepared)",StringComparison.Ordinal);
+        Assert.True(launch>0);
+        var gateAcquire=method.LastIndexOf("await programUpdateGate.WaitAsync(ct);",launch,StringComparison.Ordinal);
+        var identityCheck=method.LastIndexOf("IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate)",launch,StringComparison.Ordinal);
+        var gateRelease=method.IndexOf("programUpdateGate.Release();",launch,StringComparison.Ordinal);
+
+        Assert.True(gateAcquire>=0);
+        Assert.True(identityCheck>gateAcquire);
+        Assert.True(gateRelease>launch);
+    }
+
+    [Fact]
     public void Background_metadata_and_remote_visual_cache_are_hardened()
     {
         var root=FindRepositoryRoot();
