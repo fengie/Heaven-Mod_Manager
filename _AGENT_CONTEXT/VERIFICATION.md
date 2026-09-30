@@ -1,3 +1,9 @@
+# v8.8.52 Heaven authentication-state candidate
+
+Behavioral contract: configured/healthy -> `online`; configured + `heartbeat-auth-invalid` -> `auth-required`; stale/dirty/otherwise uncertain transport -> `presence-unknown`; unconfigured -> `not-configured`. `auth-required` must render as blocked/error and must not grant execution authority or cause local fallback.
+
+Exact-head acceptance requires Agent Control syntax/tests plus Security Supply Chain and Workflow Feature gates. Live diagnostic evidence: heaven is worker v8 with explicit local compatibility authorization; heaven2 is worker v8/`hmac-required` until a machine-local setup action is performed. Post-integration runtime acceptance requires syncing/restarting heaven2 Agent Control, admitting the fresh Heaven heartbeat, and completing one bounded remote dispatch without a replacement storm.
+
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.
