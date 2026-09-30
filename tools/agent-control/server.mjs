@@ -3991,7 +3991,7 @@ function managedRegistryViews(state) {
     "work-detected-incomplete",
     "work-unverified"
   ]);
-  const terminalRegistryStates = new Set(["failed", "stopped", "capacity-blocked"]);
+  const terminalRegistryStates = new Set(["done", "failed", "finished", "stopped", "capacity-blocked"]);
   const live = [];
   const attention = [];
   const history = [];
