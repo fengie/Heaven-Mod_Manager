@@ -878,3 +878,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-046 installed-runtime/restart proof; LR-049 producer-specific text encoding.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-051 — interactive containers must preserve descendant accessibility semantics
+
+- **Rule ID:** LR-051
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Dashboard cards, list rows, tree items, composite widgets, keyboard interaction
+- **Rule:** Do not assign a broad interactive role such as `button` to a container that contains meaningful status/details or native interactive descendants. That role can flatten child semantics in the accessibility tree. Preserve the native structural role, give the container a useful accessible name, and add keyboard activation separately while excluding nested controls from delegated activation.
+- **Trigger / evidence:** Agent Control v0.6.6 made managed/federated `<article>` cards mouse- and keyboard-inspectable by assigning `role="button"`; an independent accessibility review found that the button role could hide status/task content and nested View log/Stop/Copy branch controls from assistive technology.
+- **Rationale:** Visual click delegation must not erase the semantic structure and independent actions users of assistive technology rely on.
+- **Enforcement:** Review rendered accessibility semantics whenever adding pointer/keyboard behavior to a card/container. Regression-pin native container semantics, accessible names, meaningful descendant content, nested native control markup, and event exclusion. Verify with a browser accessibility tree when supported browser tooling is available.
+- **Regression/evidence:** v8.8.28 / Agent Control v0.6.7; `tools/agent-control/test/operator-ui-cli.test.mjs`; fix commit `683c8f0f`.
+- **Related rules:** LR-021 defect-class closure; LR-047 authoritative operator-action closure.
+- **Supersedes:** none
+- **Superseded by:** none

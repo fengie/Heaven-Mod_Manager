@@ -1,3 +1,11 @@
+# v8.8.28 — Accessible Agent Manager cards
+
+- Remove conflicting button semantics from managed/federated agent card containers while retaining their native, named, keyboard-focusable article semantics.
+- Preserve existing card click and Enter/Space inspection behavior; nested View log, Stop, Deploy reviewer, and Copy branch remain independent and retain native button semantics.
+- Add regression checks for both card types, status/task detail markup, child action controls, and executed mouse/Enter/Space event routing with nested-control isolation.
+- Advance root release to v8.8.28 and Agent Control runtime/root plugin/nested plugin identity to v0.6.7.
+- Record the escaped ARIA semantics defect and LR-051. Browser CLI/accessibility-tree verification and real heaven2 interaction smoke remain open.
+
 # v8.8.27 — Agent Manager card inspection
 - Make managed Agent Manager cards inspectable by clicking the card body or using Enter/Space; the interaction opens the worker log without requiring the small **View log** button.
 - Make federated cards inspectable: linked controller workers focus/open their managed card, while external-only sessions expose their current provider/state/heartbeat/recovery/action details.

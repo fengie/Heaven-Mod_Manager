@@ -1,4 +1,8 @@
-# v8.8.27 Universal Mod Manager
+# v8.8.28 Universal Mod Manager
+
+## v8.8.28 — Accessible Agent Manager cards
+
+Managed and federated agent cards keep visible status/task details and nested action buttons in the accessibility tree. Cards remain keyboard-focusable inspection articles that activate with Enter/Space; they no longer use button semantics that flatten child content and controls. Regression coverage pins the native article contract while preserving v8.8.27 mouse/keyboard behavior. Agent Control runtime and both private plugin manifests advance together to **v0.6.7**. The agent-browser CLI is unavailable in this runtime, so a real screen-reader/accessibility-tree smoke remains open with the heaven2 UI gates.
 
 ## v8.8.27 — Agent Manager card inspection
 

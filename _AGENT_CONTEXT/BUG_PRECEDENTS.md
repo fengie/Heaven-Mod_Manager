@@ -529,3 +529,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Added CLI log round-trip JSON coverage plus installer-source assertions for valid WScript quoting; live reinstall will run the Startup fallback with `cscript.exe` and reparse the generated audit JSON.
 - **Sibling/adjacent cases checked:** Task action uses `pythonw.exe` with a dedicated `--log`; scheduled-task registration and Startup fallback point at the same runtime/pruner arguments.
 - **Verification/evidence:** Failing install jobs `chatgpt-20260930-install-plugin-pruner-heaven2-a1` and `chatgpt-20260930-install-plugin-pruner-heaven-a1`; fixes `9d2a78266ddb89d0489d9eada2108546ccdbeedb` and `d0716ff3c2b477d766a3685dcad597c9670d6491`; exact heaven2 verification `chatgpt-20260930-verify-plugin-pruner-runtime-fix-a1` passed the full plugin gate, JSON consumer round-trip, and deletion smoke.
+
+## 2026-09-30 — Agent Control interactive cards obscured their content from assistive technology
+- **Symptom:** Managed and federated agent cards appeared inspectable and keyboard-operable, but assistive technology could announce only the short “Inspect …” button name and omit card status/task structure and native action buttons.
+- **Root cause:** The v0.6.6 interaction change assigned `role="button"` to an `<article>` that contains meaningful content and nested native buttons. Button-role semantics flatten descendants in the accessibility tree.
+- **Violated invariant / wrong assumption:** Adding pointer/keyboard activation to a container must not override the semantics of meaningful content or descendant actions.
+- **Why prior defenses missed it:** Tests parsed the inline script and checked event filters/keyboard keys, but did not review role semantics or the rendered accessibility tree.
+- **Direct fix:** Remove explicit role overrides, retain the native named, focusable `<article>`, and keep existing click/Enter/Space handling with nested-control exclusion.
+- **Preventive rule/process change:** LR-051 requires interactive containers to preserve native descendant accessibility semantics and calls for accessibility-tree verification when supported browser tooling is available.
+- **Regression coverage added/strengthened:** Pin native article semantics, accessible names, managed/federated status/task markup, keyboard focus, and nested action buttons; execute managed/federated click, Enter, Space, and nested-control events in `operator-ui-cli.test.mjs`.
+- **Verification/evidence:** Implementation checkpoint `683c8f0f`; behavioral test checkpoint `0de7e868`; focused UI/CLI test passed 6/6. Full exact-head suite and screen-reader/accessibility-tree smoke pending.
+- **Adjacent cases checked:** Managed and federated cards received the same semantic correction; existing click/Enter/Space handlers and nested-control guards remain in place.

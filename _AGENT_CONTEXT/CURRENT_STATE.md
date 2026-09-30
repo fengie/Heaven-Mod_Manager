@@ -1,4 +1,10 @@
-# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+# 2026-09-30 v8.8.28 Accessible Agent Manager cards — CURRENT
+
+Managed and federated agent card containers retain native `<article>` semantics while remaining named and keyboard-focusable. This prevents their previous `role="button"` override from flattening status/task content and nested controls for assistive technology. Existing click/Enter/Space inspection and nested-control exclusion remain. Root version is v8.8.28; Agent Control and both private plugin manifests are v0.6.7. At behavior checkpoint `0de7e868`, focused UI tests pass 6/6, full Agent Control suite passes 228/228, and all package module syntax checks pass. Hosted exact-head checks and browser accessibility-tree/heaven2 smoke remain required. Agent Manager P0 stays active.
+
+---
+
+# 2026-09-30 v8.8.27 Agent Manager card inspection — prior checkpoint
 
 Canonical v8.8.26 already contains the retry-exhausted retirement lifecycle: safe ownership-proven process cleanup, managed/federated live-registry removal, durable retirement tombstones, terminal replay suppression, and live-heartbeat reactivation. The remaining operator defect was independent: the dashboard rendered agent cards as visual containers with no card-level click or keyboard inspection path, so clicking a bot/card body appeared broken unless the operator happened to use a nested button.
 

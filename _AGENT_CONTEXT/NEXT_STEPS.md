@@ -1,4 +1,15 @@
-# 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
+# 2026-09-30 v8.8.28 Accessible Agent Manager cards — CURRENT
+
+1. Run exact-head `cd tools/agent-control && npm run check && npm test`; record full candidate SHA and hosted CI result.
+2. On heaven2, inspect managed and federated cards with a screen reader/browser accessibility tree: article role/name, status/task details, and View log/Stop/Deploy reviewer/Copy branch buttons must all remain exposed.
+3. Verify mouse plus Enter/Space card inspection still works and nested button click/keyboard activation never triggers card inspection.
+4. Confirm package/root plugin/nested plugin all report v0.6.7. The `agent-browser` CLI is absent in this runtime; do not claim a browser-tree smoke until supported browser tooling is available.
+5. Continue active Agent Manager P0 host/runtime gates, including remote job-stop proof and heaven2→heaven1 START SWARM/perpetual dispatch/recovery/stop checks.
+6. Keep Agent Manager P0 active until all exact-head gates have evidence. See `_AGENT_CONTEXT/AGENT_MANAGER_ACCESSIBLE_CARDS_2026-09-30.md`.
+
+---
+
+# 2026-09-30 v8.8.27 Agent Manager card inspection — prior checkpoint
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate; the emitted dashboard script must parse and all Agent Control tests must pass.
 2. On heaven2, click the blank/body area of a managed agent card and prove its log opens; repeat with Enter/Space keyboard activation.
