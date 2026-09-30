@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "fix/runtime-hardening-20260930",
+  "currentVersion": "8.8.50",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
-  "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "status": "v8.8.50-runtime-hardening-candidate",
+  "nextMilestone": "Close current UI/updater correctness findings before feature expansion.",
+  "nextRequiredAction": "Run exact-head PR gates for Dashboard width, metadata retry, updater handoff identity, and startup-argument redaction; merge only if green, then refresh continuity against canonical main.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 exact main/release closure remains historical; v8.8.49 UI regression candidate requires exact-head gates and runtime confirmation.",
+  "verificationScopeNote": "v8.8.49 UI fixes are integrated; v8.8.50 runtime-hardening candidate needs exact-head gates and post-merge canonical-main continuity closure.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,6 +38,8 @@
     ]
   },
   "unresolvedRisks": [
+    "v8.8.50 exact-head gates and post-merge canonical-main continuity closure are pending.",
+    "Concurrent PRs #528/#529 started from v8.8.49 and must reconcile version/continuity metadata against whichever patch integrates first.",
     "Actual operator latest proven352; latest release install remains unverified.",
     "Bridge auth/provider registration and signing issues411/350/354 remain open.",
     "Preserve external branches until semantic/ownership review."
