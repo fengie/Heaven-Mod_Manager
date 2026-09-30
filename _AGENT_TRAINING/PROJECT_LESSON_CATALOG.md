@@ -46,6 +46,7 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 28. **Structural regression tests must evolve atomically with intentional structure changes.** When a UI/schema/layout refactor deliberately replaces the structure a regression asserts, update the test in the same change to encode the new durable invariant and run the full relevant suite before merge.
 
 29. **Long-running autonomy needs progress supervision plus an independent controller supervisor.** A live PID/heartbeat proves only process/channel liveness, not useful forward progress. Track progress separately, preserve durable work before one-for-one replacement, gate replacement on execution capacity, persist pending recovery across restarts, rate-limit restart storms, and place the controller itself under a recovery owner outside its process/failure domain.
+30. **Merge gates must bind successful verification to the exact head SHA.** Prose policy, mergeability, prior green runs, or a merely queued workflow are insufficient. Automated/agent-driven integration must fail closed unless the required gate completed successfully for the current head immediately before merge; missing, cancelled, zero-job, superseded, or different-SHA runs must block the merge.
 
 ## Future-project rule
 
