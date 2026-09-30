@@ -8,12 +8,12 @@
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.52-audit-hardening-stacked-candidate",
-  "nextMilestone": "Land canonical v8.8.50 governance and v8.8.51 Agent Manager UI owners, then reconcile and integrate v8.8.52 audit hardening.",
-  "nextRequiredAction": "Do not merge ahead of PR #528/#531. After both resolve to main, reconcile fresh main, rerun exact-head gates, merge v8.8.52 if green, then runtime-check Dashboard layout and updater handoff behavior.",
+  "nextMilestone": "Finish v8.8.50 audit hardening; keep the P0 lock.",
+  "nextRequiredAction": "Gate PR #532; reconcile current main; merge if green; refresh runtime/continuity evidence.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.49 UI fixes are canonical; v8.8.50 PR #528 and v8.8.51 PR #531 own the next two patch versions. v8.8.52 audit hardening is stacked and unverified until those owners resolve and exact-head gates rerun.",
+  "verificationScopeNote": "v8.8.49 merged; v8.8.50 PR #532 awaits exact-head verification.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,10 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "v8.8.50 requires exact-head CI and runtime UI/update confirmation before closure.",
-    "Actual operator latest and immutable updater release evidence must be refreshed after canonical integration.",
+    "Actual operator latest proven352; latest release install remains unverified.",
     "Bridge auth/provider registration and signing issues411/350/354 remain open.",
-    "Preserve external branches/PR ownership and reconcile version metadata after this patch lands."
+    "Preserve external branches until semantic/ownership review."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
