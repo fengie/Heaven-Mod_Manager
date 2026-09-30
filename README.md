@@ -1,5 +1,9 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
 
+
+## v8.8.50 — manual updater check
+
+Adds a visible **Check for updates** button to the Dashboard app-health card. It invokes the updater's existing manual check/stage path, so users can start the same verified update flow on demand when the automatic startup/background check does not run. Automatic update checks remain unchanged, and regression coverage pins both manual and automatic routes to the shared updater implementation.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 
