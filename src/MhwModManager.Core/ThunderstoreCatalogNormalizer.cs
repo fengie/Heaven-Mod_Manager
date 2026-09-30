@@ -204,7 +204,7 @@ public static class ThunderstoreCatalogNormalizer
             latestDescription ?? string.Empty,
             owner,
             latestVersion,
-            Category: categories.FirstOrDefault(),
+            Category: categories.Count == 0 ? null : categories[0],
             Tags: categories,
             Thumbnail: thumbnail,
             Screenshots: thumbnail is null
@@ -291,7 +291,7 @@ public static class ThunderstoreCatalogNormalizer
             downloads);
     }
 
-    private static IReadOnlyList<CatalogDependency> ReadDependencies(
+    private static List<CatalogDependency> ReadDependencies(
         JsonElement root,
         string community)
     {
@@ -332,7 +332,7 @@ public static class ThunderstoreCatalogNormalizer
         return result;
     }
 
-    private static IReadOnlyList<string> ReadStringArray(JsonElement root, string propertyName)
+    private static List<string> ReadStringArray(JsonElement root, string propertyName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var entries = RequireArray(root, propertyName);
