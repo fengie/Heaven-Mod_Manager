@@ -635,3 +635,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-023 collision-safe rule IDs; LR-035 integration-ready ownership.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-037 — verification scripts must execute on their production shell/runtime
+
+- **Rule ID:** LR-037
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** CI/release/security PowerShell and other executable policy scripts
+- **Rule:** Parser success or execution on a newer runtime does not prove compatibility. Any script that gates CI, release, security, recovery, or deployment must be executed under the exact shell/runtime family declared by its production workflow before integration. Runtime API availability and literal/escaping semantics are part of the tested contract.
+- **Trigger / evidence:** `Test-CiSecurityPolicy.ps1` parsed after a repair but failed under Windows PowerShell 5.1 because `Path.GetRelativePath` is unavailable. Its first compatibility helper then used `'\\\\'` as though PowerShell escaped backslashes, producing a doubled separator instead of one path separator.
+- **Prevention:** Prefer runtime-provided separator/path primitives over hand-escaped path strings. For a workflow using `shell: powershell`, run the candidate with `powershell.exe`; for `pwsh`, run `pwsh`; preserve parser checks in addition to execution tests. A compatibility repair is not complete until the real host executes the affected path successfully.
+- **Enforcement:** Exact-head verification for security/release-script changes must include the production shell invocation. Required workflow checks that are queued, cancelled, skipped, failed, or executed under a different runtime do not authorize integration.
+- **Related rules:** LR-035 integration readiness; mandatory bug-prevention protocol.
+- **Supersedes:** none
+- **Superseded by:** none
