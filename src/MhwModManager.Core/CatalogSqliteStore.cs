@@ -52,7 +52,8 @@ public sealed class CatalogSqliteStore
         {
             DataSource = this.databasePath,
             Mode = SqliteOpenMode.ReadWriteCreate,
-            Cache = SqliteCacheMode.Shared
+            Cache = SqliteCacheMode.Shared,
+            Pooling = false
         }.ToString();
     }
 
