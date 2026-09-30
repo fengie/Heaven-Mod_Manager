@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHmac } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -23,6 +24,60 @@ function delay(ms) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+function canonicalUtf8(value) {
+  return Buffer.from(String(value), "utf8");
+}
+
+function canonicalJsonValue(value) {
+  if (value === null) return ["n"];
+  if (typeof value === "boolean") return ["b", value ? 1 : 0];
+  if (typeof value === "string") return ["s", canonicalUtf8(value).toString("base64")];
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("Bridge canonical JSON contains a non-finite number.");
+    if (Number.isSafeInteger(value)) return ["i", String(value)];
+    const bytes = Buffer.allocUnsafe(8);
+    bytes.writeDoubleBE(value, 0);
+    return ["f", bytes.toString("hex")];
+  }
+  if (Array.isArray(value)) return ["a", value.map(canonicalJsonValue)];
+  if (value && typeof value === "object") {
+    const entries = Object.keys(value)
+      .map(key => ({ key, bytes: canonicalUtf8(key) }))
+      .sort((left, right) => Buffer.compare(left.bytes, right.bytes))
+      .map(({ key, bytes }) => [bytes.toString("base64"), canonicalJsonValue(value[key])]);
+    return ["o", entries];
+  }
+  throw new Error(`Bridge canonical JSON contains unsupported type ${typeof value}.`);
+}
+
+export function canonicalBridgeJob(job) {
+  // Round-trip first so signing covers exactly the JSON-compatible value that will
+  // be written to the relay (for example NaN/Infinity become null in JSON.stringify).
+  const copy = JSON.parse(JSON.stringify(job ?? {}));
+  if (copy.auth && typeof copy.auth === "object" && !Array.isArray(copy.auth)) {
+    delete copy.auth.signature;
+    delete copy.auth.canonical;
+    if (Object.keys(copy.auth).length === 0) delete copy.auth;
+  }
+  return JSON.stringify(["mhw-bridge-canon-v1", canonicalJsonValue(copy)]);
+}
+
+export function signBridgeJob(job, key) {
+  const secret = clean(key);
+  if (!secret) return job;
+  const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
+    .update(Buffer.from(canonicalBridgeJob(job), "utf8"))
+    .digest("hex");
+  return {
+    ...job,
+    auth: {
+      ...(job?.auth && typeof job.auth === "object" && !Array.isArray(job.auth) ? job.auth : {}),
+      canonical: "mhw-bridge-canon-v1",
+      signature
+    }
+  };
 }
 
 export function resolveHeavenRelayDir({
@@ -433,6 +488,8 @@ export async function submitHeavenBridgeJob(job, {
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
   if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  const signingKey = process.env.AGENT_CONTROL_HEAVEN_HMAC_KEY || process.env.HEAVEN_BRIDGE_HMAC_KEY || "";
+  if (clean(signingKey)) job = signBridgeJob(job, signingKey);
   const targetHost = normalizeBridgeHost(job?.target_host || HEAVEN_BRIDGE_HOST);
   return withRelayLock(relayDir, async () => {
     await syncUnlocked(relayDir, { expectedRepository, pull: true });
