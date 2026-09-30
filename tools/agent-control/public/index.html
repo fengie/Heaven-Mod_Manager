@@ -637,7 +637,7 @@
       }
 
       $("agents").innerHTML = agents.map(a => `
-        <article class="agent inspectable managed-agent-card" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}" tabindex="0" role="group" aria-label="Managed agent ${escapeHtml(a.roleLabel || a.role || "agent")}">
+        <article class="agent inspectable managed-agent-card" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}" tabindex="0" aria-label="Managed agent ${escapeHtml(a.roleLabel || a.role || "agent")}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}${a.recoveryStatus ? ` · ${escapeHtml(recoveryLabel(a.recoveryStatus))}` : ""}</span></div>
@@ -687,7 +687,7 @@
       `).join("") : '<div class="empty">No providers registered.</div>';
 
       $("federatedAgents").innerHTML = agents.length ? agents.map(a => `
-        <article class="agent inspectable federated-agent-card" data-federated-id="${escapeHtml(encodeURIComponent(a.agent_id))}" tabindex="0" role="group" aria-label="Federated agent ${escapeHtml(a.agent_id)}">
+        <article class="agent inspectable federated-agent-card" data-federated-id="${escapeHtml(encodeURIComponent(a.agent_id))}" tabindex="0" aria-label="Federated agent ${escapeHtml(a.agent_id)}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}${a.recovery_status ? ` · ${escapeHtml(recoveryLabel(a.recovery_status))}` : ""}</span></div>
