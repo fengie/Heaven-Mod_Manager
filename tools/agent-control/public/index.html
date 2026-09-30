@@ -876,7 +876,7 @@
       const managedHtml = managed.map(a => {
         const encodedId = escapeHtml(encodeURIComponent(String(a.id || "")));
         return `
-          <article class="agent inspectable managed-agent-card" data-agent-key="${encodedId}" aria-label="Managed recovery item ${escapeHtml(a.roleLabel || a.role || "agent")}">
+          <article class="agent inspectable managed-agent-card" data-agent-key="${encodedId}" aria-label="Managed agent ${escapeHtml(a.roleLabel || a.role || "agent")} needs attention">
             <div class="agent-top">
               <div>
                 <div class="agent-name"><span class="dot stopping"></span>${escapeHtml(a.roleLabel || a.role || "agent")} <span class="meta">· ${escapeHtml(a.status || "unknown")}</span></div>
@@ -890,7 +890,7 @@
       const federatedHtml = federated.map(a => {
         const encodedId = escapeHtml(encodeURIComponent(String(a.agent_id || "")));
         return `
-          <article class="agent inspectable federated-agent-card" data-federated-key="${encodedId}" aria-label="Federated recovery item ${escapeHtml(a.role || "agent")}">
+          <article class="agent inspectable federated-agent-card" data-federated-key="${encodedId}" aria-label="Federated agent ${escapeHtml(a.role || "agent")} needs attention">
             <div class="agent-top">
               <div>
                 <div class="agent-name"><span class="dot stopping"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state || "unknown")}</span></div>
