@@ -1,3 +1,11 @@
+# v8.8.23 — Agent Manager P0 functionality
+- Make Agent Manager / Agent Control the explicit P0 engineering priority in canonical continuity.
+- Inject the active P0 directive into bounded and perpetual implementation prompts so existing autopilot runs pick it up without requiring a new operator objective.
+- Constrain perpetual next-cycle expansion to Agent Manager work while the P0 marker is active and raise that planning lane to priority 100.
+- Align the Agent Control runtime package and private ChatGPT plugin at v0.6.2.
+- Make stable ChatGPT session registration/heartbeat the default first observability step when a real stable identity is available; preserve honest partial coverage when it is not.
+- Keep the P0 marker active until exact-head Agent Control checks plus heaven2 controller and heaven1 worker-bridge smoke are proven.
+
 # v8.8.22 — Strict analyzer repair
 - Repair six warnings-as-errors in Core/catalog code: preserve the installed-origin checker instance API with a narrow CA1822 justification, use direct indexing for indexable Thunderstore categories, and keep concrete collection types where the implementation is concrete.
 - Repair four strict analyzer failures in tests: use `Assert.Single` for collection cardinality, propagate xUnit cancellation, and remove repeated constant-array allocations.
