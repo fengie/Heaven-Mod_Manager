@@ -42,6 +42,7 @@ test("restart normalization preserves durable autopilot progress", () => {
   const restored = normalizeAutopilotState({
     enabled: true,
     objective: "Continue the big direction",
+    overallGoal: "  Ship a reliable autonomous manager  ",
     phase: "review",
     iteration: 7,
     repairLoops: 2,
@@ -49,6 +50,7 @@ test("restart normalization preserves durable autopilot progress", () => {
     runId: "run-1"
   });
   assert.equal(restored.enabled, true);
+  assert.equal(restored.overallGoal, "Ship a reliable autonomous manager");
   assert.equal(restored.phase, "review");
   assert.equal(restored.iteration, 7);
   assert.equal(restored.repairLoops, 2);
