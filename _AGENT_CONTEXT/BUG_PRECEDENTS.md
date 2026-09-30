@@ -494,3 +494,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Added `test_windows_utf8_bom_manifests_are_supported` to the plugin-pruner suite and retained the live two-version deletion smoke.
 - **Sibling/adjacent cases checked:** Direct `manifest.json`, `plugin.json`, and `.codex-plugin/plugin.json` discovery all use the same decoder; non-SemVer and canonical-source protections remain fail-closed.
 - **Verification/evidence:** Failing live job `chatgpt-20260930-verify-plugin-pruner-heaven2-a1`; fix commit `ccff83a93c39233a0231456ac60b919cf003d8f9`; regression commit `44e293003a7b4b06c77270f27f4f85beb6d0f1ff`.
+
+## 2026-09-30 — Agent Control terminal failures remained forever in live registries
+- **Symptom:** failed, dead, capacity-blocked, interrupted/orphaned, and especially **RETRY EXHAUSTED** workers stayed visible in Managed agents / Federated agent registry indefinitely, making new clicks/dispatches look broken amid stale tombstones.
+- **Root cause:** lifecycle code wrote terminal/retry-exhausted status durably but had no authoritative registry-retirement pass. `refreshState()` then called `syncManagedAgents(...)`, re-materializing those terminal records into federation, while dashboard renderers displayed every stored entry.
+- **Violated invariant / wrong assumption:** durable failure evidence and live registry membership are separate concerns. A terminal worker can leave durable task/event/failure/branch evidence without remaining a live registry entity.
+- **Direct fix:** add process/recovery-aware terminal registry GC; retire failed managed records only after no process or active recovery owns them, purge linked failed federation records, and preserve retry-pending/waiting plus durable incomplete work.
+- **Preventive rule/process change:** every terminal lifecycle state must define an explicit retention/retirement disposition; live registries must not double as historical failure archives.
+- **Regression coverage added/strengthened:** `tools/agent-control/test/registry-retention.test.mjs` pins failure retirement, active recovery retention, process-alive retention, linked federation purge, and bulk failed-federated GC.
+- **Verification/evidence:** v8.8.26 candidate; exact-head Agent Control tests plus heaven2 live dispatch/cleanup smoke required.
