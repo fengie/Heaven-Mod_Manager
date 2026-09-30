@@ -1,92 +1,50 @@
-# Generic Programming-Agent Trainer
+# Programming-Agent Trainer
 
-This directory is the company-level engineering doctrine derived from reusable lessons learned across software projects. It is intentionally project-agnostic.
+This directory is the reusable engineering layer for programming agents. It is intentionally smaller and more stable than project state.
 
-## Mandatory cross-repository bootstrap
+## How to use it
 
-MHW `fengie/mhw-mods` current `main` is the canonical training authority for every repository. Before any repository reasoning/work, all agents and recurring workers refresh main and complete live MHW core/shared/role and indexed bootstrap; then load target-repository rules/state as additional requirements. Dispatchers/managers/successors propagate this recursively. Stale copies never substitute for live training. Exhaust authorized fallback routes; otherwise report TRAINING-BLOCKED. Higher-priority platform/safety and explicit newer user instructions prevail. Full binding contract: indexed REPOSITORY_POLICY_REFERENCE.md, cross-repository bootstrap authority.
+For any repository assignment, bootstrap from current `fengie/mhw-mods` training first, then load the target repository's own instructions and current state. The bootstrap is progressive: read the compact core, then retrieve only task-relevant indexed material.
 
-## Mandatory task/plugin preflight
+Do not turn the trainer into an archive. Git history, project evidence, incident ledgers, and old handoffs belong outside the active instruction path.
 
-Every trained agent must still perform a fresh task-specific plugin preflight before planning or execution. Re-read the full assigned task, discover the actual plugins/connectors/skills/toolbox capabilities available in that runtime, load/read the instructions for relevant capabilities, and use/activate the narrowest applicable purpose-built route. Persist `PLUGIN-PREFLIGHT` evidence. User-named plugins are mandatory routes unless current-runtime evidence proves them unavailable, unsafe, or insufficient. Managers must embed and verify this gate for every dispatch; stale assumptions or a single failed lookup are not acceptable evidence that a plugin is unavailable.
+## Authority and evidence
 
-## Authority and hierarchy
+Instruction priority is:
 
-Use this order when deciding how to work:
+1. platform/safety requirements and the current user's explicit instructions;
+2. the target repository's current, specific operating rules;
+3. this generic trainer.
 
-1. company engineering doctrine in this directory;
-2. repository-specific operating rules and architecture;
-3. current canonical repository state;
-4. current task instructions.
+Facts use a different rule: current repository/runtime evidence outranks stale factual claims in prompts, summaries, or old documentation. A user may change scope or policy; an old hash may not overrule a freshly observed hash.
 
-More specific, newer repository truth may override generic guidance. A task prompt never overrides verified repository truth.
+## Mandatory core
 
-## Required startup behavior
+- `AGENT_OPERATING_STANDARD.md` — default programming behavior and completion standard.
+- `AGENTS.md` at repository root — project entry point, bootstrap, and repository-specific invariants.
+- `_AGENT_CONTEXT/CURRENT_REVISION.json` — compact current-state/verification identity.
 
-Repository training remains a pre-response gate, but it is intentionally **progressive and hash-verified** rather than a forced reread of the entire historical corpus.
+The permanent continuity constitution must be read in full before the first task response/action; indexed pagination preserves this obligation. Read other larger documents when their domain is relevant. The hash-verified repository context index is the normal discovery path.
 
-Before the first task-facing answer, plan, dispatch, or task-specific action:
-- establish the canonical repository, branch, revision, working-tree state when available, relevant PR/branch ownership, and current verification boundary;
-- read the repository's compact core startup set in full;
-- use the controller-generated hash/index manifest to prove the larger continuity/training corpus belongs to the assigned revision;
-- expand only task-relevant sections of large indexed files, plus materially relevant bug precedents/learned rules and nearby source/tests;
-- paginate/chunk truncated reads instead of treating truncation as failure;
-- route around a missing preferred CLI, network path, or checkout using authorized GitHub connectors/APIs, canonical worktrees, Heaven Local Bridge/Agent Control, or repository CI;
-- declare a training/execution blocker only after reasonable authorized fallbacks are exhausted and record the attempted routes/evidence.
+## Reference map
 
-Senior/premium agents should consume compact evidence packets and spend scarce context on architecture, diagnosis, review, integration, and verification decisions; mechanical retrieval and repetitive evidence gathering should be offloaded when practical.
+- `DEVELOPMENT_PIPELINE.md` — risk-calibrated stage selection.
+- `VERIFICATION_DOCTRINE.md` — evidence ladder and exact-source verification.
+- `MULTI_AGENT_COORDINATION.md` — ownership, delegation, recovery, and convergence.
+- `AGENT_ROLES.md` — role-specific responsibilities.
+- `SAFETY_AND_DESTRUCTIVE_OPERATIONS.md` — destructive/stateful boundaries.
+- `CI_RELEASE_ENGINEERING.md` — build, CI, supply chain, release, update, rollback.
+- `REPOSITORY_STRUCTURE.md` — repository organization and safe moves.
+- `KNOWLEDGE_MAINTENANCE.md` — how to improve this trainer without making it grow by default.
+- `PROMPTING_GUIDE.md` — task/agent prompt design.
+- `COMPANY_ENGINEERING_VALUES.md` — durable values.
+- `PROVENANCE.md` and `PROJECT_LESSON_CATALOG.md` — provenance/reference, not routine startup reading.
+- `PROMPT_TEMPLATES/` — role deltas; they must not duplicate the common operating standard.
 
-Bound startup by measured bytes, not file count. Keep current-state truth concise and archive historical snapshots without deleting knowledge. A context index needs an operational retrieval path: whitelist documents, require the advertised source hash, paginate by lines and UTF-8 bytes, reject linked/outside paths, and regenerate expired or changed evidence. A locally cached remote ref is not a fresh remote observation; partial ownership lists must disclose truncation and require expansion before mutation. Enforce core-size budgets and test actual CLI/API paths as well as pure helpers.
+## Maintenance rule
 
-No agent should answer first and “catch up” on repository context afterward. Progressive startup changes **how much is reread**, not the requirement to prove canonical truth and inspect task-relevant evidence. Propagate the same gate to successors and sub-agents.
+Persistent instructions have recurring context cost. Prefer, in order:
 
-## Required completion behavior
+**delete → merge → rewrite → relocate → add**
 
-Before declaring a task complete, ask:
-
-> Did this work reveal reusable engineering knowledge that belongs in the company trainer?
-
-If yes, generalize the lesson, verify the root cause, update the appropriate trainer document, and keep project-specific details in the project layer.
-
-Documentation is part of the engineering pipeline. Update meaningful truth at the same checkpoint as the work that changed it; do not wait for a final cleanup pass.
-
-## Contents
-
-- COMPANY_ENGINEERING_VALUES.md — durable values and how to verify them.
-- AGENT_OPERATING_STANDARD.md — mandatory behavior for programming agents.
-- DEVELOPMENT_PIPELINE.md — selectable end-to-end engineering stages.
-- AGENT_ROLES.md — role boundaries for implementation, review, testing, integration, recovery, and release.
-- MULTI_AGENT_COORDINATION.md — branch ownership, status, integration, and stale-work handling.
-- CONTINUITY_PROTOCOL.md — minimum durable state and interruption recovery.
-- VERIFICATION_DOCTRINE.md — evidence standards and test strategy.
-- SAFETY_AND_DESTRUCTIVE_OPERATIONS.md — fail-closed rules for destructive/stateful work.
-- CI_RELEASE_ENGINEERING.md — build, CI, artifact, update, and rollback doctrine.
-- KNOWLEDGE_MAINTENANCE.md — how this living body of knowledge evolves.
-- PROJECT_LESSON_CATALOG.md — portable rules promoted from real project incidents and workflow discoveries.
-- PROMPTING_GUIDE.md — how to write high-quality programming-agent prompts.
-- PROVENANCE.md — lightweight mapping from generic doctrine to the MHW evidence that motivated it.
-- PROMPT_TEMPLATES/ — reusable role prompts.
-
-## What this is not
-
-This is not an architecture document, bug tracker, project handoff, current branch inventory, or substitute for source code and tests. Those belong in the project layer.
-
-The long-term rule is simple:
-
-> Every project should make the next project better.
-
-## Mandatory continuous-learning contract
-Whenever work exposes a bug, regression, false completion, process/agent failure, release failure, coordination failure, user correction, or durable workflow improvement, generic promotion is a required completion gate.
-
-A qualifying lesson is closed only when project evidence is durable, root cause/invariant are stated, generic trainer coverage was checked, missing/weak doctrine was updated, and enforcement was strengthened where practical. Repeated escape of an already-documented class means the prevention mechanism itself failed and must be strengthened.
-
-
-## Repository structure training
-
-`REPOSITORY_STRUCTURE.md` is mandatory training for every repository-changing agent. It defines the organized-library placement invariant, canonical directory homes, subfolder rules, safe move protocol, verification requirements, and multi-agent coordination for reorganization work.
-
-Release decisions must bind evidence to repository/source/event/branch/workflow identity, prove the newest result, and reject partial, ambiguous, running or expired observations. Any historical success never overrides competing evidence. Query/provider failures require explicit availability evidence and an authorized alternate reader; revalidate freshness at final authorization.
-
-Output budgets apply to final emitted bytes, including serialization envelope, escaping, formatting and terminator. Test actual CLI/API output at scale and escaped Unicode pagination with lossless continuation; helper-size assertions alone are insufficient.
-
-Supported Windows producer encodings must be tested across primary, backup, validation and migration. A valid newer ownership record must not fall back to stale state for an encoding marker; malformed content still fails closed.
+Add a new permanent rule only when a concrete failure class is not already covered by a stronger existing invariant and the expected behavioral value justifies repeated context cost. Favor mechanical enforcement/tests over repeated prose.

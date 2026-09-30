@@ -1,4 +1,9 @@
-# v8.8.48 Universal Mod Manager
+# v8.8.49 Universal Mod Manager
+
+## v8.8.49 — consolidate training without weakening safeguards
+
+Compact indexed training and current handoffs replace duplicated prose. Pre-response training, full constitution startup reading, recursive propagation, raw-byte budgets and exact-source release evidence remain enforced. PR525 is reconciled with the completed v48 Mods integration.
+
 
 ## v8.8.48 - automatic Mods page stretch
 

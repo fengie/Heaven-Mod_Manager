@@ -1,97 +1,90 @@
 # Agent Operating Standard
 
-## Before editing
-1. Identify the canonical repository and source-of-truth branch.
-2. Fetch remote state and inspect actual HEAD, working-tree status, recent history, and relevant branches.
-3. Preserve unexplained local changes; never overwrite them for convenience.
-4. Read project startup, continuity, architecture, and verification instructions.
-5. Inspect the code, call sites, tests, and invariants directly related to the task.
-6. State which facts are verified and which remain assumptions.
+This is the default programming behavior for every repository. Project rules may specialize it without duplicating it.
 
-## While editing
-- Control scope. Avoid unrelated refactoring and opportunistic cleanup.
-- Prefer the smallest sufficient change.
-- Inspect callers before changing contracts or removing APIs.
-- Preserve behavior unless the task intentionally changes it.
-- Patch root causes and invariants, not only visible symptoms.
-- Keep destructive/stateful operations fail closed.
-- Do not hide, swallow, or relabel failures to obtain a green result.
-- Do not disable or weaken tests, analyzers, safety checks, or verification gates to make them pass.
-- Keep changes interruption-safe and checkpoint meaningful progress.
-- Update architecture/current-state/verification/knowledge docs when their truth changes.
+## Core loop
 
+**Inspect → understand → choose the smallest coherent task → implement → test → verify → integrate → document → hand off.**
 
-## Research and wraparound under blockers
-- A failed preferred path is a routing/research event, not automatically a blocker.
-- Verify the limitation using current evidence, then research authoritative docs, available capabilities, existing code, and compatible alternate routes.
-- If the desired outcome is achievable through an authorized adapter, wrapper, bridge, local replacement, alternate API, or different execution surface, implement the smallest maintainable option rather than stopping at "unsupported."
-- Optimize for the user's underlying outcome and acceptance criteria, not fidelity to a failed mechanism.
-- Reuse existing capability owners and shared primitives before creating parallel implementations.
-- Verify the workaround end to end and preserve evidence of both the original limitation and the successful alternate path.
-- Never use a workaround to evade authentication, authorization, consent, safety controls, destructive-operation safeguards, or repository policy.
-- Report a genuine blocker only after reasonable authorized alternatives have been researched and exhausted or ruled out with evidence.
+Do not substitute repeated planning, audits, or governance writing for implementation when the assignment calls for a change.
 
-## Verification integrity
-- Never claim a command, test, build, release, or manual check ran when it did not.
-- Never transfer verification from one revision or artifact to another without a valid identity/fingerprint rule.
-- Passing tests do not prove untested assumptions.
-- A real escaped bug should normally become: bug fix + regression test + reusable lesson review.
-- When a platform-specific boundary matters, run the authoritative platform check or clearly leave it unverified.
+## Inspect and understand
 
-## Availability and liveness evidence
-- Separate **resource presence** from **control-channel health**. A failed transport, adapter, runner, heartbeat relay, or cached observation does not by itself prove the underlying resource is offline.
-- Negative availability claims require current authoritative evidence. When a local/cached liveness record is missing or stale, refresh the authoritative source when safe and bounded before degrading status.
-- If transport health is known-bad but resource presence is not independently known, use an explicit unknown/degraded state rather than `offline`.
-- Keep read-only presence checks distinct from mutation/write-readiness checks; local dirtiness, lock state, or replica divergence may block writes without invalidating remote presence.
-- Add regression tests for both evidence refresh and state mapping whenever a false offline/online classification escapes.
-- In operator/control UIs, treat background polling as observational: sequence concurrent responses, reject stale snapshots, preserve operator-edited controls across renders, and derive lifecycle actions from the server's authoritative state model.
+Before editing:
 
-## Long-running autonomy and supervision
-- Distinguish **process liveness** from **progress liveness**. A fresh heartbeat or live PID is not evidence that useful work is advancing.
-- A stuck-worker replacement is a takeover protocol: preserve branch/worktree/task evidence first, prove termination/ownership second, persist replacement intent third, and only then dispatch a replacement.
-- Check provider/worker capacity before destructive takeover. Never stop useful work first and discover afterward that no replacement path exists.
-- Persist recovery intent, retry time, and restart history outside transient workers so manager restarts resume the exact unfinished recovery.
-- Bound restart intensity with cooldown/backoff; an outage must not become an infinite respawn storm.
-- The controller needs an independent supervisor in another failure domain. In-process retry handles children; an OS/service/task watchdog handles controller death. Neither layer may bypass operator stop, read-only, emergency, authentication, or ownership boundaries.
+- establish current canonical source, working state, ownership, and the acceptance criteria;
+- inspect the surrounding architecture, callers, tests, data/control flow, and failure boundaries that actually constrain the change;
+- distinguish observed facts from assumptions;
+- reproduce a reported defect before fixing it when practical;
+- identify the invariant or user-visible behavior that must change and the behavior that must remain stable.
 
-## Git and persistence
-- Make coherent commits that can be reviewed and reverted independently.
-- Push recoverable progress before expensive work can be lost.
-- Do not force-rewrite shared canonical history unless repository policy explicitly permits it.
-- Before final push, fetch again and reconcile concurrent remote work.
-- Verify the remote contains the commit(s) you claim were pushed.
+Read context on demand. Do not require a full repository map or historical corpus when the task needs one local boundary.
 
-## Documentation checkpoint
-At each meaningful checkpoint ask:
-1. Did repository truth change?
-2. Did architecture or an invariant change?
-3. Did current state or verification status change?
-4. Did we discover a failure mode?
-5. Did next-step priority change?
-6. Does another agent need new information?
-7. Did this reveal reusable engineering knowledge?
+## Implement
 
-Update only what changed. Avoid ceremonial documentation churn.
+Prefer the smallest coherent change that solves the actual problem.
 
-## Completion standard
-A task is not complete until:
-- the intended behavior or investigation is finished;
-- relevant verification is complete or limitations are explicit;
-- the working tree is understood;
-- durable state is updated;
-- intended commits are pushed according to repository policy;
-- the next agent can resume safely;
-- actionable ordered next-step notes and concrete improvement opportunities are left in durable handoff state for the successor;
-- unresolved risks, assumptions, debt, and verification gaps are explicit rather than silently dropped;
-- reusable lessons have been considered for promotion into company doctrine.
+- Keep modules, classes, and functions focused.
+- Preserve separation of concerns and avoid unnecessary coupling.
+- Reuse an abstraction when reuse is real; do not create speculative frameworks for hypothetical reuse.
+- Avoid unrelated refactors, speculative features, and compatibility layers with no demonstrated requirement.
+- Make failure modes explicit. Stateful, destructive, security-sensitive, and recovery boundaries fail closed.
+- Remove dead code when safe instead of accumulating permanent bypasses or duplicate implementations.
+- Comments should explain intent, invariants, or surprising constraints, not restate code.
+- Preserve public behavior unless the task intentionally changes it.
 
-## Defect-class closure
-When a bug, warning, failed integration, false completion claim, or process escape is found:
-- identify why existing prevention did not catch it earlier;
-- inspect sibling instances of the same defect pattern;
-- add regression coverage that would have failed before the fix;
-- strengthen analyzers/verifiers/gates when mechanically enforceable;
-- update project precedent and promote reusable learning into the generic trainer;
-- treat recurrence after an earlier rule as a prevention-control failure requiring stronger enforcement.
+A bug fix should address the root cause, not merely the visible symptom.
 
-Do not mark complete with only a local symptom patch while the failure class remains open.
+## Test and verify
+
+Verification is risk-calibrated, not ceremonial.
+
+1. Run the narrowest useful check that directly exercises the changed behavior.
+2. Add/update tests for behavior changes. An escaped bug should normally gain a regression that fails before the fix.
+3. Broaden to compile, integration, end-to-end, platform, fault, concurrency, performance, or release checks when the changed boundary or repository policy requires them.
+4. Stop repeating broad checks when no new change, failure, or risk justifies another run.
+
+Verify meaningful postconditions, especially after failure or cancellation. Do not equate “an exception occurred” with correct recovery.
+
+Never:
+- claim a command or check ran when it did not;
+- inherit green evidence across changed inputs without a proven equivalence rule;
+- weaken tests, analyzers, warnings, authorization, or safety gates to get green;
+- normalize flaky tests, warnings, ignored failures, or unexplained state as background noise.
+
+## Review and integration
+
+Read the complete diff before delivery. Check contract/caller impacts, failure paths, cleanup/cancellation, state transitions, tests, and documentation impact.
+
+Keep changes reviewable and independently reversible where practical. Branches and PRs are coordination tools, not goals. Reconcile against fresh canonical state, preserve concurrent unique work, run affected checks on the reconciled candidate, then verify the canonical tree contains the intended result.
+
+## Debugging and observability
+
+Prefer evidence-producing debugging over guess-and-patch loops. Use logs, traces, focused assertions, reproductions, and state inspection that can distinguish hypotheses. Add observability only where it improves diagnosis or operation; avoid permanent debug noise.
+
+## Delegation and context efficiency
+
+Use another agent when the task is independent, bounded, and benefits from separate context or parallelism. Keep short or dependency-chained work with the owner. Never assign two unsynchronized agents to the same mutable boundary.
+
+A delegation packet should contain: objective, boundary, relevant context, acceptance criterion, expected artifact/evidence, and non-goals. The owner synthesizes and verifies the returned work.
+
+Senior agents should reserve context for architecture, hard reasoning, review, integration, and high-risk verification. Offload mechanical retrieval or repetitive independent work when useful, not by default.
+
+## Documentation and durable knowledge
+
+Update documentation when truth changed, not as a ritual after every command. Keep current state current and historical detail historical.
+
+A newly discovered lesson does not automatically become a permanent rule. First check whether an existing invariant already covers it. Prefer strengthening that invariant or its mechanical enforcement. Record a new durable rule only for a material, reusable gap.
+
+## Completion
+
+A task is complete only when:
+
+- the requested implementation or investigation is actually finished;
+- relevant checks pass, or remaining verification limits are explicit;
+- canonical/integration state is known;
+- durable documentation reflects changed truth;
+- unresolved risks/assumptions are explicit;
+- a fresh successor can continue from the durable handoff without private chat history.
+
+If blocked, preserve the smallest useful checkpoint and exact next action. Do not relabel partial work as done.

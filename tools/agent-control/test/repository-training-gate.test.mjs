@@ -77,5 +77,14 @@ test("manager prompt requires manager-specific core training", () => {
 });
 
 test("prompt library version records bounded context navigation", () => {
-  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.3");
+  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.4");
+});
+
+test("compact indexing preserves full constitution startup and pre-response obligations", () => {
+  for (const role of ["support", "manager"]) {
+    const prompt = render(role);
+    assert.match(prompt, /Do not analyze, answer, summarize, plan, or act.*until the compact repository bootstrap is complete/);
+    assert.match(prompt, /CONTINUITY_PROTOCOL\.md in full at startup, paginating all ranges/);
+    assert.match(prompt, /Preserve this same pre-response gate for every successor or sub-agent/);
+  }
 });

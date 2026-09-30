@@ -1,3 +1,9 @@
+# v0.6.23 — compact training with preserved startup and continuity safeguards
+
+## What v0.6.23 does
+
+PR525 governance integration retains full constitution startup reading and pre-response training while reducing duplicated core/context prose. Raw-byte and recursive-handoff regression guards apply.
+
 # v0.6.22 - exact federation inspector identity
 
 ## What v0.6.22 does
