@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.42",
+  "currentVersion": "8.8.43",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.41 bounded bootstrap, published build 350",
+  "immediateParentRevision": "v8.8.42 current CI evidence, merged to main",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish exact-head v8.8.42 scoped CI evidence/fail-closed gate tests and actual API proof, integrate/publish and preserve truthful provider configuration, separate auth/install gaps, Agent Manager P0 and recursive continuity.",
+  "nextAgentObligation": "Finish exact-head v8.8.43 bounded context-navigation verification on PR #515; refresh/reconcile main, integrate only with an available publication path, immediately complete immutable release/runtime closure if merged, preserve Agent Manager P0/separate Bridge-auth and operator-install gaps, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
