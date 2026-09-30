@@ -5338,18 +5338,18 @@ const server = http.createServer(async (req, res) => {
     if (!allowedOrigin(req)) return sendJson(res, 403, { error: "Origin not allowed." });
 
     if (req.method === "GET" && pathname === "/api/status") {
-      const snapshot = await buildSnapshot();
+      const state = loadState();
       return sendJson(res, 200, {
         ok: true,
-        generatedAt: snapshot.generatedAt,
-        controller: snapshot.controller,
-        telemetry: snapshot.telemetry,
-        federation: {
-          counts: snapshot.federation.counts,
-          providers: snapshot.federation.providers
-        },
-        workers: snapshot.workers,
-        roles: snapshot.roles
+        generatedAt: isoNow(),
+        controller: {
+          host: os.hostname(),
+          bindHost: HOST,
+          port: PORT,
+          stateVersion: STATE_VERSION,
+          sessionId: SESSION_ID,
+          health: state.health
+        }
       });
     }
 
