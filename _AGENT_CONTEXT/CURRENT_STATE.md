@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.29 handoff visible-progress validator hardening — CURRENT
+
+The broad Workflow Feature gate exposed a governance escape: the negative fixture removed the entire `### Mandatory visible-progress versioning` rule from `AGENTS.md`, yet `Test-AgentHandoff.ps1` still passed because it searched for “README” and “patch” anywhere in the document.
+
+v8.8.29 scopes validation to the named rule section and independently requires the root README, `VERSION.txt` patch advancement, `CHANGELOG.md`, and same-change-set coupling. Product and Agent Control runtime behavior are unchanged from v8.8.28.
+
+---
+
 # 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
 
 The remaining worker-click failure is confirmed inside Heaven Bridge execution, not dashboard dispatch. Health already discovered `~/HeavenBridgeRepo`, while submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR`, causing observed main and manager workers to exit code 1.
