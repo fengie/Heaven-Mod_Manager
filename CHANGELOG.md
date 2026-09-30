@@ -1,3 +1,9 @@
+# v8.8.51 — 2026-09-30
+
+- Fixed the corrupted Windows desktop shortcut icon by removing the malformed 48×48 PNG frame while preserving the valid 16×16, 24×24, and 32×32 application artwork.
+- Added deterministic ICO/PNG integrity coverage for frame bounds, image dimensions, per-chunk CRCs, and exact IEND termination.
+- Classified shell-visible binary assets as verified release inputs so a successful compile cannot silently ship structurally corrupt icon resources again.
+
 # v8.8.50 — governance integration and enforcement repair
 - Reconcile superseded PR #525 compact operating standard, role deltas and current-state consolidation onto v8.8.49 main while preserving its repaired ancestry.
 - Preserve pre-response/global training and full constitution startup obligations; repair recursive successor validation and raw UTF-8 budget enforcement.
