@@ -231,8 +231,11 @@
             </Setter>
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="Foreground" Value="{StaticResource Text}"/>
-            <Setter Property="Background" Value="#0C1015"/>
+            <!-- Native WPF ComboBox chrome is rendered with the Windows control surface.
+                 Keep its foreground/background as a matched system pair so the selected
+                 value stays readable instead of inheriting the app's white dark-theme text. -->
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,6"/>
