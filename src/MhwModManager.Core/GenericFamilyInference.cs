@@ -86,8 +86,17 @@ public static partial class GenericFamilyInference
             if(StringComparer.OrdinalIgnoreCase.Equals(leftRoot,rightRoot))continue;
             var leftMembers=clusterMembers[leftRoot];
             var rightMembers=clusterMembers[rightRoot];
-            var blocked=leftMembers.Any(leftId=>rightMembers.Any(rightId=>
-                HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId])));
+            var blocked=false;
+            foreach(var leftId in leftMembers)
+            {
+                foreach(var rightId in rightMembers)
+                {
+                    if(!HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId]))continue;
+                    blocked=true;
+                    break;
+                }
+                if(blocked)break;
+            }
             if(!blocked)Union(pair.LeftModId,pair.RightModId);
         }
 
@@ -117,7 +126,7 @@ public static partial class GenericFamilyInference
             m=>new CandidateProfile(
                 BuildFileProfile(grouped.GetValueOrDefault(m.Id)??Array.Empty<ModFileDescriptor>(),includeMhwAssetSemantics),
                 IdentityStem(m.DisplayName),
-                IdentityTokens(m.DisplayName).ToHashSet(StringComparer.OrdinalIgnoreCase),
+                IdentityTokens(m.DisplayName),
                 HasRoleSignal(m.DisplayName),
                 HasChoiceSignal(m.DisplayName)),
             StringComparer.OrdinalIgnoreCase);
@@ -158,11 +167,21 @@ public static partial class GenericFamilyInference
         var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
         var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
 
-        var sharedPaths=CountOverlap(ap.Files.Paths,bp.Files.Paths);
+        var sharedPaths=IntersectionCount(ap.Files.Paths,bp.Files.Paths);
         var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
         var overlap=smaller==0?0:sharedPaths/(double)smaller;
-        var sharedAssets=CountOverlap(ap.Files.Assets,bp.Files.Assets);
-        var sharedRoots=CountOverlap(ap.Files.Roots,bp.Files.Roots);
+        var sharedAssets=IntersectionCount(ap.Files.Assets,bp.Files.Assets);
+        var sharedRoots=IntersectionCount(ap.Files.Roots,bp.Files.Roots);
+
+        static int IntersectionCount(HashSet<string> left,HashSet<string> right)
+        {
+            if(left.Count==0||right.Count==0)return 0;
+            var scan=left.Count<=right.Count?left:right;
+            var lookup=ReferenceEquals(scan,left)?right:left;
+            var count=0;
+            foreach(var value in scan)if(lookup.Contains(value))count++;
+            return count;
+        }
 
         // Identical labels alone are not evidence. Likewise, a local "Alt/Variant" name is not safely
         // composable without source lineage; keep it separate unless concrete file topology proves kinship.
@@ -194,7 +213,10 @@ public static partial class GenericFamilyInference
         var sim=TokenSimilarity(ap.IdentityTokens,bp.IdentityTokens);
         var sharedAssets=ap.Files.Assets.Overlaps(bp.Files.Assets);
         var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
-        var sharedPaths=CountOverlap(ap.Files.Paths,bp.Files.Paths);
+        var pathScan=ap.Files.Paths.Count<=bp.Files.Paths.Count?ap.Files.Paths:bp.Files.Paths;
+        var pathLookup=ReferenceEquals(pathScan,ap.Files.Paths)?bp.Files.Paths:ap.Files.Paths;
+        var sharedPaths=0;
+        foreach(var path in pathScan)if(pathLookup.Contains(path))sharedPaths++;
         var overlap=smaller==0?0:sharedPaths/(double)smaller;
         return sim<.25&&!sharedAssets&&overlap<.20;
     }
@@ -207,10 +229,12 @@ public static partial class GenericFamilyInference
         return string.Join(' ',tokens.Where(t=>!StopWords.Contains(t)));
     }
 
-    private static string[] IdentityTokens(string value)
+    private static HashSet<string> IdentityTokens(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return Tokenize(CleanName(value)).Where(t=>!StopWords.Contains(t)&&!RoleWords.Contains(t)&&!ChoiceWords.Contains(t)&&!VersionTokenRegex().IsMatch(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return Tokenize(CleanName(value))
+            .Where(t=>!StopWords.Contains(t)&&!RoleWords.Contains(t)&&!ChoiceWords.Contains(t)&&!VersionTokenRegex().IsMatch(t))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
     private static bool HasRoleSignal(string value)
     {
@@ -239,16 +263,6 @@ public static partial class GenericFamilyInference
         return union==0?0:hit/(double)union;
     }
 
-    private static int CountOverlap(HashSet<string> a,HashSet<string> b)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(a.Count==0||b.Count==0)return 0;
-        var smaller=a.Count<=b.Count?a:b;
-        var larger=ReferenceEquals(smaller,a)?b:a;
-        var count=0;
-        foreach(var value in smaller)if(larger.Contains(value))count++;
-        return count;
-    }
     private static List<string> Tokenize(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
