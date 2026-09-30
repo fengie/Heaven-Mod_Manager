@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Mod DB Fixture Downloads</title>
+    <description>Latest fixture downloads</description>
+    <item>
+      <title>Fixture MHW Download</title>
+      <link>https://www.moddb.com/mods/fixture-mhw/downloads/fixture-release</link>
+      <guid isPermaLink="false">moddb-fixture-download-12345</guid>
+      <description><![CDATA[<p>Fixture <strong>release</strong> summary.</p>]]></description>
+      <dc:creator>Fixture Author</dc:creator>
+      <pubDate>Wed, 30 Sep 2026 02:30:00 +0000</pubDate>
+      <category>Full Version</category>
+      <category>Monster Hunter: World</category>
+    </item>
+  </channel>
+</rss>
