@@ -5,15 +5,18 @@ namespace MhwModManager.Tests;
 
 public sealed class CatalogSqliteStoreTests
 {
+    private static readonly string[] DefaultTags = ["balance", "elder-dragon"];
+    private static readonly string[] WeaponTags = ["weapons", "visual"];
     [Fact]
     public async Task Round_trip_persists_normalized_mod_cache_files_and_provenance()
     {
+        var ct = TestContext.Current.CancellationToken;
         var directory = CreateTempDirectory();
         try
         {
             var store = new CatalogSqliteStore(Path.Combine(directory, "catalog.db"));
-            await store.InitializeAsync();
-            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider");
+            await store.InitializeAsync(ct);
+            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider", ct);
 
             var fetchedAt = new DateTimeOffset(2026, 9, 29, 20, 0, 0, TimeSpan.Zero);
             var cached = new CachedCatalogMod(
@@ -29,12 +32,12 @@ public sealed class CatalogSqliteStoreTests
                     LastModified: fetchedAt.AddMinutes(-5),
                     SourceFingerprint: "sha256:fixture"));
 
-            await store.UpsertModAsync(cached);
+            await store.UpsertModAsync(cached, ct);
 
-            var loaded = await store.GetAsync("fixture:101");
+            var loaded = await store.GetAsync("fixture:101", ct);
             Assert.NotNull(loaded);
             Assert.Equal("Dragon Rebalance", loaded!.Mod.Name);
-            Assert.Equal(new[] { "balance", "elder-dragon" }, loaded.Mod.Tags);
+            Assert.Equal(DefaultTags, loaded.Mod.Tags);
             Assert.Single(loaded.Mod.Files);
             Assert.Equal("main.zip", loaded.Mod.Files[0].FileName);
             Assert.Null(loaded.Mod.ProviderMetadata);
@@ -43,7 +46,7 @@ public sealed class CatalogSqliteStoreTests
             Assert.Equal("\"fixture-v1\"", loaded.Cache.ETag);
             Assert.Equal("sha256:fixture", loaded.Cache.SourceFingerprint);
 
-            var provenance = await store.GetProvenanceAsync("fixture:101");
+            var provenance = await store.GetProvenanceAsync("fixture:101", ct: ct);
             var entry = Assert.Single(provenance);
             Assert.Equal("fixture", entry.ProviderId);
             Assert.Equal("101", entry.ProviderModId);
@@ -59,12 +62,13 @@ public sealed class CatalogSqliteStoreTests
     [Fact]
     public async Task Fts_search_indexes_normalized_fields_and_replacement_removes_stale_terms_and_files()
     {
+        var ct = TestContext.Current.CancellationToken;
         var directory = CreateTempDirectory();
         try
         {
             var store = new CatalogSqliteStore(Path.Combine(directory, "catalog.db"));
-            await store.InitializeAsync();
-            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider");
+            await store.InitializeAsync(ct);
+            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider", ct);
 
             var first = new CachedCatalogMod(
                 CreateMod(
@@ -75,9 +79,9 @@ public sealed class CatalogSqliteStoreTests
                     fileId: "old-file",
                     fileName: "old.zip"),
                 new CatalogCacheMetadata(new DateTimeOffset(2026, 9, 29, 20, 0, 0, TimeSpan.Zero)));
-            await store.UpsertModAsync(first);
+            await store.UpsertModAsync(first, ct);
 
-            var initialSearch = await store.SearchAsync("dragon balance", gameId: "monsterhunterworld");
+            var initialSearch = await store.SearchAsync("dragon balance", gameId: "monsterhunterworld", ct: ct);
             Assert.Single(initialSearch);
             Assert.Equal("fixture:202", initialSearch[0].Mod.CanonicalId);
 
@@ -87,19 +91,19 @@ public sealed class CatalogSqliteStoreTests
                     providerModId: "202",
                     name: "Weapon Polish",
                     description: "Improves weapon texture clarity.",
-                    tags: new[] { "weapons", "visual" },
+                    tags: WeaponTags,
                     fileId: "new-file",
                     fileName: "new.zip"),
                 new CatalogCacheMetadata(new DateTimeOffset(2026, 9, 29, 21, 0, 0, TimeSpan.Zero)));
-            await store.UpsertModAsync(replacement);
+            await store.UpsertModAsync(replacement, ct);
 
-            Assert.Empty(await store.SearchAsync("dragon"));
-            var weaponSearch = await store.SearchAsync("weapon");
+            Assert.Empty(await store.SearchAsync("dragon", ct: ct));
+            var weaponSearch = await store.SearchAsync("weapon", ct: ct);
             var loaded = Assert.Single(weaponSearch);
             Assert.Single(loaded.Mod.Files);
             Assert.Equal("new-file", loaded.Mod.Files[0].ProviderFileId);
 
-            var provenance = await store.GetProvenanceAsync("fixture:202");
+            var provenance = await store.GetProvenanceAsync("fixture:202", ct: ct);
             Assert.Equal(2, provenance.Count);
         }
         finally
@@ -111,12 +115,13 @@ public sealed class CatalogSqliteStoreTests
     [Fact]
     public async Task Sync_state_round_trips_provider_cursor_and_typed_failure_without_raw_error_text()
     {
+        var ct = TestContext.Current.CancellationToken;
         var directory = CreateTempDirectory();
         try
         {
             var store = new CatalogSqliteStore(Path.Combine(directory, "catalog.db"));
-            await store.InitializeAsync();
-            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider");
+            await store.InitializeAsync(ct);
+            await store.UpsertSourceAsync(CreateCompliance("fixture"), "Fixture Provider", ct);
 
             var state = new CatalogSyncState(
                 ProviderId: "fixture",
@@ -126,8 +131,8 @@ public sealed class CatalogSqliteStoreTests
                 ConsecutiveFailures: 2,
                 LastFailureKind: CatalogSyncFailureKind.RateLimited);
 
-            await store.UpsertSyncStateAsync(state);
-            var loaded = await store.GetSyncStateAsync("FIXTURE");
+            await store.UpsertSyncStateAsync(state, ct);
+            var loaded = await store.GetSyncStateAsync("FIXTURE", ct);
 
             Assert.NotNull(loaded);
             Assert.Equal("fixture", loaded!.ProviderId);
@@ -145,18 +150,19 @@ public sealed class CatalogSqliteStoreTests
     [Fact]
     public async Task Catalog_data_fails_closed_when_provider_source_is_not_registered()
     {
+        var ct = TestContext.Current.CancellationToken;
         var directory = CreateTempDirectory();
         try
         {
             var store = new CatalogSqliteStore(Path.Combine(directory, "catalog.db"));
-            await store.InitializeAsync();
+            await store.InitializeAsync(ct);
 
             var cached = new CachedCatalogMod(
                 CreateMod(providerId: "missing", providerModId: "303", name: "Missing Source"),
                 new CatalogCacheMetadata(DateTimeOffset.UtcNow));
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => store.UpsertModAsync(cached));
+                () => store.UpsertModAsync(cached, ct));
 
             Assert.Contains("must be registered", exception.Message, StringComparison.Ordinal);
         }
@@ -218,7 +224,7 @@ public sealed class CatalogSqliteStoreTests
             Author: "Fixture Author",
             Version: "1.0.0",
             Category: "Gameplay",
-            Tags: tags ?? new[] { "balance", "elder-dragon" },
+            Tags: tags ?? DefaultTags,
             Thumbnail: "https://images.example.test/thumb.jpg",
             Screenshots: new[] { new CatalogImage("https://images.example.test/shot.jpg", "Shot") },
             CreatedAt: new DateTimeOffset(2026, 9, 28, 18, 0, 0, TimeSpan.Zero),
