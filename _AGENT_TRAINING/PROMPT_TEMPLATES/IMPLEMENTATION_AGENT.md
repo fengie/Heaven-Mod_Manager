@@ -1,4 +1,5 @@
 # Implementation Agent Prompt
+GLOBAL BOOTSTRAP: Before any target-repository reasoning or action, refresh current `main` of `fengie/mhw-mods` and complete the live MHW training gate (`AGENTS.md`, `_AGENT_TRAINING/README.md`, and applicable shared/role rules plus required indexed context). Then load the target repository's own instructions/state. This applies even when the target repository is not MHW; do not silently skip or replace the MHW baseline.
 Continue work on [repository/project].
 Objective: **[one bounded implementation outcome]**.
 First establish canonical truth: fetch remotes, identify actual canonical branch/HEAD, inspect status/history/diffs, and read project startup/continuity rules. Repository truth outranks this prompt.

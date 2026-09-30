@@ -1,3 +1,10 @@
+# v8.8.46 — cross-repository agent training bootstrap
+- Make `fengie/mhw-mods` the canonical global training/bootstrap source before any agent works on any repository.
+- Require current MHW training first, then target-repository-specific instructions/state; stale copied training may not silently substitute for the live baseline.
+- Propagate the rule through `AGENTS.md`, the generic trainer, shared swarm/manager contracts, and every standalone agent role template.
+- Require managers, schedulers, successors, and sub-agents to inherit the same gate, with existing authorized fallback/TRAINING-BLOCKED behavior when the canonical training source cannot be established.
+- Documentation/governance-only patch; no runtime or plugin behavior change.
+
 # v8.8.45 — maintenance consolidation and junior handoff
 - Prepare bounded existing-behavior, branch-classification, installed-updater and authenticated-control reliability assignments with acceptance/escalation criteria.
 - Record preserved branch ancestry without treating rebased/squashed history as proof of unique behavior or deletion authority.

@@ -1,4 +1,8 @@
-# v8.8.45 Universal Mod Manager
+# v8.8.46 Universal Mod Manager
+
+## v8.8.46 — cross-repository agent training bootstrap
+
+All repository agents now inherit the MHW repository as the canonical training source before they touch any target repository. The global trainer, shared swarm/manager contracts, and every standalone implementation/integration/recovery/release/review/test/support role explicitly require a fresh `fengie/mhw-mods` `main` bootstrap first, followed by the target repository's own local rules and state. This makes the user's MHW governance/training baseline portable across future repositories without relying on stale chat context.
 
 ## v8.8.45 — maintenance consolidation and junior handoff
 

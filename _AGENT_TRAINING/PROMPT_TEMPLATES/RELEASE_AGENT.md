@@ -1,4 +1,5 @@
 # Release Agent Prompt
+GLOBAL BOOTSTRAP: Before any target-repository reasoning or action, refresh current `main` of `fengie/mhw-mods` and complete the live MHW training gate (`AGENTS.md`, `_AGENT_TRAINING/README.md`, and applicable shared/role rules plus required indexed context). Then load the target repository's own instructions/state. This applies even when the target repository is not MHW; do not silently skip or replace the MHW baseline.
 Prepare and verify release **[version/candidate]** for [repository].
 Establish canonical truth and identify the exact candidate revision. Do not inherit prior green status across changed inputs.
 Run required build/test/analyzer/platform gates; verify the actual packaged/installed/update artifact, version metadata, and integrity identity; test publication/update/rollback behavior as applicable.

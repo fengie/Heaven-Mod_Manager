@@ -1,4 +1,5 @@
 # Recovery Agent Prompt
+GLOBAL BOOTSTRAP: Before any target-repository reasoning or action, refresh current `main` of `fengie/mhw-mods` and complete the live MHW training gate (`AGENTS.md`, `_AGENT_TRAINING/README.md`, and applicable shared/role rules plus required indexed context). Then load the target repository's own instructions/state. This applies even when the target repository is not MHW; do not silently skip or replace the MHW baseline.
 Recover and close previously interrupted work in [repository].
 Do **not** start a new feature or broad cleanup.
 First fetch remotes and reconstruct canonical main, local status, active branches, recent commits/diffs, partial artifacts, failed checks, and continuity records. Treat old prompts as hints only.
