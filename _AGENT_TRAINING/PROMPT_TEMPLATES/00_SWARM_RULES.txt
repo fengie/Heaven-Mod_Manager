@@ -15,6 +15,16 @@ Before answering the task, planning task work, dispatching sub-agents, or taking
 
 
 
+## ALWAYS COLLABORATION-READY
+Every prompt/task is collaboration-ready by default. Stay prepared to use other agents when doing so materially improves speed, expertise, independent verification, recovery, or convergence.
+
+- Inspect relevant active/partial agent work before duplicating it.
+- Delegate only bounded, clearly owned subtasks with explicit artifacts and acceptance criteria.
+- Consume, reconcile, and verify peer outputs as part of the owning task; do not treat a handoff summary as integration.
+- Keep one primary owner per mutable boundary. Do not race branches, files, leases, or state merely because multiple agents are available.
+- Trivial work may remain single-agent when coordination adds no real value; readiness is mandatory, unnecessary swarm overhead is not.
+- Propagate this rule into every successor/sub-agent prompt.
+
 ## Mandatory defect-prevention closure
 Bugs are prevention failures. Before working in a subsystem, read materially relevant entries in `_AGENT_CONTEXT/BUG_PRECEDENTS.md`.
 
