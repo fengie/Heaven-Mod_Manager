@@ -130,3 +130,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change touches only the feature workflow plus governance/test files, which are release-irrelevant under `UpdaterReleasePolicy.ps1`; it does not trigger Windows Release Gate and does not invalidate exact-source updater E2E evidence.
 - **Sibling/adjacent cases checked:** Windows Release Gate and Updater Installed Client E2E retain their own concurrency groups; their source/evidence pinning is unchanged.
 - **References:** updater E2E run `36659154949`; competing feature-gate runs included `36659334396`, `36659186555`, `36659543467`, and `36659596149`.
+
+## 2026-09-29 — Catalog integration — cancelled provider gates reached canonical main
+
+- **Symptom:** GitHub Releases #327 and Nexus #330 reached canonical `main` without successful exact-head feature gates; GitHub still contained known verifier/analyzer/xUnit compile defects, and GameBanana arrived concurrently with the same public-getter trace gap class.
+- **Root cause:** Branch replacement/merge races treated cancelled verification as if it were sufficient evidence and did not reconcile known fixes from superseded branches before canonical integration.
+- **Violated invariant / wrong assumption:** A cancelled, pending, or superseded run is never merge evidence. Integration requires a successful run for the exact head, and reconciled branches must include previously discovered defect fixes.
+- **Direct fix:** Rebase a narrow repair onto the newest canonical main, preserve concurrent provider behavior fixes, close the known GitHub compile/analyzer gaps, trace all newly introduced provider/capability getters, and run the complete exact-head Heaven gate across the integrated provider set.
+- **Preventive rule/process change:** The integration manager must compare the exact candidate SHA to successful CI status immediately before merge and reject cancelled runs. Replacement branches must be diffed against known bug-precedent fixes, not judged by branch cleanliness alone.
+- **Regression/verification:** PR #331 is the canonical repair gate; it must pass before this incident is considered closed.
+- **Sibling/adjacent cases checked:** Source-aware SQLite/FTS #325 did pass run 36659776837 before merge. GameBanana's assisted-page correction from #333 is preserved while adding tracing. Nexus current-main reconciliation is included in the combined repair verification.
+- **Reference:** #327, #330, #331; cancelled runs 36660058628 and 36660257258; successful storage run 36659776837.
