@@ -203,6 +203,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         with unittest.mock.patch.dict("os.environ", {worker.HMAC_KEY_ENV: key}, clear=True):
             signed = worker.sign_relay_document(document)
         self.assertEqual(signed["auth"]["canonical"], "mhw-bridge-canon-v1")
+        self.assertEqual(signed["auth"]["key_id"], hb.hmac_key_id(key))
         expected = hmac.new(
             key.encode("utf-8"),
             worker.canonical_auth_job_v1(signed),
@@ -232,6 +233,57 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         ):
             verified = worker.verify_auth(job)
         self.assertEqual(verified["mode"], "private-repo-acl-explicit-insecure")
+
+    def test_hmac_key_rotation_accepts_previous_key_then_revokes_it(self):
+        job = self.make_job("health", job_id="rotation-hmac")
+        current = "current-0123456789abcdef-current-key"
+        previous = "previous-0123456789abcdef-old-key"
+        signed = dict(job)
+        signed["auth"] = {
+            "canonical": "mhw-bridge-canon-v1",
+            "key_id": hb.hmac_key_id(previous),
+        }
+        signed["auth"]["signature"] = hmac.new(
+            previous.encode("utf-8"),
+            hb.canonical_auth_job_v1(signed),
+            hashlib.sha256,
+        ).hexdigest()
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                hb.HMAC_KEY_ENV: current,
+                hb.HMAC_PREVIOUS_KEY_ENV: previous,
+            },
+            clear=True,
+        ):
+            verified = hb.verify_auth(signed)
+        self.assertEqual(verified["key_slot"], "previous")
+        self.assertEqual(verified["key_id"], hb.hmac_key_id(previous))
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {hb.HMAC_KEY_ENV: current},
+            clear=True,
+        ):
+            with self.assertRaises(hb.BridgeError) as revoked:
+                hb.verify_auth(signed)
+        self.assertEqual(revoked.exception.code, "AUTH_KEY_ID_UNKNOWN")
+
+        relabeled = dict(signed)
+        relabeled["auth"] = dict(signed["auth"])
+        relabeled["auth"]["key_id"] = hb.hmac_key_id(current)
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                hb.HMAC_KEY_ENV: current,
+                hb.HMAC_PREVIOUS_KEY_ENV: previous,
+            },
+            clear=True,
+        ):
+            with self.assertRaises(hb.BridgeError) as tampered:
+                hb.verify_auth(relabeled)
+        self.assertEqual(tampered.exception.code, "AUTH_INVALID")
 
     def test_legacy_hmac_canonicalization_requires_explicit_opt_in(self):
         job = self.make_job("health", job_id="legacy-hmac")
