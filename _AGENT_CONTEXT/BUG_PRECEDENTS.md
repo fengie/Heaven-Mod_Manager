@@ -194,3 +194,10 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** The security policy is executed both as a dedicated workflow and by authoritative release verification; reusable lessons are codified in agent training.
 - **Residual risk:** Main branch protection/rulesets, ephemeral runner isolation, and a trusted Windows publisher signing identity require repository/admin or identity configuration outside ordinary source changes.
 
+## 2026-09-29 — generated CI policy — JavaScript replacement token corrupted PowerShell regex
+
+- **Symptom:** Security Supply Chain Gate run `36662225529` failed before policy evaluation with PowerShell parse errors; the generated file had a truncated `persist-credentials` regex and a duplicated tail.
+- **Root cause:** JavaScript `String.replace` treated PowerShell's regex-ending `$'` sequence as a JavaScript replacement token rather than literal source.
+- **Direct fix:** Regenerate the policy from the known-good base using replacement callbacks so replacement text is literal.
+- **Prevention:** Cross-language generated source must use literal-safe/AST-safe generation and must be syntax-checked by the target runtime before it is accepted as security evidence.
+
