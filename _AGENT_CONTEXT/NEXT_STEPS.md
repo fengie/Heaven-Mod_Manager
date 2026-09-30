@@ -313,3 +313,10 @@ Ordered next steps:
 Unresolved verification gap: fast concurrent pushes can supersede/cancel plugin runs. A cancelled older plugin run is not failure, but it is also not exact-head success. Preserve this distinction in any completion claim.
 
 Successor requirement: keep LR-040/LR-041 and the bug precedents active, leave updated exact-SHA evidence, and pass these notes to the next agent.
+
+## 2026-09-30 Agent Control terminal-evidence repair
+
+- The deterministic nonzero-exit retry-storm guard is complemented by terminal-output reconciliation: JSONL/plain stderr provider-capacity evidence is no longer discarded behind the final-message file.
+- Capacity evidence is persisted and keeps the provider circuit closed, preventing same-provider no-work/tail-recovery churn.
+- Verify the exact integrated revision with the Agent Control PR gate; the next quota failure should produce one capacity-blocked notice and no `agent.no-work-requeued` event for that lineage.
+- Follow-up: surface the preserved capacity diagnostic and blocked-until time directly on the dashboard failure card.
