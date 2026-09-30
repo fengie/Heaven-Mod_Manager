@@ -1,5 +1,9 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
 
+
+## v8.8.50 — integrated mod browser
+
+The federated catalog is now visible directly inside the desktop manager through a dedicated **Browse** page. It composes the existing source-aware SQLite/FTS cache with public Nexus Mods v3 trending discovery and GameBanana updates, keeps stale cached results available through source failures, supports fast local search/source filters/sorting, and presents a split-pane mod detail UI with provider provenance and safe source-page handoff. Browse refresh deliberately skips file hydration so public Nexus discovery does not require credentials, and it does not bypass provider-authorized download flows.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 
