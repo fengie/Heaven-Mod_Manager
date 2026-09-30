@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "fix/dark-combobox-v8.8.53-20260930",
+  "currentVersion": "8.8.53",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
-  "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "status": "v8.8.53-dark-combobox-candidate",
+  "nextMilestone": "Integrate the dark ComboBox visual-regression repair without disturbing concurrent v8.8.50-v8.8.52 lanes.",
+  "nextRequiredAction": "Run exact-head build/UI/security/workflow gates, reconcile fresh main/version races, merge only if green, then visually confirm the GAME selector stays dark in the installed client.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 exact main/release closure remains historical; v8.8.49 UI regression candidate requires exact-head gates and runtime confirmation.",
+  "verificationScopeNote": "v8.8.49 system-brush contrast fix is historical and visually insufficient; v8.8.53 owns dark ComboBox chrome and requires exact-head CI plus installed-client visual proof.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,6 +38,8 @@
     ]
   },
   "unresolvedRisks": [
+    "Installed-client runtime confirmation of the new dark ComboBox template is still required.",
+    "Concurrent v8.8.50-v8.8.52 candidates must be reconciled without overwriting their unique work or version metadata.",
     "Actual operator latest proven352; latest release install remains unverified.",
     "Bridge auth/provider registration and signing issues411/350/354 remain open.",
     "Preserve external branches until semantic/ownership review."
