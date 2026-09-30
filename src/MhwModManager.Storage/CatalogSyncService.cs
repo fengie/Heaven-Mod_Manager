@@ -127,11 +127,28 @@ public sealed class CatalogSyncService
                 && provider.Capabilities.HasFlag(CatalogProviderCapabilities.FileList)
                 && mod.Files.Count == 0)
             {
-                var files = await provider.GetModFilesAsync(
-                    request.Game,
-                    mod.ProviderModId,
-                    ct).ConfigureAwait(false);
-                mod = mod with { Files = files };
+                try
+                {
+                    var files = await provider.GetModFilesAsync(
+                        request.Game,
+                        mod.ProviderModId,
+                        ct).ConfigureAwait(false);
+                    mod = mod with { Files = files };
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch
+                {
+                    var health = await TryGetHealthAsync(provider, CancellationToken.None).ConfigureAwait(false);
+                    if (health?.State != CatalogProviderState.AuthenticationRequired)
+                        throw;
+
+                    // Public discovery remains useful even when optional/authenticated
+                    // file metadata cannot be hydrated (for example, Nexus without a credential).
+                    // Cache the normalized public item and let acquisition/detail flows request auth later.
+                }
             }
 
             ValidateModIdentity(provider.ProviderId, request.Game.Id, mod);
