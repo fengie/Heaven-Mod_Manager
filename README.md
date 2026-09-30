@@ -6,6 +6,9 @@ Agent Control now retires dead terminal workers from the live registries instead
 
 This also closes the misleading “click did nothing” symptom caused by old failed workers accumulating around new dispatches: the live dashboard now represents actionable workers instead of historical failure tombstones.
 
+
+The dispatch failure itself was traced to a separate execution/preflight mismatch: Agent Control health could discover the documented `~/HeavenBridgeRepo` checkout, but bridge job submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR` explicitly. Both execution paths now use the same resolver, so the normal per-user relay checkout works without a special Agent Control environment variable.
+
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 
 Agent Control fixes two escaped operator/release-contract bugs. **Copy branch** no longer embeds a JSON-quoted branch name directly inside a double-quoted inline handler; branch values are URI-encoded before interpolation and decoded only at invocation, so normal branch names cannot break the generated action markup.
