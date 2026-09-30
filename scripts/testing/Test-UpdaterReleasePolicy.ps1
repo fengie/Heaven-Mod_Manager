@@ -237,19 +237,28 @@ Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST ta
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
-# Release completion requires private publication followed by the public client-feed mirror.
+# Release completion is deliberately public-first. Installed clients consume the
+# public feed, so the canonical/private GitHub release must never become visible first.
 $repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $releaseWorkflowPath=Join-Path $repoRoot '.github\workflows\windows-release-gate.yml'
 $releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
 $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
-$publicMirrorIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
-if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical private updater publisher.'}
-if($publicMirrorIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater mirror.'}
-if($publicMirrorIndex -le $privatePublishIndex){throw 'Public updater mirroring must run after canonical private release publication.'}
+$publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
+$parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
+if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical updater publisher.'}
+if($publicPublishIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater publisher.'}
+if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
+if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
+Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
 $publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
 Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'
-Assert-Equal $true ($publicPublisherSource.Contains('Unexpected private source repository')) 'canonical private release source guard'
+Assert-Equal $true ($publicPublisherSource.Contains('Unexpected private source repository')) 'canonical private source guard'
+Assert-Equal $true ($publicPublisherSource.Contains('ExpectedSourceSha=$env:GITHUB_SHA')) 'public release exact source pin'
+Assert-Equal $true ($publicPublisherSource.Contains('ExpectedBuildNumber=0')) 'public release exact build pin'
+Assert-Equal $false ($publicPublisherSource.Contains('Canonical private updater release')) 'public feed cannot depend on already-visible canonical release'
+Assert-Equal $true ($publicPublisherSource.Contains('Recovering abandoned public updater draft')) 'public release abandoned-draft recovery'
+Assert-Equal $true ($publicPublisherSource.Contains('Get-UpdaterMainDriftDecision')) 'public release current-main drift guard'
 
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
