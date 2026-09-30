@@ -3,19 +3,19 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/agent-control-runtime-freshness-v8.8.35-20260930",
-  "currentVersion": "8.8.35",
+  "workingBranch": "fix/agent-manager-notification-inspector-20260930",
+  "currentVersion": "8.8.36",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify and integrate v8.8.35 canonical runtime freshness without regressing v8.8.34 durable stop proof, then obtain live heaven2 freshness/dispatch evidence before closing #475 and continue #461",
+  "nextMilestone": "verify and integrate v8.8.36 Agent Manager notification/inspector closure for #461; preserve the v8.8.35 runtime-freshness boundary and obtain live heaven2/heaven1 evidence separately before closing runtime-only issues",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.34 Agent Control durable stop proof",
-  "status": "v8.8.35-agent-control-canonical-runtime-freshness",
+  "immediateParentRevision": "v8.8.35 Agent Control canonical runtime freshness",
+  "status": "v8.8.36-agent-manager-notification-inspector",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.35 transplants the canonical startup/runtime freshness implementation onto v8.8.34 main. Exact-head Agent Control/Security gates are required; #475 remains open until live heaven2 stale/behind restart, unowned-listener preservation, exact source identity, and bounded heaven dispatch evidence exists.",
+  "verificationScopeNote": "v8.8.36 closes the source/UI contract for Agent Manager notifications and stable managed/federated inspection on top of v8.8.35. Exact-head Agent Control and Security gates are required before integration; no heaven2/heaven1 live-runtime evidence is claimed while remote desktop endpoints are unavailable.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.36 Agent Manager notification inspector: render backend notifications, route inspect-agent/inspect-federation actions to exact records, persist a hash-backed managed/federated inspector across refreshes, degrade retired selections explicitly, preserve nested-control isolation, and advance Agent Control/plugin identity to v0.6.14.",
     "2026-09-30 v8.8.35 Agent Control runtime freshness: sync clean local main to origin/main before restore/watchdog/manual launch, fail closed for unsafe checkout states, publish exact runtime SHA/version, preserve unknown listeners, retain v8.8.34 durable stop proof, and advance Agent Control/plugin identity to v0.6.13.",
     "2026-09-30 v8.8.34 Agent Control durable stop proof: persist termination-proof-pending before wrapper exit classification, require canonical-provider Heaven terminal proof plus local exit proof before lease release, preserve ambiguous/missing-id ownership, and advance Agent Control/plugin identity to v0.6.12.",
     "2026-09-30 v8.8.33 Agent Control lightweight health: /api/status no longer runs full repository/dashboard/relay work; full snapshots share one Heaven Bridge assessment; startup/watchdog retain the lightweight status probe; Agent Control/plugin identity v0.6.11.",
@@ -161,7 +162,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test, handoff preflight/negative fixtures, and configured PR gates. Then complete the lightweight /api/status health contract as the next patch; live heaven2?heaven1 retirement smoke remains required runtime evidence.",
+  "nextRequiredAction": "Run exact-head Agent Control and Security PR gates for v8.8.36, merge only if both pass, verify remote main, and close #461. Keep #475/#477 and other runtime-only closure claims open until live heaven2/heaven1 evidence is available.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
