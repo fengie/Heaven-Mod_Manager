@@ -1,5 +1,7 @@
 param(
     [string]$RepoRoot = $env:AGENT_CONTROL_REPO,
+    [string]$ExpectedSourceSha = $env:AGENT_CONTROL_SOURCE_SHA,
+    [string]$ExpectedAgentControlVersion = $env:AGENT_CONTROL_VERSION,
     [switch]$AllowNonControllerHost
 )
 
@@ -22,6 +24,11 @@ $logPath = Join-Path $appDir 'startup-restore.log'
 $statusPath = Join-Path $appDir 'startup-last-status.json'
 $profilePath = Join-Path $appDir 'startup-profile.json'
 $lockPath = Join-Path $appDir 'startup-restore.lock'
+$agentDir = Join-Path $RepoRoot 'tools\agent-control'
+$serverPath = Join-Path $agentDir 'server.mjs'
+$syncScript = Join-Path $agentDir 'Sync-AgentControlRuntime.ps1'
+$dataDir = if ([string]::IsNullOrWhiteSpace($env:AGENT_CONTROL_DATA_DIR)) { Join-Path $agentDir 'data' } else { $env:AGENT_CONTROL_DATA_DIR }
+$controllerPidPath = Join-Path $dataDir 'controller-process.json'
 
 function Write-RestoreLog {
     param([string]$Message)
@@ -88,6 +95,10 @@ try {
             already_listening = $false
             started = $false
             healthy = $false
+            expected_source_sha = $null
+            expected_version = $null
+            replaced_stale_controller = $false
+            refused_unowned_listener = $false
             error = $null
         }
         plugin_workspace = [ordered]@{
@@ -183,6 +194,55 @@ try {
         }
     }
 
+    function Get-AgentControlListenerPid {
+        param([int]$Port)
+        try {
+            if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+                $listener = Get-NetTCPConnection -LocalAddress '127.0.0.1' -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+                    Select-Object -First 1
+                if ($listener -and $listener.OwningProcess) { return [int]$listener.OwningProcess }
+            }
+        } catch {}
+        return $null
+    }
+
+    function Test-IsOwnedAgentControlProcess {
+        param(
+            [int]$ProcessId,
+            [int]$Port
+        )
+        if (-not $ProcessId -or -not (Test-Path -LiteralPath $controllerPidPath)) { return $false }
+        try {
+            $identity = Get-Content -LiteralPath $controllerPidPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ([int]$identity.pid -ne $ProcessId) { return $false }
+            if ($identity.port -and [int]$identity.port -ne $Port) { return $false }
+            if ([string]::IsNullOrWhiteSpace([string]$identity.serverPath)) { return $false }
+
+            $identityServer = [System.IO.Path]::GetFullPath([string]$identity.serverPath)
+            $expectedServer = [System.IO.Path]::GetFullPath($serverPath)
+            if ($identityServer -ine $expectedServer) { return $false }
+
+            $process = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction Stop
+            $command = [string]$process.CommandLine
+            return -not [string]::IsNullOrWhiteSpace($command) -and
+                $command -match '(?i)node(?:\.exe)?' -and
+                $command -match '(?i)server\.mjs'
+        } catch {
+            return $false
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedSourceSha) -or [string]::IsNullOrWhiteSpace($ExpectedAgentControlVersion)) {
+        if (-not (Test-Path -LiteralPath $syncScript)) {
+            throw "Agent Control runtime freshness guard missing: $syncScript"
+        }
+        $runtime = & $syncScript -RepoRoot $RepoRoot
+        $ExpectedSourceSha = [string]$runtime.source_sha
+        $ExpectedAgentControlVersion = [string]$runtime.agent_control_version
+    }
+    $env:AGENT_CONTROL_SOURCE_SHA = $ExpectedSourceSha
+    $env:AGENT_CONTROL_VERSION = $ExpectedAgentControlVersion
+
     $agentControlEnabled = if ($null -eq $profile.agent_control) { $true } else { [bool]$profile.agent_control }
     if ($agentControlEnabled) {
         $result.agent_control.requested = $true
@@ -212,21 +272,52 @@ try {
         }
 
         $port = 7331
-        $result.agent_control.already_listening = Test-LocalTcpPort -Port $port
+        $result.agent_control.expected_source_sha = $ExpectedSourceSha
+        $result.agent_control.expected_version = $ExpectedAgentControlVersion
+        $portOpen = Test-LocalTcpPort -Port $port
+        $result.agent_control.already_listening = $portOpen
 
-        if (-not $result.agent_control.already_listening) {
+        if ($portOpen) {
+            $runtimeMatches = $false
             try {
-                $agentDir = Join-Path $RepoRoot 'tools\agent-control'
-                $server = Join-Path $agentDir 'server.mjs'
-                if (-not (Test-Path -LiteralPath $server)) {
-                    throw "Agent Control server missing: $server"
+                $status = Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -Method Get -TimeoutSec 3
+                $runtimeMatches =
+                    [bool]$status.ok -and
+                    ([string]$status.controller.sourceSha -eq $ExpectedSourceSha) -and
+                    ([string]$status.controller.agentControlVersion -eq $ExpectedAgentControlVersion)
+            } catch {}
+
+            if (-not $runtimeMatches) {
+                $listenerPid = Get-AgentControlListenerPid -Port $port
+                if (-not $listenerPid -or -not (Test-IsOwnedAgentControlProcess -ProcessId $listenerPid -Port $port)) {
+                    $result.agent_control.refused_unowned_listener = $true
+                    $result.agent_control.error = "Port $port is occupied by a stale or unknown listener whose Agent Control ownership could not be proven; refusing replacement."
+                    Write-RestoreLog $result.agent_control.error
+                } else {
+                    Stop-Process -Id $listenerPid -Force -ErrorAction Stop
+                    $result.agent_control.replaced_stale_controller = $true
+                    Write-RestoreLog ("Stopped stale proven-owned Agent Control PID {0} before canonical restart." -f $listenerPid)
+                    for ($i = 0; $i -lt 20; $i++) {
+                        Start-Sleep -Milliseconds 100
+                        if (-not (Test-LocalTcpPort -Port $port)) { break }
+                    }
+                }
+            }
+        }
+
+        if (-not (Test-LocalTcpPort -Port $port) -and -not $result.agent_control.refused_unowned_listener) {
+            try {
+                if (-not (Test-Path -LiteralPath $serverPath)) {
+                    throw "Agent Control server missing: $serverPath"
                 }
                 $node = (Get-Command node.exe -ErrorAction Stop).Source
                 $env:AGENT_CONTROL_REPO = $RepoRoot
                 $env:AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP = '1'
+                $env:AGENT_CONTROL_SOURCE_SHA = $ExpectedSourceSha
+                $env:AGENT_CONTROL_VERSION = $ExpectedAgentControlVersion
                 Start-Process -FilePath $node -ArgumentList @('server.mjs') -WorkingDirectory $agentDir -WindowStyle Hidden
                 $result.agent_control.started = $true
-                Write-RestoreLog 'Started Agent Control server.'
+                Write-RestoreLog ("Started Agent Control server at source {0} / v{1}." -f $ExpectedSourceSha, $ExpectedAgentControlVersion)
 
                 for ($i = 0; $i -lt 20; $i++) {
                     Start-Sleep -Milliseconds 250
@@ -241,7 +332,13 @@ try {
         if (Test-LocalTcpPort -Port $port) {
             try {
                 $status = Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -Method Get -TimeoutSec 3
-                $result.agent_control.healthy = [bool]$status.ok
+                $identityMatches =
+                    ([string]$status.controller.sourceSha -eq $ExpectedSourceSha) -and
+                    ([string]$status.controller.agentControlVersion -eq $ExpectedAgentControlVersion)
+                $result.agent_control.healthy = [bool]$status.ok -and $identityMatches
+                if (-not $identityMatches -and -not $result.agent_control.error) {
+                    $result.agent_control.error = "Agent Control responded but runtime identity did not match canonical source/version."
+                }
             } catch {
                 $result.agent_control.healthy = $false
                 if (-not $result.agent_control.error) {

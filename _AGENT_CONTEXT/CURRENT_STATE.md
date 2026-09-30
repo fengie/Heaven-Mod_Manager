@@ -1,3 +1,16 @@
+# v8.8.35 Agent Control canonical runtime freshness — CURRENT CANDIDATE
+
+- Issue #475 is rebased onto canonical `main` `05a5227f313957c184d9fe509b67286f2c4cefa5`, which already contains v8.8.34 durable stop proof and closes #482.
+- Startup persistence copies `Sync-AgentControlRuntime.ps1` into `%LOCALAPPDATA%\MHW-Agent-Control` so source freshness is checked before repository restore/watchdog scripts are loaded.
+- Only a clean local `main` may fast-forward to fetched `origin/main`; dirty, detached, non-main, ahead, or diverged states fail closed without destructive cleanup.
+- Controller health/process identity expose runtime repo, source SHA, and Agent Control version; the Git probe uses the forced-hidden process wrapper.
+- Startup treats a source/version-mismatched listener as stale and replaces it only after persisted PID, exact server path, and Node process identity prove ownership; unknown listeners are preserved.
+- Watchdog restarts re-run the canonical source guard and retain hidden/background launch semantics.
+- Windows behavioral regression exercises clean-behind fast-forward plus dirty/non-main/detached/ahead/diverged preservation.
+- Exact-head Agent Control/Security gates and live heaven2 restart/source-identity plus one bounded heaven1 dispatch remain required before #475 can close.
+
+---
+
 # v8.8.34 Agent Control durable stop proof — CURRENT CANDIDATE
 
 - Operator Stop and provider-capacity termination now enter a persisted proof-pending state before any process termination begins.

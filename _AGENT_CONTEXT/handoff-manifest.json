@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.34",
+  "currentVersion": "8.8.35",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.33 Agent Control lightweight health",
+  "immediateParentRevision": "v8.8.34 Agent Control durable stop proof",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Verify and integrate v8.8.34 durable stop proof on its exact candidate. Preserve proof-pending ownership until both authoritative Heaven terminal state (when applicable) and local wrapper exit are proven; ambiguous or missing remote identity must remain blocked without lease release. After merge, obtain live heaven2→heaven stop smoke when available, preserve pending v8.8.33 live health evidence, then continue startup freshness and notification/inspector closure.",
+  "nextAgentObligation": "Verify and integrate v8.8.35 startup/runtime freshness on top of canonical v8.8.34 durable stop proof. Require exact-head gates, then reinstall startup persistence on heaven2, prove exact source/version restart behavior and unowned-listener preservation, and complete one bounded heaven1 dispatch before closing #475. Keep pending v8.8.33 live health evidence separate and continue #461 afterward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

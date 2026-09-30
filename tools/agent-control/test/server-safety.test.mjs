@@ -690,6 +690,9 @@ test("controller publishes process identity for ownership-verified watchdog rest
   assert.match(source, /controller-process\.json/);
   assert.match(source, /function writeControllerProcessIdentity/);
   assert.match(source, /pid: process\.pid/);
+  assert.match(source, /sourceSha: RUNTIME_SOURCE_SHA/);
+  assert.match(source, /agentControlVersion: AGENT_CONTROL_VERSION/);
+  assert.match(source, /repoRoot: RUNTIME_REPO_ROOT/);
   assert.match(source, /writeControllerProcessIdentity\(\)/);
   assert.match(source, /process\.once\("exit", clearControllerProcessIdentity\)/);
 });

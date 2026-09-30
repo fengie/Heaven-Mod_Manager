@@ -1,3 +1,13 @@
+# v8.8.35 Agent Control runtime freshness (#475) — verification scope
+
+This candidate is rebased onto canonical v8.8.34 durable stop proof and changes startup persistence, runtime source synchronization, listener ownership/replacement, controller runtime identity, watchdog restart behavior, focused startup tests, and Agent Control v0.6.13 release identity. Historical evidence does not verify these bytes.
+
+Required source closure: exact-candidate Agent Control syntax/tests, the Windows runtime-sync behavioral regression, and configured Agent Control/Security gates. The guard must prove clean-main ff-only behavior and fail closed for dirty, detached, non-main, ahead, or diverged checkouts without reset/clean. Controller Git identity checks must use the repository's hidden-process wrapper.
+
+Required live closure on heaven2: reinstall startup persistence once, restart from a stale/behind runtime, confirm exact canonical source SHA/version through `/api/status` and `controller-process.json`, prove unowned listeners are never killed, preserve hidden/background shell behavior, and complete one bounded heaven1 dispatch. Do not close #475 on source-only evidence.
+
+---
+
 # v8.8.34 Agent Control durable stop proof — verification scope
 
 This candidate changes live Agent Control termination ownership semantics. Required source closure is exact-head `npm --prefix tools/agent-control run check`, the complete Agent Control test suite, and configured Agent Control/Security PR gates. The focused source contract must prove that proof-pending state precedes child-exit classification, failure does not release leases, and successful finalization is the only lease-release path.

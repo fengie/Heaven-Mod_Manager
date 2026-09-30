@@ -1,5 +1,7 @@
 param(
     [string]$RepoRoot = $env:AGENT_CONTROL_REPO,
+    [string]$ExpectedSourceSha = $env:AGENT_CONTROL_SOURCE_SHA,
+    [string]$ExpectedAgentControlVersion = $env:AGENT_CONTROL_VERSION,
     [int]$CheckIntervalSeconds = 10,
     [int]$UnhealthyChecksBeforeRestart = 3,
     [int]$MaxRestartsPerWindow = 6,
@@ -38,6 +40,7 @@ $agentDir = Join-Path $RepoRoot 'tools\agent-control'
 $serverPath = Join-Path $agentDir 'server.mjs'
 $dataDir = if ([string]::IsNullOrWhiteSpace($env:AGENT_CONTROL_DATA_DIR)) { Join-Path $agentDir 'data' } else { $env:AGENT_CONTROL_DATA_DIR }
 $controllerPidPath = Join-Path $dataDir 'controller-process.json'
+$syncScript = Join-Path $agentDir 'Sync-AgentControlRuntime.ps1'
 $healthUri = 'http://127.0.0.1:7331/api/status'
 $port = 7331
 
@@ -121,10 +124,10 @@ function Test-IsOwnedAgentControlProcess {
         if ([string]::IsNullOrWhiteSpace($command)) { return $false }
 
         $serverIdentity = [string]$identity.serverPath
-        if (-not [string]::IsNullOrWhiteSpace($serverIdentity)) {
-            $expectedName = [System.IO.Path]::GetFileName($serverIdentity)
-            if ($command -notmatch [Regex]::Escape($expectedName)) { return $false }
-        }
+        if ([string]::IsNullOrWhiteSpace($serverIdentity)) { return $false }
+        $identityServer = [System.IO.Path]::GetFullPath($serverIdentity)
+        $expectedServer = [System.IO.Path]::GetFullPath($serverPath)
+        if ($identityServer -ine $expectedServer) { return $false }
 
         return $command -match '(?i)node(?:\.exe)?' -and $command -match '(?i)server\.mjs'
     } catch {
@@ -152,7 +155,20 @@ function Stop-HungOwnedAgentControl {
     }
 }
 
+function Sync-AgentControlSource {
+    if (-not (Test-Path -LiteralPath $syncScript)) {
+        throw "Agent Control runtime freshness guard missing: $syncScript"
+    }
+    $runtime = & $syncScript -RepoRoot $RepoRoot
+    $script:ExpectedSourceSha = [string]$runtime.source_sha
+    $script:ExpectedAgentControlVersion = [string]$runtime.agent_control_version
+    $env:AGENT_CONTROL_SOURCE_SHA = $script:ExpectedSourceSha
+    $env:AGENT_CONTROL_VERSION = $script:ExpectedAgentControlVersion
+    return $runtime
+}
+
 function Start-AgentControlServer {
+    $runtime = Sync-AgentControlSource
     if (-not (Test-Path -LiteralPath $serverPath)) {
         throw "Agent Control server missing: $serverPath"
     }
@@ -161,7 +177,7 @@ function Start-AgentControlServer {
     $env:AGENT_CONTROL_REPO = $RepoRoot
     $env:AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP = '1'
     Start-Process -FilePath $node -ArgumentList @('server.mjs') -WorkingDirectory $agentDir -WindowStyle Hidden
-    Write-WatchdogLog ("Started Agent Control server from {0}." -f $agentDir)
+    Write-WatchdogLog ("Started Agent Control server from {0} at source {1} / v{2}." -f $agentDir, $runtime.source_sha, $runtime.agent_control_version)
 }
 
 try {
@@ -176,6 +192,13 @@ try {
 }
 
 try {
+    if ([string]::IsNullOrWhiteSpace($ExpectedSourceSha) -or [string]::IsNullOrWhiteSpace($ExpectedAgentControlVersion)) {
+        $runtime = Sync-AgentControlSource
+        Write-WatchdogLog ("Watchdog canonicalized runtime source to {0} / v{1}." -f $runtime.source_sha, $runtime.agent_control_version)
+    } else {
+        $env:AGENT_CONTROL_SOURCE_SHA = $ExpectedSourceSha
+        $env:AGENT_CONTROL_VERSION = $ExpectedAgentControlVersion
+    }
     Write-WatchdogLog ("Watchdog started; repo={0} interval={1}s" -f $RepoRoot, $CheckIntervalSeconds)
     $unhealthyCount = 0
 

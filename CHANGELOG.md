@@ -1,3 +1,12 @@
+# v8.8.35 — Agent Control canonical runtime freshness
+- Persist a checkout-independent startup freshness guard that fetches canonical `origin/main` before repository runtime scripts are loaded.
+- Fast-forward only a clean local `main`; dirty, detached, non-main, ahead, or diverged runtime checkouts fail closed without reset/clean.
+- Publish exact runtime repo/source SHA/Agent Control version in controller health and `controller-process.json`.
+- Replace stale startup listeners only after PID, exact server path, and Node process identity prove Agent Control ownership; unknown listeners are preserved and block restart.
+- Re-sync before watchdog restarts while preserving the forced-hidden/background process policy.
+- Add Windows behavioral regressions for clean-behind fast-forward and unsafe checkout preservation.
+- Preserve v8.8.34 durable stop proof and advance Agent Control runtime/root/nested plugin identity to v0.6.13 and root product version to v8.8.35.
+
 # v8.8.34 — Agent Control durable stop proof
 - Route operator Stop and provider-capacity auto-termination through the same canonical provider resolver and durable remote termination proof.
 - Require Heaven-backed workers to carry a durable remote job id and reach an explicit processed-terminal Bridge state; ambiguous cancellation/status outcomes fail closed.

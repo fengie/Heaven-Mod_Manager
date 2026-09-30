@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.35 runtime freshness (#475) — SOURCE CANDIDATE / VERIFY NEXT
+
+1. Require exact-head `npm --prefix tools/agent-control run check && npm --prefix tools/agent-control test` plus configured Agent Control/Security gates on the rebased candidate.
+2. Preserve canonical v8.8.34 durable stop proof from #482 while verifying startup/runtime freshness.
+3. On heaven2, rerun `Install-StartupRestore.ps1` once so the checkout-independent freshness guard is copied to `%LOCALAPPDATA%\MHW-Agent-Control`.
+4. Prove clean-behind `main` fast-forwards before runtime load, while dirty/detached/non-main/ahead/diverged fixtures fail closed and preserve work.
+5. Prove an old/stale controller is replaced only when PID + exact server path + Node process identity are owned, then verify `/api/status` and `controller-process.json` report the exact canonical source SHA and Agent Control v0.6.13.
+6. Perform one bounded heaven2→heaven1 dispatch from that exact runtime. Only then close #475.
+7. Keep v8.8.33 lightweight-health live timing/no-false-restart evidence separate; continue #461 notification/inspector closure after #475.
+
+---
+
 # 2026-09-30 v8.8.34 durable stop proof — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security PR gates on the exact candidate.

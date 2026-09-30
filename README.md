@@ -1,4 +1,10 @@
-# v8.8.34 Universal Mod Manager
+# v8.8.35 Universal Mod Manager
+
+## v8.8.35 — Agent Control canonical runtime freshness
+
+Agent Control startup now canonicalizes its heaven2 checkout before loading runtime code: only a clean local `main` may fast-forward to fetched `origin/main`; dirty, detached, non-main, ahead, or diverged checkouts fail closed without reset/clean. The startup installer persists the freshness guard outside the mutable checkout so a previously stale checkout can update itself before it loads repository restore/watchdog scripts.
+
+A listening controller is no longer accepted merely because port 7331 responds. Startup compares the controller's published source SHA and Agent Control version against the canonical checkout; a stale listener is replaced only when its persisted PID, exact server path, and Node process identity prove ownership. Controller Git probing uses the repository's forced-hidden child-process wrapper. Agent Control advances to **v0.6.13** while preserving v8.8.34 durable stop proof.
 
 ## v8.8.34 — Agent Control durable stop proof
 

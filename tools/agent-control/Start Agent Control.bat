@@ -8,6 +8,14 @@ if /I not "%COMPUTERNAME%"=="heaven2" if not "%AGENT_CONTROL_ALLOW_NON_CONTROLLE
 )
 if not defined AGENT_CONTROL_REPO set "AGENT_CONTROL_REPO=%USERPROFILE%\local-ai-workspaces\mhw-mods"
 
+if exist "%~dp0Sync-AgentControlRuntime.ps1" (
+  for /f "usebackq tokens=1,* delims==" %%A in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "$r = & '%~dp0Sync-AgentControlRuntime.ps1' -RepoRoot '%AGENT_CONTROL_REPO%'; 'AGENT_CONTROL_SOURCE_SHA=' + $r.source_sha; 'AGENT_CONTROL_VERSION=' + $r.agent_control_version"`) do set "%%A=%%B"
+  if errorlevel 1 (
+    echo ERROR: Agent Control runtime source is not safe to launch. Preserving the checkout unchanged.
+    exit /b 3
+  )
+)
+
 if exist "%~dp0Install-AgentControlShortcut.ps1" (
   powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-AgentControlShortcut.ps1" -RepoRoot "%AGENT_CONTROL_REPO%" >nul
   if errorlevel 1 (

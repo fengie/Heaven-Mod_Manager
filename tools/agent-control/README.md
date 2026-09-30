@@ -14,7 +14,11 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.12 does
+## What v0.6.13 does
+
+- Canonicalizes the heaven2 runtime checkout before startup/restart: clean `main` fast-forwards to fetched `origin/main`; dirty, detached, non-main, ahead, or diverged states fail closed.
+- Publishes exact source SHA and Agent Control version, and replaces stale listeners only with positive persisted PID + exact server-path + Node-process ownership proof.
+- Uses the forced-hidden process wrapper for controller Git identity checks and preserves hidden/background shell behavior.
 
 - Makes operator Stop and provider-capacity termination share one persisted fail-closed proof path.
 - Resolves Heaven ownership through the canonical executionProvider/runtimeProvider/provider fallback and requires a durable remote job id plus an explicit processed-terminal Bridge state.
