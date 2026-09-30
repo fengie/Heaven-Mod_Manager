@@ -182,7 +182,7 @@ public sealed class ModIoTransportTests
         Assert.Equal(CatalogSourceKind.OfficialApi, compliance.SourceKind);
         Assert.True(compliance.AllowsCatalogDiscovery);
         Assert.False(compliance.AllowsHtmlParsing);
-        Assert.False(compliance.AllowsDirectDownload);
+        Assert.True(compliance.AllowsDirectDownload);
     }
 
     [Fact]
