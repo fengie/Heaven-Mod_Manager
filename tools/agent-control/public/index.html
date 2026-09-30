@@ -591,7 +591,7 @@
           <div class="actions">
             <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
             ${stoppableManagedStatuses.has(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : (a.status === "done" ? `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>` : "")}
-            <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
+            <button onclick="copyText(decodeURIComponent('${encodeURIComponent(String(a.branchName ?? ""))}'))">Copy branch</button>
           </div>
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
         </article>
