@@ -4,7 +4,7 @@
 
 Normal Apply, preview readiness, recovery restores, diagnosis probes, and safe-mode restoration now validate the exact staged dependency set before writing modded game state. A dependency cannot be considered satisfied by a manager-owned live file whose provider is being disabled in the same plan.
 
-Conflict inference is also stricter where a wrong winner can be catastrophic: file/directory topology collisions always block, DLL/EXE collisions need explicit intent or high-trust same-source update/optional lineage, and package-size/subset shape alone no longer proves that one same-family package is an add-on. Clear main/optional relationships and verified source lineage still compose automatically, with deterministic explanations for the chosen provider.
+Conflict inference is also stricter where a wrong winner can be catastrophic: file/directory topology collisions always block; MHW model/material/physics siblings are treated as atomic bundles so unrelated mods cannot silently create a partial mixed asset; malformed overlay rules and missing resolver winners hard-block instead of falling back to priority; ambiguous texture siblings need high-confidence evidence; DLL/EXE collisions need explicit intent or high-trust same-source update/optional lineage; and package-size/subset shape alone no longer proves that one same-family package is an add-on. Clear main/optional relationships and verified source lineage still compose automatically, with deterministic explanations for the chosen provider. Normal modded launch revalidates the current dependency/conflict proof before starting the game.
 
 See `docs/OVERRIDE-DEPENDENCY-SAFETY-RESEARCH.md` for the research basis and failure cases that motivated these rules.
 
