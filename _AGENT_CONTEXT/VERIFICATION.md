@@ -1,3 +1,13 @@
+# v8.8.37 Agent Control registry lifecycle — verification scope
+
+This patch changes registry lifecycle truthfulness and therefore requires exact-head Agent Control syntax/tests plus the configured Agent Control and Security PR gates. Historical product or runtime evidence does not verify these changed bytes.
+
+Focused regressions must prove: ordinary terminal managed eligibility; preservation of active recovery/needs-attention/candidate/cleanup states; terminal and disconnected-timeout federated retirement decisions; independent tombstones for correlated provider/source identities; strictly-newer-heartbeat reactivation; historical rows excluded from current-registry total; and a separately rendered read-only Registry history surface.
+
+Destructive cleanup stays fail-closed. Live unowned PIDs, missing branch provenance, divergent commits, dirty worktrees, or unresolved durable/recovery work must remain visible for reconciliation. Source integration of #458 does not prove the separate heaven2 startup-health/browser acceptance tracked by #475, #477, and #461.
+
+---
+
 # v8.8.36 Agent Manager notification + stable inspector — verification scope
 
 This candidate is a UI/test-only functional closure layered on canonical v8.8.35. Required source evidence is exact-head Agent Control syntax/tests plus configured Agent Control/Security gates. Focused regressions must pin notification rendering/action filtering, shared managed/federated ID routing, explicit Inspect controls, nested-control isolation, refresh-persistent selection, arbitrary stable IDs, and deterministic missing/retired behavior including the async managed-log race.
