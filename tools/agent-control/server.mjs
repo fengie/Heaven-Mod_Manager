@@ -58,6 +58,7 @@ import {
   recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
   shouldRetireFromLiveRegistry,
+  retryExhaustedRetirementCandidateIds,
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
 import { planGoToWorkRecoveries } from "./lib/go-to-work-recovery.mjs";
@@ -912,10 +913,70 @@ function markNoWorkRecoveryPending(state, agent, decision, leaseReason = "no-wor
   }
 }
 
+function retireRetryExhaustedManagedAgents(state) {
+  const candidateIds = new Set(retryExhaustedRetirementCandidateIds(state?.agents || []));
+  if (candidateIds.size === 0) return [];
+
+  const retiredIds = [];
+  for (const agent of state.agents) {
+    if (!candidateIds.has(agent.id)) continue;
+
+    const child = agent.ownerSessionId === SESSION_ID ? children.get(agent.id) : null;
+    const ownsLiveChild = Boolean(
+      child
+      && child.pid === agent.pid
+      && child.exitCode === null
+      && child.signalCode === null
+      && isPidAlive(agent.pid)
+    );
+
+    if (ownsLiveChild) continue;
+
+    releaseLeaseForAgent(state, agent, "retry-exhausted-registry-retirement");
+    retiredIds.push(agent.id);
+  }
+
+  if (retiredIds.length === 0) return [];
+
+  const retired = new Set(retiredIds);
+  state.agents = state.agents.filter(agent => !retired.has(agent.id));
+
+  if (Array.isArray(state.federation?.agents)) {
+    state.federation.agents = state.federation.agents.filter(agent => {
+      const controllerAgentId = String(agent?.correlation?.controller_agent_id || "");
+      const sourceId = String(agent?.source_id || "");
+      const agentId = String(agent?.agent_id || "");
+      return !retired.has(controllerAgentId) && !retired.has(sourceId) && !retired.has(agentId);
+    });
+  }
+
+  if (Array.isArray(state.notifications)) {
+    state.notifications = state.notifications.filter(notification => {
+      const actionAgentId = String(notification?.action?.agentId || "");
+      return !retired.has(actionAgentId);
+    });
+  }
+
+  addEvent(
+    state,
+    "agent.retry-exhausted-registry-retired",
+    `Retired ${retiredIds.length} dead no-work retry record(s) after retry exhaustion`,
+    {
+      reason: "retry-exhausted-terminal-cleanup",
+      evidence: { retiredAgentIds: retiredIds }
+    }
+  );
+
+  return retiredIds;
+}
+
 function refreshState() {
   const state = loadState();
   let changed = false;
   const now = Date.now();
+
+  const retiredRetryAgentIds = retireRetryExhaustedManagedAgents(state);
+  if (retiredRetryAgentIds.length > 0) changed = true;
 
   for (const agent of state.agents) {
     const last = selectAgentTerminalMessage(
@@ -2132,12 +2193,14 @@ async function recoverNoWorkAgent(agentId) {
         task.status = "failed";
         task.finishedAt ||= isoNow();
         task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-retry-exhausted"]));
-        task.nextAction = "Automatic no-work retry limit reached; inspect the provider/session failure before another dispatch.";
+        task.nextAction = "Automatic no-work retry limit reached. Dead retry-lineage records were retired from the active registry; inspect the durable failure/event evidence before another dispatch.";
       }
+
+      const retiredIds = retireRetryExhaustedManagedAgents(state);
       addNotification(state, {
         severity: "error",
         title: "No-work retry limit reached",
-        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts. The dead worker was removed from the live registry; failure/task evidence remains available in diagnostics.`,
+        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts. ${retiredIds.length} dead retry record(s) were cleared from the managed/federated registries; durable failure and event evidence was preserved.`,
         action: null,
         dedupeKey: `no-work-exhausted:${source.id}`
       });
