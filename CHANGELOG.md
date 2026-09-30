@@ -1,4 +1,4 @@
-## 8.8.49 - 2026-09-30
+# v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
 - Fixed the Mods empty-state overlay so collection-count changes notify InstalledCount and reveal populated mod content.
