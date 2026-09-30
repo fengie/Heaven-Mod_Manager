@@ -128,6 +128,72 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.Contains(result.Decisions, x => x.ModId == "addon-only" && !x.Enabled && x.Reason.Contains("not-installed", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task AutoPopulateFillsAroundExplicitStagedPreference()
+    {
+        var db = await CreateDbAsync("staged-preference.db");
+        var gameRoot = Path.Combine(root, "game-staged-preference");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "preferred", "My Preferred Texture", 100);
+        await AddModAsync(db, "higher-priority", "Higher Priority Alternative", 1000);
+        var path = @"nativePC\pl\f_equip\preferred\skin.tex";
+        await db.ReplaceModFilesAsync(
+            "preferred",
+            [ModFile("preferred", path, "preferred-hash", FileClass.Texture)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync(
+            "higher-priority",
+            [ModFile("higher-priority", path, "alternative-hash", FileClass.Texture)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(["preferred"], TestContext.Current.CancellationToken);
+
+        Assert.True(result.State["preferred"].Enabled);
+        Assert.False(result.State["higher-priority"].Enabled);
+        Assert.Contains(
+            result.Decisions,
+            x => x.ModId == "preferred" &&
+                 x.Enabled &&
+                 x.Reason.Contains("protected preference", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains("preserved 1 selected package", result.Summary, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AutoPopulateNeverSilentlyDropsUnsafeStagedPreference()
+    {
+        var db = await CreateDbAsync("unsafe-staged-preference.db");
+        var gameRoot = Path.Combine(root, "game-unsafe-staged-preference");
+        Directory.CreateDirectory(gameRoot);
+
+        var preferred = await AddModAsync(db, "preferred-addon", "Preferred Addon", 100);
+        await File.WriteAllTextAsync(
+            Path.Combine(preferred.SourcePath, "mod-manager.requirements.json"),
+            """{"dependencies":["missing-base"]}""",
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync(
+            "preferred-addon",
+            [ModFile("preferred-addon", @"nativePC\armor\preferred.mod3", "preferred", FileClass.Structural)],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var service = new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.BuildAsync(["preferred-addon"], TestContext.Current.CancellationToken));
+
+        Assert.Contains("selected mod 'Preferred Addon'", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("left unchanged", error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));
