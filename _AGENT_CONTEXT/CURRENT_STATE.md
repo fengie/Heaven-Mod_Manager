@@ -1,3 +1,18 @@
+# v8.8.36 Agent Manager notification + stable inspector — CURRENT CANDIDATE
+
+- Dashboard renders backend notifications with severity/message/time and exact supported inspection actions.
+- `inspect-agent` and `inspect-federation` route through shared stable-ID helpers; unsupported action types remain informational.
+- One persistent Inspector surface exposes managed/federated recovery context and restores selection across refresh while the record remains live.
+- Missing/retired selected IDs, including retirement during an awaited managed log fetch, degrade explicitly instead of silently clearing or null-dereferencing.
+- Agent articles retain mouse-click convenience but are no longer fake keyboard controls; explicit real Inspect buttons own keyboard/control semantics.
+- Dynamic managed/federated IDs are carried through bound data attributes rather than inline JavaScript handlers.
+- Managed inspector actions are lifecycle-gated so terminal/dead rows never show Stop.
+- v8.8.35 runtime freshness and v8.8.34 durable stop proof remain intact.
+- Agent Control/root/nested plugin identity is v0.6.14 / product v8.8.36.
+- Exact-head Agent Control + Security gates are required. Live heaven2 click/refresh smoke should follow #475 runtime-source proof before #461 is closed.
+
+---
+
 # v8.8.35 Agent Control canonical runtime freshness — CURRENT CANDIDATE
 
 - Startup restore, watchdog restart, and manual launch canonicalize runtime source before execution.
