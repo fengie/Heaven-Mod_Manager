@@ -43,7 +43,7 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 26. **Sequential durable IDs need collision-safe allocation.** Concurrent writers must not infer the same next integer from stale state; serialize/reserve allocation or use collision-resistant IDs, and make integration validate uniqueness before canonicalization.
 27. **A blocked direct path should trigger research and wraparound, not premature surrender.** Prove the limitation with current evidence, research authoritative alternatives, and when the underlying outcome remains technically achievable, use or build the narrowest authorized adapter/wrapper/bridge/local replacement; verify the original acceptance criteria end to end and never bypass legitimate auth, consent, safety, or governance boundaries.
 
-27. **Structural regression tests must evolve atomically with intentional structure changes.** When a UI/schema/layout refactor deliberately replaces the structure a regression asserts, update the test in the same change to encode the new durable invariant and run the full relevant suite before merge.
+28. **Structural regression tests must evolve atomically with intentional structure changes.** When a UI/schema/layout refactor deliberately replaces the structure a regression asserts, update the test in the same change to encode the new durable invariant and run the full relevant suite before merge.
 
 ## Future-project rule
 
