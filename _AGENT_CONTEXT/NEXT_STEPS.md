@@ -1,3 +1,15 @@
+# 2026-09-30 live reconciliation — CURRENT CRITICAL PATH
+
+1. **CLOSED:** automatic-updater installed-client E2E is no longer pending. Evidence `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.20.log` records Heaven run **36659154949** on exact source `c8eb6218130ac5e08a5a78ea954b58ad3069c022`: real packaged build 60 → build **222**, restarted health identity confirmed, journal `Confirmed`, and seeded `Mods`, `State`, and unknown-file SHA-256 values unchanged.
+2. **CLOSED:** the paired deterministic rollback scenario in the same evidence restored exact build **60** / source `ffd218b6ad4e9f4fea4b143d266712a6fa17a285`, restored prior owned files/metadata, removed target-only paths, reached journal `RolledBack`, and preserved the same seeded user-data hashes.
+3. Do not rerun or reopen the old build-61 updater completion boundary merely because older sections below still describe it as pending. Treat those sections as historical. Reopen updater E2E only for a new updater/release-path change or contradictory evidence.
+4. **CURRENT:** obtain exact-SHA Windows verification for present `main` after the rapid catalog/security/performance/override integrations. Heaven job `job-20260930T040400Z-moddb-current-main-gate` runs unit tests, the CI security gate, then full `Verify-Release.ps1` in an isolated worktree. Evidence remains exact-SHA scoped.
+5. **CURRENT:** finish the Mod DB RSS/Atom feed tranche with green exact-SHA tests/gate and preserve browser-assisted-only acquisition. See `_AGENT_CONTEXT/MODDB_FEED_CATALOG_2026-09-30.md`.
+6. Re-query current branches/PRs after every integration. LR-035 now forbids harvesting an active branch without an explicit integration-ready/owner signal plus required verification evidence.
+7. After the current-main gate is green, select the next non-overlapping issue #281/catalog or audited safety lane from live ownership rather than stale historical task lists.
+
+---
+
 # 2026-09-29 v8.8.7 reconciliation — CURRENT CRITICAL PATH
 
 1. Re-fetch canonical `main` before every integration; this checkpoint audited source `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`.
