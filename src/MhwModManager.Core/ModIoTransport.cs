@@ -90,7 +90,7 @@ public sealed class ModIoTransport
         ArgumentNullException.ThrowIfNull(apiKey);
         ValidatePositiveId(gameId, nameof(gameId));
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
 
         return SendJsonAsync(
             $"games/{gameId.ToString(CultureInfo.InvariantCulture)}/mods",
@@ -149,7 +149,7 @@ public sealed class ModIoTransport
 
     private async Task<ModIoTransportResponse> SendJsonAsync(
         string relativePath,
-        IReadOnlyList<(string Key, string Value)> query,
+        (string Key, string Value)[] query,
         ModIoApiKey apiKey,
         bool requireDataEnvelope,
         CancellationToken ct)
@@ -276,6 +276,6 @@ public sealed class ModIoTransport
     private static void ValidatePositiveId(long value, string parameterName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value, parameterName);
     }
 }
