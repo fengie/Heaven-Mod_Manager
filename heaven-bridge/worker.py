@@ -185,6 +185,8 @@ def worker_capacity_snapshot(active_noncontrol=0):
 
 HMAC_KEY_ENV = "HEAVEN_BRIDGE_HMAC_KEY"
 HMAC_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_KEY_FILE"
+HMAC_PREVIOUS_KEY_ENV = "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY"
+HMAC_PREVIOUS_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_PREVIOUS_KEY_FILE"
 ALLOW_REPO_ACL_ONLY_ENV = "HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY"
 ALLOW_LEGACY_HMAC_ENV = "HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL"
 MIN_HMAC_KEY_BYTES = 32
@@ -591,6 +593,7 @@ def sign_relay_document(document):
     auth = body.get("auth") if isinstance(body.get("auth"), dict) else {}
     auth.pop("signature", None)
     auth["canonical"] = "mhw-bridge-canon-v1"
+    auth["key_id"] = hmac_key_id(key)
     body["auth"] = auth
     signature = hmac.new(key.encode("utf-8"), canonical_auth_job_v1(body), hashlib.sha256).hexdigest()
     body["auth"]["signature"] = signature
@@ -629,18 +632,21 @@ def env_flag(name):
     return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
 
 
-def hmac_key_path():
-    configured = str(os.environ.get(HMAC_KEY_FILE_ENV) or "").strip()
+def hmac_key_path(previous=False):
+    env_name = HMAC_PREVIOUS_KEY_FILE_ENV if previous else HMAC_KEY_FILE_ENV
+    configured = str(os.environ.get(env_name) or "").strip()
     if configured:
         return Path(os.path.expandvars(os.path.expanduser(configured))).resolve()
-    return (STATE / "auth" / "hmac.key").resolve()
+    filename = "hmac.previous.key" if previous else "hmac.key"
+    return (STATE / "auth" / filename).resolve()
 
 
-def load_hmac_key():
-    inline = os.environ.get(HMAC_KEY_ENV)
+def _load_hmac_key(previous=False):
+    env_name = HMAC_PREVIOUS_KEY_ENV if previous else HMAC_KEY_ENV
+    inline = os.environ.get(env_name)
     if inline:
-        return validate_hmac_key_strength(inline, HMAC_KEY_ENV)
-    path = hmac_key_path()
+        return validate_hmac_key_strength(inline, env_name)
+    path = hmac_key_path(previous=previous)
     try:
         value = path.read_text(encoding="utf-8").strip()
     except FileNotFoundError:
@@ -656,6 +662,32 @@ def load_hmac_key():
             {"path": str(path), "minimum_bytes": MIN_HMAC_KEY_BYTES},
         )
     return value
+
+
+def load_hmac_key():
+    return _load_hmac_key(previous=False)
+
+
+def load_previous_hmac_key():
+    return _load_hmac_key(previous=True)
+
+
+def hmac_key_id(value):
+    key = str(value or "")
+    if not key:
+        return ""
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+def load_hmac_verification_keys():
+    current = load_hmac_key()
+    previous = load_previous_hmac_key()
+    keys = []
+    if current:
+        keys.append(("current", current, hmac_key_id(current)))
+    if previous and previous != current:
+        keys.append(("previous", previous, hmac_key_id(previous)))
+    return keys
 
 
 def validate_hmac_key_strength(value, source="environment"):
@@ -678,8 +710,8 @@ def auth_mode():
 
 
 def verify_auth(job):
-    key = load_hmac_key()
-    if not key:
+    keys = load_hmac_verification_keys()
+    if not keys:
         if env_flag(ALLOW_REPO_ACL_ONLY_ENV):
             return {"mode": "private-repo-acl-explicit-insecure", "verified": True}
         raise BridgeError(
@@ -702,14 +734,30 @@ def verify_auth(job):
                 "versioned HMAC canonicalization is required; legacy JSON signing needs an explicit emergency compatibility opt-in",
             )
         payload = canonical_job(job)
-    expected = hmac.new(key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(signature.lower(), expected.lower()):
-        raise BridgeError("AUTH_INVALID", "HMAC signature verification failed")
-    return {
-        "mode": "hmac-sha256",
-        "verified": True,
-        "canonical": canonical_version or "legacy-json-sort",
-    }
+
+    requested_key_id = str(auth.get("key_id") or "").strip().lower()
+    candidates = keys
+    if requested_key_id:
+        candidates = [row for row in keys if row[2] == requested_key_id]
+        if not candidates:
+            raise BridgeError("AUTH_KEY_ID_UNKNOWN", "HMAC key id is not accepted", {"key_id": requested_key_id})
+    else:
+        # Pre-rotation clients did not send key_id. Preserve compatibility only
+        # against the current key; the previous key requires an explicit id so
+        # removing it immediately revokes old credentials.
+        candidates = [row for row in keys if row[0] == "current"]
+
+    for slot, key, key_id in candidates:
+        expected = hmac.new(key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(signature.lower(), expected.lower()):
+            return {
+                "mode": "hmac-sha256",
+                "verified": True,
+                "canonical": canonical_version or "legacy-json-sort",
+                "key_id": key_id,
+                "key_slot": slot,
+            }
+    raise BridgeError("AUTH_INVALID", "HMAC signature verification failed")
 
 
 def load_processed():
