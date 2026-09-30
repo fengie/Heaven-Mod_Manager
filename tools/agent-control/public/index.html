@@ -11,7 +11,7 @@
       --text:#eef3f8; --muted:#8d99a8; --accent:#86b7ff; --good:#7ee787;
       --warn:#f2cc60; --bad:#ff7b72; --radius:16px;
       --motion-fast:120ms; --motion-base:180ms; --motion-slow:240ms;
-      --motion-ease:cubic-bezier(.2,.8,.2,1);
+      --motion-ease:cubic-bezier(.2,.8,.2,1); --motion-spring:cubic-bezier(.16,1,.3,1);
     }
     * { box-sizing:border-box; }
     body {
@@ -50,19 +50,51 @@
     .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
     .section-title h2 { font-size:15px; margin:0; }
     .overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; margin-bottom:16px; }
-    details.compact-section { padding:0; margin:0; overflow:hidden; }
-    details.compact-section[open] { grid-column:1 / -1; }
+    details.compact-section {
+      padding:0; margin:0; overflow:hidden; transform:translateZ(0);
+      transition:border-color var(--motion-base) var(--motion-ease), background-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease);
+      animation:card-enter var(--motion-slow) var(--motion-spring) both;
+    }
+    .overview-grid > .compact-section:nth-child(2) { animation-delay:18ms; }
+    .overview-grid > .compact-section:nth-child(3) { animation-delay:30ms; }
+    .overview-grid > .compact-section:nth-child(4) { animation-delay:42ms; }
+    .overview-grid > .compact-section:nth-child(5) { animation-delay:54ms; }
+    .overview-grid > .compact-section:nth-child(6) { animation-delay:66ms; }
+    .overview-grid > .compact-section:nth-child(7) { animation-delay:78ms; }
+    .overview-grid > .compact-section:nth-child(8) { animation-delay:90ms; }
+    .overview-grid > .compact-section:nth-child(9) { animation-delay:102ms; }
+    .overview-grid > .compact-section:nth-child(10) { animation-delay:114ms; }
+    details.compact-section[open] {
+      grid-column:1 / -1; border-color:#34465e;
+      box-shadow:0 24px 84px rgba(0,0,0,.3), 0 0 0 1px rgba(134,183,255,.035);
+    }
     .compact-summary {
-      cursor:pointer; list-style:none; margin:0; padding:13px 15px; user-select:none;
-      transition:background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+      cursor:pointer; list-style:none; margin:0; padding:13px 15px; user-select:none; position:relative;
+      transition:background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-spring);
     }
     .compact-summary::-webkit-details-marker { display:none; }
-    .compact-summary::after { content:"›"; color:var(--muted); font-size:20px; line-height:1; transform:rotate(0deg); transition:transform var(--motion-fast) var(--motion-ease); }
+    .compact-summary::before {
+      content:""; position:absolute; left:14px; right:14px; bottom:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(134,183,255,.8),transparent);
+      opacity:0; transform:scaleX(.4);
+      transition:opacity var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-spring);
+    }
+    .compact-summary:hover { background:rgba(21,27,36,.46); }
+    .compact-summary:active { transform:scale(.997); }
+    .compact-summary:focus-visible { outline:2px solid rgba(134,183,255,.72); outline-offset:-3px; border-radius:13px; }
+    .compact-summary::after {
+      content:"›"; color:var(--muted); font-size:20px; line-height:1; transform:rotate(0deg) scale(.96);
+      transition:transform var(--motion-base) var(--motion-spring), color var(--motion-fast) var(--motion-ease);
+    }
     details.compact-section[open] > .compact-summary { border-bottom:1px solid var(--line); background:rgba(21,27,36,.58); }
-    details.compact-section[open] > .compact-summary::after { transform:rotate(90deg); }
+    details.compact-section[open] > .compact-summary::before { opacity:1; transform:scaleX(1); }
+    details.compact-section[open] > .compact-summary::after { transform:rotate(90deg) scale(1); color:var(--accent); }
     .compact-summary .pill { margin-left:auto; }
-    .compact-section-body { padding:12px 15px 15px; max-height:min(68vh,760px); overflow:auto; overscroll-behavior:contain; }
-    details.compact-section[open] > .compact-section-body { animation:panel-open var(--motion-base) var(--motion-ease) both; }
+    .compact-section-body {
+      padding:12px 15px 15px; max-height:min(68vh,760px); overflow:auto; overscroll-behavior:contain;
+      scrollbar-gutter:stable;
+    }
+    details.compact-section[open] > .compact-section-body { animation:panel-open var(--motion-base) var(--motion-spring) both; }
     details.compact-section .empty { padding:18px 12px; }
     #notificationSummary[data-severity="critical"] { color:var(--bad); border-color:rgba(255,123,114,.45); }
     #notificationSummary[data-severity="warning"] { color:var(--warn); border-color:rgba(242,204,96,.45); }
@@ -114,8 +146,11 @@
       border-radius:11px; padding:10px 12px; cursor:pointer;
       transition:transform var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
     }
-    button:hover { transform:translateY(-1px); border-color:#3d4d62; }
-    button:active { transform:translateY(0) scale(.985); }
+    button:hover { transform:translateY(-1px); border-color:#3d4d62; box-shadow:0 8px 22px rgba(0,0,0,.18); }
+    button:active { transform:translateY(0) scale(.982); box-shadow:0 3px 10px rgba(0,0,0,.14); }
+    .start-swarm:hover { transform:translateY(-2px) scale(1.003); box-shadow:0 16px 38px rgba(31,111,235,.18); }
+    .sound-toggle { min-width:106px; padding-inline:11px; color:var(--muted); }
+    .sound-toggle[aria-pressed="true"] { color:#dceaff; border-color:#365f94; background:#13233a; }
     button.primary { background:#1f6feb; border-color:#2f81f7; font-weight:800; }
     button.danger { color:#ffb3ad; }
     button.good { color:#a8f0ae; }
@@ -163,10 +198,10 @@
     .tiny { color:var(--muted); font-size:11px; margin-top:9px; }
     .toast {
       position:fixed; right:18px; bottom:18px; background:#161d27; border:1px solid var(--line); border-radius:11px;
-      padding:12px 14px; max-width:min(460px,calc(100% - 36px)); opacity:0; transform:translateY(8px);
-      pointer-events:none; transition:opacity var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease); z-index:20;
+      padding:12px 14px; max-width:min(460px,calc(100% - 36px)); opacity:0; transform:translateY(10px) scale(.985);
+      pointer-events:none; transition:opacity var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-spring), box-shadow var(--motion-base) var(--motion-ease); z-index:20;
     }
-    .toast.show { opacity:1; transform:translateY(0); }
+    .toast.show { opacity:1; transform:translateY(0) scale(1); box-shadow:0 16px 50px rgba(0,0,0,.3); }
     .progress { height:7px; border-radius:999px; background:#080b10; border:1px solid var(--line); overflow:hidden; margin-top:9px; }
     .progress > span {
       display:block; height:100%; background:linear-gradient(90deg,#2f81f7,#7ee787);
@@ -179,8 +214,12 @@
       to { opacity:1; transform:translateY(0); }
     }
     @keyframes panel-open {
-      from { opacity:0; transform:translateY(-5px); }
-      to { opacity:1; transform:translateY(0); }
+      from { opacity:0; transform:translateY(-6px) scale(.997); }
+      to { opacity:1; transform:translateY(0) scale(1); }
+    }
+    @keyframes card-enter {
+      from { opacity:0; transform:translateY(7px) scale(.995); }
+      to { opacity:1; transform:translateY(0) scale(1); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -215,6 +254,7 @@
         <div class="sub">Agent Manager runs from <strong>heaven2</strong>. Heavy execution is routed to <strong>heaven1</strong> (runtime host <code>heaven</code>) whenever policy permits.</div>
       </div>
       <div class="toolbar">
+        <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false" title="Toggle subtle interaction sounds">UI sound: off</button>
         <div class="pill" id="connection">Connecting…</div>
       </div>
     </header>
@@ -509,7 +549,15 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0, selectedInspector:null, inspectorNotice:null };
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const readUiSoundPreference = () => {
+      try { return localStorage.getItem("agent-control-ui-sound") === "on"; }
+      catch { return false; }
+    };
+    const state = {
+      snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0,
+      selectedInspector:null, inspectorNotice:null, soundEnabled:readUiSoundPreference(), motionReduced:reducedMotionQuery.matches
+    };
     const stoppableManagedStatuses = new Set(["reserved","starting","running","waiting","blocked","stale","stopping"]);
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
@@ -530,6 +578,86 @@
       if (m < 60) return `${m}m`;
       return `${Math.round(m / 60)}h`;
     };
+    let uiAudioContext = null;
+    function ensureUiAudioContext() {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return null;
+      uiAudioContext ||= new AudioContextCtor();
+      if (uiAudioContext.state === "suspended") void uiAudioContext.resume();
+      return uiAudioContext;
+    }
+
+    function playUiSound(kind="tap") {
+      if (!state.soundEnabled) return;
+      const context = ensureUiAudioContext();
+      if (!context) return;
+      const presets = {
+        tap:[520,610,.026,.008],
+        open:[460,680,.055,.010],
+        close:[520,360,.045,.008],
+        enable:[620,880,.075,.010]
+      };
+      const preset = presets[kind] || presets.tap;
+      const fromHz = preset[0], toHz = preset[1], duration = preset[2], volume = preset[3];
+      const now = context.currentTime;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(fromHz, now);
+      oscillator.frequency.exponentialRampToValueAtTime(toHz, now + duration);
+      gain.gain.setValueAtTime(.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + .005);
+      gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + duration + .01);
+    }
+
+    function updateSoundToggle() {
+      const button = $("soundToggle");
+      button.textContent = "UI sound: " + (state.soundEnabled ? "on" : "off");
+      button.setAttribute("aria-pressed", String(state.soundEnabled));
+    }
+
+    function setUiSoundEnabled(enabled) {
+      state.soundEnabled = Boolean(enabled);
+      try { localStorage.setItem("agent-control-ui-sound", state.soundEnabled ? "on" : "off"); }
+      catch {}
+      updateSoundToggle();
+      if (state.soundEnabled) playUiSound("enable");
+    }
+
+    function animateCompactSection(section) {
+      if (state.motionReduced || document.visibilityState !== "visible" || typeof section?.animate !== "function") return;
+      const opening = section.open;
+      section.animate(
+        opening
+          ? [{ opacity:.96, transform:"translateY(-2px) scale(.997)" }, { opacity:1, transform:"translateY(0) scale(1)" }]
+          : [{ opacity:1, transform:"translateY(0) scale(1.002)" }, { opacity:1, transform:"translateY(0) scale(1)" }],
+        { duration:opening ? 220 : 130, easing:"cubic-bezier(.16,1,.3,1)" }
+      );
+    }
+
+    function bindCompactSectionMotion() {
+      document.querySelectorAll("details.compact-section").forEach(section => {
+        section.addEventListener("toggle", () => animateCompactSection(section));
+        section.querySelector(":scope > summary")?.addEventListener("click", () => playUiSound(section.open ? "close" : "open"));
+      });
+    }
+
+    function setMetricText(id, value) {
+      const element = $(id);
+      const next = String(value);
+      if (element.textContent === next) return;
+      element.textContent = next;
+      if (state.motionReduced || document.visibilityState !== "visible" || typeof element.animate !== "function") return;
+      element.animate(
+        [{ opacity:.62, transform:"translateY(3px) scale(.985)" }, { opacity:1, transform:"translateY(0) scale(1)" }],
+        { duration:180, easing:"cubic-bezier(.16,1,.3,1)" }
+      );
+    }
+
     const toast = message => {
       $("toast").textContent = message;
       $("toast").classList.add("show");
@@ -1129,17 +1257,17 @@
     function render(snapshot) {
       const t = snapshot.telemetry || {};
       const coverage = snapshot.federation?.coverage || t.coverage || {};
-      $("running").textContent = federatedCount(t.running, coverage);
-      $("working").textContent = federatedCount(t.working, coverage);
-      $("waiting").textContent = federatedCount(t.toolWait, coverage);
-      $("blocked").textContent = federatedCount(t.blocked, coverage);
-      $("idle").textContent = federatedCount(t.idle, coverage);
-      $("stale").textContent = federatedCount(t.stale, coverage);
-      $("disconnected").textContent = federatedCount(t.disconnected, coverage);
-      $("leases").textContent = t.activeLeases ?? 0;
-      $("candidates").textContent = t.integrationCandidates ?? 0;
-      $("success").textContent = t.successRate == null ? "—" : `${t.successRate}%`;
-      $("total").textContent = federatedCount(t.total, coverage);
+      setMetricText("running", federatedCount(t.running, coverage));
+      setMetricText("working", federatedCount(t.working, coverage));
+      setMetricText("waiting", federatedCount(t.toolWait, coverage));
+      setMetricText("blocked", federatedCount(t.blocked, coverage));
+      setMetricText("idle", federatedCount(t.idle, coverage));
+      setMetricText("stale", federatedCount(t.stale, coverage));
+      setMetricText("disconnected", federatedCount(t.disconnected, coverage));
+      setMetricText("leases", t.activeLeases ?? 0);
+      setMetricText("candidates", t.integrationCandidates ?? 0);
+      setMetricText("success", t.successRate == null ? "—" : String(t.successRate) + "%");
+      setMetricText("total", federatedCount(t.total, coverage));
 
       const controller = snapshot.controller || {};
       $("connection").textContent = `${machineLabel(controller.host || "controller")} · ${t.running || 0} live`;
@@ -1456,6 +1584,15 @@
     $("controlEmergency").addEventListener("click", () => controlAction("emergency-stop"));
     $("routingApply").addEventListener("click", applyRouting);
     $("routingClear").addEventListener("click", clearRouting);
+    $("soundToggle").addEventListener("click", () => setUiSoundEnabled(!state.soundEnabled));
+    document.addEventListener("click", event => {
+      const button = event.target.closest?.("button");
+      if (!button || button.disabled || button.id === "soundToggle") return;
+      playUiSound("tap");
+    }, { capture:true });
+    reducedMotionQuery.addEventListener?.("change", event => { state.motionReduced = event.matches; });
+    bindCompactSectionMotion();
+    updateSoundToggle();
 
     refresh();
     setInterval(() => refresh(false), 4000);
