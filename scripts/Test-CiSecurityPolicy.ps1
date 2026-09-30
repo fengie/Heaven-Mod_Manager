@@ -109,6 +109,7 @@ if(!(Test-Path -LiteralPath $releasePath)){
         '$version = ''2.101.0''',
         'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794',
         'Get-FileHash',
+        '$actualSha256 -ne $expectedSha256',
         'https://github.com/cli/cli/releases/download/v${version}/${assetName}'
     )){
         if(-not $release.Contains($required)){
