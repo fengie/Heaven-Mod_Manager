@@ -38,7 +38,7 @@ public sealed class PlannerTests
         var plan=new DeploymentPlanner(new ConflictEngine()).Build(snapshot);
 
         Assert.True(plan.IsBlocked);
-        var blocker=Assert.Single(plan.Conflicts.Where(x=>x.Blocking));
+        var blocker=Assert.Single(plan.Conflicts,x=>x.Blocking);
         Assert.Equal("bundle-mixed-providers",blocker.ReasonCode);
         Assert.Equal(ConflictKind.HardStructural,blocker.Kind);
         Assert.Equal(plan.Conflicts.Count,plan.Conflicts.Select(x=>x.Path).Distinct(PathRules.Comparer).Count());
