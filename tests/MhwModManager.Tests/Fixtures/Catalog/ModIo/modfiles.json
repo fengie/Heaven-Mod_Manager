@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "id": 9001,
+      "mod_id": 101,
+      "date_added": 1760000200,
+      "date_updated": 1760000300,
+      "filesize": 123456,
+      "filehash": {
+        "md5": "2d4a0e2d7273db6b0a94b0740a88ad0d"
+      },
+      "filename": "fixture-mod-v1.zip",
+      "version": "1.0.0",
+      "download": {
+        "binary_url": "https://g-42.modapi.io/v1/games/42/mods/101/files/9001/download/ephemeral-verification-hash",
+        "date_expires": 1760003900
+      },
+      "platforms": [
+        {
+          "platform": "WINDOWS",
+          "status": 1
+        }
+      ]
+    }
+  ],
+  "result_count": 1,
+  "result_limit": 100,
+  "result_offset": 0,
+  "result_total": 1
+}
