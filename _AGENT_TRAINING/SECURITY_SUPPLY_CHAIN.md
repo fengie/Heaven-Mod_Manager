@@ -46,3 +46,8 @@ Security and release policy is executable source. When JavaScript, Python, shell
 
 A PR validation workflow on a persistent runner must be secretless and read-only. Do not reference repository/action secrets or grant write token scopes in a workflow that executes PR-controlled source. Separate mutation, publication, deployment, or credentialed operations into a trusted push/post-merge workflow after the source has crossed the review/integration boundary.
 
+## Remote execution bridges need an authority beyond repository write
+If a repository-backed relay can execute arbitrary commands on a persistent host, repository write access is too broad to be the only execution authorization boundary. Add per-request cryptographic authentication whose secret/private material remains machine-local, include replay/freshness checks, version the canonical signing format, and keep relay payloads free of raw credentials.
+
+## Update authenticity needs a separate trust root
+Artifact hashes published by the same authority as the artifact detect corruption but do not survive compromise of that publication authority. Mature update systems authenticate metadata with an independent verification key and define rotation/revocation, freshness/expiry, and rollback/freeze behavior.
