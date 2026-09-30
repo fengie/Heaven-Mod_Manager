@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.33",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.32 missing retirement identity fail-closed repair",
+  "immediateParentRevision": "v8.8.32 Agent Control retirement identity fail-closed closure",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Preserve the v8.8.32 fail-closed retirement identity boundary; verify exact-head source gates and obtain live heaven2?heaven1 runtime smoke when available. Then finish the lightweight /api/status health contract as the next meaningful patch and leave durable successor notes.",
+  "nextAgentObligation": "Verify the exact v8.8.33 lightweight-health candidate with Agent Control check/test, handoff governance, and Security Supply Chain gates; preserve v8.8.32 retirement identity safety. Then obtain the separately pending heaven2→heaven1 runtime health/retirement smoke, verify canonical main, and retire superseded task branches/PRs while preserving heaven-bridge.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
