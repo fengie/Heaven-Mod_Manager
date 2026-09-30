@@ -54,6 +54,11 @@ public static partial class GenericFamilyInference
         }
 
         var parent = candidates.ToDictionary(m=>m.Id,m=>m.Id,StringComparer.OrdinalIgnoreCase);
+        var candidateById = candidates.ToDictionary(m=>m.Id,StringComparer.OrdinalIgnoreCase);
+        var clusterMembers = candidates.ToDictionary(
+            m=>m.Id,
+            m=>new HashSet<string>(StringComparer.OrdinalIgnoreCase){m.Id},
+            StringComparer.OrdinalIgnoreCase);
         string Find(string id)
         {
             while (!StringComparer.OrdinalIgnoreCase.Equals(parent[id], id))
@@ -69,6 +74,8 @@ public static partial class GenericFamilyInference
             var keep=StringComparer.OrdinalIgnoreCase.Compare(ra,rb)<=0?ra:rb;
             var drop=StringComparer.OrdinalIgnoreCase.Equals(keep,ra)?rb:ra;
             parent[drop]=keep;
+            clusterMembers[keep].UnionWith(clusterMembers[drop]);
+            clusterMembers.Remove(drop);
         }
 
         foreach (var pair in pairs.OrderByDescending(x=>x.Score).ThenBy(x=>x.LeftModId,StringComparer.OrdinalIgnoreCase).ThenBy(x=>x.RightModId,StringComparer.OrdinalIgnoreCase))
@@ -77,9 +84,10 @@ public static partial class GenericFamilyInference
             // have strong negative evidence. This is a lightweight complete-link safety check.
             var leftRoot=Find(pair.LeftModId);var rightRoot=Find(pair.RightModId);
             if(StringComparer.OrdinalIgnoreCase.Equals(leftRoot,rightRoot))continue;
-            var leftMembers=candidates.Where(m=>StringComparer.OrdinalIgnoreCase.Equals(Find(m.Id),leftRoot)).ToArray();
-            var rightMembers=candidates.Where(m=>StringComparer.OrdinalIgnoreCase.Equals(Find(m.Id),rightRoot)).ToArray();
-            var blocked=leftMembers.Any(l=>rightMembers.Any(r=>HardBlock(l,r,profiles[l.Id],profiles[r.Id])));
+            var leftMembers=clusterMembers[leftRoot];
+            var rightMembers=clusterMembers[rightRoot];
+            var blocked=leftMembers.Any(leftId=>rightMembers.Any(rightId=>
+                HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId])));
             if(!blocked)Union(pair.LeftModId,pair.RightModId);
         }
 
@@ -225,7 +233,8 @@ public static partial class GenericFamilyInference
         if(a.Count==0||b.Count==0)return 0;
         var smaller=a.Count<=b.Count?a:b;
         var larger=ReferenceEquals(smaller,a)?b:a;
-        var hit=smaller.Count(larger.Contains);
+        var hit=0;
+        foreach(var token in smaller)if(larger.Contains(token))hit++;
         var union=a.Count+b.Count-hit;
         return union==0?0:hit/(double)union;
     }
@@ -236,7 +245,9 @@ public static partial class GenericFamilyInference
         if(a.Count==0||b.Count==0)return 0;
         var smaller=a.Count<=b.Count?a:b;
         var larger=ReferenceEquals(smaller,a)?b:a;
-        return smaller.Count(larger.Contains);
+        var count=0;
+        foreach(var value in smaller)if(larger.Contains(value))count++;
+        return count;
     }
     private static List<string> Tokenize(string value)
     {
