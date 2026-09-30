@@ -22,7 +22,7 @@ public static class ModIoCatalogNormalizer
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(document);
-        if (expectedGameId <= 0) throw new ArgumentOutOfRangeException(nameof(expectedGameId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedGameId);
 
         var root = RequireObjectValue(document.RootElement, "mod.io mod list response");
         var data = RequireArray(root, "data");
@@ -43,7 +43,7 @@ public static class ModIoCatalogNormalizer
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(document);
-        if (expectedGameId <= 0) throw new ArgumentOutOfRangeException(nameof(expectedGameId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedGameId);
         var providerModId = NormalizePositiveId(expectedProviderModId, nameof(expectedProviderModId));
 
         var mod = NormalizeModElement(game, expectedGameId, document.RootElement);
