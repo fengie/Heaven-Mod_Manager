@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.37</Version>
-    <InformationalVersion>8.8.37-agent-control-registry-lifecycle</InformationalVersion>
+    <Version>8.8.38</Version>
+    <InformationalVersion>8.8.38-dependency-blocker-compile-fix</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
