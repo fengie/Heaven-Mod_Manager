@@ -878,3 +878,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-046 installed-runtime/restart proof; LR-049 producer-specific text encoding.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-051 — interactive affordances require actual input semantics
+
+- **Rule ID:** LR-051
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Operator dashboards, cards/list rows, mouse/keyboard interaction, nested controls
+- **Rule:** If a surface visually advertises interactivity through hover/focus treatment or operator wording, give that surface an explicit action and keyboard equivalent, or remove the affordance. When an interactive container contains buttons/links/inputs, container-level handlers must ignore events originating from those nested controls.
+- **Trigger / evidence:** Agent cards had hover styling but no card handler, so users reasonably clicked them and observed no action while only the small nested View log button worked.
+- **Rationale:** False affordances look like backend failures, erode operator trust, and create accessibility gaps. Container handlers added later can also cause destructive double-actions unless nested controls are excluded.
+- **Enforcement:** Regression-test emitted UI structure and JavaScript parsing; require mouse + keyboard activation paths and nested-control isolation for card/row interaction changes.
+- **Regression/evidence:** v8.8.27 Agent Control card inspection and `operator-ui-cli.test.mjs`.
+- **Related rules:** LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure; LR-048 whole-output closure.
+- **Supersedes:** none
+- **Superseded by:** none
