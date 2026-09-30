@@ -127,9 +127,9 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Removed the `Search` capability until a full-search transport exists; unsupported query/non-trending modes now fail closed instead of filtering a trending subset; source URLs require exact `nexusmods.com` or `.nexusmods.com` host boundaries; assisted URLs percent-encode the configured game domain.
 - **Preventive rule/process change:** Provider capability declarations must be justified by reachable transport behavior, and origin allowlists must use parsed URI host equality or dot-boundary subdomain checks rather than raw suffix matching.
 - **Regression coverage added/strengthened:** `NexusV3CatalogProviderTests` now asserts no Search capability, fail-closed unsupported discovery, rejection of `evilnexusmods.com`, and cancellation-aware async test calls under the strict xUnit1051 policy.
-- **Verification evidence/environment:** Focused deterministic regressions are committed on PR #318. Exact-head Workflow Feature PR Gate verification is required before merge; no passing-gate claim is made in this entry until that run completes.
+- **Verification evidence/environment:** Focused deterministic regressions are frozen on stable integration PR #320. Exact-head Workflow Feature PR Gate verification is required before merge; no passing-gate claim is made in this entry until that run completes.
 - **Sibling/adjacent cases checked:** The shared normalizer now owns Nexus source-origin parsing; authenticated detail/file endpoints retain their existing transport boundary; assisted acquisition remains browser-only and does not expose direct-download claims.
-- **References (SHA/PR/issue/log):** PR #318; issue #281; branch `agent/nexus-v3-normalizer-20260929`.
+- **References (SHA/PR/issue/log):** stable integration PR #320 (superseding moving implementation PR #318); issue #281; branch `integration/nexus-v3-provider-20260929`.
 
 
 ## 2026-09-29 — test analyzers — cancellation warning enforcement covered only one test project
