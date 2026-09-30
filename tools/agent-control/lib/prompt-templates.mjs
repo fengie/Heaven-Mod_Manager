@@ -79,20 +79,22 @@ export const REPOSITORY_CONTEXT_INDEX_PATHS = Object.freeze([
 const REPOSITORY_TRAINING_GATE = [
   "Read the compact core manifest in full, then retrieve only task-relevant indexed policy, continuity, precedent, architecture, source, and tests.",
   "Establish current canonical source/ownership before mutation. Refresh remote truth again before integration or destructive action.",
-  "Treat truncation or one failed execution route as recoverable; use another authorized route before declaring a blocker.",
-  "Managers additionally read the manager delta. Subagents receive the same compact bootstrap plus only their bounded task context.",
-  "Do not substitute summaries, stale hashes, or prior green evidence for current source and observed verification."
+  "Output truncation is recoverable: paginate/chunk. If missing gh/CLI or a local checkout, use an authorized GitHub connector/API or other documented route. TRAINING-BLOCKED or EXECUTION-BLOCKED only after reasonable authorized fallback routes are exhausted. Truncation, missing gh, or no local checkout alone is never sufficient.",
+  "Managers additionally read the manager delta before responding to or dispatching work. Subagents receive the same compact bootstrap plus only their bounded task context.",
+  "Do not substitute summaries, stale hashes, or prior green evidence for current source and observed verification.",
+  "The compact repository bootstrap is complete only after the required core is read and task-relevant indexed context has been retrieved and hash-checked."
 ];
 
 const REPOSITORY_PROTOCOL = [
   "Unless the user requests analysis/review only, planning is preparatory: implement the smallest coherent change and make concrete progress.",
   "Current repository/runtime facts outrank stale factual claims; higher-priority platform/safety and current user instructions still govern authority and scope.",
   "Inspect surrounding code/contracts/tests before editing; reproduce bugs when practical; prefer root-cause fixes over symptom patches.",
+  "Load applicable BUG_PRECEDENTS/LEARNED_RULES entries. BUG PREVENTION CLOSURE: record root cause and violated invariant, add regression coverage or strongest durable verifier, and complete this before DONE/FIXED/merge/release.",
   "Run the narrowest useful verification first and broaden by risk. Never weaken tests, analyzers, authorization, or safety gates to get green.",
   "Use one primary owner per mutable boundary. Delegate only independent bounded work and synthesize/verify returned artifacts.",
   "Finished owned work belongs on verified canonical main unless an explicit external gate blocks delivery. Branches/PRs are coordination tools, not completion.",
   "Never claim tests, pushes, merges, fixes, liveness, releases, or publication without observed exact-input evidence.",
-  "Update only durable truth that changed; leave a concise successor handoff with exact revision, evidence, risks, integration state, and next action."
+  "Update only durable truth that changed; preserve recursive continuity and leave a concise successor handoff with exact revision, evidence, risks, integration state, and next action."
 ];
 
 const MACHINE_POLICIES = {
