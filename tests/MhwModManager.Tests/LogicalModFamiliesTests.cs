@@ -172,8 +172,10 @@ public sealed class LogicalModFamiliesTests
         var families = LogicalModFamilies.Build(mods, files);
 
         Assert.Equal(2, families.Count);
-        Assert.Contains(families, family => family.Members.Select(x => x.Id).ToHashSet(StringComparer.OrdinalIgnoreCase)
-            .SetEquals(new[] { "alpha", "bridge" }));
+        Assert.Contains(families, family =>
+            family.Members.Count == 2
+            && family.Members.Any(member => member.Id.Equals("alpha", StringComparison.OrdinalIgnoreCase))
+            && family.Members.Any(member => member.Id.Equals("bridge", StringComparison.OrdinalIgnoreCase)));
         Assert.Contains(families, family => family.Members.Count == 1 && family.Members[0].Id == "beta");
     }
 
