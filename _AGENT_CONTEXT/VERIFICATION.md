@@ -1,3 +1,13 @@
+# v8.8.33 Agent Control lightweight health — verification scope
+
+This candidate changes controller liveness semantics, snapshot bridge-assessment reuse, focused health-contract tests, and Agent Control v0.6.11 release identity. Historical Agent Control evidence does not verify these changed bytes.
+
+Required source closure: exact-candidate `npm run check && npm test`, including the lightweight-status source contract, one-assessment full-snapshot contract, startup/watchdog status-probe contract, and configured Agent Control/Security gates. Broader product/analyzer failures must be attributed separately if unrelated.
+
+Required runtime evidence when heaven2 is reachable: repeated local status requests with p50/p95 below the watchdog timeout, no false restart under slow/failing Git conditions, one bridge assessment per dashboard snapshot, and unchanged authoritative dispatch trust validation.
+
+---
+
 # v8.8.32 Agent Control retirement identity fail-closed closure ? verification scope
 
 Exact-head source evidence must include the real-server missing-ID/provider-fallback regression, migration tombstone preservation, complete Agent Control suite, Security Supply Chain, and handoff governance validators. Live heaven2?heaven1 cancellation/status/replay remains separate runtime evidence.
