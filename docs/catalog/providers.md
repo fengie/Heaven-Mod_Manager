@@ -9,7 +9,7 @@ Research date: 2026-09-29.
 | GameBanana | Official API | Provider-specific | Yes | Official file/source links | Normally unnecessary | P1 |
 | GitHub Releases | REST Releases API | Public/GitHub auth as needed | Curated/linked repos | Release assets | No | P1 |
 | mod.io | Official REST API | API key; access token for authenticated flows | Yes | Official/dynamic modfile URLs | No | P1/P2 |
-| Thunderstore | Public REST API | Provider-specific | Community/package | Package URL | No | P2 |
+| Thunderstore | Public REST API (adapter implemented; compliance-gated) | Public read API | Community/package | Provider-generated package URL | No | P2; disabled pending current Terms reference |
 | CurseForge | Official REST API | x-api-key | Yes | Approved file/download APIs | No by default | P2 |
 | GitLab Releases | Releases API | Public/PAT as needed | Curated/linked projects | Release assets/links | No | P2 |
 | Steam Workshop | Steamworks APIs | Operation-specific Steam credentials | Supported games only | Workshop/game-managed | No | P2 |
