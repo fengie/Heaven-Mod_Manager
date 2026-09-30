@@ -54,6 +54,31 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
   return Boolean(String(task?.objective || agent?.task || "").trim());
 }
 
+export function retryExhaustedRetirementCandidateIds(agents = []) {
+  const list = Array.isArray(agents) ? agents : [];
+  const exhaustedRoots = new Set(list
+    .filter(agent =>
+      String(agent?.status || "").toLowerCase() === "failed"
+      && String(agent?.failureClass || "").toLowerCase() === "no-work"
+      && String(agent?.recoveryStatus || "").toLowerCase() === "retry-exhausted"
+    )
+    .map(agent => swarmTailRecoveryRootId(agent))
+    .filter(Boolean));
+
+  if (exhaustedRoots.size === 0) return [];
+
+  return list
+    .filter(agent => {
+      if (!agent?.id) return false;
+      if (String(agent?.status || "").toLowerCase() !== "failed") return false;
+      if (String(agent?.failureClass || "").toLowerCase() !== "no-work") return false;
+      const recoveryStatus = String(agent?.recoveryStatus || "").toLowerCase();
+      if (!["retry-dispatched", "retry-exhausted"].includes(recoveryStatus)) return false;
+      return exhaustedRoots.has(swarmTailRecoveryRootId(agent));
+    })
+    .map(agent => String(agent.id));
+}
+
 export function planSwarmTailRecoveryBatch(state, {
   maxWorkers = 4,
   maxAttemptsPerRoot = 2,
