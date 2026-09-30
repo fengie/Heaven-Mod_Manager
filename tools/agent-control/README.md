@@ -1,3 +1,11 @@
+# v0.6.16 — live-registry projection closure
+
+## What v0.6.16 does
+
+Agent Control now separates persisted workflow records from current registry presence. The main managed/federated arrays contain only current live records; unresolved ownership/recovery/durable work appears under **Needs Attention / recovery**, and completed/stale/disconnected/terminal evidence appears under **Registry history** while remaining inspectable.
+
+This projection layer preserves the v0.6.15 retirement and tombstone safety model. Durable completed records can remain available to capability/evidence/review authorization without inflating live counts or rendering as active agent cards.
+
 # v0.6.15 — registry lifecycle closure
 
 ## What v0.6.15 does
