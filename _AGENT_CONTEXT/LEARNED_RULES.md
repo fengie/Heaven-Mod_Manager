@@ -592,3 +592,17 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** Heaven Local Bridge execution policy; mandatory bug-prevention protocol; LR-021 defect-class closure.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-035 — overwrite intent and dependency safety must be proven against the effective deployment
+- **Rule ID:** LR-035
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Mod conflict resolution, dependency closure, deployment planning, Auto Populate, launch gating
+- **Rule:** Family membership, package priority, filename similarity, subset size, and raw overlap are not sufficient proof that one mod may safely overwrite another. Automatic precedence requires explicit user intent or high-confidence source/provenance evidence appropriate to the file class. The manager must validate dependencies against the final effective winner graph and final filesystem topology before any write or modded launch.
+- **Trigger / evidence:** Previous resolver paths could infer same-family texture/subset winners from priority or overlap, validate a dependency merely because a source/live file existed even when deployment would shadow/remove it, and treat loader/bootstrap pieces independently. Those are manager-created crash risks.
+- **Prevention:** Fail closed on ambiguous executable/plugin/loader collisions, low-confidence texture precedence, malformed/cyclic overlay rules, file-vs-directory collisions, mixed atomic structural bundles, stale staged identities, incompatible dependency versions, partial/mixed loader pairs, and managed-live dependencies scheduled for removal. Every non-blocking multi-provider decision must name an enabled candidate winner, and all Apply/restore/diagnostic/Auto Populate/launch paths must use the same plan-aware dependency gate. Keep randomized/adversarial regression coverage for these invariants.
+- **Related rules:** LR-021 defect-class closure; mandatory bug-prevention protocol.
+- **Supersedes:** priority/overlap-only overwrite heuristics for safety-sensitive file classes.
+- **Superseded by:** none
