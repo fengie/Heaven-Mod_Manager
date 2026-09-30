@@ -4049,7 +4049,7 @@ async function reconcilePerpetualReplacement(state) {
     },
     nextRetryAt: null,
     lastRecoveryAt: isoNow(),
-    lastRecoveryReason: "stale-worker-stopped-for-replacement",
+    lastRecoveryReason: "perpetual-stale-replacement",
     updatedAt: isoNow()
   });
   addEvent(stopped, "autopilot.stale-replacement-pending", `${agent.id} stopped after durable takeover preservation`, {
