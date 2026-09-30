@@ -514,4 +514,3 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** every terminal lifecycle state must define an explicit retention/retirement disposition; live registries must not double as historical failure archives.
 - **Regression coverage added/strengthened:** `tools/agent-control/test/registry-retention.test.mjs` pins failure retirement, active recovery retention, process-alive retention, linked federation purge, and bulk failed-federated GC.
 - **Verification/evidence:** v8.8.26 candidate; exact-head Agent Control tests plus heaven2 live dispatch/cleanup smoke required.
-
