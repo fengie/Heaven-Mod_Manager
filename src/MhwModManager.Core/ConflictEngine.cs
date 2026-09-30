@@ -296,9 +296,15 @@ public sealed class ConflictEngine
         try { normalized = PathRules.Normalize(path); }
         catch (ArgumentException) { return false; }
 
-        return normalized.Equals(@"root\dinput8.dll", StringComparison.OrdinalIgnoreCase) ||
-               normalized.Equals(@"root\loader.dll", StringComparison.OrdinalIgnoreCase) ||
-               normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase);
+        if (normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var extension = Path.GetExtension(normalized);
+        return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".asi", StringComparison.OrdinalIgnoreCase);
     }
 
     public static (string,string) PairKey(string a, string b)
