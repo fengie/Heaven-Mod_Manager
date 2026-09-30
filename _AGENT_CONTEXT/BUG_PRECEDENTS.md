@@ -640,7 +640,7 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - Direct fix: compact CLI JSON; navigation includes newline in byte accounting; pagination reduces whole lines until its JSON envelope/newline fits the global ceiling and preserves exact continuation.
 - Preventive rule: LR-058 and generic trainer require actual emitted-byte tests, escaped/Unicode fixtures and lossless continuation. No larger limit or weakened check.
 - Regression: actual CLI maximum-result test plus quote/emoji pagination walk proving every line is retrieved exactly once, with each emitted page <=8,192 bytes.
-- Evidence: reproduction on PR #515 source 2031c405, hidden local Node on heaven2; focused integration tests 12/12 pass after repair. Exact candidate/full gates remain required before integration.
+- Evidence: reproduction on PR #515 source 2031c405, hidden local Node on heaven2; focused integration tests 12/12 pass after repair. Historical candidate status is superseded by exact source e655e465: PR #517/main controller 269/269, 26/26 Windows, security, immutable build 352 and updater/rollback 36772774812 pass; live 0.6.20 navigation smoke passes. Full closure is in EVIDENCE/v8.8.43-context-navigation.md.
 - Siblings: pagination raw-text/envelope expansion, navigation query/result/snippet bounds, indexed whitelist, stale hashes, bootstrap budget and CLI formatting; bootstrap packet unchanged in structure and still bounded.
 - References: v8.8.43 integration evidence; integration branch codex/context-navigation-integration.
 

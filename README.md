@@ -1,4 +1,8 @@
-# v8.8.44 Universal Mod Manager
+# v8.8.45 Universal Mod Manager
+
+## v8.8.45 — maintenance consolidation and junior handoff
+
+Consolidates verified work into bounded junior bug-fix assignments, preserves unmerged branch provenance and separates real installed-client proof from release CI. New features are frozen for this maintenance cycle; existing runtime behavior and plugin identities are unchanged. See [`junior maintenance handoff`](_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md).
 
 ## v8.8.44 — Windows-safe agent ownership state
 

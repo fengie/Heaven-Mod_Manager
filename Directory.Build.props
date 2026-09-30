@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.44</Version>
-    <InformationalVersion>8.8.44-agent-state-encoding</InformationalVersion>
+    <Version>8.8.45</Version>
+    <InformationalVersion>8.8.45-maintenance-consolidation</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

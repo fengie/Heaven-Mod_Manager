@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.44",
+  "currentVersion": "8.8.45",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.43 verified and published",
+  "immediateParentRevision": "v8.8.44 verified and published",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -94,7 +94,8 @@
     "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md",
     "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log",
     "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
-    "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json"
+    "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
+    "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -103,7 +104,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.44 verified/published build 353; controller 0.6.21 live. Continue authenticated Agent Manager P0, preserve external catalog ownership/reconcile provisional version, verify actual operator latest (proven 352), and recursively propagate continuity.",
+  "nextAgentObligation": "Use junior-maintenance handoff: no new features; claim one existing bug-fix lane, preserve branch/auth/user data boundaries, verify exact source and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,3 +1,9 @@
+# v8.8.45 — maintenance consolidation and junior handoff
+- Prepare bounded existing-behavior, branch-classification, installed-updater and authenticated-control reliability assignments with acceptance/escalation criteria.
+- Record preserved branch ancestry without treating rebased/squashed history as proof of unique behavior or deletion authority.
+- Reconcile the navigation precedent with completed exact-source release evidence; retain candidate failure history.
+- Freeze new features for this maintenance cycle and preserve current runtime/plugin versions.
+
 # v8.8.44 — Windows-safe agent ownership state
 - Accept one leading UTF-8 BOM in primary/backup/legacy controller state, preserving newer tasks/leases rather than recovering an older backup for a supported encoding.
 - Reuse the strict decoder during pre-save backup validation; keep BOM-free atomic writes and corrupt-state read-only/paused behavior.
