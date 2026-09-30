@@ -261,9 +261,9 @@ internal static class ModRequirementReader
         {
             if (item.ValueKind == JsonValueKind.String)
             {
-                var token = item.GetString();
-                if (!string.IsNullOrWhiteSpace(token))
-                    MergeRequirement(output, new(token.Trim()), errors);
+                var stringToken = item.GetString();
+                if (!string.IsNullOrWhiteSpace(stringToken))
+                    MergeRequirement(output, new(stringToken.Trim()), errors);
                 continue;
             }
 
