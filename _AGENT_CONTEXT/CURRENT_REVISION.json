@@ -5,45 +5,20 @@
   "canonicalBranch": "main",
   "workingBranch": "fix/installed-game-discovery-20260930",
   "currentVersion": "8.8.50",
-  "companyTrainingRoot": "_AGENT_TRAINING",
-  "companyTrainingStatus": "active-living-system",
   "status": "v8.8.50-installed-game-discovery-candidate",
-  "nextMilestone": "Close the installed-game discovery defect, then resume existing issue/PR and branch reconciliation.",
-  "nextRequiredAction": "Run exact-head Workflow Feature/Security/required PR gates for the installed-game discovery candidate, reconcile fresh main, merge only if green, then verify canonical main/release evidence.",
+  "nextMilestone": "Verify and integrate installed-game discovery; then resume existing PR/branch maintenance.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-  "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-  "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "Prior v8.8.49 and earlier verification is historical only. The v8.8.50 installed-game discovery candidate requires exact-head Windows/CI verification; no candidate pass is claimed yet.",
+  "verificationScopeNote": "Historical proof only; v8.8.50 discovery requires exact-head gates and fresh-main integration evidence.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
-    "updaterBuild": 356,
-    "updaterReleaseTag": "updater-main-356",
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.47-existing-bug-integration.md"
+    "updaterBuild": 356
   },
-  "candidateSourceCommit": null,
   "agentManagerPriority": {
     "status": "active",
     "priority": "P0",
     "mode": "functionality-lock",
-    "goal": "Prove Agent Manager end-to-end before expansion.",
-    "completionContract": "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json#agentManagerPriority",
-    "releasePolicy": "No unrelated product features before exact-head full P0 proof; full binding acceptance contract remains in completionContract.",
-    "completionRequires": [
-      "Runtime/plugin identity agrees.",
-      "Exact candidate check and P0 tests pass.",
-      "heaven2 server/CLI/dashboard smoke passes.",
-      "Authenticated Heaven provider healthy or fails closed.",
-      "Dispatch/observe/recover/stop without stale ownership.",
-      "Honest provider/machine/freshness/partial coverage."
-    ]
+    "completionContract": "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json#agentManagerPriority"
   },
-  "unresolvedRisks": [
-    "Exact-head Windows/CI verification is still pending for the v8.8.50 discovery candidate.",
-    "PR #534 is a separate active catalog-browser branch with provisional v8.8.50 metadata and must rebase/re-version if this candidate reaches main first.",
-    "Automatic detection remains intentionally bounded to Steam, Epic, GOG, Xbox Games and explicit manual Add Game; arbitrary portable/custom-launcher games are not guessed by whole-drive scanning.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open; preserve external branches until semantic/ownership review."
-  ],
-  "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
 }
