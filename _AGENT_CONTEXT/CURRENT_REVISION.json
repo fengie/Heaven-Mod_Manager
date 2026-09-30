@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.23",
+  "currentVersion": "8.8.24",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run exact-head Agent Control checks and heaven2/heaven1 runtime validation for v8.8.23, then continue fixing highest-impact Agent Manager federation/lifecycle/recovery gaps before lower-priority work",
+  "nextMilestone": "P0 Agent Manager functionality: run exact-head Agent Control checks and heaven2→heaven1 live runtime validation; keep unrelated autonomous expansion blocked until the completion gate is proven",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.22 strict analyzer repair",
-  "status": "v8.8.23-agent-manager-runtime-reliability",
-  "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
+  "immediateParentRevision": "v8.8.23 Agent Manager runtime reliability",
+  "status": "v8.8.24-agent-manager-p0-active",
+  "verificationAppliesToCommit": null,
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "0e81e6a454594dd98116e97709ea5075714c09a4",
-  "verificationScopeNote": "v8.8.23 prioritizes Agent Manager runtime reliability on top of 0e81e6a454594dd98116e97709ea5075714c09a4: paused perpetual START SWARM resumes truthfully; active non-perpetual conflicts fail explicitly; empty starts do not mutate controls; all server-active managed states expose Stop; dashboard polling rejects stale responses; and worker-target selection survives polling. Regression guards are source-integrated, but fresh exact-head Agent Control/Windows/heaven2 runtime verification is required before release-ready claims.",
+  "candidateSourceCommit": null,
+  "verificationScopeNote": "v8.8.24 activates the Agent Manager P0 runtime lock that server.mjs already consumes. Historical verification does not transfer. Exact-head Agent Control syntax/tests plus live heaven2 controller and heaven1 delegated-worker smoke are required before this marker may be completed.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.24 Agent Manager P0 activation: canonical continuity now activates the runtime priority lock already integrated in server.mjs; autonomous implementation/expansion remains constrained to Agent Control until exact-head checks and heaven2→heaven1 runtime smoke pass; regression coverage prevents a dormant-marker recurrence.",
     "2026-09-30 v8.8.23 Agent Manager priority: Agent Control v0.5.11 combines truthful one-click perpetual resume/conflict handling with full active-state Stop controls, stale-response-safe polling, preserved operator worker targeting, and LR-045 defect prevention.",
     "2026-09-30 v8.8.23 Agent Manager one-click recovery: START SWARM resumes paused perpetual work, rejects non-perpetual mode conflicts, preserves safety settings on invalid empty starts, reports resumed state truthfully, and adds regression guards; Agent Control v0.5.11.",
     "2026-09-30 v8.8.22 strict analyzer repair: close six Core/catalog warnings-as-errors plus four Core-test analyzer failures; record LR-042 and the analyzer-cascade bug precedent; require production-and-test analyzer closure before integration readiness.",
@@ -322,5 +323,21 @@
     "releaseArtifact": "MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip",
     "releaseArtifactSha256": "0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154",
     "hostedExactMain": "pending"
+  },
+  "agentManagerPriority": {
+    "status": "active",
+    "priority": "P0",
+    "mode": "functionality-lock",
+    "goal": "Make Agent Manager / Agent Control work as intended end-to-end before unrelated engineering expansion.",
+    "completionRequires": [
+      "Agent Control runtime package, private ChatGPT plugin, and Agent Control documentation use one release identity.",
+      "npm run check passes on the exact candidate.",
+      "npm test passes on the exact candidate, including the Agent Manager P0 activation regression.",
+      "Server, CLI, and dashboard smoke pass on heaven2 with all operator-facing control remaining on heaven2.",
+      "Heaven Local Bridge proves delegated worker execution to heaven1 via runtime host heaven, or Agent Control fails closed with a specific visible provider-health reason.",
+      "START SWARM / perpetual orchestration proves dispatch, observation, recovery, explicit stop, and no duplicate mutable-boundary ownership.",
+      "Federated counts expose provider, machine, heartbeat freshness, and partial-coverage status honestly."
+    ],
+    "releasePolicy": "Until status is changed to complete after exact-head runtime proof, Agent Control implementation and expansion prompts must prioritize Agent Manager work and must not spend autonomous cycles on unrelated product features."
   }
 }
