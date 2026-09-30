@@ -25,7 +25,7 @@ public sealed record GitHubReleaseCatalogSource(
 public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
 {
     private readonly GitHubReleasesTransport transport;
-    private readonly IReadOnlyList<GitHubReleaseCatalogSource> sources;
+    private readonly GitHubReleaseCatalogSource[] sources;
 
     public GitHubReleasesCatalogProvider(
         GitHubReleasesTransport transport,
@@ -37,7 +37,7 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
 
         this.transport = transport;
         this.sources = sources.Select(ValidateSource).ToArray();
-        if (this.sources.Count == 0)
+        if (this.sources.Length == 0)
             throw new ArgumentException("At least one curated GitHub release source is required.", nameof(sources));
 
         var duplicates = this.sources
@@ -51,16 +51,46 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
                 nameof(sources));
     }
 
-    public string ProviderId => GitHubReleasesCatalogPolicy.ProviderId;
-    public string DisplayName => "GitHub Releases";
-    public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Browse
-        | CatalogProviderCapabilities.Search
-        | CatalogProviderCapabilities.Metadata
-        | CatalogProviderCapabilities.FileList
-        | CatalogProviderCapabilities.DirectDownload
-        | CatalogProviderCapabilities.Updates;
-    public CatalogProviderCompliance Compliance => GitHubReleasesCatalogPolicy.Compliance;
+    public string ProviderId
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GitHubReleasesCatalogPolicy.ProviderId;
+        }
+    }
+
+    public string DisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return "GitHub Releases";
+        }
+    }
+
+    public CatalogProviderCapabilities Capabilities
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogProviderCapabilities.Browse
+                | CatalogProviderCapabilities.Search
+                | CatalogProviderCapabilities.Metadata
+                | CatalogProviderCapabilities.FileList
+                | CatalogProviderCapabilities.DirectDownload
+                | CatalogProviderCapabilities.Updates;
+        }
+    }
+
+    public CatalogProviderCompliance Compliance
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GitHubReleasesCatalogPolicy.Compliance;
+        }
+    }
 
     public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct = default)
     {
