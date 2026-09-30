@@ -459,5 +459,6 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Violated invariant:** a strict analyzer/warnings-as-errors stage must prove diagnostics were evaluated under strict settings; an incremental no-op after a relaxed build is not evidence of that.
 - **Prevention:** strict per-project verification now forces recompilation with `--no-incremental`; the verifier regression test structurally requires that flag so a future refactor cannot silently restore the false-green path.
 - **Direct repair:** normalize the one-character Nexus base-URI suffix check to the char overload, closing CA1865 without behavior change.
+- **Follow-up proof:** once strict recompilation was enforced, Windows Release Gate run `36658135531` correctly exposed the previously masked UnitTests warnings: one CS8629 nullable-value access and the complete eight-call xUnit1051 cancellation-token cluster in `NexusV3TransportTests`. Those sibling defects are repaired together instead of suppressing the analyzers.
 - **Reusable lesson:** promoted to `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md` under “Strict analyzer rerun semantics.”
 
