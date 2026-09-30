@@ -63,13 +63,13 @@ jobs:
       - name: Restore integration test project
         shell: powershell
         run: |
-          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -p:NuGetAudit=false
+          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build integration test project
         shell: powershell
         run: |
-          dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -p:NuGetAudit=false
+          dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Resolve exact published updater target
