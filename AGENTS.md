@@ -314,3 +314,18 @@ Development and validation launches on the operator machine must never be left l
 - After a user-facing updater release is publicly mirrored, operator-facing verification on `heaven2` must include launching the actual desktop shortcut (or other canonical user launcher) and verifying that the resulting process resolves to the updater-managed install and expected published build.
 - The updater mutates a packaged install in place, so a version string embedded in the parent folder name may be stale. Do not infer the running version from the folder name or shortcut label.
 - If a temporary validation instance and the installed client are both present, close the temporary instance before presenting or validating the installed client so the user cannot mistake one for the other.
+
+## Security boundary invariants
+
+Security-sensitive automation is fail-closed:
+
+- Every external GitHub Action reference must be pinned to a full 40-character commit SHA. Keep readable version tags in comments, not as executable refs.
+- A persistent self-hosted runner must never execute fork pull-request code. Any workflow with both `pull_request` and `runs-on: [self-hosted,...]` requires an explicit same-repository head guard.
+- Never introduce `pull_request_target` for PR-controlled source execution without a separately reviewed isolated design.
+- Keep `GITHUB_TOKEN` permissions explicit and least-privilege. New `contents: write` workflows require a documented mutation need and security review.
+- Privileged release tooling must be immutable and independently verified before execution; do not trust arbitrary preinstalled tools or moving latest downloads.
+- Do not suppress NuGet/dependency vulnerability auditing to obtain a green build.
+- Run `scripts/Test-CiSecurityPolicy.ps1` when changing workflow/security/release infrastructure; `scripts/Verify-Release.ps1` runs it as an authoritative preflight.
+- Heaven Bridge execution authentication should use HMAC in hardened deployments. Secret key material stays machine-local and never enters Git queue/result/state files.
+- Treat updater hashes as integrity checks, not a complete publisher-authenticity root. Preserve a path toward independently signed releases/metadata and key rotation/recovery.
+
