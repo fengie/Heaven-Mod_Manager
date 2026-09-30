@@ -592,3 +592,12 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** Heaven Local Bridge execution policy; mandatory bug-prevention protocol; LR-021 defect-class closure.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## 2026-09-29 — Inline browser scripts must be parser-validated
+
+- **Trigger / evidence:** Agent Control's zero-agent dashboard regression came from a merge that duplicated a top-level `const federatedCount` declaration in `tools/agent-control/public/index.html`. The browser rejected the entire inline script at parse time, so initialization never ran and every metric remained at its static placeholder even while agents were active.
+- **Violated invariant:** UI source that renders correctly as HTML is not deployable unless its executable JavaScript parses as one complete script after merge/integration.
+- **Prevention:** Any change to inline or generated browser JavaScript must include a syntax-parse regression on the final assembled source, not only substring/DOM assertions. Duplicate declarations and other parser-fatal merge artifacts must block integration.
+- **Regression:** `tools/agent-control/test/federation-dashboard.test.mjs` now parses every inline dashboard script with the JavaScript parser before integration.
+- **Reusable lesson:** promote parser validation of final generated/embedded source across UI, startup, policy, and code-generation surfaces.
+
