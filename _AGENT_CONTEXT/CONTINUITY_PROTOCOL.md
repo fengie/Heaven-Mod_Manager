@@ -156,6 +156,20 @@ If usable context, token/session budget, Work/Codex allowance, execution time, o
 
 Spend final resources preserving state, not beginning another refactor.
 
+
+## 7a. Recurring blocked-task rotation
+
+Recurring/scheduled workers have a bounded retry budget per task, not an unlimited multi-cycle retry loop.
+
+1. Attempt the repository's normal authorized recovery/fallback routes during the current iteration.
+2. If the task remains blocked at iteration end, checkpoint all useful work and evidence durably and mark it `DEFERRED-TO-LIVE` (or equivalent) for the user's live/manual agents.
+3. On the next scheduled iteration, do not select that same blocked task again unless the user explicitly reassigns it or durable evidence proves the blocker materially cleared.
+4. Select a different actionable unowned task and make concrete progress instead.
+5. Preserve deferred work exactly; rotation never authorizes deletion, false completion, unsafe integration, weakened verification, or silent loss of ownership/evidence.
+6. Managers must detect repeated scheduled selection of an unchanged deferred blocker and redirect the lane.
+
+The purpose is to keep autonomous cycles productive while leaving hard/manual blockers ready for the user's live agents to finish.
+
 ## 8. Exact verification rule
 
 Verification belongs to exact inputs.

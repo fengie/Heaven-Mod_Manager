@@ -85,6 +85,19 @@ Before meaningful changes:
 - Continue the user's current task with the safest authorized fallback when possible; plugin-gap capture/replacement startup is mandatory but must not become an excuse to stop execution.
 - Never leave reusable plugin ideas or outage plans only in chat or transient agent state.
 
+
+## RECURRING / SCHEDULED BLOCKED-TASK ROTATION
+
+For any recurring or scheduled agent lane:
+- use the current iteration for the normal bounded recovery/fallback attempt;
+- if the task is still blocked at iteration end, persist an exact durable checkpoint and mark it `DEFERRED-TO-LIVE` (or equivalent) for the user's live/manual agents;
+- on the next scheduled iteration, do **not** select or retry that same blocked task as primary work unless the user explicitly reassigns it or durable evidence shows the blocker materially cleared;
+- choose a different actionable unowned task and make concrete progress instead;
+- do not repeatedly consume scheduled cycles rediscovering or restating the same blocker;
+- preserve deferred work, revision/error/evidence/next action, and never treat deferral as completion, deletion, merge authorization, release authorization, or permission to weaken verification.
+
+Managers must enforce rotation and prevent repeated scheduled ownership of an unchanged deferred blocker.
+
 ## Ownership and collision safety
 - Every mutable boundary has one primary owner.
 - BEFORE creating any new branch, fetch/prune and inventory local/remote branches, open PRs, and live Agent Control tasks/leases.
