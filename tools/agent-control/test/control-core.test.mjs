@@ -150,7 +150,7 @@ test("v2 state migrates without dropping durable records", () => {
   assert.equal(migrated.settings.goToWorkRecovery.browser, "brave");
   assert.equal(migrated.settings.swarmTailRecovery.enabled, true);
   assert.equal(migrated.settings.swarmTailRecovery.maxWorkers, 4);
-  assert.equal(migrated.settings.swarmTailRecovery.maxAttemptsPerRoot, 2);
+  assert.equal(migrated.settings.swarmTailRecovery.maxAttemptsPerRoot, 4);
   assert.ok(migrated.federation);
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
 });
