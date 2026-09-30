@@ -295,3 +295,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Before accepting a candidate closure, require at least one newly added mod to be the effective provider of a planned path; otherwise skip the fully shadowed candidate.
 - **Preventive rule/process change:** Auto Populate decisions must be judged on effective output, not only enabled-state conflict freedom. Protected anchors remain meaningful choices and should not accumulate inert/redundant alternatives around them.
 - **Regression coverage added/strengthened:** `AutoPopulateFillsAroundExplicitStagedPreference` is the authoritative regression for this case.
+
+
+## 2026-09-30 — override/dependency resolution — source presence was mistaken for effective deployment safety
+- **Symptom / risk:** A selected mod could appear dependency-complete because a required package/file or one loader binary existed, even though conflict resolution could shadow that provider, remove a currently managed live file, split the loader pair across providers, or select an incompatible dependency version.
+- **Root cause:** Dependency closure and file precedence were partially evaluated as separate source-state heuristics instead of one final effective-filesystem proof. Some fallback paths also treated priority/overlap as sufficient evidence for unsafe overwrite classes.
+- **Violated invariant / wrong assumption:** “Installed/enabled/present in a source package” is not equivalent to “survives as the effective deployed provider.” Crash-sensitive bootstrap/code/structural content must never be resolved by guess.
+- **Direct fix:** Validate dependency constraints against the resolved deployment plan; require exact/min/max version compatibility; analyze hard cycles; require a complete same-provider native loader pair; fail closed on differing root bootstrap binaries; preserve concrete-winner, topology, atomic-bundle, and code-lineage planner invariants; make Preview/Apply/recovery/launch paths use the same preflight.
+- **Preventive rule/process change:** Any future resolver feature must prove both dependency satisfiability and effective per-path provider consistency before mutation. If either proof is missing, block/skip and explain why instead of falling back to priority.
+- **Regression coverage added/strengthened:** Version mismatch, prerelease minimum, optional dependency, hard cycle, missing/superseded staged identity, managed-live removal, partial loader, protected bootstrap collision, deterministic planner, atomic bundle, and protected Auto Populate cases.
+- **Research note:** `docs/research/OVERRIDE-DEPENDENCY-SAFETY-2026-09-30.md`.
