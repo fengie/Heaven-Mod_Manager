@@ -15,6 +15,7 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
 {
     private readonly SyndicationFeedTransport transport;
     private readonly ModDbFeedSource[] sources;
+    private readonly IReadOnlyDictionary<string, FeedCacheState> feedStates;
 
     public ModDbFeedCatalogProvider(
         SyndicationFeedTransport transport,
@@ -36,6 +37,14 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
             .ToArray();
         if (duplicates.Length > 0)
             throw new ArgumentException("Duplicate Mod DB feed sources are not allowed.", nameof(sources));
+
+        feedStates = this.sources
+            .Select(source => source.FeedUri.AbsoluteUri)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                uri => uri,
+                _ => new FeedCacheState(),
+                StringComparer.OrdinalIgnoreCase);
     }
 
     public string ProviderId
@@ -104,8 +113,8 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
         foreach (var source in SourcesForGame(request.Game.Id))
         {
             ct.ThrowIfCancellationRequested();
-            var response = await transport.GetAsync(source.FeedUri, ct).ConfigureAwait(false);
-            foreach (var entry in response.Feed.Entries)
+            var feed = await GetFeedAsync(source, ct).ConfigureAwait(false);
+            foreach (var entry in feed.Entries)
             {
                 var mod = ToCatalogMod(source, entry);
                 if (MatchesQuery(mod, source, request.Query))
@@ -132,8 +141,8 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
         foreach (var source in SourcesForGame(game.Id))
         {
             ct.ThrowIfCancellationRequested();
-            var response = await transport.GetAsync(source.FeedUri, ct).ConfigureAwait(false);
-            var entry = response.Feed.Entries.FirstOrDefault(candidate =>
+            var feed = await GetFeedAsync(source, ct).ConfigureAwait(false);
+            var entry = feed.Entries.FirstOrDefault(candidate =>
                 string.Equals(BuildProviderModId(source, candidate), providerModId.Trim(), StringComparison.OrdinalIgnoreCase));
             if (entry is not null)
                 return ToCatalogMod(source, entry);
@@ -170,8 +179,8 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
         foreach (var source in SourcesForGame(request.Game.Id))
         {
             ct.ThrowIfCancellationRequested();
-            var response = await transport.GetAsync(source.FeedUri, ct).ConfigureAwait(false);
-            var entry = response.Feed.Entries.FirstOrDefault(candidate =>
+            var feed = await GetFeedAsync(source, ct).ConfigureAwait(false);
+            var entry = feed.Entries.FirstOrDefault(candidate =>
                 string.Equals(BuildProviderModId(source, candidate), request.Mod.ProviderModId, StringComparison.OrdinalIgnoreCase));
             if (entry is null)
                 continue;
@@ -192,7 +201,7 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
-            await transport.GetAsync(sources[0].FeedUri, ct).ConfigureAwait(false);
+            await GetFeedAsync(sources[0], ct).ConfigureAwait(false);
             return new CatalogProviderHealth(
                 ProviderId,
                 CatalogProviderState.Connected,
@@ -236,6 +245,43 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
                 "Mod DB RSS feed is unavailable.",
                 null,
                 DateTimeOffset.UtcNow);
+        }
+    }
+
+    private async Task<SyndicationFeedSnapshot> GetFeedAsync(
+        ModDbFeedSource source,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var state = feedStates[source.FeedUri.AbsoluteUri];
+        await state.Gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var response = await transport.GetConditionalAsync(
+                source.FeedUri,
+                state.ETag,
+                state.LastModified,
+                ct).ConfigureAwait(false);
+
+            if (response.NotModified)
+            {
+                return state.Snapshot
+                    ?? throw new InvalidDataException(
+                        "Mod DB feed returned HTTP 304 without a previously validated snapshot.");
+            }
+
+            var feed = response.Feed
+                ?? throw new InvalidDataException(
+                    "Mod DB feed returned a successful response without a feed payload.");
+
+            state.Snapshot = feed;
+            state.ETag = response.ETag;
+            state.LastModified = response.LastModified;
+            return feed;
+        }
+        finally
+        {
+            state.Gate.Release();
         }
     }
 
@@ -368,6 +414,14 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray()
         };
+    }
+
+    private sealed class FeedCacheState
+    {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+        public SyndicationFeedSnapshot? Snapshot { get; set; }
+        public string? ETag { get; set; }
+        public DateTimeOffset? LastModified { get; set; }
     }
 
     private static CatalogAcquisitionResolution Unavailable(string message)
