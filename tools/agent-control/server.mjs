@@ -881,9 +881,15 @@ function retireDeadRegistryEntries(state) {
       && isPidAlive(agent.pid)
     );
     const processAlive = Boolean(agent.pid && isPidAlive(agent.pid));
+    const currentSha = String(agent.currentSha || "").trim();
+    const baseSha = String(agent.baseSha || "").trim();
+    const durableWork = agent.worktreeDirty === true
+      || agent.completionEvidence === "durable-work-detected"
+      || (Boolean(currentSha) && (!baseSha || currentSha !== baseSha));
     const disposition = managedAgentRegistryDisposition(agent, {
       processAlive,
-      ownedChildAlive
+      ownedChildAlive,
+      durableWork
     });
 
     if (!disposition.retire) {
