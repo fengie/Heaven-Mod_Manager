@@ -419,7 +419,8 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const state = { snapshot:null, busy:false };
+    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0 };
+    const stoppableManagedStatuses = new Set(["reserved","starting","running","waiting","blocked","stale","stopping"]);
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
@@ -487,8 +488,10 @@
 
     function renderWorkers(snapshot) {
       const workers = snapshot.workers || [];
+      const selectedMachine = $("machine").value || "auto";
       $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
       $("machine").innerHTML = '<option value="auto">Auto / heaven1 (runtime: heaven)</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(machineLabel(w.name))}</option>`).join("");
+      if ([...$("machine").options].some(option => option.value === selectedMachine)) $("machine").value = selectedMachine;
       if (!workers.length) {
         $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
         return;
@@ -540,7 +543,7 @@
           ${a.recoveryStatus ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(recoveryLabel(a.recoveryStatus))}${a.replacementAgentId ? ` → ${escapeHtml(a.replacementAgentId)}` : ""}${a.recoveryNextAt ? ` · next ${fmt(a.recoveryNextAt)}` : ""}</div>` : ""}
           <div class="actions">
             <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
+            ${stoppableManagedStatuses.has(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
             <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
           </div>
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
@@ -732,14 +735,23 @@
     }
 
     async function refresh(sync=false) {
+      if (!sync && state.refreshInFlight) return;
+      const requestId = ++state.refreshRequestId;
+      if (!sync) state.refreshInFlight = true;
       try {
         const snapshot = await api(sync ? "/api/sync" : "/api/snapshot", sync ? {method:"POST",body:JSON.stringify({repositoryWriteAuthorized:true})} : {});
+        if (requestId < state.refreshAppliedId) return;
+        state.refreshAppliedId = requestId;
         state.snapshot = snapshot;
         render(snapshot);
         if (sync) toast("Git state synchronized.");
       } catch (error) {
-        $("connection").textContent = "Offline";
-        toast(error.message);
+        if (requestId >= state.refreshAppliedId) {
+          $("connection").textContent = "Offline";
+          toast(error.message);
+        }
+      } finally {
+        if (!sync) state.refreshInFlight = false;
       }
     }
 
