@@ -1,4 +1,10 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control Heaven dispatch + retry-exhausted retirement
+
+Agent Control now uses the same documented Heaven relay auto-discovery path for **actual job submission/result waiting** that health inspection already used. Live failure evidence showed the runner exiting before dispatch with `AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution` even though `%USERPROFILE%\HeavenBridgeRepo` existed; execution now resolves that checkout automatically instead of requiring an extra startup-only environment variable.
+
+Failed **RETRY EXHAUSTED** no-work executions no longer remain as immortal bot rows. Controller-owned processes are retired only after they are already dead or their ownership is proven and termination succeeds; then the managed row and its federated mirror are removed while task/event/failure-ledger evidence remains durable. Federated retry-exhausted observations are likewise purged from the live registry instead of being kept as historical agents. Agent Control advances to **v0.6.5** with focused relay-discovery and registry-retirement regressions.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 

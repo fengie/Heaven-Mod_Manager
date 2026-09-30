@@ -1,3 +1,10 @@
+# v8.8.26 — Agent Control Heaven dispatch + retry-exhausted retirement
+- Fix Heaven Bridge worker launches that exited before dispatch because submit/result-wait paths required `AGENT_CONTROL_HEAVEN_RELAY_DIR` instead of reusing the provider's documented `%USERPROFILE%\HeavenBridgeRepo` auto-discovery resolver.
+- Retire managed `failed · RETRY EXHAUSTED` executions from the live managed/federated registry after process death is observed or controller ownership + termination are proven; preserve durable task/event/failure evidence.
+- Purge retry-exhausted federated observations and stale managed mirrors instead of leaving dead bots as permanent historical registry cards.
+- Add focused regressions for execution-side relay discovery and managed-registry pruning.
+- Advance Agent Control runtime/private-plugin identity to v0.6.5 and record the incident/prevention rule for future agents.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.

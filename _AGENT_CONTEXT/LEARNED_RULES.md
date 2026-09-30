@@ -861,3 +861,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-044 copied-test destination validation; LR-046 installed-runtime/restart proof.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+## LR-001 — transport configuration and terminal registry membership must close as one lifecycle contract
+
+- **Rule ID:** LR-001
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent Control providers, retry/recovery lifecycle, managed/federated registry
+- **Rule:** Any provider transport setting used by health/inspection must resolve identically for submission and result waiting. When a bounded worker retry reaches a terminal exhausted state, preserve durable forensic/task evidence but remove the execution identity from live managed/federated registries after process death or controller-owned termination is proven; never leave a dead execution as a permanent bot row.
+- **Trigger / evidence:** Live heaven2 workers repeatedly exited before dispatch because inspection auto-discovered `HeavenBridgeRepo` while submit/wait required `AGENT_CONTROL_HEAVEN_RELAY_DIR`; exhausted workers then remained indefinitely in managed/federated state.
+- **Rationale:** A green transport health check is meaningless if execution uses a different configuration path, and mixing historical failure evidence into the live registry produces misleading operator state and retry clutter.
+- **Enforcement:** Provider regressions must cover inspect/submit/wait configuration symmetry. Recovery regressions must assert post-terminal registry absence while failure/task evidence remains available. PID/process termination must remain ownership-proven and fail closed.
+- **Relevant commit/run:** 1809427cff2dee1ac5ec8db3abdd6425c1d3db41; PR #460.
+- **Supersedes:** none
+- **Superseded by:** none

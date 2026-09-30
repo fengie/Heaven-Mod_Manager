@@ -1,3 +1,16 @@
+## 2026-09-30 — Agent Control — execution relay discovery diverged from inspection and terminal failures leaked into the live registry
+
+- **Symptom:** Managed Heaven workers exited almost immediately with code 1, repeated bounded replacements, then remained indefinitely as `failed · RETRY EXHAUSTED` bot cards/federated rows.
+- **Root cause:** `inspectHeavenBridge` used `resolveHeavenRelayDir()`, but `submitHeavenBridgeJob` and `waitForHeavenBridgeResult` defaulted directly to `AGENT_CONTROL_HEAVEN_RELAY_DIR`. Normal startup therefore looked healthy while execution threw before queue publication. Separately, retry exhaustion only mutated `recoveryStatus`; no retirement transition removed the dead managed/federated identity.
+- **Violated invariant / wrong assumption:** Health/inspection and execution must resolve the same transport configuration. A terminal execution record is not a live registry member; forensic evidence belongs in tasks/events/failure ledgers, not immortal live bot rows.
+- **Why prior defenses missed it:** Tests covered the relay resolver and bridge health independently but did not assert that submit/wait used the resolver. Retry tests asserted bounded replacement status but not post-exhaustion registry membership.
+- **Direct fix:** Use relay auto-discovery for submit/wait; on retry exhaustion prove the controller-owned process is dead or terminate it, preserve durable evidence, and remove managed/federated live observations. Purge federated retry-exhausted observations and stale managed mirrors during reconciliation.
+- **Preventive rule/process change:** Test configuration symmetry across inspect/submit/wait and test terminal lifecycle postconditions, including absence from live registries after retirement.
+- **Regression coverage added/strengthened:** `heaven-bridge-provider.test.mjs` pins execution-side resolver use; `federated-registry.test.mjs` pins retry-exhausted/stale managed observation pruning.
+- **Verification evidence/environment:** Live heaven2 logs for `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6` contain the exact pre-dispatch relay-dir exception. PR #460 exact-head gate + live dispatch smoke are the closure evidence.
+- **Sibling/adjacent cases checked:** Existing bounded retry suppression, stale managed federation mirrors, federated-only retry exhaustion, ownership-proven process termination, and durable failure/task evidence retention.
+- **References (SHA/PR/issue/log):** source `1809427cff2dee1ac5ec8db3abdd6425c1d3db41`; PR #460; Heaven relay results `chatgpt-agentcontrol-read-main42701-log-20260930-0446` and `chatgpt-agentcontrol-read-manager42717-log-20260930-0446`.
+
 ## 2026-09-30 — One-click control actions must reconcile lifecycle state, not just the enabled bit
 
 **Failure:** Agent Manager's primary **START SWARM** action treated any enabled autopilot as an already-running perpetual swarm. A paused perpetual run therefore produced a success-looking “already running” message while the scheduler intentionally did nothing; an enabled non-perpetual run was also mislabeled as perpetual. The function additionally normalized control/safety settings before validating an empty objective.

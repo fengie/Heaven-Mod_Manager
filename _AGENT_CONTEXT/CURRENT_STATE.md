@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.26 Agent Control relay dispatch + retry-exhausted retirement — CURRENT
+
+Live heaven2 evidence identified the actual failed-agent launch cause: `tools/agent-control/lib/heaven-bridge-runner.mjs` called execution paths whose provider defaults still required `AGENT_CONTROL_HEAVEN_RELAY_DIR`. Health inspection already auto-discovered `%USERPROFILE%\HeavenBridgeRepo`, but submit/result-wait did not, so each replacement exited with code 1 before any Heaven work was dispatched.
+
+The candidate makes submit/result-wait use the same relay resolver, then closes the second failure: `failed · RETRY EXHAUSTED` is now a retirement boundary. Agent Control proves a controller-owned PID is already dead or terminates the owned process tree, preserves task/event/failure-ledger evidence, removes the managed row, and synchronizes federation so the dead bot does not remain visible forever. Federated retry-exhausted observations are purged as well.
+
+Source fix commit: `1809427cff2dee1ac5ec8db3abdd6425c1d3db41`. Agent Control/private plugin identity: **v0.6.5**. Root product patch: **v8.8.26**. Exact-head `npm run check` + `npm test` and a live heaven2→heaven1 dispatch/registry smoke are required before release-ready closure.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
