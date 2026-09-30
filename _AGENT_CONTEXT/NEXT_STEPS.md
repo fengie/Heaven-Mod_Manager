@@ -384,3 +384,8 @@ Successor requirement: carry this verification gap and the transactional-cleanup
 - Integrated the exact functional head `9ceaa6284ffa821bbd4b80426e65ce944173a16f` onto current `main` without overwriting unrelated concurrent changes.
 - Scope: Agent Manager P0 priority enforcement in autopilot, stable-session registration guidance, and version alignment for Agent Control/plugin metadata.
 - Successor: verify the exact integrated revision through the Agent Control gate; continue remaining P0 work from `main`, not the retired task branch.
+
+## 2026-09-30 Agent Manager P0 source-branch retirement
+
+- Exact source head `8c8101fefa561acb32202a5d7b232d41503dde8d` was reconciled into current `main` through PR #447 and PR #449 while preserving concurrent runtime-reliability work.
+- This source branch was realigned to current `main`; continue all P0 work from `main` and auto-delete this temporary branch after merge.
