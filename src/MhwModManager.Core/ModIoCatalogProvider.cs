@@ -146,13 +146,13 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
-        var source = RequireSource(game);
+        var source = RequireSource(game, providerModId, out var rawModId);
 
         try
         {
             using var response = await transport.GetModAsync(
                 source.ProviderGameId,
-                providerModId,
+                rawModId,
                 ct).ConfigureAwait(false);
             var mod = ModIoCatalogNormalizer.NormalizeMod(
                 game,
@@ -181,13 +181,13 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
-        var source = RequireSource(game);
+        var source = RequireSource(game, providerModId, out var rawModId);
 
         try
         {
             using var response = await transport.GetModFilesAsync(
                 source.ProviderGameId,
-                providerModId,
+                rawModId,
                 ct: ct).ConfigureAwait(false);
             var files = ModIoCatalogNormalizer.NormalizeModFiles(providerModId, response.Document);
             MarkConnected();
@@ -206,7 +206,6 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(request);
-        var source = RequireSource(request.Game);
 
         if (!request.Mod.ProviderId.Equals(ProviderId, StringComparison.OrdinalIgnoreCase)
             || !request.File.ProviderId.Equals(ProviderId, StringComparison.OrdinalIgnoreCase)
@@ -218,11 +217,16 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
                 nameof(request));
         }
 
+        var source = RequireSource(
+            request.Game,
+            request.Mod.ProviderModId,
+            out var rawModId);
+
         try
         {
             using var response = await transport.GetModFileAsync(
                 source.ProviderGameId,
-                request.Mod.ProviderModId,
+                rawModId,
                 request.File.ProviderFileId,
                 ct).ConfigureAwait(false);
             var acquisition = ModIoCatalogNormalizer.NormalizeAcquisitionFile(
@@ -281,6 +285,27 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
                    source.GameId.Equals(game.Id, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException(
                 $"{game.DisplayName} does not have a mod.io game mapping configured.");
+    }
+
+    private ModIoCatalogGameSource RequireSource(
+        GameProfile game,
+        string providerModId,
+        out string rawModId)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var source = RequireSource(game);
+        if (!ModIoCatalogNormalizer.TryParseProviderModId(
+                providerModId,
+                out var providerGameId,
+                out rawModId)
+            || providerGameId != source.ProviderGameId)
+        {
+            throw new ArgumentException(
+                "mod.io provider identity does not match the selected game.",
+                nameof(providerModId));
+        }
+
+        return source;
     }
 
     private static ModIoCatalogGameSource ValidateSource(ModIoCatalogGameSource source)
