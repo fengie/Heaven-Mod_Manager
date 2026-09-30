@@ -72,6 +72,28 @@ public sealed class ModIoCatalogProviderTests
     }
 
     [Fact]
+    public async Task Transport_sanitizes_network_failures_that_echo_the_request_uri()
+    {
+        using var client = new HttpClient(new RoutingHandler((request, _) =>
+            Task.FromException<HttpResponseMessage>(
+                new HttpRequestException($"fixture failure for {request.RequestUri}"))));
+
+        var transport = new ModIoTransport(client, ApiKey, ApiBaseUri);
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+            () => transport.GetModsAsync(
+                123,
+                null,
+                "-date_live",
+                0,
+                10,
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("mod.io API request failed before receiving a response.", exception.Message);
+        Assert.DoesNotContain(ApiKey, exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("api_key", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Transport_preserves_retry_after_without_reading_error_body()
     {
         using var client = new HttpClient(new RoutingHandler((_, _) =>
