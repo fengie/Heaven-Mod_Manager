@@ -28,12 +28,16 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         await Assert.ThrowsAsync<NotSupportedException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game, Query: "weapon")));
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game, Query: "weapon"),
+                TestContext.Current.CancellationToken));
 
         await Assert.ThrowsAsync<NotSupportedException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(
-                game,
-                Mode: CatalogBrowseMode.RecentlyUpdated)));
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(
+                    game,
+                    Mode: CatalogBrowseMode.RecentlyUpdated),
+                TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -61,7 +65,9 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                TestContext.Current.CancellationToken));
 
         Assert.Contains("trusted Nexus source URL", exception.Message, StringComparison.Ordinal);
     }
@@ -81,7 +87,9 @@ public sealed class NexusV3CatalogProviderTests
         var provider = new NexusV3CatalogProvider(new NexusV3Transport(client));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var result = await provider.SearchModsAsync(new CatalogBrowseRequest(game, Limit: 10));
+        var result = await provider.SearchModsAsync(
+            new CatalogBrowseRequest(game, Limit: 10),
+            TestContext.Current.CancellationToken);
 
         Assert.Equal(2, result.Count);
         var first = result[0];
@@ -96,7 +104,7 @@ public sealed class NexusV3CatalogProviderTests
             "https://staticdelivery.nexusmods.com/fixture-one.jpg",
             first.Thumbnail);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
         Assert.Equal(CatalogProviderState.Limited, health.State);
     }
 
@@ -130,7 +138,7 @@ public sealed class NexusV3CatalogProviderTests
             NexusV3Credential.ApiKey("fixture-key"));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var files = await provider.GetModFilesAsync(game, "101");
+        var files = await provider.GetModFilesAsync(game, "101", TestContext.Current.CancellationToken);
 
         Assert.Equal(
             new[]
@@ -155,7 +163,7 @@ public sealed class NexusV3CatalogProviderTests
         Assert.Equal(CatalogFileCategory.Optional, optional.Category);
         Assert.False(optional.Recommended);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
         Assert.Equal(CatalogProviderState.Connected, health.State);
     }
 
@@ -176,7 +184,7 @@ public sealed class NexusV3CatalogProviderTests
             NexusV3Credential.Bearer("fixture-token"));
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
-        var mod = await provider.GetModAsync(game, "101");
+        var mod = await provider.GetModAsync(game, "101", TestContext.Current.CancellationToken);
 
         Assert.NotNull(mod);
         Assert.Equal("101", mod!.ProviderModId);
@@ -198,10 +206,12 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => provider.SearchModsAsync(new CatalogBrowseRequest(game)));
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                TestContext.Current.CancellationToken));
 
         Assert.Contains("mod_page_url", exception.Message, StringComparison.Ordinal);
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
         Assert.Equal(CatalogProviderState.Limited, health.State);
         Assert.Contains("schema drift", health.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -226,12 +236,12 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var exception = await Assert.ThrowsAsync<NexusV3TransportException>(
-            () => provider.GetModAsync(game, "101"));
+            () => provider.GetModAsync(game, "101", TestContext.Current.CancellationToken));
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
         Assert.Equal(1, calls);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
         Assert.Equal(CatalogProviderState.RateLimited, health.State);
         Assert.NotNull(health.RateLimit?.RetryAfter);
     }
@@ -249,11 +259,11 @@ public sealed class NexusV3CatalogProviderTests
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
 
         var exception = await Assert.ThrowsAsync<NexusV3TransportException>(
-            () => provider.GetModAsync(game, "101"));
+            () => provider.GetModAsync(game, "101", TestContext.Current.CancellationToken));
 
         Assert.DoesNotContain("secret-that-must-not-leak", exception.Message, StringComparison.Ordinal);
 
-        var health = await provider.GetHealthAsync();
+        var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
         Assert.Equal(CatalogProviderState.AuthenticationRequired, health.State);
     }
 
@@ -297,7 +307,8 @@ public sealed class NexusV3CatalogProviderTests
             CatalogFileCategory.Main);
 
         var resolution = await provider.ResolveAcquisitionAsync(
-            new CatalogAcquisitionRequest(game, mod, file));
+            new CatalogAcquisitionRequest(game, mod, file),
+            TestContext.Current.CancellationToken);
 
         Assert.Equal(CatalogAcquisitionKind.Assisted, resolution.Kind);
         Assert.Null(resolution.DownloadUri);
