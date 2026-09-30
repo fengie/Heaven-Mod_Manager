@@ -1,3 +1,15 @@
+### 2026-09-30 — Installed-game discovery — specialized MHW bootstrap hid general discovery
+- **Symptom:** The Universal Mod Manager game selector commonly contained only Monster Hunter: World even when other supported-store games were installed.
+- **Root cause:** Startup had a special MHW locator that registered MHW immediately, while the general Steam/Epic/GOG scanner was reachable only through the later **Find Installed Games** action. Steam candidates also depended on a shallow executable fallback that skipped legitimate nested executables.
+- **Violated invariant / wrong assumption:** A compatibility-specific bootstrap path must not become the effective discovery policy for a universal manager. General discovery must be automatic/idempotent, bounded to trustworthy install roots, and source failures must be isolated.
+- **Why prior defenses missed it:** Multi-game tests proved manual generic-profile creation and deployment semantics, but no regression exercised first Games-page refresh with MHW plus another installed game or multiple Steam libraries.
+- **Direct fix:** Run best-effort discovery once on the first Games refresh; keep manual rescans; isolate per-launcher failures; broaden Steam root lookup; add bounded install-root executable traversal; add Xbox Games top-level discovery; preserve launcher-proven game roots when creating generic profiles.
+- **Preventive rule/process change:** LR-060 requires specialized bootstrap/discovery paths to compose with, not suppress, the general discovery lifecycle. Never compensate by scanning whole drives for arbitrary executables.
+- **Regression coverage added/strengthened:** Integration tests pin first-refresh MHW + generic registration, one-time discovery, every configured Steam library manifest, nested executable resolution, Xbox Content-root discovery, and helper/anti-cheat executable exclusion.
+- **Verification evidence/environment:** Candidate verification is tracked in `_AGENT_CONTEXT/EVIDENCE/v8.8.50-installed-game-discovery.md`; exact-head CI is required before merge.
+- **Sibling/adjacent cases checked:** Manual **Find Installed Games**, manual executable addition, MHW enhanced adapter identity, generic isolated workspaces, Epic/GOG source paths, and bounded/non-drive-recursive discovery remain intact.
+- **References (SHA/PR/issue/log):** branch `fix/installed-game-discovery-20260930`; final PR/SHA/run recorded in the evidence file.
+
 ### 2026-09-30 — Release gate evidence — old success could mask a failed or running result
 - **Symptom:** Heaven Workflows release_verify_gates returned ok for success + failure/cancelled/queued rows on the same exact commit, and for an in-progress row with a success conclusion.
 - **Root cause / invariant:** Existential any-success aggregation discarded competing evidence and authoritative lifecycle status. A required gate needs one proven current result; unknown/partial/conflicting evidence cannot authorize publication.
