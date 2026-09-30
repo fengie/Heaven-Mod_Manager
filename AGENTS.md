@@ -22,6 +22,15 @@ Every successor and sub-agent inherits this same gate. **No untrained agent gets
 
 
 
+## Non-interruptive agent shell execution
+
+On both `heaven2` and `heaven`, every agent-spawned Command Prompt, Windows PowerShell, or PowerShell Core process must run hidden/background by default and must not steal keyboard focus or open a visible console window over the user's desktop.
+
+- Use the repository's shared background/hidden process helpers and Heaven Bridge structured execution/session actions.
+- Do not request `CREATE_NEW_CONSOLE`, `visible_console=true`, or equivalent for `cmd.exe`, `powershell.exe`, or `pwsh.exe`.
+- GUI applications may still be launched visibly when the task actually requires a GUI. A human-visible shell window is allowed only when the user explicitly asks for that foreground shell for the current task.
+- New process-launch paths must include regression coverage proving shell visibility cannot be accidentally re-enabled by an option override.
+
 ## Mandatory bug-prevention and precedent protocol
 
 Bugs are prevention failures, not routine cleanup. Every agent must optimize for preventing defects from escaping into canonical `main`, releases, updater paths, or user-visible behavior.
