@@ -1,0 +1,20 @@
+{
+  "data": {
+    "versions": [
+      {
+        "id": "fixture-version-id",
+        "file": {
+          "id": "fixture-file-id",
+          "name": "Main File"
+        },
+        "position": "1.0",
+        "game_scoped_id": "9001",
+        "name": "Main File 1.2.3",
+        "version": "1.2.3",
+        "category": "main",
+        "uploaded_at": "2026-09-29T12:00:00Z",
+        "is_primary": true
+      }
+    ]
+  }
+}
