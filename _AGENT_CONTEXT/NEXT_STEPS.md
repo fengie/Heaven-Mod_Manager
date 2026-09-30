@@ -1,4 +1,4 @@
-# Next steps — v8.8.49 candidate
+# Next steps — v8.8.50 candidate
 
 1. Finish exact-head review/PR gates for codex/training-governance-integration, then protected merge and remote-main confirmation. Current assignment and ownership are in NEXT-AGENT-START-HERE.md; verification identity is CURRENT_REVISION.json.
 2. Verify main gates, immutable private/public publication and packaged update/rollback. Retire original525/owned integration branches only after ancestry and semantic preservation proof.
@@ -6,3 +6,5 @@
 4. Resume cached-plugin routing consolidation afterward. Improve actual populated Mods-window reproduction through the authorized operator route; do not promote styled probes to root-cause proof.
 
 Every successor must inherit and preserve the constitution and recursively propagate it to the agent after them, including exact evidence, unresolved risks and ordered next actions.
+
+Concurrent mainbe4615f6 preserves PR526 and527 histories and both ComboBox/count source repairs as v49. Exact49 main gates/publication/runtime proof remain pending; source merge is not release closure.
