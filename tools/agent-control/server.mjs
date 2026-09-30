@@ -1136,7 +1136,7 @@ function refreshState() {
   return state;
 }
 
-async function workerSnapshot(state = refreshState()) {
+async function workerSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   const hostname = os.hostname();
   const currentId = hostname.toLowerCase();
@@ -1144,7 +1144,7 @@ async function workerSnapshot(state = refreshState()) {
   const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
   configured.add(currentId);
   const heavenBridge = currentId === "heaven2" && configured.has("heaven")
-    ? await inspectHeavenBridge({ sync: false })
+    ? (heavenBridgeAssessment === undefined ? await inspectHeavenBridge({ sync: false }) : heavenBridgeAssessment)
     : null;
 
   return [...configured].map(id => {
@@ -1213,12 +1213,14 @@ function federationCountCoverage(snapshot) {
   };
 }
 
-async function runtimeFederationSnapshot(state = refreshState()) {
+async function runtimeFederationSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
   const snapshot = federationSnapshot(state.federation, { now: Date.now() });
   snapshot.coverage = federationCountCoverage(snapshot);
   if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
 
-  const health = await inspectHeavenBridge({ sync: false });
+  const health = heavenBridgeAssessment === undefined
+    ? await inspectHeavenBridge({ sync: false })
+    : heavenBridgeAssessment;
   const provider = snapshot.providers.find(item => item.id === "heaven-bridge");
   if (provider) {
     provider.status = health.healthy ? "online" : (health.configured ? "unhealthy" : "not-configured");
@@ -3665,8 +3667,11 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     observedBranches(state),
     repositorySnapshot()
   ]);
-  const workers = await workerSnapshot(state);
-  const federation = await runtimeFederationSnapshot(state);
+  const heavenBridgeAssessment = os.hostname().toLowerCase() === "heaven2"
+    ? await inspectHeavenBridge({ sync: false })
+    : null;
+  const workers = await workerSnapshot(state, heavenBridgeAssessment);
+  const federation = await runtimeFederationSnapshot(state, heavenBridgeAssessment);
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
 
