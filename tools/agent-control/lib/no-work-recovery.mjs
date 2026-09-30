@@ -10,7 +10,8 @@ export const NO_WORK_TERMINAL_STATUSES = new Set([
 export const SWARM_TAIL_UNFINISHED_STATUSES = new Set([
   "failed",
   "interrupted",
-  "orphaned"
+  "orphaned",
+  "stale"
 ]);
 
 export function swarmTailRecoveryRootId(agent) {
@@ -23,7 +24,8 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
   if (status === "capacity-blocked" || agent?.failureClass === "provider-capacity") return false;
   if (["retry-pending", "retry-waiting", "retry-dispatched"].includes(String(agent?.recoveryStatus || ""))) return false;
   if (String(agent?.recoveryStatus || "") === "work-verified-complete") return false;
-  if (agent?.stopRequestedAt || agent?.completionEvidence === "verified-operator-stop") return false;
+  const supervisedStaleRecovery = String(agent?.swarmTailRecoveryCause || "") === "stale-progress-timeout";
+  if (!supervisedStaleRecovery && (agent?.stopRequestedAt || agent?.completionEvidence === "verified-operator-stop")) return false;
   const taskStatus = String(task?.status || "").trim().toLowerCase();
   if (["done", "candidate", "finished", "stopped"].includes(taskStatus)) return false;
   return Boolean(String(task?.objective || agent?.task || "").trim());
@@ -32,9 +34,14 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
 export function planSwarmTailRecoveryBatch(state, {
   maxWorkers = 4,
   maxAttemptsPerRoot = 2,
-  since = null
+  since = null,
+  excludeAgentIds = [],
+  now = Date.now()
 } = {}) {
   const agents = Array.isArray(state?.agents) ? state.agents : [];
+  const excluded = new Set((Array.isArray(excludeAgentIds) ? excludeAgentIds : [excludeAgentIds])
+    .map(value => String(value || "").trim())
+    .filter(Boolean));
   const sinceMs = Date.parse(String(since || ""));
   const inScope = agent => {
     if (!Number.isFinite(sinceMs)) return true;
@@ -55,16 +62,21 @@ export function planSwarmTailRecoveryBatch(state, {
   const seenRoots = new Set();
 
   for (const agent of agents) {
-    if (!inScope(agent)) continue;
+    if (!inScope(agent) || excluded.has(String(agent?.id || ""))) continue;
+    const retryAt = Date.parse(String(agent?.swarmTailRecoveryNextAt || ""));
+    if (Number.isFinite(retryAt) && retryAt > Number(now)) continue;
     const task = tasksById.get(agent?.taskId) || null;
     if (!isSwarmTailUnfinishedCandidate(agent, task)) continue;
     const rootId = swarmTailRecoveryRootId(agent);
     if (!rootId || seenRoots.has(rootId)) continue;
 
     const lineage = agents.filter(candidate => swarmTailRecoveryRootId(candidate) === rootId && candidate.id !== rootId);
-    if (lineage.some(candidate => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(candidate?.status || "")))) continue;
+    const otherLineage = lineage.filter(candidate => candidate.id !== agent.id);
+    if (otherLineage.some(candidate => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(candidate?.status || "")))) continue;
     if (lineage.some(candidate => String(candidate?.status || "") === "done")) continue;
-    const attempts = lineage.filter(candidate => candidate?.swarmTailRecovery === true || candidate?.retryOfAgentId).length;
+    const lineageAttempts = lineage.filter(candidate => candidate?.swarmTailRecovery === true || candidate?.retryOfAgentId).length;
+    const dispatchFailures = Math.max(0, Math.floor(Number(agent?.swarmTailRecoveryDispatchFailures) || 0));
+    const attempts = Math.max(lineageAttempts, dispatchFailures);
     if (attempts >= maxAttempts) continue;
 
     seenRoots.add(rootId);
@@ -307,4 +319,17 @@ export function recoveryBackoffMs(dispatchFailures, {
   const base = Math.max(1_000, Number(baseMs) || 15_000);
   const maximum = Math.max(base, Number(maxMs) || 300_000);
   return Math.min(maximum, base * (2 ** Math.min(8, failures - 1)));
+}
+
+export function recoveryBackoffWithJitterMs(dispatchFailures, {
+  baseMs = 15_000,
+  maxMs = 300_000,
+  jitterUnit = 0.5,
+  minFactor = 0.5
+} = {}) {
+  const capped = recoveryBackoffMs(dispatchFailures, { baseMs, maxMs });
+  const unit = Math.max(0, Math.min(1, Number(jitterUnit) || 0));
+  const floorFactor = Math.max(0, Math.min(1, Number(minFactor) || 0.5));
+  const factor = floorFactor + ((1 - floorFactor) * unit);
+  return Math.max(1_000, Math.floor(capped * factor));
 }
