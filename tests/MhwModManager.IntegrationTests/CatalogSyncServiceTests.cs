@@ -94,6 +94,40 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Authentication_required_file_hydration_preserves_public_discovery()
+    {
+        var repository = await CreateRepositoryAsync("auth-hydration");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 45, 0, TimeSpan.Zero);
+        var provider = new FakeProvider
+        {
+            FileException = new InvalidOperationException("credential required"),
+            Health = new CatalogProviderHealth(
+                "fixture",
+                CatalogProviderState.AuthenticationRequired,
+                "Credentials are required for file variants.",
+                CheckedAt: now)
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-auth"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+
+        var result = await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20)),
+            TestToken);
+
+        Assert.Equal(1, result.ItemCount);
+        Assert.Equal(CatalogProviderState.AuthenticationRequired, result.Health?.State);
+        var stored = await repository.GetAsync("fixture:mod-1", TestToken);
+        Assert.NotNull(stored);
+        Assert.Empty(stored!.Mod.Files);
+
+        var state = await repository.GetSyncStateAsync("fixture", result.ScopeKey, TestToken);
+        Assert.NotNull(state);
+        Assert.Equal(CatalogSyncFailureKind.None, state!.LastFailureKind);
+    }
+
+    [Fact]
     public async Task Provider_failure_preserves_existing_cache_and_records_failure()
     {
         var repository = await CreateRepositoryAsync("stale-preserved");
@@ -205,6 +239,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
             [CreateMod("fixture", "mod-1")];
 
         public Exception? SearchException { get; set; }
+        public Exception? FileException { get; set; }
 
         public CatalogProviderHealth Health { get; set; } = new(
             "fixture",
@@ -246,6 +281,8 @@ public sealed class CatalogSyncServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             FileHydrationCalls++;
+            if (FileException is not null)
+                return Task.FromException<IReadOnlyList<CatalogModFile>>(FileException);
             IReadOnlyList<CatalogModFile> files =
             [
                 new(
