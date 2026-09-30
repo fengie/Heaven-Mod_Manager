@@ -1,3 +1,11 @@
+# v8.8.39 repository verification gate repair — verification scope
+
+This patch repairs deterministic failures in the repository verification path. Exact-head evidence must show: handoff manifest version equals `VERSION.txt`; the previously uncovered Core helper call sites are traced; Storage passes strict analyzer CA1822 checks; the WPF application compiles through dependency blocker formatting; and downstream product/test stages execute rather than failing from missing prerequisite binaries.
+
+Behavioral scope is intentionally unchanged for conflict resolution, catalog synchronization, dependency scanning/order, and Agent Control retirement. Security Supply Chain must also pass on the same exact head.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — verification scope
 
 This patch closes the remaining managed-registry tombstone leak: `retry-dispatched` must not permanently pin a terminal parent after its task has been superseded. Exact-head Agent Control syntax/tests plus configured Agent Control and Security gates are required.
