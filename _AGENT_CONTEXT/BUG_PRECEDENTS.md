@@ -8,6 +8,19 @@
 
 # Bug Precedents
 
+## 2026-09-30 — Agent Control registry — terminal failure bookkeeping leaked into the live control surface
+- **Symptom:** Dead workers remained visible indefinitely as cards such as **failed · RETRY EXHAUSTED**. Their historical notification actions could still target agent IDs that had no meaningful operation left, so clicking them was ineffective or misleading.
+- **Root cause:** Agent Control used the same persisted agent collections for both live operator state and historical failure evidence. Retry exhaustion and other definitive terminal failures changed status/recovery fields and saved state, but no lifecycle step retired the dead record after evidence was persisted. `refreshState()` then re-synchronized the lingering managed record back into federation on every snapshot.
+- **Violated invariant / wrong assumption:** A live registry is not a failure archive. Once execution is definitively terminal, no useful durable work exists, and task/event/failure evidence is persisted, the live control identity must be retired rather than kept as an actionable card.
+- **Why prior defenses missed it:** Retry tests focused on bounded dispatch and correct recovery classification. Dashboard tests checked status rendering/action validity, but did not assert terminal garbage collection or stale action removal after the retry budget was exhausted.
+- **Direct fix:** Add a shared retirement predicate that preserves substantive work, retire managed/federated dead records on retry exhaustion, sweep legacy clean terminal debris during refresh before federation sync, persist retirement metadata on the task, and clear notification actions that reference retired IDs.
+- **Preventive rule/process change:** Separate durable history from live control membership. Terminal failure evidence belongs in tasks/events/failure logs; live registries contain only active, recoverable, or intentionally actionable identities.
+- **Regression coverage added/strengthened:** `no-work-recovery.test.mjs` pins retirement vs preservation decisions; `operator-ui-cli.test.mjs` pins retry-exhausted retirement, refresh sweeping, and stale notification-action removal.
+- **Verification evidence/environment:** Source/contract review completed on the v8.8.26 candidate. Exact Node checks/tests and heaven2 runtime smoke remain required because both remote desktop endpoints were offline at this checkpoint.
+- **Sibling/adjacent cases checked:** Deterministic nonzero failures, provider-capacity terminals, retry-dispatched sources, disabled retries, dirty worktrees, commit/PR/artifact/verification evidence, and legacy federated duplicates were considered. Substantive durable work fails closed and remains visible.
+- **References (SHA/PR/issue/log):** branch `fix/agent-control-retire-dead-registry-20260930`; functional commits `deff943a`, `4abd659f`, `831c2344`, `34318cc5`.
+
+
 This file is the canonical defect-prevention ledger for the MHW project. It is mandatory training material.
 
 Every discovered bug/regression/process escape must produce or update an entry here before the work is considered complete. Entries are not blame records; they are durable engineering controls. Future agents must read materially relevant precedents before changing the same subsystem.
