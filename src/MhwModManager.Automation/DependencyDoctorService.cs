@@ -78,12 +78,24 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
             if (cycleEvidence.TryGetValue(id, out var cycles))
                 evidence.AddRange(cycles);
 
-            if (spec.RequiresNativeLoader &&
-                !HasEffectiveLoader(selected, filesByMod, effectivePlan, out var loaderEvidence))
+            var modFiles = filesByMod.GetValueOrDefault(id) ?? [];
+            var suppliesLoaderBinary = modFiles.Any(f =>
+                PathRules.Comparer.Equals(f.Path, LoaderProxyPath) ||
+                PathRules.Comparer.Equals(f.Path, LoaderCorePath));
+            var suppliesCompleteLoaderPair =
+                modFiles.Any(f => PathRules.Comparer.Equals(f.Path, LoaderProxyPath)) &&
+                modFiles.Any(f => PathRules.Comparer.Equals(f.Path, LoaderCorePath));
+
+            if (suppliesLoaderBinary && !suppliesCompleteLoaderPair)
+            {
+                missing.Add("Tracked native-loader package is incomplete: dinput8.dll and loader.dll must be supplied together by the same package.");
+            }
+            else if ((spec.RequiresNativeLoader || suppliesLoaderBinary) &&
+                     !HasEffectiveLoader(selected, filesByMod, effectivePlan, out var loaderEvidence))
             {
                 missing.Add(loaderEvidence);
             }
-            else if (spec.RequiresNativeLoader && !string.IsNullOrWhiteSpace(loaderEvidence))
+            else if ((spec.RequiresNativeLoader || suppliesLoaderBinary) && !string.IsNullOrWhiteSpace(loaderEvidence))
             {
                 evidence.Add(loaderEvidence);
             }
