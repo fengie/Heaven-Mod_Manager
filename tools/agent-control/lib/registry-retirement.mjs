@@ -17,7 +17,8 @@ const ACTIVE_REGISTRY_RECOVERY_STATES = new Set([
   "retry-blocked",
   "stream-lost-checking-work",
   "work-detected-incomplete",
-  "provider-capacity"
+  "provider-capacity",
+  "registry-retirement-blocked"
 ]);
 const PROVEN_REMOTE_TERMINAL_STATES = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
 
