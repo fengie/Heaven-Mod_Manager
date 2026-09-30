@@ -688,6 +688,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             SelectedTab=3;
             return;
         }
+        await ValidateStageDependenciesAsync(stage,ct);
         PlanPreviewText=$"Ready • {changes.Count} file change(s): {add} add • {replace} replace • {remove} remove • {restore} restore";
         StatusText="Dry run passed. "+PlanPreviewText+".";
         SelectedTab=0;
@@ -724,6 +725,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written.";
             return;
         }
+
+        // Dependencies are validated against this exact staged enabled set after the conflict plan
+        // is proven non-blocking and immediately before any deployment write/journal begins.
+        await ValidateStageDependenciesAsync(stage,ct);
 
         var audits=analysis.plan.Conflicts.Where(d=>d.Inferred&&d.ResolverScore>0)
             .Select(d=>new ResolverAudit(d.Path,d.WinnerModId,d.ResolverScore,d.ReasonCode,d.Explanation,d.Evidence??string.Empty)).ToArray();
@@ -1044,6 +1049,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
+        await ValidateStageDependenciesAsync(stage,ct);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
@@ -1130,9 +1136,31 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         return false;
     }
 
+    private async Task ValidateStageDependenciesAsync(
+        IReadOnlyDictionary<string,(bool enabled,int priority)> state,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var enabled=state
+            .Where(x=>x.Value.enabled)
+            .Select(x=>x.Key)
+            .ToHashSet(PathRules.Comparer);
+        var failed=(await s.Dependencies.ScanStageAsync(enabled,ct))
+            .Where(x=>!x.Ready)
+            .ToArray();
+        if(failed.Length==0)return;
+
+        var detail=string.Join(" | ",failed.Take(6).Select(x=>
+            $"{x.ModId}: {string.Join("; ",x.Missing.Take(3))}"));
+        if(failed.Length>6)detail+=$" | +{failed.Length-6} more failed package(s)";
+        throw new InvalidOperationException(
+            "Dependency validation blocked deployment before any game files were written. "+detail);
+    }
+
     private async Task ApplyStateDirectAsync(Dictionary<string,(bool enabled,int priority)> state,string description,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await ValidateStageDependenciesAsync(state,ct);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>state.TryGetValue(m.Id,out var v)?m with{Enabled=v.enabled,Priority=v.priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
@@ -1157,6 +1185,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var p=ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath){WorkingDirectory=s.Paths.GameRoot,UseShellExecute=true}, "game-safe-mode-launch");
         await p.WaitForExitAsync(ct);
         var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
+        var restoreState=restoreSnap.Mods.ToDictionary(
+            m=>m.Id,
+            m=>(enabled:m.Enabled,priority:m.Priority),
+            StringComparer.OrdinalIgnoreCase);
+        await ValidateStageDependenciesAsync(restoreState,ct);
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
         var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
         if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
