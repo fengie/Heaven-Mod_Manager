@@ -3981,6 +3981,54 @@ function buildHealthSnapshot(state) {
   };
 }
 
+function managedRegistryViews(state) {
+  const attentionRecoveryStates = new Set([
+    "retry-pending",
+    "retry-waiting",
+    "retry-blocked",
+    "retry-exhausted",
+    "stream-lost-checking-work",
+    "work-detected-incomplete",
+    "work-unverified"
+  ]);
+  const terminalRegistryStates = new Set(["failed", "stopped", "capacity-blocked"]);
+  const live = [];
+  const attention = [];
+  const history = [];
+
+  for (const agent of state.agents || []) {
+    const status = String(agent?.status || "").trim().toLowerCase();
+    const recovery = String(agent?.recoveryStatus || agent?.recovery_status || "").trim().toLowerCase();
+    const pid = Number(agent?.pid);
+    const processAlive = Number.isInteger(pid) && pid > 0 && isPidAlive(pid);
+    const unresolvedWork = agent?.worktreeDirty === true
+      || agent?.completionEvidence === "durable-work-detected"
+      || recovery === "work-detected-incomplete";
+    const unresolvedOwnership = Boolean(
+      agent?.remoteTerminationPending
+      || agent?.blocker === "termination-unproven"
+      || ["interrupted", "orphaned"].includes(status)
+      || processAlive
+    );
+    const recoveryNeedsAttention = attentionRecoveryStates.has(recovery);
+
+    if (terminalRegistryStates.has(status) || recovery === "retry-exhausted") {
+      if (unresolvedWork || unresolvedOwnership || recoveryNeedsAttention) attention.push(agent);
+      else history.push(agent);
+      continue;
+    }
+
+    if (["interrupted", "orphaned"].includes(status) || unresolvedWork || recoveryNeedsAttention) {
+      attention.push(agent);
+      continue;
+    }
+
+    live.push(agent);
+  }
+
+  return { live, attention, history };
+}
+
 async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = false } = {}) {
   if (fetchRemote) {
     const beforeSync = loadState();
@@ -4005,6 +4053,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
   const federation = await runtimeFederationSnapshot(state, heavenBridgeAssessment);
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
+  const managedRegistry = managedRegistryViews(state);
 
   return {
     ok: true,
@@ -4038,7 +4087,10 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     workers,
     taskGraph: buildTaskGraph(state.tasks),
     tasks: state.tasks,
-    agents: state.agents,
+    agents: managedRegistry.live,
+    attentionAgents: managedRegistry.attention,
+    managedHistory: managedRegistry.history,
+    retiredAgents: state.retiredAgents || [],
     leases: state.leases,
     integrationQueue: queue,
     releaseGate: releaseGate(state, queue, repository, repositoryContext),
