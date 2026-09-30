@@ -29,12 +29,14 @@ public sealed record GameProfile(
     string? SavePath = null,
     bool SupportsSemanticCoverage = false,
     string? SteamAppId = null,
-    string? Store = null)
+    string? Store = null,
+    int? GameBananaGameId = null)
 {
     [JsonIgnore] public string ExecutablePath => Path.GetFullPath(Path.Combine(GameRoot, ExecutableRelativePath));
     [JsonIgnore] public string LiveModRoot => string.IsNullOrWhiteSpace(ModRootRelativePath) ? Path.GetFullPath(GameRoot) : Path.GetFullPath(Path.Combine(GameRoot, ModRootRelativePath));
     [JsonIgnore] public bool IsMonsterHunterWorld => AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase);
     [JsonIgnore] public bool HasNexusIntegration => !string.IsNullOrWhiteSpace(NexusGameDomain);
+    [JsonIgnore] public bool HasGameBananaIntegration => GameBananaGameId is > 0;
     [JsonIgnore] public string ManagedDescription => string.IsNullOrWhiteSpace(ModRootRelativePath) ? "Game root" : ModRootRelativePath;
     [JsonIgnore] public string StorageKey
     {
@@ -59,7 +61,8 @@ public sealed record GameProfile(
         null,
         true,
         "582010",
-        "Steam");
+        "Steam",
+        9081);
 
     public static GameProfile Generic(
         string id,
@@ -70,7 +73,8 @@ public sealed record GameProfile(
         string adapterId="generic-folder",
         string? steamAppId=null,
         string? nexusGameDomain=null,
-        string? store=null) => new(
+        string? store=null,
+        int? gameBananaGameId=null) => new(
         NormalizeId(id),
         string.IsNullOrWhiteSpace(displayName) ? Path.GetFileNameWithoutExtension(executableRelativePath) : displayName.Trim(),
         Path.GetFullPath(root),
@@ -83,7 +87,8 @@ public sealed record GameProfile(
         null,
         false,
         string.IsNullOrWhiteSpace(steamAppId)?null:steamAppId.Trim(),
-        string.IsNullOrWhiteSpace(store)?null:store.Trim());
+        string.IsNullOrWhiteSpace(store)?null:store.Trim(),
+        gameBananaGameId is > 0 ? gameBananaGameId : null);
 
     public static string NormalizeId(string value)
     {
