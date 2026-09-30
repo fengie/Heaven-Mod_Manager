@@ -37,6 +37,8 @@ GLOBAL_GIT_DIRECTIVE.md remains mandatory. Fetch/prune and inventory branches, P
 
 ## Mandatory machine, process and safety boundaries
 
+Recurring agents perform bounded recovery in the current iteration; if still blocked, preserve exact revision/branch/artifact/error/evidence and next live/manual action as DEFERRED-TO-LIVE. The next scheduled iteration must choose different actionable unowned work unless the user reassigns the task or durable evidence shows the blocker cleared. Managers prevent unchanged-blocker retry loops. Deferral never authorizes deletion, closure, merge, release or completion. This applies to every recurring role; detailed policy is in the indexed reference.
+
 heaven2 is operator/control/credential authority; heaven is delegated compute. Use Heaven Local Bridge for heaven, with explicit target_host; operator UI defaults to heaven2. Never use RDC without current-task authorization. A failed control path does not prove host absence. Bridge readiness requires current canonical worker, independent watchdog, separate SYSTEM sentinel and local recovery evidence. Read machine/recovery policies before deployment.
 
 Every agent-owned cmd/PowerShell/process helper runs hidden/background by default: forced windowsHide, CREATE_NO_WINDOW or -WindowStyle Hidden. A visible shell requires explicit user request; requested GUI applications may be visible. Process ownership must be proven before replacement/termination. Capacity and runner-allocation failures route to compatible authorized paths with bounded retries, never retry storms. Lost streams require durable-work reconciliation before replacement, never blind full-task restart.

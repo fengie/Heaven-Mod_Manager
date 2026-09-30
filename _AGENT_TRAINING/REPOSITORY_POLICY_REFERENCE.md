@@ -4,6 +4,19 @@ The complete operating policies below remain binding. AGENTS.md is the compact e
 
 # Agent Instructions
 
+## Recurring-agent blocked-task rotation — current canonical addition (15e23ef9)
+
+Scheduled/recurring agents must not burn future iterations on a task that is already proven blocked.
+
+- During the current iteration, the owning agent may perform the normal bounded recovery/fallback attempts required by repository policy.
+- If the task is still blocked when that iteration ends, preserve an exact durable checkpoint/handoff and classify the task as DEFERRED-TO-LIVE (or an equivalent explicit state) for the user's live/manual agents.
+- On the next scheduled iteration, that recurring lane must not select or retry the same blocked task as its primary work unless the user explicitly reassigns it or durable evidence shows the blocker has materially cleared.
+- The next scheduled iteration must choose a different actionable, unowned task and make concrete progress there. Re-reading or re-reporting the same unchanged blocker is not useful work.
+- Deferral is preservation, not abandonment: do not delete, close, merge, release, or mark the blocked task complete merely because it was rotated out. Preserve exact revision/branch/artifact/error/evidence and the next manual/live action.
+- Managers must prevent scheduled lanes from cycling indefinitely on the same blocker and should reserve deferred tasks for live/manual agents unless a real unblock signal appears.
+
+This rule applies to managers, programmers, recovery workers, integration workers, QA/release workers, janitors, and any future recurring automation.
+
 This repository is the canonical working state for MHW Manual Mod Manager.
 
 ## Mandatory pre-response repository training gate
