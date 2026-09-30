@@ -62,3 +62,7 @@ When a verification pipeline performs a relaxed build before a strict warning-as
 
 When HTML embeds or generates JavaScript, verification must parse the **final assembled script source** after all merges/transforms. Structural substring tests are insufficient: duplicate top-level declarations, truncated generated source, or merge artifacts can make the browser reject the entire script before initialization. Add a parser-only regression that does not execute browser APIs and make parser failure integration-blocking.
 
+
+
+## Multi-way inferred decision proof
+When an algorithm chooses one winner from three or more candidates using pairwise heuristics, do not assume the pairwise relation is transitive and do not use a sequential tournament as correctness evidence. Verify the global invariant directly: one candidate must satisfy the authoritative precedence/compatibility predicate against every other eligible candidate. If any pair is incomparable, the relation cycles, or no unique complete dominator exists, fail closed or require an explicit choice. Add a non-transitive/cyclic regression fixture so deterministic iteration order cannot masquerade as correctness. Apply this pattern to package/provider selection, override resolution, preference arbitration, reconciliation, and other N-way inferred winner systems.
