@@ -321,3 +321,15 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** PR #394 head `ccf1f1c4525464d396ba19a9dcdc07a74086b991`: Security Supply Chain Gate run `36667038748` failed while Workflow Feature PR Gate run `36667038775` remained queued/cancelled; merge `b90e79acc487366f475edf31916337d57bbea59d` nevertheless landed on main.
 - **Sibling/adjacent cases checked:** The same defect class previously occurred on PR #386 and is recorded by LR-035; recurrence confirms the prior prose-only control was insufficient.
 - **References (SHA/PR/issue/log):** PR #394; runs `36667038748`, `36667038775`; LR-035.
+
+### 2026-09-30 — CI security gate — Windows PowerShell 5.1 API incompatibility
+- **Symptom:** Security Supply Chain Gate run 36667566426 failed before evaluating repository policy because Test-CiSecurityPolicy.ps1 called System.IO.Path.GetRelativePath, which is unavailable in the Windows PowerShell 5.1/.NET Framework runtime used by the Heaven self-hosted runner.
+- **Root cause:** A security-policy expansion was authored against a newer .NET API surface without verifying the actual shell/runtime declared by the workflow (powershell.exe).
+- **Violated invariant / wrong assumption:** CI policy code must execute on the minimum runtime that the workflow actually invokes. A fail-closed security gate that cannot start is unavailable protection, not successful hardening.
+- **Why prior defenses missed it:** Review focused on the new secret/unsafe-primitive detection logic, while runtime compatibility of the policy implementation itself was not exercised before the change reached unrelated PR validation.
+- **Direct fix:** Replaced all three Path.GetRelativePath calls in the policy with one repository-contained relative-path helper built from APIs available in Windows PowerShell 5.1.
+- **Preventive rule/process change:** Any PowerShell script used by CI must target the workflow's declared PowerShell edition/runtime, or the workflow must explicitly select and verify pwsh. Do not introduce .NET Core-only APIs into a powershell.exe gate without a compatibility implementation.
+- **Regression coverage added/strengthened:** The Security Supply Chain Gate itself is the runtime regression check because it executes this policy under Windows PowerShell 5.1 on Heaven. The helper also fails closed if a path is outside the repository root.
+- **Verification evidence/environment:** Original failure: run 36667566426, job 109735436681, Heaven runner, Windows PowerShell 5.1. Repair branch: fix/security-policy-powershell51-relative-path-20260930-chatgpt; exact-head green rerun required before merge.
+- **Sibling/adjacent cases checked:** All three GetRelativePath uses in Test-CiSecurityPolicy.ps1 were replaced together; repository code search showed no additional indexed occurrences at the time of repair.
+- **References (SHA/PR/issue/log):** failed run 36667566426; repair starts at cf1cf3d44d5f8504f868d574e45cc6ee4d2bb915.

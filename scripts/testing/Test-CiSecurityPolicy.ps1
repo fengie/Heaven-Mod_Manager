@@ -21,6 +21,35 @@ function Get-RepoRelativePath {
     return $full.Substring($prefix.Length)
 }
 
+# This policy intentionally runs under Windows PowerShell 5.1 on the persistent
+# Heaven runner. Do not use .NET Core-only helpers such as Path.GetRelativePath.
+function Get-RepositoryRelativePath {
+    param(
+        [Parameter(Mandatory=$true)][string]$RootPath,
+        [Parameter(Mandatory=$true)][string]$FullPath
+    )
+
+    $trimChars=[char[]]'\/'
+    $normalizedRoot=[IO.Path]::GetFullPath($RootPath).TrimEnd($trimChars)
+    $normalizedPath=[IO.Path]::GetFullPath($FullPath)
+    $comparison=if($env:OS -eq 'Windows_NT' -or $PSVersionTable.PSEdition -eq 'Desktop'){
+        [StringComparison]::OrdinalIgnoreCase
+    }else{
+        [StringComparison]::Ordinal
+    }
+
+    if([string]::Equals($normalizedRoot,$normalizedPath,$comparison)){
+        return '.'
+    }
+
+    $prefix=$normalizedRoot+[IO.Path]::DirectorySeparatorChar
+    if(-not $normalizedPath.StartsWith($prefix,$comparison)){
+        throw "Path is outside repository root: $normalizedPath"
+    }
+
+    return ($normalizedPath.Substring($prefix.Length) -replace '\\','/')
+}
+
 $workflowRoot=Join-Path $Root '.github\workflows'
 if(!(Test-Path -LiteralPath $workflowRoot)){throw "Workflow directory is missing: $workflowRoot"}
 

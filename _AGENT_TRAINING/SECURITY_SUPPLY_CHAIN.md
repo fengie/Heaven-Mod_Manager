@@ -64,3 +64,13 @@ Benchmarking, compiling, testing, parsing, or otherwise executing candidate-cont
 
 Keep common local secret containers and environment files out of version control with ignore rules, but do not treat ignore rules as the control boundary. Add a tracked-file secret gate that scans the exact Git index for high-confidence credential formats and private-key material. The gate must scan its own policy files safely, fail closed, and never print the matched secret value.
 
+
+## CI shell/runtime compatibility
+
+Security policy code is part of the security boundary and must run on the **actual shell/runtime selected by the workflow**. On Windows, shell: powershell / the default Windows PowerShell invocation may be PowerShell 5.1 on .NET Framework; do not assume PowerShell 7 or modern .NET APIs such as System.IO.Path.GetRelativePath are available.
+
+Before adding runtime-library calls to a CI policy script:
+- identify the workflow's minimum PowerShell edition/runtime;
+- use APIs supported by that runtime or provide a deterministic compatibility helper;
+- if PowerShell 7 is required, select pwsh explicitly and verify it is provisioned on every eligible runner;
+- treat policy-startup/runtime failures as security-gate defects and record them in the bug-precedent ledger rather than merely rerunning the workflow.
