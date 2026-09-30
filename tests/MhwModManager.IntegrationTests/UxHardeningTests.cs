@@ -84,6 +84,24 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Mods_empty_state_reacts_when_library_count_changes()
+    {
+        var root=FindRepositoryRoot();
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+        var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
+
+        Assert.Contains("public int InstalledCount=>Mods.Count;",vm);
+        Assert.Contains("<DataTrigger Binding=\"{Binding InstalledCount}\" Value=\"0\"><Setter Property=\"Visibility\" Value=\"Visible\"/></DataTrigger>",xaml);
+
+        var changedStart=vm.IndexOf("private void Changed()",StringComparison.Ordinal);
+        var changedEnd=vm.IndexOf("private async Task ReloadMods",changedStart,StringComparison.Ordinal);
+        Assert.True(changedStart>=0&&changedEnd>changedStart);
+        var changed=vm[changedStart..changedEnd];
+        Assert.Contains("OnPropertyChanged(nameof(InstalledCount));",changed);
+        Assert.Contains("OnPropertyChanged(nameof(InstalledCountLabel));",changed);
+    }
+
+    [Fact]
     public void Background_metadata_and_remote_visual_cache_are_hardened()
     {
         var root=FindRepositoryRoot();

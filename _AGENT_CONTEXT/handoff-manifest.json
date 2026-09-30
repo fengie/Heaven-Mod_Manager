@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.48 verified and published build357; active PR #526 owns v8.8.49 UI fixes",
+  "immediateParentRevision": "v8.8.49 UI visibility and Mods empty-state fixes merged at be4615f61b91e7fbefc82e0520513cf17a6c3f6f",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -106,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.50 compact Agent Manager overview after PR #526 resolves: reconcile fresh main, run exact Agent Control/security gates, merge/push/verify remote main, perform live heaven2 collapsed-overview/Inspector smoke, preserve remaining P0/auth/signing work, and recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.50 compact Agent Manager overview: run exact Agent Control/security gates, merge/push/verify remote main, perform live heaven2 collapsed-overview/Inspector smoke, preserve remaining P0/auth/signing work, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

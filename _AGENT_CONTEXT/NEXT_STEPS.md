@@ -1,8 +1,12 @@
 # v8.8.50 compact Agent Manager overview — next
 
-Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`, require configured Agent Control/security gates, reconcile against fresh main, merge with expected head, then smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without scrolling, notification severity summary correct, one opened card full-width/internal-scroll, and Inspect auto-opens Inspector. Preserve active PR #526 as the v8.8.49 UI-fix owner and concurrent PR #525 governance work and do not close unrelated P0 issues from source-only evidence.
+Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`, require configured Agent Control/security gates, reconcile against fresh main, merge with expected head, then smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without scrolling, notification severity summary correct, one opened card full-width/internal-scroll, and Inspect auto-opens Inspector. Preserve concurrent PR #525 governance work and do not close unrelated P0 issues from source-only evidence.
 
 ---
+# v8.8.49 UI regression integration candidate
+
+Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.

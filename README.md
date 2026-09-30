@@ -4,6 +4,10 @@
 
 Agent Manager now defaults every high-volume operational surface to a compact collapsed summary card, so notifications, agent registries, leases, queues, branches, events, history, and machine details no longer create a giant vertical wall. The summaries remain visible together in a responsive two-column overview; opening one card expands it full-width with its own bounded internal scroll. Inspecting an agent or notification automatically opens the Inspector, and notification summaries surface critical/warning counts at a glance. Agent Control advances to **v0.6.23**.
 
+## v8.8.49 — UI visibility and Mods empty-state refresh
+
+Fixes two current UI regressions without changing feature scope: native WPF ComboBoxes now use matched system control/background text brushes so selected values remain readable, and the Mods empty-state overlay now refreshes when the installed-mod collection count changes instead of continuing to cover populated content. Regression guards pin both behaviors.
+
 ## v8.8.48 - automatic Mods page stretch
 
 Reconciles existing PR522 with current main, removes the redundant ancestor ActualWidth dependency from the Mods root and strengthens the actual wrapper contract using parsed XAML. Existing styles, margins, library and toolbar behavior stay intact. Styled probes resize both old/new layouts correctly; the reported populated-window collapse remains a separate verification gap. No new features.
