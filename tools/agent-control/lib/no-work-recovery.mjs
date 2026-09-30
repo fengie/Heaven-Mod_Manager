@@ -14,6 +14,28 @@ export const SWARM_TAIL_UNFINISHED_STATUSES = new Set([
   "stale"
 ]);
 
+
+function finiteNonZeroNumber(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return false;
+  const number = Number(value);
+  return Number.isFinite(number) && number !== 0;
+}
+
+export function hasDeterministicRuntimeFailure(agent) {
+  const metadata = agent?.source_metadata && typeof agent.source_metadata === "object"
+    ? agent.source_metadata
+    : {};
+  const completionEvidence = String(
+    agent?.completionEvidence
+    || metadata.completion_evidence
+    || ""
+  ).trim().toLowerCase();
+
+  return finiteNonZeroNumber(agent?.exitCode)
+    || finiteNonZeroNumber(metadata.exit_code)
+    || ["spawn-error", "provider-capacity"].includes(completionEvidence);
+}
+
 export function swarmTailRecoveryRootId(agent) {
   return String(agent?.swarmTailRecoveryRootAgentId || agent?.recoveryRootAgentId || agent?.id || "").trim();
 }
@@ -22,6 +44,7 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
   if (!SWARM_TAIL_UNFINISHED_STATUSES.has(status)) return false;
   if (status === "capacity-blocked" || agent?.failureClass === "provider-capacity") return false;
+  if (hasDeterministicRuntimeFailure(agent) && !hasSubstantiveWorkEvidence(agent)) return false;
   if (["retry-pending", "retry-waiting", "retry-dispatched"].includes(String(agent?.recoveryStatus || ""))) return false;
   if (String(agent?.recoveryStatus || "") === "work-verified-complete") return false;
   const supervisedStaleRecovery = String(agent?.swarmTailRecoveryCause || "") === "stale-progress-timeout";
@@ -247,6 +270,16 @@ export function terminationReconciliationDecision(agent, {
     };
   }
 
+  if (hasDeterministicRuntimeFailure(agent)) {
+    return {
+      reconcile: true,
+      recoveryStatus: "work-unverified",
+      retry: false,
+      action: "inspect",
+      reason: "deterministic-runtime-failure"
+    };
+  }
+
   const noWork = noWorkTerminationDecision(agent, {
     expectsRepositoryWork,
     maxOpeningMessageChars
@@ -279,6 +312,9 @@ export function noWorkTerminationDecision(agent, {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
   if (!expectsRepositoryWork || !NO_WORK_TERMINAL_STATUSES.has(status)) {
     return { noWork: false, retry: false, reason: null, openingOnly: false, emptyOutput: false };
+  }
+  if (hasDeterministicRuntimeFailure(agent)) {
+    return { noWork: false, retry: false, reason: "deterministic-runtime-failure", openingOnly: false, emptyOutput: false };
   }
   if (hasSubstantiveWorkEvidence(agent)) {
     return { noWork: false, retry: false, reason: "substantive-work-evidence", openingOnly: false, emptyOutput: false };
