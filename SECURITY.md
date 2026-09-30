@@ -25,3 +25,9 @@ Include the affected version/commit, attack prerequisites, a minimal reproductio
 ## Release authenticity
 
 Hash verification protects integrity relative to trusted metadata, but it is not a substitute for publisher identity. Windows release binaries should be Authenticode-signed with a stable trusted publisher identity before broad public distribution. Never weaken update verification or bypass Windows security warnings as a workaround.
+
+## Heaven Local Bridge authentication
+The private relay repository ACL is a compatibility trust boundary, not the preferred execution-authentication boundary. Hardened deployments use per-job HMAC-SHA256 authentication: workers keep `HEAVEN_BRIDGE_HMAC_KEY` machine-local and Agent Control on heaven2 uses the matching `AGENT_CONTROL_HEAVEN_HMAC_KEY` to sign canonical job payloads. New signed jobs use the versioned `mhw-bridge-canon-v1` canonical format; workers retain legacy-signature verification for rollout compatibility. Secret key material must never enter queue, result, state, or repository files.
+
+## Updater signing roadmap
+The updater's immutable-release, size, SHA-256, path, staging, product-manifest, and rollback checks protect integrity relative to trusted release metadata. They do not by themselves protect a client if the release publication authority is compromised and an attacker can replace both payload and metadata. The next authenticity milestone is independently signed update metadata with an embedded verification key plus explicit key rotation/revocation, expiry/freshness, and rollback/freeze defenses.
