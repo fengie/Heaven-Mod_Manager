@@ -51,6 +51,49 @@ public sealed class ModDbFeedCatalogProviderTests
     }
 
     [Fact]
+    public async Task Repeated_feed_reads_revalidate_with_etag_and_last_modified()
+    {
+        var calls = 0;
+        var lastModified = new DateTimeOffset(2026, 9, 30, 2, 30, 0, TimeSpan.Zero);
+        var handler = new RecordingHandler((request, _) =>
+        {
+            calls++;
+            if (calls == 1)
+            {
+                Assert.Empty(request.Headers.IfNoneMatch);
+                Assert.Null(request.Headers.IfModifiedSince);
+                var response = RssResponse(ReadFixture());
+                response.Headers.ETag =
+                    new System.Net.Http.Headers.EntityTagHeaderValue("\"moddb-fixture-v1\"");
+                response.Content.Headers.LastModified = lastModified;
+                return Task.FromResult(response);
+            }
+
+            Assert.Equal(
+                "\"moddb-fixture-v1\"",
+                Assert.Single(request.Headers.IfNoneMatch).ToString());
+            Assert.Equal(lastModified, request.Headers.IfModifiedSince);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotModified));
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = CreateProvider(client);
+        var game = CreateGame();
+        var request = new CatalogBrowseRequest(game, "fixture");
+
+        var first = await provider.SearchModsAsync(
+            request,
+            TestContext.Current.CancellationToken);
+        var second = await provider.SearchModsAsync(
+            request,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, first.Count);
+        Assert.Equal(first[0].CanonicalId, Assert.Single(second).CanonicalId);
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
     public async Task Wrong_game_acquisition_fails_before_second_feed_request()
     {
         var calls = 0;
