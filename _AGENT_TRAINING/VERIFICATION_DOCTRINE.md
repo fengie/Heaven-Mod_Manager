@@ -47,3 +47,13 @@ An escaped failure is evidence about the verification system, not only the produ
 ## Strict analyzer rerun semantics
 When a verification pipeline performs a relaxed build before a strict warning-as-error or analyzer build, the strict phase must force actual compiler/analyzer execution. A successful incremental no-op is not strict verification: up-to-date outputs can suppress diagnostics that were visible in the relaxed phase. Use a rebuild/no-incremental mechanism (or otherwise prove analyzer execution), and regression-test that invariant in the verifier itself.
 
+
+
+## Performance optimization protocol
+- Measure representative Release builds and distinguish cold startup, warm startup, and time to meaningful interactivity. Do not claim a speedup from source inspection alone.
+- Profile the critical path before broad rewrites. Prefer removing, narrowing, caching, or demand-loading optional work over adding concurrency blindly.
+- Keep network access, broad filesystem scans, artwork/preview generation, metadata enrichment, and rarely used feature initialization off the first-interactive-frame path unless correctness requires them there.
+- Preserve safety and consistency barriers on the blocking path. Recovery, migrations, transactional invariants, and correctness-critical validation must not be deferred merely to improve a startup number.
+- For repeated reads, fetch only the columns/state the caller needs and avoid wide joins/object materialization when a narrow query is sufficient.
+- Treat parallelism as a measured optimization: prove independence and verify that added concurrency does not increase SSD contention, UI-thread pressure, lock contention, allocation rate, or peak memory.
+- Protect important performance boundaries with benchmarks or structural regression checks, then remeasure after the change. Record exact source revision, workload, environment, latency, allocation/memory evidence, and any remaining measurement gap.
