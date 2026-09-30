@@ -1,6 +1,8 @@
 # Agent Control Federation / Registry v2 — 2026-09-29
 
 
+> **Mandatory completion-handoff rule (2026-09-30):** Whenever an agent finishes a task, it must leave durable, actionable notes for the successor: ordered next steps, concrete ways the work could be improved, unresolved risks/assumptions/debt or verification gaps, and exact branch/revision/evidence needed to continue. A completion claim without this successor handoff is incomplete. Update authoritative handoff state and supersede stale notes rather than leaving contradictory copies. The next agent must be able to continue without private chat history.
+
 > **Mandatory defect-prevention precedent (2026-09-29):** Bugs are prevention failures, not routine cleanup. Read `_AGENT_CONTEXT/BUG_PRECEDENTS.md` as mandatory training. Any discovered bug/regression/process escape must complete the chain **root cause → precedent log → guideline/process hardening → regression coverage → real-risk verification → propagation** before `DONE`/`FIXED`/merge/release. Managers must reject fixes that skip applicable prevention evidence; recurrence of a logged defect class requires strengthening the prior control itself.
 
 
