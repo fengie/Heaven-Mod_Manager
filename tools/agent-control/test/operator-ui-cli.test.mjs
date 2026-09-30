@@ -76,7 +76,13 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
     "events",
     "recommendationSummary",
     "recommendations",
-    "managedAgentsSection"
+    "managedAgentsSection",
+    "attentionSection",
+    "attentionSummary",
+    "attentionAgents",
+    "registryHistorySection",
+    "registryHistorySummary",
+    "registryHistory"
   ]) {
     assert.ok(ids.includes(id), `missing operator surface #${id}`);
   }
@@ -160,6 +166,34 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(server, /readOnly: false/);
   assert.match(server, /draining: false/);
   assert.match(server, /clearEmergencyStop: true/);
+});
+
+test("dashboard separates live registry, attention, and archived history surfaces", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
+
+  assert.match(html, /Needs Attention \/ recovery/);
+  assert.match(html, /Registry history/);
+  assert.match(html, /function renderAttention\(snapshot\)/);
+  assert.match(html, /snapshot\.attentionAgents \|\| \[\]/);
+  assert.match(html, /snapshot\.federation\?\.attention_agents \|\| \[\]/);
+  assert.match(html, /function renderRegistryHistory\(snapshot\)/);
+  assert.match(html, /snapshot\.managedHistory \|\| \[\]/);
+  assert.match(html, /snapshot\.retiredAgents \|\| \[\]/);
+  assert.match(html, /snapshot\.federation\?\.history_agents \|\| \[\]/);
+  assert.match(html, /\.\.\.\(snapshot\?\.attentionAgents \|\| \[\]\)/);
+  assert.match(html, /\.\.\.\(snapshot\?\.managedHistory \|\| \[\]\)/);
+  assert.match(html, /\.\.\.\(federation\.attention_agents \|\| \[\]\)/);
+  assert.match(html, /\.\.\.\(federation\.history_agents \|\| \[\]\)/);
+
+  assert.match(server, /function managedRegistryViews\(state\)/);
+  assert.match(server, /agents: managedRegistry\.live/);
+  assert.match(server, /attentionAgents: managedRegistry\.attention/);
+  assert.match(server, /managedHistory: managedRegistry\.history/);
+  assert.match(server, /retiredAgents: state\.retiredAgents \|\| \[\]/);
+  assert.match(server, /worktreeDirty === true/);
+  assert.match(server, /remoteTerminationPending/);
+  assert.match(server, /recovery === "retry-exhausted"/);
 });
 
 test("dashboard renders notifications and a stable explicit inspector contract", () => {
