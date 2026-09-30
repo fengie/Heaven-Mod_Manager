@@ -41,21 +41,49 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
                 nameof(sources));
     }
 
-    public string ProviderId => ModIoCatalogPolicy.ProviderId;
-    public string DisplayName => "mod.io";
+    public string ProviderId
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return ModIoCatalogPolicy.ProviderId;
+        }
+    }
 
-    public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Search |
-        CatalogProviderCapabilities.Browse |
-        CatalogProviderCapabilities.Metadata |
-        CatalogProviderCapabilities.Images |
-        CatalogProviderCapabilities.FileList |
-        CatalogProviderCapabilities.FileVariants |
-        CatalogProviderCapabilities.DirectDownload |
-        CatalogProviderCapabilities.Updates |
-        CatalogProviderCapabilities.Ratings;
+    public string DisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return "mod.io";
+        }
+    }
 
-    public CatalogProviderCompliance Compliance => ModIoCatalogPolicy.Compliance;
+    public CatalogProviderCapabilities Capabilities
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogProviderCapabilities.Search |
+                CatalogProviderCapabilities.Browse |
+                CatalogProviderCapabilities.Metadata |
+                CatalogProviderCapabilities.Images |
+                CatalogProviderCapabilities.FileList |
+                CatalogProviderCapabilities.FileVariants |
+                CatalogProviderCapabilities.DirectDownload |
+                CatalogProviderCapabilities.Updates |
+                CatalogProviderCapabilities.Ratings;
+        }
+    }
+
+    public CatalogProviderCompliance Compliance
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return ModIoCatalogPolicy.Compliance;
+        }
+    }
 
     public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct = default)
     {
