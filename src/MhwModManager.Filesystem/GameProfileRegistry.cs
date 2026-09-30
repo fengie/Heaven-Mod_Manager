@@ -370,8 +370,20 @@ public sealed partial class GameProfileRegistry
             {
                 var current=queue.Dequeue();
                 if(!visited.Add(current.Directory))continue;
-                try{candidates.AddRange(Directory.EnumerateFiles(current.Directory,"*.exe",SearchOption.TopDirectoryOnly));}
-                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){MasterDebugLog.Write("GAME-DISCOVERY",$"Could not inspect executables in '{current.Directory}'.",ex);}
+                string[] localExecutables;
+                try{localExecutables=Directory.EnumerateFiles(current.Directory,"*.exe",SearchOption.TopDirectoryOnly).ToArray();}
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){MasterDebugLog.Write("GAME-DISCOVERY",$"Could not inspect executables in '{current.Directory}'.",ex);localExecutables=[];}
+                candidates.AddRange(localExecutables);
+                var strongMatch=localExecutables
+                    .Where(x=>!IsHelperExecutable(Path.GetFileNameWithoutExtension(x)))
+                    .Select(x=>(Path:x,Normalized:GameProfile.NormalizeId(Path.GetFileNameWithoutExtension(x)).Replace("-",string.Empty,StringComparison.Ordinal)))
+                    .Where(x=>x.Normalized.Equals(normalized,StringComparison.OrdinalIgnoreCase)
+                        ||(normalized.Length>=5&&(x.Normalized.Contains(normalized,StringComparison.OrdinalIgnoreCase)||normalized.Contains(x.Normalized,StringComparison.OrdinalIgnoreCase))))
+                    .OrderByDescending(x=>x.Normalized.Equals(normalized,StringComparison.OrdinalIgnoreCase))
+                    .ThenByDescending(x=>SafeFileLength(x.Path))
+                    .Select(x=>x.Path)
+                    .FirstOrDefault();
+                if(strongMatch is not null)return strongMatch;
                 if(current.Depth>=maxDepth)continue;
                 string[] children;
                 try{children=Directory.EnumerateDirectories(current.Directory).ToArray();}
@@ -409,13 +421,15 @@ public sealed partial class GameProfileRegistry
         ||name.Equals("dotnet",StringComparison.OrdinalIgnoreCase)
         ||name.Equals("easyanticheat",StringComparison.OrdinalIgnoreCase)
         ||name.Equals("battleye",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("content",StringComparison.OrdinalIgnoreCase)
         ||name.Equals("saved",StringComparison.OrdinalIgnoreCase)
         ||name.Equals("mods",StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsHelperExecutable(string name)=>name.Contains("unins",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("uninstall",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("crash",StringComparison.OrdinalIgnoreCase)
+    private static bool IsHelperExecutable(string name)=>name.StartsWith("unins",StringComparison.OrdinalIgnoreCase)
+        ||name.StartsWith("uninstall",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("CrashReportClient",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("CrashReporter",StringComparison.OrdinalIgnoreCase)
+        ||name.StartsWith("UnityCrashHandler",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("crashpad_handler",StringComparison.OrdinalIgnoreCase)
         ||name.Contains("reportclient",StringComparison.OrdinalIgnoreCase)
         ||name.Contains("easyanticheat",StringComparison.OrdinalIgnoreCase)
         ||name.Contains("battleye",StringComparison.OrdinalIgnoreCase)
