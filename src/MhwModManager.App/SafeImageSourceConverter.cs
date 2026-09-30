@@ -9,6 +9,9 @@ namespace MhwModManager.App;
 
 public sealed class SafeImageSourceConverter:IValueConverter
 {
+    private const int MinimumDecodeWidth=64;
+    private const int MaximumDecodeWidth=2048;
+
     public object Convert(object value,Type targetType,object parameter,CultureInfo culture)
     {
         if(value is not string path||string.IsNullOrWhiteSpace(path)||!File.Exists(path))return null;
@@ -18,6 +21,8 @@ public sealed class SafeImageSourceConverter:IValueConverter
             image.BeginInit();
             image.CacheOption=BitmapCacheOption.OnLoad;
             image.CreateOptions=BitmapCreateOptions.IgnoreImageCache;
+            var decodeWidth=ParseDecodeWidth(parameter);
+            if(decodeWidth>0)image.DecodePixelWidth=decodeWidth;
             image.UriSource=new Uri(Path.GetFullPath(path),UriKind.Absolute);
             image.EndInit();
             image.Freeze();
@@ -28,6 +33,14 @@ public sealed class SafeImageSourceConverter:IValueConverter
             MasterDebugLog.Write("VISUALS",$"Thumbnail decode rejected path={path}",ex);
             return null;
         }
+    }
+
+    private static int ParseDecodeWidth(object parameter)
+    {
+        if(parameter is int width)return Math.Clamp(width,MinimumDecodeWidth,MaximumDecodeWidth);
+        return int.TryParse(parameter?.ToString(),NumberStyles.Integer,CultureInfo.InvariantCulture,out var parsed)
+            ?Math.Clamp(parsed,MinimumDecodeWidth,MaximumDecodeWidth)
+            :0;
     }
 
     public object ConvertBack(object value,Type targetType,object parameter,CultureInfo culture)=>Binding.DoNothing;

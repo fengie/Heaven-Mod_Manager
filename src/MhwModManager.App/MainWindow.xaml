@@ -303,7 +303,7 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border Width="156" Height="102" Margin="0,0,8,8" CornerRadius="6" Background="#090D12" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
-                                                            <Image Source="{Binding Converter={StaticResource SafeImage}}" Stretch="UniformToFill" ToolTip="{Binding}"/>
+                                                            <Image Source="{Binding Converter={StaticResource SafeImage},ConverterParameter=320}" Stretch="UniformToFill" ToolTip="{Binding}"/>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -341,7 +341,7 @@
                                             <Border Width="76" Height="48" CornerRadius="5" Background="#0B1016" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                                 <Grid>
                                                     <TextBlock Text="IMG" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    <Image Source="{Binding ThumbnailPath,Converter={StaticResource SafeImage}}" Stretch="UniformToFill"/>
+                                                    <Image Source="{Binding ThumbnailPath,Converter={StaticResource SafeImage},ConverterParameter=160}" Stretch="UniformToFill"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -504,7 +504,7 @@
                                         <Border Width="250" Height="160" CornerRadius="7" Background="#090D12" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True" HorizontalAlignment="Left">
                                             <Grid>
                                                 <TextBlock Text="No visual available" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage}}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=512}" Stretch="UniformToFill"/>
                                             </Grid>
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="8,2,0,0">
@@ -526,7 +526,7 @@
                                         <Border Width="108" Height="72" CornerRadius="6" Background="#0B1016" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                             <Grid>
                                                 <TextBlock Text="No preview" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage}}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=224}" Stretch="UniformToFill"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -640,7 +640,7 @@
                                         <Border Margin="0,0,10,10" Padding="10" MinWidth="190" MaxWidth="230" Style="{StaticResource Card}">
                                             <StackPanel>
                                                 <Border Width="170" Height="82" Background="#0B0F13" CornerRadius="6" Margin="0,0,0,7" ClipToBounds="True">
-                                                    <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage}}" Stretch="UniformToFill"/>
+                                                    <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=384}" Stretch="UniformToFill"/>
                                                 </Border>
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="205"/>
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
