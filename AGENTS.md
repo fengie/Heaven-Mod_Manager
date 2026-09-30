@@ -31,6 +31,10 @@ Before risky work, identify invariants, failure modes, state transitions, integr
 
 Every meaningful change set must update root README.md, increment the patch component of VERSION.txt, synchronize Directory.Build.props and continuity/release metadata, and update CHANGELOG.md in the same change set before completion. One integrated change set gets one patch increment; evidence-only attestation/publication of that same change set stays on its version. Independent code, configuration, tests, documentation or governance changes advance again.
 
+### Mandatory centralized feature planning
+
+`_AGENT_CONTEXT/PROJECT_PLAN.md` is the single source of truth for feature plans, priority, ownership and progress. Before proposing or starting feature work, read/update the relevant plan ID; create a new entry there instead of a competing roadmap/status checklist. Specialized design/audit docs may hold detail but must link back to the plan and must not independently claim current progress. Update plan status/checks/owner/dependencies/next action in the same checkpoint whenever feature truth changes, and keep the root `README.md` current-goals/progress mirror synchronized. Completion requires truthful acceptance/verification/integration evidence; do not pre-tick work or mark DONE from implementation alone.
+
 ### Mandatory completion handoff
 
 Before completion/termination leave ordered exact next actions, improvement opportunities, unresolved risks/debt/verification gaps, branch/revision/artifact evidence and ownership/integration status in authoritative continuity. Supersede stale notes. The next agent must continue without previous chat history.

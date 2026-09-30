@@ -26,10 +26,13 @@ The durable hierarchy is:
 - `AGENTS.md` — concise mandatory entry point;
 - `NEXT-AGENT-START-HERE.md` — current handoff;
 - `_AGENT_CONTEXT/CURRENT_REVISION.json` — machine-readable current state and exact verification applicability;
+- `_AGENT_CONTEXT/PROJECT_PLAN.md` — canonical feature priorities, ownership, dependencies, progress milestones, and next actions;
 - this file — permanent Core Rules;
 - `_AGENT_CONTEXT/LEARNED_RULES.md` — append-only agent-discovered durable rules;
 - `_AGENT_CONTEXT/README_FIRST.md` — remaining read order;
 - current state, next steps, verification, research, architecture, decisions, known issues, and evidence documents.
+
+Feature planning follows the same rule: `_AGENT_CONTEXT/PROJECT_PLAN.md` is the current-status authority. Detailed design docs, issues, PRs, CURRENT_STATE, NEXT_STEPS, and handoffs may preserve evidence/detail but must not become competing live roadmaps. Keep the root README summary synchronized.
 
 Do not leave important project knowledge only in chat, private reasoning, terminal history, temporary logs, CI webpages, or unpushed files.
 

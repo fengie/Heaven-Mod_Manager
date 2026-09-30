@@ -1,4 +1,4 @@
-# READ THIS FIRST — MHW Manual Mod Manager v8.8.7
+# READ THIS FIRST — MHW Manual Mod Manager v8.8.50
 
 **Current reconciliation checkpoint — 2026-09-29 (v8.8.7):** canonical `main` was audited at `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`, and the shipped identity is v8.8.7. Cross-session updater ownership, Agent Control 0.5.1 liveness, reliability coverage, security/authorization hardening, profile/UI integration, and updater E2E/release-gating follow-ups are canonical.
 
@@ -32,16 +32,16 @@ The user wants a robust manual mod manager with strong failure diagnostics and i
 1. `_AGENT_CONTEXT/CURRENT_REVISION.json` — machine-readable current status and the exact source commit verification applies to.
 2. `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` — permanent Core Rules and recursive continuity constitution.
 3. `_AGENT_CONTEXT/LEARNED_RULES.md` — active incident-driven rules; preserve append-only history.
-4. `_AGENT_CONTEXT/CURRENT_STATE.md`
-5. `_AGENT_CONTEXT/ARCHITECTURE.md`
-6. `docs/FUNCTION-VERIFICATION.md`
-7. `_AGENT_CONTEXT/DECISIONS.md`
-8. `_AGENT_CONTEXT/KNOWN_ISSUES.md`
-9. `_AGENT_CONTEXT/SOURCE_MAP.md`
-10. `_AGENT_CONTEXT/VERIFICATION.md`
-11. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
-12. `_AGENT_CONTEXT/NEXT_STEPS.md`
-
+4. `_AGENT_CONTEXT/PROJECT_PLAN.md` — canonical feature priorities, ownership, dependencies, progress checkboxes, and next actions.
+5. `_AGENT_CONTEXT/CURRENT_STATE.md`
+6. `_AGENT_CONTEXT/ARCHITECTURE.md`
+7. `docs/FUNCTION-VERIFICATION.md`
+8. `_AGENT_CONTEXT/DECISIONS.md`
+9. `_AGENT_CONTEXT/KNOWN_ISSUES.md`
+10. `_AGENT_CONTEXT/SOURCE_MAP.md`
+11. `_AGENT_CONTEXT/VERIFICATION.md`
+12. `_AGENT_CONTEXT/RESEARCH_FINDINGS.md`
+13. `_AGENT_CONTEXT/NEXT_STEPS.md`
 ## Integrated specialized support audits
 
 These documents preserve durable research and implementation history. **Read each document's newest status header**: recursive-source reparse containment and archive physical-root containment are now implemented; other audit findings may remain future work.

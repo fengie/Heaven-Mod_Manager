@@ -40,6 +40,10 @@ Bound startup by measured bytes, not file count. Keep current-state truth concis
 
 No agent should answer first and “catch up” on repository context afterward. Progressive startup changes **how much is reread**, not the requirement to prove canonical truth and inspect task-relevant evidence. Propagate the same gate to successors and sub-agents.
 
+## Canonical project planning
+
+The generic operating standard requires every target repository to maintain one authoritative feature-plan/progress ledger. Reuse an existing authoritative roadmap when one exists; otherwise create one in the target repository's normal project-context/docs home. Detailed architecture documents, issues, PRs, and handoffs support that ledger but do not become parallel status authorities. Keep the human-facing project landing page to a short synchronized summary when useful.
+
 ## Required completion behavior
 
 Before declaring a task complete, ask:

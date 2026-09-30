@@ -25,7 +25,7 @@ Fetch; identify canonical branch/revision; inspect status/history/diffs; reconci
 Write down what must remain true before changing code. Include ownership, transactions, ordering, identity, scope, failure state, compatibility, and recovery.
 
 ## Plan
-Choose the smallest boundary that can be independently verified. Define non-goals and acceptance criteria.
+Choose the smallest boundary that can be independently verified. Define non-goals and acceptance criteria. For feature work, create or refresh the item in the repository's single canonical project-plan/progress ledger before implementation; do not create a competing status roadmap. Keep its owner, dependencies, milestones, and next action current as truth changes.
 
 ## Implement
 Make the narrow change. Preserve unrelated behavior. Add observability where failure would otherwise be opaque.

@@ -14,6 +14,10 @@ Every task is collaboration-ready by default. An agent should continuously remai
 - Do not create a swarm for its own sake. Small self-contained work may stay with one agent when coordination overhead would exceed the benefit.
 - Propagate collaboration readiness to successors and generated sub-agent prompts.
 
+## Shared project-plan ownership
+
+Feature-level scheduling and progress must be discoverable from the repository's single canonical project-plan/progress ledger. Agents claim the relevant stable plan ID before mutating a feature boundary, keep one primary owner, respect declared dependencies, and update milestones/status/next action at meaningful checkpoints. Branches, PRs, handoffs, issues, and design docs attach evidence to that ID rather than becoming competing roadmaps. Managers should select actionable READY/ACTIVE work, prevent duplicate claims, and route unchanged blocked recurring work through the repository's deferral policy.
+
 ## Task selection
 - Split work by independent boundaries, not arbitrary file counts.
 - Avoid assigning two agents the same mutable surface unless one is explicitly reviewer/test-only.

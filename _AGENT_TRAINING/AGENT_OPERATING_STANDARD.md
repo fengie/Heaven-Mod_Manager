@@ -61,6 +61,19 @@
 - Before final push, fetch again and reconcile concurrent remote work.
 - Verify the remote contains the commit(s) you claim were pushed.
 
+## Canonical project planning
+
+For feature work, every repository must keep **one canonical project-plan/progress ledger** (use the repository's existing roadmap if it is already authoritative; otherwise create one in the project-context/docs home). That ledger is the status authority.
+
+- Create/refresh the feature entry before substantial implementation.
+- Keep stable ID, priority/status, owner, dependencies, acceptance criteria, checkable milestones, evidence/design links, and one next action.
+- Update it at the same checkpoint when work is claimed, materially advanced, blocked/deferred, integrated, completed, or superseded.
+- Detailed design documents may exist, but they must reference the canonical item and must not maintain a competing current-progress checklist.
+- Human-facing README/project landing pages may mirror a compact summary, but the canonical ledger wins on disagreement and the mirror must be repaired.
+- Never mark a milestone complete merely because code exists; distinguish design, implementation, verification, integration, runtime acceptance, and release as the project requires.
+
+Keep the ledger small enough that agents actually maintain it; archive/supersede stale detail rather than creating parallel plans.
+
 ## Documentation checkpoint
 At each meaningful checkpoint ask:
 1. Did repository truth change?
