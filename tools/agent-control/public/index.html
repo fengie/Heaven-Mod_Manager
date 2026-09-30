@@ -51,7 +51,7 @@
     .section-title h2 { font-size:15px; margin:0; }
     .overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; margin-bottom:16px; }
     details.compact-section {
-      padding:0; margin:0; overflow:hidden; transform:translateZ(0);
+      padding:0; margin:0; overflow:hidden;
       transition:border-color var(--motion-base) var(--motion-ease), background-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease);
       animation:card-enter var(--motion-slow) var(--motion-spring) both;
     }
@@ -580,11 +580,15 @@
     };
     let uiAudioContext = null;
     function ensureUiAudioContext() {
-      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextCtor) return null;
-      uiAudioContext ||= new AudioContextCtor();
-      if (uiAudioContext.state === "suspended") void uiAudioContext.resume();
-      return uiAudioContext;
+      try {
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextCtor) return null;
+        uiAudioContext ||= new AudioContextCtor();
+        if (uiAudioContext.state === "suspended") void uiAudioContext.resume().catch(() => {});
+        return uiAudioContext;
+      } catch {
+        return null;
+      }
     }
 
     function playUiSound(kind="tap") {
