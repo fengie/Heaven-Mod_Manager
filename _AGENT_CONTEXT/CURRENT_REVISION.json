@@ -11,11 +11,11 @@
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.38 Agent Control retry-parent retirement",
   "status": "v8.8.39-verification-gate-repair",
-  "verificationAppliesToCommit": null,
+  "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.39 repairs the product verification gate: DependencyStatus array length compilation, Core helper trace coverage, Storage CA1822 compliance, and handoff-manifest version continuity. Require exact-head Workflow Feature and Security gates before integration.",
+  "verificationScopeNote": "v8.8.39 repairs the product verification gate: DependencyStatus array length compilation, Core/App/Automation trace coverage, Storage/test/benchmark analyzer compliance, locale-stable catalog fixtures, and handoff continuity. The verificationAppliesToCommit pointer remains the last closed verified source until this candidate itself passes exact-head gates.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,7 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
-    "2026-09-30 v8.8.39 verification gate repair: fix dependency blocker array count compilation, trace newly introduced Core helper call sites, make state-free CatalogSync helpers static for strict analyzers, and align durable handoff version metadata.",
+    "2026-09-30 v8.8.39 verification gate repair: fix dependency blocker array count compilation; restore Core/App/Automation trace coverage; satisfy Storage, xUnit, benchmark, and locale analyzers; and align durable handoff metadata while preserving the last closed verification pointer.",
     "2026-09-30 v8.8.38 Agent Control retry-parent retirement: terminal failed retry-dispatched parents with superseded tasks are no longer permanently retained; unresolved recovery/work remains fail-closed; Agent Control/plugin identity advances to v0.6.16.",
     "2026-09-30 v8.8.37 Agent Control registry lifecycle: safely retire ordinary terminal managed workers only after ownership/work preservation, archive terminal/disconnected-timeout federated presence with per-source tombstones, exclude historical rows from live-registry totals, expose forensic Registry history, and advance Agent Control/plugin identity to v0.6.15.",
     "2026-09-30 v8.8.36 Agent Manager notification/stable inspector: render backend notifications, route exact supported inspect actions, persist managed/federated selection across refresh, expose recovery context/valid actions, handle retirement races explicitly, replace fake keyboard card semantics with explicit Inspect controls, and advance Agent Control/plugin identity to v0.6.14.",
