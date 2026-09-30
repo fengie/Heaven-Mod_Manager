@@ -223,7 +223,7 @@ Still required before Nexus is considered a supported catalog provider:
 - GameBanana;
 - curated GitHub Releases;
 - source-aware SQLite cache + FTS5;
-- source badges/filters;
+- [implemented v8.8.50] integrated desktop Browse page with cached FTS search, source filters, sorting, provenance/freshness presentation, and public Nexus/GameBanana refresh;
 - exact installed-origin update checks.
 
 ### Phase 2 — broaden official APIs
