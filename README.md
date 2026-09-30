@@ -1,4 +1,12 @@
-# v8.8.36 Universal Mod Manager
+# v8.8.37 Universal Mod Manager
+
+## v8.8.37 — Agent Manager live-registry truthfulness
+
+The Agent Manager now separates current presence from audit history. Federated `agents` and `counts.total` contain only fresh live sessions; terminal, stale, and disconnected observations move to separately inspectable history, while recovery-owned or unresolved work is kept on a dedicated **Needs Attention / recovery** surface instead of being silently deleted.
+
+Managed terminal rows follow the same operator model: failed/stopped/capacity-blocked records with resolved ownership move out of the live card list, while retry/reconciliation, dirty-work, termination-proof, orphaned/interrupted, or still-running ownership remains visible under Needs Attention. Durable retirement tombstones and stale-replay protections remain intact, and a genuinely fresh provider heartbeat can re-register a previously stale session. Agent Control advances to **v0.6.15**.
+
+
 
 ## v8.8.36 — Agent Manager notification + stable inspector closure
 
