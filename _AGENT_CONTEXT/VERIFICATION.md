@@ -1,3 +1,11 @@
+# v8.8.25 Agent Control operator-markup + plugin identity repair — verification scope
+
+This candidate changes dashboard-generated operator markup, release identity across all private-plugin manifests, and focused regression coverage. Historical v8.8.24 evidence does not verify these bytes.
+
+Required closure is exact-candidate `npm run check` + `npm test`, followed by heaven2 operator smoke for **Copy branch** and manifest/runtime identity. Do not infer live dashboard proof from source-level tests alone.
+
+---
+
 # v8.8.24 Agent Manager operator actions — verification scope
 
 The operator-actions implementation was reconciled from exact source head `6c32c3f351a1950215e0a6702307384d0cefd59c` onto current main without replaying stale continuity state. Regression coverage lives in `tools/agent-control/test/operator-ui-cli.test.mjs`.
