@@ -12,13 +12,13 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
-        var current=(await db.GetModsAsync(ct)).ToDictionary(x=>x.SourcePath,StringComparer.OrdinalIgnoreCase);
+        var current=await db.GetModSourcePathsAsync(ct);
         var directories = await Task.Run(() => Directory.EnumerateDirectories(modsRoot).Order(StringComparer.OrdinalIgnoreCase).ToArray(), ct);
         var priority=100000;
         foreach(var dir in directories)
         {
             ct.ThrowIfCancellationRequested();
-            if(current.ContainsKey(dir)) continue;
+            if(current.Contains(dir)) continue;
             var name=Path.GetFileName(dir);
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var nexusMatch=NexusArchiveSuffixRegex().Match(name);
