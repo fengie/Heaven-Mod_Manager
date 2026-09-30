@@ -34,6 +34,7 @@ Bugs are prevention failures, not routine cleanup. Every agent must optimize for
 - Verification must match the risk. Unit tests alone are insufficient for bugs involving integration, startup, updater/install flows, persistence, concurrency, process lifetime, UI state, machine routing, branch/integration state, or real user-visible behavior.
 - For operator-facing behavior, verify the actual user path on the appropriate machine/environment when available; do not substitute an internal API/unit assertion for an observable UI/runtime claim.
 - Review changed code for adjacent instances of the same defect class. Fix or explicitly rule out sibling cases before closure.
+- For mod conflict/dependency work, treat grouping, precedence, and requirement satisfaction as separate proofs: family membership or configured priority alone never authorizes an overwrite; atomic MHW structural siblings must not mix unrelated providers; and normal deployment/launch paths must fail closed when dependencies or a unique resolver winner are not proven.
 
 ### Mandatory bug-to-precedent closure
 Whenever any bug, regression, escaped defect, false completion claim, broken integration, or process failure is discovered, the owning agent must complete this chain before marking the work done:
