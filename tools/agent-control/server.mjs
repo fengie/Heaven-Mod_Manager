@@ -102,6 +102,7 @@ const HEAVEN_BRIDGE_RUNNER = path.join(HERE, "lib", "heaven-bridge-runner.mjs");
 const SESSION_ID = randomUUID();
 const children = new Map();
 const stopOperations = new Map();
+const capacityTerminationOperations = new Map();
 let degradedReason = null;
 let deployMutex = Promise.resolve();
 let autopilotTickRunning = false;
@@ -855,6 +856,7 @@ function refreshState() {
   const state = loadState();
   let changed = false;
   const now = Date.now();
+  const capacityTerminationRequests = [];
 
   for (const agent of state.agents) {
     const last = selectAgentTerminalMessage(
@@ -868,87 +870,49 @@ function refreshState() {
       changed = true;
     }
 
+    if (agent.remoteTerminationPending) {
+      const heartbeatAt = isoNow();
+      agent.heartbeatAt = heartbeatAt;
+      agent.updatedAt = heartbeatAt;
+      const lease = state.leases.find(item => item.id === agent.leaseId);
+      if (lease && lease.status === "active") {
+        lease.heartbeatAt = heartbeatAt;
+        lease.expiresAt = new Date(now + LEASE_TTL_MS).toISOString();
+      }
+      changed = true;
+      continue;
+    }
+
     const capacityTermination = providerCapacityActiveTerminationDecision(agent);
     if (capacityTermination.terminate) {
       const detectedAt = isoNow();
-      const child = agent.ownerSessionId === SESSION_ID ? children.get(agent.id) : null;
-      const ownsLiveProcess = Boolean(
-        child
-        && child.pid === agent.pid
-        && child.exitCode === null
-        && child.signalCode === null
-        && isPidAlive(agent.pid)
-      );
-
-      agent.status = capacityTermination.status;
+      const operationId = markRemoteTerminationPending(agent, {
+        reason: "provider-capacity",
+        finalStatus: capacityTermination.status,
+        completionEvidence: capacityTermination.completionEvidence,
+        at: detectedAt
+      });
       agent.failureClass = capacityTermination.failureClass;
-      agent.completionEvidence = capacityTermination.completionEvidence;
       agent.providerCapacityEvidence ||= agent.lastMessage || agent.error || null;
       agent.recoveryStatus = "provider-capacity";
       agent.recoveryNextAt = null;
       agent.providerCapacityDetectedAt ||= detectedAt;
-      agent.finishedAt ||= detectedAt;
       agent.updatedAt = detectedAt;
       agent.heartbeatAt = detectedAt;
-      releaseLeaseForAgent(state, agent, "provider-capacity-auto-termination");
       updateTaskForAgent(state, agent);
-      recordAgentFailure(agent, {
-        category: "provider-capacity",
-        phase: "runtime-capacity-detection",
-        reason: capacityTermination.reason
-      });
-      addEvent(state, "agent.capacity-auto-terminated", `${agent.id} hit a hard provider usage limit and was removed from the active swarm`, {
+      addEvent(state, "agent.capacity-termination-pending", `${agent.id} hit a hard provider usage limit; durable termination proof is pending`, {
         agentId: agent.id,
         taskId: agent.taskId,
         reason: capacityTermination.reason,
         evidence: {
           pid: agent.pid || null,
-          ownedProcess: ownsLiveProcess,
-          executionProvider: agent.executionProvider || "local-control"
+          executionProvider: managedAgentProvider(agent),
+          remoteJobId: agent.remoteJobId || null,
+          operationId
         }
       });
-      addNotification(state, {
-        severity: "warning",
-        title: "Usage limit reached · agent stopped",
-        message: `${agent.roleLabel || agent.id} hit a hard usage/credit limit. Agent Control removed it from the active swarm and will not treat it as healthy or auto-retry the same blocked provider.`,
-        action: { type: "inspect-agent", agentId: agent.id },
-        dedupeKey: `capacity-auto-terminated:${agent.id}`
-      });
+      capacityTerminationRequests.push({ agentId: agent.id, operationId });
       changed = true;
-
-      if (ownsLiveProcess) {
-        void (async () => {
-          if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
-            const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "provider-capacity" });
-            if (!bridgeResultSucceeded(cancellation)) {
-              throw new Error(`Heaven Bridge quota cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
-            }
-          }
-          if (isPidAlive(agent.pid)) await killProcessTree(agent.pid);
-          const exited = await waitForPidExit(agent.pid);
-          if (!exited) throw new Error(`PID ${agent.pid} remained alive after provider-capacity termination.`);
-        })().catch(error => {
-          const failed = loadState();
-          const current = failed.agents.find(item => item.id === agent.id);
-          if (current) {
-            current.providerCapacityTerminationError = error?.message || String(error);
-            current.updatedAt = isoNow();
-            addEvent(failed, "agent.capacity-auto-termination-failed", `Could not prove process-tree termination for ${agent.id}`, {
-              agentId: agent.id,
-              taskId: agent.taskId,
-              reason: current.providerCapacityTerminationError
-            });
-            addNotification(failed, {
-              severity: "error",
-              title: "Quota-blocked agent termination failed",
-              message: `${current.roleLabel || current.id} is quota-blocked, but Agent Control could not terminate its owned process tree automatically.`,
-              action: { type: "inspect-agent", agentId: current.id },
-              dedupeKey: `capacity-auto-termination-failed:${current.id}`
-            });
-            saveState(failed);
-          }
-        });
-      }
       continue;
     }
 
@@ -1128,6 +1092,11 @@ function refreshState() {
   if (JSON.stringify(state.federation) !== federationBefore) changed = true;
 
   if (changed && !degradedReason) saveState(state);
+  if (capacityTerminationRequests.length && !degradedReason) {
+    for (const request of capacityTerminationRequests) {
+      setImmediate(() => void terminateProviderCapacityAgent(request.agentId, request.operationId));
+    }
+  }
   if (exhaustedAgentIds.length && !degradedReason) {
     for (const exhaustedAgentId of exhaustedAgentIds) {
       setImmediate(() => void retireRetryExhaustedManagedAgent(exhaustedAgentId));
@@ -1810,6 +1779,31 @@ async function deployOne({
         item.worktreeDirty = worktreeStatus.length > 0;
         item.worktreeStatusSummary = worktreeStatus ? worktreeStatus.slice(0, 4000) : "";
       }
+      if (item.remoteTerminationPending) {
+        item.remoteTerminationProof = {
+          ...(item.remoteTerminationProof || {}),
+          localExitAt: item.remoteTerminationProof?.localExitAt || isoNow(),
+          localExitCode: code ?? null,
+          localExitSignal: signal || null
+        };
+        item.updatedAt = isoNow();
+        item.heartbeatAt = item.updatedAt;
+        addEvent(current, "agent.local-exited-awaiting-remote-proof", `${id} local wrapper exited while durable termination proof is still pending`, {
+          agentId: id,
+          taskId,
+          reason: item.remoteTerminationProof?.reason || "managed-termination",
+          evidence: {
+            exitCode: code,
+            signal: signal || null,
+            executionProvider: managedAgentProvider(item),
+            remoteJobId: item.remoteJobId || null
+          }
+        });
+        saveState(current);
+        children.delete(id);
+        return;
+      }
+
       const authoritativeStatus = classifyAuthoritativeExit(item, code);
       item.status = authoritativeStatus;
       if (authoritativeStatus === "capacity-blocked") {
@@ -2030,6 +2024,275 @@ function swarmTailRecoveryConfig(state) {
 
 function managedAgentProvider(agent) {
   return String(agent?.executionProvider || agent?.runtimeProvider || agent?.provider || "local-control").trim().toLowerCase() || "local-control";
+}
+
+function markRemoteTerminationPending(agent, {
+  reason,
+  finalStatus,
+  completionEvidence,
+  at = isoNow()
+} = {}) {
+  const operationId = randomUUID();
+  const provider = managedAgentProvider(agent);
+  agent.remoteTerminationPending = true;
+  agent.remoteTerminationProof = {
+    operationId,
+    reason: String(reason || "termination"),
+    provider,
+    remoteJobId: String(agent?.remoteJobId || "").trim() || null,
+    finalStatus: String(finalStatus || "stopped"),
+    completionEvidence: String(completionEvidence || "verified-termination"),
+    requestedAt: at,
+    remoteState: null,
+    remoteProvenAt: null,
+    localExitAt: null,
+    localExitCode: null,
+    error: null
+  };
+  agent.status = "stopping";
+  agent.finishedAt = null;
+  agent.completionEvidence = null;
+  agent.blocker = null;
+  agent.updatedAt = at;
+  return operationId;
+}
+
+async function proveManagedRemoteTermination(agent, {
+  reason = "managed-termination"
+} = {}) {
+  const provider = managedAgentProvider(agent);
+  if (provider !== "heaven-bridge") {
+    return { required: false, stopped: true, state: null };
+  }
+
+  const remoteJobId = String(agent?.remoteJobId || "").trim();
+  if (!remoteJobId) {
+    throw new Error("Heaven Bridge termination requires a durable remote job id.");
+  }
+
+  return proveRemoteJobStopped({
+    remoteJobId,
+    cancelJob: async jobId => {
+      const cancellation = await cancelHeavenBridgeJob(jobId, { reason });
+      return {
+        succeeded: bridgeResultSucceeded(cancellation),
+        cancelRequested: cancellation?.data?.cancel_requested === true,
+        reason: cancellation?.data?.reason || null
+      };
+    },
+    getStatus: async jobId => {
+      const status = await runHeavenBridgeAction({
+        id: `terminate-status-${jobId}-${Date.now()}`,
+        action: "job_status",
+        params: { job_id: jobId },
+        timeoutMs: 30_000,
+        priority: "highest"
+      });
+      return {
+        succeeded: bridgeResultSucceeded(status),
+        state: status?.data?.state || "unknown"
+      };
+    }
+  });
+}
+
+function remoteTerminationOperationMatches(agent, operationId) {
+  return Boolean(
+    agent?.remoteTerminationPending
+    && agent?.remoteTerminationProof?.operationId
+    && agent.remoteTerminationProof.operationId === operationId
+  );
+}
+
+function recordRemoteTerminationFailure(state, agent, operationId, error) {
+  if (!remoteTerminationOperationMatches(agent, operationId)) return false;
+  const message = error?.message || String(error);
+  agent.status = "blocked";
+  agent.blocker = "termination-unproven";
+  agent.updatedAt = isoNow();
+  agent.remoteTerminationProof = {
+    ...agent.remoteTerminationProof,
+    error: message
+  };
+  updateTaskForAgent(state, agent);
+  const capacity = agent.remoteTerminationProof.reason === "provider-capacity";
+  if (capacity) {
+    agent.providerCapacityTerminationError = message;
+    addEvent(state, "agent.capacity-auto-termination-failed", `Could not prove process-tree termination for ${agent.id}`, {
+      agentId: agent.id,
+      taskId: agent.taskId,
+      reason: message
+    });
+    addNotification(state, {
+      severity: "error",
+      title: "Quota-blocked agent termination failed",
+      message: `${agent.roleLabel || agent.id} remains ownership-blocked because durable remote/local termination was not proven.`,
+      action: { type: "inspect-agent", agentId: agent.id },
+      dedupeKey: `capacity-auto-termination-failed:${agent.id}`
+    });
+  } else {
+    addEvent(state, "agent.stop-failed", `Failed to prove termination of ${agent.id}`, {
+      agentId: agent.id,
+      taskId: agent.taskId,
+      reason: message
+    });
+    addNotification(state, {
+      severity: "error",
+      title: "Stop could not be proven",
+      message: `${agent.roleLabel || agent.id} keeps its ownership lease because termination was not proven.`,
+      action: { type: "inspect-agent", agentId: agent.id },
+      dedupeKey: `stop-failed:${agent.id}`
+    });
+  }
+  return true;
+}
+
+function finalizeManagedTermination(state, agent, operationId, remoteProof, localExitAt) {
+  if (!remoteTerminationOperationMatches(agent, operationId)) {
+    throw new Error(`Termination operation ${operationId} no longer owns ${agent?.id || "unknown"}.`);
+  }
+  const proof = agent.remoteTerminationProof;
+  const finalStatus = proof.finalStatus || "stopped";
+  const completionEvidence = proof.completionEvidence || "verified-termination";
+  const finishedAt = localExitAt || proof.localExitAt || isoNow();
+
+  agent.remoteTerminationPending = false;
+  agent.remoteTerminationProof = {
+    ...proof,
+    remoteState: remoteProof?.state || null,
+    remoteProvenAt: isoNow(),
+    localExitAt: finishedAt,
+    error: null
+  };
+  agent.status = finalStatus;
+  agent.finishedAt = finishedAt;
+  agent.updatedAt = isoNow();
+  agent.heartbeatAt = agent.updatedAt;
+  agent.completionEvidence = completionEvidence;
+  agent.blocker = null;
+
+  if (proof.reason === "provider-capacity") {
+    agent.failureClass = "provider-capacity";
+    agent.recoveryStatus = "provider-capacity";
+    agent.recoveryNextAt = null;
+    releaseLeaseForAgent(state, agent, "provider-capacity-auto-termination");
+    updateTaskForAgent(state, agent);
+    recordAgentFailure(agent, {
+      category: "provider-capacity",
+      phase: "runtime-capacity-detection",
+      reason: "provider-capacity-message-detected"
+    });
+    addEvent(state, "agent.capacity-auto-terminated", `${agent.id} hit a hard provider usage limit and was removed from the active swarm`, {
+      agentId: agent.id,
+      taskId: agent.taskId,
+      reason: "provider-capacity-message-detected",
+      evidence: {
+        pid: agent.pid || null,
+        executionProvider: managedAgentProvider(agent),
+        remoteJobId: agent.remoteJobId || null,
+        remoteState: remoteProof?.state || null
+      }
+    });
+    addNotification(state, {
+      severity: "warning",
+      title: "Usage limit reached · agent stopped",
+      message: `${agent.roleLabel || agent.id} hit a hard usage/credit limit. Agent Control removed it only after durable termination proof.`,
+      action: { type: "inspect-agent", agentId: agent.id },
+      dedupeKey: `capacity-auto-terminated:${agent.id}`
+    });
+  } else {
+    releaseLeaseForAgent(state, agent, "verified-user-stop");
+    updateTaskForAgent(state, agent);
+    addEvent(state, "agent.stopped", `${agent.id} stopped after durable remote/local termination proof`, {
+      agentId: agent.id,
+      taskId: agent.taskId,
+      reason: "verified-process-exit",
+      evidence: {
+        executionProvider: managedAgentProvider(agent),
+        remoteJobId: agent.remoteJobId || null,
+        remoteState: remoteProof?.state || null
+      }
+    });
+  }
+  return agent;
+}
+
+async function performManagedTermination(agentId, operationId) {
+  let state = loadState();
+  let agent = state.agents.find(item => item.id === agentId);
+  if (!agent || !remoteTerminationOperationMatches(agent, operationId)) return agent || null;
+
+  try {
+    const proofReason = agent.remoteTerminationProof.reason || "managed-termination";
+    const remoteProof = await proveManagedRemoteTermination(agent, { reason: proofReason });
+
+    state = loadState();
+    agent = state.agents.find(item => item.id === agentId);
+    if (!agent || !remoteTerminationOperationMatches(agent, operationId)) return agent || null;
+    agent.remoteTerminationProof = {
+      ...agent.remoteTerminationProof,
+      remoteState: remoteProof?.state || null,
+      remoteProvenAt: isoNow(),
+      error: null
+    };
+    saveState(state);
+
+    const child = children.get(agentId);
+    const ownsProcessIdentity = Boolean(
+      agent.ownerSessionId === SESSION_ID
+      && child
+      && child.pid === agent.pid
+    );
+    let localExitAt = agent.remoteTerminationProof.localExitAt || null;
+
+    if (!localExitAt) {
+      if (!ownsProcessIdentity) {
+        throw new Error(`Cannot safely finalize ${agentId}: owned local wrapper identity is unavailable.`);
+      }
+      if (isPidAlive(agent.pid)) await killProcessTree(agent.pid);
+      const exited = await waitForPidExit(agent.pid);
+      if (!exited) throw new Error(`PID ${agent.pid} remained alive after the bounded termination wait.`);
+      localExitAt = isoNow();
+    }
+
+    state = loadState();
+    agent = state.agents.find(item => item.id === agentId);
+    if (!agent || !remoteTerminationOperationMatches(agent, operationId)) return agent || null;
+    agent.remoteTerminationProof = {
+      ...agent.remoteTerminationProof,
+      localExitAt: agent.remoteTerminationProof.localExitAt || localExitAt,
+      localExitCode: agent.remoteTerminationProof.localExitCode ?? child?.exitCode ?? null
+    };
+    const finalized = finalizeManagedTermination(
+      state,
+      agent,
+      operationId,
+      remoteProof,
+      agent.remoteTerminationProof.localExitAt
+    );
+    saveState(state);
+    children.delete(agentId);
+    return finalized;
+  } catch (error) {
+    state = loadState();
+    agent = state.agents.find(item => item.id === agentId);
+    if (agent && recordRemoteTerminationFailure(state, agent, operationId, error)) saveState(state);
+    throw error;
+  }
+}
+
+async function terminateProviderCapacityAgent(agentId, operationId) {
+  const existing = capacityTerminationOperations.get(agentId);
+  if (existing) return existing;
+  const operation = performManagedTermination(agentId, operationId);
+  capacityTerminationOperations.set(agentId, operation);
+  try {
+    return await operation;
+  } catch {
+    return null;
+  } finally {
+    if (capacityTerminationOperations.get(agentId) === operation) capacityTerminationOperations.delete(agentId);
+  }
 }
 
 function markRegistryRetirementBlocked(state, source, reason) {
@@ -3197,69 +3460,26 @@ async function stopAgentOnce(id) {
   }
 
   agent.stopRequestedAt ||= isoNow();
-  agent.status = "stopping";
-  agent.updatedAt = isoNow();
+  const operationId = markRemoteTerminationPending(agent, {
+    reason: "operator-stop",
+    finalStatus: "stopped",
+    completionEvidence: "verified-operator-stop",
+    at: agent.stopRequestedAt
+  });
   updateTaskForAgent(state, agent);
   addEvent(state, "agent.stopping", `Stop requested for ${id}`, {
     agentId: id,
     taskId: agent.taskId,
-    reason: "operator-stop"
+    reason: "operator-stop",
+    evidence: {
+      executionProvider: managedAgentProvider(agent),
+      remoteJobId: agent.remoteJobId || null,
+      operationId
+    }
   });
   saveState(state);
 
-  try {
-    if (agent.executionProvider === "heaven-bridge" && agent.remoteJobId) {
-      const cancellation = await cancelHeavenBridgeJob(agent.remoteJobId, { reason: "operator-stop" });
-      if (!bridgeResultSucceeded(cancellation)) {
-        throw new Error(`Heaven Bridge cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
-      }
-    }
-    await killProcessTree(agent.pid);
-    const exited = await waitForPidExit(agent.pid);
-    if (!exited) throw new Error(`PID ${agent.pid} remained alive after the bounded termination wait.`);
-  } catch (error) {
-    const failedStop = loadState();
-    const item = failedStop.agents.find(candidate => candidate.id === id);
-    if (item) {
-      item.status = "blocked";
-      item.blocker = "termination-unproven";
-      item.updatedAt = isoNow();
-      updateTaskForAgent(failedStop, item);
-      addEvent(failedStop, "agent.stop-failed", `Failed to prove termination of ${id}`, {
-        agentId: id,
-        taskId: item.taskId,
-        reason: error.message || String(error)
-      });
-      addNotification(failedStop, {
-        severity: "error",
-        title: "Stop could not be proven",
-        message: `${item.roleLabel || id} keeps its ownership lease because termination was not proven.`,
-        action: { type: "inspect-agent", agentId: id },
-        dedupeKey: `stop-failed:${id}`
-      });
-    }
-    saveState(failedStop);
-    throw error;
-  }
-
-  const stopped = loadState();
-  const item = stopped.agents.find(candidate => candidate.id === id);
-  if (item && !isTerminalStatus(item.status)) {
-    item.status = "stopped";
-    item.finishedAt = isoNow();
-    item.updatedAt = isoNow();
-    item.completionEvidence = "verified-operator-stop";
-    releaseLeaseForAgent(stopped, item, "verified-user-stop");
-    updateTaskForAgent(stopped, item);
-    addEvent(stopped, "agent.stopped", `${id} stopped after process-exit proof`, {
-      agentId: id,
-      taskId: item.taskId,
-      reason: "verified-process-exit"
-    });
-    saveState(stopped);
-  }
-  children.delete(id);
-  return item || agent;
+  return await performManagedTermination(id, operationId);
 }
 
 async function branchDivergence(agent) {
