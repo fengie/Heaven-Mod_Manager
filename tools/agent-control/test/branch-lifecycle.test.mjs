@@ -99,6 +99,7 @@ test("cleanup failure prevents completion", () => {
     branchName: "feature/integrated",
     branchSha: "abc",
     mainContainsBranchTip: true,
+    canonicalTreeContainsBranchDelta: true,
     deletionSucceeded: false
   }), { status: "cleanup-required", reason: "deletion-not-verified" });
 });
