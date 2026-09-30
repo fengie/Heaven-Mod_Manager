@@ -102,6 +102,49 @@ public sealed class UxHardeningTests
     }
 
     [Fact]
+    public void Dashboard_page_stretches_without_viewport_width_binding()
+    {
+        var root=FindRepositoryRoot();
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+        var document=System.Xml.Linq.XDocument.Parse(xaml);
+        var dashboard=document.Descendants()
+            .Single(element=>element.Name.LocalName=="TabItem"&&(string?)element.Attribute("Header")=="Dashboard");
+        var scroll=dashboard.Descendants()
+            .Single(element=>element.Name.LocalName=="ScrollViewer"&&element.Attributes().Any(attribute=>attribute.Name.LocalName=="Name"&&attribute.Value=="DashboardScroll"));
+        var wrapper=Assert.Single(scroll.Elements());
+
+        Assert.Equal("Stretch",(string?)scroll.Attribute("HorizontalContentAlignment"));
+        Assert.Equal("Stretch",(string?)wrapper.Attribute("HorizontalAlignment"));
+        Assert.Null(wrapper.Attribute("Width"));
+    }
+
+    [Fact]
+    public void Initial_metadata_refresh_can_retry_after_a_failed_or_cancelled_attempt()
+    {
+        var root=FindRepositoryRoot();
+        var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
+
+        Assert.Contains("private bool initialMetadataRefreshCompleted;",vm);
+        Assert.Contains("!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted",vm);
+        var start=vm.IndexOf("private async Task EnsureInitialMetadataLoadedAsync",StringComparison.Ordinal);
+        var end=vm.IndexOf("private async Task EnsureConflictPreviewsLoadedAsync",start,StringComparison.Ordinal);
+        Assert.True(start>=0&&end>start);
+        var method=vm[start..end];
+        Assert.Contains("if(completed)initialMetadataRefreshCompleted=true;",method);
+        Assert.Contains("initialMetadataRefreshStarted=false;",method);
+    }
+
+    [Fact]
+    public void Startup_diagnostics_strip_updater_health_arguments_before_logging()
+    {
+        var root=FindRepositoryRoot();
+        var app=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","App.xaml.cs"));
+
+        Assert.Contains("UpdateArgumentSanitizer.RemoveHealthArguments(e.Args)",app);
+        Assert.DoesNotContain("string.Join(\" \",e.Args)",app);
+    }
+
+    [Fact]
     public void Background_metadata_and_remote_visual_cache_are_hardened()
     {
         var root=FindRepositoryRoot();
