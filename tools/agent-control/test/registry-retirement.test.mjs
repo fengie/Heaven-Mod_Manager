@@ -49,7 +49,12 @@ test("ordinary terminal managed agents retire only after attention and cleanup s
   assert.deepEqual(managedAgentRetirementDecision(
     { status: "done", recoveryStatus: "work-verified-complete" },
     { status: "done", branchCleanup: { status: "done" } }
-  ), { retire: true, reason: "terminal-done" });
+  ), { retire: false, reason: "completed-history" });
+
+  assert.deepEqual(managedAgentRetirementDecision(
+    { status: "stopped", recoveryStatus: "stopped" },
+    { status: "done", branchCleanup: { status: "done" } }
+  ), { retire: true, reason: "terminal-stopped" });
 });
 
 test("federated retirement is terminal immediately and timeout-based for abandoned presence", () => {
