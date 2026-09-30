@@ -212,7 +212,7 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
             game.Id,
             domain,
             document);
-        if (!normalized.Mod.ProviderModId.Equals(providerModId, StringComparison.OrdinalIgnoreCase))
+        if (!normalized.ProviderModId.Equals(providerModId, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException("Nexus v3 returned a mod whose game-scoped id does not match the requested mod.");
         }
