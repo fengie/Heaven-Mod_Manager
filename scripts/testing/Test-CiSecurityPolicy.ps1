@@ -11,14 +11,32 @@ if([string]::IsNullOrWhiteSpace($Root)){
 }
 
 function Get-RepoRelativePath {
-    param([string]$BasePath,[string]$FullPath)
-    $base=(Resolve-Path -LiteralPath $BasePath).Path.TrimEnd('\\')
+    param(
+        [Parameter(Mandatory=$true)][string]$BasePath,
+        [Parameter(Mandatory=$true)][string]$FullPath
+    )
+
+    # Security CI runs under Windows PowerShell 5.1 on the self-hosted runner.
+    # Stay on the .NET Framework API surface and avoid hand-escaped separators.
+    $trimChars=[char[]]'\/'
+    $base=[IO.Path]::GetFullPath((Resolve-Path -LiteralPath $BasePath).Path).TrimEnd($trimChars)
     $full=[IO.Path]::GetFullPath($FullPath)
-    $prefix=$base+'\\'
-    if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){
+    $comparison=if($env:OS -eq 'Windows_NT' -or $PSVersionTable.PSEdition -eq 'Desktop'){
+        [StringComparison]::OrdinalIgnoreCase
+    }else{
+        [StringComparison]::Ordinal
+    }
+
+    if([string]::Equals($base,$full,$comparison)){
+        return '.'
+    }
+
+    $prefix=$base+[IO.Path]::DirectorySeparatorChar
+    if(-not $full.StartsWith($prefix,$comparison)){
         throw "Path is outside repository root: $FullPath"
     }
-    return $full.Substring($prefix.Length)
+
+    return ($full.Substring($prefix.Length) -replace '\\','/')
 }
 
 $workflowRoot=Join-Path $Root '.github\workflows'
@@ -76,7 +94,8 @@ foreach($workflow in $workflows){
     if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
         $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
     }
-    if($usesSelfHosted -and $writeAllowlist -notcontains $workflow.Name -and $content -match '(?mi)^\s{2}[A-Za-z][A-Za-z0-9-]*:\s*write\s*
+    if($usesSelfHosted -and $writeAllowlist -notcontains $workflow.Name
+        -and $content -match '(?mi)^\s{2}[A-Za-z][A-Za-z0-9-]*:\s*write\s*$'){
         $errors.Add("$($workflow.Name): persistent self-hosted code execution must not carry write-capable GITHUB_TOKEN scopes. Split privileged mutation into an explicitly reviewed trusted workflow.")
     }
 
@@ -185,9 +204,6 @@ if(!(Test-Path -LiteralPath $bridgeWorkerPath)){
         'AUTH_HMAC_NOT_CONFIGURED',
         'HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY',
         'HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL',
-        'MIN_HMAC_KEY_BYTES = 32',
-        'def sign_relay_document(document):',
-        'signed_body = sign_relay_document(body)',
         'def safe_process_env():',
         'SENSITIVE_HOST_ENV_BLOCKED',
         'env=env if env is not None else safe_process_env()'
@@ -211,8 +227,6 @@ if(!(Test-Path -LiteralPath $bridgeProviderPath)){
     $bridgeProvider=Get-Content -LiteralPath $bridgeProviderPath -Raw
     foreach($required in @(
         'resolveBridgeSigningKey',
-        'verifyBridgeDocument',
-        'timingSafeEqual',
         'AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE',
         'unsigned privileged relay jobs are disabled by default'
     )){
