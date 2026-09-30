@@ -747,16 +747,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task AutoPopulate()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var preferredModIds=Mods
+            .SelectMany(row=>row.ExpandStage().Where(x=>x.Value.enabled).Select(x=>x.Key))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         AutoPopulateResult? result=null;
         await RunBusy(
             "mods.auto-populate",
             "Auto Populating Mods",
-            "Building the largest safe setup, enabling dependencies and required texture providers, and rejecting anything that would conflict…",
+            "Keeping your currently selected mods, then filling around them with compatible mods, dependencies, and required texture providers…",
             true,
             async ct=>
             {
                 var service=new AutoPopulateService(s.PlannerSnapshots,s.Planner,s.Dependencies,s.Paths.GameRoot,s.Paths.Game);
-                result=await service.BuildAsync(ct);
+                result=await service.BuildAsync(preferredModIds,ct);
                 var stage=result.State.ToDictionary(
                     x=>x.Key,
                     x=>(x.Value.Enabled,x.Value.Priority),
