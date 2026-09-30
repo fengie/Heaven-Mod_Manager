@@ -1,8 +1,9 @@
 # v8.8.33 — Agent Control lightweight health contract
 - Make `GET /api/status` a `loadState()`-backed health response instead of invoking the full controller snapshot.
 - Remove repository inspection, branch/integration scans, worker enumeration, federation refresh, and Heaven Bridge probing from the health path.
-- Keep full operator/controller data behind `GET /api/snapshot`.
-- Add `health-contract.test.mjs` to reject heavyweight status-route dependencies.
+- Keep full operator/controller data behind `GET /api/snapshot` and reuse one Heaven Bridge assessment across its worker/federation views.
+- Preserve authoritative bridge revalidation for actual dispatch; only advisory snapshot work is deduplicated.
+- Add `health-contract.test.mjs` to reject heavyweight status-route dependencies and regress duplicate full-snapshot bridge inspection.
 - Preserve v8.8.32 retirement hardening and card accessibility; advance Agent Control/root/nested plugin identity to v0.6.11.
 
 # v8.8.32 — Agent Control retirement identity fail-closed closure
