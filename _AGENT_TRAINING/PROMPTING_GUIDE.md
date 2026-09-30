@@ -23,6 +23,7 @@ Strong prompts reduce wasted work by making source of truth, scope, acceptance, 
 - branch assumptions without fetch/status/history checks;
 - output-only requests that omit repository updates when durable work is required.
 - cross-runtime file contracts that test only synthetic fixtures; when one tool writes text/JSON for another tool to parse, include the real producer encoding/serialization behavior (for example Windows PowerShell UTF-8 BOM output).
+- generated/persisted artifact claims that stop at producer success; round-trip persisted data through its real consumer and parse/execute generated scripts with their target interpreter.
 
 ## Parallelize when
 Tasks are independent, ownership boundaries are clear, support research can proceed without mutating the same files, and integration criteria are explicit.
