@@ -33,9 +33,9 @@
     .machine-role { color:var(--accent); font-size:10px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
     .topology-node strong { display:block; margin-top:3px; font-size:18px; }
     .machine-detail { display:block; margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4; }
-    .grid { display:grid; grid-template-columns:minmax(310px,.85fr) minmax(0,1.85fr); gap:18px; align-items:start; }
+    .grid { display:block; }
     .card { background:rgba(16,21,29,.9); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 18px 70px rgba(0,0,0,.24); }
-    .composer { padding:18px; position:sticky; top:14px; }
+    .composer { padding:18px; position:static; margin-bottom:18px; }
     .section { padding:16px; margin-bottom:16px; }
     .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
     .section-title h2 { font-size:15px; margin:0; }
@@ -53,7 +53,7 @@
     .role-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
     .start-card { align-self:start; }
     .start-hero { display:grid; gap:10px; padding:8px 0 4px; }
-    .start-swarm { width:100%; min-height:88px; font-size:22px; font-weight:900; letter-spacing:.04em; }
+    .start-swarm { width:100%; min-height:112px; font-size:28px; font-weight:900; letter-spacing:.04em; }
     .start-status { color:var(--muted); line-height:1.45; text-align:center; }
     .overall-goal-wrap { margin-top:2px; }
     .overall-goal-label { margin:0 0 7px; color:var(--text); font-size:13px; font-weight:850; }
@@ -147,17 +147,45 @@
       <aside class="card composer start-card">
         <div class="section-title"><h2>Start the swarm</h2><span class="pill" id="repoPill">ready</span></div>
         <div class="start-hero">
-          <button class="primary start-swarm" id="startSwarm">♾ START PERPETUAL SWARM</button>
-          <div class="overall-goal-wrap">
-            <label class="overall-goal-label" for="overallGoal">Overall goal <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-            <textarea class="overall-goal" id="overallGoal" placeholder="Example: Make Agent Manager fully autonomous, resilient, easy to operate, and always aligned with the project’s highest-level outcome."></textarea>
-            <div class="overall-goal-note">When set, this stays attached to the perpetual run and is passed through every swarm phase. Leave it blank for the existing behavior.</div>
-          </div>
-          <div class="start-status" id="startSwarmStatus">One click starts the swarm and keeps cycling: stabilize → verify/review/repair → integrate → clean repo state → expand → repeat.</div>
+          <button class="primary start-swarm" id="startSwarm">START SWARM</button>
+          <div class="start-status" id="startSwarmStatus">Click Start. Agent Control handles autonomy, read-only, drain, routing freshness, worker placement, and perpetual cycling automatically.</div>
+        </div>
+      </aside>
+
+      <main>
+        <div class="stats">
+          <div class="card stat"><span>Live agents</span><strong id="running">0</strong></div>
+          <div class="card stat"><span>Working</span><strong id="working">0</strong></div>
+          <div class="card stat"><span>Waiting</span><strong id="waiting">0</strong></div>
+          <div class="card stat"><span>Blocked</span><strong id="blocked">0</strong></div>
+          <div class="card stat"><span>Idle</span><strong id="idle">0</strong></div>
+          <div class="card stat"><span>Stale</span><strong id="stale">0</strong></div>
+          <div class="card stat"><span>Disconnected</span><strong id="disconnected">0</strong></div>
+          <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
+          <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
+          <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
+          <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
         </div>
 
-        <details class="advanced">
-          <summary>Custom launch options</summary>
+        <details class="card diagnostics">
+          <summary>Advanced / diagnostics</summary>
+          <div class="diagnostics-body">
+            <div class="actions">
+              <button id="refresh">Refresh status</button>
+              <button id="sync">Sync Git</button>
+            </div>
+
+        <section class="card section">
+          <div class="section-title">
+            <h2>Optional launch customization</h2>
+            <span class="pill">not required</span>
+          </div>
+          <div class="overall-goal-wrap">
+            <label class="overall-goal-label" for="overallGoal">Overall goal <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+            <textarea class="overall-goal" id="overallGoal" placeholder="Leave blank to continuously improve the project using the default swarm objective."></textarea>
+            <div class="overall-goal-note">You never need to fill this in to start the swarm.</div>
+          </div>
+
           <label for="task">Custom objective <span style="font-weight:400">(optional)</span></label>
           <textarea id="task" style="min-height:92px" placeholder="Leave blank to continue the highest-value unfinished work."></textarea>
 
@@ -190,42 +218,20 @@
             </div>
           </div>
 
-          <label>Deploy one role</label>
-          <div class="role-grid">
-            <button class="primary deploy" data-role="support">Support</button>
-            <button class="deploy" data-role="reviewer">Reviewer</button>
-            <button class="deploy" data-role="test">Test</button>
-            <button class="deploy" data-role="main">Main</button>
-            <button class="deploy" data-role="manager">Manager</button>
-            <button class="deploy" data-role="integration">Integration</button>
-            <button class="deploy" data-role="recovery">Recovery</button>
-            <button class="deploy" data-role="release">Release</button>
-          </div>
-        </details>
-      </aside>
-
-      <main>
-        <div class="stats">
-          <div class="card stat"><span>Live agents</span><strong id="running">0</strong></div>
-          <div class="card stat"><span>Working</span><strong id="working">0</strong></div>
-          <div class="card stat"><span>Waiting</span><strong id="waiting">0</strong></div>
-          <div class="card stat"><span>Blocked</span><strong id="blocked">0</strong></div>
-          <div class="card stat"><span>Idle</span><strong id="idle">0</strong></div>
-          <div class="card stat"><span>Stale</span><strong id="stale">0</strong></div>
-          <div class="card stat"><span>Disconnected</span><strong id="disconnected">0</strong></div>
-          <div class="card stat"><span>Active leases</span><strong id="leases">0</strong></div>
-          <div class="card stat"><span>Integration</span><strong id="candidates">0</strong></div>
-          <div class="card stat"><span>Success</span><strong id="success">—</strong></div>
-          <div class="card stat"><span>Registry total</span><strong id="total">0</strong></div>
-        </div>
-
-        <details class="card diagnostics">
-          <summary>Advanced / diagnostics</summary>
-          <div class="diagnostics-body">
-            <div class="actions">
-              <button id="refresh">Refresh status</button>
-              <button id="sync">Sync Git</button>
+          <details class="advanced">
+            <summary>Manual single-agent deployment</summary>
+            <div class="role-grid">
+              <button class="primary deploy" data-role="support">Support</button>
+              <button class="deploy" data-role="reviewer">Reviewer</button>
+              <button class="deploy" data-role="test">Test</button>
+              <button class="deploy" data-role="main">Main</button>
+              <button class="deploy" data-role="manager">Manager</button>
+              <button class="deploy" data-role="integration">Integration</button>
+              <button class="deploy" data-role="recovery">Recovery</button>
+              <button class="deploy" data-role="release">Release</button>
             </div>
+          </details>
+        </section>
         <section class="card section">
           <div class="section-title">
             <h2>Operator controls</h2>
