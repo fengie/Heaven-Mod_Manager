@@ -65,6 +65,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Parse security policy before execution
+        shell: powershell
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "$env:GITHUB_WORKSPACE\scripts\testing\Test-CiSecurityPolicy.ps1",
+            [ref]$tokens,
+            [ref]$parseErrors
+          ) | Out-Null
+          if ($parseErrors -and $parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
       - name: Audit workflow security policy
         shell: powershell
         run: .\scripts\testing\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE
