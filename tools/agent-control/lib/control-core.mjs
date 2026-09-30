@@ -190,8 +190,12 @@ export function defaultControlState({ sessionId, hostname }) {
       },
       swarmTailRecovery: {
         enabled: true,
+        replaceStale: true,
+        staleAfterMs: 900_000,
+        retryBaseMs: 15_000,
+        retryMaxMs: 300_000,
         maxWorkers: 4,
-        maxAttemptsPerRoot: 2
+        maxAttemptsPerRoot: 4
       }
     },
     autopilot: defaultAutopilotState(),
