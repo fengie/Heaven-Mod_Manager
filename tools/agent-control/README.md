@@ -1,3 +1,9 @@
+# v0.6.16 — superseded retry-parent retirement
+
+## What v0.6.16 does
+
+Agent Control no longer treats `retry-dispatched` as a permanent retention state for a terminal parent whose task has already been superseded by a replacement. The parent now goes through the existing fail-closed retirement proof and disappears from current managed-agent presence when its process, branch provenance, and worktree are safe; durable retirement history is retained separately. Pending/blocked/unverified recovery and unresolved task/work states remain protected.
+
 # v0.6.15 — registry lifecycle closure
 
 ## What v0.6.15 does
