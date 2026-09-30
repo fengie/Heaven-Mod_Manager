@@ -133,11 +133,12 @@ public sealed class NexusV3CatalogProviderTests
         var files = await provider.GetModFilesAsync(game, "101");
 
         Assert.Equal(
-            [
+            new[]
+            {
                 "/v3/games/monsterhunterworld/mods/101",
                 "/v3/mods/fixture-mod-global-id/files",
                 "/v3/mod-files/fixture-file-id/versions"
-            ],
+            },
             requests);
 
         Assert.Equal(2, files.Count);
@@ -147,7 +148,7 @@ public sealed class NexusV3CatalogProviderTests
         Assert.Equal(CatalogFileCategory.Main, main.Category);
         Assert.Equal("1.2.0", main.Version);
         Assert.True(main.Recommended);
-        Assert.Contains("fixture-file-id", main.ProviderMetadata, StringComparison.Ordinal);
+        Assert.Contains("fixture-file-id", main.ProviderMetadata!, StringComparison.Ordinal);
 
         var optional = files[1];
         Assert.Equal("fixture-optional-version-id", optional.ProviderFileId);
@@ -180,8 +181,8 @@ public sealed class NexusV3CatalogProviderTests
         Assert.NotNull(mod);
         Assert.Equal("101", mod!.ProviderModId);
         Assert.Equal("nexus:101", mod.CanonicalId);
-        Assert.Contains("fixture-mod-global-id", mod.ProviderMetadata, StringComparison.Ordinal);
-        Assert.DoesNotContain("fixture-token", mod.ProviderMetadata, StringComparison.Ordinal);
+        Assert.Contains("fixture-mod-global-id", mod.ProviderMetadata!, StringComparison.Ordinal);
+        Assert.DoesNotContain("fixture-token", mod.ProviderMetadata!, StringComparison.Ordinal);
     }
 
     [Fact]
