@@ -3,6 +3,17 @@
 ## Principle
 Parallelism is useful only when ownership and integration state remain discoverable from the repository.
 
+## Default collaboration readiness
+Every task is collaboration-ready by default. An agent should continuously remain able to coordinate with peers rather than assuming isolated execution.
+
+- Check for relevant active, partial, or previously completed agent work before duplicating effort.
+- Use bounded delegation when another agent can materially improve speed, specialization, independent verification, recovery, or parallelism.
+- Share precise scope, ownership, artifacts, dependencies, and acceptance criteria so another agent can contribute without guessing.
+- Consume and integrate peer results instead of merely collecting summaries; the owning agent remains responsible for verifying the combined outcome.
+- Keep one primary owner per mutable boundary and avoid parallel edits that race the same state.
+- Do not create a swarm for its own sake. Small self-contained work may stay with one agent when coordination overhead would exceed the benefit.
+- Propagate collaboration readiness to successors and generated sub-agent prompts.
+
 ## Task selection
 - Split work by independent boundaries, not arbitrary file counts.
 - Avoid assigning two agents the same mutable surface unless one is explicitly reviewer/test-only.
