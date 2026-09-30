@@ -617,3 +617,10 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+
+- Cross-repository updater publication is one logical transaction even when GitHub exposes two release repositories.
+- A release workflow must not be cancellable after publication begins unless cancellation is transaction-aware and compensating.
+- Publish the feed consumed by installed clients before making a secondary/canonical release visible to humans. If publication fails between the two, prefer clients being ahead of the canonical listing over clients being behind it.
+- Retry paths must recover automation-owned abandoned drafts instead of treating them as permanent blockers.
+- Release completion requires an automated parity assertion over tag/build identity plus exact asset names, sizes, and server digests.
