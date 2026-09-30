@@ -896,3 +896,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-039 deterministic failure classification; LR-046 installed-runtime/restart proof; v8.8.26 retry-exhausted registry retirement.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-052 — remote retirement requires monotonic proof across execution layers
+
+- **Rule ID:** LR-052
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Remote workers, relay wrappers, live registries, retirement tombstones, heartbeat/session replay
+- **Rule:** A remote-backed entity may leave live registry state only after every execution layer is authoritatively terminal. Local wrapper exit, `not_running`, `unknown`, or any generic non-running state is insufficient. Re-registering a retired provider source requires raw lifecycle evidence strictly newer than the retirement tombstone before normalization can synthesize freshness.
+- **Trigger / evidence:** Heaven Bridge cancellation can report `not_running` for queued/unclaimed work while `job_status` reports `unknown` outside RUNNING/PROCESSED; stale live-state provider payloads could also clear tombstones without proving a newer heartbeat.
+- **Rationale:** Multi-hop systems can outlive their local wrapper and stale replicas can look live. Absence of running evidence is not terminal proof, and normalized freshness is not new-session proof.
+- **Enforcement:** Whitelist explicit processed terminal states, fail closed for every ambiguous/authority-failure state, re-cancel running races, and compare raw heartbeat/session evidence monotonically against retirement time before clearing tombstones.
+- **Regression/evidence:** v8.8.31 `registry-retirement.test.mjs` terminal/queued/race/authority matrix and retired-heartbeat matrix; real heaven2→heaven1 smoke remains required.
+- **Related rules:** LR-017 independent recovery ownership; LR-039 deterministic failure classification; LR-051 provider resolution parity.
+- **Supersedes:** none
+- **Superseded by:** none
