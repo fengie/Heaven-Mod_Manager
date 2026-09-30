@@ -1,3 +1,13 @@
+# v8.8.38 Agent Control live-registry projection — verification scope
+
+This follow-up exists because review of the merged v8.8.37 retirement patch found three remaining truthfulness gaps: historical federated rows were still returned in the live array; unresolved managed recovery/ownership was mixed into the normal managed list; and durable completed managed evidence remained mixed with current presence.
+
+Required exact-head source evidence is Agent Control syntax plus the complete deterministic suite and the configured Security Supply Chain gate. Regressions must prove live-only managed/federated arrays, dedicated attention/history projections, persistent workflow evidence for completed managed records, attention routing for uncertain recovered work, live-count exclusion, stable inspector lookup across all projections, and parseable/bound UI controls.
+
+v8.8.37 destructive-safety rules remain authoritative: uncertain ownership, remote-stop ambiguity, dirty/divergent work, incomplete provenance, and unresolved durable work must never be silently deleted just to make the live UI clean. Projection is not deletion. #458 may close after source acceptance is proven; #475/#477/#461 retain separate live heaven2 runtime/browser gates.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — verification scope
 
 This patch changes registry lifecycle truthfulness and therefore requires exact-head Agent Control syntax/tests plus the configured Agent Control and Security PR gates. Historical product or runtime evidence does not verify these changed bytes.
