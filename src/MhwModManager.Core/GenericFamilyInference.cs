@@ -140,7 +140,7 @@ public static partial class GenericFamilyInference
             }
         }
 
-        foreach(var encoded in encodedPairs)
+        foreach(var encoded in encodedPairs.Order())
             yield return ((int)(encoded>>32),(int)(encoded&uint.MaxValue));
 
         void AddPostings(string prefix,IEnumerable<string> values,int index)
