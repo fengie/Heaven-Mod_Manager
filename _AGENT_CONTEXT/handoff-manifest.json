@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.33",
+  "currentVersion": "8.8.34",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.32 missing retirement identity fail-closed repair",
+  "immediateParentRevision": "v8.8.33 Agent Control lightweight health",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.33 lightweight health is integrated on canonical main via PR #495. Complete the pending live heaven2 status timing/no-false-restart proof and heaven2→heaven1 retirement/replay smoke without relabeling source-only evidence as runtime closure. Then continue Agent Manager P0 startup freshness, sibling stop safety, and notification/inspector closure; preserve durable successor notes.",
+  "nextAgentObligation": "Verify and integrate v8.8.34 durable stop proof on its exact candidate. Preserve proof-pending ownership until both authoritative Heaven terminal state (when applicable) and local wrapper exit are proven; ambiguous or missing remote identity must remain blocked without lease release. After merge, obtain live heaven2→heaven stop smoke when available, preserve pending v8.8.33 live health evidence, then continue startup freshness and notification/inspector closure.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
