@@ -2,6 +2,8 @@
 
 Current UI lane is stacked on PR #528's latest v8.8.50 governance baseline. Product behavior change is limited to Agent Manager presentation: high-volume operational sections default closed, summarize state at a glance, expand full-width with internal scrolling, and automatically open Inspector when inspection is requested. Verify stacked exact head, then after #528 lands reconcile onto fresh main and rerun gates before integration. Live heaven2 browser acceptance remains required.
 
+Canonical continuity pointers for v8.8.51: `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` remains the permanent constitution and `_AGENT_CONTEXT/LEARNED_RULES.md` remains the active learned-rules ledger. Every successor must read and preserve both.
+
 ---
 # v8.8.50 governance reconciliation — current handoff
 
