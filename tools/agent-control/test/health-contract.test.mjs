@@ -30,6 +30,7 @@ test("status health avoids heavyweight controller work", () => {
   assert.doesNotMatch(route, /repositorySnapshot/);
   assert.doesNotMatch(route, /inspectHeavenBridge/);
   assert.match(route, /loadState/);
+  assert.match(route, /workerSnapshot\(state, \{ inspectRemote: false \}\)/);
 });
 
 test("full dashboard snapshot reuses one Heaven Bridge assessment", () => {
@@ -41,8 +42,8 @@ test("full dashboard snapshot reuses one Heaven Bridge assessment", () => {
     1,
     "buildSnapshot must assess Heaven Bridge exactly once on heaven2"
   );
-  assert.match(snapshot, /workerSnapshot\(state, heavenBridgeAssessment\)/);
-  assert.match(snapshot, /runtimeFederationSnapshot\(state, heavenBridgeAssessment\)/);
+  assert.match(snapshot, /workerSnapshot\(state, \{ heavenBridgeAssessment \}\)/);
+  assert.match(snapshot, /runtimeFederationSnapshot\(state, \{ heavenBridgeAssessment \}\)/);
 
   const workers = block(source, "async function workerSnapshot", "function federationCountCoverage");
   assert.match(workers, /heavenBridgeAssessment === undefined/);
