@@ -46,6 +46,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify pinned .NET SDK
         shell: powershell
@@ -156,7 +157,16 @@ jobs:
       - name: Persist promoted verification state
         if: success() && github.ref == 'refs/heads/main'
         shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
+            throw 'Repository token was not supplied to the verification-state persistence step.'
+          }
+          $authBytes = [Text.Encoding]::UTF8.GetBytes("x-access-token:$env:GH_TOKEN")
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
+          $env:GIT_CONFIG_VALUE_0 = 'AUTHORIZATION: basic ' + [Convert]::ToBase64String($authBytes)
           # Verification evidence is exact-input data. Never replay a stale run's promoted
           # cache/evidence commit on top of a newer main revision.
           git fetch origin main
