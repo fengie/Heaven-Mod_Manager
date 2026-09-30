@@ -69,3 +69,8 @@ The long-term rule is simple:
 Whenever work exposes a bug, regression, false completion, process/agent failure, release failure, coordination failure, user correction, or durable workflow improvement, generic promotion is a required completion gate.
 
 A qualifying lesson is closed only when project evidence is durable, root cause/invariant are stated, generic trainer coverage was checked, missing/weak doctrine was updated, and enforcement was strengthened where practical. Repeated escape of an already-documented class means the prevention mechanism itself failed and must be strengthened.
+
+
+## Repository structure training
+
+`REPOSITORY_STRUCTURE.md` is mandatory training for every repository-changing agent. It defines the organized-library placement invariant, canonical directory homes, subfolder rules, safe move protocol, verification requirements, and multi-agent coordination for reorganization work.
