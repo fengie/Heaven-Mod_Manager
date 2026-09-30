@@ -84,7 +84,7 @@ public sealed record CatalogBrowserItem(
 
 public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
 {
-    private static readonly string[] SortOptions=["Recently updated","Most downloaded","Highest rated","Name"];
+    private readonly string[] sortModes=["Recently updated","Most downloaded","Highest rated","Name"];
 
     private readonly CatalogRepository repository;
     private readonly CatalogSyncService syncService;
@@ -98,11 +98,18 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
 
     public ObservableRangeCollection<CatalogBrowserItem> Results{get;}=[];
     public ObservableRangeCollection<CatalogProviderFilter> ProviderFilters{get;}=[];
-    public IReadOnlyList<string> SortModes=>SortOptions;
+    public IReadOnlyList<string> SortModes
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return sortModes;
+        }
+    }
 
     [ObservableProperty]private string searchText="";
     [ObservableProperty]private CatalogProviderFilter selectedProvider=CatalogProviderFilter.All;
-    [ObservableProperty]private string selectedSortMode=SortOptions[0];
+    [ObservableProperty]private string selectedSortMode="Recently updated";
     [ObservableProperty]private CatalogBrowserItem? selectedMod;
     [ObservableProperty]private bool isRefreshing;
     [ObservableProperty]private string statusText="Open Browse to load the local catalog.";
