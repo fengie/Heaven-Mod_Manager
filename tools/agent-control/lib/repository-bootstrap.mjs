@@ -15,6 +15,7 @@ const MAX_CONTEXT_QUERY_BYTES = 256;
 const MAX_CONTEXT_MATCH_BYTES = 512;
 const MANAGER_PATH = "_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt";
 const DOCUMENTS = new Set([...REQUIRED_REPOSITORY_TRAINING_PATHS, ...REPOSITORY_CONTEXT_INDEX_PATHS, MANAGER_PATH]);
+const CONTEXT_DOCUMENTS = new Set(REPOSITORY_CONTEXT_INDEX_PATHS);
 const sha256 = value => createHash("sha256").update(value).digest("hex");
 const bounded = (value, limit = 160) => {
   let result = "", bytes = 0;
@@ -122,6 +123,7 @@ export function verifyRepositoryBootstrap(packet, { root, head, now = Date.now()
 }
 
 function verifiedContextLines({ root, document, expectedSha256 }) {
+  if (!CONTEXT_DOCUMENTS.has(document)) throw new Error("Context retrieval path is not an indexed context document.");
   if (!/^[a-f0-9]{64}$/.test(String(expectedSha256 || ""))) throw new Error("Context retrieval requires the indexed source SHA-256.");
   const bytes = documentBytes(root, document);
   if (sha256(bytes) !== expectedSha256) throw new Error("Indexed context hash changed; refresh bootstrap before reading.");
