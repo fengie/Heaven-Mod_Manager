@@ -314,3 +314,16 @@ Development and validation launches on the operator machine must never be left l
 - After a user-facing updater release is publicly mirrored, operator-facing verification on `heaven2` must include launching the actual desktop shortcut (or other canonical user launcher) and verifying that the resulting process resolves to the updater-managed install and expected published build.
 - The updater mutates a packaged install in place, so a version string embedded in the parent folder name may be stale. Do not infer the running version from the folder name or shortcut label.
 - If a temporary validation instance and the installed client are both present, close the temporary instance before presenting or validating the installed client so the user cannot mistake one for the other.
+
+## Security boundary invariants
+
+- Every external GitHub Action reference must remain pinned to a full 40-character commit SHA; readable tags belong in comments only.
+- Persistent self-hosted runners must never execute fork pull-request code, and PR checkouts on those runners must use `persist-credentials: false`.
+- Do not introduce `pull_request_target` as a shortcut around PR trust boundaries.
+- Keep workflow token permissions explicit and least-privilege. New write scopes require a documented mutation need.
+- Privileged release tools must be preprovisioned or fetched from an immutable versioned location and cryptographically verified before execution; never resolve and execute a moving `latest` asset.
+- NuGet/dependency vulnerability auditing must not be disabled by command-line overrides, project properties, or CI convenience flags.
+- Changes to workflows, release security, or the CI policy must pass `scripts/Test-CiSecurityPolicy.ps1`; the security gate must also trigger when that policy script itself changes.
+- Hardened Heaven Bridge deployments use machine-local per-job cryptographic authentication; repository write access alone is a compatibility boundary, not the preferred execution authority.
+- Updater hashes are integrity checks, not an independent publisher trust root. Preserve the path toward independently signed update metadata and key rotation/recovery.
+
