@@ -25,7 +25,9 @@
    - opened panel expands full-width and long content scrolls internally;
    - severity totals are useful while Notifications is closed;
    - managed/federated/supported-notification Inspect opens Inspector;
-   - normal auto-refresh preserves the DOM-native open/closed state and selected Inspector.
+   - normal auto-refresh preserves the DOM-native open/closed state and selected Inspector;
+   - UI sound starts off for a fresh profile, persists after explicit opt-in, and periodic refresh remains silent;
+   - reduced-motion suppresses transition work, and metric changes do not animate while the page is hidden.
 
 ## Successor improvements / risks
 - Persist per-user section preferences only if real operator use justifies it; native `details` state already survives in-page data refresh.
