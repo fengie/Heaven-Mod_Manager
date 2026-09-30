@@ -181,6 +181,6 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Violated invariant / wrong assumption:** A cancelled, pending, superseded, or older-SHA run is never merge evidence. Canonical integration requires a successful gate for the exact candidate head.
 - **Direct fix:** Apply one atomic repair commit on the newest canonical main, preserve concurrent provider behavior fixes, close the GitHub compile/analyzer gaps, and trace all newly introduced provider/capability getters before running one combined gate.
 - **Preventive rule/process change:** Bind merge decisions to exact SHA + successful required gate immediately before merge. Reconciled branches must carry every known defect fix from branches they supersede.
-- **Regression/verification:** The atomic repair PR must pass the exact Heaven feature gate across the fully integrated provider set before merge.
+- **Regression/verification:** The atomic repair PR must pass the exact Heaven feature gate across the fully integrated provider set before merge. Run `36661512788` was cancelled by shared feature-gate concurrency and is explicitly not merge evidence; the replacement exact-head run must complete successfully.
 - **Sibling/adjacent cases checked:** SQLite/FTS #325 did pass run 36659776837 before merge. GameBanana assisted-page fix #333 is preserved. Nexus provider entrypoints already contain first-statement traces on current main.
 - **Reference:** #327, #330; cancelled runs 36660058628 and 36660257258; successful storage run 36659776837.
