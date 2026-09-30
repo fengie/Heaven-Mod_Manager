@@ -193,18 +193,47 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         Profiles=ProfilesPage.Rows;
         GamesPage=new GamesPageViewModel(s.GameRegistry);
         Games=GamesPage.Rows;
-        PropertyChanged += (_, args) => MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
-        Mods.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
+        PropertyChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-PROPERTY", $"MainWindowViewModel property changed: {args.PropertyName ?? "<unknown>"}");
+        };
+        Mods.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"Mods change={args.Action}; count={Mods.Count}");
+        };
         Conflicts.CollectionChanged += (_, args) =>
         {
-            MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"Conflicts change={args.Action}; count={Conflicts.Count}");
             NotifyConflictDerivedState();
         };
-        OutfitRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"OutfitRows change={args.Action}; count={OutfitRows.Count}");
-        Profiles.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"Profiles change={args.Action}; count={Profiles.Count}");
-        ActivityRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"ActivityRows change={args.Action}; count={ActivityRows.Count}");
-        IssueSuspects.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"IssueSuspects change={args.Action}; count={IssueSuspects.Count}");
-        OverlapRows.CollectionChanged += (_, args) => MasterDebugLog.Write("VM-COLLECTION", $"OverlapRows change={args.Action}; count={OverlapRows.Count}");
+        OutfitRows.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"OutfitRows change={args.Action}; count={OutfitRows.Count}");
+        };
+        Profiles.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"Profiles change={args.Action}; count={Profiles.Count}");
+        };
+        ActivityRows.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"ActivityRows change={args.Action}; count={ActivityRows.Count}");
+        };
+        IssueSuspects.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"IssueSuspects change={args.Action}; count={IssueSuspects.Count}");
+        };
+        OverlapRows.CollectionChanged += (_, args) =>
+        {
+            if (MasterDebugLog.DetailedTracingEnabled)
+                MasterDebugLog.Write("VM-COLLECTION", $"OverlapRows change={args.Action}; count={OverlapRows.Count}");
+        };
         ModsView=CollectionViewSource.GetDefaultView(Mods);
         ModsView.Filter=FilterMod;
         GamesPage.Refresh();
