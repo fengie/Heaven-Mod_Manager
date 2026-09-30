@@ -4821,6 +4821,18 @@ function serveStatic(res, pathname) {
   return true;
 }
 
+function allowedHost(req) {
+  const host = String(req.headers.host || "").trim().toLowerCase();
+  if (!host) return false;
+  const allowed = new Set([
+    `${String(HOST).trim().toLowerCase()}:${PORT}`,
+    `localhost:${PORT}`,
+    `127.0.0.1:${PORT}`,
+    `[::1]:${PORT}`
+  ]);
+  return allowed.has(host);
+}
+
 function allowedOrigin(req) {
   const origin = req.headers.origin;
   if (!origin) return true;
@@ -4837,6 +4849,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${HOST}:${PORT}`);
     const pathname = decodeURIComponent(url.pathname);
 
+    if (!allowedHost(req)) return sendJson(res, 400, { error: "Host not allowed." });
     if (!allowedOrigin(req)) return sendJson(res, 403, { error: "Origin not allowed." });
 
     if (req.method === "GET" && pathname === "/api/status") {
