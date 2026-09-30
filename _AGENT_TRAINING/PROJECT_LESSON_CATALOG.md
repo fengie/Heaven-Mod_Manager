@@ -47,6 +47,9 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 
 29. **Long-running autonomy needs progress supervision plus an independent controller supervisor.** A live PID/heartbeat proves only process/channel liveness, not useful forward progress. Track progress separately, preserve durable work before one-for-one replacement, gate replacement on execution capacity, persist pending recovery across restarts, rate-limit restart storms, and place the controller itself under a recovery owner outside its process/failure domain.
 
+30. **Provider capabilities must be evidence-backed by implemented transport semantics.** Do not advertise full search, browse modes, mutation, or download capability when the implementation only serves a narrower subset; unsupported semantics should fail closed rather than silently return partial results.
+31. **Trusted-host checks need DNS label boundaries.** After parsing a URI, accept an origin only by exact host equality or a dot-delimited subdomain check; raw string suffix tests such as `host.EndsWith("example.com")` also accept lookalikes such as `evilexample.com`.
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
