@@ -323,6 +323,29 @@ function Invoke-AgentHandoffPreflight {
     }
 }
 
+function Invoke-CiSecurityPolicyPreflight {
+    Write-MhwMasterDebug -Root $Root -Area 'VERIFY-SECURITY' -Message 'START CI security policy preflight'
+    $log=Join-Path $BuildLogs ("ci-security-policy-{0}.log" -f $Stamp)
+    $sw=[System.Diagnostics.Stopwatch]::StartNew()
+    try {
+        & (Join-Path $PSScriptRoot 'Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        $sw.Stop()
+        Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'Workflow actions, permissions, self-hosted PR trust, remote bootstrap, and dependency-audit invariants passed.'
+        Write-Host 'PASS: CI supply-chain policy' -ForegroundColor Green
+        Write-MhwMasterDebug -Root $Root -Area 'VERIFY-SECURITY' -Message 'PASS CI security policy preflight'
+        return $true
+    }
+    catch {
+        $sw.Stop()
+        $_.Exception.ToString() | Add-Content -Path $log -Encoding UTF8
+        Add-Result 'Security' 'CI supply-chain policy' $false 6 $sw.Elapsed.TotalSeconds $log $_.Exception.Message
+        Write-Host "FAIL: CI supply-chain policy - $($_.Exception.Message)" -ForegroundColor Red
+        Write-MhwMasterDebug -Root $Root -Area 'VERIFY-SECURITY' -Message $_.Exception.ToString()
+        return $false
+    }
+}
+
+
 function Write-Reports {
     Write-MhwMasterDebug -Root $Root -Area 'VERIFY-REPORT' -Message ("Writing reports: Markdown=$MarkdownReport; JSON=$JsonReport")
     $resultArray=@($script:Results)
@@ -407,6 +430,7 @@ try {
     Invoke-PowerShellSyntaxSweep | Out-Null
     Invoke-HarnessReportPreflight | Out-Null
     Invoke-AgentHandoffPreflight | Out-Null
+    Invoke-CiSecurityPolicyPreflight | Out-Null
 
     Invoke-DotnetStep 'Restore' 'Solution restore' @('restore','.\MhwModManager.sln') 'restore' | Out-Null
 
