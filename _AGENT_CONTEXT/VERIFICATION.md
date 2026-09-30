@@ -1,4 +1,8 @@
-# v8.8.40 efficient agent bootstrap + repository-gate recovery — verification scope
+# v8.8.40 exact-source closure — 2026-09-30
+
+Product source `f7bbeb8d317a9e0be09733013262cc5d32783ef3`: Windows Release Gate `36751367465` SUCCESS, repository verifier 26/26; main security `36751367414` and Agent Control `36751367635` SUCCESS. Immutable public/private updater build 349 parity verified. Disposable updater success/rollback run `36752050465` passed. Live heaven2 controller 0.6.18 plus generated main/manager/verification prompt smoke passed. Exact details and operator-installation/bridge gaps are in `EVIDENCE/v8.8.40-bootstrap-runtime-closure.md`; CI evidence-only persistence is `b3fe5cd7`.
+
+# v8.8.40 efficient agent bootstrap + repository-gate recovery — historical verification scope
 
 The new startup contract has focused exact-source evidence from PR #510: Agent Control syntax and deterministic tests passed on the initial bootstrap head, and Security Supply Chain passed. The first broad Workflow Feature run failed in the repository verifier on pre-existing product debt already isolated by #507: CA1822 in CatalogSync/benchmark code plus planner ambiguity, binary update semantics, Atom whitespace normalization, and GitLab latest-release normalization. That failure is not acceptance evidence, but it proves the red gate was outside the bootstrap-only files.
 

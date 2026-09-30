@@ -1,4 +1,8 @@
-# 2026-09-30 v8.8.40 efficient bootstrap + verification recovery — CURRENT CANDIDATE
+# 2026-09-30 v8.8.40 closure evidence — current continuation
+
+PR #510 is integrated; exact-main release/security/controller gates passed, build 349 is immutable in both updater feeds, and Agent Control 0.6.18 is running on heaven2 at source `f7bbeb8d`. #507 is closed as superseded. The candidate checklist below is historical and superseded by `_AGENT_CONTEXT/EVIDENCE/v8.8.40-bootstrap-runtime-closure.md`, which records exact commands/results, ownership, ordered next actions and improvement opportunities. Continue the actual operator-installed-client staged-update verification and separately authorized bridge runtime recovery; do not claim the operator client updated from disposable CI proof. Preserve and recursively propagate the continuity constitution to your successor.
+
+# 2026-09-30 v8.8.40 efficient bootstrap + verification recovery — historical candidate
 
 1. Let PR #510 finish exact-head Agent Control, Workflow Feature, and Security Supply Chain gates; do not infer success from earlier heads.
 2. If Workflow Feature remains red, repair only the independently reproduced failing group; do not weaken verification or revert to full-corpus agent startup.

@@ -1,4 +1,8 @@
-# v8.8.40 efficient agent bootstrap + repository-gate recovery — CURRENT CANDIDATE
+# v8.8.40 bootstrap integrated and controller deployed — 2026-09-30
+
+Exact product source `f7bbeb8d317a9e0be09733013262cc5d32783ef3` passed release gate `36751367465` (26/26), Agent Control and security. Immutable private/public build 349 assets match. Live heaven2 controller reports v0.6.18 and that exact source; fresh generated prompts reduce mandatory corpus reading about 80%. See `_AGENT_CONTEXT/EVIDENCE/v8.8.40-bootstrap-runtime-closure.md` for proof and separate operator-client/bridge verification gaps. No full product verification is inferred for later independent source changes.
+
+# v8.8.40 efficient agent bootstrap + repository-gate recovery — historical candidate
 
 - PR #510 is the current integration lane, based on the v8.8.39 Heaven Local Bridge primary-reliability main lineage.
 - Agent startup is progressive: a small full-read core is paired with a hash-verified indexed context manifest; large continuity/training ledgers are expanded only where task-relevant.
