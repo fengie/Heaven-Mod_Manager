@@ -10,7 +10,10 @@ This note records the engineering rationale for the fail-closed conflict/depende
 4. File-vs-directory path collisions fail closed regardless of priority. A path cannot reliably be both a file and an ancestor directory.
 5. A currently-live manager-owned file does not satisfy a dependency if its provider is absent from the staged set, because the same deployment is about to remove or restore that file.
 6. Manual exact rules and verified same-source update/optional lineage remain authoritative. Unknown same-family subsets remain blocking until overwrite direction is proven.
-7. Deployment remains transactional and rollback-safe; preflight never mutates game files.
+7. Structural siblings that form one MHW asset bundle are treated atomically: exact-path independence is not enough when model/material/physics files are coupled at runtime.
+8. A resolver may never fall back to priority when it claims a collision is safe but cannot identify a provider that actually participates in the collision.
+9. Texture priority is advisory only. Automatic precedence requires high-confidence revision/role/provenance evidence.
+10. Deployment remains transactional and rollback-safe; preflight never mutates game files.
 
 ## External references
 
