@@ -1,3 +1,13 @@
+# v8.8.33 Agent Control lightweight health — CURRENT CANDIDATE
+
+- `GET /api/status` is now a local-state-only liveness path and no longer calls `buildSnapshot()`, repository scans, branch divergence, or Heaven Bridge inspection.
+- Startup restore and the Agent Control watchdog keep using `/api/status` with their existing three-second timeout, now isolated from slow Git/relay work.
+- Full dashboard snapshots compute at most one Heaven Bridge assessment and share it between worker and federation views.
+- Real dispatch retains authoritative Heaven Bridge validation; this change does not weaken execution trust checks.
+- Exact-head Agent Control/Security gates remain required; live heaven2 p50/p95 timing is still pending runtime evidence.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? CURRENT
 
 Canonical v8.8.31 remote-stop proof is retained. This patch closes the remaining identity gap: the canonical provider fallback applies before retirement and any Heaven-backed retry-exhausted row without a durable remote job id is preserved as retry-blocked. Migration keeps retired-source tombstones/retiredAt boundaries intact.
