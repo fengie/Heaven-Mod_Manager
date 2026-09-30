@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.38 retry-parent retirement — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and the full Agent Control test suite; require configured Agent Control and Security gates.
+2. Verify a terminal failed parent with `recoveryStatus=retry-dispatched` and a superseded task is retirement-eligible.
+3. Verify `retry-pending`, retry-blocked, incomplete/unverified work, active/attention/candidate/cleanup task states remain protected.
+4. Merge to current `main` only after exact-head gates pass.
+5. Deploy/restart Agent Control v0.6.16 on heaven2 and verify the observed stale retry-parent cards are archived out of **Managed agents** while durable Registry history remains available.
+
+---
+
 # 2026-09-30 v8.8.37 registry lifecycle — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
