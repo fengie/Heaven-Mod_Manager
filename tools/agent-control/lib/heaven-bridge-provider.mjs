@@ -28,6 +28,20 @@ function envFlag(value) {
   return ["1", "true", "yes", "on"].includes(clean(value).toLowerCase());
 }
 
+export function resolveUnsignedBridgeAllowance({
+  env = process.env,
+  homeDir = os.homedir(),
+  existsSync = fs.existsSync
+} = {}) {
+  if (envFlag(env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)) return true;
+  const marker = path.join(homeDir, "HeavenBridge", "auth", "allow-repo-acl-only");
+  try {
+    return Boolean(existsSync(marker));
+  } catch {
+    return false;
+  }
+}
+
 function resolveBridgeKeySlot({
   env = process.env,
   homeDir = os.homedir(),
@@ -316,7 +330,7 @@ function heartbeatAssessment(heartbeat, {
   expectedHost = HEAVEN_BRIDGE_HOST,
   signingKey = resolveBridgeSigningKey(),
   previousSigningKey = resolveBridgePreviousSigningKey(),
-  allowUnsigned = envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)
+  allowUnsigned = resolveUnsignedBridgeAllowance()
 } = {}) {
   if (!heartbeat || typeof heartbeat !== "object") {
     return { healthy: false, reason: "heartbeat-malformed", heartbeat: null };
@@ -629,7 +643,7 @@ export async function submitHeavenBridgeJob(job, {
   const signingKey = resolveBridgeSigningKey();
   if (clean(signingKey)) {
     job = signBridgeJob(job, signingKey);
-  } else if (!envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)) {
+  } else if (!resolveUnsignedBridgeAllowance()) {
     throw new Error(
       "Heaven Bridge HMAC key is not configured; unsigned privileged relay jobs are disabled by default."
     );
@@ -695,7 +709,7 @@ export async function waitForHeavenBridgeResult({
       const signingKey = resolveBridgeSigningKey();
       const previousSigningKey = resolveBridgePreviousSigningKey();
       verifyBridgeDocument(result, signingKey, {
-        allowUnsigned: envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE),
+        allowUnsigned: resolveUnsignedBridgeAllowance(),
         previousKey: previousSigningKey
       });
       return validateBridgeResult(result, { id, action, requireHost: normalizeBridgeHost(targetHost) });
