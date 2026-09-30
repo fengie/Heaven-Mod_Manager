@@ -32,7 +32,8 @@ concurrency:
 jobs:
   workflow-policy:
     name: Enforce immutable actions and runner trust boundary
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 10
     steps:
       - name: Check out exact source without persisted credentials
@@ -70,6 +71,19 @@ jobs:
                   failures.append(f"{path}: persistent self-hosted PR workflow must reject fork PR code")
               if "pull_request_target:" in text and "actions/checkout@" in text:
                   failures.append(f"{path}: pull_request_target plus checkout requires explicit security design review")
+
+          release_path = workflow_dir / "windows-release-gate.yml"
+          release_text = release_path.read_text(encoding="utf-8")
+          if "repos/cli/cli/releases/latest" in release_text or "Get-Command gh" in release_text:
+              failures.append(f"{release_path}: privileged release tooling must not trust a moving latest release or arbitrary preinstalled gh.exe")
+          if "$version = '2.101.0'" not in release_text:
+              failures.append(f"{release_path}: GitHub CLI bootstrap version is not pinned to the reviewed release")
+          if "bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794" not in release_text:
+              failures.append(f"{release_path}: reviewed GitHub CLI SHA-256 is missing")
+          if "Get-FileHash" not in release_text:
+              failures.append(f"{release_path}: GitHub CLI archive must be digest-verified before execution")
+          if "https://github.com/cli/cli/releases/download/v${version}/${assetName}" not in release_text:
+              failures.append(f"{release_path}: GitHub CLI bootstrap must use the pinned release-asset URL")
 
           if failures:
               print("\n".join(f"ERROR: {item}" for item in failures))
