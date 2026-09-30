@@ -76,6 +76,13 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual("heaven-maintenance/v1 owner=agent ",payload["env"]["H_OWNER_MARKER"])
         self.assertIn("HeavenMaintenance--*",payload["command"])
 
+    def test_create_without_cwd_uses_conditional_action(self):
+        scheduler,cp=self.scheduler()
+        scheduler.create_job("agent","cleanup",self.EXE,confirm=True)
+        command=cp.calls[0][1]["command"]
+        self.assertIn("IsNullOrWhiteSpace($env:H_CWD)",command)
+        self.assertEqual("",cp.calls[0][1]["env"]["H_CWD"])
+
 
 if __name__=="__main__":
     unittest.main()
