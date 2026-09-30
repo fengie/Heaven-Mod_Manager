@@ -255,25 +255,10 @@ public sealed class ConflictEngine
                 return true;
             }
 
-            // A smaller package that is mostly contained by a larger sibling is the generic shape of
-            // an optional component, even when its author uses an unfamiliar future naming scheme.
-            var ac = contentStats.GetValueOrDefault(a.Id)?.TotalFiles ?? stats.LeftFiles;
-            var bc = contentStats.GetValueOrDefault(b.Id)?.TotalFiles ?? stats.RightFiles;
-            var smaller = ac <= bc ? a : b;
-            var larger = ReferenceEquals(smaller,a) ? b : a;
-            var smallerCount = Math.Min(ac,bc);
-            if (smallerCount > 0 && stats.SmallerOverlapRatio >= .75 && ac != bc)
-            {
-                MasterDebugLog.Write("FAMILY-CONFLICT", $"COMPOSE family={familyId}; path={path}; winner={smaller.Id}; reason=subset-component; overlap={stats.SmallerOverlapRatio:F3}");
-                decision = new(path, ConflictKind.ModFamilyOption, false, smaller.Id,
-                    "family-subset-component",
-                    $"'{smaller.DisplayName}' is a mostly-overlapping smaller member of the same logical family as '{larger.DisplayName}'. It is treated as a family component and wins only the paths it supplies.",
-                    Confidence.High,
-                    Inferred:true,
-                    ResolverScore:94,
-                    Evidence:$"Shared logical family '{familyId}'; smaller-package overlap ratio {stats.SmallerOverlapRatio:P0}.");
-                return true;
-            }
+            // Overlap ratio alone is not proof of a safe optional/component relationship for
+            // structural, game-data, plugin, or unknown binary content. Those files can crash the
+            // game when generations are mixed. Only semantic/provenance overlay evidence above may
+            // auto-compose non-texture family members; otherwise fall through to an explicit choice.
         }
 
         // Remaining same-family collisions are ambiguous sibling variants/components. They must never
