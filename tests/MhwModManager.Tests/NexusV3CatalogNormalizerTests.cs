@@ -53,6 +53,9 @@ public sealed class NexusV3CatalogNormalizerTests
         Assert.Equal(
             "monsterhunterworld",
             metadata.RootElement.GetProperty("game_domain").GetString());
+        Assert.Equal(
+            "monsterhunterworld-game-id",
+            metadata.RootElement.GetProperty("game_id").GetString());
     }
 
     [Fact]
@@ -197,6 +200,119 @@ public sealed class NexusV3CatalogNormalizerTests
             () => NexusV3CatalogNormalizer.NormalizeModFiles("101", document));
 
         Assert.Contains("'name' must be a string", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Detail_missing_required_game_id_fails_closed()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "data": {
+                "id": "global-101",
+                "game_scoped_id": "101",
+                "name": "Missing game identity"
+              }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidDataException>(
+            () => NexusV3CatalogNormalizer.NormalizeModDetails(
+                "monsterhunterworld",
+                "monsterhunterworld",
+                document));
+
+        Assert.Contains("game_id", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Detail_allows_nullable_name_with_stable_fallback()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "data": {
+                "id": "global-101",
+                "game_scoped_id": "101",
+                "game_id": "game-global-id",
+                "name": null
+              }
+            }
+            """);
+
+        var mod = NexusV3CatalogNormalizer.NormalizeModDetails(
+            "monsterhunterworld",
+            "monsterhunterworld",
+            document);
+
+        Assert.Equal("Nexus Mod 101", mod.Name);
+        Assert.Equal("101", mod.ProviderModId);
+    }
+
+    [Fact]
+    public void File_version_requires_nested_persistent_file_identity()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "data": {
+                "versions": [
+                  {
+                    "id": "version-1",
+                    "file": { "id": "different-file", "name": "Wrong file" },
+                    "position": "1",
+                    "game_scoped_id": "1001",
+                    "name": "Main",
+                    "version": "1.0",
+                    "category": "main",
+                    "uploaded_at": "2026-09-29T12:00:00Z"
+                  }
+                ]
+              }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidDataException>(
+            () => NexusV3CatalogNormalizer.NormalizeModFileVersions(
+                "101",
+                "expected-file",
+                "Main File",
+                document));
+
+        Assert.Contains("persistent mod-file id", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Unknown_file_version_category_fails_closed_as_schema_drift()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "data": {
+                "versions": [
+                  {
+                    "id": "version-1",
+                    "file": { "id": "file-1", "name": "Main File" },
+                    "position": "1",
+                    "game_scoped_id": "1001",
+                    "name": "Main",
+                    "version": "1.0",
+                    "category": "future_category",
+                    "uploaded_at": "2026-09-29T12:00:00Z"
+                  }
+                ]
+              }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidDataException>(
+            () => NexusV3CatalogNormalizer.NormalizeModFileVersions(
+                "101",
+                "file-1",
+                "Main File",
+                document));
+
+        Assert.Contains("unrecognized file-version category", exception.Message, StringComparison.Ordinal);
     }
 
     private static JsonDocument ReadFixture(string name)
