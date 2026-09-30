@@ -570,3 +570,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-034 — dependency validity is a property of the final effective filesystem
+
+- **Rule ID:** LR-034
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** mod conflict resolution, dependency solving, deployment planning, launch safety
+- **Rule:** Do not mark a mod dependency satisfied merely because a matching package or file is installed/enabled. Validate hard dependency identity/version constraints and required resources against the exact final deployment plan after every overlap winner is known. Every non-blocking path decision must name a real enabled provider; a resolver contract failure blocks deployment rather than falling back to priority. Different-byte collisions on protected loader/bootstrap root files require an explicit verified human rule or a single provider.
+- **Trigger / evidence:** Review of Apply/DependencyDoctor found that ordinary Apply could reach the transactional executor without plan-aware dependency validation, while source-level path checks could count a required resource that was not the final effective provider. DeploymentPlanner also contained a highest-priority fallback when a non-blocking decision lacked a valid winner.
+- **Rationale:** The game consumes the effective filesystem, not the manager's list of enabled source folders. Conflict safety and dependency safety cannot be proven independently when one mod can shadow another's required files.
+- **Enforcement:** Run dependency preflight against the completed DeploymentPlan before mutation/launch; represent optional and version-constrained requirements explicitly; detect hard dependency SCCs; validate loader/bootstrap bundles as coherent effective providers; regression-test source-presence-vs-effective-winner cases and fail-closed resolver invariants.
+- **Related rules:** LR-021 defect-class closure.
+- **Supersedes:** none
+- **Superseded by:** none
