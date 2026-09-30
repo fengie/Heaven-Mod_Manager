@@ -213,7 +213,7 @@ public sealed class GameBananaCatalogProvider : IModCatalogProvider
         }
 
         var assisted = new Uri(
-            $"https://gamebanana.com/dl/{fileId.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            $"https://gamebanana.com/mods/download/{modId.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
 
         return Task.FromResult(new CatalogAcquisitionResolution(
             CatalogAcquisitionKind.Assisted,
