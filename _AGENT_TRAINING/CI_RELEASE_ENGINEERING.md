@@ -55,3 +55,14 @@ A development build, validation process, staging deployment, old shortcut target
 
 ## Delivery completion policy
 When project policy defines publication/deployment as part of version completion, “implemented” or “merged” is not “released.” Completion requires release gates, publication, canonical distribution identity, and post-publication health/identity verification unless an explicit hold exists.
+
+## Supply-chain and privileged-runner security
+
+- Pin every third-party CI action to a full immutable commit SHA. Human-readable release tags may appear only as comments/documentation because tags can move.
+- Give workflow tokens the smallest explicit permissions required. A write-capable workflow is a security boundary, not a convenience.
+- Persistent self-hosted runners must not execute fork pull-request code. Gate PR jobs to trusted same-repository heads, and use ephemeral/sandboxed infrastructure when genuinely untrusted code must run.
+- A privileged release job must not fetch “latest” tools or trust arbitrary preinstalled executables. Use an independently pinned and cryptographically verified bootstrap or a separately trusted immutable tool image.
+- Do not disable dependency vulnerability auditing just to keep CI green. A newly reported vulnerable dependency is a release input change that must be triaged.
+- Software-update integrity should ultimately authenticate publisher identity independently of the repository/release account. Hashes stored beside an artifact detect corruption but do not alone survive compromise of the publication authority.
+- Encode these invariants in executable CI policy tests so later workflow edits fail closed.
+
