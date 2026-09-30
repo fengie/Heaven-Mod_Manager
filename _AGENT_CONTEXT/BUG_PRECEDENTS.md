@@ -517,3 +517,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Added CLI log round-trip JSON coverage plus installer-source assertions for valid WScript quoting; live reinstall will run the Startup fallback with `cscript.exe` and reparse the generated audit JSON.
 - **Sibling/adjacent cases checked:** Task action uses `pythonw.exe` with a dedicated `--log`; scheduled-task registration and Startup fallback point at the same runtime/pruner arguments.
 - **Verification/evidence:** Failing install jobs `chatgpt-20260930-install-plugin-pruner-heaven2-a1` and `chatgpt-20260930-install-plugin-pruner-heaven-a1`; fixes `9d2a78266ddb89d0489d9eada2108546ccdbeedb` and `d0716ff3c2b477d766a3685dcad597c9670d6491`; exact heaven2 verification `chatgpt-20260930-verify-plugin-pruner-runtime-fix-a1` passed the full plugin gate, JSON consumer round-trip, and deletion smoke.
+
+## 2026-09-30 — Agent cards looked clickable but had no card-level interaction
+- **Symptom:** Clicking a managed or federated bot card appeared to do nothing even though the card had hover styling and visually presented itself as an interactive surface.
+- **Root cause:** Registry cards were rendered as plain `<article class="agent">` elements. Only nested buttons such as **View log**, **Stop**, **Review**, and **Copy branch** had click handlers; the card itself had no mouse or keyboard action.
+- **Violated invariant / wrong assumption:** Visual interaction affordance must match actual interaction semantics. Hover treatment alone must not imply a clickable card when no card handler exists.
+- **Direct fix:** Make managed/federated cards explicit inspectable controls; managed cards open logs, federated cards resolve to linked managed logs or an inline federated summary, and Enter/Space mirrors mouse inspection.
+- **Safety detail:** Card handlers ignore events originating from nested controls so button actions do not double-fire.
+- **Regression coverage:** `operator-ui-cli.test.mjs` parses the emitted dashboard script and asserts card classes, mouse/keyboard handlers, nested-control exclusion, optional log-button semantics, and stale federated-card handling.
+- **Verification:** v8.8.27 candidate; exact-head Agent Control gate plus heaven2 live interaction smoke required.
