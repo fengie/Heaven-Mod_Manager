@@ -4,6 +4,8 @@ import ipaddress
 import re
 from typing import Any, Mapping, Protocol, Sequence
 
+from .scheduler import WindowsMaintenanceScheduler
+
 _SERVICE_RE = re.compile(r"^[A-Za-z0-9_. -]{1,128}$")
 _HOST_RE = re.compile(r"^[A-Za-z0-9.-]{1,253}$")
 
@@ -23,8 +25,9 @@ class ControlPlaneLike(Protocol):
 class ProcessServicesPlugin:
     """Process, Windows-service, port-health, and dev-server helpers."""
 
-    def __init__(self, control_plane: ControlPlaneLike):
+    def __init__(self, control_plane: ControlPlaneLike, maintenance_executables: Sequence[str] = ()):
         self.control_plane = control_plane
+        self.maintenance = WindowsMaintenanceScheduler(control_plane, maintenance_executables)
 
     @staticmethod
     def _host(value: Any) -> str:
@@ -209,3 +212,26 @@ class ProcessServicesPlugin:
             "execution.session.stop",
             {"session_id": session_id, "force": force},
         )
+
+    def maintenance_create_job(self,owner:str,name:str,executable:str,*,args:Sequence[str]=(),working_directory:str|None=None,interval_minutes:int=60,missed_run_policy:str="skip",max_runtime_minutes:int=60,enabled:bool=True,confirm:bool=False)->Mapping[str,Any]:
+        return self.maintenance.create_job(
+            owner,name,executable,args=args,working_directory=working_directory,
+            interval_minutes=interval_minutes,missed_run_policy=missed_run_policy,
+            max_runtime_minutes=max_runtime_minutes,enabled=enabled,confirm=confirm,
+        )
+
+    def maintenance_list_jobs(self,*,owner:str|None=None)->Mapping[str,Any]:
+        return self.maintenance.list_jobs(owner=owner)
+
+    def maintenance_enable_job(self,owner:str,name:str,*,confirm:bool=False)->Mapping[str,Any]:
+        return self.maintenance.enable_job(owner,name,confirm=confirm)
+
+    def maintenance_disable_job(self,owner:str,name:str,*,confirm:bool=False)->Mapping[str,Any]:
+        return self.maintenance.disable_job(owner,name,confirm=confirm)
+
+    def maintenance_run_now(self,owner:str,name:str,*,confirm:bool=False)->Mapping[str,Any]:
+        return self.maintenance.run_now(owner,name,confirm=confirm)
+
+    def maintenance_delete_job(self,owner:str,name:str,*,confirm:bool=False)->Mapping[str,Any]:
+        return self.maintenance.delete_job(owner,name,confirm=confirm)
+

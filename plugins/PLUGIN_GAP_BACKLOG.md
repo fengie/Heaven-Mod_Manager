@@ -151,7 +151,7 @@ Do not create a new plugin when extending an existing plugin/control-plane modul
 - **Security / permission boundary:** Rollback never invents inverse commands; only explicitly declared reversible actions are eligible. Scheduled privileged jobs require the same permission checks as interactive execution and may reference only opaque secret handles.
 - **Dependencies / reuse:** `heaven-state-store`, `heaven-workflows`, `heaven-process-services`, `heaven-git-ops`, `heaven-system-ops`.
 - **Acceptance tests:** failed multi-step mutation triggers only registered rollback steps in reverse order; idempotent rollback; scheduler cannot create duplicate ownership for same job; disabled jobs never execute; receipts include exact pre/post state identifiers.
-- **Owner / branch / PR:** `heaven-workflows` rollback lane on canonical `main`; bounded scheduled-maintenance owner is still pending.
+- **Owner / branch / PR:** rollback is in `heaven-workflows`; bounded Windows scheduled-maintenance ownership is in `heaven-process-services`; both are on canonical `main`, verification evidence pending.
 - **Completion evidence:** pending.
 
 
