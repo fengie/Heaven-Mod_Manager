@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.42</Version>
-    <InformationalVersion>8.8.42-current-ci-evidence</InformationalVersion>
+    <Version>8.8.43</Version>
+    <InformationalVersion>8.8.43-bounded-context-navigation</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
