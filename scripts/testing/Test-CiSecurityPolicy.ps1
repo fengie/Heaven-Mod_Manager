@@ -11,43 +11,32 @@ if([string]::IsNullOrWhiteSpace($Root)){
 }
 
 function Get-RepoRelativePath {
-    param([string]$BasePath,[string]$FullPath)
-    $base=(Resolve-Path -LiteralPath $BasePath).Path.TrimEnd('\\')
-    $full=[IO.Path]::GetFullPath($FullPath)
-    $prefix=$base+'\\'
-    if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){
-        throw "Path is outside repository root: $FullPath"
-    }
-    return $full.Substring($prefix.Length)
-}
-
-# This policy intentionally runs under Windows PowerShell 5.1 on the persistent
-# Heaven runner. Do not use .NET Core-only helpers such as Path.GetRelativePath.
-function Get-RepositoryRelativePath {
     param(
-        [Parameter(Mandatory=$true)][string]$RootPath,
+        [Parameter(Mandatory=$true)][string]$BasePath,
         [Parameter(Mandatory=$true)][string]$FullPath
     )
 
+    # Security CI runs on Windows PowerShell 5.1, so keep this helper on the
+    # .NET Framework API surface rather than using Path.GetRelativePath.
     $trimChars=[char[]]'\/'
-    $normalizedRoot=[IO.Path]::GetFullPath($RootPath).TrimEnd($trimChars)
-    $normalizedPath=[IO.Path]::GetFullPath($FullPath)
+    $base=[IO.Path]::GetFullPath((Resolve-Path -LiteralPath $BasePath).Path).TrimEnd($trimChars)
+    $full=[IO.Path]::GetFullPath($FullPath)
     $comparison=if($env:OS -eq 'Windows_NT' -or $PSVersionTable.PSEdition -eq 'Desktop'){
         [StringComparison]::OrdinalIgnoreCase
     }else{
         [StringComparison]::Ordinal
     }
 
-    if([string]::Equals($normalizedRoot,$normalizedPath,$comparison)){
+    if([string]::Equals($base,$full,$comparison)){
         return '.'
     }
 
-    $prefix=$normalizedRoot+[IO.Path]::DirectorySeparatorChar
-    if(-not $normalizedPath.StartsWith($prefix,$comparison)){
-        throw "Path is outside repository root: $normalizedPath"
+    $prefix=$base+[IO.Path]::DirectorySeparatorChar
+    if(-not $full.StartsWith($prefix,$comparison)){
+        throw "Path is outside repository root: $FullPath"
     }
 
-    return ($normalizedPath.Substring($prefix.Length) -replace '\\','/')
+    return ($full.Substring($prefix.Length) -replace '\\','/')
 }
 
 $workflowRoot=Join-Path $Root '.github\workflows'
