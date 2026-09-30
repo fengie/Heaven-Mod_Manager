@@ -1,3 +1,16 @@
+# v8.8.37 Agent Manager live-registry truthfulness — CURRENT CANDIDATE
+
+- Federated `agents` and `counts.total` now represent fresh live presence only; stale, disconnected, failed, and done observations are separated from current capacity.
+- Recovery-owned non-live observations stay visible in `attention_agents`; other non-live observations remain queryable in `history_agents`.
+- Managed failed/stopped/capacity-blocked rows leave the live list only when ownership/work no longer requires attention; retry/reconciliation, dirty-work, proof-pending, orphaned/interrupted, and still-running ownership stays in a dedicated Needs Attention surface.
+- Dashboard Registry history keeps managed historical rows, durable retirement tombstones, and federated history inspectable without counting them as live.
+- Existing retry-exhausted destructive retirement, durable remote-stop proof, and monotonic retired-source heartbeat protection remain unchanged.
+- Regression coverage pins stale/disconnected projection, retry-exhausted archival, live totals, attention/history UI contracts, and fresh-heartbeat re-registration.
+- Agent Control/root/nested plugin identity is v0.6.15 / product v8.8.37.
+- Next gate: exact-head Agent Control + Security and repository verification; live heaven2 smoke remains separate evidence.
+
+---
+
 # v8.8.36 Agent Manager notification + stable inspector — CURRENT CANDIDATE
 
 - Dashboard renders backend notifications with severity/message/time and exact supported inspection actions.
