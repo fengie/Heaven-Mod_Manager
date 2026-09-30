@@ -95,6 +95,19 @@ Write these notes into the repository's authoritative continuity/handoff surface
 
 Managers, reviewers, recovery agents, and integration agents must reject or repair a completion claim that lacks actionable next-step notes and improvement opportunities. A task can be functionally complete while still having useful follow-on work; record that work instead of discarding it.
 
+## Mandatory plugin version replacement lifecycle
+
+Local/custom plugin upgrades must not leave stale installed versions behind. When a newer version of an existing plugin identity is installed:
+
+- verify the replacement version first using the owning plugin's required checks/runtime smoke;
+- in the same execution cycle, remove strictly older installed/runtime copies of that same manifest identity;
+- use `plugins/_tooling/prune_outdated_plugins.py --apply` (or the owning updater's equivalent safe replacement primitive) rather than ad-hoc broad deletion;
+- preserve canonical Git source/history, user configuration, OAuth/auth state, secrets, and unrelated plugins;
+- never delete a non-SemVer or ambiguously identified copy automatically; report it for explicit reconciliation instead;
+- keep the `MHW Plugin Version Pruner` startup/maintenance task installed on both `heaven2` and `heaven` as a safety net for stale local copies.
+
+Managers/reviewers must treat a completed plugin upgrade that leaves a proven older installed copy as incomplete work.
+
 ## Mandatory task-review and plugin activation gate
 
 Repository training is necessary but not sufficient. **After training and before any task-facing plan, answer, dispatch, tool choice, or task-specific action**, every agent must perform a task/plugin preflight.
