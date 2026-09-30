@@ -1,7 +1,7 @@
 # v8.8.37 — Agent Manager live-registry truthfulness
 - Make federated `agents` and `counts.total` represent fresh live presence only; stale, disconnected, failed, and done observations no longer inflate the live registry.
 - Preserve non-live federated records under `attention_agents` or `history_agents` so forensic state stays queryable without masquerading as capacity.
-- Project resolved failed/stopped/capacity-blocked managed records out of the live card list while keeping unresolved ownership, retry/recovery, dirty-work, orphaned/interrupted, and proof-pending records in a dedicated Needs Attention surface.
+- Project resolved completed/failed/stopped/capacity-blocked managed records out of the live card list while keeping unresolved ownership, retry/recovery, dirty-work, orphaned/interrupted, and proof-pending records in a dedicated Needs Attention surface.
 - Add Registry history UI/API surfaces for managed history, retirement tombstones, and federated history; inspector lookup can resolve attention/history records without reclassifying them as live.
 - Regression-pin deterministic stale/disconnected retirement, retry-exhausted archival, live `counts.total`, and legitimate fresh-heartbeat re-registration.
 - Preserve v8.8.36 notification/inspector behavior plus v8.8.31–v8.8.35 retirement/runtime safety; advance Agent Control/plugin identity to v0.6.15 and product version to v8.8.37.
