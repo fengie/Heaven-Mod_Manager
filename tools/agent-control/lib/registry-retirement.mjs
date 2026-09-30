@@ -17,7 +17,6 @@ const ACTIVE_REGISTRY_RECOVERY_STATES = new Set([
   "retry-blocked",
   "stream-lost-checking-work",
   "work-detected-incomplete",
-  "provider-capacity",
   "registry-retirement-blocked"
 ]);
 const PROVEN_REMOTE_TERMINAL_STATES = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
@@ -67,6 +66,9 @@ export function managedAgentRegistryDisposition(agent, {
   const status = text(agent.status || agent.state).toLowerCase();
   const recovery = text(agent.recoveryStatus || agent.recovery_status).toLowerCase();
 
+  if (agent.remoteTerminationPending) {
+    return { retire: false, reason: "recovery-active:remote-termination-pending" };
+  }
   if (!MANAGED_FAILURE_STATUSES.has(status)) {
     return { retire: false, reason: "non-retirable-managed-status" };
   }
