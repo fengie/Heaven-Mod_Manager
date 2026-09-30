@@ -432,6 +432,33 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private Dictionary<string,(bool enabled,int priority)> CaptureStage()=>
         Mods.SelectMany(x=>x.ExpandStage()).ToDictionary(x=>x.Key,x=>x.Value,StringComparer.OrdinalIgnoreCase);
 
+    private async Task<DependencyStatus[]> GetDependencyBlockersAsync(
+        Dictionary<string,(bool enabled,int priority)> stage,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var enabled = stage.Where(x => x.Value.enabled).Select(x => x.Key).ToHashSet(PathRules.Comparer);
+        var statuses = await s.Dependencies.ScanStageAsync(enabled, ct);
+        return statuses.Where(x => !x.Ready)
+            .OrderBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.ModId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string DescribeDependencyBlockers(IReadOnlyList<DependencyStatus> blockers)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var details = blockers.Take(3).Select(x =>
+        {
+            var missing = x.Missing.Take(3).ToArray();
+            var suffix = x.Missing.Count > missing.Length ? $" (+{x.Missing.Count-missing.Length} more)" : string.Empty;
+            return $"{x.ModName}: {string.Join(", ", missing)}{suffix}";
+        });
+        var summary = string.Join(" | ", details);
+        if (blockers.Count > 3) summary += $" | +{blockers.Count-3} more mod(s)";
+        return summary;
+    }
+
     private async Task<(DeploymentPlan plan,ConflictRow[] rows,List<EffectiveModSummary> summaries)> BuildAnalysisAsync(
         Dictionary<string,(bool enabled,int priority)> stage,CancellationToken ct)
     {
@@ -463,7 +490,26 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var choices=new Dictionary<string,ChoiceAccumulator>(StringComparer.OrdinalIgnoreCase);
             foreach(var conflict in plan.Conflicts.Where(x=>x.Blocking&&x.Path!="<rules>"))
             {
-                filesByPath.TryGetValue(conflict.Path,out var providers);
+                List<ModDescriptor>? providers;
+                IReadOnlyList<string> conflictPaths=[conflict.Path];
+                if(conflict.ReasonCode=="bundle-mixed-providers"&&s.Paths.Game.IsMonsterHunterWorld)
+                {
+                    var bundleKey=AssetBundles.KeyForPath(conflict.Path);
+                    var bundleFiles=snap.Files
+                        .Where(file=>enabledById.ContainsKey(file.ModId)&&
+                                     file.FileClass is FileClass.Structural or FileClass.GameData or FileClass.Plugin or FileClass.Executable&&
+                                     StringComparer.OrdinalIgnoreCase.Equals(AssetBundles.KeyForPath(file.Path),bundleKey))
+                        .ToArray();
+                    conflictPaths=bundleFiles.Select(file=>file.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+                    providers=bundleFiles.Select(file=>enabledById[file.ModId])
+                        .GroupBy(mod=>mod.Id,PathRules.Comparer)
+                        .Select(group=>group.First())
+                        .ToList();
+                }
+                else
+                {
+                    filesByPath.TryGetValue(conflict.Path,out providers);
+                }
                 if(providers is null||providers.Count<2)continue;
                 var logicalGroups=providers
                     .Select(provider=>logicalByMember.TryGetValue(provider.Id,out var identity)
@@ -502,7 +548,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 // own logical family so an external choice cannot accidentally re-enable all parts.
                 var key=logicalGroups.Length>=2?bundle:$"{bundle}|internal:{logicalGroups[0].LogicalId}";
                 if(!choices.TryGetValue(key,out var acc))choices[key]=acc=new ChoiceAccumulator(bundle);
-                acc.Paths.Add(conflict.Path);
+                acc.Paths.UnionWith(conflictPaths);
                 acc.Conflicts.Add(conflict);
                 foreach(var option in options)acc.Options[option.Token]=option;
             }
@@ -515,10 +561,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 var score=Math.Max(95,acc.Conflicts.Max(x=>x.ResolverScore));
                 var evidence=string.Join(" • ",acc.Conflicts.Select(x=>x.Evidence).Where(x=>!string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase));
                 if(string.IsNullOrWhiteSpace(evidence))evidence=s.Paths.Game.IsMonsterHunterWorld?"Independent logical mods provide different bytes inside the same atomic MHW asset bundle.":"Independent logical mods provide different bytes for the same game path.";
-                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
-                    options.Length==2
+                var explanation=first.ReasonCode=="bundle-mixed-providers"
+                    ?first.Explanation+" Choose one coherent provider/family for the entire bundle; the manager will not mix structural siblings."
+                    :options.Length==2
                         ?"These two logical mods provide different bytes for the same effective game asset/path. Choose one; the other logical mod is staged OFF as a whole."
-                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.",
+                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.";
+                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
+                    explanation,
                     Confidence.High,score,evidence,options);
             }).OrderBy(x=>x.Scope,StringComparer.OrdinalIgnoreCase).ToArray();
 
