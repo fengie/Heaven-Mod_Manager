@@ -425,3 +425,4 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Sibling/adjacent cases checked:** Thunderstore normalization, generic-family inference, Mod DB feed caching, installed-origin checking, Mod DB feed tests, logical-family tests, syndication transport tests, and GitLab catalog tests.
 - **Verification/evidence:** failing Windows run `36669017493`, job `109739811849`; production exact Heaven job `job-20260930T044200Z-bugfix-core-analyzers`; PR #437 head `8bb9702880e5b550a1492fc3c2b839d670e2cd03` queued for exact Heaven and PR-gate verification.
 
+## 2026-09-30 — Never expose canonical updater release before the client feed
