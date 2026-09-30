@@ -879,9 +879,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
-## LR-049 — live registries are not historical failure archives
+---
 
-- **Rule ID:** LR-049
+## LR-051 — live registries are not historical failure archives
+
+- **Rule ID:** LR-051
 - **Status:** Active
 - **Date:** 2026-09-30
 - **Scope:** Agent registries, worker lifecycle state, retries, federation, dashboards
@@ -890,7 +892,6 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rationale:** live control-plane views must represent actionable/current workers; mixing historical failures into them corrupts counts, UI meaning, recovery decisions, and operator trust.
 - **Enforcement:** lifecycle code must have explicit retention tests for process-alive, retry-pending/waiting, incomplete durable work, retry-exhausted, deterministic failure, and linked federated records.
 - **Regression/evidence:** v8.8.26 registry-retention implementation and `registry-retention.test.mjs`.
-- **Related rules:** LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure; LR-048 whole-output closure.
+- **Related rules:** LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling; LR-047 authoritative operator-action closure; LR-048 whole-output closure; LR-049 producer-specific text encoding; LR-050 consumer-side generated-artifact proof.
 - **Supersedes:** none
 - **Superseded by:** none
-
