@@ -2,7 +2,9 @@
 - Use `DependencyStatus[].Length` when formatting dependency blocker remainder counts, fixing the WPF compile regression.
 - Trace newly introduced Core bootstrap/family-role helpers so explicit call-site coverage is no longer orphaned.
 - Mark state-free catalog preparation/health helpers static to satisfy strict CA1822 analysis.
-- Align the durable agent handoff manifest with the current product patch.
+- Align the durable agent handoff manifest with the current product patch while preserving the last closed verified commit pointer.
+- Close remaining App/Automation/Core trace gaps exposed by the function verifier.
+- Update strict xUnit assertions, culture-invariant catalog fixture timestamps, and the BenchmarkDotNet instance-method analyzer annotation.
 - Preserve existing conflict, catalog, dependency, and Agent Control behavior while restoring repository verification execution.
 
 # v8.8.38 — Retire superseded retry parents
