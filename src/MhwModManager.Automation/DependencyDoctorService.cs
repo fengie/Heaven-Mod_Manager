@@ -28,11 +28,26 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         var filesByMod = files
             .GroupBy(x => x.ModId, PathRules.Comparer)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<ModFileDescriptor>)g.ToArray(), PathRules.Comparer);
+        var currentManifest = (await new PlannerSnapshotRepository(db).LoadAsync([], ct)).CurrentManifest;
+
+        // A staged identity that no longer exists (or is superseded) is itself an unsatisfied
+        // dependency. Never silently drop it from validation; stale profiles must fail closed.
+        var unavailable = enabledModIds
+            .Where(id => !modsById.TryGetValue(id, out var mod) || mod.IsSuperseded)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var results = unavailable
+            .Select(id => new DependencyStatus(
+                id,
+                modsById.TryGetValue(id, out var mod) ? mod.DisplayName : id,
+                false,
+                [$"Selected mod '{id}' is unavailable or superseded."],
+                ["The staged enabled set referenced a package that cannot participate in deployment."]))
+            .ToList();
 
         var selected = enabledModIds
             .Where(id => modsById.TryGetValue(id, out var mod) && !mod.IsSuperseded)
             .ToHashSet(PathRules.Comparer);
-        var results = new List<DependencyStatus>();
 
         foreach (var id in selected.Order(StringComparer.OrdinalIgnoreCase))
         {
@@ -48,8 +63,8 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
             var missing = new List<string>(spec.Errors);
             var evidence = new List<string>(spec.Evidence);
 
-            if (spec.RequiresNativeLoader && !HasLoader() && !SelectedProvidesLoader(selected, filesByMod))
-                missing.Add("Stracker/native plugin loader (no dinput8.dll or loader.dll is enabled or present in the game root)");
+            if (spec.RequiresNativeLoader && !LoaderWillRemainAvailable(selected, filesByMod, currentManifest))
+                missing.Add("Stracker/native plugin loader (no unmanaged loader or selected tracked loader will remain after this staged deployment)");
 
             foreach (var token in spec.RequiredModTokens)
             {
@@ -68,6 +83,16 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
             {
                 if (SelectedProvidesPath(requiredPath, selected, filesByMod))
                     continue;
+
+                // A currently-live manager-owned file is not a valid dependency if its provider is
+                // absent from the staged set: the deployment plan is about to remove/restore it.
+                // Only unmanaged/base-game live files may satisfy an otherwise-unprovided path.
+                if (currentManifest.ContainsKey(requiredPath))
+                {
+                    missing.Add(requiredPath + " (currently supplied only by a managed provider that is not enabled in the staged set)");
+                    continue;
+                }
+
                 if (File.Exists(ModRequirementReader.LivePath(gameRoot, requiredPath)))
                     continue;
                 missing.Add(requiredPath);
@@ -80,11 +105,26 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         return results;
     }
 
-    private bool HasLoader()
+    private bool LoaderWillRemainAvailable(
+        HashSet<string> selected,
+        Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod,
+        IReadOnlyDictionary<string,DeploymentManifestEntry> currentManifest)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
-               File.Exists(Path.Combine(gameRoot, "loader.dll"));
+        if (SelectedProvidesLoader(selected, filesByMod))
+            return true;
+
+        return LiveLoaderIsUnmanaged(@"root\dinput8.dll", currentManifest) ||
+               LiveLoaderIsUnmanaged(@"root\loader.dll", currentManifest);
+    }
+
+    private bool LiveLoaderIsUnmanaged(
+        string relativePath,
+        IReadOnlyDictionary<string,DeploymentManifestEntry> currentManifest)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return !currentManifest.ContainsKey(relativePath) &&
+               File.Exists(ModRequirementReader.LivePath(gameRoot, relativePath));
     }
 
     private static bool SelectedProvidesLoader(
