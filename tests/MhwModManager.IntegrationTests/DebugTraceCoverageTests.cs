@@ -66,8 +66,8 @@ public sealed class DebugTraceCoverageTests
     {
         var root = FindRepositoryRoot();
         var verifier = File.ReadAllText(Path.Combine(root, "tools", "MhwModManager.FunctionVerifier", "Program.cs"));
-        var verifyScript = File.ReadAllText(Path.Combine(root, "scripts", "Verify-Release.ps1"));
-        var buildScript = File.ReadAllText(Path.Combine(root, "scripts", "Build-Release.ps1"));
+        var verifyScript = File.ReadAllText(Path.Combine(root, "scripts", "release", "Verify-Release.ps1"));
+        var buildScript = File.ReadAllText(Path.Combine(root, "scripts", "build", "Build-Release.ps1"));
 
         Assert.Contains("CSharpSyntaxTree.ParseText", verifier, StringComparison.Ordinal);
         Assert.Contains("exact-function-cache", verifier, StringComparison.Ordinal);
@@ -116,8 +116,8 @@ public sealed class DebugTraceCoverageTests
         var root = FindRepositoryRoot();
         var start = File.ReadAllText(Path.Combine(root, "NEXT-AGENT-START-HERE.md"));
         var protocol = File.ReadAllText(Path.Combine(root, "_AGENT_CONTEXT", "CONTINUITY_PROTOCOL.md"));
-        var preflight = File.ReadAllText(Path.Combine(root, "scripts", "Test-AgentHandoff.ps1"));
-        var packager = File.ReadAllText(Path.Combine(root, "scripts", "Build-Source-Handoff.ps1"));
+        var preflight = File.ReadAllText(Path.Combine(root, "scripts", "testing", "Test-AgentHandoff.ps1"));
+        var packager = File.ReadAllText(Path.Combine(root, "scripts", "build", "Build-Source-Handoff.ps1"));
         Assert.Contains("Do not break the chain", start, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Do not break the chain", protocol, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("propagateToNextAgent", preflight, StringComparison.Ordinal);
