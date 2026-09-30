@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.35 canonical runtime freshness — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security PR gates.
+2. Preserve v8.8.34 durable Stop proof while verifying the startup freshness transplant on current canonical main.
+3. After source integration, reinstall startup persistence once on heaven2 and prove a stale/behind controller restart converges to exact canonical source SHA/version.
+4. Confirm an unknown/unowned listener on 127.0.0.1:7331 is not killed or replaced.
+5. Complete one bounded heaven2→heaven dispatch using the canonicalized controller.
+6. Only then close #475; source-only CI is not the live runtime acceptance gate.
+7. Continue #461 notification/inspector closure after runtime freshness is integrated and its live evidence is scheduled/available.
+
+---
+
 # 2026-09-30 v8.8.34 durable stop proof — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security PR gates on the exact candidate.
