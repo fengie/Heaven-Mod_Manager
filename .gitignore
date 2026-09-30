@@ -11,3 +11,21 @@ Mods/
 /MHW-DEBUG-ALL.log
 /BuildLogs/
 /StartupLogs/
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.kdbx
+*.snk
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
