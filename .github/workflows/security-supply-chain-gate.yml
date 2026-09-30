@@ -51,7 +51,7 @@ permissions:
 
 concurrency:
   group: security-supply-chain-gate-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   workflow-policy:
