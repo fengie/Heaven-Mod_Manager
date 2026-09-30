@@ -38,7 +38,7 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         Assert.Equal(1, result.SuccessfulProviders);
         Assert.Equal(1, result.FailedProviders);
         Assert.Equal(1, result.ItemCount);
-        Assert.Equal(["alpha", "beta"], result.Providers.Select(x => x.ProviderId).ToArray());
+        Assert.Equal(new[] { "alpha", "beta" }, result.Providers.Select(x => x.ProviderId).ToArray());
         Assert.Equal(CatalogSyncFailureKind.Offline, result.Providers[0].FailureKind);
         Assert.True(result.Providers[1].Succeeded);
         Assert.NotNull(await repository.GetAsync("beta:mod-1", TestToken));
