@@ -271,19 +271,18 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
             return false;
         }
 
-        if (filesByMod.TryGetValue(proxyWinner, out var providerFiles) &&
-            providerFiles.Any(f => PathRules.Comparer.Equals(f.Path, LoaderConfigPath)))
+        // Treat the root loader config as part of the bootstrap generation too. Even when the
+        // binary provider did not package a config itself, a different enabled package must not
+        // silently inject a non-identical config alongside that loader generation.
+        var configDecision = effectivePlan.Conflicts.FirstOrDefault(x => PathRules.Comparer.Equals(x.Path, LoaderConfigPath));
+        if (configDecision is not null &&
+            !configDecision.Blocking &&
+            configDecision.WinnerModId is not null &&
+            !PathRules.Comparer.Equals(configDecision.WinnerModId, proxyWinner) &&
+            configDecision.Kind != ConflictKind.Identical)
         {
-            var configDecision = effectivePlan.Conflicts.FirstOrDefault(x => PathRules.Comparer.Equals(x.Path, LoaderConfigPath));
-            if (configDecision is not null &&
-                !configDecision.Blocking &&
-                configDecision.WinnerModId is not null &&
-                !PathRules.Comparer.Equals(configDecision.WinnerModId, proxyWinner) &&
-                configDecision.Kind != ConflictKind.Identical)
-            {
-                detail = $"Native loader config would be supplied by '{configDecision.WinnerModId}' while loader binaries come from '{proxyWinner}'.";
-                return false;
-            }
+            detail = $"Native loader config would be supplied by '{configDecision.WinnerModId}' while loader binaries come from '{proxyWinner}'.";
+            return false;
         }
 
         detail = $"Effective native loader is internally consistent: dinput8.dll + loader.dll <- {proxyWinner}.";
