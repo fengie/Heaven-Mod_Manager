@@ -1,3 +1,11 @@
+# v8.8.27 — Agent registry card inspection
+- Make managed agent cards mouse- and keyboard-inspectable instead of display-only.
+- Make federated agent cards open their linked managed worker log when possible, otherwise show an inline federated status summary.
+- Prevent card-level inspection from hijacking nested Stop, Review, Copy branch, and View log controls.
+- Add emitted-dashboard JavaScript parse and interaction-contract regression coverage.
+- Keep v8.8.26 retry-exhausted retirement semantics unchanged; this is the independent UI half of the incident.
+- Advance Agent Control runtime/root/nested plugin identity to v0.6.6.
+
 # v8.8.26 — Agent Control exhausted-agent registry retirement
 - Retire terminal no-work agents when their bounded recovery budget reaches **RETRY EXHAUSTED** instead of leaving failed/dead cards in the live registry.
 - Prove controller ownership before terminating any still-live process; refuse destructive cleanup when PID ownership, worktree cleanliness, or branch divergence is uncertain.
