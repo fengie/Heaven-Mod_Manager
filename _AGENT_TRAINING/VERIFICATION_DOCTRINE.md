@@ -47,3 +47,6 @@ An escaped failure is evidence about the verification system, not only the produ
 ## Strict analyzer rerun semantics
 When a verification pipeline performs a relaxed build before a strict warning-as-error or analyzer build, the strict phase must force actual compiler/analyzer execution. A successful incremental no-op is not strict verification: up-to-date outputs can suppress diagnostics that were visible in the relaxed phase. Use a rebuild/no-incremental mechanism (or otherwise prove analyzer execution), and regression-test that invariant in the verifier itself.
 
+## Analyzer severity scope
+When an analyzer rule encodes a durable repository invariant, enforce it across every sibling project where the defect class can occur. Fixing call sites without propagating severity leaves later additions source-valid and recreates reviewer-only prevention. Prefer repository-wide or shared-project policy when safe; otherwise enumerate and harden each applicable project explicitly.
+
