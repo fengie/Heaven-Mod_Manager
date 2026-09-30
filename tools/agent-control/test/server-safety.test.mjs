@@ -571,9 +571,12 @@ test("perpetual one-click path renews ownership freshness without reviving stale
 
 test("perpetual recovery preserves takeover before proven stop and persists replacement before redispatch", () => {
   const source = fs.readFileSync(SERVER, "utf8");
+  const dispatchStart = source.indexOf("async function dispatchPerpetualReplacement");
   const start = source.indexOf("async function reconcilePerpetualReplacement");
   const end = source.indexOf("function gateAutopilot", start);
+  assert.ok(dispatchStart >= 0 && start > dispatchStart);
   assert.ok(start >= 0 && end > start);
+  const dispatchBlock = source.slice(dispatchStart, start);
   const block = source.slice(start, end);
 
   const capacityAt = block.indexOf("providerCapacityCircuit(state)");
