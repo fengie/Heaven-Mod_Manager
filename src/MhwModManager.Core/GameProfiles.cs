@@ -36,7 +36,15 @@ public sealed record GameProfile(
     [JsonIgnore] public string LiveModRoot => string.IsNullOrWhiteSpace(ModRootRelativePath) ? Path.GetFullPath(GameRoot) : Path.GetFullPath(Path.Combine(GameRoot, ModRootRelativePath));
     [JsonIgnore] public bool IsMonsterHunterWorld => AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase);
     [JsonIgnore] public bool HasNexusIntegration => !string.IsNullOrWhiteSpace(NexusGameDomain);
-    [JsonIgnore] public bool HasGameBananaIntegration => GameBananaGameId is > 0;
+    [JsonIgnore]
+    public bool HasGameBananaIntegration
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GameBananaGameId is > 0;
+        }
+    }
     [JsonIgnore] public string ManagedDescription => string.IsNullOrWhiteSpace(ModRootRelativePath) ? "Game root" : ModRootRelativePath;
     [JsonIgnore] public string StorageKey
     {
