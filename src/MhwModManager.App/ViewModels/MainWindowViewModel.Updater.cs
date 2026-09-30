@@ -142,99 +142,123 @@ public sealed partial class MainWindowViewModel
         try
         {
             PreparedUpdateHandoff? prepared = null;
-            while (!ct.IsCancellationRequested && stagedProgramUpdate is not null)
+            StagedUpdate? preparedFor = null;
+            while (!ct.IsCancellationRequested)
             {
-            if (CriticalOperation
-                || BusyVisibility == Visibility.Visible)
-            {
-                ProgramUpdateStatus =
-                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
-                await DelayForSafeUpdateRetryAsync(ct);
-                continue;
-            }
+                var staged = stagedProgramUpdate;
+                if (staged is null) return;
 
-            if (HasActiveGameProcess())
-            {
-                ProgramUpdateStatus =
-                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} is staged; it will install after the game exits.";
-                await DelayForSafeUpdateRetryAsync(ct);
-                continue;
-            }
+                // A manual/periodic check can replace the staged update while this
+                // long-lived safe-handoff task is still waiting. Never reuse a
+                // prepared helper/request for a different staged update.
+                if (!ReferenceEquals(preparedFor, staged))
+                {
+                    prepared = null;
+                    preparedFor = null;
+                }
 
-            try
-            {
-                prepared ??= await s.Updater.PrepareHandoffAsync(
-                    stagedProgramUpdate,
-                    UpdateClientService.GetInstallRoot(),
-                    s.StartupArguments,
-                    Environment.ProcessId,
-                    ct,
-                    managerHomeRoot:s.Paths.ToolRoot);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                return;
-            }
-            catch (Exception ex)
-            {
-                ProgramUpdateStatus =
-                    $"Update build {stagedProgramUpdate.Manifest.BuildNumber} is staged, but restart preparation failed ({ex.GetType().Name}). It will be retried on a later launch.";
-                s.Log.Warning(ex,"Program updater handoff preparation failed.");
-                return;
-            }
+                if (CriticalOperation
+                    || BusyVisibility == Visibility.Visible)
+                {
+                    ProgramUpdateStatus =
+                        $"Verified update build {staged.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
+                    await DelayForSafeUpdateRetryAsync(ct);
+                    continue;
+                }
 
-            // Preparing the helper is non-destructive and asynchronous. Re-check
-            // operation/game lifetime immediately before arming the one synchronous
-            // launch+shutdown step.
-            if (CriticalOperation
-                || BusyVisibility == Visibility.Visible
-                || HasActiveGameProcess())
-            {
-                await DelayForSafeUpdateRetryAsync(ct);
-                continue;
-            }
-            if (!programUpdateHandoffGate.TryArmHandoff())
-            {
-                ProgramUpdateStatus =
-                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
-                await DelayForSafeUpdateRetryAsync(ct);
-                continue;
-            }
+                if (HasActiveGameProcess())
+                {
+                    ProgramUpdateStatus =
+                        $"Verified update build {staged.Manifest.BuildNumber} is staged; it will install after the game exits.";
+                    await DelayForSafeUpdateRetryAsync(ct);
+                    continue;
+                }
 
-            var keepHandoffArmed = false;
-            try
-            {
-                // No RunBusy operation can begin after the handoff gate is armed.
-                // Re-check legacy UI state and the external game-process condition
-                // without yielding before helper launch.
+                try
+                {
+                    if (prepared is null)
+                    {
+                        prepared = await s.Updater.PrepareHandoffAsync(
+                            staged,
+                            UpdateClientService.GetInstallRoot(),
+                            s.StartupArguments,
+                            Environment.ProcessId,
+                            ct,
+                            managerHomeRoot:s.Paths.ToolRoot);
+                        preparedFor = staged;
+                    }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    ProgramUpdateStatus =
+                        $"Update build {staged.Manifest.BuildNumber} is staged, but restart preparation failed ({ex.GetType().Name}). It will be retried on a later launch.";
+                    s.Log.Warning(ex,"Program updater handoff preparation failed.");
+                    return;
+                }
+
+                // Preparation yields. If another update check replaced the staged
+                // update while it ran, throw away this cached handoff on the next
+                // iteration instead of launching the wrong build.
+                if (!ReferenceEquals(stagedProgramUpdate, staged))
+                    continue;
+
+                // Preparing the helper is non-destructive and asynchronous. Re-check
+                // operation/game lifetime immediately before arming the one synchronous
+                // launch+shutdown step.
                 if (CriticalOperation
                     || BusyVisibility == Visibility.Visible
                     || HasActiveGameProcess())
+                {
+                    await DelayForSafeUpdateRetryAsync(ct);
                     continue;
+                }
+                if (!programUpdateHandoffGate.TryArmHandoff())
+                {
+                    ProgramUpdateStatus =
+                        $"Verified update build {staged.Manifest.BuildNumber} is staged; waiting for the current operation to finish.";
+                    await DelayForSafeUpdateRetryAsync(ct);
+                    continue;
+                }
 
-                using var helper = s.Updater.LaunchHelper(prepared);
-                keepHandoffArmed = true;
-                ProgramUpdateStatus =
-                    $"Installing verified update build {stagedProgramUpdate.Manifest.BuildNumber}; restarting…";
-                s.Log.Information(
-                    "Program updater helper launched for build {Build}; shutting down current PID {Pid}.",
-                    stagedProgramUpdate.Manifest.BuildNumber,
-                    Environment.ProcessId);
-                Application.Current.Shutdown();
-                return;
-            }
-            catch (Exception ex)
-            {
-                ProgramUpdateStatus =
-                    $"Update build {stagedProgramUpdate.Manifest.BuildNumber} remains staged because the updater helper could not start ({ex.GetType().Name}).";
-                s.Log.Warning(ex,"Program updater helper launch failed; current application remains active.");
-                return;
-            }
-            finally
-            {
-                if (!keepHandoffArmed)
-                    programUpdateHandoffGate.DisarmHandoff();
-            }
+                var keepHandoffArmed = false;
+                try
+                {
+                    // No RunBusy operation can begin after the handoff gate is armed.
+                    // Re-check legacy UI state, game-process state, and staged-update
+                    // identity without yielding before helper launch.
+                    if (CriticalOperation
+                        || BusyVisibility == Visibility.Visible
+                        || HasActiveGameProcess()
+                        || !ReferenceEquals(stagedProgramUpdate, staged))
+                        continue;
+
+                    using var helper = s.Updater.LaunchHelper(prepared);
+                    keepHandoffArmed = true;
+                    ProgramUpdateStatus =
+                        $"Installing verified update build {staged.Manifest.BuildNumber}; restarting…";
+                    s.Log.Information(
+                        "Program updater helper launched for build {Build}; shutting down current PID {Pid}.",
+                        staged.Manifest.BuildNumber,
+                        Environment.ProcessId);
+                    Application.Current.Shutdown();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    ProgramUpdateStatus =
+                        $"Update build {staged.Manifest.BuildNumber} remains staged because the updater helper could not start ({ex.GetType().Name}).";
+                    s.Log.Warning(ex,"Program updater helper launch failed; current application remains active.");
+                    return;
+                }
+                finally
+                {
+                    if (!keepHandoffArmed)
+                        programUpdateHandoffGate.DisarmHandoff();
+                }
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
