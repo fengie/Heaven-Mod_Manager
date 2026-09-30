@@ -1,10 +1,11 @@
-# v8.8.33 Agent Control lightweight health — CURRENT CANDIDATE
+# v8.8.33 Agent Control lightweight health — INTEGRATED
 
-- `GET /api/status` is now a local-state-only liveness path and no longer calls `buildSnapshot()`, repository scans, branch divergence, or Heaven Bridge inspection.
+- PR #495 integrated the lightweight-health source onto canonical `main` as squash commit `4ffff561a05e7f4d9f2a47b2af49927ca086cee2`.
+- Exact candidate `6483661d87d452715f85d06088a53f8b8ebeafe2` passed Agent Control PR Gate run 504 and Security Supply Chain Gate run 363 before integration.
+- `GET /api/status` is a local-state-only liveness path and no longer calls `buildSnapshot()`, repository scans, branch divergence, or Heaven Bridge inspection while preserving its operator-facing response contract.
 - Startup restore and the Agent Control watchdog keep using `/api/status` with their existing three-second timeout, now isolated from slow Git/relay work.
-- Full dashboard snapshots compute at most one Heaven Bridge assessment and share it between worker and federation views.
-- Real dispatch retains authoritative Heaven Bridge validation; this change does not weaken execution trust checks.
-- Exact-head Agent Control/Security gates remain required; live heaven2 p50/p95 timing is still pending runtime evidence.
+- Full dashboard snapshots compute at most one Heaven Bridge assessment and share it between worker and federation views; real dispatch still performs authoritative Bridge validation.
+- Live heaven2 p50/p95/no-false-restart evidence and heaven2→heaven1 retirement/replay smoke remain pending runtime evidence and are not claimed by the source merge.
 
 ---
 

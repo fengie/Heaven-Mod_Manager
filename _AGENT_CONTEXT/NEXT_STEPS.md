@@ -1,12 +1,11 @@
-# 2026-09-30 v8.8.33 lightweight health — CURRENT
+# 2026-09-30 v8.8.33 lightweight health — INTEGRATED / RUNTIME NEXT
 
-1. Run exact-head Agent Control `npm run check && npm test` and configured Security/Agent Control PR gates.
-2. Before integration, resync with canonical `main` and preserve any newer Agent Control safety changes.
-3. On heaven2, issue repeated local `GET /api/status` probes and record p50/p95 comfortably below the three-second watchdog timeout, including while Git/origin/relay work is slow or unavailable.
-4. Confirm the watchdog and startup restore remain healthy on `/api/status` and do not false-restart a responsive controller.
-5. Confirm a full dashboard snapshot performs one Heaven Bridge assessment while real dispatch still revalidates bridge trust normally.
-6. After integration, continue P0 #475 startup/runtime freshness, #482 sibling Heaven stop-path proof, and #461 notification/inspector closure.
-
+1. Source integration is complete: PR #495 merged exact candidate `6483661d87d452715f85d06088a53f8b8ebeafe2` to canonical `main`; Agent Control run 504 and Security run 363 passed on that candidate.
+2. On heaven2, issue repeated local `GET /api/status` probes and record p50/p95 comfortably below the three-second watchdog timeout, including while Git/origin/relay work is slow or unavailable.
+3. Confirm the watchdog and startup restore stay healthy on `/api/status` and do not false-restart a responsive controller.
+4. Complete the separately pending heaven2→heaven1 retirement/replay smoke: queued/unknown fail-closed, explicit-terminal retirement, running-race re-cancellation, and strictly-newer-heartbeat tombstone reactivation.
+5. Confirm a full dashboard snapshot performs one Heaven Bridge assessment while real dispatch still revalidates Bridge trust normally.
+6. Continue Agent Manager P0 startup freshness, sibling stop safety, and notification/inspector closure after the runtime evidence above.
 ---
 
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? NEXT

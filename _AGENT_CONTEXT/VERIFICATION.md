@@ -1,11 +1,10 @@
-# v8.8.33 Agent Control lightweight health — verification scope
+# v8.8.33 Agent Control lightweight health — source closure / runtime evidence pending
 
-This candidate changes controller liveness semantics, snapshot bridge-assessment reuse, focused health-contract tests, and Agent Control v0.6.11 release identity. Historical Agent Control evidence does not verify these changed bytes.
+Source integration is closed. Exact candidate `6483661d87d452715f85d06088a53f8b8ebeafe2` passed Agent Control PR Gate run **504** and Security Supply Chain Gate run **363**, then merged through PR #495 as canonical squash commit `4ffff561a05e7f4d9f2a47b2af49927ca086cee2`.
 
-Required source closure: exact-candidate `npm run check && npm test`, including the lightweight-status source contract, one-assessment full-snapshot contract, startup/watchdog status-probe contract, and configured Agent Control/Security gates. Broader product/analyzer failures must be attributed separately if unrelated.
+The integrated source preserves the prior `/api/status` response contract while removing heavyweight repository/remote-provider work, shares one Heaven Bridge assessment per full dashboard snapshot, and pins startup/watchdog probes to the lightweight status endpoint. `health-contract.test.mjs` is present on canonical main.
 
-Required runtime evidence when heaven2 is reachable: repeated local status requests with p50/p95 below the watchdog timeout, no false restart under slow/failing Git conditions, one bridge assessment per dashboard snapshot, and unchanged authoritative dispatch trust validation.
-
+Still pending and intentionally not claimed by source gates: live heaven2 repeated-status p50/p95/no-false-restart evidence and the separate heaven2→heaven1 retirement/replay runtime matrix. Historical full-product verification remains SHA-scoped and must not be relabeled as proving these runtime observations.
 ---
 
 # v8.8.32 Agent Control retirement identity fail-closed closure ? verification scope

@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Preserve the v8.8.32 fail-closed retirement identity boundary; verify exact-head source gates and obtain live heaven2?heaven1 runtime smoke when available. Then finish the lightweight /api/status health contract as the next meaningful patch and leave durable successor notes.",
+  "nextAgentObligation": "v8.8.33 lightweight health is integrated on canonical main via PR #495. Complete the pending live heaven2 status timing/no-false-restart proof and heaven2→heaven1 retirement/replay smoke without relabeling source-only evidence as runtime closure. Then continue Agent Manager P0 startup freshness, sibling stop safety, and notification/inspector closure; preserve durable successor notes.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
