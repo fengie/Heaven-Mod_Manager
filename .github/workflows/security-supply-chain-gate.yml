@@ -54,6 +54,7 @@ jobs:
           immutable = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
           uses_re = re.compile(r"^\s*uses:\s*([^\s#]+)", re.MULTILINE)
           pr_re = re.compile(r"^\s*pull_request\s*:", re.MULTILINE)
+          pr_target_re = re.compile(r"^\s*pull_request_target\s*:", re.MULTILINE)
           permissions_re = re.compile(r"^permissions:\s*$", re.MULTILINE)
           guard = "github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository"
 
@@ -69,7 +70,7 @@ jobs:
                   failures.append(f"{path}: workflow must declare explicit top-level permissions")
               if pr_re.search(text) and "self-hosted" in text and guard not in text:
                   failures.append(f"{path}: persistent self-hosted PR workflow must reject fork PR code")
-              if "pull_request_target:" in text and "actions/checkout@" in text:
+              if pr_target_re.search(text) and "actions/checkout@" in text:
                   failures.append(f"{path}: pull_request_target plus checkout requires explicit security design review")
 
           release_path = workflow_dir / "windows-release-gate.yml"
