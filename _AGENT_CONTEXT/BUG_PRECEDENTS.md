@@ -117,3 +117,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change is routed through the Agent Control PR/CI gate before integration. Final merge evidence is recorded in the integrating commit/PR.
 - **Sibling/adjacent cases checked:** Existing pre-launch capacity/lease checks remain authoritative; provider-capacity active termination remains the classifier; successful startup still proceeds; single-step workflows are not delayed by an unnecessary next-lane gate; no prompt body, task capability, or environment secret is written to the new ledger.
 - **References (SHA/PR/issue/log):** implementation branch `agent-control-swarm-failure-log-20260929`; integration PR/merge SHA to be filled by canonical history.
+
+
+## 2026-09-29 — Nexus catalog adapter — partial discovery overclaim and hostname suffix trust gap
+- **Symptom:** The pre-merge Nexus v3 provider advertised full catalog search while its only discovery transport was the public trending endpoint, and the first provider-local URL check accepted any host whose text merely ended in `nexusmods.com`.
+- **Root cause:** Provider capability flags were derived from the interface shape rather than the actually implemented transport surface, while hostname validation used a raw string suffix instead of a DNS-label-boundary rule.
+- **Violated invariant / wrong assumption:** A provider must never advertise discovery semantics it cannot fulfill completely, and a trusted web origin match must prove either the exact host or a dot-delimited subdomain of that host.
+- **Why prior defenses missed it:** Initial provider tests covered happy-path trending normalization and transport auth/rate behavior but did not assert capability honesty, unsupported browse/search behavior, or adversarial lookalike hosts.
+- **Direct fix:** Removed the `Search` capability until a full-search transport exists; unsupported query/non-trending modes now fail closed instead of filtering a trending subset; source URLs require exact `nexusmods.com` or `.nexusmods.com` host boundaries; assisted URLs percent-encode the configured game domain.
+- **Preventive rule/process change:** Provider capability declarations must be justified by reachable transport behavior, and origin allowlists must use parsed URI host equality or dot-boundary subdomain checks rather than raw suffix matching.
+- **Regression coverage added/strengthened:** `NexusV3CatalogProviderTests` now asserts no Search capability, fail-closed unsupported discovery, rejection of `evilnexusmods.com`, and cancellation-aware async test calls under the strict xUnit1051 policy.
+- **Verification evidence/environment:** Focused deterministic regressions are committed on PR #318. Exact-head Workflow Feature PR Gate verification is required before merge; no passing-gate claim is made in this entry until that run completes.
+- **Sibling/adjacent cases checked:** The shared normalizer now owns Nexus source-origin parsing; authenticated detail/file endpoints retain their existing transport boundary; assisted acquisition remains browser-only and does not expose direct-download claims.
+- **References (SHA/PR/issue/log):** PR #318; issue #281; branch `agent/nexus-v3-normalizer-20260929`.
