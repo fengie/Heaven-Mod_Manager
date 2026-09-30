@@ -183,7 +183,11 @@ def worker_capacity_snapshot(active_noncontrol=0):
     }
 
 
-SENSITIVE_ENV_RE = re.compile(r"(PASS|PASSWORD|TOKEN|SECRET|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH)", re.I)
+HMAC_KEY_ENV = "HEAVEN_BRIDGE_HMAC_KEY"
+HMAC_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_KEY_FILE"
+ALLOW_REPO_ACL_ONLY_ENV = "HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY"
+ALLOW_LEGACY_HMAC_ENV = "HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL"
+SENSITIVE_ENV_RE = re.compile(r"(PASS(?:WORD)?|TOKEN|SECRET|HMAC[_-]?KEY|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH|CREDENTIAL|BEARER|CONNECTION[_-]?STRING)", re.I)
 CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
 UIA_MAX_NODES = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_NODES", "250")), 1000))
 UIA_MAX_DEPTH = max(1, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_DEPTH", "6")), 12))
@@ -387,6 +391,7 @@ def git(*args, check=True, timeout=120):
         capture_output=True,
         text=True,
         timeout=timeout,
+        env=safe_process_env(),
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     if check and p.returncode != 0:
@@ -604,14 +609,50 @@ def validate_job_time(job, current=None):
     return {"created_at": created.isoformat(), "ttl_seconds": ttl, "age_seconds": int(age)}
 
 
+def env_flag(name):
+    return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def hmac_key_path():
+    configured = str(os.environ.get(HMAC_KEY_FILE_ENV) or "").strip()
+    if configured:
+        return Path(os.path.expandvars(os.path.expanduser(configured))).resolve()
+    return (STATE / "auth" / "hmac.key").resolve()
+
+
+def load_hmac_key():
+    inline = os.environ.get(HMAC_KEY_ENV)
+    if inline:
+        return str(inline)
+    path = hmac_key_path()
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
+    except OSError as exc:
+        raise BridgeError("AUTH_KEY_UNREADABLE", "HMAC key file exists but cannot be read", {"path": str(path)}) from exc
+    if not value:
+        raise BridgeError("AUTH_KEY_EMPTY", "HMAC key file is empty", {"path": str(path)})
+    return value
+
+
 def auth_mode():
-    return "hmac-sha256" if os.environ.get("HEAVEN_BRIDGE_HMAC_KEY") else "private-repo-acl"
+    if load_hmac_key():
+        return "hmac-sha256"
+    if env_flag(ALLOW_REPO_ACL_ONLY_ENV):
+        return "private-repo-acl-explicit-insecure"
+    return "hmac-required"
 
 
 def verify_auth(job):
-    key = os.environ.get("HEAVEN_BRIDGE_HMAC_KEY")
+    key = load_hmac_key()
     if not key:
-        return {"mode": "private-repo-acl", "verified": True}
+        if env_flag(ALLOW_REPO_ACL_ONLY_ENV):
+            return {"mode": "private-repo-acl-explicit-insecure", "verified": True}
+        raise BridgeError(
+            "AUTH_HMAC_NOT_CONFIGURED",
+            "Heaven Bridge HMAC authentication is required; unsigned repository-relay execution is disabled by default",
+        )
     auth = job.get("auth") if isinstance(job.get("auth"), dict) else {}
     signature = str(auth.get("signature") or "")
     if not re.fullmatch(r"[0-9a-fA-F]{64}", signature):
@@ -622,6 +663,11 @@ def verify_auth(job):
             raise BridgeError("AUTH_CANONICAL_UNSUPPORTED", "unsupported HMAC canonical format", {"canonical": canonical_version})
         payload = canonical_auth_job_v1(job)
     else:
+        if not env_flag(ALLOW_LEGACY_HMAC_ENV):
+            raise BridgeError(
+                "AUTH_CANONICAL_REQUIRED",
+                "versioned HMAC canonicalization is required; legacy JSON signing needs an explicit emergency compatibility opt-in",
+            )
         payload = canonical_job(job)
     expected = hmac.new(key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(signature.lower(), expected.lower()):
@@ -727,8 +773,16 @@ def cap_text(value, limit=MAX_OUTPUT_TAIL):
     return text if len(text) <= limit else text[-limit:]
 
 
+def safe_process_env():
+    return {
+        str(key): str(value)
+        for key, value in os.environ.items()
+        if not SENSITIVE_ENV_RE.search(str(key))
+    }
+
+
 def build_env(p):
-    env = os.environ.copy()
+    env = safe_process_env()
     requested = p.get("env_from_host") or []
     if requested:
         if not isinstance(requested, list):
@@ -736,6 +790,8 @@ def build_env(p):
         selected = {}
         for name in requested[:100]:
             name = str(name)
+            if SENSITIVE_ENV_RE.search(name):
+                raise BridgeError("SENSITIVE_HOST_ENV_BLOCKED", f"secret-like host environment variable is blocked: {name}")
             if name in os.environ:
                 selected[name] = os.environ[name]
         env.update(selected)
@@ -799,7 +855,11 @@ def kill_process_tree(pid, force=True):
         args = ["taskkill", "/PID", str(pid), "/T"]
         if force:
             args.append("/F")
-        subprocess.run(args, capture_output=True, text=True, timeout=30, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        subprocess.run(
+            args, capture_output=True, text=True, timeout=30,
+            env=safe_process_env(),
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
         return
     try:
         os.kill(pid, 9 if force else 15)
@@ -955,7 +1015,7 @@ def run_capture(job_id, argv, cwd, timeout, stdin=None, cancel_event=None, env=N
     with stdout_path.open("wb") as out_f, stderr_path.open("wb") as err_f:
         proc = subprocess.Popen(
             argv, cwd=str(cwd), stdin=subprocess.PIPE if stdin is not None else None,
-            stdout=out_f, stderr=err_f, env=env, creationflags=flags,
+            stdout=out_f, stderr=err_f, env=env if env is not None else safe_process_env(), creationflags=flags,
         )
         if stdin is not None and proc.stdin:
             data = stdin.encode("utf-8")
@@ -1946,7 +2006,7 @@ def verify_secret_inbox_transport(raw=None):
     except OSError:
         return False
 
-    env = os.environ.copy()
+    env = safe_process_env()
     env["HEAVEN_SECRET_VERIFY_SERVER"] = server
     env["HEAVEN_SECRET_VERIFY_SHARE"] = share
     command = (
@@ -2214,7 +2274,7 @@ def _run_uia_once(request):
     script = ROOT / "heaven-bridge" / "uia.ps1"
     if not script.is_file():
         raise BridgeError("UIA_BACKEND_UNAVAILABLE", "UI Automation backend script is missing")
-    env = os.environ.copy()
+    env = safe_process_env()
     raw = json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     env["HEAVEN_UIA_REQUEST"] = base64.b64encode(raw).decode("ascii")
     timeout_seconds = max(5, min(30, 6 + int(request.get("wait_ms") or 0) // 1000))
@@ -2393,7 +2453,7 @@ def desktop_create_shortcut(job_id, p, cancel_event):
     if location != "desktop":
         raise BridgeError("INVALID_SHORTCUT_LOCATION", "only location=desktop is currently supported")
 
-    env = os.environ.copy()
+    env = safe_process_env()
     env.update({
         "HLB_SHORTCUT_NAME": name,
         "HLB_SHORTCUT_TARGET": target,
@@ -2474,7 +2534,7 @@ def desktop_launch_app(p):
         proc = subprocess.Popen(
             [resolved, *args], cwd=str(cwd), stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            creationflags=flags,
+            env=safe_process_env(), creationflags=flags,
         )
         return {
             "target": target,
@@ -2484,14 +2544,24 @@ def desktop_launch_app(p):
             "visible_console": visible_console,
             "visible_console_suppressed": launch_policy["visible_console_suppressed"],
         }
-    except OSError:
+    except OSError as direct_error:
         if args:
-            raise BridgeError("APP_LAUNCH_FAILED", "direct launch failed and shell association cannot safely accept args")
-        try:
-            os.startfile(target)
-            return {"target": target, "pid": None, "started": True, "via": "shell_association"}
-        except OSError as e:
-            raise BridgeError("APP_LAUNCH_FAILED", str(e), {"target": target}) from e
+            raise BridgeError("APP_LAUNCH_FAILED", "direct launch failed and shell association cannot safely accept args") from direct_error
+        association_env = safe_process_env()
+        association_env["HLB_APP_TARGET"] = target
+        association = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+             "Start-Process -FilePath $env:HLB_APP_TARGET"],
+            capture_output=True, text=True, timeout=30, env=association_env,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if association.returncode != 0:
+            raise BridgeError(
+                "APP_LAUNCH_FAILED",
+                (association.stderr or association.stdout or str(direct_error))[-4000:],
+                {"target": target},
+            ) from direct_error
+        return {"target": target, "pid": None, "started": True, "via": "shell_association"}
 
 
 def desktop_display_list(job_id, cancel_event):
@@ -2503,7 +2573,7 @@ def desktop_display_list(job_id, cancel_event):
         "work_x=$_.WorkingArea.X;work_y=$_.WorkingArea.Y;work_width=$_.WorkingArea.Width;work_height=$_.WorkingArea.Height}; $i++ "
         "}) | ConvertTo-Json -Compress"
     )
-    result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
+    result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=safe_process_env())
     if result["exit_code"] != 0:
         raise BridgeError("DISPLAY_ENUM_FAILED", result.get("stderr") or "display enumeration failed")
     raw = (result.get("stdout") or "").strip()
@@ -2549,7 +2619,9 @@ def run_job(job_id, job, cancel_event):
             "elevated": is_process_elevated(),
             "allowed_roots": [str(x) for x in allowed_roots()],
             "capabilities": {
-                "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": True,
+                "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": False,
+                "hmac_required_by_default": True, "legacy_hmac_requires_explicit_opt_in": True,
+                "child_environment_secret_stripping": True,
                 "binary_files": True, "file_delete": True, "file_copy": True, "output_pagination": True,
                 "process_tree_kill": True, "session_timeouts": True, "session_restart_recovery": True,
                 "heartbeat": True, "audit_log": True,
@@ -2880,7 +2952,7 @@ def run_job(job_id, job, cancel_event):
     if action == "proc_list":
         limit = max(1, min(int(p.get("limit") or 200), 500))
         command = f"Get-Process | Sort-Object CPU -Descending | Select-Object -First {limit} Id,ProcessName,CPU,WorkingSet64,Path | ConvertTo-Json -Depth 3"
-        result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
+        result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=safe_process_env())
         result.update({"host": current_host(), "action": action})
         return result
 
@@ -2910,7 +2982,7 @@ def run_job(job_id, job, cancel_event):
             "$g.Dispose(); $bmp.Dispose(); "
             "$b.X.ToString()+','+$b.Y.ToString()+','+$b.Width.ToString()+'x'+$b.Height.ToString()"
         )
-        result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=os.environ.copy())
+        result = run_capture(job_id, shell_argv("powershell", command), Path.home(), 30, cancel_event=cancel_event, env=safe_process_env())
         if result["exit_code"] != 0 or not target.exists():
             raise BridgeError("SCREENSHOT_FAILED", result.get("stderr") or "screenshot capture failed")
         return make_result(
@@ -2939,7 +3011,7 @@ def run_job(job_id, job, cancel_event):
         else:
             argv = [codex, "exec", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"]
         stdin = payload
-    result = run_capture(job_id, argv, cwd, timeout, stdin=stdin, cancel_event=cancel_event, env=os.environ.copy())
+    result = run_capture(job_id, argv, cwd, timeout, stdin=stdin, cancel_event=cancel_event, env=safe_process_env())
     result.update({"host": current_host(), "action": action})
     return result
 
