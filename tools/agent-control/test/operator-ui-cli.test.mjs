@@ -207,6 +207,25 @@ test("dashboard keeps high-volume operational surfaces collapsed and glanceable 
   assert.match(html, /Showing the newest \$\{visible\.length\} of \$\{items\.length\} notifications/);
 });
 
+test("dashboard motion polish stays opt-in, bounded, and reduced-motion aware", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/i)?.[1] || "";
+
+  assert.match(html, /id="soundToggle"[^>]*aria-pressed="false"/);
+  assert.match(script, /localStorage\.getItem\("agent-control-ui-sound"\) === "on"/);
+  assert.match(script, /window\.AudioContext \|\| window\.webkitAudioContext/);
+  assert.match(script, /function playUiSound\(kind="tap"\)/);
+  assert.match(script, /function bindCompactSectionMotion\(\)/);
+  assert.match(script, /function setMetricText\(id, value\)/);
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(script, /document\.visibilityState !== "visible"/);
+
+  const motion = extractInlineDeclaration(script, "function animateCompactSection(section)");
+  assert.match(motion, /section\.animate\(/);
+  assert.doesNotMatch(motion, /(?:scrollHeight|offsetHeight|clientHeight|style\.height|style\.width)/);
+  assert.match(script, /element\.textContent === next/);
+});
+
 test("dashboard renders notifications and a stable explicit inspector contract", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);
