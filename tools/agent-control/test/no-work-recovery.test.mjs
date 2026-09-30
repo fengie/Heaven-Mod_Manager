@@ -102,6 +102,33 @@ test("empty interrupted worker is retryable and backoff is bounded", () => {
 });
 
 
+
+test("authoritative nonzero exit is a deterministic failure, not no-work", () => {
+  const result = noWorkTerminationDecision({
+    status: "failed",
+    exitCode: 1,
+    completionEvidence: "authoritative-exit",
+    lastMessage: ""
+  });
+  assert.equal(result.noWork, false);
+  assert.equal(result.retry, false);
+  assert.equal(result.reason, "deterministic-runtime-failure");
+});
+
+test("stream loss metadata cannot turn an authoritative nonzero exit into an automatic retry", () => {
+  const result = terminationReconciliationDecision({
+    state: "failed",
+    exitCode: 1,
+    completionEvidence: "authoritative-exit",
+    last_action_summary: "",
+    source_metadata: { stream_lost: true }
+  }, { streamLost: true, durableEvidenceChecked: true });
+  assert.equal(result.recoveryStatus, "work-unverified");
+  assert.equal(result.retry, false);
+  assert.equal(result.action, "inspect");
+  assert.equal(result.reason, "deterministic-runtime-failure");
+});
+
 test("stream loss with durable work is preserved as incomplete", () => {
   const result = terminationReconciliationDecision({
     state: "disconnected",
@@ -313,3 +340,37 @@ test("end-of-swarm recovery does not duplicate successful or exhausted recovery 
   const batch = planSwarmTailRecoveryBatch({ agents, tasks }, { maxWorkers: 4, maxAttemptsPerRoot: 2 });
   assert.deepEqual(batch, []);
 });
+
+
+test("swarm-tail recovery does not resurrect a clean deterministic nonzero failure", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{
+      id: "failed-runtime",
+      status: "failed",
+      exitCode: 1,
+      completionEvidence: "authoritative-exit",
+      taskId: "t-runtime",
+      task: "do work"
+    }],
+    tasks: [{ id: "t-runtime", status: "failed", objective: "do work" }]
+  });
+  assert.deepEqual(batch, []);
+});
+
+test("swarm-tail recovery still preserves deterministic failures that left substantive work", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{
+      id: "failed-with-work",
+      status: "failed",
+      exitCode: 1,
+      completionEvidence: "authoritative-exit",
+      worktreeDirty: true,
+      taskId: "t-work",
+      task: "finish preserved work"
+    }],
+    tasks: [{ id: "t-work", status: "failed", objective: "finish preserved work" }]
+  });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "failed-with-work");
+});
+
