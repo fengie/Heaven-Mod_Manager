@@ -353,6 +353,7 @@ public sealed class ConflictEngine
 
     private static bool IsProtectedBootstrapPath(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         string normalized;
         try { normalized = PathRules.Normalize(path); }
         catch (ArgumentException) { return false; }
