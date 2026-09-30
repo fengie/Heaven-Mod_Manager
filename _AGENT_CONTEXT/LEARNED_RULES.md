@@ -452,3 +452,12 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** provider-capacity retry suppression; LR-021 defect-class closure; LR-023 collision-safe rule IDs.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## 2026-09-29 — Strict analyzer gates must force recompilation
+
+- **Trigger / evidence:** Windows Release Gate run `36656144330` on source `e3fb8fae2db8c7c6b2d41ff5ec1f510679f505e8` printed CA1865 from `NexusV3Transport.cs` during the relaxed build, then its strict Core stage reported zero warnings because MSBuild treated the just-built project as up-to-date. The subsequent fresh-checkout Updater Installed Client E2E run `36656604071` rebuilt the integration graph and failed on that same CA1865 before exercising updater behavior.
+- **Violated invariant:** a strict analyzer/warnings-as-errors stage must prove diagnostics were evaluated under strict settings; an incremental no-op after a relaxed build is not evidence of that.
+- **Prevention:** strict per-project verification now forces recompilation with `--no-incremental`; the verifier regression test structurally requires that flag so a future refactor cannot silently restore the false-green path.
+- **Direct repair:** normalize the one-character Nexus base-URI suffix check to the char overload, closing CA1865 without behavior change.
+- **Reusable lesson:** promoted to `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md` under “Strict analyzer rerun semantics.”
+
