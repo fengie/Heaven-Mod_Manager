@@ -643,3 +643,15 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - Evidence: reproduction on PR #515 source 2031c405, hidden local Node on heaven2; focused integration tests 12/12 pass after repair. Exact candidate/full gates remain required before integration.
 - Siblings: pagination raw-text/envelope expansion, navigation query/result/snippet bounds, indexed whitelist, stale hashes, bootstrap budget and CLI formatting; bootstrap packet unchanged in structure and still bounded.
 - References: v8.8.43 integration evidence; integration branch codex/context-navigation-integration.
+
+## 2026-09-30 — Agent Control state — repeated Windows BOM defect could discard newer ownership
+- Symptom: valid BOM-prefixed primary JSON was rejected and an older backup was selected, dropping tasks/leases unique to the primary. Live controller carried a historical BOM fallback incident.
+- Root cause: plain JSON.parse on decoded UTF-8 did not accept the supported Windows producer's single leading BOM; the same mismatch existed in backup validation and legacy migration.
+- Violated invariant: supported encoding cannot demote valid authoritative current ownership to stale recovery state. Backup is a corruption fallback, not an encoding fallback.
+- Missed prevention: prior plugin-pruner BOM precedent was not propagated into controller state consumers; fixtures only wrote BOM-free JSON. This repeated class is escalated to a shared state decoder and real server/persistence tests.
+- Fix: one readStateJson decoder removes only one leading BOM before strict JSON parsing. Primary/backup, legacy import and pre-save backup validation reuse it; writers stay BOM-free.
+- Prevention: LR-059 requires producer-format fixtures across the entire read/validate/backup/migrate chain, retaining strict malformed-data handling. Generic trainer propagation.
+- Regression: newer primary vs stale backup; settings save retains newest backup, then corrupt primary recovers those records; BOM backup recovery; legacy unmerged agent stays orphaned; duplicate/misplaced BOM and malformed JSON stay degraded/read-only/paused.
+- Evidence: isolated hidden Node/HTTP on heaven2 reproduced recovered instead of healthy before fix; four focused BOM tests pass afterward. Exact full/candidate/main gates remain required.
+- Siblings: three state-read sites and pre-save validation centralized; plugin pruner already uses UTF-8-sig; generated state writers stay BOM-free. Network/auth payload parsers unchanged; historical recovery warning is not erased.
+- References: v8.8.44-agent-state-encoding evidence; prior plugin-pruner Windows BOM incident.

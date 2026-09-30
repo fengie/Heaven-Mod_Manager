@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.43",
+  "currentVersion": "8.8.44",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.42 current CI evidence, merged to main",
+  "immediateParentRevision": "v8.8.43 verified and published",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.43 is verified and published as build 352; controller 0.6.20 live. Preserve active v8.8.44 owner, continue Agent Manager P0, verify actual operator latest build (currently proven 351), and recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.44 exact-source state-encoding gates, integrate/release/restore; preserve catalog ownership and auth/operator-client gaps, then recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

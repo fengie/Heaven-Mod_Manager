@@ -1,4 +1,8 @@
-# v8.8.43 Universal Mod Manager
+# v8.8.44 Universal Mod Manager
+
+## v8.8.44 — Windows-safe agent ownership state
+
+Agent Control v0.6.21 accepts Windows UTF-8 BOM state files without falling back to an older backup and losing newer ownership. Primary, backup, legacy migration and backup validation share one strict decoder; malformed content still fails closed, writes stay BOM-free, and interrupted-write recovery preserves uncertain work.
 
 ## v8.8.43 — bounded indexed-context navigation
 

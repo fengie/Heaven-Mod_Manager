@@ -1,3 +1,9 @@
+# v8.8.44 — Windows-safe agent ownership state
+- Accept one leading UTF-8 BOM in primary/backup/legacy controller state, preserving newer tasks/leases rather than recovering an older backup for a supported encoding.
+- Reuse the strict decoder during pre-save backup validation; keep BOM-free atomic writes and corrupt-state read-only/paused behavior.
+- Add real isolated server/HTTP regressions for newer-primary precedence, backup preservation/interruption recovery, legacy uncertain-agent identity, and malformed/duplicate/misplaced BOM rejection.
+- Strengthen the prior Windows-encoding precedent with LR-059 and generic training; Agent Control/root+nested plugin version 0.6.21.
+
 # v8.8.43 — bounded indexed-context navigation
 - Enforce actual compact CLI output, escaping and newline within the 8 KiB envelope; preserve pagination continuation without dropped lines when serialization expands content.
 - Add hash-checked literal `--search` and Markdown `--heading` modes to the canonical repository-context CLI.

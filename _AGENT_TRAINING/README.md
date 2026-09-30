@@ -85,3 +85,5 @@ A qualifying lesson is closed only when project evidence is durable, root cause/
 Release decisions must bind evidence to repository/source/event/branch/workflow identity, prove the newest result, and reject partial, ambiguous, running or expired observations. Any historical success never overrides competing evidence. Query/provider failures require explicit availability evidence and an authorized alternate reader; revalidate freshness at final authorization.
 
 Output budgets apply to final emitted bytes, including serialization envelope, escaping, formatting and terminator. Test actual CLI/API output at scale and escaped Unicode pagination with lossless continuation; helper-size assertions alone are insufficient.
+
+Supported Windows producer encodings must be tested across primary, backup, validation and migration. A valid newer ownership record must not fall back to stale state for an encoding marker; malformed content still fails closed.

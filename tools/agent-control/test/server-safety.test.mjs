@@ -10,6 +10,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { execFileHidden } from "../lib/background-process.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.resolve(HERE, "..", "server.mjs");
@@ -205,6 +206,80 @@ test("backup recovery preserves uncertain work and refuses to call it complete",
   assert.notEqual(agent.completionEvidence, "authoritative-exit");
   const lease = response.body.leases.find(item => item.id === "lease-old");
   assert.equal(lease.status, "active");
+});
+
+test("Windows UTF-8 BOM primary keeps newer ownership instead of stale backup", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-bom-primary-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const dataDir = path.join(root, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const primary = { version: 2, agents: [], tasks: [{ id: "newer-task", objective: "Preserve latest ownership", status: "queued" }], leases: [{ id: "newer-lease", boundary: "owned-new-work", status: "active", taskId: "newer-task" }], events: [] };
+  const primaryPath = path.join(dataDir, "control-plane.json");
+  if (process.platform === "win32") {
+    fs.writeFileSync(primaryPath, JSON.stringify(primary));
+    await execFileHidden("powershell.exe", ["-NoProfile", "-WindowStyle", "Hidden", "-Command", '$p=$env:AGENT_ENCODING_TEST_TARGET; $text=Get-Content -LiteralPath $p -Raw; Set-Content -LiteralPath $p -Value $text -Encoding UTF8'], { env: { ...process.env, AGENT_ENCODING_TEST_TARGET: primaryPath }, timeout: 5000 });
+  } else {
+    fs.writeFileSync(primaryPath, "\uFEFF" + JSON.stringify(primary));
+  }
+  assert.deepEqual([...fs.readFileSync(primaryPath).subarray(0, 3)], [0xEF, 0xBB, 0xBF]);
+  fs.writeFileSync(path.join(dataDir, "control-plane.json.bak"), JSON.stringify({ version: 2, agents: [], tasks: [], leases: [], events: [] }));
+  const port = await freePort(), { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  const response = await waitForSnapshot(port);
+  assert.equal(response.body.controller.health.mode, "healthy");
+  assert.ok(response.body.tasks.some(row => row.id === "newer-task"));
+  assert.ok(response.body.leases.some(row => row.id === "newer-lease"));
+  const changed = await postJson(port, "/api/control/settings", { dispatchPaused: true });
+  assert.equal(changed.status, 200);
+  assert.ok(fs.readFileSync(path.join(dataDir, "control-plane.json.bak"), "utf8").includes('"newer-task"'));
+  assert.notEqual(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8").charCodeAt(0), 0xFEFF);
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), "{ interrupted");
+  const recovered = await getJson(port);
+  assert.equal(recovered.body.controller.health.mode, "recovered");
+  assert.ok(recovered.body.tasks.some(row => row.id === "newer-task"));
+  assert.ok(recovered.body.leases.some(row => row.id === "newer-lease"));
+});
+
+test("Windows BOM backup still recovers uncertain ownership when primary is corrupt", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-bom-backup-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const dataDir = path.join(root, "data"); fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), "{ broken");
+  fs.writeFileSync(path.join(dataDir, "control-plane.json.bak"), "\uFEFF" + JSON.stringify({ version: 2, agents: [], tasks: [{ id: "backup-work", objective: "Resume existing work", status: "queued" }], leases: [], events: [] }));
+  const port = await freePort(), { child } = launch({ root, port }); t.after(() => closeChild(child));
+  const response = await waitForSnapshot(port);
+  assert.equal(response.body.controller.health.mode, "recovered");
+  assert.ok(response.body.tasks.some(row => row.id === "backup-work"));
+});
+
+test("Windows BOM legacy migration preserves imported agent identity", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-bom-legacy-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const dataDir = path.join(root, "data"); fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(path.join(dataDir, "agents.json"), "\uFEFF" + JSON.stringify({ agents: [{ id: "legacy-owned", role: "support", status: "running", task: "Resume legacy work", pid: 424242, branchName: "agent/legacy-unmerged", baseBranch: "main", taskId: "legacy-task", leaseId: "legacy-lease", startedAt: new Date().toISOString() }] }));
+  const port = await freePort(), { child } = launch({ root, port }); t.after(() => closeChild(child));
+  const response = await waitForSnapshot(port);
+  const agent = response.body.agents.find(row => row.id === "legacy-owned");
+  assert.equal(agent.status, "orphaned");
+  assert.notEqual(agent.completionEvidence, "authoritative-exit");
+  assert.notEqual(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8").charCodeAt(0), 0xFEFF);
+});
+
+test("duplicate or misplaced BOM and malformed JSON still fail closed", async t => {
+  for (const text of ["\uFEFF\uFEFF{}", " \uFEFF{}", "\uFEFF{ broken"]) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-bom-invalid-"));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const dataDir = path.join(root, "data"); fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(path.join(dataDir, "control-plane.json"), text);
+    fs.writeFileSync(path.join(dataDir, "control-plane.json.bak"), text);
+    const port = await freePort(), { child } = launch({ root, port });
+    try {
+      const response = await waitForSnapshot(port);
+      assert.equal(response.body.controller.health.mode, "degraded");
+      assert.equal(response.body.settings.readOnly, true);
+      assert.equal(response.body.settings.dispatchPaused, true);
+    } finally { await closeChild(child); }
+  }
 });
 
 

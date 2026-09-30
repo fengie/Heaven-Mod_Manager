@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
-  "currentVersion": "8.8.43",
+  "workingBranch": "codex/agent-state-encoding",
+  "currentVersion": "8.8.44",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.43-context-navigation-verified-and-published",
-  "nextMilestone": "Context navigation delivered; continue actionable Agent Manager P0 with existing owners.",
-  "nextRequiredAction": "Use v8.8.43 evidence; preserve active v8.8.44 catalog owner and auth/latest-installed-client gaps.",
+  "status": "v8.8.44-state-encoding-candidate",
+  "nextMilestone": "Verify Windows-safe ownership state, integrate and publish exact proof.",
+  "nextRequiredAction": "Run candidate gates, preserve external catalog owner, refresh canonical version and complete release/runtime closure.",
   "verificationAppliesToCommit": "e655e46567aecdbf52b00623c81f6ce4569dd525",
   "lastClosedVerificationCommit": "e655e46567aecdbf52b00623c81f6ce4569dd525",
   "lastClosedVerificationRun": "heaven-github-actions-36772161122",
-  "verificationScopeNote": "Exact v8.8.43 source passed 26/26 Windows, 269 controller tests, security, immutable private/public build 352 and disposable update/rollback. Controller 0.6.20 navigation smoke passes. Actual operator client reached 351; latest 352 remains unverified.",
+  "verificationScopeNote": "v8.8.43 source/release proof below remains historical; this candidate requires fresh exact-input verification.",
   "lastClosedVerification": {
     "sourceSha": "e655e46567aecdbf52b00623c81f6ce4569dd525",
     "windowsGate": "36772161122 success; 26/26",
@@ -27,12 +27,11 @@
     "evidenceCommit": "dcb14065bcc44a1cacf653fada43c8addf1a1e5c",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.43-context-navigation.md"
   },
-  "candidateSourceCommit": "e655e46567aecdbf52b00623c81f6ce4569dd525",
+  "candidateSourceCommit": null,
   "candidateChanges": [
-    "SHA-256-bound literal text and Markdown-heading navigation for indexed repository context, with explicit indexed-subset authorization.",
-    "Bounded query/results/output with line-addressable matches and explicit result/snippet truncation.",
-    "Regression protection against valid-hash core documents crossing the indexed-context reader boundary (LR-057).",
-    "Agent Control/plugin identity v0.6.20 and prompt library 2026.09.30.3."
+    "Single-leading-BOM strict state decoder for primary, backup, legacy and backup validation.",
+    "Real ownership precedence, interruption recovery and malformed-encoding regressions.",
+    "Agent Control/root+nested plugin 0.6.21; unchanged prompt contract."
   ],
   "agentManagerPriority": {
     "status": "active",
