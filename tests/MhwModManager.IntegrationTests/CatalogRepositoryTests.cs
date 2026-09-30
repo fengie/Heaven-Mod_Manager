@@ -37,7 +37,15 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Equal(cached.Mod.Tags.ToArray(), loaded.Mod.Tags.ToArray());
         Assert.Equal(cached.Mod.Screenshots.ToArray(), loaded.Mod.Screenshots.ToArray());
         Assert.Equal(cached.Mod.Dependencies.ToArray(), loaded.Mod.Dependencies.ToArray());
-        Assert.Equal(cached.Mod.Files.ToArray(), loaded.Mod.Files.ToArray());
+        var expectedFile = Assert.Single(cached.Mod.Files);
+        var actualFile = Assert.Single(loaded.Mod.Files);
+        Assert.Equal(expectedFile.ProviderId, actualFile.ProviderId);
+        Assert.Equal(expectedFile.ProviderModId, actualFile.ProviderModId);
+        Assert.Equal(expectedFile.ProviderFileId, actualFile.ProviderFileId);
+        Assert.Equal(expectedFile.Name, actualFile.Name);
+        Assert.Equal(expectedFile.FileName, actualFile.FileName);
+        Assert.Equal(expectedFile.Category, actualFile.Category);
+        Assert.Equal(expectedFile.Dependencies!.ToArray(), actualFile.Dependencies!.ToArray());
         Assert.Equal(cached.Cache, loaded.Cache);
 
         var db = new ManagerDatabase(Path.Combine(root, "persist", "manager.db"));
@@ -103,6 +111,24 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Single(await repository.SearchAsync("wyvern", includeStale: true, now: now, ct: TestToken));
         Assert.Empty(await repository.SearchAsync("wyvern", includeStale: false, now: now, ct: TestToken));
         Assert.True((await repository.GetAsync(cached.Mod.CanonicalId, TestToken))!.IsStale(now));
+    }
+
+    [Fact]
+    public async Task Freshness_filter_compares_instants_not_original_offsets()
+    {
+        var repository = await CreateRepositoryAsync("offsets");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 0, 0, TimeSpan.Zero);
+        var sameInstantLaterOffset = new DateTimeOffset(2026, 9, 30, 1, 30, 0, TimeSpan.FromHours(-3));
+        await repository.UpsertAsync(
+            CreateCached(
+                canonicalId: "nexus:global-fixture-offset",
+                name: "Offset Wyvern Cache",
+                summary: "UTC normalization fixture.",
+                description: "Should still be fresh by instant.",
+                expiresAt: sameInstantLaterOffset),
+            TestToken);
+
+        Assert.Single(await repository.SearchAsync("wyvern", includeStale: false, now: now, ct: TestToken));
     }
 
     [Fact]
