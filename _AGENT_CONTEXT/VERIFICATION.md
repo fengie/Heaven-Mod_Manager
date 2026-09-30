@@ -920,3 +920,10 @@ Exact code commit: `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2` on `agent/auto-upd
 - **Research basis:** dependency planning is treated as a constraint problem rather than a priority sort; mod tooling precedent likewise treats missing requirements/incompatibilities and overwrite order as explicit safety metadata. LR-036 generalizes the N-way complete-winner proof.
 - **Hosted verification limitation:** PR #410 Workflow Feature PR Gate run `36667797291` was cancelled by the repository-wide shared-runner concurrency policy before executing the exact candidate; Security Supply Chain Gate run `36667797309` remained queued. This is **not** recorded as a green hosted gate. Product/test source remains canonical on main and must be exercised by the next non-superseded Windows release/feature gate.
 - **Process incident:** PR #394 was prematurely integrated before its required gates completed. LR-035 and `BUG_PRECEDENTS.md` now record the recurrence; queued/cancelled/failed gates are explicitly not merge authorization.
+
+## PG-005 Release Orchestrator Canonical-Main Verification — 2026-09-30
+
+- Candidate purpose: verify the recovered `heaven-workflows` release-orchestration capability after preservation merges repeatedly recorded ancestry without carrying the file tree.
+- Canonical-tree evidence: `service.py` exposes deterministic release planning/gate/artifact/publish/reconciliation/cancellation helpers; focused tests, manifest capabilities, and README documentation are present on `main`.
+- Required evidence: exact-candidate Plugin Toolbox Gate + Security Supply Chain Gate. Do not mark PG-005 DONE from PR ancestry or merge state alone.
+- Status at creation: PENDING.
