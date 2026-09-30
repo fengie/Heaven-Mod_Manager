@@ -17,7 +17,17 @@
     "status": "active",
     "priority": "P0",
     "mode": "functionality-lock",
-    "completionContract": "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json#agentManagerPriority"
+    "goal": "Prove Agent Manager/Agent Control end-to-end before expansion.",
+    "completionContract": "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json#agentManagerPriority",
+    "releasePolicy": "No unrelated product features before exact-head Agent Manager P0 proof.",
+    "completionRequires": [
+      "Runtime/plugin identity agrees.",
+      "Exact candidate checks pass.",
+      "heaven2 server/CLI/dashboard smoke passes.",
+      "Authenticated Heaven provider is healthy or fails closed.",
+      "Dispatch/observe/recover/stop preserves ownership.",
+      "Provider/machine/freshness/partial coverage is truthful."
+    ]
   },
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
