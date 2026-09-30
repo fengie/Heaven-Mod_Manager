@@ -241,7 +241,7 @@ class HeavenWorkflowPlugin:
             if not success:
                 failures.append({"gate":gate,"reason":"not_successful"}); continue
             passed.append(gate)
-        return {"ok":not failures,"candidate_sha":candidate_sha,"passed":passed,"failures":failures}
+        return {"ok":not failures,"plan_id":plan.get("plan_id"),"candidate_sha":candidate_sha,"passed":passed,"failures":failures}
 
     def release_verify_artifacts(self, plan: Mapping[str, Any], artifacts: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         version = self._require_release_text(plan.get("version"), "version", max_length=64)
@@ -281,15 +281,19 @@ class HeavenWorkflowPlugin:
         extras = sorted(set(actual) - {str(x.get("name")) for x in expected if isinstance(x, Mapping)})
         if extras:
             failures.append({"artifact":",".join(extras),"reason":"unexpected"})
-        return {"ok":not failures,"version":version,"channel":channel,"artifacts":sorted(verified,key=lambda x:x["name"]),"failures":failures}
+        return {"ok":not failures,"plan_id":plan.get("plan_id"),"version":version,"channel":channel,"artifacts":sorted(verified,key=lambda x:x["name"]),"failures":failures}
 
     def release_authorize_publish(self, plan: Mapping[str, Any], gate_verification: Mapping[str, Any], artifact_verification: Mapping[str, Any], *, confirmation: str) -> dict[str, Any]:
         plan_id = self._require_release_text(plan.get("plan_id"), "plan_id", max_length=64)
         candidate_sha = self._require_hex(plan.get("candidate_sha"), 40, "candidate_sha")
-        if gate_verification.get("candidate_sha") != candidate_sha or gate_verification.get("ok") is not True:
-            raise ValueError("required gates are not verified for the candidate commit")
-        if artifact_verification.get("ok") is not True:
-            raise ValueError("release artifacts are not verified")
+        required_gates = set(plan.get("required_gates") or [])
+        if gate_verification.get("plan_id") != plan_id or gate_verification.get("candidate_sha") != candidate_sha or gate_verification.get("ok") is not True or set(gate_verification.get("passed") or []) != required_gates:
+            raise ValueError("required gates are not verified for this release plan")
+        if artifact_verification.get("plan_id") != plan_id or artifact_verification.get("ok") is not True:
+            raise ValueError("release artifacts are not verified for this release plan")
+        rebound = self.release_verify_artifacts(plan, artifact_verification.get("artifacts") or [])
+        if rebound.get("ok") is not True:
+            raise ValueError("release artifact verification is not bound to this release plan")
         expected = f"CONFIRM PUBLISH {plan_id}"
         if confirmation != expected:
             raise ValueError("explicit publish confirmation does not match this release plan")
