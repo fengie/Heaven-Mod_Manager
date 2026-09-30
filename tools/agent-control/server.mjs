@@ -3324,7 +3324,8 @@ async function deployReview(targetAgentId, body = {}) {
     verification: [
       "Run focused checks needed to validate review findings.",
       "Identify any exact-source verification gap that blocks integration."
-    ]
+    ],
+    swarmContext: body.swarmContext || null
   });
 }
 
@@ -3383,7 +3384,10 @@ async function waitForWorkflowStartupViability(agentId, {
 async function executeWorkflow(workflowId, body = {}, { operatorInitiated = false } = {}) {
   return withDeployLock(async () => {
     const workflowStartedAt = isoNow();
-    const workflowWaveId = randomUUID();
+    const requestedSwarmContext = body.swarmContext && typeof body.swarmContext === "object"
+      ? body.swarmContext
+      : null;
+    const workflowWaveId = String(requestedSwarmContext?.waveId || "").trim() || randomUUID();
     const state = refreshState();
     assertMutationsAllowed(state, { dispatch: true });
     assertWorkflowAutonomy(state, workflowId);
@@ -3447,12 +3451,12 @@ async function executeWorkflow(workflowId, body = {}, { operatorInitiated = fals
             "Tie claims to exact source/artifact identity and report any unverified environment honestly."
           ],
           swarmContext: {
-            workflowId,
+            workflowId: String(requestedSwarmContext?.workflowId || workflowId).trim() || workflowId,
             waveId: workflowWaveId,
-            mission: plan.mission || body.objective || work.task,
+            mission: requestedSwarmContext?.mission || plan.mission || body.objective || work.task,
             stepIndex: currentStepIndex,
             totalSteps: plan.steps.length,
-            source: "one-click-workflow"
+            source: requestedSwarmContext?.source || "one-click-workflow"
           }
         });
         created.push(agent);
@@ -4111,6 +4115,11 @@ async function dispatchPerpetualReplacement(state, pending) {
   const attempt = Math.max(1, Number(pending.attempt || 1));
   const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
   const role = rolePresets[source.role] ? source.role : "recovery";
+  const replacementSwarmContext = autopilotSwarmContext(
+    state,
+    pending.phase || "repair",
+    task.objective || source.task || state.autopilot?.objective
+  );
   return withDeployLock(() => deployOne({
     role,
     task: [
@@ -4146,11 +4155,13 @@ async function dispatchPerpetualReplacement(state, pending) {
       rootAgentId: source.recoveryRootAgentId || source.id
     },
     swarmContext: {
-      workflowId: task.workflowId || "perpetual-autopilot",
-      waveId: task.swarmWaveId || `perpetual:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
-      mission: state.autopilot.objective,
-      stepIndex: task.swarmStepIndex || 0,
-      totalSteps: task.swarmStepTotal || 1,
+      ...(replacementSwarmContext || {
+        workflowId: task.workflowId || "perpetual-autopilot",
+        waveId: task.swarmWaveId || `perpetual:${state.autopilot.runId}:${Math.max(1, Number(state.autopilot.cycleNumber || 0) + 1)}`,
+        mission: state.autopilot.objective,
+        stepIndex: task.swarmStepIndex || 0,
+        totalSteps: task.swarmStepTotal || 1
+      }),
       source: "perpetual-stale-replacement"
     }
   }));
@@ -4416,6 +4427,22 @@ function autopilotOverallGoalLine(state) {
   return overallGoal ? `Overall goal: ${overallGoal}` : null;
 }
 
+function autopilotSwarmContext(state, phase, mission = "") {
+  if (!state.autopilot?.perpetual) return null;
+  const phases = ["implement", "verify", "review", "repair", "integrate", "hygiene", "expand"];
+  const normalizedPhase = phases.includes(String(phase || "")) ? String(phase) : "implement";
+  const cycle = Math.max(1, Number(state.autopilot?.cycleNumber || 0) + 1);
+  const runId = String(state.autopilot?.runId || "untracked").trim() || "untracked";
+  return {
+    workflowId: "perpetual-autopilot",
+    waveId: `perpetual:${runId}:${cycle}`,
+    mission: String(mission || state.autopilot?.objective || "Continuously improve the project.").trim(),
+    stepIndex: phases.indexOf(normalizedPhase),
+    totalSteps: phases.length,
+    source: `one-click-perpetual:${normalizedPhase}`
+  };
+}
+
 function autopilotImplementationObjective(state) {
   const overallGoalLine = autopilotOverallGoalLine(state);
   if (!state.autopilot?.perpetual) {
@@ -4439,7 +4466,8 @@ async function dispatchAutopilotImplementation(state) {
     objective,
     baseBranch: state.autopilot.baseBranch || "main",
     requireReconciledOwnership: true,
-    repositoryWriteAuthorized: true
+    repositoryWriteAuthorized: true,
+    swarmContext: autopilotSwarmContext(state, "implement", objective)
   });
   if (result.blocked?.length) {
     throw new Error(`Autopilot swarm dispatch blocked: ${JSON.stringify(result.blocked)}`);
@@ -4482,7 +4510,8 @@ async function dispatchAutopilotVerification(state) {
     machine: "auto",
     targetAgentId: candidate.id,
     repositoryWriteAuthorized: true,
-    verification: ["A pass requires structured verification evidence, not prose output."]
+    verification: ["A pass requires structured verification evidence, not prose output."],
+    swarmContext: autopilotSwarmContext(state, "verify", state.autopilot?.objective)
   }));
 }
 
@@ -4502,7 +4531,8 @@ async function dispatchAutopilotReview(state) {
     boundary: `autopilot:review:${state.autopilot.runId}:${state.autopilot.repairLoops}`,
     priority: 93,
     machine: "auto",
-    repositoryWriteAuthorized: true
+    repositoryWriteAuthorized: true,
+    swarmContext: autopilotSwarmContext(state, "review", state.autopilot?.objective)
   }));
 }
 
@@ -4524,7 +4554,8 @@ async function dispatchAutopilotRepair(state) {
     boundary: `autopilot:repair:${state.autopilot.runId}:${state.autopilot.repairLoops + 1}`,
     priority: 96,
     machine: "auto",
-    repositoryWriteAuthorized: true
+    repositoryWriteAuthorized: true,
+    swarmContext: autopilotSwarmContext(state, "repair", state.autopilot?.objective)
   }));
 }
 
@@ -4557,7 +4588,8 @@ async function dispatchAutopilotIntegration(state) {
       "Remote origin/main contains the approved candidate tip as an ancestor.",
       "Affected verification was rerun after reconciliation.",
       "No unrelated unreviewed work was merged."
-    ]
+    ],
+    swarmContext: autopilotSwarmContext(state, "integrate", state.autopilot?.objective)
   }));
 }
 
@@ -4582,7 +4614,8 @@ async function dispatchAutopilotHygiene(state) {
       "Every deleted branch has integration proof.",
       "Every closed issue/PR has completion or obsolescence evidence.",
       "Continuity remains truthful to current origin/main."
-    ]
+    ],
+    swarmContext: autopilotSwarmContext(state, "hygiene", state.autopilot?.objective)
   }));
 }
 
@@ -4604,7 +4637,8 @@ async function dispatchAutopilotExpansion(state) {
     machine: "auto",
     lane: "perpetual-next-cycle",
     repositoryWriteAuthorized: true,
-    verification: ["Durable next-step context names one bounded high-value action and its verification contract."]
+    verification: ["Durable next-step context names one bounded high-value action and its verification contract."],
+    swarmContext: autopilotSwarmContext(state, "expand", state.autopilot?.objective)
   }));
 }
 
