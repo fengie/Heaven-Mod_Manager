@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution discovery — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.28 candidate.
+2. On heaven2, start/reload Agent Control without manually setting `AGENT_CONTROL_HEAVEN_RELAY_DIR` while `%USERPROFILE%\\HeavenBridgeRepo` exists; provider health and execution must resolve the same checkout.
+3. Trigger START SWARM / one delegated Heaven job and prove the queue publication reaches heaven1 and the authoritative result returns to heaven2.
+4. Re-smoke v8.8.27 managed/federated card inspection and v8.8.26 retry-exhausted retirement so the transport fix does not regress operator interaction or terminal cleanup.
+5. Confirm package/root plugin/nested Codex plugin all report Agent Control v0.6.7 and record exact-SHA runtime evidence.
+6. If dispatch still fails, inspect HMAC/heartbeat/relay cleanliness/result-validation errors next; do not reintroduce duplicate relay-path configuration.
+
+---
+
 # 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate; the emitted dashboard script must parse and all Agent Control tests must pass.
