@@ -90,6 +90,14 @@ jobs:
           if "https://github.com/cli/cli/releases/download/v${version}/${assetName}" not in release_text:
               failures.append(f"{release_path}: GitHub CLI bootstrap must use the pinned release-asset URL")
 
+          updater_path = workflow_dir / "updater-installed-client-e2e.yml"
+          updater_text = updater_path.read_text(encoding="utf-8")
+          for privileged_path, privileged_text in ((release_path, release_text), (updater_path, updater_text)):
+              if "persist-credentials: false" not in privileged_text:
+                  failures.append(f"{privileged_path}: privileged updater/release checkouts must not persist repository credentials")
+          if re.search(r"^      MHW_MOD_MANAGER_GITHUB_TOKEN:\s*\$\{\{ github\.token \}\}\s*$", updater_text, re.MULTILINE):
+              failures.append(f"{updater_path}: repository token must be scoped to only the steps that require it")
+
           if failures:
               print("\n".join(f"ERROR: {item}" for item in failures))
               sys.exit(1)
