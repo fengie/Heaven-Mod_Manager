@@ -827,7 +827,7 @@ public sealed class CatalogSqliteStore
         if (terms.Length == 0)
             throw new ArgumentException("Catalog search query must contain searchable letters or digits.", nameof(query));
 
-        return string.Join(" AND ", terms.Select(static term => $""{term}""));
+        return string.Join(" AND ", terms.Select(static term => $"\"{term}\""));
     }
 
     private static string SanitizeFtsTerm(string value)
