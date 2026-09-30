@@ -57,3 +57,8 @@ When a verification pipeline performs a relaxed build before a strict warning-as
 - For repeated reads, fetch only the columns/state the caller needs and avoid wide joins/object materialization when a narrow query is sufficient.
 - Treat parallelism as a measured optimization: prove independence and verify that added concurrency does not increase SSD contention, UI-thread pressure, lock contention, allocation rate, or peak memory.
 - Protect important performance boundaries with benchmarks or structural regression checks, then remeasure after the change. Record exact source revision, workload, environment, latency, allocation/memory evidence, and any remaining measurement gap.
+
+### Final assembled browser-script parse gate
+
+When HTML embeds or generates JavaScript, verification must parse the **final assembled script source** after all merges/transforms. Structural substring tests are insufficient: duplicate top-level declarations, truncated generated source, or merge artifacts can make the browser reject the entire script before initialization. Add a parser-only regression that does not execute browser APIs and make parser failure integration-blocking.
+
