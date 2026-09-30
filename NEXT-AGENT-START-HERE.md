@@ -17,4 +17,6 @@ Canonical continuity pointers for every successor: `_AGENT_CONTEXT/CONTINUITY_PR
 3. Retire temporary governance branches only after ancestry and semantic preservation proof. Preserve unique registry/catalog branches until separately reviewed.
 4. Issues #411, #350, #354, and #281 remain unresolved. Resume paused cached-plugin routing work only after the existing queue is reconciled.
 
+Before continuing, read the permanent continuity constitution at `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and the active durable rules at `_AGENT_CONTEXT/LEARNED_RULES.md`.
+
 Each successor must inherit and preserve the constitution and recursively propagate it to the agent after them. Do not break the chain. Preserve exact source, evidence, unresolved risks, and ordered next actions without private chat history.
