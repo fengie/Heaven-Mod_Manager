@@ -1,3 +1,7 @@
+# v8.8.50 runtime hardening candidate — 2026-09-30
+
+Current branch `fix/runtime-hardening-20260930` is based on canonical v8.8.49 main `be4615f61b91e7fbefc82e0520513cf17a6c3f6f`. It removes the Dashboard self-width binding, restores retryability after an incomplete first metadata refresh, invalidates cached updater handoffs when staged-update identity changes, and redacts updater-health argument values from startup diagnostics. Focused regressions are included. Exact-head gates and post-merge canonical-main continuity closure are still required; do not copy this candidate status forward after integration.
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
