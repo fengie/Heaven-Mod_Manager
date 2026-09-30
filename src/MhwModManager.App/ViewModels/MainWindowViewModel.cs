@@ -283,6 +283,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(ct.IsCancellationRequested)return;
+        var completed=false;
         await RunBusy("metadata.initial-refresh","Refreshing mod information","Checking lineage, artwork, and update metadata now that the Mods page is in use…",true,async innerCt=>
         {
             await metadataGate.WaitAsync(innerCt);
@@ -291,10 +292,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 var result=await s.Nexus.RefreshAsync(false,innerCt);
                 await ReloadMods(innerCt);
                 await RefreshAnalysis(innerCt);
+                completed=true;
                 MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
             }
             finally{metadataGate.Release();}
         });
+        if(!completed&&!ct.IsCancellationRequested&&!disposed)
+        {
+            initialMetadataRefreshStarted=false;
+            MasterDebugLog.Write("AUTO-METADATA","Demand-loaded metadata refresh did not complete; cached metadata remains available and selecting the Mods page again may retry.");
+        }
     }
 
     private async Task EnsureConflictPreviewsLoadedAsync(CancellationToken ct)
