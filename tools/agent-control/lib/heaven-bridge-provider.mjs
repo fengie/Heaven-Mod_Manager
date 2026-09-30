@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { execFileHidden as execFileAsync } from "./background-process.mjs";
@@ -13,6 +13,7 @@ export const DEFAULT_HEARTBEAT_MAX_AGE_MS = 10 * 60_000;
 export const DEFAULT_HEARTBEAT_REFRESH_COOLDOWN_MS = 30_000;
 export const DEFAULT_RESULT_TIMEOUT_MS = 2 * 60 * 60_000;
 const DEFAULT_RELAY_REPOSITORY = "fengie/mhw-mods";
+const MIN_HMAC_KEY_BYTES = 32;
 const heartbeatRefreshAttempts = new Map();
 
 function delay(ms) {
@@ -84,9 +85,17 @@ export function canonicalBridgeJob(job) {
   return JSON.stringify(["mhw-bridge-canon-v1", canonicalJsonValue(copy)]);
 }
 
-export function signBridgeJob(job, key) {
+function requireStrongBridgeKey(key) {
   const secret = clean(key);
-  if (!secret) throw new Error("Heaven Bridge HMAC key is required to sign privileged relay jobs.");
+  if (!secret) throw new Error("Heaven Bridge HMAC key is required to authenticate privileged relay traffic.");
+  if (Buffer.byteLength(secret, "utf8") < MIN_HMAC_KEY_BYTES) {
+    throw new Error(`Heaven Bridge HMAC key must be at least ${MIN_HMAC_KEY_BYTES} UTF-8 bytes.`);
+  }
+  return secret;
+}
+
+export function signBridgeJob(job, key) {
+  const secret = requireStrongBridgeKey(key);
   const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
     .update(Buffer.from(canonicalBridgeJob(job), "utf8"))
     .digest("hex");
@@ -485,6 +494,36 @@ export function buildBridgeJob({
   };
 }
 
+export function verifyBridgeDocument(document, key, { allowUnsigned = false } = {}) {
+  if (!document || typeof document !== "object") throw new Error("Bridge document is missing or malformed.");
+  const secret = clean(key);
+  if (!secret) {
+    if (allowUnsigned) return document;
+    throw new Error("Heaven Bridge HMAC key is not configured for relay-document verification.");
+  }
+  requireStrongBridgeKey(secret);
+  const auth = document.auth && typeof document.auth === "object" && !Array.isArray(document.auth)
+    ? document.auth
+    : {};
+  if (auth.canonical !== "mhw-bridge-canon-v1") {
+    if (allowUnsigned && !auth.signature) return document;
+    throw new Error("Bridge document is missing the required versioned HMAC canonical format.");
+  }
+  const actualHex = clean(auth.signature).toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(actualHex)) {
+    throw new Error("Bridge document HMAC signature is missing or malformed.");
+  }
+  const expectedHex = createHmac("sha256", Buffer.from(secret, "utf8"))
+    .update(Buffer.from(canonicalBridgeJob(document), "utf8"))
+    .digest("hex");
+  const actual = Buffer.from(actualHex, "hex");
+  const expected = Buffer.from(expectedHex, "hex");
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    throw new Error("Bridge document HMAC signature verification failed.");
+  }
+  return document;
+}
+
 export function validateBridgeResult(result, { id, action, requireHost = HEAVEN_BRIDGE_HOST } = {}) {
   if (!result || typeof result !== "object") throw new Error("Bridge result is missing or malformed.");
   if (id && result.id !== id) throw new Error("Bridge result job identity mismatch.");
@@ -572,7 +611,13 @@ export async function waitForHeavenBridgeResult({
       const file = resultPath(relayDir, id);
       return fs.existsSync(file) ? readJson(file) : null;
     });
-    if (result) return validateBridgeResult(result, { id, action, requireHost: normalizeBridgeHost(targetHost) });
+    if (result) {
+      const signingKey = resolveBridgeSigningKey();
+      verifyBridgeDocument(result, signingKey, {
+        allowUnsigned: envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)
+      });
+      return validateBridgeResult(result, { id, action, requireHost: normalizeBridgeHost(targetHost) });
+    }
     await delay(Math.max(250, Number(pollMs) || 1_500));
   }
   throw new Error(`Timed out waiting for authoritative Heaven Bridge result for ${id}.`);
