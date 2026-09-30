@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
-export const STATE_VERSION = 9;
+export const STATE_VERSION = 10;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
@@ -201,6 +201,7 @@ export function defaultControlState({ sessionId, hostname }) {
     autopilot: defaultAutopilotState(),
     federation: defaultFederationState(),
     agents: [],
+    retiredAgents: [],
     tasks: [],
     leases: [],
     events: [],
@@ -235,6 +236,7 @@ export function migrateControlState(parsed, context) {
     autopilot: normalizeAutopilotState(parsed.autopilot),
     federation: migrateFederationState(parsed.federation),
     agents: Array.isArray(parsed.agents) ? parsed.agents : [],
+    retiredAgents: Array.isArray(parsed.retiredAgents) ? parsed.retiredAgents : [],
     tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
     leases: Array.isArray(parsed.leases) ? parsed.leases : [],
     events: Array.isArray(parsed.events) ? parsed.events : [],

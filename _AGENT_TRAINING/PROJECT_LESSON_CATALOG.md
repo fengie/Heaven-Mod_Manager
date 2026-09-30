@@ -1,3 +1,5 @@
+> **New portable lesson — live registries require explicit terminal retirement.** Status labels are not lifecycle cleanup. When retries are exhausted or an entity otherwise becomes terminal, reconcile process/resource ownership, remove it from live synchronization, preserve history separately, suppress stale/replayed terminal observations, and allow reactivation only from authoritative live evidence. Destructive cleanup must still fail closed when ownership or preserved work is uncertain.
+
 # Portable Project-Lesson Catalog
 
 This is the product-agnostic catalog of reusable engineering lessons promoted from real project work. It is intentionally safe to copy into future repositories: keep product names, machine names, versions, hashes, and transient state in project-local evidence instead.

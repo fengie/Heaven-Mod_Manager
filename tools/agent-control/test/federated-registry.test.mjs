@@ -526,3 +526,26 @@ test("migration preserves unsupported persisted providers without treating them 
     state: "working"
   }), /no installed adapter/);
 });
+
+
+test("managed retry-exhausted workers are never re-synchronized into the federated live registry", () => {
+  const federation = defaultFederationState();
+  syncManagedAgents(federation, [{
+    id: "dead-retry",
+    role: "support",
+    status: "failed",
+    recoveryStatus: "retry-exhausted",
+    machine: "heaven2",
+    heartbeatAt: "2026-09-30T07:00:00.000Z"
+  }, {
+    id: "live-worker",
+    role: "support",
+    status: "running",
+    machine: "heaven2",
+    heartbeatAt: "2026-09-30T07:00:00.000Z"
+  }], { hostname: "heaven2", now: Date.parse("2026-09-30T07:00:00.000Z") });
+
+  assert.deepEqual(federation.agents.map(agent => agent.agent_id), ["live-worker"]);
+  const localProvider = federation.providers.find(provider => provider.id === "local-control");
+  assert.equal(localProvider.metadata.managed_agents, 1);
+});

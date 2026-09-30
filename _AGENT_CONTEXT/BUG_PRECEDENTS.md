@@ -1,3 +1,15 @@
+### 2026-09-30 — Agent Control registry — terminal retry state was treated as a label instead of retirement
+- **Symptom:** Agents remained visible as `failed · RETRY EXHAUSTED` after bounded recovery ended, and the federated registry could keep/recreate those dead entries on subsequent refreshes.
+- **Root cause:** Retry exhaustion only changed `recoveryStatus` / task status and returned. `refreshState()` then synchronized every managed agent, including terminal failures, back into federation. There was no terminal retirement lifecycle, tombstone, or replay suppression.
+- **Violated invariant / wrong assumption:** A terminal recovery decision is not complete until live ownership, process/worktree/lease cleanup, registry membership, and durable history are reconciled together. Marking a dead entity terminal must not leave it in the live registry.
+- **Why prior defenses missed it:** Existing no-work tests proved bounded retry classification/backoff, while federation tests proved freshness/counting. Neither tested the cross-layer transition from final retry exhaustion to process cleanup and registry removal.
+- **Direct fix:** Add retry-exhausted retirement with ownership-proven termination, dirty/diverged-work fail-closed preservation, clean worktree/lease release, managed/federated removal, durable tombstones, terminal replay suppression, and live-heartbeat reactivation.
+- **Preventive rule/process change:** Every terminal lifecycle state must define both durable history semantics and live-registry retirement semantics. Registry synchronization must explicitly exclude retired terminal entities.
+- **Regression coverage added/strengthened:** `registry-retirement.test.mjs`, federated anti-resurrection coverage, control-state migration assertions, and exact Agent Control package checks.
+- **Verification evidence/environment:** Exact-head source/Node gate required on this candidate; heaven2 live retirement smoke remains required before runtime closure.
+- **Sibling/adjacent cases checked:** Successful `done` integration candidates remain preserved; provider-capacity and uncertain ownership remain fail-closed; external terminal replay can reactivate only on a genuine live state.
+- **References (SHA/PR/issue/log):** v8.8.26 implementation branch `fix/agent-registry-retirement-20260930`; final PR/SHA to be recorded after integration.
+
 ## 2026-09-30 — One-click control actions must reconcile lifecycle state, not just the enabled bit
 
 **Failure:** Agent Manager's primary **START SWARM** action treated any enabled autopilot as an already-running perpetual swarm. A paused perpetual run therefore produced a success-looking “already running” message while the scheduler intentionally did nothing; an enabled non-perpetual run was also mislabeled as perpetual. The function additionally normalized control/safety settings before validating an empty objective.

@@ -716,6 +716,7 @@ export function syncManagedAgents(federation, managedAgents = [], {
   let changed = 0;
   for (const managed of managedAgents) {
     if (!managed?.id) continue;
+    if (String(managed.recoveryStatus || managed.recovery_status || "").trim().toLowerCase() === "retry-exhausted") continue;
     const provider = String(managed.executionProvider || managed.runtimeProvider || managed.provider || "local-control").trim().toLowerCase() || "local-control";
     reconcileObservation(federation, {
       provider,
@@ -748,7 +749,10 @@ export function syncManagedAgents(federation, managedAgents = [], {
     changed += 1;
   }
 
-  const localManaged = managedAgents.filter(managed => !managed?.executionProvider || managed.executionProvider === "local-control").length;
+  const localManaged = managedAgents.filter(managed =>
+    String(managed?.recoveryStatus || managed?.recovery_status || "").trim().toLowerCase() !== "retry-exhausted" &&
+    (!managed?.executionProvider || managed.executionProvider === "local-control")
+  ).length;
   recordProviderHeartbeat(federation, "local-control", {
     status: "online",
     at: now,
