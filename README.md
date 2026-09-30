@@ -1,4 +1,10 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control retry-exhausted registry retirement
+
+Agent Control now treats exhausted no-work recovery as a terminal lifecycle boundary instead of leaving dead worker cards in the live managed registry. When a retry lineage reaches **RETRY EXHAUSTED**, its dead no-work records are removed from the managed registry and matching federated observations, so they stop inflating Registry total and stop appearing as no-change integration candidates. Existing exhausted lineages are also swept on the next controller refresh/restart.
+
+Cleanup preserves the durable task, failure-ledger, and event evidence needed for diagnosis. It also fails safe around process ownership: a record is never hidden while the current controller can still prove it owns a live matching child process, and cleanup does not blindly terminate a persisted PID from an older controller session.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 
