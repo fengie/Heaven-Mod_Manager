@@ -91,8 +91,16 @@ public sealed class GitHubReleasesTransport
             throw new ArgumentOutOfRangeException(nameof(maxResponseBytes), "Response bound must be between 1 KiB and 64 MiB.");
 
         this.client = client;
-        this.credential = credential;
         this.baseUri = NormalizeBaseUri(baseUri ?? ProductionBaseUri);
+        if (credential is not null
+            && !this.baseUri.Host.Equals(ProductionBaseUri.Host, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "GitHub credentials may only be sent to the canonical api.github.com origin.",
+                nameof(baseUri));
+        }
+
+        this.credential = credential;
         this.maxResponseBytes = maxResponseBytes;
         this.userAgent = NormalizeUserAgent(userAgent);
     }
