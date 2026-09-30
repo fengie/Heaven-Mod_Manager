@@ -51,3 +51,12 @@ If a repository-backed relay can execute arbitrary commands on a persistent host
 
 ## Update authenticity needs a separate trust root
 Artifact hashes published by the same authority as the artifact detect corruption but do not survive compromise of that publication authority. Mature update systems authenticate metadata with an independent verification key and define rotation/revocation, freshness/expiry, and rollback/freeze behavior.
+
+## Persistent runners must not retain checkout credentials
+
+On a persistent self-hosted runner, every `actions/checkout` use must set `persist-credentials: false`, even for trusted push workflows. Leaving the token in local Git configuration creates a credential-reuse surface for later build tools, scripts, malware, stale worktrees, or compromised jobs.
+
+## Separate untrusted computation from repository mutation
+
+Benchmarking, compiling, testing, parsing, or otherwise executing candidate-controlled source should run with read-only repository permissions. Do not give that job write-capable `GITHUB_TOKEN` scopes merely for convenience such as posting a PR comment. Emit an artifact or step summary, then perform any necessary mutation in a separately reviewed trusted context that does not execute candidate source.
+
