@@ -1,3 +1,12 @@
+# v8.8.52 — 2026-09-30
+
+- Report Heaven Bridge heartbeat authentication failures as `auth-required` instead of ambiguous `presence-unknown`.
+- Style `auth-required` as a blocked/error worker state while preserving the exact provider health reason.
+- Add regression coverage separating authentication failure from stale/transport-uncertain presence.
+- Preserve fail-closed placement: no fallback to heaven2 and no automatic authorization downgrade.
+- Advance Agent Control/plugin identity to v0.6.24.
+- Live repair evidence: heaven is on worker v8 with six free slots; heaven2 remains v8/`hmac-required` pending its machine-local authorization/provisioning step.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
