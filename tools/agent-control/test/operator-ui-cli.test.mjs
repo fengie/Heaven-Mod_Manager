@@ -155,6 +155,19 @@ test("dashboard agent cards are inspectable without hijacking nested controls", 
 
   assert.match(html, /managed-agent-card/);
   assert.match(html, /federated-agent-card/);
+  const managedCardAttributes = html.match(/<article class="agent inspectable managed-agent-card"([^>]*)>/)?.[1] || "";
+  const federatedCardAttributes = html.match(/<article class="agent inspectable federated-agent-card"([^>]*)>/)?.[1] || "";
+  assert.match(managedCardAttributes, /tabindex="0"/);
+  assert.match(managedCardAttributes, /role="group"/);
+  assert.match(managedCardAttributes, /aria-label="Managed agent /);
+  assert.doesNotMatch(managedCardAttributes, /role="button"/, "button semantics on a card flatten its nested status/details and action controls");
+  assert.match(federatedCardAttributes, /tabindex="0"/);
+  assert.match(federatedCardAttributes, /role="group"/);
+  assert.match(federatedCardAttributes, /aria-label="Federated agent /);
+  assert.doesNotMatch(federatedCardAttributes, /role="button"/);
+  assert.match(html, /<div class="agent-name">[\s\S]*?\$\{escapeHtml\(a\.status\)\}/);
+  assert.match(html, /<div class="task">\$\{escapeHtml\(a\.task\)\}<\/div>/);
+  assert.match(html, /<button onclick="showLog\('\$\{encodeURIComponent\(a\.id\)\}', this\)"\>View log<\/button>/);
   assert.match(html, /function eventTargetsControl\(event\)/);
   assert.match(html, /closest\?\.\("button,a,input,select,textarea,summary"\)/);
   assert.match(html, /async function inspectManagedAgentCard\(event\)/);
