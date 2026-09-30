@@ -91,6 +91,7 @@ public sealed class ModIoTransport
         int offset,
         int limit,
         string sort,
+        string? query = null,
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -100,13 +101,16 @@ public sealed class ModIoTransport
         if (sort is not ("-date_updated" or "-date_live" or "-downloads"))
             throw new ArgumentException("Unsupported mod.io sort.", nameof(sort));
 
-        return SendAsync(
-            gameId,
-            $"games/{gameId}/mods",
-            [("_offset", offset.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-             ("_limit", limit.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-             ("_sort", sort)],
-            ct);
+        var parameters = new List<(string Key, string Value)>
+        {
+            ("_offset", offset.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            ("_limit", limit.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            ("_sort", sort)
+        };
+        if (!string.IsNullOrWhiteSpace(query))
+            parameters.Add(("_q", query.Trim()));
+
+        return SendAsync(gameId, $"games/{gameId}/mods", parameters, ct);
     }
 
     public Task<ModIoTransportResponse> GetModAsync(
