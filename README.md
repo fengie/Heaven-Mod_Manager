@@ -1,4 +1,10 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control terminal-registry garbage collection
+
+Agent Control now retires dead terminal workers from the live registries instead of leaving **failed**, **RETRY EXHAUSTED**, capacity-blocked, interrupted, or orphaned tombstones on screen forever. Retirement is conservative: records stay while an owned/live process exists, while a retry is pending/waiting, or while durable incomplete work still needs reconciliation. Once no live process or recovery owns the failed worker, its managed and federated registry entries are removed while task state, events, failure evidence, branches, and worktrees remain durable for recovery/audit.
+
+This also closes the misleading “click did nothing” symptom caused by old failed workers accumulating around new dispatches: the live dashboard now represents actionable workers instead of historical failure tombstones.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 
