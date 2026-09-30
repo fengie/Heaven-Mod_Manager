@@ -320,7 +320,7 @@ Development and validation launches on the operator machine must never be left l
 Security-sensitive automation is fail-closed:
 
 - Every external GitHub Action reference must be pinned to a full 40-character commit SHA. Keep readable version tags in comments, not as executable refs.
-- A persistent self-hosted runner must never execute fork pull-request code. Any workflow with both `pull_request` and `runs-on: [self-hosted,...]` requires an explicit same-repository head guard.
+- A persistent self-hosted runner must never execute fork pull-request code. Any workflow with both `pull_request` and `runs-on: [self-hosted,...]` requires an explicit same-repository head guard. PR validation is secretless and read-only: no `secrets.*` references and no write token scopes.
 - Never introduce `pull_request_target` for PR-controlled source execution without a separately reviewed isolated design.
 - Keep `GITHUB_TOKEN` permissions explicit and least-privilege. New `contents: write` workflows require a documented mutation need and security review.
 - Privileged release tooling must be immutable and independently verified before execution; do not trust arbitrary preinstalled tools or moving latest downloads.
