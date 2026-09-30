@@ -19,6 +19,13 @@ _BLOCKED_CAPABILITIES = {
     "codex",
 }
 
+_SECRET_VALUE_PATTERNS = (
+    re.compile(r"\bghp_" r"[A-Za-z0-9]{20,}\b"),
+    re.compile(r"\bgithub_pat_" r"[A-Za-z0-9_]{20,}\b"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{16,}\b"),
+    re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+)
+
 
 class StateStoreLike(Protocol):
     def put_checkpoint(
@@ -65,6 +72,8 @@ def _validate_persistable(value: Any, *, depth: int = 0) -> None:
     elif isinstance(value, str):
         if len(value) > 32768:
             raise ValueError("persisted rollback string exceeds 32768 characters")
+        if any(pattern.search(value) for pattern in _SECRET_VALUE_PATTERNS):
+            raise ValueError("credential-like value is not persistable")
     elif value is not None and not isinstance(value, (bool, int, float)):
         raise ValueError(f"unsupported persisted rollback value type: {type(value).__name__}")
 
@@ -188,7 +197,16 @@ class RollbackCoordinator:
             if isinstance(current, Mapping) and current.get("plan_id") == plan_id:
                 return {**dict(existing), "idempotent": True}
             raise ValueError("change_id is already owned by a different rollback plan")
-        stored = self.store.put_checkpoint(key, payload, expected_revision=None)
+        try:
+            stored = self.store.put_checkpoint(key, payload, expected_revision=0)
+        except ValueError:
+            raced = self.store.get_checkpoint(key)
+            current = raced.get("payload") if isinstance(raced, Mapping) else None
+            if isinstance(current, Mapping) and current.get("plan_id") == plan_id:
+                return {**dict(raced), "idempotent": True}
+            if raced is not None:
+                raise ValueError("change_id is already owned by a different rollback plan")
+            raise
         return {"key": key, "plan": payload, "revision": stored.get("revision"), "idempotent": False}
 
     def commit_change(self, change_id: str, *, post_state_id: str) -> Mapping[str, Any]:

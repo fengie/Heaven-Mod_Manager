@@ -20,6 +20,13 @@ class StoreTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.s.put_checkpoint("task",{"step":3},expected_revision=1)
 
+    def test_checkpoint_create_only_cas(self):
+        created=self.s.put_checkpoint("new",{"step":1},expected_revision=0)
+        self.assertEqual(1,created["revision"])
+        with self.assertRaises(ValueError):
+            self.s.put_checkpoint("new",{"step":2},expected_revision=0)
+        self.assertEqual({"step":1},self.s.get_checkpoint("new")["payload"])
+
     def test_blocked_metadata_key_refused(self):
         with self.assertRaises(ValueError):
             self.s.publish_artifact(b"x",metadata={"credentials":"not-stored"})

@@ -19,7 +19,8 @@ class Store:
     def put_checkpoint(self,key,payload,*,expected_revision=None):
         current=self.values.get(key)
         current_revision=None if current is None else current["revision"]
-        if expected_revision is not None and current_revision != expected_revision:
+        compare_revision=0 if current_revision is None else current_revision
+        if expected_revision is not None and compare_revision != expected_revision:
             raise ValueError("revision conflict")
         revision=1 if current_revision is None else current_revision+1
         self.values[key]={"payload":dict(payload),"revision":revision}
@@ -33,6 +34,17 @@ class Invoker:
     def invoke(self,name,payload=None,**kwargs):
         self.calls.append((name,dict(payload or {})))
         return {"status":"error" if name in self.fail else "ok"}
+
+
+class RacingStore(Store):
+    def __init__(self):
+        super().__init__()
+        self.raced=False
+    def put_checkpoint(self,key,payload,*,expected_revision=None):
+        if key=="rollback:change-1" and expected_revision==0 and not self.raced:
+            self.raced=True
+            self.values[key]={"payload":{"plan_id":"other-plan"},"revision":1}
+        return super().put_checkpoint(key,payload,expected_revision=expected_revision)
 
 
 class RollbackTests(unittest.TestCase):
@@ -103,6 +115,26 @@ class RollbackTests(unittest.TestCase):
                 pre_state_id="pre",
                 rollback_steps=({"step_id":"bad","capability":"service.restart","payload":{"token":"raw-secret"}},),
             )
+
+    def test_credential_like_value_under_generic_key_is_rejected(self):
+        token="ghp_" + ("a"*36)
+        with self.assertRaises(ValueError):
+            RollbackCoordinator(Store(),Invoker()).prepare_change(
+                "change-1",
+                pre_state_id="pre",
+                rollback_steps=({"step_id":"bad","capability":"service.restart","payload":{"value":token}},),
+            )
+
+    def test_prepare_change_cannot_overwrite_concurrent_owner(self):
+        store=RacingStore()
+        coordinator=RollbackCoordinator(store,Invoker())
+        with self.assertRaises(ValueError):
+            coordinator.prepare_change(
+                "change-1",
+                pre_state_id="pre",
+                rollback_steps=({"step_id":"safe","capability":"service.restart","payload":{"service":"demo"}},),
+            )
+        self.assertEqual("other-plan",store.values["rollback:change-1"]["payload"]["plan_id"])
 
     def test_opaque_handle_is_allowed(self):
         RollbackCoordinator(Store(),Invoker()).prepare_change(

@@ -186,7 +186,12 @@ class StateStore:
                     "SELECT revision FROM checkpoints WHERE key=?", (key,)
                 ).fetchone()
                 current = None if row is None else int(row["revision"])
-                if expected_revision is not None and current != expected_revision:
+                if expected_revision == 0:
+                    if current is not None:
+                        raise ValueError(
+                            f"checkpoint revision conflict: expected absent checkpoint, current {current}"
+                        )
+                elif expected_revision is not None and current != expected_revision:
                     raise ValueError(
                         f"checkpoint revision conflict: expected {expected_revision}, current {current}"
                     )
