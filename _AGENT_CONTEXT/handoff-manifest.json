@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.49",
+  "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.47 verified and published build356",
+  "immediateParentRevision": "v8.8.49 UI visibility and Mods empty-state refresh",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -105,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.45/build354 verified/published. Finish existing PR522 and inspector issue461 with exact regressions/runtime proof; preserve unique branches and deferred crypto/auth work, no new features, recursively propagate continuity.",
+  "nextAgentObligation": "v8.8.50 catalog-browser candidate: verify exact head, reconcile fresh main, integrate/push main, confirm remote state, then continue direct acquisition/import only through provider-authorized flows and the existing safe archive pipeline. Preserve stale-cache isolation and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
