@@ -147,7 +147,7 @@ public sealed partial class MainWindowViewModel
             {
                 var staged = stagedProgramUpdate;
                 if (staged is null) return;
-                if (prepared is not null && !IsPreparedHandoffCurrent(preparedFor, staged))
+                if (prepared is not null && !IsPreparedHandoffCurrent(prepared, preparedFor, staged))
                 {
                     prepared = null;
                     preparedFor = null;
@@ -195,7 +195,7 @@ public sealed partial class MainWindowViewModel
                     return;
                 }
 
-                if (!IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                if (prepared is null || !IsPreparedHandoffCurrent(prepared, preparedFor, stagedProgramUpdate))
                 {
                     prepared = null;
                     preparedFor = null;
@@ -287,8 +287,8 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    private static bool IsPreparedHandoffCurrent(StagedUpdate? preparedFor, StagedUpdate? current) =>
-        preparedFor is not null && ReferenceEquals(preparedFor, current);
+    private static bool IsPreparedHandoffCurrent(PreparedUpdateHandoff? prepared, StagedUpdate? preparedFor, StagedUpdate? current) =>
+        prepared is not null && preparedFor is not null && ReferenceEquals(preparedFor, current);
 
     private bool HasActiveGameProcess()
     {
