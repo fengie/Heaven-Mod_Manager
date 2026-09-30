@@ -137,6 +137,38 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("firstChanceExceptions=", text, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void WpfInternalTracingIsDiagnosticOnly()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "WpfMasterTraceListener.cs"));
+        Assert.Contains("MasterDebugLog.DetailedTracingEnabled", text, StringComparison.Ordinal);
+        Assert.Contains("MHW_WPF_TRACE_DETAIL", text, StringComparison.Ordinal);
+        Assert.Contains("SourceLevels.All", text, StringComparison.Ordinal);
+        Assert.Contains("disabled in normal mode", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NormalApplicationLoggingDoesNotBuildDebugEvents()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Diagnostics", "AppLogging.cs"));
+        Assert.Contains("MinimumLevel.Is(detailed ? LogEventLevel.Debug : LogEventLevel.Information)", text, StringComparison.Ordinal);
+        Assert.Contains("detailed ? LogEventLevel.Debug : LogEventLevel.Information", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NormalMethodTraceScopesAvoidEagerGuidAndStopwatchObjects()
+    {
+        var root = FindRepositoryRoot();
+        var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Core", "MasterDebugLog.cs"));
+        Assert.Contains("Stopwatch.GetTimestamp()", text, StringComparison.Ordinal);
+        Assert.Contains("private string ScopeId => id ??= NewScopeId();", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("private readonly Stopwatch stopwatch = Stopwatch.StartNew();", text, StringComparison.Ordinal);
+        Assert.Contains("if (verbose) CurrentOperation.Value = previousOperation;", text, StringComparison.Ordinal);
+    }
+
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
