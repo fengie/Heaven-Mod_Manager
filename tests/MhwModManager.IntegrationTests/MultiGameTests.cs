@@ -16,6 +16,79 @@ public sealed class MultiGameTests : IDisposable
     public void Dispose(){try{Directory.Delete(root,true);}catch(IOException){}catch(UnauthorizedAccessException){}}
 
     [Fact]
+    public void Games_page_first_refresh_discovers_MHW_and_other_installed_games_once()
+    {
+        var mhw=Path.Combine(root,"steam-mhw");Directory.CreateDirectory(mhw);
+        File.WriteAllBytes(Path.Combine(mhw,"MonsterHunterWorld.exe"),[0x4d,0x5a]);
+        var other=Path.Combine(root,"steam-other");var binaries=Path.Combine(other,"SomeGame","Binaries","Win64");Directory.CreateDirectory(binaries);
+        File.WriteAllBytes(Path.Combine(binaries,"SomeGame.exe"),[0x4d,0x5a,0x01]);
+
+        var discoveryCalls=0;
+        var registry=new GameProfileRegistry(Path.Combine(root,"discover-state"),()=>
+        {
+            discoveryCalls++;
+            return
+            [
+                new GameDiscoveryCandidate("Monster Hunter: World",mhw,null,"Steam","582010"),
+                new GameDiscoveryCandidate("Some Game",other,null,"Steam","123456")
+            ];
+        });
+        var page=new GamesPageViewModel(registry);
+
+        page.Refresh();
+        page.Refresh();
+
+        Assert.Equal(1,discoveryCalls);
+        Assert.Equal(2,page.Rows.Count);
+        Assert.Contains(page.Rows,x=>x.IsMonsterHunterWorld&&x.SteamAppId=="582010");
+        var generic=Assert.Single(page.Rows,x=>x.DisplayName=="Some Game");
+        Assert.Equal("Steam",generic.Store);
+        Assert.Equal("123456",generic.SteamAppId);
+        Assert.Equal(Path.GetFullPath(other),generic.GameRoot,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(@"SomeGame\Binaries\Win64\SomeGame.exe",generic.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Steam_discovery_reads_every_manifest_across_configured_libraries()
+    {
+        var steam=Path.Combine(root,"Steam");
+        var secondary=Path.Combine(root,"SteamLibrary");
+        Directory.CreateDirectory(Path.Combine(steam,"steamapps","common","First Game"));
+        Directory.CreateDirectory(Path.Combine(secondary,"steamapps","common","Second Game"));
+        var escapedSecondary=secondary.Replace("\\","\\\\",StringComparison.Ordinal);
+        File.WriteAllText(Path.Combine(steam,"steamapps","libraryfolders.vdf"),$"\"libraryfolders\"\n{{\n  \"1\"\n  {{\n    \"path\" \"{escapedSecondary}\"\n  }}\n}}");
+        File.WriteAllText(Path.Combine(steam,"steamapps","appmanifest_111.acf"),"\"AppState\"\n{\n\"appid\" \"111\"\n\"name\" \"First Game\"\n\"installdir\" \"First Game\"\n}");
+        File.WriteAllText(Path.Combine(secondary,"steamapps","appmanifest_222.acf"),"\"AppState\"\n{\n\"appid\" \"222\"\n\"name\" \"Second Game\"\n\"installdir\" \"Second Game\"\n}");
+
+        var found=GameProfileRegistry.DiscoverSteamFromRoots([steam]);
+
+        Assert.Equal(2,found.Count);
+        Assert.Contains(found,x=>x.Name=="First Game"&&x.SteamAppId=="111");
+        Assert.Contains(found,x=>x.Name=="Second Game"&&x.SteamAppId=="222");
+    }
+
+    [Fact]
+    public void Xbox_discovery_uses_Content_root_and_ignores_helper_executables()
+    {
+        var xbox=Path.Combine(root,"XboxGames");
+        var content=Path.Combine(xbox,"Example Game","Content");
+        var binaries=Path.Combine(content,"Example","Binaries","Win64");
+        Directory.CreateDirectory(binaries);
+        Directory.CreateDirectory(Path.Combine(content,"EasyAntiCheat"));
+        File.WriteAllBytes(Path.Combine(content,"EasyAntiCheat","EasyAntiCheat.exe"),[0x4d,0x5a,0x02,0x03]);
+        var gameExe=Path.Combine(binaries,"ExampleGame.exe");
+        File.WriteAllBytes(gameExe,[0x4d,0x5a]);
+
+        var found=GameProfileRegistry.DiscoverXboxRoots([xbox]);
+
+        var game=Assert.Single(found);
+        Assert.Equal("Example Game",game.Name);
+        Assert.Equal("Xbox",game.Store);
+        Assert.Equal(Path.GetFullPath(content),Path.GetFullPath(game.Root),StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(Path.GetFullPath(gameExe),Path.GetFullPath(game.Executable!),StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Registry_can_add_and_activate_arbitrary_windows_game()
     {
         var game=Path.Combine(root,"game");Directory.CreateDirectory(game);
