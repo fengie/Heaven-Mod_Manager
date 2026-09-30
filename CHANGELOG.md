@@ -1,3 +1,12 @@
+# v8.8.38 — Agent live-registry projection closure
+- Project managed persisted records into separate live, Needs Attention / recovery, and historical views without deleting durable workflow evidence.
+- Keep orphaned/interrupted, retirement-blocked, dirty/divergent, unresolved recovery, and cleanup-required managed work out of live counts while preserving it for reconciliation.
+- Return only live federated records in the live registry array; expose unresolved recovery via `attention_agents` and stale/disconnected/terminal records via `history_agents`.
+- Keep managed/federated attention and history records inspectable through the existing stable Inspector.
+- Add dedicated dashboard Needs Attention and Registry History surfaces and regression coverage proving non-live rows cannot leak into live cards/counts.
+- Preserve v8.8.37 safe retirement, remote-stop proof, multi-source tombstones, and fresh-correlated-provider protection.
+- Advance Agent Control/root/nested plugin identity to v0.6.16 and product version to v8.8.38.
+
 # v8.8.37 — Agent registry lifecycle closure
 - Generalize managed retirement beyond retry-exhausted rows while preserving unresolved recovery/attention/candidate/cleanup states.
 - Fail closed on live unowned PIDs, incomplete branch provenance, committed divergence, or dirty worktrees; preserve the affected task as needs-attention rather than hiding work.
