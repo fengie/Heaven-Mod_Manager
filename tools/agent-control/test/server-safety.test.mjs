@@ -509,7 +509,7 @@ test("federated bridge observations drive normalized live counts without duplica
   assert.equal(snapshot.body.federatedAgents.length, 1);
 
   const persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
-  assert.equal(persisted.version, 8);
+  assert.equal(persisted.version, 9);
   assert.equal(persisted.federation.agents.length, 1);
 });
 
@@ -579,7 +579,7 @@ test("perpetual recovery preserves takeover before proven stop and persists repl
   const capacityAt = block.indexOf("providerCapacityCircuit(state)");
   const takeoverAt = block.indexOf("buildTakeoverForAgent(agent.id, { persist: true, safetyControl: true })");
   const stopAt = block.indexOf("await stopAgent(agent.id)");
-  const pendingAt = block.indexOf("pendingReplacement: {");
+  const pendingAt = block.indexOf("pendingReplacement: {", stopAt);
   const redispatchAt = block.indexOf("return reconcilePerpetualReplacement(refreshState())");
 
   assert.ok(capacityAt >= 0);
