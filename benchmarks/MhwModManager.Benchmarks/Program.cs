@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using MhwModManager.Core;
@@ -106,6 +107,10 @@ public class FamilyInferenceBenchmarks
 public class MasterTraceBenchmarks
 {
     [Benchmark]
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "BenchmarkDotNet discovers and invokes benchmark methods on benchmark class instances.")]
     public void BeginDisposeMethodScope()
     {
         using var scope = MasterDebugLog.BeginMethod();
