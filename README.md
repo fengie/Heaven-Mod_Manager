@@ -1,4 +1,8 @@
-# v8.8.50 Universal Mod Manager
+# v8.8.51 Universal Mod Manager
+
+## v8.8.51 — repaired Windows shortcut icon
+
+Fixes the corrupted desktop shortcut icon by removing the malformed 48×48 PNG frame from the shipped ICO; Windows now scales the intact 32×32 artwork instead of decoding corrupt bytes. New integration coverage validates every committed icon frame for ICO bounds, PNG dimensions, chunk CRCs, and exact IEND termination so malformed shell assets fail verification before release.
 
 ## v8.8.50 — consolidate training without weakening safeguards
 

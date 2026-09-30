@@ -1,3 +1,11 @@
+# v8.8.51 shortcut icon fix — current lane
+
+- Root cause proven from canonical source: only the 48×48 PNG frame in the application ICO is structurally corrupt; 16/24/32 validate.
+- Candidate removes the corrupt frame, preserves existing artwork, and adds an integration regression that validates every remaining ICO/PNG frame.
+- Required closure: exact-head CI, packaged EXE/resource verification, fresh Windows desktop shortcut rendering, merge/push main, updater publication, installed-client confirmation.
+- Existing owned branches remain separate. If another lane advances main/version first, reconcile this candidate onto fresh main and re-version instead of overwriting either change set.
+- Improvement: establish a validated high-resolution source icon and deterministic multi-size generation path if sharper 48/64px shell rendering is desired later.
+
 # Next steps — v8.8.50 candidate
 
 1. Finish exact-head Security Supply Chain, Agent Control, and Workflow Feature checks applicable to PR #528. Repair failures without weakening tests, byte budgets, training timing, continuity, or security boundaries.

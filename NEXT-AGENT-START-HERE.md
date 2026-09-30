@@ -1,3 +1,10 @@
+# v8.8.51 Windows shortcut icon integrity — candidate
+
+User-reported desktop corruption is reproduced from canonical source: the 48×48 PNG frame embedded in `src/MhwModManager.App/Assets/MHWModManager.ico` has a bad IDAT CRC and malformed termination, while the 16/24/32 frames validate. This candidate removes only the corrupt 48px frame, preserving the existing artwork and allowing Windows to scale the intact 32px image. Integration coverage parses the real committed ICO so malformed frame bytes cannot silently pass verification again. Existing independently owned branches remain separate and must reconcile against this lane if it reaches main first.
+
+Next: require exact-head gates, then verify the packaged EXE and a freshly recreated desktop shortcut on Windows before merge/release. Improvement opportunity: later add a separately validated high-resolution source/master icon and generate the multi-size ICO deterministically during asset maintenance; do not reintroduce unvalidated frames. Preserve and recursively propagate the continuity constitution.
+
+---
 # v8.8.50 governance reconciliation — current handoff
 
 Owner: PR #528 / branch `codex/training-governance-integration`, reconciled onto canonical v8.8.49 main `be4615f`. PR #525 is closed as superseded; its repaired head and reconciliation ancestry are preserved inside #528. New product features remain frozen.
