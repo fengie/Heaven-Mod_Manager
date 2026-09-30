@@ -56,3 +56,6 @@ At each meaningful checkpoint, compare project-local learned rules/incidents wit
 - Validate changed PowerShell startup, installer, watchdog, recovery, and generated scripts with the native PowerShell parser before registering or executing them.
 - Do not rely only on structural/string tests: PowerShell has lexical traps such as `$name:` inside double-quoted strings, where punctuation can be parsed as part of a scoped-variable token. Use `${name}:` or explicit formatting.
 - When one such defect escapes, add a source-level regression for the entire syntax class so non-Windows CI can still prevent recurrence.
+
+30. **Programmatic source edits require emitted-source validation.** When an agent generates or rewrites source code, validate the final bytes as target-language source—not merely the edit template or diff—and run the narrowest native parser/compiler/build before handoff when execution is available. Escaped control characters, quoting artifacts, encoding damage, or templating residues are a recurring defect class; a source-producing workflow should not advertise readiness until syntax closure is proven.
+
