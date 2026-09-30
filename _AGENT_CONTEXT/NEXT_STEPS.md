@@ -1,3 +1,15 @@
+# v8.8.43 closure — authoritative continuation, 2026-09-30
+
+PR #517 integrated source e655e465; original #515/head 2031c405 is proven an ancestor and GitHub marked it merged. Both implementation branches were removed remotely by repository lifecycle; local integration branch removed safely. Exact main controller/security/Windows checks pass; immutable private/public updater-main-352 has equal assets/digests/provenance and disposable update/rollback passes. Controller 0.6.20 is healthy on heaven2 and actual hash-checked search/heading/pagination smoke passes. See EVIDENCE/v8.8.43-context-navigation.md. Earlier candidate notes below are historical and superseded.
+
+1. Refresh main, live PRs/branches/leases and compact core before new work. Agent Manager P0 remains active; full dispatch/recovery/stop and authenticated provider proof are not claimed.
+2. Preserve active fix/catalog-compliance-future-review-v8.8.44 and inspector/recovery branches; inspect ownership and unique work before edits/integration/deletion. No duplicate feature implementation.
+3. Actual desktop shortcut launched the operator client, which updated 222 -> 349 -> 351 and reported restarted main-window readiness at PID 17836 from the real install path. Build 352 was published after that startup check. Confirm latest through the normal Check for program updates action or next launch; never force-stop busy user work or substitute disposable CI. No validation build is left masquerading as the installed app.
+4. Next P0 reliability opportunity: distinguish historical recovered-state incidents from current provider health; investigate BOM/state recovery before changing semantics. Also wire existing authorized reader/health consumers and measure navigation use before caching. Bridge auth and worker/watchdog/SYSTEM sentinel readiness remain live tasks; no bypass or unchanged-blocker retry storms.
+
+Ownership: source/release integrated, current chat owns same-version closure only. Local plugin-source identities match; pruner dry-run found zero older copies, no installation/auth claim. Current evidence applies to e655e465; proof-only main commits do not advance the patch. Preserve and recursively propagate the constitution to successors and the agent after them. Do not break the chain.
+
+---
 # v8.8.43 integration ownership — 2026-09-30
 
 Current chat owns integration/release on `codex/context-navigation-integration`, preserving externally authored PR #515/head 2031c405 unchanged. Refreshed main a03fa700, clean worktree and controller on heaven2 with zero active leases; registry coverage is partial, not proof every external agent is absent. Isolated integration branch is required because the implementation branch has external provenance; no force push or duplicate implementation. Newer v8.8.42 release/evidence is preserved; candidate history below is superseded for current execution.
