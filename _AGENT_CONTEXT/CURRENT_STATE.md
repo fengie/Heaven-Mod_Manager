@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? CURRENT
+
+Canonical v8.8.31 remote-stop proof is retained. This patch closes the remaining identity gap: the canonical provider fallback applies before retirement and any Heaven-backed retry-exhausted row without a durable remote job id is preserved as retry-blocked. Migration keeps retired-source tombstones/retiredAt boundaries intact.
+
+Agent Control/runtime/plugin identity is v0.6.10.
+
+---
+
 # 2026-09-30 v8.8.31 Agent Control durable retirement safety — CURRENT
 
 Canonical main already contains the v8.8.30 card-accessibility closure. This patch closes the remaining retry-exhausted backend retirement-safety boundary without replacing those UI semantics.

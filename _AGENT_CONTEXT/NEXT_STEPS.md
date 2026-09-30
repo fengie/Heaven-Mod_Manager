@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? NEXT
+
+1. Require exact-head Agent Control check/test, Security Supply Chain, and handoff preflight/negative fixtures.
+2. Preserve the missing-ID/provider-fallback behavioral regression and migrated tombstone regression.
+3. Obtain live heaven2?heaven1 retirement/replay smoke when the control host path is available; do not relabel source-only evidence as runtime closure.
+4. Complete the lightweight /api/status health contract as the next meaningful patch.
+5. Delete superseded retirement branches after canonical integration is proven.
+
+---
+
 # 2026-09-30 v8.8.31 Agent Control durable retirement safety — CURRENT
 
 1. Require exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test` before merge.

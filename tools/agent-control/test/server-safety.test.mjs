@@ -972,3 +972,63 @@ test("retired observation decision runs on raw heartbeat evidence before federat
   assert.ok(decision >= 0, "retirement decision must inspect the raw observation");
   assert.ok(reconcile > decision, "retirement freshness proof must run before normalization/reconciliation");
 });
+
+
+test("retry-exhausted Heaven provider fallback without durable remote id is blocked and preserved", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-retirement-missing-id-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const dataDir = path.join(root, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const now = new Date().toISOString();
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), JSON.stringify({
+    version: 10,
+    agents: [{
+      id: "remote-missing-id",
+      role: "support",
+      roleLabel: "Support Agent",
+      taskId: "task-missing-id",
+      task: "Retire exhausted Heaven worker",
+      status: "failed",
+      recoveryStatus: "retry-exhausted",
+      runtimeProvider: "heaven-bridge",
+      pid: null,
+      startedAt: now,
+      finishedAt: now
+    }],
+    tasks: [{
+      id: "task-missing-id",
+      objective: "Retire exhausted Heaven worker",
+      status: "failed",
+      agentId: "remote-missing-id",
+      blockers: []
+    }],
+    leases: [],
+    events: [],
+    notifications: [],
+    retiredAgents: []
+  }, null, 2), "utf8");
+
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  let persisted = null;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
+    const agent = persisted.agents?.find(item => item.id === "remote-missing-id");
+    if (agent?.recoveryStatus === "retry-blocked") break;
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await waitForSnapshot(port);
+  }
+
+  const agent = persisted.agents.find(item => item.id === "remote-missing-id");
+  assert.ok(agent, "missing-id Heaven worker must remain in the managed registry");
+  assert.equal(agent.recoveryStatus, "retry-blocked");
+  assert.match(agent.recoveryLastError || "", /durable remote job id/i);
+  const task = persisted.tasks.find(item => item.id === "task-missing-id");
+  assert.equal(task.status, "blocked");
+  assert.ok(task.blockers.includes("registry-retirement-blocked"));
+  assert.ok(persisted.events.some(event => event.type === "agent.registry-retirement-blocked"));
+  assert.equal((persisted.retiredAgents || []).some(item => item.agentId === "remote-missing-id"), false);
+});

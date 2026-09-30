@@ -1,3 +1,9 @@
+# v8.8.32 Agent Control retirement identity fail-closed closure ? verification scope
+
+Exact-head source evidence must include the real-server missing-ID/provider-fallback regression, migration tombstone preservation, complete Agent Control suite, Security Supply Chain, and handoff governance validators. Live heaven2?heaven1 cancellation/status/replay remains separate runtime evidence.
+
+---
+
 # v8.8.31 Agent Control durable retirement safety — verification scope
 
 This patch changes Agent Control retry-exhausted remote-job proof and federation tombstone reactivation. Historical v8.8.30 accessibility evidence does not verify these changed bytes.
