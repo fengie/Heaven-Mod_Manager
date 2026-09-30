@@ -165,6 +165,19 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("DispatcherPriority.Render", app, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void StartupDatabaseReadsDoNotStayOnTheWpfDispatcher()
+    {
+        var root = FindRepositoryRoot();
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        Assert.Contains("Task.Run(()=>s.Adoption.CountAsync(ct),ct)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("var loaded=await Task.Run(async ()=>", viewModel, StringComparison.Ordinal);
+        Assert.Contains("var snap=await s.PlannerSnapshots.LoadAsync(enabledIds,ct);", viewModel, StringComparison.Ordinal);
+        Assert.Contains("var suspects=await Task.Run(()=>s.Issues.GetActiveAsync(ct),ct)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("Application.Current.Dispatcher.InvokeAsync", viewModel, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
