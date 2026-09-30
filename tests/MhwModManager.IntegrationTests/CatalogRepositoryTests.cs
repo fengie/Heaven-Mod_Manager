@@ -134,6 +134,108 @@ public sealed class CatalogRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task Persists_sync_rate_link_and_provenance_state()
+    {
+        var repository = await CreateRepositoryAsync("state");
+        var first = CreateCached(
+            canonicalId: "nexus:state-a",
+            name: "State A",
+            summary: "First linked item.",
+            description: "State fixture.",
+            expiresAt: null,
+            providerModId: "state-a");
+        var second = CreateCached(
+            canonicalId: "nexus:state-b",
+            name: "State B",
+            summary: "Second linked item.",
+            description: "State fixture.",
+            expiresAt: null,
+            providerModId: "state-b");
+        await repository.UpsertAsync(first, TestToken);
+        await repository.UpsertAsync(second, TestToken);
+
+        var success = new DateTimeOffset(2026, 9, 30, 0, 15, 0, TimeSpan.FromHours(-4));
+        var attempt = success.AddMinutes(5);
+        var sync = new CatalogSyncState("nexus", "monsterhunterworld", "cursor-2", success, attempt, null);
+        await repository.UpsertSyncStateAsync(sync, TestToken);
+        Assert.Equal(sync, await repository.GetSyncStateAsync("nexus", "monsterhunterworld", TestToken));
+
+        var rate = new CatalogRateState(
+            "nexus",
+            "monsterhunterworld",
+            new CatalogRateLimit(100, 42, 1000, 900, attempt.AddMinutes(2), attempt));
+        await repository.UpsertRateStateAsync(rate, TestToken);
+        Assert.Equal(rate, await repository.GetRateStateAsync("nexus", "monsterhunterworld", TestToken));
+
+        var observed = new DateTimeOffset(2026, 9, 30, 1, 30, 0, TimeSpan.FromHours(-3));
+        var link = new CatalogLink(
+            second.Mod.CanonicalId,
+            first.Mod.CanonicalId,
+            CatalogLinkEvidenceKind.CanonicalProjectUrl,
+            "https://example.test/project",
+            observed);
+        await repository.UpsertLinkAsync(link, TestToken);
+        var storedLink = Assert.Single(await repository.GetLinksAsync(first.Mod.CanonicalId, TestToken));
+        Assert.Equal(first.Mod.CanonicalId, storedLink.LeftCanonicalId);
+        Assert.Equal(second.Mod.CanonicalId, storedLink.RightCanonicalId);
+        Assert.Equal(link.EvidenceKind, storedLink.EvidenceKind);
+        Assert.Equal(link.EvidenceValue, storedLink.EvidenceValue);
+        Assert.Equal(observed, storedLink.ObservedAt);
+
+        var provenance = await repository.GetProvenanceAsync(first.Mod.CanonicalId, TestToken);
+        Assert.NotNull(provenance);
+        Assert.Equal(first.Mod.CanonicalId, provenance!.CanonicalId);
+        Assert.Equal(first.Mod.SourceUrl, provenance.SourceUrl);
+        Assert.Equal(first.Cache.FetchedAt, provenance.FetchedAt);
+    }
+
+    [Fact]
+    public async Task Signed_nested_urls_and_raw_provider_metadata_are_not_persisted()
+    {
+        var repository = await CreateRepositoryAsync("privacy");
+        var cached = CreateCached(
+            canonicalId: "nexus:privacy",
+            name: "Privacy Fixture",
+            summary: "Secret persistence guard.",
+            description: "Provider payloads must not become durable cache state.",
+            expiresAt: null,
+            providerModId: "privacy");
+        var signedUrl = "https://cdn.example.test/file?token=secret-value";
+        var dependency = new CatalogDependency("Signed dependency", Url: signedUrl);
+        var originalFile = Assert.Single(cached.Mod.Files);
+        cached = cached with
+        {
+            Mod = cached.Mod with
+            {
+                Thumbnail = signedUrl,
+                Screenshots = [new CatalogImage(signedUrl, "signed")],
+                Dependencies = [dependency],
+                ProviderMetadata = "{\"access_token\":\"secret-value\"}",
+                Files =
+                [
+                    originalFile with
+                    {
+                        Dependencies = [dependency],
+                        ProviderMetadata = "{\"api_key\":\"secret-value\"}"
+                    }
+                ]
+            }
+        };
+
+        await repository.UpsertAsync(cached, TestToken);
+        var loaded = Assert.NotNull(await repository.GetAsync(cached.Mod.CanonicalId, TestToken));
+        Assert.Null(loaded.Mod.Thumbnail);
+        Assert.Empty(loaded.Mod.Screenshots);
+        Assert.Null(Assert.Single(loaded.Mod.Dependencies).Url);
+        Assert.Null(loaded.Mod.ProviderMetadata);
+        Assert.Null(Assert.Single(loaded.Mod.Files).ProviderMetadata);
+        Assert.Null(Assert.Single(Assert.Single(loaded.Mod.Files).Dependencies!).Url);
+
+        var unsafeSource = cached with { Mod = cached.Mod with { SourceUrl = signedUrl } };
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.UpsertAsync(unsafeSource, TestToken));
+    }
+
+    [Fact]
     public async Task Search_literalizes_fts_operator_like_input()
     {
         var repository = await CreateRepositoryAsync("literal");
