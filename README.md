@@ -1,4 +1,10 @@
-# v8.8.47 Universal Mod Manager
+# v8.8.48 Universal Mod Manager
+
+## v8.8.48 — agent training/governance consolidation
+
+The active programming-agent training path is substantially smaller and more direct. Common engineering behavior now lives in one `AGENT_OPERATING_STANDARD.md`; `AGENTS.md` is a compact router; manager/swarm prompts contain role deltas instead of copied common policy; and large continuity, precedent, policy, and history documents are retrieved only when the task touches them. Current-state/handoff files were pruned back to current truth instead of revision diaries.
+
+Agent Control now enforces a 32 KiB mandatory-core budget and a 24 KiB generated-manager-prompt budget. Continuity verification was rewritten around semantic invariants and explicit active-document byte ceilings rather than requiring identical phrases in several files. Git/integration guidance now treats branches/PRs as coordination tools, keeps canonical-main delivery and exact evidence, and removes unnecessary branch ceremony. Knowledge maintenance now defaults to delete → merge → rewrite → relocate → add. This patch changes governance/prompt/bootstrap verification tooling only; MHW product behavior is unchanged.
 
 ## v8.8.47 — exact inspector identity and integration repair
 

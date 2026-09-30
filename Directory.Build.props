@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.47</Version>
-    <InformationalVersion>8.8.47-existing-bug-integration</InformationalVersion>
+    <Version>8.8.48</Version>
+    <InformationalVersion>8.8.48-agent-training-governance-refactor</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

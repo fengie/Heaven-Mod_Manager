@@ -1,3 +1,14 @@
+# v8.8.48 — agent training/governance consolidation
+- Removed mandatory end-to-end reads of the full continuity constitution/history from the universal core; task-relevant policy and precedent are now indexed and retrieved progressively.
+- Merged repeated implementation/testing/completion guidance into `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`; manager and swarm templates now contain role-specific deltas only.
+- Rewrote `AGENTS.md`, the trainer router, development pipeline, Git directive, active state/next-step/handoff files, and knowledge-maintenance policy around concise execution invariants.
+- Moved the permanent continuity constitution from mandatory core to hash-indexed context while preserving its MHW-specific Core Rules and exact-verification/safety invariants.
+- Replaced prose-coupled handoff tests with semantic/structural checks plus negative fixtures and explicit active-training byte ceilings.
+- Lowered Agent Control's mandatory-core budget from 65536 to 32768 bytes and added a 24576-byte generated-manager-prompt regression ceiling.
+- Corrected authority wording so current platform/safety/user instructions govern scope while fresh repository/runtime evidence governs factual source truth; removed hardcoded UI/tool-surface prohibitions from universal prompts.
+- Preserved canonical-main delivery, collision-safe ownership, visible README/CHANGELOG/patch progress, exact-source verification, P0 Agent Manager state, and project-specific safety/release/filesystem/transaction invariants.
+- Governance/prompt/bootstrap-verification patch only; no MHW product behavior change.
+
 # v8.8.47 — existing bug integration
 - Recover exact federation inspector fix from branch8f78d21d without stale server/version history. Linked managed identity remains lineage.
 - Add executable notification/direct-inspection regression with arbitrary IDs and retired records; existing card routes share the function.
