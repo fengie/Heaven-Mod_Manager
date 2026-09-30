@@ -14,14 +14,14 @@ public sealed class ModDbFeedCatalogProviderTests
         var handler = new RecordingHandler((request, _) =>
         {
             calls++;
-            Assert.Equal("https://rss.moddb.com/downloads/feed/rss.xml", request.RequestUri?.AbsoluteUri);
+            Assert.Equal("https://rss.moddb.com/games/fixture-game/downloads/feed/rss.xml", request.RequestUri?.AbsoluteUri);
             Assert.Contains("MHW-Manual-Mod-Manager", request.Headers.GetValues("User-Agent"));
             return Task.FromResult(RssResponse(ReadFixture()));
         });
 
         using var client = new HttpClient(handler);
         var provider = CreateProvider(client);
-        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var game = CreateGame();
 
         var mods = await provider.SearchModsAsync(
             new CatalogBrowseRequest(game, "fixture"),
@@ -62,7 +62,7 @@ public sealed class ModDbFeedCatalogProviderTests
 
         using var client = new HttpClient(handler);
         var provider = CreateProvider(client);
-        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var game = CreateGame();
         var mod = Assert.Single(await provider.SearchModsAsync(
             new CatalogBrowseRequest(game),
             TestContext.Current.CancellationToken));
@@ -106,6 +106,28 @@ public sealed class ModDbFeedCatalogProviderTests
                         "monster-hunter-world",
                         "Monster Hunter: World",
                         new Uri("http://rss.moddb.com/downloads/feed/rss.xml"),
+                        "Downloads")
+                ]));
+
+        Assert.Throws<ArgumentException>(() =>
+            new ModDbFeedCatalogProvider(
+                transport,
+                [
+                    new ModDbFeedSource(
+                        "fixture-game",
+                        "Fixture Game",
+                        new Uri("https://rss.moddb.com/downloads/feed/rss.xml"),
+                        "Downloads")
+                ]));
+
+        Assert.Throws<ArgumentException>(() =>
+            new ModDbFeedCatalogProvider(
+                transport,
+                [
+                    new ModDbFeedSource(
+                        "fixture-game",
+                        "Fixture Game",
+                        new Uri("https://rss.moddb.com/mods/fixture-mod/downloads/feed/rss.xml"),
                         "Downloads")
                 ]));
     }
@@ -163,17 +185,27 @@ public sealed class ModDbFeedCatalogProviderTests
         Assert.Equal(CatalogProviderState.Limited, health.State);
     }
 
+    private static GameProfile CreateGame()
+    {
+        return GameProfile.Generic(
+            "fixture-game",
+            "Fixture Game",
+            Path.Combine(Path.GetTempPath(), "mhw-mod-manager-catalog-fixture-game"),
+            "FixtureGame.exe",
+            "Mods");
+    }
+
     private static ModDbFeedCatalogProvider CreateProvider(HttpClient client)
     {
         return new ModDbFeedCatalogProvider(
             new SyndicationFeedTransport(client),
             [
                 new ModDbFeedSource(
-                    "monster-hunter-world",
-                    "Monster Hunter: World",
-                    new Uri("https://rss.moddb.com/downloads/feed/rss.xml"),
+                    "fixture-game",
+                    "Fixture Game",
+                    new Uri("https://rss.moddb.com/games/fixture-game/downloads/feed/rss.xml"),
                     "Downloads",
-                    ["mhw"])
+                    ["fixture"])
             ]);
     }
 
