@@ -30,3 +30,7 @@ When a security weakness is found, fix the immediate defect, add a machine-enfor
 
 A workflow runner migration is also a shell/runtime migration. When changing runner OS, labels, or default shell, inspect every inline script and tool invocation for platform assumptions and execute the policy on the target runner before calling the migration complete. Bash heredocs, path syntax, quoting, executable discovery, environment-variable syntax, and line endings are part of the security control when the workflow enforces security policy. A security gate that cannot execute on its declared runner is equivalent to no gate.
 
+## Security policy scanners must be structurally self-safe
+
+Repository security checks must not use broad substring sentinels that can match comments, documentation, or the scanner's own embedded source. Match anchored syntax or parse the target format, include a fixture for the scanner workflow itself, and prove both a known-bad fixture fails and the real repository passes. A policy that permanently false-positives trains operators to bypass or ignore the security control.
+
