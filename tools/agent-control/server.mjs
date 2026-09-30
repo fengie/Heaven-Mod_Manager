@@ -2643,40 +2643,22 @@ function retireExpiredFederatedPresence(state, {
 function retireFederatedRetryExhaustedAgent(state, source, {
   reason = "federated-no-work-retry-exhausted"
 } = {}) {
-  const provider = String(source?.provider || "chatgpt").trim().toLowerCase() || "chatgpt";
-  const sourceId = String(source?.source_id || source?.agent_id || "").trim();
-  if (!sourceId) return null;
-  const retirement = recordAgentRetirement(state, {
-    agentId: source.agent_id,
-    provider,
-    sourceId,
-    taskId: source.task_id,
-    role: source.role,
-    machine: source.machine,
-    branch: source.branch,
-    status: source.state,
-    recoveryStatus: source.recovery_status,
-    reason
-  });
-  forgetFederatedAgent(state.federation, {
-    agentId: source.agent_id,
-    provider,
-    sourceId
-  });
+  const retirements = archiveFederatedAgent(state, source, { reason });
+  if (!retirements.length) return null;
   addEvent(state, "federation.registry-retired", `${source.agent_id} exhausted recovery and was removed from the federated live registry`, {
     agentId: source.agent_id,
     taskId: source.task_id || null,
     reason,
-    evidence: { provider, sourceId, tombstoneKey: retirement.key }
+    evidence: { tombstoneKeys: retirements.map(item => item.key) }
   });
   addNotification(state, {
     severity: "warning",
     title: "Federated retry-exhausted agent cleared",
-    message: `${source.role || source.agent_id} exhausted automatic recovery and was removed from the live federated registry. Repeated terminal observations for the same source will be suppressed until a real live heartbeat returns.`,
+    message: `${source.role || source.agent_id} exhausted automatic recovery and was removed from the live federated registry. Every correlated provider/source identity was tombstoned so stale replay cannot recreate the logical session.`,
     action: null,
     dedupeKey: `federated-registry-retired:${source.agent_id}`
   });
-  return retirement;
+  return retirements[0];
 }
 
 function liveRecoveryReplacement(state, source) {
@@ -2737,7 +2719,7 @@ async function recoverNoWorkAgent(agentId) {
         task.nextAction = "Automatic no-work retry limit reached; retiring the dead worker from the live registry.";
       }
       saveState(state);
-      await retireRetryExhaustedManagedAgent(source.id);
+      await retireManagedTerminalAgent(source.id, { reason: "no-work-retry-exhausted" });
       return null;
     }
 
@@ -4154,6 +4136,7 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
     taskGraph: buildTaskGraph(state.tasks),
     tasks: state.tasks,
     agents: state.agents,
+    retiredAgents: normalizeRetiredAgents(state.retiredAgents).slice(-100).reverse(),
     leases: state.leases,
     integrationQueue: queue,
     releaseGate: releaseGate(state, queue, repository, repositoryContext),
