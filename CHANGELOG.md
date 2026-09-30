@@ -2,7 +2,7 @@
 
 - Replaced the Dashboard ViewportWidth binding with normal stretch layout and added parsed-XAML coverage.
 - Split initial metadata refresh in-flight/completed state so failed, cancelled, or gate-skipped attempts can retry.
-- Bound prepared updater handoffs to the exact staged update object and invalidate/reprepare after candidate replacement.
+- Bound prepared updater handoffs to the exact staged update object, invalidate/reprepare after candidate replacement, and serialize the final identity check plus synchronous helper launch against concurrent update checks.
 - Scrubbed updater health token/file/attempt arguments from normal startup diagnostics.
 - Refreshed stale continuity/version metadata and added defect-prevention precedents.
 
