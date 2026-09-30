@@ -61,6 +61,7 @@ public sealed class ConflictEngine
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (candidates.Count == 0) throw new ArgumentException("At least one provider is required.", nameof(candidates));
+        var fileClass = PathRules.ClassifyFile(path);
         if (candidates.Count == 1)
             return new(path, ConflictKind.None, false, candidates[0].ModId, "single-provider", "Only one enabled mod supplies this path.", Confidence.High, ResolverScore:100, Evidence:"Only one enabled provider.");
 
@@ -96,6 +97,20 @@ public sealed class ConflictEngine
         if (orderedOverlay is not null)
         {
             var inferred = !orderedOverlay.Rule.Explicit;
+            if (inferred && IsCodeBearing(fileClass) && orderedOverlay.Rule.ResolverScore < 98)
+                return new(
+                    path,
+                    ConflictKind.HardGameData,
+                    true,
+                    null,
+                    "untrusted-code-overlay",
+                    "Multiple mods provide executable/plugin code at the same path. A local name/overlap heuristic is not strong enough to choose which code should load; use an explicit rule or verified same-source update/optional lineage.",
+                    Confidence.High,
+                    orderedOverlay.Rule.Id,
+                    true,
+                    orderedOverlay.Rule.ResolverScore,
+                    orderedOverlay.Rule.Evidence ?? "Code-bearing collisions require explicit or high-trust source provenance.");
+
             return new(path,
                 inferred ? ConflictKind.ModFamilyOption : ConflictKind.UserOverlayRule,
                 false,
@@ -133,12 +148,31 @@ public sealed class ConflictEngine
             if (AutoCompatibility.TryInferOverlay(am,bm,stats,out _,out var child,out var reason,out var confidence))
             {
                 if (confidence == Confidence.High)
+                {
+                    if (IsCodeBearing(fileClass))
+                    {
+                        var trusted = ProvenanceIntelligence.TryNexusOverlay(am,bm,stats,out _,out _,out _,out var provenanceScore) &&
+                                      provenanceScore >= 98;
+                        if (!trusted)
+                            return new(
+                                path,
+                                ConflictKind.HardGameData,
+                                true,
+                                null,
+                                "untrusted-code-overlay",
+                                "Executable/plugin collisions require explicit overwrite intent or verified same-source update/optional lineage. Local naming and overlap alone are not enough to load one binary over another.",
+                                Confidence.High,
+                                Inferred:true,
+                                ResolverScore:100,
+                                Evidence:"Fail-closed code-bearing collision; no >=98 source-provenance signal.");
+                    }
+
                     return new(path, ConflictKind.PatchOverlay, false, child.Id, "high-confidence-auto-overlay", reason, Confidence.High, Inferred:true, ResolverScore:94, Evidence:"High-confidence package lineage/role inference.");
+                }
                 if (confidence == Confidence.Medium) possibleOverlayReason = reason;
             }
         }
 
-        var fileClass = PathRules.ClassifyFile(path);
         if (fileClass == FileClass.Texture && !richMhwSemantics)
         {
             return new(path, ConflictKind.TextureOverride, true, null, "generic-texture-choice",
@@ -162,6 +196,15 @@ public sealed class ConflictEngine
                 : string.Empty;
             if(selection.WinnerModId is null)
                 return new(path,ConflictKind.TextureOverride,true,null,selection.ReasonCode,composedPrefix+selection.Explanation,selection.Confidence,Inferred:true,ResolverScore:selection.Score,Evidence:selection.Evidence);
+            if(selection.Confidence is Confidence.Medium or Confidence.Low)
+                return new(path,ConflictKind.TextureOverride,true,null,"texture-evidence-insufficient",
+                    composedPrefix + selection.Explanation + " The available evidence is not strong enough to auto-select a provider, so deployment is blocked instead of falling back to priority.",
+                    Confidence.High,
+                    Inferred:true,
+                    ResolverScore:Math.Max(95,selection.Score),
+                    Evidence:string.IsNullOrWhiteSpace(selection.Evidence)
+                        ? "Texture resolver produced only medium/low-confidence precedence evidence."
+                        : selection.Evidence);
             return new(path, kind, false, selection.WinnerModId,
                 selection.ReasonCode,
                 composedPrefix + selection.Explanation + " All source mods remain enabled; only this exact path has one final provider in the composed nativePC tree.",
@@ -205,24 +248,37 @@ public sealed class ConflictEngine
         }
         if (familyId is null) return false;
 
-        // Texture files are intrinsically single-provider at a nativePC path. Once every provider
-        // has already been proven to belong to the same logical family, resolve that internal
-        // texture layer deterministically instead of surfacing a self-conflict. Explicit overlay
-        // rules were handled above, so configured priority is only the family-internal fallback.
+        // Family membership proves grouping, not overwrite direction. A pair of sibling variants
+        // can share a family while being mutually exclusive. Reuse the texture evidence engine and
+        // auto-compose only when it reaches High/Explicit confidence; a Medium priority tie remains
+        // a real choice instead of silently changing the user's game.
         if (PathRules.ClassifyFile(path) == FileClass.Texture)
         {
-            var winner = candidates
-                .OrderByDescending(c => c.Priority)
-                .ThenByDescending(c => c.ModId, StringComparer.OrdinalIgnoreCase)
-                .First();
-            MasterDebugLog.Write("FAMILY-CONFLICT", $"COMPOSE family={familyId}; path={path}; winner={winner.ModId}; reason=family-texture-priority");
-            decision = new(path, ConflictKind.ModFamilyOption, false, winner.ModId,
-                "family-texture-priority",
-                $"All providers of this texture are members of logical family '{familyId}'. The configured family priority selects '{winner.ModName}' for this exact path while keeping the family enabled.",
+            var selection = AutoCompatibility.SelectTextureProvider(path, candidates, enabledMods, contentStats);
+            if (selection.WinnerModId is not null &&
+                selection.Confidence is Confidence.High or Confidence.Explicit)
+            {
+                MasterDebugLog.Write("FAMILY-CONFLICT", $"COMPOSE family={familyId}; path={path}; winner={selection.WinnerModId}; reason={selection.ReasonCode}; confidence={selection.Confidence}");
+                decision = new(path, ConflictKind.ModFamilyOption, false, selection.WinnerModId,
+                    "family-" + selection.ReasonCode,
+                    selection.Explanation + $" All providers are members of logical family '{familyId}', and the overwrite direction is backed by high-confidence evidence.",
+                    selection.Confidence,
+                    Inferred:true,
+                    ResolverScore:selection.Score,
+                    Evidence:selection.Evidence);
+                return true;
+            }
+
+            MasterDebugLog.Write("FAMILY-CONFLICT", $"CHOICE family={familyId}; path={path}; reason=texture-evidence-insufficient; confidence={selection.Confidence}");
+            decision = new(path, ConflictKind.ModFamilyOption, true, null,
+                "family-texture-choice",
+                $"Members of logical family '{familyId}' replace the same texture, but family membership alone does not prove which sibling should overwrite the other. " + selection.Explanation,
                 Confidence.High,
                 Inferred:true,
-                ResolverScore:92,
-                Evidence:$"Shared logical family '{familyId}'; deterministic family-internal texture priority.");
+                ResolverScore:Math.Max(95, selection.Score),
+                Evidence:string.IsNullOrWhiteSpace(selection.Evidence)
+                    ? "Same-family texture collision without high-confidence revision/role evidence."
+                    : selection.Evidence);
             return true;
         }
 
@@ -244,6 +300,27 @@ public sealed class ConflictEngine
             if (AutoCompatibility.TryInferOverlay(a,b,stats,out _,out var child,out var reason,out var confidence) &&
                 confidence == Confidence.High)
             {
+                if (IsCodeBearing(PathRules.ClassifyFile(path)))
+                {
+                    var trusted = ProvenanceIntelligence.TryNexusOverlay(a,b,stats,out _,out _,out _,out var provenanceScore) &&
+                                  provenanceScore >= 98;
+                    if (!trusted)
+                    {
+                        decision = new(
+                            path,
+                            ConflictKind.HardGameData,
+                            true,
+                            null,
+                            "untrusted-code-overlay",
+                            "Same-family executable/plugin files still require explicit overwrite intent or verified same-source update/optional lineage; family membership alone is not enough to choose code.",
+                            Confidence.High,
+                            Inferred:true,
+                            ResolverScore:100,
+                            Evidence:$"Family '{familyId}' is known, but no >=98 source-provenance code-overwrite signal exists.");
+                        return true;
+                    }
+                }
+
                 MasterDebugLog.Write("FAMILY-CONFLICT", $"COMPOSE family={familyId}; path={path}; winner={child.Id}; reason=semantic-overlay; confidence={confidence}");
                 decision = new(path, ConflictKind.ModFamilyOption, false, child.Id,
                     "family-internal-overlay",
@@ -255,10 +332,9 @@ public sealed class ConflictEngine
                 return true;
             }
 
-            // Overlap ratio alone is not proof of a safe optional/component relationship for
-            // structural, game-data, plugin, or unknown binary content. Those files can crash the
-            // game when generations are mixed. Only semantic/provenance overlay evidence above may
-            // auto-compose non-texture family members; otherwise fall through to an explicit choice.
+            // Size/subset shape alone is not overwrite intent. Two same-family packages can be
+            // mutually-exclusive variants even when one happens to contain fewer files. If no
+            // semantic/provenance direction was proven above, leave the collision blocking.
         }
 
         // Remaining same-family collisions are ambiguous sibling variants/components. They must never
@@ -290,6 +366,12 @@ public sealed class ConflictEngine
         return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
                extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
                extension.Equals(".asi", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsCodeBearing(FileClass fileClass)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return fileClass is FileClass.Plugin or FileClass.Executable;
     }
 
     public static (string,string) PairKey(string a, string b)
