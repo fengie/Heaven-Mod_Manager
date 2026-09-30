@@ -260,7 +260,9 @@ test("federated card click and keyboard inspection expose external session detai
 
   card.listeners.click({ type: "click", currentTarget: card, target: { closest: () => null } });
   card.listeners.keydown({ type: "keydown", key: "Enter", currentTarget: card, target: { closest: () => null }, preventDefault() {} });
-  assert.equal(box.toggles, 2);
+  card.listeners.keydown({ type: "keydown", key: " ", currentTarget: card, target: { closest: () => null }, preventDefault() {} });
+  card.listeners.click({ type: "click", currentTarget: card, target: { closest: () => ({ tagName: "BUTTON" }) } });
+  assert.equal(box.toggles, 3);
   assert.match(box.textContent, /State: running · fresh/);
   assert.match(box.textContent, /Heartbeat: 2026-09-30T12:00:00Z/);
   assert.match(box.textContent, /Last action: Working on task/);
