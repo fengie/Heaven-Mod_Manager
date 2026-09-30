@@ -1,3 +1,13 @@
+# v8.8.21 — Curated GitHub Releases catalog
+
+- Add a curated GitHub Releases provider backed by the official Releases REST API.
+- Query only explicitly configured repositories per game; do not perform unbounded repository search or HTML scraping.
+- Normalize latest-release metadata and assets into provider-neutral `CatalogMod` / `CatalogModFile` records.
+- Resolve `browser_download_url` only from the current API response at acquisition time instead of persisting it as durable catalog identity.
+- Support optional Bearer authentication, bounded response parsing, HTTPS-only GitHub source/asset URLs, a stable User-Agent, and the current API-version header.
+- Surface primary GitHub rate-limit health and fail closed on malformed provider schema or unsafe URLs without leaking credentials.
+- Add deterministic fixtures and regressions for curated-only discovery, 404 handling, acquisition refresh, authentication secrecy, schema drift, and rate-limit health.
+
 # v8.8.20 — One-click Auto Populate
 
 - Add lightweight, accessibility-aware transform/opacity transitions for page navigation, blocking-operation presentation, and shared button/sidebar interaction feedback.
