@@ -1181,15 +1181,24 @@ function refreshState() {
     changed = true;
   }
 
-  const exhaustedAgentIds = state.agents
+  const retryExhaustedAgentIds = state.agents
     .filter(isRetryExhaustedManagedAgent)
     .map(agent => agent.id);
+  const terminalRetirementAgentIds = state.agents
+    .filter(agent => !isRetryExhaustedManagedAgent(agent))
+    .filter(agent => managedAgentRegistryDisposition(agent, {
+      processAlive: false,
+      durableWork: recordedManagedDurableWork(agent)
+    }).retire)
+    .map(agent => agent.id);
+
   const federationBefore = JSON.stringify(state.federation);
   syncManagedAgents(
     state.federation,
-    state.agents.filter(agent => !isRetryExhaustedManagedAgent(agent)),
+    state.agents.filter(shouldExposeManagedAgentInFederation),
     { hostname: os.hostname(), now }
   );
+  if (retireInactiveFederatedAgents(state, { now }) > 0) changed = true;
   if (JSON.stringify(state.federation) !== federationBefore) changed = true;
 
   if (changed && !degradedReason) saveState(state);
@@ -1198,9 +1207,14 @@ function refreshState() {
       setImmediate(() => void terminateProviderCapacityAgent(request.agentId, request.operationId));
     }
   }
-  if (exhaustedAgentIds.length && !degradedReason) {
-    for (const exhaustedAgentId of exhaustedAgentIds) {
-      setImmediate(() => void retireRetryExhaustedManagedAgent(exhaustedAgentId));
+  if (retryExhaustedAgentIds.length && !degradedReason) {
+    for (const agentId of retryExhaustedAgentIds) {
+      setImmediate(() => void retireRetryExhaustedManagedAgent(agentId));
+    }
+  }
+  if (terminalRetirementAgentIds.length && !degradedReason) {
+    for (const agentId of terminalRetirementAgentIds) {
+      setImmediate(() => void retireManagedRegistryAgent(agentId));
     }
   }
   return state;
