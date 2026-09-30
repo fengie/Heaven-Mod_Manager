@@ -117,3 +117,15 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change is routed through the Agent Control PR/CI gate before integration. Final merge evidence is recorded in the integrating commit/PR.
 - **Sibling/adjacent cases checked:** Existing pre-launch capacity/lease checks remain authoritative; provider-capacity active termination remains the classifier; successful startup still proceeds; single-step workflows are not delayed by an unnecessary next-lane gate; no prompt body, task capability, or environment secret is written to the new ledger.
 - **References (SHA/PR/issue/log):** implementation branch `agent-control-swarm-failure-log-20260929`; integration PR/merge SHA to be filled by canonical history.
+
+## 2026-09-29 — GitHub Releases catalog — escaped newline token was written into C# test source
+- **Symptom:** A newly added provider regression test contained the literal characters `\n` between two C# statements instead of an actual line break, making the test project syntactically invalid before semantic verification could begin.
+- **Root cause:** A source-edit/generation path serialized a line break as text and the resulting file was committed without a syntax/build check of the changed C# project.
+- **Violated invariant / wrong assumption:** Source-producing edits are not complete when the text looks structurally plausible in a patch. The emitted file must be valid source in the target language before it is presented as an integration candidate.
+- **Why prior defenses missed it:** Review focused on provider behavior, compliance, schema drift, auth secrecy, and download boundaries. The branch had not yet passed a compile gate, and no pre-PR source-generation check caught escaped control-token artifacts.
+- **Direct fix:** Replaced the literal escape token with a real newline in `GitHubReleasesCatalogProviderTests.cs` and re-routed the branch through the normal build/test gate.
+- **Preventive rule/process change:** After any programmatic source rewrite, inspect the final emitted file rather than only the transformation input, and run the narrowest native syntax/build check before opening or declaring a PR ready. Treat visible serialized control tokens such as stray `\n`, `\r`, or escaped quote artifacts between statements as a source-generation defect class.
+- **Regression coverage added/strengthened:** The authoritative C# build in the workflow feature gate remains the mechanical closure for this class; source-producing agents must run an equivalent focused compile before handoff when execution is available.
+- **Verification evidence/environment:** GitHub Releases provider branch `agent/github-releases-catalog-20260929b`; fix commit `1dc71a9279162dff35e5eab2d3bc77ae73ecc430`; final merge evidence belongs to the integrating PR.
+- **Sibling/adjacent cases checked:** Review the rest of generated/edited C# in the provider lane for escaped control-token artifacts and require the branch gate before integration.
+
