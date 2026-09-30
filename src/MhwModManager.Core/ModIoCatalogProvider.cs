@@ -10,7 +10,7 @@ public sealed record ModIoCatalogGameSource(
 public sealed class ModIoCatalogProvider : IModCatalogProvider
 {
     private readonly ModIoTransport transport;
-    private readonly IReadOnlyList<ModIoCatalogGameSource> sources;
+    private readonly ModIoCatalogGameSource[] sources;
     private CatalogProviderHealth health = new(
         ModIoCatalogPolicy.ProviderId,
         CatalogProviderState.Limited,
@@ -27,7 +27,7 @@ public sealed class ModIoCatalogProvider : IModCatalogProvider
 
         this.transport = transport;
         this.sources = sources.Select(ValidateSource).ToArray();
-        if (this.sources.Count == 0)
+        if (this.sources.Length == 0)
             throw new ArgumentException("At least one mod.io game mapping is required.", nameof(sources));
 
         var duplicates = this.sources
