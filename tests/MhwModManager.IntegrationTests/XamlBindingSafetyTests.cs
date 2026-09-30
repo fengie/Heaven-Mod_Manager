@@ -118,6 +118,17 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void ComboBoxesUseMatchedSystemColorsForReadableSelectedText()
+    {
+        var root = FindRepositoryRoot();
+        var appXaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "App.xaml"));
+
+        Assert.Contains("Property=\"Foreground\" Value=\"{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}\"", appXaml);
+        Assert.Contains("Property=\"Background\" Value=\"{DynamicResource {x:Static SystemColors.ControlBrushKey}}\"", appXaml);
+        Assert.DoesNotContain("<Setter Property=\"Foreground\" Value=\"{StaticResource Text}\"/>\n            <Setter Property=\"Background\" Value=\"#0C1015\"/>", appXaml);
+    }
+
+    [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
     {
         var root = FindRepositoryRoot();
