@@ -46,6 +46,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public ObservableRangeCollection<AssetOverlapRow> OverlapRows{get;}=[];
     public GamesPageViewModel GamesPage{get;}
     public ObservableRangeCollection<GameProfile> Games{get;}
+    public CatalogBrowserViewModel BrowsePage{get;}
 
     [ObservableProperty]private string searchText="";
     [ObservableProperty]private string modViewMode="All";
@@ -193,6 +194,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         Profiles=ProfilesPage.Rows;
         GamesPage=new GamesPageViewModel(s.GameRegistry);
         Games=GamesPage.Rows;
+        BrowsePage=new CatalogBrowserViewModel(s.RemoteCatalog,s.RemoteCatalogSync,s.RemoteCatalogProviders,s.Paths.Game);
         var detailedDiagnostics=MasterDebugLog.DetailedDiagnosticsEnabled;
         if(detailedDiagnostics)
         {
@@ -244,6 +246,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
         if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
+        if(value==7)_=BrowsePage.EnsureLoadedAsync(backgroundCts.Token);
     }
 
     private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
@@ -1454,6 +1457,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(disposed)return;
         disposed=true;
+        BrowsePage.Dispose();
         backgroundCts.Cancel();
         backgroundCts.Dispose();
         deferredPageGate.Dispose();
