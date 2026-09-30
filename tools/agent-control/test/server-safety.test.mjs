@@ -588,7 +588,7 @@ test("perpetual recovery preserves takeover before proven stop and persists repl
   assert.ok(pendingAt > stopAt);
   assert.ok(redispatchAt > pendingAt);
   assert.match(block, /replacement-dispatch-failed/);
-  assert.match(block, /perpetual-stale-replacement/);
+  assert.match(block, /autopilot\.stale-replacement-pending/);
   assert.match(block, /executionMode: "direct"/);
 });
 
