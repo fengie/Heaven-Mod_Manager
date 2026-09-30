@@ -129,3 +129,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** GitHub Releases provider branch `agent/github-releases-catalog-20260929b`; fix commit `1dc71a9279162dff35e5eab2d3bc77ae73ecc430`; final merge evidence belongs to the integrating PR.
 - **Sibling/adjacent cases checked:** Review the rest of generated/edited C# in the provider lane for escaped control-token artifacts and require the branch gate before integration.
 
+## 2026-09-29 — GitHub Releases catalog — concrete collection was stored behind a slower interface and failed strict CA1859
+
+- **Symptom:** The frozen GitHub Releases integration candidate failed the strict whole-solution gate because the curated source array was stored as `IReadOnlyList<GitHubReleaseCatalogSource>`, triggering CA1859 under warnings-as-errors.
+- **Root cause:** Construction always materialized `sources` with `ToArray()`, but the field retained the broader interface type even though no alternate implementation was required.
+- **Violated invariant / wrong assumption:** Strict-analyzer repositories require concrete hot-path/internal collection types when the implementation is fixed and abstraction provides no behavioral value.
+- **Direct fix:** Store the already-materialized curated sources as `GitHubReleaseCatalogSource[]` and use `Length` for the empty-source check.
+- **Preventive rule/process change:** Before integration handoff, inspect newly introduced private collection fields for CA1859 candidates: if construction always yields one concrete collection type and substitution is not part of the design, keep the concrete type internally.
+- **Regression/verification:** Rerun the exact Heaven repository verification gate on the amended frozen integration head; do not treat downstream missing-assembly/test-executable errors from the failed Core build as independent defects.
+- **Reference:** PR #323, failing Heaven run 36659334396.
