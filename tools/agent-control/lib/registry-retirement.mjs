@@ -12,7 +12,6 @@ const LIVE_FEDERATED_STATES = new Set(["working", "tool_wait", "blocked", "idle"
 const PROVEN_REMOTE_TERMINAL_STATES = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
 const PRESERVED_MANAGED_RECOVERY_STATES = new Set([
   "retry-pending",
-  "retry-dispatched",
   "retry-blocked",
   "work-detected-incomplete",
   "work-unverified",
