@@ -16,6 +16,24 @@ spec.loader.exec_module(hb)
 
 
 class HeavenBridgeWorkerTests(unittest.TestCase):
+    def test_console_launch_policy_keeps_agent_shells_hidden(self):
+        for target in (
+            "cmd.exe",
+            r"C:\\Windows\\System32\\cmd.exe",
+            "powershell.exe",
+            r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "pwsh.exe",
+        ):
+            policy = hb.console_launch_policy(target, True)
+            self.assertTrue(policy["is_console_shell"], target)
+            self.assertFalse(policy["visible_console"], target)
+            self.assertTrue(policy["visible_console_suppressed"], target)
+
+        normal_app = hb.console_launch_policy("notepad.exe", True)
+        self.assertFalse(normal_app["is_console_shell"])
+        self.assertTrue(normal_app["visible_console"])
+        self.assertFalse(normal_app["visible_console_suppressed"])
+
     def test_health_and_system_info_report_elevation_boolean(self):
         health = hb.run_job("health-elevation", {"action": "health", "params": {}}, threading.Event())
         info = hb.run_job("system-elevation", {"action": "system_info", "params": {}}, threading.Event())
