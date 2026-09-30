@@ -861,3 +861,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-044 copied-test destination validation; LR-046 installed-runtime/restart proof.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-050 — live registries are not historical failure archives
+
+- **Rule ID:** LR-050
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent Control, worker/session registries, retry/recovery lifecycle, operator dashboards
+- **Rule:** After a worker/session is definitively terminal, has no substantive durable work requiring recovery, and its task/event/failure evidence is persisted, retire its identity from the live registry and remove operator actions that target it. Historical evidence must remain in dedicated durable records rather than by keeping a dead live card.
+- **Trigger / evidence:** No-work recovery set `recoveryStatus=retry-exhausted` but left the agent in `state.agents` and federation indefinitely; every refresh re-synchronized the dead identity, producing persistent **failed · RETRY EXHAUSTED** cards and stale click targets.
+- **Rationale:** Mixing history with live membership makes counts misleading, leaves invalid controls visible, and turns terminal cleanup into permanent operator noise. Retirement must still fail closed around useful work so cleanup cannot destroy recovery evidence.
+- **Enforcement:** Every terminal lifecycle path must answer two separate questions: (1) what durable evidence/history is retained, and (2) whether the identity remains live/actionable. Regression tests must cover both retirement and preservation cases, including legacy-state sweeps.
+- **Regression/evidence:** v8.8.26 registry-retirement candidate; `test/no-work-recovery.test.mjs`; `test/operator-ui-cli.test.mjs`.
+- **Related rules:** LR-039 deterministic runtime failure is not no-work; LR-047 operator controls close over authoritative server actions; LR-049 producer encoding contract.
+- **Supersedes:** none
+- **Superseded by:** none
