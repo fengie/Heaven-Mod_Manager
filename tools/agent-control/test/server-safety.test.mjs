@@ -441,8 +441,7 @@ test("explicit Start Swarm normalizes operator friction without weakening automa
   assert.equal(stopped.status, 200);
 
   const started = await postJson(port, "/api/swarm/start", {
-    objective: "Continue the highest-value unfinished project work",
-    overallGoal: "Make Agent Manager autonomous, resilient, and easy to operate"
+    objective: "Continue the highest-value unfinished project work"
   });
   assert.equal(started.status, 201);
   assert.equal(started.body.created.length, 0);
@@ -451,7 +450,6 @@ test("explicit Start Swarm normalizes operator friction without weakening automa
   const snapshot = await getJson(port);
   assert.equal(snapshot.status, 200);
   assert.equal(snapshot.body.settings.autonomyLevel, "coordinate");
-  assert.equal(snapshot.body.autopilot.overallGoal, "Make Agent Manager autonomous, resilient, and easy to operate");
   assert.equal(snapshot.body.settings.dispatchPaused, false);
   assert.equal(snapshot.body.settings.readOnly, false);
   assert.equal(snapshot.body.settings.draining, false);
@@ -536,6 +534,34 @@ test("stale external heartbeat is visible but excluded from active-agent count",
   assert.equal(federation.body.counts.live, 0);
   assert.equal(federation.body.counts.disconnected, 1);
   assert.equal(federation.body.agents[0].effective_state, "disconnected");
+});
+
+test("overall swarm goal is persisted by autopilot and propagated through every perpetual phase", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const startAt = source.indexOf("function startAutopilot");
+  const candidateAt = source.indexOf("function autopilotCandidate", startAt);
+  assert.ok(startAt >= 0 && candidateAt > startAt);
+  const startBlock = source.slice(startAt, candidateAt);
+  assert.match(startBlock, /const overallGoal = String\(body\.overallGoal \|\| ""\)\.trim\(\)/);
+  assert.match(startBlock, /overallGoal,/);
+
+  const helperAt = source.indexOf("function autopilotOverallGoalLine");
+  const stepAt = source.indexOf("async function autopilotStep", helperAt);
+  assert.ok(helperAt >= 0 && stepAt > helperAt);
+  const propagation = source.slice(helperAt, stepAt);
+  for (const phase of [
+    "dispatchAutopilotImplementation",
+    "dispatchAutopilotVerification",
+    "dispatchAutopilotReview",
+    "dispatchAutopilotRepair",
+    "dispatchAutopilotIntegration",
+    "dispatchAutopilotHygiene",
+    "dispatchAutopilotExpansion"
+  ]) {
+    const phaseAt = propagation.indexOf(`async function ${phase}`);
+    assert.ok(phaseAt >= 0, `missing ${phase}`);
+  }
+  assert.ok((propagation.match(/autopilotOverallGoalLine\(state\)/g) || []).length >= 7);
 });
 
 test("engineering autopilot exposes governed control routes and a periodic internal loop", () => {
