@@ -46,7 +46,7 @@ public sealed class NexusV3CatalogAdapterTests
         Assert.Equal("AuthorOne", mod.Author);
         Assert.Equal("Fixture mod details", mod.Summary);
         Assert.Equal("fixture-mod-global-id", NexusV3CatalogNormalizer.GetGlobalModId(mod));
-        Assert.Contains("monsterhunterworld-game-id", mod.ProviderMetadata, StringComparison.Ordinal);
+        Assert.Contains("monsterhunterworld-game-id", mod.ProviderMetadata!, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class NexusV3CatalogAdapterTests
         Assert.Equal("1.2.3", file.Version);
         Assert.Equal(CatalogFileCategory.Main, file.Category);
         Assert.True(file.Recommended);
-        Assert.Contains("fixture-file-id", file.ProviderMetadata, StringComparison.Ordinal);
+        Assert.Contains("fixture-file-id", file.ProviderMetadata!, StringComparison.Ordinal);
     }
 
     [Fact]
