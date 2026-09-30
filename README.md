@@ -1,5 +1,12 @@
-# v8.8.38 Universal Mod Manager
+# v8.8.39 Universal Mod Manager
 
+
+
+## v8.8.39 — Heaven Local Bridge primary reliability
+
+Heaven Local Bridge is now the explicit primary remote-control path for both `heaven2` and `heaven`; Remote Desktop Commander is retained as a paired, on-demand fallback rather than an always-on competing controller. Worker v8 and Agent Control v0.6.17 share a machine-local `HeavenBridge/auth/allow-repo-acl-only` marker for the private-GitHub-relay compatibility mode, so restart/recovery does not depend on fragile process environment variables and terminal-agent retirement can use the same relay mode as ChatGPT.
+
+Bridge recovery remains three-layered (worker + watchdog + SYSTEM sentinel), canonical runtime comes from `main`, Python runtime caches are ignored, and the operator policy is reproducible through `heaven-bridge/Set-PrimaryControlMode.ps1`. The Heaven Local Bridge plugin advances to **v0.8.3**.
 
 ## v8.8.38 — Superseded retry-parent retirement
 
