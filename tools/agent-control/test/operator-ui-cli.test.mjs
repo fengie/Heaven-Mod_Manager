@@ -204,7 +204,7 @@ test("dashboard agent cards are inspectable without hijacking nested controls", 
   assert.match(html, /\["Enter", " "\]\.includes\(event\.key\)/);
   assert.match(html, /async function showLog\(id, button = null\)/);
   assert.match(html, /if \(button\) button\.textContent/);
-  assert.match(html, /Federated agent is no longer in the live registry/);
+  assert.match(html, /is no longer present in the live registry/);
   assert.match(html, /function bindManagedAgentCardInteractions\(\)/);
   assert.match(html, /function bindFederatedAgentCardInteractions\(\)/);
   assert.equal((html.match(/bindManagedAgentCardInteractions\(\);/g) || []).length, 1, "managed cards must receive exactly one inspection-binding pass per render");
