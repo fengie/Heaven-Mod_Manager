@@ -24,7 +24,7 @@ public static class ModIoCatalogNormalizer
         ArgumentNullException.ThrowIfNull(document);
         if (expectedGameId <= 0) throw new ArgumentOutOfRangeException(nameof(expectedGameId));
 
-        var root = RequireObject(document.RootElement, "mod.io mod list response");
+        var root = RequireObjectValue(document.RootElement, "mod.io mod list response");
         var data = RequireArray(root, "data");
         var result = new List<CatalogMod>(data.GetArrayLength());
 
@@ -78,7 +78,7 @@ public static class ModIoCatalogNormalizer
         ArgumentNullException.ThrowIfNull(document);
         var providerModId = NormalizePositiveId(expectedProviderModId, nameof(expectedProviderModId));
         var providerFileId = NormalizePositiveId(expectedProviderFileId, nameof(expectedProviderFileId));
-        var root = RequireObject(document.RootElement, "mod.io modfile response");
+        var root = RequireObjectValue(document.RootElement, "mod.io modfile response");
 
         var actualFileId = ReadRequiredPositiveId(root, "id");
         var actualModId = ReadRequiredPositiveId(root, "mod_id");
@@ -130,7 +130,7 @@ public static class ModIoCatalogNormalizer
         JsonElement element)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var root = RequireObject(element, "mod.io mod");
+        var root = RequireObjectValue(element, "mod.io mod");
 
         var providerModId = ReadRequiredPositiveId(root, "id");
         var gameId = ReadRequiredInt64(root, "game_id");
@@ -215,7 +215,7 @@ public static class ModIoCatalogNormalizer
         bool recommended)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var root = RequireObject(element, "mod.io modfile");
+        var root = RequireObjectValue(element, "mod.io modfile");
         var providerFileId = ReadRequiredPositiveId(root, "id");
         var providerModId = ReadRequiredPositiveId(root, "mod_id");
 
@@ -337,7 +337,7 @@ public static class ModIoCatalogNormalizer
         return url;
     }
 
-    private static JsonElement RequireObject(JsonElement element, string context)
+    private static JsonElement RequireObjectValue(JsonElement element, string context)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (element.ValueKind != JsonValueKind.Object)
