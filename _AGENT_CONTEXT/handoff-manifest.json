@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.48",
+  "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.47 verified and published build356",
+  "immediateParentRevision": "v8.8.48 verified and published build357; active PR #526 owns v8.8.49 UI fixes",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -96,7 +96,8 @@
     "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
     "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
     "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
-    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json"
+    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json",
+    "_AGENT_CONTEXT/HANDOFFS/agent-manager-compact-overview-v8.8.50.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.45/build354 verified/published. Finish existing PR522 and inspector issue461 with exact regressions/runtime proof; preserve unique branches and deferred crypto/auth work, no new features, recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.50 compact Agent Manager overview after PR #526 resolves: reconcile fresh main, run exact Agent Control/security gates, merge/push/verify remote main, perform live heaven2 collapsed-overview/Inspector smoke, preserve remaining P0/auth/signing work, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
