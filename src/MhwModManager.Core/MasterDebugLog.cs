@@ -14,7 +14,7 @@ public static class MasterDebugLog
 {
     private static readonly object Gate = new();
     private static readonly AsyncLocal<string?> CurrentOperation = new();
-    private static readonly AsyncLocal<ScopeFrame?> CurrentScope = new();
+    private static readonly AsyncLocal<OperationScope?> CurrentScope = new();
     private static string rootDirectory = ResolveInitialRoot();
     private static StreamWriter? writer;
     private static string? writerPath;
@@ -219,8 +219,8 @@ public static class MasterDebugLog
 
     private static void MarkExceptionObserved(Exception exception)
     {
-        for (var frame = CurrentScope.Value; frame is not null; frame = frame.Parent)
-            frame.Scope.ObserveException(exception);
+        for (var scope = CurrentScope.Value; scope is not null; scope = scope.Parent)
+            scope.ObserveException(exception);
     }
 
     private static bool IsEnabled(string? value) =>
@@ -238,21 +238,15 @@ public static class MasterDebugLog
         catch { return AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar); }
     }
 
-    private sealed class ScopeFrame(OperationScope scope, ScopeFrame? parent)
-    {
-        public OperationScope Scope { get; } = scope;
-        public ScopeFrame? Parent { get; } = parent;
-    }
-
     public sealed class OperationScope : IDisposable
     {
         private readonly string area;
         private readonly string operation;
-        private readonly string id;
+        private string? id;
         private readonly string? parentId;
         private readonly string? previousOperation;
-        private readonly ScopeFrame? previousScope;
-        private readonly Stopwatch stopwatch = Stopwatch.StartNew();
+        private readonly OperationScope? previousScope;
+        private readonly long startedTimestamp;
         private readonly bool verbose;
         private int outcome;
         private int disposed;
@@ -265,14 +259,15 @@ public static class MasterDebugLog
             this.area = area;
             this.operation = operation;
             this.verbose = verbose;
-            id = Guid.NewGuid().ToString("N")[..12];
+            startedTimestamp = Stopwatch.GetTimestamp();
             parentId = CurrentOperation.Value;
             previousOperation = CurrentOperation.Value;
             previousScope = CurrentScope.Value;
-            CurrentOperation.Value = id;
-            CurrentScope.Value = new ScopeFrame(this, previousScope);
+            CurrentScope.Value = this;
             if (verbose)
             {
+                id = NewTraceId();
+                CurrentOperation.Value = id;
                 var location = $"{Path.GetFileName(sourceFile)}:{sourceLine}";
                 Write(area, $"START {operation}; id={id}; parent={parentId ?? "<none>"}; caller={caller}; source={location}{FormatDetail(detail)}");
             }
@@ -285,7 +280,7 @@ public static class MasterDebugLog
             if (verbose || errors != 0)
             {
                 var status = errors == 0 ? "PASS" : "PASS-WITH-ERROR-CHECK";
-                Write(area, $"{status} {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
+                Write(area, $"{status} {operation}; id={TraceId}; elapsedMs={ElapsedMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
             }
         }
 
@@ -294,7 +289,7 @@ public static class MasterDebugLog
             ArgumentNullException.ThrowIfNull(exception);
             if (Interlocked.CompareExchange(ref outcome, 2, 0) != 0) return;
             var errors = Volatile.Read(ref observedExceptionCount);
-            Write(area, $"FAIL {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}", exception);
+            Write(area, $"FAIL {operation}; id={TraceId}; elapsedMs={ElapsedMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}", exception);
         }
 
         internal void ObserveException(Exception exception)
@@ -309,24 +304,28 @@ public static class MasterDebugLog
         public void Dispose()
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0) return;
-            stopwatch.Stop();
             if (Volatile.Read(ref outcome) == 0)
             {
                 var errors = Volatile.Read(ref observedExceptionCount);
                 if (errors == 0)
                 {
                     if (verbose)
-                        Write(area, $"PASS-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
+                        Write(area, $"PASS-CHECK {operation}; id={TraceId}; elapsedMs={ElapsedMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
                 }
                 else
                 {
-                    Write(area, $"ERROR-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}");
+                    Write(area, $"ERROR-CHECK {operation}; id={TraceId}; elapsedMs={ElapsedMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}");
                 }
             }
-            CurrentOperation.Value = previousOperation;
+            if (verbose) CurrentOperation.Value = previousOperation;
             CurrentScope.Value = previousScope;
             GC.SuppressFinalize(this);
         }
+
+        internal OperationScope? Parent => previousScope;
+        private string TraceId => id ??= NewTraceId();
+        private double ElapsedMilliseconds => Stopwatch.GetElapsedTime(startedTimestamp).TotalMilliseconds;
+        private static string NewTraceId() => Guid.NewGuid().ToString("N")[..12];
 
         private string FormatObservedErrors(int errors) => errors == 0
             ? "observedExceptions=0"
