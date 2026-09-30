@@ -1,0 +1,53 @@
+[
+  {
+    "name": "CoolMod",
+    "full_name": "ExampleTeam-CoolMod",
+    "owner": "ExampleTeam",
+    "package_url": "https://thunderstore.io/c/lethal-company/p/ExampleTeam/CoolMod/",
+    "date_created": "2026-09-20T12:34:56Z",
+    "date_updated": "2026-09-29T10:00:00Z",
+    "uuid4": "11111111-1111-1111-1111-111111111111",
+    "rating_score": 42,
+    "is_pinned": false,
+    "is_deprecated": false,
+    "has_nsfw_content": false,
+    "categories": [
+      "Mods",
+      "Utilities"
+    ],
+    "versions": [
+      {
+        "name": "CoolMod",
+        "full_name": "ExampleTeam-CoolMod-1.2.3",
+        "description": "Fixture package used to verify Thunderstore catalog normalization.",
+        "icon": "https://gcdn.thunderstore.io/live/repository/icons/ExampleTeam-CoolMod-1.2.3.png",
+        "version_number": "1.2.3",
+        "dependencies": [
+          "BepInEx-BepInExPack-5.4.2100"
+        ],
+        "download_url": "https://thunderstore.io/package/download/ExampleTeam/CoolMod/1.2.3/",
+        "downloads": 1234,
+        "date_created": "2026-09-29T09:00:00Z",
+        "website_url": "https://github.com/example/coolmod",
+        "is_active": true,
+        "uuid4": "22222222-2222-2222-2222-222222222222",
+        "file_size": 456789
+      },
+      {
+        "name": "CoolMod",
+        "full_name": "ExampleTeam-CoolMod-1.2.2",
+        "description": "Previous fixture version.",
+        "icon": "https://gcdn.thunderstore.io/live/repository/icons/ExampleTeam-CoolMod-1.2.2.png",
+        "version_number": "1.2.2",
+        "dependencies": [],
+        "download_url": "https://thunderstore.io/package/download/ExampleTeam/CoolMod/1.2.2/",
+        "downloads": 100,
+        "date_created": "2026-09-25T09:00:00Z",
+        "website_url": "https://github.com/example/coolmod",
+        "is_active": true,
+        "uuid4": "33333333-3333-3333-3333-333333333333",
+        "file_size": 400000
+      }
+    ]
+  }
+]
