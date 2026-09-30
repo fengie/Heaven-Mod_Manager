@@ -1,3 +1,7 @@
+# v8.8.50 manual updater check candidate
+
+Adds the user-requested **Check for updates** control to the Dashboard app-health card and routes it through the existing verified updater command rather than duplicating update logic. Automatic startup/background checks remain unchanged. Exact-head CI, merge-to-main confirmation, updater publication, and an installed-client click smoke remain required before runtime closure. Successors must preserve and recursively propagate the continuity constitution.
+
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.
