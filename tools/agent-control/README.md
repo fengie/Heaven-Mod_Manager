@@ -1,3 +1,9 @@
+# v0.6.21 — Windows-safe ownership state
+
+## What v0.6.21 does
+
+Valid BOM-prefixed primary state takes precedence over older backup state. Primary, backup, legacy migration and pre-save backup validation share a strict single-leading-BOM decoder. Writers remain BOM-free; malformed JSON, duplicate/misplaced BOMs and unrecoverable state remain fail-closed. Recovery does not mark uncertain work complete or erase historical incidents.
+
 # v0.6.20 — bounded indexed-context navigation
 
 ## What v0.6.20 does

@@ -1,3 +1,14 @@
+# v8.8.44 agent-state encoding — current candidate
+
+Owner current chat, branch codex/agent-state-encoding, fresh base 7607906b. Scope is strict Windows JSON state decoding, preserving authoritative newer ownership and shared backup validation. External fix/catalog-compliance-future-review-v8.8.44 is preserved and not modified; provisional branch versions must reconcile against exact canonical main before integration. See EVIDENCE/v8.8.44-agent-state-encoding.md for PLUGIN-PREFLIGHT and acceptance; no extra plugin/auth path.
+
+1. Reproduce and verify focused/full controller, syntax, handoff/negative fixtures and exact-head CI. Preserve corruption read-only/paused behavior, migration/orphaning, atomic writes and history.
+2. Fetch main/PRs/leases, reconcile version/continuity, integrate only green exact candidate, then immediately verify immutable private/public publication and update/rollback; restore only clean canonical source and smoke current controller state/CLI.
+3. Persist exact closure and safely remove only merged owned branches. Actual operator latest build currently proven 351; future manual check/launch to latest is separate from disposable CI. Bridge auth/persistence and P0 dispatch/recovery/stop remain separate.
+
+Improvement: encoding fixtures must cover every supported Windows producer at durable ownership boundaries. Do not strip arbitrary content or broaden network JSON; preserve prior incident history. No repeated fallback/retry on unchanged auth blockers. Preserve and recursively propagate the constitution to every successor and the agent after them. Do not break the chain.
+
+---
 # v8.8.43 closure — authoritative continuation, 2026-09-30
 
 PR #517 integrated source e655e465; original #515/head 2031c405 is proven an ancestor and GitHub marked it merged. Both implementation branches were removed remotely by repository lifecycle; local integration branch removed safely. Exact main controller/security/Windows checks pass; immutable private/public updater-main-352 has equal assets/digests/provenance and disposable update/rollback passes. Controller 0.6.20 is healthy on heaven2 and actual hash-checked search/heading/pagination smoke passes. See EVIDENCE/v8.8.43-context-navigation.md. Earlier candidate notes below are historical and superseded.

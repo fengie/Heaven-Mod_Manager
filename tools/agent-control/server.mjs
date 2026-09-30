@@ -199,8 +199,13 @@ function defaultState() {
   return defaultControlState({ sessionId: SESSION_ID, hostname: os.hostname() });
 }
 
+function readStateJson(file) {
+  // Windows PowerShell's UTF-8 writer may prefix one BOM; JSON remains strict.
+  return JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+}
+
 function parseStateFile(file) {
-  const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+  const parsed = readStateJson(file);
   return migrateControlState(parsed, { sessionId: SESSION_ID, hostname: os.hostname() });
 }
 
@@ -211,7 +216,7 @@ if (!fs.existsSync(STATE_FILE)) {
   const initial = defaultState();
   if (fs.existsSync(LEGACY_STATE_FILE)) {
     try {
-      const legacy = JSON.parse(fs.readFileSync(LEGACY_STATE_FILE, "utf8"));
+      const legacy = readStateJson(LEGACY_STATE_FILE);
       if (Array.isArray(legacy.agents)) {
         initial.agents = legacy.agents.map(agent => ({
           ...agent,
@@ -265,7 +270,7 @@ function saveState(state) {
   JSON.parse(serialized);
   fs.writeFileSync(tmp, serialized);
   try {
-    JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
+    readStateJson(STATE_FILE);
     fs.copyFileSync(STATE_FILE, STATE_BACKUP_FILE);
   } catch {}
   fs.renameSync(tmp, STATE_FILE);

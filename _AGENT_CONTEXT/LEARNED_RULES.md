@@ -985,3 +985,12 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - Trigger/evidence: v8.8.43 review reproduced 9,368-byte CLI output from an 8,141-byte compact helper; sibling pagination only counted raw text.
 - Enforcement: compact repository-context CLI, emitted-byte accounting and actual maximum-result/escaped Unicode pagination regressions; generic trainer propagation.
 - Related: LR-055 bounded evidence and operational retrieval; LR-057 subset authority.
+
+## LR-059 — supported encodings must not discard authoritative ownership
+- Rule ID: LR-059
+- Status: Active
+- Date: 2026-09-30
+- Scope: durable state, primary/backup/migration readers and Windows producers
+- Rule: Normalize only explicitly supported encoding markers before strict parsing; test actual producer bytes throughout reads, backup validation and migration. Valid newer ownership must never be replaced by stale backup due only to encoding. Malformed data remains fail-closed.
+- Trigger/evidence: repeated BOM defect after the plugin-pruner precedent; controller primary/legacy/backup-validation consumers still used plain JSON.parse.
+- Enforcement: shared state decoder, real isolated server precedence/save/recovery/legacy/malformed regressions, generic trainer. Preserve incident history and uncertainty.
