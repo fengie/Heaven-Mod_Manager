@@ -46,6 +46,7 @@ test("agent PowerShell bootstrap and recovery launchers stay hidden", () => {
   assert.match(bootstrap, /Start-Process -WindowStyle Hidden -FilePath \$hostExe -Verb RunAs/);
   assert.match(bootstrap, /\$args = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass/);
   assert.match(bootstrap, /\$sentinelArguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass/);
+  assert.match(bootstrap, /\$watchdogAction = New-ScheduledTaskAction[\s\S]*?-Argument \('-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File/);
   assert.match(runner, /Start-Process -WindowStyle Hidden -FilePath \$hostExe -Verb RunAs/);
   assert.match(runner, /\$args = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass/);
   assert.match(sentinel, /'-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File/);
