@@ -51,9 +51,9 @@ function launch({ root, host = "127.0.0.1", port }) {
   return { child, dataDir, getOutput: () => output };
 }
 
-function getJson(port, pathname = "/api/snapshot") {
+function getJson(port, pathname = "/api/snapshot", extraHeaders = {}) {
   return new Promise((resolve, reject) => {
-    const request = http.get({ host: "127.0.0.1", port, path: pathname, timeout: 700 }, response => {
+    const request = http.get({ host: "127.0.0.1", port, path: pathname, timeout: 700, headers: extraHeaders }, response => {
       let body = "";
       response.setEncoding("utf8");
       response.on("data", chunk => { body += chunk; });
@@ -137,6 +137,19 @@ test("server refuses unauthenticated non-loopback binding", async t => {
   ]);
   assert.notEqual(code, 0);
   assert.match(getOutput(), /Refusing unauthenticated non-loopback bind host/i);
+});
+
+test("server rejects untrusted Host headers", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-host-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  await waitForSnapshot(port);
+
+  const response = await getJson(port, "/api/status", { Host: `evil.example:${port}` });
+  assert.equal(response.status, 400);
+  assert.match(response.body.error, /Host not allowed/i);
 });
 
 test("corrupt primary and backup state fail closed into read-only degraded mode", async t => {
