@@ -54,6 +54,8 @@ public sealed class ModIoCatalogProviderTests
             Assert.Contains("api_key=" + ApiKey, query, StringComparison.Ordinal);
             Assert.Contains("_q=weapon", query, StringComparison.Ordinal);
             Assert.Contains("_sort=-date_updated", query, StringComparison.Ordinal);
+            Assert.True(request.Headers.TryGetValues("X-Modio-Platform", out var platforms));
+            Assert.Equal("windows", Assert.Single(platforms));
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
         }));
 
@@ -133,14 +135,14 @@ public sealed class ModIoCatalogProviderTests
         var mod = Assert.Single(ModIoCatalogNormalizer.NormalizeMods(game, 123, modsDocument));
         var embeddedFile = Assert.Single(mod.Files);
 
-        Assert.Equal("modio:42", mod.CanonicalId);
+        Assert.Equal("modio:123:42", mod.CanonicalId);
         Assert.Equal("420", embeddedFile.ProviderFileId);
         Assert.Contains("Weapons", mod.Tags);
         Assert.DoesNotContain("binary_url", embeddedFile.ProviderMetadata ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("expiring-secret-token", embeddedFile.ProviderMetadata ?? string.Empty, StringComparison.Ordinal);
 
         using var filesDocument = JsonDocument.Parse(ReadFixture("files.json"));
-        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("42", filesDocument));
+        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("123:42", filesDocument));
 
         Assert.Equal("2.0", file.Version);
         Assert.DoesNotContain("binary_url", file.ProviderMetadata ?? string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -154,7 +156,7 @@ public sealed class ModIoCatalogProviderTests
         using var modDocument = JsonDocument.Parse(ReadFixture("mod.json"));
 
         Assert.Throws<InvalidDataException>(
-            () => ModIoCatalogNormalizer.NormalizeMod(game, 999, "42", modDocument));
+            () => ModIoCatalogNormalizer.NormalizeMod(game, 999, "999:42", modDocument));
 
         using var maliciousDownload = JsonDocument.Parse(
             """
@@ -172,7 +174,7 @@ public sealed class ModIoCatalogProviderTests
 
         Assert.Throws<InvalidDataException>(
             () => ModIoCatalogNormalizer.NormalizeAcquisitionFile(
-                "42",
+                "123:42",
                 "420",
                 maliciousDownload));
     }
@@ -199,7 +201,7 @@ public sealed class ModIoCatalogProviderTests
             TestContext.Current.CancellationToken);
 
         var mod = Assert.Single(result);
-        Assert.Equal("42", mod.ProviderModId);
+        Assert.Equal("123:42", mod.ProviderModId);
         Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search));
         Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.DirectDownload));
 
@@ -213,7 +215,7 @@ public sealed class ModIoCatalogProviderTests
         var game = CreateGame();
         using var modDocument = JsonDocument.Parse(ReadFixture("mod.json"));
         using var filesDocument = JsonDocument.Parse(ReadFixture("files.json"));
-        var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "42", modDocument);
+        var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "123:42", modDocument);
         var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("42", filesDocument));
 
         var fileFetches = 0;
@@ -241,7 +243,7 @@ public sealed class ModIoCatalogProviderTests
         var game = CreateGame();
         using var modDocument = JsonDocument.Parse(ReadFixture("mod.json"));
         using var filesDocument = JsonDocument.Parse(ReadFixture("files.json"));
-        var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "42", modDocument);
+        var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "123:42", modDocument);
         var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("42", filesDocument));
 
         using var client = new HttpClient(new RoutingHandler((_, _) =>
@@ -288,6 +290,20 @@ public sealed class ModIoCatalogProviderTests
             var health = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
             Assert.Equal(CatalogProviderState.AuthenticationRequired, health.State);
         }
+    }
+
+    [Fact]
+    public async Task Provider_rejects_cross_game_provider_identity_before_transport()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Cross-game identity must not reach mod.io transport.")));
+        var provider = CreateProvider(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.GetModAsync(
+                CreateGame(),
+                "999:42",
+                TestContext.Current.CancellationToken));
     }
 
     [Fact]
