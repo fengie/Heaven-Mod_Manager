@@ -18,6 +18,19 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Sibling/adjacent cases checked:**
 - **References (SHA/PR/issue/log):**
 
+### 2026-09-29 — conflict/deployment — grouping and priority were treated as overwrite authority
+- **Symptom:** The resolver could silently choose a same-family texture by configured priority, and exact-path planning could combine unrelated structural siblings in one atomic MHW asset bundle without observing a direct collision. Manual deployment/launch also did not re-run the dependency doctor at the final user-facing gate.
+- **Root cause:** Family grouping, file-path collision detection, overwrite precedence, and dependency validity were implemented as adjacent concerns instead of independent safety proofs. A non-blocking resolver result also retained a priority fallback if it failed to name a candidate winner.
+- **Violated invariant / wrong assumption:** Family membership and priority are not proof of overwrite direction; structural model/material/physics siblings are atomic even when filenames differ; every normal deployment/launch must prove enabled requirements immediately before proceeding; a non-blocking multi-provider decision must identify a real winner.
+- **Why prior defenses missed it:** Existing tests emphasized exact same-path conflicts, deterministic family priority, and Auto Populate dependency closure. They did not adversarially cover disjoint files inside one structural bundle, malformed winner edges, ambiguous family texture siblings, or manual Apply/Launch dependency revalidation.
+- **Direct fix:** Added enabled-rule schema validation, fail-closed winner invariants, high-confidence-only texture auto-selection, atomic structural-bundle checks, and dependency gates for Preview/Apply/modded launch/last-known-good restore.
+- **Preventive rule/process change:** Conflict resolution must separate identity/grouping from precedence proof. Never use priority as an emergency safety fallback. Never compose an atomic structural bundle across providers without a complete overlay chain or strong one-main/dependent-family proof. Normal mutation/launch paths must revalidate dependencies at the boundary.
+- **Regression coverage added/strengthened:** Added malformed-overlay, disjoint structural-sibling, proven main+optional bundle, ambiguous same-family texture, and randomized no-guess texture invariants.
+- **Verification evidence/environment:** Reconciled implementation is on PR #369 from `integration/override-dependency-safety-currentmain-20260930-chatgpt`; Workflow Feature PR Gate / Windows CI evidence must be recorded here before merge.
+- **Sibling/adjacent cases checked:** Exact winners, explicit incompatibilities, overlay cycles, dedicated/newer texture providers, Auto Populate closure, last-known-good restore, and crash-diagnosis subset behavior were reviewed. Crash-diagnosis probes remain intentionally exempt from dependency completeness because incomplete subsets are the diagnostic mechanism.
+- **References (SHA/PR/issue/log):** integration work begins at `942193747c66`; final PR/CI pending.
+
+
 ## 2026-09-29 — repository-wide — escaped bugs require durable prevention controls
 - **Symptom:** User-facing and engineering bugs were still able to appear after agent-authored work, despite substantial verification rules.
 - **Root cause:** The governance model emphasized fixing and verifying individual tasks, but did not make every escaped bug automatically create a durable precedent, guideline update, and regression-prevention control.
