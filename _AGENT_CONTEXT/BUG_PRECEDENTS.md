@@ -552,3 +552,40 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Add `resolveExecutionRelayDir()`; explicit caller paths remain authoritative, otherwise submit/result-wait reuse `resolveHeavenRelayDir()`.
 - **Preventive rule/process change:** LR-051 requires provider preflight and execution to share one authoritative resolution path.
 - **Regression coverage added/strengthened:** `heaven-bridge-provider.test.mjs` now covers documented fallback, explicit override, and absent-fallback fail-closed behavior; live restarted heaven2→heaven1 proof remains required.
+
+## 2026-09-30 — agent startup governance — truncated context or missing preferred tool caused false blocking
+- **Symptom:** A senior programming agent refused to process its task after large mandatory continuity reads were truncated and a preferred GitHub CLI was unavailable, even though alternate repository routes existed.
+- **Root cause:** The startup contract required end-to-end reads of a large fixed corpus and gave the fail-closed training-blocked instruction stronger wording than the later fallback/wraparound rules. Agent Control mechanically reproduced that ordering in every generated prompt.
+- **Violated invariant / wrong assumption:** Proving canonical repository truth does not require rereading every historical byte through one interface. Tool-output truncation, one missing CLI, one failed network route, or one unavailable checkout are recoverable routing conditions unless reasonable authorized alternatives also fail.
+- **Why prior defenses missed it:** Regression coverage only proved that the old full-read gate appeared before the task and contained every path; it did not test context efficiency, pagination recovery, alternate-tool routing, or evidence requirements for declaring a blocker.
+- **Direct fix:** Split startup into a small full-read core and hash-verified indexed context; require task-relevant expansion, pagination/chunking for truncation, GitHub/Heaven/CI fallback routing, and evidence-backed blocker criteria. Generated Agent Control prompts now encode these rules before the task.
+- **Preventive rule/process change:** Startup success means proving canonical truth efficiently. Large historical ledgers remain available and hash-pinned but are read selectively; premium/senior agents delegate mechanical retrieval and preserve context for high-value reasoning.
+- **Regression coverage added/strengthened:** `repository-training-gate.test.mjs` now verifies that large ledgers are indexed rather than full-read core, prompt generation includes pagination and missing-tool fallbacks, and blocked status requires exhausted authorized routes.
+- **Verification evidence/environment:** Exact-head Agent Control/CI verification is required before this candidate is integrated; no inherited green result is claimed.
+- **Sibling/adjacent cases checked:** Missing preferred GitHub CLI, truncated tool output, unavailable local checkout, single network-path failure, large CURRENT_STATE/NEXT_STEPS/VERIFICATION rereads, and manager-specific training.
+- **References (SHA/PR/issue/log):** v8.8.40 efficient-bootstrap candidate branch `fix/efficient-agent-bootstrap-v8.8.40-20260930`.
+
+## 2026-09-30 — verification recovery — stale repair fixtures introduced independent gate failures
+- **Symptom:** Recovering #507's verifier repairs onto current-main lineage still left the broad gate red on a literal escaped newline in a planner-test comment, one untraced nested GitLab helper, and a dependency-cycle fixture that accidentally exercised MHW atomic-bundle safety.
+- **Root cause:** #507's latest source was treated as useful repair material but had never earned a completed green exact-head run. Its cycle fixture mixed an unrelated structural-bundle invariant into a dependency-cycle test, and one authored comment preserved an escaped newline literally.
+- **Violated invariant / wrong assumption:** A stale repair branch is candidate material, not verified truth. Regression fixtures must isolate the behavior they claim to test, and function instrumentation applies to newly introduced local helpers.
+- **Why prior defenses missed it:** The latest #507 head had no completed green Workflow Feature run. The defects became visible only after #510 exercised the full verifier on fresh-main lineage.
+- **Direct fix:** Preserve the validator's stable training-gate heading, trace the nested catalog normalizer, replace the escaped newline with a real line break, and make the dependency-cycle fixture use non-structural unique files so atomic-bundle semantics cannot mask dependency behavior.
+- **Preventive rule/process change:** Transplant stale repair work narrowly and require exact-head verification before promotion; do not weaken unrelated production invariants to make a fixture pass.
+- **Regression coverage:** Existing handoff continuity, function verifier, planner invariant, and hard-dependency-cycle tests exercise these boundaries.
+- **Verification evidence:** Exact-head PR #510 Agent Control, Workflow Feature, and Security gates are required before integration.
+- **Adjacent cases checked:** Stable handoff heading contract, nested local-function tracing, generated literal escape handling, and MHW structural fixture interference.
+- **Learned-rule decision:** No new rule ID is needed; the existing exact-head verification doctrine plus LR-053's fallback/provenance requirements already cover the reusable lesson.
+
+
+## 2026-09-30 — texture resolver — multi-provider aggregation upgraded weak evidence into a guessed winner
+- **Symptom:** Exact-head Workflow Feature verification on PR #510 failed the randomized same-family texture invariant because some 3+ provider collisions were reported non-blocking with an automatically selected winner.
+- **Root cause:** `SelectTextureProvider` counted pairwise winners even when those pair decisions were only `Confidence.Medium` priority tie-breaks, then synthesized a `Confidence.High` `texture-complete-dominance` result when one provider won every weak pair.
+- **Violated invariant / wrong assumption:** Combining several weak precedence signals cannot increase their authority. Multi-provider automatic selection requires every supporting pairwise proof to be independently high/explicit confidence.
+- **Why prior defenses missed it:** Two-provider callers already rejected medium/low confidence after selection, but the 3+ aggregation path rebuilt the final result as High and bypassed that safeguard. Existing complete-dominator coverage used genuinely high-confidence revision evidence only.
+- **Direct fix:** Reject any medium/low pairwise winner before it contributes to multi-provider dominance; return a blocking `texture-evidence-insufficient` result instead of promoting profile priority into overwrite authority.
+- **Preventive rule/process change:** LR-054 requires aggregate decisions to preserve the weakest required evidence threshold rather than strengthening it by vote/count/dominance.
+- **Regression coverage added/strengthened:** Added a deterministic three-provider same-lineage priority-only regression and retained the randomized family-texture invariant plus the genuine high-confidence complete-dominator test.
+- **Verification evidence/environment:** Exact-head PR #510 Workflow Feature gate must pass after this repair; Agent Control and Security gates were already green on the immediately preceding head.
+- **Sibling/adjacent cases checked:** two-provider medium-confidence family texture handling, 3+ genuine revision dominance, dedicated texture-provider dominance, and explicit resource-provider precedence.
+- **References:** PR #510; failed Workflow Feature run 36749989372.

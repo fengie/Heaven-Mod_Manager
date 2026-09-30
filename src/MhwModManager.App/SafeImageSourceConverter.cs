@@ -14,6 +14,7 @@ public sealed class SafeImageSourceConverter:IValueConverter
 
     public object Convert(object value,Type targetType,object parameter,CultureInfo culture)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(value is not string path||string.IsNullOrWhiteSpace(path)||!File.Exists(path))return null;
         try
         {
@@ -37,6 +38,7 @@ public sealed class SafeImageSourceConverter:IValueConverter
 
     private static int ParseDecodeWidth(object parameter)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(parameter is int width)return Math.Clamp(width,MinimumDecodeWidth,MaximumDecodeWidth);
         return int.TryParse(parameter?.ToString(),NumberStyles.Integer,CultureInfo.InvariantCulture,out var parsed)
             ?Math.Clamp(parsed,MinimumDecodeWidth,MaximumDecodeWidth)

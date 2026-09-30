@@ -1,3 +1,5 @@
+> **Efficient startup rule — 2026-09-30:** This file is now **indexed continuity**, not a mandatory end-to-end reread on every agent launch. Read the compact core bootstrap first, prove this file's hash/revision through the generated context manifest, then search/read only the newest and task-relevant sections. Output truncation requires pagination/chunking, and a missing CLI or local checkout requires authorized fallback routing rather than an immediate training blocker.
+
 # Agent Control Federation / Registry v2 — 2026-09-29
 
 > **Mandatory visible-progress versioning (2026-09-30):** Every completed meaningful change set must update root `README.md` with a concise current-patch summary, increment the patch version, update `CHANGELOG.md`, and synchronize canonical version metadata before completion. One integrated change set gets one patch increment; evidence-only verification/publication records for that exact change set stay on the same patch unless they introduce an independent change. The handoff validator enforces this rule.

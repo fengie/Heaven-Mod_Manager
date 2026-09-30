@@ -399,12 +399,35 @@ public sealed class GitLabReleasesCatalogProvider : IModCatalogProvider
         if (string.IsNullOrWhiteSpace(query)) return true;
         var needle = query.Trim();
 
-        return mod.Name.Contains(needle, StringComparison.OrdinalIgnoreCase)
-            || mod.Summary.Contains(needle, StringComparison.OrdinalIgnoreCase)
-            || mod.Description.Contains(needle, StringComparison.OrdinalIgnoreCase)
-            || mod.Author.Contains(needle, StringComparison.OrdinalIgnoreCase)
-            || source.ProviderModId.Contains(needle, StringComparison.OrdinalIgnoreCase)
-            || mod.Tags.Any(tag => tag.Contains(needle, StringComparison.OrdinalIgnoreCase));
+        return MatchesCatalogText(mod.Name, needle)
+            || MatchesCatalogText(mod.Summary, needle)
+            || MatchesCatalogText(mod.Description, needle)
+            || MatchesCatalogText(mod.Author, needle)
+            || MatchesCatalogText(source.ProviderModId, needle)
+            || mod.Tags.Any(tag => MatchesCatalogText(tag, needle));
+    }
+
+    private static bool MatchesCatalogText(string value, string needle)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (value.Contains(needle, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        static string NormalizeSearchSeparators(string text)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            var chars = text
+                .Select(character => character is '-' or '_' ? ' ' : character)
+                .ToArray();
+            return string.Join(
+                ' ',
+                new string(chars).Split(
+                    ' ',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        }
+
+        return NormalizeSearchSeparators(value)
+            .Contains(NormalizeSearchSeparators(needle), StringComparison.OrdinalIgnoreCase);
     }
 
     private static GitLabReleaseCatalogSource ValidateSource(GitLabReleaseCatalogSource source)

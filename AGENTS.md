@@ -4,23 +4,21 @@ This repository is the canonical working state for MHW Manual Mod Manager.
 
 ## Mandatory pre-response repository training gate
 
-Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, automation, and successor that handles this repository must complete repository training **before answering the task prompt or taking task-specific action**. This is a hard startup gate, not advisory guidance.
+Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, automation, and successor that handles this repository must complete a **compact canonical bootstrap** before task-specific reasoning or action. This remains a hard startup gate, but startup success is defined by proving current repository truth efficiently—not by rereading every historical byte through one tool.
 
 Before the first task-facing response or action, the agent must:
 
-1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
-2. Read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, and `_AGENT_CONTEXT/LEARNED_RULES.md`.
-3. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt` before responding or dispatching work.
-4. Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming an answer or plan.
-5. Treat the repository itself as the source of truth. Stale chat context, old SHAs, filenames, summaries, or prior-agent prose do not satisfy this gate.
+1. Establish exact canonical repository truth: current `origin/main` SHA, assigned branch/base, worktree status when a checkout is available, recent relevant history, open/relevant PRs and branches, and live Agent Control ownership/leases when available.
+2. Read the **core startup set** in full: `AGENTS.md`, `_AGENT_TRAINING/README.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`; then read the task-applicable entries from `_AGENT_CONTEXT/LEARNED_RULES.md` identified by the indexed manifest/search. The Learned Rules ledger remains hash-indexed and does not require an end-to-end reread unless the task needs it. Managers must also read `_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt`.
+3. Treat the controller's hash-verified **indexed context manifest** as provenance for larger continuity/training sources such as `NEXT-AGENT-START-HERE.md`, `_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt`, `_AGENT_CONTEXT/README_FIRST.md`, `CURRENT_STATE.md`, `NEXT_STEPS.md`, `VERIFICATION.md`, `BUG_PRECEDENTS.md`, `LEARNED_RULES.md`, and repository-structure guidance. Do **not** reread those files end-to-end by default.
+4. Expand indexed context selectively: search/read the newest and task-relevant sections, applicable bug precedents/learned rules, relevant source/tests/architecture, and any continuity entry needed to resolve ownership, verification, or risk. Before risky or bug-fix work, materially relevant precedent/rule entries remain mandatory.
+5. Treat output truncation as a pagination/chunking condition, not a blocker. Read the remaining ranges or use search/find. Treat a missing preferred CLI (including `gh`), one failed network route, or one unavailable local checkout as a routing condition: try authorized Git/GitHub connector/API, existing `heaven2`/`heaven` canonical worktrees, Heaven Local Bridge, Agent Control, or repository CI as applicable.
+6. Report `TRAINING-BLOCKED` or `EXECUTION-BLOCKED` only after reasonable authorized fallback routes are exhausted. The report must list attempted routes and exact evidence. A truncated response, missing `gh`, or absence of a local checkout by itself is never sufficient.
+7. Optimize scarce senior/premium capacity for architecture, root-cause synthesis, review, integration, and high-risk decisions. Mechanical context collection, pagination, branch inventory, log extraction, and repetitive verification should be delegated/offloaded when possible and returned as compact evidence packets.
 
-Do not output a task analysis, plan, status answer, implementation claim, or recommendation before the gate is complete. If mandatory training material cannot be read or canonical state cannot be established, report `TRAINING-BLOCKED` with exact evidence instead of answering from partial context.
+Repository state remains authoritative over stale chat context, old SHAs, filenames, summaries, or prior-agent prose. The bootstrap/index split never permits guessing from summaries: targeted source expansion is required whenever the compact evidence is insufficient for the task.
 
-Agent Control must enforce this mechanically for spawned workers: required training sources must exist and be non-empty before worker launch, their exact hashes must be included in the generated training manifest, and the training-gate section must appear before the user/manager task in the generated prompt.
-
-Every successor and sub-agent inherits this same gate. **No untrained agent gets to answer first and “catch up” afterward.**
-
-
+Agent Control must enforce this mechanically for spawned workers: core and indexed sources must exist and be non-empty, exact hashes must be included in generated manifests, the compact bootstrap gate must appear before the user/manager task, and generated prompts must explicitly encode pagination and fallback routing. Every successor and sub-agent inherits the same gate. **No untrained agent gets to answer first and “catch up” afterward.**
 
 ## Non-interruptive agent shell execution
 

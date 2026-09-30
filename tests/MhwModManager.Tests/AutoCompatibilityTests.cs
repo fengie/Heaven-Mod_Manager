@@ -492,6 +492,36 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
+    public void Multi_provider_texture_priority_tiebreaks_do_not_escalate_to_high_confidence()
+    {
+        var path = @"nativePC\pl\f_equip\mod_series\f_skin_NM.tex";
+        var candidates = new[]
+        {
+            new ProviderCandidate("a", "Series Texture Alpha", 10, new("a", path, "11", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("b", "Series Texture Beta", 20, new("b", path, "22", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("c", "Series Texture Gamma", 30, new("c", path, "33", null, 100, Now, FileClass.Texture))
+        };
+        var mods = new Dictionary<string,ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = new("a", "Series Texture Alpha", "Series Texture Alpha", "a", true, 10, FamilyId:"manual:series"),
+            ["b"] = new("b", "Series Texture Beta", "Series Texture Beta", "b", true, 20, FamilyId:"manual:series"),
+            ["c"] = new("c", "Series Texture Gamma", "Series Texture Gamma", "c", true, 30, FamilyId:"manual:series")
+        };
+        var stats = new Dictionary<string,ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = new(1, 1, 0, 0, Now),
+            ["b"] = new(1, 1, 0, 0, Now),
+            ["c"] = new(1, 1, 0, 0, Now)
+        };
+
+        var result = AutoCompatibility.SelectTextureProvider(path, candidates, mods, stats);
+
+        Assert.Null(result.WinnerModId);
+        Assert.Equal("texture-evidence-insufficient", result.ReasonCode);
+        Assert.Contains("high or explicit", result.Explanation, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Multi_provider_texture_precedence_accepts_unique_complete_dominator()
     {
         var path = @"nativePC\pl\f_equip\mod_series\f_skin_NM.tex";

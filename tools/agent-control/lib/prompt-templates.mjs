@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.29.6";
+export const PROMPT_LIBRARY_VERSION = "2026.09.30.1";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -55,12 +55,16 @@ export const ROLE_TEMPLATES = Object.freeze({
 
 export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
   "AGENTS.md",
-  "NEXT-AGENT-START-HERE.md",
   "_AGENT_TRAINING/README.md",
+  "_AGENT_CONTEXT/CURRENT_REVISION.json",
+  "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md"
+]);
+
+export const REPOSITORY_CONTEXT_INDEX_PATHS = Object.freeze([
+  "NEXT-AGENT-START-HERE.md",
+  "_AGENT_TRAINING/REPOSITORY_STRUCTURE.md",
   "_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt",
   "_AGENT_CONTEXT/README_FIRST.md",
-  "_AGENT_CONTEXT/CURRENT_REVISION.json",
-  "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
   "_AGENT_CONTEXT/CURRENT_STATE.md",
   "_AGENT_CONTEXT/NEXT_STEPS.md",
   "_AGENT_CONTEXT/VERIFICATION.md",
@@ -69,12 +73,14 @@ export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
 ]);
 
 const REPOSITORY_TRAINING_GATE = [
-  "THIS GATE RUNS BEFORE THE TASK. Do not analyze, answer, summarize, plan, or act on the USER / MANAGER TASK until repository training is complete.",
-  "Open and read every path in the TRAINING MANIFEST from the assigned worktree. The manifest proves the controller found and hashed the files; it is not a substitute for reading their contents.",
-  "Establish exact canonical repository truth before task reasoning: current origin/main SHA, assigned base/head, worktree status, recent relevant history, active branches/PRs, and live Agent Control ownership/leases when available.",
-  "Inspect the task-relevant source, tests, architecture docs, and nearby implementation before forming a task answer. Do not rely on filenames or stale chat context as a substitute for repository evidence.",
+  "THIS GATE RUNS BEFORE THE TASK. Do not analyze, answer, summarize, plan, or act on the USER / MANAGER TASK until the compact repository bootstrap is complete.",
+  "Read every path in the CORE TRAINING MANIFEST in full. The controller has also hash-verified the INDEXED CONTEXT MANIFEST; do not reread those large historical files end-to-end by default.",
+  "Establish exact canonical repository truth before task reasoning: current origin/main SHA, assigned base/head, worktree status when available, recent relevant history, active branches/PRs, and live Agent Control ownership/leases when available.",
+  "Search/read the newest task-relevant sections of indexed continuity/training files, applicable BUG_PRECEDENTS/LEARNED_RULES entries, and task-relevant source/tests/architecture before forming a task answer. If compact evidence is insufficient, expand it; never guess from a summary.",
+  "Output truncation is recoverable: paginate/chunk remaining ranges or use search/find. A missing gh/CLI, one failed network route, or no local checkout is also recoverable: try authorized Git/GitHub connector/API, canonical heaven2/heaven worktrees, Heaven Local Bridge/Agent Control, or repository CI as applicable.",
   "Managers must additionally read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt before responding to or dispatching work.",
-  "If any mandatory training source is unreadable, missing, stale relative to the assigned revision, or contradicted by current repository state, stop task execution and report TRAINING-BLOCKED with the exact evidence instead of answering from partial context.",
+  "Report TRAINING-BLOCKED or EXECUTION-BLOCKED only after reasonable authorized fallback routes are exhausted; include the attempted routes and exact evidence. Truncation, missing gh, or no local checkout alone is never sufficient.",
+  "Senior/premium roles should spend scarce context on architecture, root-cause synthesis, review, integration, and verification decisions; delegate mechanical pagination, inventory, log extraction, and repetitive evidence gathering when practical.",
   "Only after this gate is complete may you process the USER / MANAGER TASK. Preserve this same pre-response gate for every successor or sub-agent you create."
 ];
 
@@ -84,7 +90,8 @@ const REPOSITORY_PROTOCOL = [
   "Stay in the current ChatGPT conversation when it can execute the task. If a normal Chat session cannot be auto-created, continue through another authorized non-Work path such as the direct local worker, Heaven Local Bridge, or repository tooling. Do not stop solely to ask the operator to switch modes.",
   "Repository governance and current repository state are authoritative over stale chat text, old SHAs, or this prompt.",
   "Before meaningful changes: fetch or refresh remote state when possible; identify exact current origin/main; inspect branch/worktree status, recent history, relevant PRs/branches, ownership/routing, and continuity files.",
-  "Read AGENTS.md, NEXT-AGENT-START-HERE.md, _AGENT_TRAINING/README.md, _AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt, _AGENT_CONTEXT/CURRENT_REVISION.json, _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, active _AGENT_CONTEXT/BUG_PRECEDENTS.md, and active _AGENT_CONTEXT/LEARNED_RULES.md before meaningful work.",
+  "Read the compact core startup set in full, then use the indexed-context hashes to retrieve only task-relevant continuity/training sections and materially relevant precedent/rule entries before meaningful work.",
+  "A missing preferred CLI, one failed network path, or absence of a local checkout is a routing condition, not a blocker: use authorized GitHub connector/API, canonical worktrees, Heaven Local Bridge/Agent Control, or repository CI before declaring BLOCKED.",
   "Managers must also read _AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt and operate as convergence owners, not passive status bots.",
   "main is the canonical integration target. Finished work belongs on verified remote main, not parked on a completed task branch or PR.",
   "The agent that creates or materially completes a change owns it through final diff inspection, focused verification, refresh against current origin/main, reconciliation, conflict resolution inside its owned boundary, rerun of affected checks, integration into main, push, and remote-main confirmation unless an explicit external gate prevents this.",
@@ -173,6 +180,7 @@ export function renderAgentPrompt({
   repositoryWriteAuthorized = false,
   additionalConstraints = [],
   repositoryTrainingManifest = [],
+  repositoryContextManifest = [],
   swarmEvolutionContext = []
 }) {
   const template = ROLE_TEMPLATES[role] || ROLE_TEMPLATES.support;
@@ -201,8 +209,11 @@ export function renderAgentPrompt({
     "MANDATORY REPOSITORY TRAINING GATE — COMPLETE BEFORE TASK RESPONSE",
     bullets(REPOSITORY_TRAINING_GATE),
     "",
-    "TRAINING MANIFEST — READ EVERY LISTED PATH BEFORE TASK REASONING",
+    "CORE TRAINING MANIFEST — READ EVERY LISTED PATH BEFORE TASK REASONING",
     bullets(repositoryTrainingManifest),
+    "",
+    "INDEXED CONTEXT MANIFEST — HASH-VERIFIED; READ TASK-RELEVANT SECTIONS ONLY",
+    bullets(repositoryContextManifest),
     "",
     "ROLE CONTRACT",
     template.mission,

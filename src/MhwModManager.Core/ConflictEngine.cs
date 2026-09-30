@@ -353,19 +353,15 @@ public sealed class ConflictEngine
 
     private static bool IsProtectedBootstrapPath(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         string normalized;
         try { normalized = PathRules.Normalize(path); }
         catch (ArgumentException) { return false; }
 
-        if (normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (!normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        var extension = Path.GetExtension(normalized);
-        return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
-               extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
-               extension.Equals(".asi", StringComparison.OrdinalIgnoreCase);
+        // Only true loader entry points are protected. Ordinary root binaries must flow
+        // through provenance-aware code collision handling so verified updates can compose.
+        return normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase) ||
+               normalized.Equals(@"root\dinput8.dll", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsCodeBearing(FileClass fileClass)

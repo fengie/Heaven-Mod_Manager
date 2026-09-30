@@ -260,6 +260,7 @@ public static class SyndicationFeedParser
         var decoded = WebUtility.HtmlDecode(value);
         var withoutTags = Regex.Replace(decoded, "<[^>]+>", " ", RegexOptions.CultureInvariant);
         var normalized = Regex.Replace(withoutTags, @"\s+", " ", RegexOptions.CultureInvariant).Trim();
+        normalized = Regex.Replace(normalized, @"\s+([.,;:!?])", "$1", RegexOptions.CultureInvariant);
         return normalized.Length <= MaxTextLength ? normalized : normalized[..MaxTextLength];
     }
 }

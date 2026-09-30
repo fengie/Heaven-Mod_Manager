@@ -106,6 +106,7 @@ public class FamilyInferenceBenchmarks
 public class MasterTraceBenchmarks
 {
     [Benchmark]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "BenchmarkDotNet discovers and invokes benchmark members through the benchmark instance lifecycle.")]
     public void BeginDisposeMethodScope()
     {
         using var scope = MasterDebugLog.BeginMethod();

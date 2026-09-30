@@ -1,3 +1,11 @@
+# v8.8.40 efficient agent bootstrap + repository-gate recovery — verification scope
+
+The new startup contract has focused exact-source evidence from PR #510: Agent Control syntax and deterministic tests passed on the initial bootstrap head, and Security Supply Chain passed. The first broad Workflow Feature run failed in the repository verifier on pre-existing product debt already isolated by #507: CA1822 in CatalogSync/benchmark code plus planner ambiguity, binary update semantics, Atom whitespace normalization, and GitLab latest-release normalization. That failure is not acceptance evidence, but it proves the red gate was outside the bootstrap-only files.
+
+The #507 source/test repairs have now been transplanted onto PR #510's current-main lineage without its stale version/continuity metadata. Final acceptance requires all three configured gates on the same exact #510 head: Agent Control PR Gate, Workflow Feature PR Gate through full repository verification/downstream tests, and Security Supply Chain Gate. Historical green evidence does not transfer.
+
+---
+
 # v8.8.39 Heaven Local Bridge primary reliability — verification scope
 
 The release is not complete until source-level tests and dual-host runtime recovery both pass. Required evidence: worker/provider marker regressions; bridge TEST; Agent Control check/test; exact main source identity; transport-source mirror agreement; one canonical worker/watchdog/SYSTEM sentinel per host; fresh local heartbeat, loop-progress, and relay heartbeat; RDC fallback task present with zero triggers and not running; and a successful privileged Agent Control bridge action using the explicit local private-repo ACL mode.

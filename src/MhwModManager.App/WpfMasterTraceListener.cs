@@ -35,6 +35,7 @@ internal static class WpfMasterTracing
 
     public static void Install()
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (Interlocked.Exchange(ref installed, 1) != 0) return;
         if (!MasterDebugLog.DetailedDiagnosticsEnabled && !IsEnabled(Environment.GetEnvironmentVariable("MHW_WPF_TRACE_DETAIL")))
         {
@@ -69,9 +70,12 @@ internal static class WpfMasterTracing
         source.Listeners.Add(listener);
     }
 
-    private static bool IsEnabled(string? value) =>
-        value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
-                              || value.Equals("true", StringComparison.OrdinalIgnoreCase)
-                              || value.Equals("yes", StringComparison.OrdinalIgnoreCase)
-                              || value.Equals("on", StringComparison.OrdinalIgnoreCase));
+    private static bool IsEnabled(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("on", StringComparison.OrdinalIgnoreCase));
+    }
 }

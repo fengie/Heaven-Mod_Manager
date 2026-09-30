@@ -159,8 +159,8 @@ public sealed class CatalogSyncServiceTests : IDisposable
             ["fixture", "weapon"],
             null,
             [],
-            DateTimeOffset.Parse("2026-09-01T00:00:00Z"),
-            DateTimeOffset.Parse("2026-09-29T00:00:00Z"),
+            DateTimeOffset.Parse("2026-09-01T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-09-29T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture),
             100,
             10,
             4.5,
@@ -210,8 +210,8 @@ public sealed class CatalogSyncServiceTests : IDisposable
             "fixture",
             CatalogProviderState.Connected,
             "Fixture provider connected.",
-            new CatalogRateLimit(100, 42, 1000, 420, null, DateTimeOffset.Parse("2026-09-30T04:00:00Z")),
-            DateTimeOffset.Parse("2026-09-30T04:00:00Z"));
+            new CatalogRateLimit(100, 42, 1000, 420, null, DateTimeOffset.Parse("2026-09-30T04:00:00Z", System.Globalization.CultureInfo.InvariantCulture)),
+            DateTimeOffset.Parse("2026-09-30T04:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
 
         public CatalogBrowseRequest? LastRequest { get; private set; }
 
@@ -258,7 +258,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
                     "1.0.0",
                     12345,
                     "Fixture archive",
-                    DateTimeOffset.Parse("2026-09-29T01:00:00Z"))
+                    DateTimeOffset.Parse("2026-09-29T01:00:00Z", System.Globalization.CultureInfo.InvariantCulture))
             ];
             return Task.FromResult(files);
         }

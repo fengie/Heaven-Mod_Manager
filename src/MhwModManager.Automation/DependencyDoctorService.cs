@@ -24,8 +24,11 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
     /// </summary>
     public Task<IReadOnlyList<DependencyStatus>> ScanStageAsync(
         IReadOnlySet<string> enabledModIds,
-        CancellationToken ct = default) =>
-        ScanStageAsync(enabledModIds, null, ct);
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ScanStageAsync(enabledModIds, null, ct);
+    }
 
     /// <summary>
     /// Validates hard/optional dependency constraints and required resources against the final
@@ -370,6 +373,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
 
         void StrongConnect(string node)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             indexes[node] = index;
             low[node] = index;
             index++;

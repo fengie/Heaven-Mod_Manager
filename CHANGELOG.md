@@ -1,3 +1,12 @@
+# v8.8.40 — efficient agent bootstrap
+- Replace the fixed full-corpus startup reread with a compact full-read core plus hash-verified indexed continuity/training context.
+- Keep task-relevant precedent, learned-rule, source, test, architecture, ownership, and verification expansion mandatory without rereading giant historical ledgers by default.
+- Require pagination/chunking for truncated tool output instead of false training-blocked states.
+- Treat a missing preferred CLI, one failed network route, or no local checkout as recoverable routing conditions and require authorized GitHub connector/API, canonical worktree, Heaven Bridge/Agent Control, or CI fallbacks before BLOCKED.
+- Optimize senior/premium agents for architecture, root cause, review, integration, and verification decisions; offload mechanical evidence collection when practical.
+- Add Agent Control regressions pinning the core/index split, indexed large ledgers, fallback language, and blocker criteria; advance Agent Control/plugin identity to v0.6.18.
+- Recover the product verification repairs already isolated on #507 onto current-main lineage without its stale release metadata: CA1822 closure, WPF/trace instrumentation, planner/conflict ambiguity and update semantics, Atom/GitLab normalization, and matching regression fixtures.
+
 # v8.8.39 — Heaven Local Bridge primary reliability
 - Make Heaven Local Bridge the explicit primary control path for heaven2/heaven and keep Remote Desktop Commander as an on-demand fallback.
 - Add a machine-local `HeavenBridge/auth/allow-repo-acl-only` marker consumed by worker v8 and Agent Control v0.6.17, eliminating restart-sensitive environment-only authorization for the private GitHub relay compatibility mode.

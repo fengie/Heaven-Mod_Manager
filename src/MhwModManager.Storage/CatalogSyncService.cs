@@ -103,7 +103,7 @@ public sealed class CatalogSyncService
         }
     }
 
-    private async Task<IReadOnlyList<CachedCatalogMod>> PrepareBatchAsync(
+    private static async Task<IReadOnlyList<CachedCatalogMod>> PrepareBatchAsync(
         IModCatalogProvider provider,
         CatalogBrowseRequest request,
         IReadOnlyList<CatalogMod> discovered,
@@ -152,7 +152,7 @@ public sealed class CatalogSyncService
         return result;
     }
 
-    private async Task<CatalogProviderHealth?> TryGetHealthAsync(
+    private static async Task<CatalogProviderHealth?> TryGetHealthAsync(
         IModCatalogProvider provider,
         CancellationToken ct)
     {

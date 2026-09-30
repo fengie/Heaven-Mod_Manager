@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.35",
+  "currentVersion": "8.8.40",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.34 Agent Control durable stop proof",
+  "immediateParentRevision": "v8.8.39 Heaven Local Bridge primary reliability",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Verify and integrate v8.8.35 canonical runtime freshness on current v8.8.34 main without regressing durable stop proof. After source integration, obtain live heaven2 stale/behind restart, exact source/version identity, unowned-listener preservation, and bounded heaven dispatch evidence before closing #475; then continue #461.",
+  "nextAgentObligation": "Finish exact-head PR #510 verification and integrate v8.8.40 efficient agent bootstrap plus recovered repository-gate repairs. Require Agent Control, Workflow Feature full repository verification, and Security Supply Chain on one exact head; after merge deploy Agent Control v0.6.18 and verify newly spawned senior/scheduled prompts use compact core + indexed context and fallback-aware blocker criteria. Confirm #507 has no unique work before closing it.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

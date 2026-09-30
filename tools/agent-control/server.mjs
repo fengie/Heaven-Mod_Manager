@@ -5,7 +5,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnHidden as spawn, execFileHidden as execFileAsync } from "./lib/background-process.mjs";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
-import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
+import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS, REPOSITORY_CONTEXT_INDEX_PATHS } from "./lib/prompt-templates.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
   STATE_VERSION,
@@ -194,20 +194,27 @@ function repositoryTrainingPathsFor(role) {
   return paths;
 }
 
-function buildRepositoryTrainingManifest(worktree, role) {
+function hashRepositoryManifest(worktree, paths, label) {
   const manifest = [];
-  for (const relativePath of repositoryTrainingPathsFor(role)) {
+  for (const relativePath of paths) {
     const absolutePath = path.join(worktree, relativePath);
     if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
-      throw new Error(`Repository training gate failed: mandatory training source is missing: ${relativePath}`);
+      throw new Error(`Repository training gate failed: ${label} source is missing: ${relativePath}`);
     }
     const content = fs.readFileSync(absolutePath);
     if (!content.length) {
-      throw new Error(`Repository training gate failed: mandatory training source is empty: ${relativePath}`);
+      throw new Error(`Repository training gate failed: ${label} source is empty: ${relativePath}`);
     }
     manifest.push(`${relativePath} — sha256:${createHash("sha256").update(content).digest("hex")} — ${content.length} bytes`);
   }
   return manifest;
+}
+
+function buildRepositoryTrainingManifest(worktree, role) {
+  return {
+    core: hashRepositoryManifest(worktree, repositoryTrainingPathsFor(role), "core training"),
+    context: hashRepositoryManifest(worktree, REPOSITORY_CONTEXT_INDEX_PATHS, "indexed context")
+  };
 }
 
 function authorizationError(message) {
@@ -1382,6 +1389,7 @@ function buildPrompt({
   verification = [],
   additionalConstraints = [],
   repositoryTrainingManifest = [],
+  repositoryContextManifest = [],
   swarmEvolutionContext = []
 }) {
   return renderAgentPrompt({
@@ -1395,6 +1403,7 @@ function buildPrompt({
     verification,
     additionalConstraints,
     repositoryTrainingManifest,
+    repositoryContextManifest,
     swarmEvolutionContext,
     assignment: { taskId, priority, boundary, baseBranch, baseSha, branchName }
   });
@@ -1573,7 +1582,7 @@ async function deployOne({
   let logFd = null;
   const remoteExecution = placement.provider === "heaven-bridge";
   try {
-    const repositoryTrainingManifest = buildRepositoryTrainingManifest(worktree, role);
+    const repositoryManifests = buildRepositoryTrainingManifest(worktree, role);
     if (!remoteExecution) codex = findCodex();
     const swarmEvolution = swarmContext
       ? buildSwarmPromptEvolutionContext(refreshState(), {
@@ -1596,7 +1605,8 @@ async function deployOne({
       repositoryWriteAuthorized,
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
-      repositoryTrainingManifest,
+      repositoryTrainingManifest: repositoryManifests.core,
+      repositoryContextManifest: repositoryManifests.context,
       swarmEvolutionContext: swarmEvolution?.lines || [],
       additionalConstraints: [
         ...additionalConstraints,
