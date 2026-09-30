@@ -1,12 +1,20 @@
-# v8.8.27 Agent Control Heaven relay execution repair — verification scope
+# v8.8.28 Agent Control Heaven relay execution repair — verification scope
 
-This candidate changes Heaven Bridge execution-time relay resolution and Agent Control v0.6.6 release identity. Historical v8.8.26 registry-retirement evidence does not verify these changed bytes.
+This candidate changes Heaven Bridge execution-time relay resolution and Agent Control v0.6.7 release identity on top of v8.8.27 agent-card inspection. Historical evidence does not verify these changed bytes.
 
-Required source closure: exact-candidate `npm run check` + `npm test`, including the Heaven Bridge provider fallback regression and runtime/plugin identity checks.
+Required source closure: exact-candidate `npm run check` + `npm test`, including provider fallback/override/fail-closed coverage and runtime/plugin identity checks.
 
-Required live closure on heaven2: restart/reload the exact candidate; keep the documented per-user `%USERPROFILE%\HeavenBridgeRepo` checkout present; do **not** inject an explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`; dispatch one heaven1/heaven-targeted worker and prove it gets through bridge job submission/result waiting rather than reproducing `AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.`
+Required live closure on heaven2: restart/reload the exact candidate; keep the documented per-user `%USERPROFILE%\HeavenBridgeRepo` checkout present; do **not** inject `AGENT_CONTROL_HEAVEN_RELAY_DIR`; dispatch one heaven1/heaven-targeted worker and prove it gets through bridge submit/result waiting rather than reproducing `AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.`
 
-Also smoke v8.8.26 retirement after the restart so a retry-exhausted dead worker is cleared from managed/federated live registries while uncertain ownership or dirty/diverged work remains preserved.
+Also smoke v8.8.26 retirement and v8.8.27 card inspection after the restart.
+
+---
+
+# v8.8.27 Agent Manager card inspection — verification scope
+
+This candidate changes dashboard card interaction/keyboard semantics, generated inline JavaScript, focused UI regression coverage, and Agent Control v0.6.6 release identity. It intentionally does not replace the v8.8.26 retry-exhausted retirement implementation.
+
+Required source closure is exact-candidate `npm run check` + `npm test`. Required live heaven2 closure is: managed card body click and Enter/Space open inspection/logs; federated cards focus a linked managed worker or show external-session details; nested card controls do not double-activate; and a retry-exhausted dead record still disappears under the v8.8.26 retirement lifecycle. Historical v8.8.26 evidence does not verify these changed dashboard bytes.
 
 ---
 
