@@ -95,3 +95,14 @@ Agent disappearance is not task completion.
 
 ## Concurrent durable ledgers
 Sequential IDs in append-only learned-rule, incident, migration, or integration ledgers are shared mutable state. Multiple agents must not independently choose “next ID” from stale snapshots. Use one allocation owner/reservation mechanism or collision-resistant IDs, then validate uniqueness during integration. If a collision escapes, preserve both entries and provenance while deterministically renumbering/reconciling the later one.
+
+## Canonical tree survival proof
+Commit reachability is not enough to prove integration. Record-only preservation merges can intentionally make a task commit an ancestor of `main` while retaining the old canonical tree.
+
+After harvesting or merging another lane:
+- verify the intended paths/content or equivalent tree invariant on canonical `main`;
+- distinguish **preserved history** from **integrated content**;
+- never retire/delete a source branch because `merge-base` or ancestry alone says its commits are reachable;
+- classify `ancestor + missing intended tree delta` as unfinished recovery work;
+- attach exact-candidate test/gate evidence separately from tree-survival evidence.
+
