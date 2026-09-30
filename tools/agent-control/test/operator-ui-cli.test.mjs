@@ -40,6 +40,15 @@ test("federation snapshot separates live lifecycle and freshness counts", () => 
   assert.equal(counts.disconnected, 1);
 });
 
+test("server retires dead retry-exhausted records instead of leaving stale clickable registry cards", () => {
+  const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
+  assert.match(server, /function pruneTerminalRegistryEntries\(state\)/);
+  assert.match(server, /if \(pruneTerminalRegistryEntries\(state\)\) changed = true;/);
+  assert.match(server, /retireManagedRegistryEntry\(state, source, "no-work-retry-exhausted"\)/);
+  assert.match(server, /retireFederatedRegistryEntry\(state, source, "federated-no-work-retry-exhausted"\)/);
+  assert.match(server, /notification\?\.action\?\.agentId === id/);
+});
+
 test("dashboard makes Start Swarm the only normal startup action and hides tuning behind diagnostics", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
