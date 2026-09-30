@@ -5,7 +5,7 @@
 
 `GET /api/status` is now a true health endpoint instead of a hidden full-controller snapshot. It reads durable control state with `loadState()` and returns lightweight controller/health identity without repository inspection, branch/integration scans, worker enumeration, federation refresh, or Heaven Bridge probing.
 
-A dedicated regression rejects reintroduction of `buildSnapshot`, `refreshState`, repository snapshotting, or Heaven Bridge inspection into the status path. Full operator data remains behind `/api/snapshot`. This preserves v8.8.32 retirement hardening and advances Agent Control/runtime/plugin identity to **v0.6.11**.
+Dedicated regressions reject reintroduction of `buildSnapshot`, `refreshState`, repository snapshotting, or Heaven Bridge inspection into the status path. Full operator data remains behind `/api/snapshot`, where worker and federation views now share one Heaven Bridge assessment instead of probing the relay twice. Dispatch still performs its own authoritative bridge validation. This preserves v8.8.32 retirement hardening and advances Agent Control/runtime/plugin identity to **v0.6.11**.
 ## v8.8.32 — Agent Control retirement identity fail-closed closure
 
 The v8.8.31 durable remote-stop proof is now enforced for every Heaven-backed persisted row, including legacy/migrated rows whose provider identity is stored in runtimeProvider or provider. A Heaven worker with a missing or blank durable remote job id can no longer bypass proof; retirement blocks, preserves live ownership/history, and records the retry-blocked condition.
