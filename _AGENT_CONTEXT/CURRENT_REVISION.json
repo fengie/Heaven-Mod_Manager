@@ -8,12 +8,12 @@
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.50-integrated-catalog-browser-candidate",
-  "nextMilestone": "Verify and integrate the in-app federated catalog browser on current main.",
-  "nextRequiredAction": "Run exact-head Workflow Feature, Security and applicable UI/build checks for the catalog-browser candidate; reconcile any main race, merge to main, then verify remote main.",
+  "nextMilestone": "Verify and integrate the catalog browser.",
+  "nextRequiredAction": "Run exact-head gates; reconcile main; merge/push when green; verify remote.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.49 main arrived through PR #526 with its exact-head gates green; v8.8.50 catalog browser requires fresh exact-head evidence.",
+  "verificationScopeNote": "v8.8.49 is historical; v8.8.50 catalog browser is not yet verified.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,10 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "Live operator acceptance for the new Browse page is not yet recorded.",
-    "Direct catalog acquisition into the safe archive-import pipeline remains a separate follow-up; this slice opens provider-authorized source pages.",
-    "Bridge auth/provider registration and signing issues remain separate from catalog UI work.",
-    "Preserve external branches until semantic/ownership review."
+    "Browse live-operator smoke is pending.",
+    "Direct acquisition/import remains a follow-up.",
+    "Preserve unrelated branches and existing auth/signing risks."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
