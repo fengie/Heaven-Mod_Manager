@@ -290,7 +290,7 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
-    public void Proven_same_family_unknown_subset_is_treated_as_component()
+    public void Proven_same_family_unknown_subset_blocks_without_overlay_evidence()
     {
         var mods = new[]
         {
@@ -308,11 +308,59 @@ public sealed class AutoCompatibilityTests
 
         var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
 
-        Assert.False(plan.IsBlocked);
+        Assert.True(plan.IsBlocked);
         var decision = plan.Conflicts.Single(x=>PathRules.Comparer.Equals(x.Path,shared));
         Assert.Equal(ConflictKind.ModFamilyOption,decision.Kind);
-        Assert.Equal("piece",decision.WinnerModId);
-        Assert.Equal("family-subset-component",decision.ReasonCode);
+        Assert.Null(decision.WinnerModId);
+        Assert.Equal("family-internal-choice",decision.ReasonCode);
+    }
+
+    [Fact]
+    public void Local_name_only_plugin_update_does_not_override_binary_code()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("base","Native Helper","Native Helper","base",true,10),
+            new ModDescriptor("update","Native Helper - Update","Native Helper - Update","update",true,20)
+        };
+        var path = @"root\native-helper.dll";
+        var files = new[]
+        {
+            new ModFileDescriptor("base",path,"aa",null,100,Now,FileClass.Plugin),
+            new ModFileDescriptor("update",path,"bb",null,100,Now,FileClass.Plugin)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(plan.IsBlocked);
+        var decision = Assert.Single(plan.Conflicts);
+        Assert.Equal("untrusted-code-overlay",decision.ReasonCode);
+        Assert.Null(decision.WinnerModId);
+    }
+
+    [Fact]
+    public void Verified_same_nexus_update_can_override_binary_code()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("base","Native Helper","Native Helper","base",true,10,
+                NexusModId:"4242",NexusCategory:NexusFileCategory.Main),
+            new ModDescriptor("update","Native Helper Update","Native Helper Update","update",true,20,
+                NexusModId:"4242",NexusCategory:NexusFileCategory.Update)
+        };
+        var path = @"root\native-helper.dll";
+        var files = new[]
+        {
+            new ModFileDescriptor("base",path,"aa",null,100,Now,FileClass.Plugin),
+            new ModFileDescriptor("update",path,"bb",null,100,Now,FileClass.Plugin)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.False(plan.IsBlocked);
+        var decision = Assert.Single(plan.Conflicts);
+        Assert.Equal("update",decision.WinnerModId);
+        Assert.True(decision.ResolverScore>=98);
     }
 
     [Fact]
