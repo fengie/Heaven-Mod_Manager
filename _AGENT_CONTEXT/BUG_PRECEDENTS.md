@@ -130,3 +130,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change touches only the feature workflow plus governance/test files, which are release-irrelevant under `UpdaterReleasePolicy.ps1`; it does not trigger Windows Release Gate and does not invalidate exact-source updater E2E evidence.
 - **Sibling/adjacent cases checked:** Windows Release Gate and Updater Installed Client E2E retain their own concurrency groups; their source/evidence pinning is unchanged.
 - **References:** updater E2E run `36659154949`; competing feature-gate runs included `36659334396`, `36659186555`, `36659543467`, and `36659596149`.
+
+## 2026-09-29 — GitHub Releases catalog — cancelled gate was merged and broke canonical main verification
+
+- **Symptom:** PR #327 was merged into canonical `main` after its feature gate had been cancelled. The merged provider still contained known verifier/analyzer/test compile defects: untraced public getters, CA1859 collection abstraction, xUnit v3 `Assert.NotNull` return-value misuse, and a repeated constant tag array.
+- **Root cause:** Integration proceeded without a successful exact-head gate, and the clean-looking replacement branch had not inherited the fixes already discovered on the failed/frozen lineage.
+- **Violated invariant / wrong assumption:** A cancelled or superseded gate is not verification evidence. Canonical integration must require a successful gate for the exact head being merged, and replacement/reconciled branches must carry all prior validated defect fixes.
+- **Direct fix:** Repair canonical main from its current head: concrete curated-source array, traced getter blocks, xUnit v3-safe assertions, reusable fixture tags, and rerun the exact Heaven gate before merging the repair.
+- **Preventive rule/process change:** Never treat cancelled CI as green. Before merging a replacement branch, compare it against known defect-fix commits/precedents from superseded branches and require successful exact-head verification.
+- **Regression/verification:** Repair PR must pass the exact repository verification gate; after merge, verify canonical main also contains the corrected source.
+- **Sibling/adjacent cases checked:** The concurrently merged GameBanana provider introduced the same expression-bodied public-provider trace gap, and its new `GameProfile.HasGameBananaIntegration` getter was also a new verifier fingerprint. Both are corrected in the same canonical-main repair before rerunning the gate.
+- **Reference:** merged PR #327; cancelled run 36660058628; earlier diagnostic run 36659728042.
