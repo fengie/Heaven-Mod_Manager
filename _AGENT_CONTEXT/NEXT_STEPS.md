@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.36 notification + stable inspector — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
+2. Verify notification rendering safely escapes title/message, supports only `inspect-agent` / `inspect-federation`, and leaves other backend actions informational.
+3. Verify managed/federated Inspect buttons, card-click convenience, nested-control suppression, refresh persistence, arbitrary stable IDs, and explicit missing/retired degradation.
+4. Preserve v8.8.35 startup/runtime freshness and v8.8.34 durable stop proof without touching backend retirement semantics.
+5. After source integration and #475 live runtime-source proof, perform one heaven2 browser smoke: notification action -> exact inspector, 4s refresh persistence, retired/missing degradation, and keyboard Inspect controls.
+6. Close #461 only after that live UI smoke is recorded; keep #475/#477 runtime evidence separate.
+
+---
+
 # 2026-09-30 v8.8.35 canonical runtime freshness — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security PR gates.
