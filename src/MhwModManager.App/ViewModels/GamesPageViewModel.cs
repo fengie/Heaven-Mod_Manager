@@ -36,9 +36,10 @@ public sealed class GamesPageViewModel
             if(added.Count==0)return;
             var dispatcher=Application.Current?.Dispatcher;
             if(dispatcher is null)Rows.ReplaceAll(registry.Load());
-            else await dispatcher.InvokeAsync(()=>Rows.ReplaceAll(registry.Load()));
+            else if(!dispatcher.HasShutdownStarted&&!dispatcher.HasShutdownFinished)
+                await dispatcher.InvokeAsync(()=>Rows.ReplaceAll(registry.Load()));
         }
-        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or OperationCanceledException or System.Security.SecurityException)
         {MasterDebugLog.Write("GAME-DISCOVERY","Automatic installed-game discovery failed; keeping the existing game registry visible.",ex);}
     }
 }
