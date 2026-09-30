@@ -156,6 +156,23 @@ test("v2 state migrates without dropping durable records", () => {
   assert.ok(migrated.federation.providers.some(provider => provider.id === "chatgpt"));
 });
 
+test("state migration preserves retired-agent monotonic comparison boundary", () => {
+  const tombstone = {
+    key: "chatgpt:conversation-123",
+    provider: "chatgpt",
+    sourceId: "conversation-123",
+    agentId: "chat-agent",
+    retiredAt: "2026-09-30T07:00:00.000Z"
+  };
+  const migrated = migrateControlState({
+    version: 9,
+    retiredAgents: [tombstone]
+  }, { sessionId: "new-session", hostname: "heaven2" });
+
+  assert.deepEqual(migrated.retiredAgents, [tombstone]);
+  assert.equal(migrated.retiredAgents[0].retiredAt, tombstone.retiredAt);
+});
+
 test("agent execution keeps working on a non-Work path by default", () => {
   const implicit = agentExecutionModeDecision();
   assert.equal(implicit.allowed, true);

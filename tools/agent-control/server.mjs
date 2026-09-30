@@ -70,6 +70,7 @@ import {
   clearObservationRetirement,
   forgetFederatedAgent,
   isRetryExhaustedManagedAgent,
+  proveRemoteJobStopped,
   recordAgentRetirement,
   retiredObservationDecision
 } from "./lib/registry-retirement.mjs";
@@ -2054,6 +2055,42 @@ function markRegistryRetirementBlocked(state, source, reason) {
   });
 }
 
+async function proveRetryExhaustedRemoteJobStopped(source) {
+  const provider = managedAgentProvider(source);
+  if (provider !== "heaven-bridge") {
+    return { required: false, stopped: true, state: null };
+  }
+
+  const remoteJobId = String(source?.remoteJobId || "").trim();
+  if (!remoteJobId) {
+    throw new Error("Heaven Bridge retirement requires a durable remote job id.");
+  }
+  return proveRemoteJobStopped({
+    remoteJobId,
+    cancelJob: async jobId => {
+      const cancellation = await cancelHeavenBridgeJob(jobId, { reason: "retry-exhausted-retirement" });
+      return {
+        succeeded: bridgeResultSucceeded(cancellation),
+        cancelRequested: cancellation?.data?.cancel_requested === true,
+        reason: cancellation?.data?.reason || null
+      };
+    },
+    getStatus: async jobId => {
+      const status = await runHeavenBridgeAction({
+        id: `retire-status-${jobId}-${Date.now()}`,
+        action: "job_status",
+        params: { job_id: jobId },
+        timeoutMs: 30_000,
+        priority: "highest"
+      });
+      return {
+        succeeded: bridgeResultSucceeded(status),
+        state: status?.data?.state || "unknown"
+      };
+    }
+  });
+}
+
 async function retireRetryExhaustedManagedAgent(agentId, {
   reason = "no-work-retry-exhausted"
 } = {}) {
@@ -2065,6 +2102,8 @@ async function retireRetryExhaustedManagedAgent(agentId, {
     let source = state.agents.find(item => item.id === agentId);
     if (!source || !isRetryExhaustedManagedAgent(source)) return null;
 
+
+    await proveRetryExhaustedRemoteJobStopped(source);
     const pid = Number(source.pid);
     const child = source.ownerSessionId === SESSION_ID ? children.get(source.id) : null;
     const alive = Number.isInteger(pid) && pid > 0 && isPidAlive(pid);
@@ -2083,12 +2122,6 @@ async function retireRetryExhaustedManagedAgent(agentId, {
         );
         saveState(state);
         return null;
-      }
-      if (source.executionProvider === "heaven-bridge" && source.remoteJobId) {
-        const cancellation = await cancelHeavenBridgeJob(source.remoteJobId, { reason: "retry-exhausted-retirement" });
-        if (!bridgeResultSucceeded(cancellation)) {
-          throw new Error(`Heaven Bridge retry-exhausted cancellation was not authoritative: ${cancellation.status} / ${cancellation.exit_code}.`);
-        }
       }
       await killProcessTree(pid);
       if (!await waitForPidExit(pid)) {

@@ -1,3 +1,15 @@
+### 2026-09-30 — Agent Control retirement — remote execution could outlive local-wrapper retirement proof
+- **Symptom:** A retry-exhausted Heaven Bridge worker could be removed from the live registry while its durable remote job was still queued/unclaimed, running, or otherwise unproven; stale provider observations could also resurrect a retired worker.
+- **Root cause:** Retirement treated local-wrapper lifetime and ambiguous remote statuses such as `not_running` / generic non-`running` as sufficient stop evidence, while tombstone reactivation accepted a live-looking state without requiring monotonic raw heartbeat evidence newer than retirement.
+- **Violated invariant / wrong assumption:** Local relay-wrapper death is not remote execution death, and a cached live state is not a new session. Registry retirement/reactivation must move monotonically with authoritative remote job and raw heartbeat evidence.
+- **Why prior defenses missed it:** v8.8.26 tests covered local PID/worktree/divergence cleanup and terminal replay, but not queued-unclaimed Heaven jobs, running races after cancellation, status ambiguity, or stale live-state heartbeat replay.
+- **Direct fix:** Accept only explicit processed remote terminal states (`completed|done|failed|error|timeout|cancelled`), re-cancel running races, fail closed on queued/unknown/unrecognized/cancel/status-authority failures, and require a raw explicit live heartbeat strictly newer than `retiredAt` before tombstone reactivation.
+- **Preventive rule/process change:** Multi-hop retirement must close every execution layer with positive terminal proof; tombstone resurrection requires monotonic lifecycle evidence before normalization.
+- **Regression coverage added/strengthened:** `registry-retirement.test.mjs` covers terminal whitelist, queued `not_running + unknown`, running re-cancel, cancellation/status authority failures, and stale/equal/missing/invalid/newer heartbeat cases.
+- **Verification evidence/environment:** Exact-head Agent Control source/tests are required for v8.8.31; real heaven2→heaven1 retirement smoke remains required before runtime closure.
+- **Sibling/adjacent cases checked:** v8.8.26 local ownership/dirty/diverged guards and v8.8.28 relay auto-discovery remain intact.
+- **References (SHA/PR/issue/log):** issues #458 and #469; branch `fix/agent-control-remote-retirement-proof-20260930`.
+
 ### 2026-09-30 — Agent Control dashboard — agent cards were display-only despite interactive presentation
 - **Symptom:** Clicking the body of a managed or federated bot card appeared to do nothing. Operators had to discover a small nested action such as **View log**, while backend/notification inspection concepts suggested the card itself should be actionable.
 - **Root cause:** The dashboard rendered each bot as a plain `<article class="agent">` with nested buttons only. There was no card-level mouse/keyboard handler, and `showLog(id, button)` assumed a button object was always the caller.
