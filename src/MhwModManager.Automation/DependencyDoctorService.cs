@@ -86,12 +86,13 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
                 modFiles.Any(f => PathRules.Comparer.Equals(f.Path, LoaderProxyPath)) &&
                 modFiles.Any(f => PathRules.Comparer.Equals(f.Path, LoaderCorePath));
 
+            var loaderEvidence = string.Empty;
             if (suppliesLoaderBinary && !suppliesCompleteLoaderPair)
             {
                 missing.Add("Tracked native-loader package is incomplete: dinput8.dll and loader.dll must be supplied together by the same package.");
             }
             else if ((spec.RequiresNativeLoader || suppliesLoaderBinary) &&
-                     !HasEffectiveLoader(selected, filesByMod, effectivePlan, out var loaderEvidence))
+                     !HasEffectiveLoader(selected, filesByMod, effectivePlan, out loaderEvidence))
             {
                 missing.Add(loaderEvidence);
             }
@@ -308,7 +309,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
     private static Dictionary<string,List<string>> BuildCycleEvidence(
         HashSet<string> selected,
         IReadOnlyList<ModDescriptor> mods,
-        IReadOnlyDictionary<string,ModRequirementSpec> specs)
+        Dictionary<string,ModRequirementSpec> specs)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var graph = selected.ToDictionary(id => id, _ => new List<string>(), PathRules.Comparer);
@@ -349,7 +350,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
 
             foreach (var next in graph[node].Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase))
             {
-                if (!indexes.ContainsKey(next))
+                if (!indexes.TryGetValue(next, out _))
                 {
                     StrongConnect(next);
                     low[node] = Math.Min(low[node], low[next]);
@@ -379,7 +380,7 @@ public sealed class DependencyDoctorService(ManagerDatabase db, string gameRoot,
         }
 
         foreach (var node in graph.Keys.Order(StringComparer.OrdinalIgnoreCase))
-            if (!indexes.ContainsKey(node))
+            if (!indexes.TryGetValue(node, out _))
                 StrongConnect(node);
 
         var evidence = new Dictionary<string,List<string>>(PathRules.Comparer);
