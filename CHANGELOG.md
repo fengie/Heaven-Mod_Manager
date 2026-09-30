@@ -1,3 +1,10 @@
+# v8.8.34 — Agent Control durable stop proof
+- Route operator Stop and provider-capacity auto-termination through the same canonical provider resolver and durable remote termination proof.
+- Require Heaven-backed workers to carry a durable remote job id and reach an explicit processed-terminal Bridge state; ambiguous cancellation/status outcomes fail closed.
+- Persist a remote-termination-pending marker before termination so a local wrapper exit can record evidence but cannot classify final status, close the task, or release the ownership lease early.
+- Finalize only after authoritative remote proof plus local wrapper exit proof, while preserving non-Heaven local stop semantics.
+- Add focused stop-safety regressions and advance Agent Control/root/nested plugin identity to v0.6.12 and root product version to v8.8.34.
+
 # v8.8.33 — Agent Control lightweight health
 - Make `GET /api/status` a local-state-only health path instead of calling heavyweight `buildSnapshot()`.
 - Keep startup restore and the watchdog on their existing `/api/status` probe while removing repository scans and Heaven Bridge synchronization from controller liveness.
