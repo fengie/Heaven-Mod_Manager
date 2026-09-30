@@ -601,3 +601,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Regression:** `tools/agent-control/test/federation-dashboard.test.mjs` now parses every inline dashboard script with the JavaScript parser before integration.
 - **Reusable lesson:** promote parser validation of final generated/embedded source across UI, startup, policy, and code-generation surfaces.
 
+---
+
+## LR-035 — active task branches require an explicit integration-ready signal
+
+- **Rule ID:** LR-035
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Multi-agent branch cleanup, branch harvesting, integration, and verification ownership
+- **Rule:** Never infer that another agent's branch is ready to merge merely because it exists, contains production changes, or appears conflict-free. Integration automation must require an explicit readiness/ownership signal plus the task's required verification evidence; branch cleanup must preserve an active owner's branch until that signal or a terminal owner state exists.
+- **Trigger / evidence:** During the Mod DB RSS/Atom catalog tranche, production source commits were placed on `agent/moddb-feed-catalog-20260930-chatgpt` while regression fixtures/tests were still being authored. A concurrent cleanup/integration lane merged that active branch as PR #386 and deleted/reconciled it before the planned tests were committed, creating a source-only interval on canonical `main`. The missing tests were restored immediately and exact-SHA verification was re-queued.
+- **Rationale:** Branch presence and code completeness are not equivalent to task completeness. In multi-agent repositories, a partially implemented branch may intentionally precede tests, evidence, documentation, or final owner reconciliation. Premature harvesting can turn an in-progress checkpoint into canonical state and erase the owner's isolation boundary.
+- **Enforcement:** Managers/integration agents must check an explicit ready marker, PR readiness/owner handoff, or equivalent durable owner signal before harvesting another lane. Require applicable tests/gates to be attached to the candidate before merge. Cleanup agents must distinguish abandoned/terminal branches from live owned branches and must not delete or absorb the latter. If premature integration occurs, record the incident, restore missing verification immediately, and keep all evidence exact-SHA scoped.
+- **Relevant commit/PR:** PR #386; merge `559299767d26c4c20983f7e606dd8df4c786dd3a`; checkpoint `_AGENT_CONTEXT/MODDB_FEED_CATALOG_2026-09-30.md`.
+- **Supersedes:** none
+- **Superseded by:** none
+
