@@ -200,7 +200,8 @@ test("backup recovery preserves uncertain work and refuses to call it complete",
   const response = await waitForSnapshot(port);
   assert.equal(response.status, 200);
   assert.equal(response.body.controller.health.mode, "recovered");
-  const agent = response.body.agents.find(item => item.id === "support-old");
+  assert.equal(response.body.agents.some(item => item.id === "support-old"), false);
+  const agent = response.body.attentionAgents.find(item => item.id === "support-old");
   assert.equal(agent.status, "orphaned");
   assert.notEqual(agent.completionEvidence, "authoritative-exit");
   const lease = response.body.leases.find(item => item.id === "lease-old");
@@ -564,7 +565,9 @@ test("stale external heartbeat is visible but excluded from active-agent count",
   const federation = await getJson(port, "/api/federation");
   assert.equal(federation.body.counts.live, 0);
   assert.equal(federation.body.counts.disconnected, 1);
-  assert.equal(federation.body.agents[0].effective_state, "disconnected");
+  assert.equal(federation.body.counts.total, 0);
+  assert.equal(federation.body.agents.length, 0);
+  assert.equal(federation.body.history_agents[0].effective_state, "disconnected");
 });
 
 test("overall swarm goal is persisted by autopilot and propagated through every perpetual phase", () => {
