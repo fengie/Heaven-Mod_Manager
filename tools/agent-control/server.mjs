@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { spawnHidden as spawn, execFileHidden as execFileAsync } from "./lib/background-process.mjs";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
@@ -77,6 +78,33 @@ import {
 import { chooseBranchPlan, cleanupDisposition, BRANCH_POLICY_RESERVED } from "./lib/branch-lifecycle.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const RUNTIME_REPO_ROOT = path.resolve(HERE, "..", "..");
+const AGENT_CONTROL_PACKAGE = JSON.parse(fs.readFileSync(path.join(HERE, "package.json"), "utf8"));
+const AGENT_CONTROL_VERSION = String(AGENT_CONTROL_PACKAGE.version || "").trim();
+const EXPECTED_RUNTIME_SOURCE_SHA = String(process.env.AGENT_CONTROL_SOURCE_SHA || "").trim();
+const EXPECTED_AGENT_CONTROL_VERSION = String(process.env.AGENT_CONTROL_VERSION || "").trim();
+
+function detectRuntimeSourceSha() {
+  try {
+    return String(execFileSync("git", ["-C", RUNTIME_REPO_ROOT, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "ignore"]
+    }) || "").trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+const DETECTED_RUNTIME_SOURCE_SHA = detectRuntimeSourceSha();
+if (EXPECTED_RUNTIME_SOURCE_SHA && DETECTED_RUNTIME_SOURCE_SHA && EXPECTED_RUNTIME_SOURCE_SHA !== DETECTED_RUNTIME_SOURCE_SHA) {
+  throw new Error(`Agent Control runtime source mismatch: expected ${EXPECTED_RUNTIME_SOURCE_SHA}, observed ${DETECTED_RUNTIME_SOURCE_SHA}.`);
+}
+if (EXPECTED_AGENT_CONTROL_VERSION && EXPECTED_AGENT_CONTROL_VERSION !== AGENT_CONTROL_VERSION) {
+  throw new Error(`Agent Control runtime version mismatch: expected ${EXPECTED_AGENT_CONTROL_VERSION}, observed ${AGENT_CONTROL_VERSION || "unknown"}.`);
+}
+const RUNTIME_SOURCE_SHA = DETECTED_RUNTIME_SOURCE_SHA || EXPECTED_RUNTIME_SOURCE_SHA || null;
+
 const PUBLIC_DIR = path.join(HERE, "public");
 const DATA_DIR = process.env.AGENT_CONTROL_DATA_DIR || path.join(HERE, "data");
 const STATE_FILE = path.join(DATA_DIR, "control-plane.json");
@@ -3936,6 +3964,9 @@ function buildHealthSnapshot(state) {
       codex: codexStatus(),
       stateVersion: STATE_VERSION,
       sessionId: SESSION_ID,
+      runtimeRepo: RUNTIME_REPO_ROOT,
+      sourceSha: RUNTIME_SOURCE_SHA,
+      agentControlVersion: AGENT_CONTROL_VERSION,
       health: state.health
     },
     telemetry: telemetry(state, [], federation),
@@ -3986,6 +4017,9 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
       codex: codexStatus(),
       stateVersion: STATE_VERSION,
       sessionId: SESSION_ID,
+      runtimeRepo: RUNTIME_REPO_ROOT,
+      sourceSha: RUNTIME_SOURCE_SHA,
+      agentControlVersion: AGENT_CONTROL_VERSION,
       health: state.health
     },
     currentMission,
@@ -6022,6 +6056,9 @@ function writeControllerProcessIdentity() {
     sessionId: SESSION_ID,
     startedAt: isoNow(),
     serverPath: fileURLToPath(import.meta.url),
+    repoRoot: RUNTIME_REPO_ROOT,
+    sourceSha: RUNTIME_SOURCE_SHA,
+    agentControlVersion: AGENT_CONTROL_VERSION,
     host: os.hostname(),
     port: PORT
   }, null, 2), "utf8");
@@ -6041,6 +6078,7 @@ server.listen(PORT, HOST, () => {
   writeControllerProcessIdentity();
   console.log(`Heaven Agent Control Plane listening on http://${HOST}:${PORT}`);
   console.log(`Repo: ${REPO}`);
+  console.log(`Runtime source: ${RUNTIME_SOURCE_SHA || "unknown"} / Agent Control v${AGENT_CONTROL_VERSION || "unknown"}`);
   console.log(`Worktrees: ${WORKTREE_ROOT}`);
   console.log(`Capacity: ${MAX_ACTIVE_AGENTS} active agents`);
 });
