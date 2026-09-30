@@ -66,7 +66,7 @@
                     SelectionChanged="OnMainTabSelectionChanged">
             <TabItem Header="Dashboard">
                 <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <Grid Width="{Binding ViewportWidth,ElementName=DashboardScroll}" MaxWidth="1320" HorizontalAlignment="Left" Margin="32,30,36,36">
+                    <Grid MaxWidth="1320" HorizontalAlignment="Stretch" Margin="32,30,36,36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
