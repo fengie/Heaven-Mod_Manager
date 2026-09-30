@@ -1,3 +1,12 @@
+### 2026-09-30 — Windows application icon — malformed 48×48 PNG frame escaped into the desktop shortcut
+- **Symptom:** the Windows desktop shortcut displayed the intended top strip followed by colored static/noise.
+- **Root cause / invariant:** `src/MhwModManager.App/Assets/MHWModManager.ico` contained valid 16×16, 24×24, and 32×32 PNG frames, but its 48×48 frame had a bad IDAT CRC and malformed termination. A buildable embedded resource is not necessarily a structurally valid shell resource; every shipped ICO frame must be independently decodable and bounded.
+- **Why defenses missed it:** compilation and packaging accepted the ICO bytes without frame-level PNG integrity checks, and existing UI regressions did not inspect binary shell assets.
+- **Fix / prevention:** remove the malformed 48×48 frame while preserving the valid existing artwork and configured `ApplicationIcon` path; treat shell-visible binary assets as release inputs requiring deterministic structural validation, not only file existence or successful compilation.
+- **Regression / verification:** `ApplicationIconIntegrityTests` parses the committed ICO and validates entry bounds, unique/required sizes, PNG signatures/dimensions, every chunk CRC, and exact IEND termination. Exact-head CI plus a fresh real Windows shortcut render remain required before runtime closure.
+- **Sibling checks / propagation:** all four original frames were inspected; only 48×48 was malformed. The app project still points both `ApplicationIcon` and WPF `Resource` at the same ICO. LR-060 carries the reusable binary-resource rule.
+- **References:** user report 2026-09-30; PR #541 / branch `fix/shortcut-icon-v8.8.51-20260930`.
+
 ### 2026-09-30 — Release gate evidence — old success could mask a failed or running result
 - **Symptom:** Heaven Workflows release_verify_gates returned ok for success + failure/cancelled/queued rows on the same exact commit, and for an in-progress row with a success conclusion.
 - **Root cause / invariant:** Existential any-success aggregation discarded competing evidence and authoritative lifecycle status. A required gate needs one proven current result; unknown/partial/conflicting evidence cannot authorize publication.
