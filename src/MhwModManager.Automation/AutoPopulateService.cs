@@ -653,17 +653,20 @@ public sealed class AutoPopulateService(
             if (spec.Errors.Count > 0)
                 return ClosureResult.Fail($"'{mod.DisplayName}' has invalid requirements: {string.Join("; ", spec.Errors)}");
 
-            foreach (var token in spec.RequiredModTokens)
+            foreach (var requirement in spec.ModRequirements.Where(x => x.Required))
             {
                 var alreadySatisfied = alreadySelected.Concat(closure)
                     .Select(selectedId => modsById.GetValueOrDefault(selectedId))
-                    .Any(selectedMod => selectedMod is not null && ModRequirementReader.MatchesToken(selectedMod, token));
+                    .Any(selectedMod =>
+                        selectedMod is not null &&
+                        ModRequirementReader.MatchesToken(selectedMod, requirement.Token) &&
+                        ModRequirementReader.VersionSatisfies(selectedMod, requirement, out _));
                 if (alreadySatisfied)
                     continue;
 
-                var dependency = ChooseModTokenProvider(token, mods);
+                var dependency = ChooseModTokenProvider(requirement, mods);
                 if (dependency is null)
-                    return ClosureResult.Fail($"'{mod.DisplayName}' requires installed mod '{token}', but no matching package is installed.");
+                    return ClosureResult.Fail($"'{mod.DisplayName}' requires {ModRequirementReader.DescribeRequirement(requirement)}, but no installed package satisfies that constraint.");
                 queue.Enqueue(dependency.Id);
             }
 
