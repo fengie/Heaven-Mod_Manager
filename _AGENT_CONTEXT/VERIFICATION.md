@@ -1,3 +1,11 @@
+# v8.8.38 dependency blocker compile repair — verification scope
+
+This patch is a narrow compile repair. Exact-head verification must prove the WPF application compiles with `DependencyStatus[]` remainder counting through `Length`, and that downstream Automation, Integration, and SelfTest executables are produced rather than missing because an earlier build stage failed. The dependency scan, sorting, and blocker text semantics are otherwise unchanged.
+
+The Agent Control v0.6.15 registry-lifecycle implementation from v8.8.37 is intentionally unchanged; its already-passed Agent Control and Security gates do not substitute for the product build verification required for these v8.8.38 bytes.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — verification scope
 
 This patch changes registry lifecycle truthfulness and therefore requires exact-head Agent Control syntax/tests plus the configured Agent Control and Security PR gates. Historical product or runtime evidence does not verify these changed bytes.
