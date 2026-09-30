@@ -1,3 +1,10 @@
+# v8.8.52 Agent Manager integration lane
+
+1. Freeze the current reconciled head while Agent Control, Security Supply Chain, and Workflow Feature gates run; do not append evidence commits that invalidate exact-head proof.
+2. If all required gates pass, verify the compact overview, Inspector auto-open, reduced-motion behavior, and opt-in UI sound on the live heaven2 dashboard.
+3. Recheck canonical main immediately before merge and merge only the exact verified head; preserve v8.8.51 icon integrity and v0.6.24 Agent Control identity.
+4. After integration, advance #540 as the next visible patch and recover [RECOVER] PRs one semantic slice at a time. No divergent unique branch may be deleted/reset before preservation proof.
+
 # v8.8.51 shortcut icon fix — current lane
 
 - Root cause proven from canonical source: only the 48×48 PNG frame in the application ICO is structurally corrupt; 16/24/32 validate.
