@@ -895,7 +895,7 @@ test("perpetual one-click prompts evolve across every controller phase", () => {
     ["dispatchAutopilotRepair", "dispatchAutopilotIntegration", /autopilotSwarmContext\(state, "repair", state\.autopilot\?\.objective\)/],
     ["dispatchAutopilotIntegration", "dispatchAutopilotHygiene", /autopilotSwarmContext\(state, "integrate", state\.autopilot\?\.objective\)/],
     ["dispatchAutopilotHygiene", "dispatchAutopilotExpansion", /autopilotSwarmContext\(state, "hygiene", state\.autopilot\?\.objective\)/],
-    ["dispatchAutopilotExpansion", "autopilotIntegrationVerified", /autopilotSwarmContext\(state, "expand", state\.autopilot\?\.objective\)/]
+    ["dispatchAutopilotExpansion", "autopilotIntegrationVerified", /autopilotSwarmContext\(state, "expand", managerPriority \|\| state\.autopilot\?\.objective\)/]
   ];
 
   for (const [startName, endName, pattern] of expectations) {
