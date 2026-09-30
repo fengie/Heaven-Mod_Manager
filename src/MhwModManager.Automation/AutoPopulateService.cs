@@ -733,7 +733,7 @@ public sealed class AutoPopulateService(
     private bool HasLiveLoader()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) ||
+        return File.Exists(Path.Combine(gameRoot, "dinput8.dll")) &&
                File.Exists(Path.Combine(gameRoot, "loader.dll"));
     }
 
@@ -744,7 +744,7 @@ public sealed class AutoPopulateService(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return selected.Concat(closure).Any(id =>
-            filesByMod.TryGetValue(id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)));
+            filesByMod.TryGetValue(id, out var files) && ProvidesCompleteLoader(files));
     }
 
     private static ModDescriptor? ChooseLoaderProvider(
@@ -752,13 +752,20 @@ public sealed class AutoPopulateService(
         Dictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && files.Any(f => ModRequirementReader.IsLoaderPath(f.Path)))
+        return mods.Where(m => filesByMod.TryGetValue(m.Id, out var files) && ProvidesCompleteLoader(files))
             .OrderByDescending(m => m.Enabled)
             .ThenBy(RoleRank)
             .ThenByDescending(m => m.ProvenanceScore)
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
+
+    private static bool ProvidesCompleteLoader(IReadOnlyList<ModFileDescriptor> files)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return files.Any(f => PathRules.Comparer.Equals(f.Path, @"root\dinput8.dll")) &&
+               files.Any(f => PathRules.Comparer.Equals(f.Path, @"root\loader.dll"));
     }
 
     private static bool IsPathSatisfiedBySelection(
