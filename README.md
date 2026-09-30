@@ -6,7 +6,7 @@ Agent Manager now exposes the decisions its backend was already computing instea
 
 Operator actions now match authoritative server state more closely: only completed managed agents offer **Deploy reviewer**, so terminal failure/capacity/recovery states no longer advertise an invalid review action. **Resume** becomes **Clear emergency stop + resume** while the emergency-stop latch is active and requires explicit confirmation before clearing it.
 
-Agent Control advances to **v0.6.3**. Regression guards pin recommendation visibility/action routing, state-valid reviewer affordances, and emergency-stop recovery semantics; LR-047 and the bug-precedent ledger make this operator/server action contract durable. The active P0 lock remains in force until its exact-head control-plane gates are proven.
+Agent Control advances to **v0.6.3**. Regression guards pin recommendation visibility/action routing, state-valid reviewer affordances, and emergency-stop recovery semantics; LR-047 and the bug-precedent ledger make this operator/server action contract durable. The active P0 lock remains in force until its exact-head control-plane gates are proven. Repository metadata now also has a regression guard that rejects literal escaped newline separators in `CHANGELOG.md`, preventing release-note bullets from being accidentally collapsed into one rendered line.
 
 ## v8.8.23 — Agent Manager runtime reliability
 
