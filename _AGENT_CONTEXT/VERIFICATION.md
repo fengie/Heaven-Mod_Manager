@@ -1,3 +1,8 @@
+# v8.8.51 compact Agent Manager overview — verification scope
+
+Required source evidence: inline dashboard JavaScript parses; operator UI tests cover 10 default-closed `<details>` cards, responsive two-column/full-width-open layout, bounded expanded scrolling, notification severity/newest-30 behavior, and Inspector auto-open. Run the complete Agent Control check/test suite plus required Security Supply Chain and Workflow Feature gates on the exact candidate. Source tests do not replace the post-integration live heaven2 browser smoke.
+
+---
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.

@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "codex/training-governance-integration",
-  "currentVersion": "8.8.50",
+  "workingBranch": "fix/agent-manager-compact-ui-v8.8.51-20260930",
+  "currentVersion": "8.8.51",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.50-governance-integration-candidate",
-  "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head PR #528 gates on v8.8.50, merge only if green, verify canonical main, then retire superseded temporary branches without discarding unique work.",
+  "status": "v8.8.51-agent-manager-compact-overview-candidate",
+  "nextMilestone": "Integrate the compact Agent Manager overview after the v8.8.50 governance baseline is accepted.",
+  "nextRequiredAction": "Verify the stacked v8.8.51 Agent Manager source against v8.8.50 governance, then retarget to fresh main after PR #528 merges, rerun exact-head gates, merge, and perform a live heaven2 browser smoke.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 full release closure remains historical proof; v8.8.49 UI PR exact head 3bc8f6b passed Security, Agent Control, and Workflow Feature gates and merged as be4615f. v8.8.50 governance candidate requires fresh exact-head verification.",
+  "verificationScopeNote": "v8.8.51 is presentation-only Agent Manager work stacked on v8.8.50 governance: high-volume sections default closed in a responsive overview, expanded content is internally bounded, notification severity is summarized, and Inspector auto-opens on selection. Existing control-plane lifecycle/action semantics are unchanged; exact-head Agent Control/security/workflow gates and live heaven2 browser smoke are required.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,9 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "v8.8.49 UI fixes are merged but actual operator visual confirmation remains outstanding.",
-    "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open.",
-    "Preserve unique external branches until semantic/ownership review."
+    "PR #528 must land or otherwise be reconciled before v8.8.51 can target canonical main.",
+    "Live heaven2 browser smoke for compact overview remains required after canonical integration.",
+    "Bridge auth/provider registration and signing issues411/350/354 remain open."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",

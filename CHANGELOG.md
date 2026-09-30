@@ -1,3 +1,11 @@
+# v8.8.51 — compact Agent Manager overview
+- Convert Machine pool, Notifications, Inspector, Registry history, Managed agents, Federated registry, leases, integration queue, branches, and recent events into native collapsed summary cards.
+- Arrange collapsed cards in a responsive two-column overview; an opened card expands full-width and scrolls internally instead of pushing the rest of the dashboard off-screen.
+- Automatically open Inspector when a managed/federated record or supported notification action is inspected.
+- Add notification severity counts and a bounded newest-30 presentation for large notification sets.
+- Add regression coverage for default-collapsed structure, bounded expanded panels, responsive layout, and inspector auto-open behavior.
+- Advance product version to v8.8.51 and Agent Control/plugin identity to v0.6.24.
+
 # v8.8.50 — 2026-09-30
 
 - Consolidated agent training/governance into a compact mandatory core plus task-relevant indexed context while retaining the full continuity constitution at startup.

@@ -1,3 +1,11 @@
+# v8.8.51 compact Agent Manager overview — next
+
+1. Verify the stacked candidate against PR #528 exact governance head with Agent Control syntax/tests plus required security/workflow gates.
+2. After PR #528 is canonical, rebuild/reconcile this v8.8.51 candidate on fresh main, require exact-head gates again, then merge/push/verify remote main.
+3. Smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without traversing content, notification severity summary correct, one opened card full-width with internal scrolling, and managed/federated/notification Inspect automatically opens Inspector.
+4. Preserve existing P0/auth/signing risks; do not infer control-plane lifecycle completion from this presentation-only patch.
+
+---
 # Next steps — v8.8.50 candidate
 
 1. Finish exact-head Security Supply Chain, Agent Control, and Workflow Feature gates for PR #528. Repair failures without weakening tests, budgets, training timing, continuity, or security boundaries.

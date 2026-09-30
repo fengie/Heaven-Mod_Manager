@@ -1,3 +1,8 @@
+# v8.8.51 compact Agent Manager overview
+
+Current UI lane is stacked on PR #528's v8.8.50 governance baseline. Product behavior change is limited to the Agent Manager dashboard: high-volume operational sections default closed, summarize state at a glance, expand full-width with internal scrolling, and automatically open Inspector when inspection is requested. Verify stacked exact head, then after #528 lands reconcile onto fresh main and rerun gates before integration. Live heaven2 browser acceptance remains required.
+
+---
 # v8.8.50 governance integration — current handoff
 
 Owner: PR #528 / branch `codex/training-governance-integration`, reconciled onto canonical v8.8.49 main `be4615f`. PR #525 is closed as superseded; its repaired head and later reconciliation ancestry are preserved in this branch. New product features remain frozen.

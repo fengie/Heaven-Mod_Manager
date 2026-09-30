@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.50",
+  "currentVersion": "8.8.51",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.49 UI regression fixes merged at be4615f after exact-head gates",
+  "immediateParentRevision": "v8.8.50 governance integration candidate PR #528 head 31307b621f3d58855389644c8c92c98022c47639",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -96,7 +96,8 @@
     "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
     "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
     "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
-    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json"
+    "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json",
+    "_AGENT_CONTEXT/HANDOFFS/agent-manager-compact-overview-v8.8.51.md"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish exact-head PR528 v8.8.50 governance verification/integration; then retire only fully preserved temporary branches. Keep issues411/350/354/281 and unique registry/catalog work open until acceptance evidence exists; recursively propagate continuity.",
+  "nextAgentObligation": "Finish stacked v8.8.51 compact Agent Manager overview: preserve PR #528 governance, reconcile onto fresh canonical main after #528 resolves, rerun exact Agent Control/security/workflow gates, merge/push/verify main, perform live heaven2 collapsed-overview/Inspector smoke, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
