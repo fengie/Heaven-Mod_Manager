@@ -51,16 +51,46 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
                 nameof(sources));
     }
 
-    public string ProviderId => GitHubReleasesCatalogPolicy.ProviderId;
-    public string DisplayName => "GitHub Releases";
-    public CatalogProviderCapabilities Capabilities =>
-        CatalogProviderCapabilities.Browse
-        | CatalogProviderCapabilities.Search
-        | CatalogProviderCapabilities.Metadata
-        | CatalogProviderCapabilities.FileList
-        | CatalogProviderCapabilities.DirectDownload
-        | CatalogProviderCapabilities.Updates;
-    public CatalogProviderCompliance Compliance => GitHubReleasesCatalogPolicy.Compliance;
+    public string ProviderId
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GitHubReleasesCatalogPolicy.ProviderId;
+        }
+    }
+
+    public string DisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return "GitHub Releases";
+        }
+    }
+
+    public CatalogProviderCapabilities Capabilities
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogProviderCapabilities.Browse
+                | CatalogProviderCapabilities.Search
+                | CatalogProviderCapabilities.Metadata
+                | CatalogProviderCapabilities.FileList
+                | CatalogProviderCapabilities.DirectDownload
+                | CatalogProviderCapabilities.Updates;
+        }
+    }
+
+    public CatalogProviderCompliance Compliance
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GitHubReleasesCatalogPolicy.Compliance;
+        }
+    }
 
     public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct = default)
     {

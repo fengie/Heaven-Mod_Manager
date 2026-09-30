@@ -130,3 +130,57 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change touches only the feature workflow plus governance/test files, which are release-irrelevant under `UpdaterReleasePolicy.ps1`; it does not trigger Windows Release Gate and does not invalidate exact-source updater E2E evidence.
 - **Sibling/adjacent cases checked:** Windows Release Gate and Updater Installed Client E2E retain their own concurrency groups; their source/evidence pinning is unchanged.
 - **References:** updater E2E run `36659154949`; competing feature-gate runs included `36659334396`, `36659186555`, `36659543467`, and `36659596149`.
+
+## 2026-09-29 — GitHub Releases catalog — escaped newline token was written into C# test source
+- **Symptom:** A newly added provider regression test contained the literal characters `\n` between two C# statements instead of an actual line break, making the test project syntactically invalid before semantic verification could begin.
+- **Root cause:** A source-edit/generation path serialized a line break as text and the resulting file was committed without a syntax/build check of the changed C# project.
+- **Violated invariant / wrong assumption:** Source-producing edits are not complete when the text looks structurally plausible in a patch. The emitted file must be valid source in the target language before it is presented as an integration candidate.
+- **Why prior defenses missed it:** Review focused on provider behavior, compliance, schema drift, auth secrecy, and download boundaries. The branch had not yet passed a compile gate, and no pre-PR source-generation check caught escaped control-token artifacts.
+- **Direct fix:** Replaced the literal escape token with a real newline in `GitHubReleasesCatalogProviderTests.cs` and re-routed the branch through the normal build/test gate.
+- **Preventive rule/process change:** After any programmatic source rewrite, inspect the final emitted file rather than only the transformation input, and run the narrowest native syntax/build check before opening or declaring a PR ready. Treat visible serialized control tokens such as stray `\n`, `\r`, or escaped quote artifacts between statements as a source-generation defect class.
+- **Regression coverage added/strengthened:** The authoritative C# build in the workflow feature gate remains the mechanical closure for this class; source-producing agents must run an equivalent focused compile before handoff when execution is available.
+- **Verification evidence/environment:** GitHub Releases provider branch `agent/github-releases-catalog-20260929b`; fix commit `1dc71a9279162dff35e5eab2d3bc77ae73ecc430`; final merge evidence belongs to the integrating PR.
+- **Sibling/adjacent cases checked:** Review the rest of generated/edited C# in the provider lane for escaped control-token artifacts and require the branch gate before integration.
+
+## 2026-09-29 — GitHub Releases catalog — credentials and acquisition were not fully bound to canonical identity
+- **Symptom:** The provider transport accepted an arbitrary HTTPS API base URI even when a GitHub bearer credential was configured, and direct acquisition validated provider/mod identity without also proving that the catalog mod belonged to the selected game.
+- **Root cause:** Testability hooks and provider-neutral request objects were treated as harmless configuration after basic HTTPS/provider checks, but neither boundary carried the complete trust identity needed by the sensitive action.
+- **Violated invariant / wrong assumption:** Secrets must be bound to their canonical egress origin, and download/acquisition authorization must validate provider + game + mod + file identity before resolving a direct artifact.
+- **Why prior defenses missed it:** Existing coverage rejected non-HTTPS bases and mismatched provider/file IDs, but did not combine a credential with a custom HTTPS origin or mutate only the game identity while keeping the repository/file identity otherwise valid.
+- **Direct fix:** Credential-bearing GitHub transports now reject non-`api.github.com` base origins before any request is created; direct acquisition now requires `request.Mod.GameId == request.Game.Id`.
+- **Preventive rule/process change:** Treat injectable network origins and provider-neutral artifact references as trust boundaries. Any secret-bearing transport must pin secret egress to the intended origin, and any acquisition/install resolution must validate the full identity tuple before producing a usable download.
+- **Regression coverage added/strengthened:** Added tests proving custom HTTPS origins cannot receive GitHub credentials and cross-game catalog mods cannot resolve direct release assets.
+- **Verification evidence/environment:** GitHub Releases provider PR #322, commits `1a9f364edc5dd898c897576e49d416f96edecc50`, `00c292ca75cf63116ab1919acbf1582df1aa9710`, and `10eb572bfbb8cbbc3c85b48c725caf8712da809e`; exact-head PR gate remains authoritative.
+- **Sibling/adjacent cases checked:** Nexus assisted acquisition already enforces provider/game/mod identity; GitHub asset URLs remain restricted to HTTPS `github.com`; credentials are not persisted in provider metadata.
+
+## 2026-09-29 — GitHub Releases catalog — successful zero-budget response could still fan out another request
+- **Symptom:** Curated multi-repository discovery consumed the authoritative rate-limit headers on each release response but did not use a successful response with `X-RateLimit-Remaining: 0` to stop the next repository request.
+- **Root cause:** Rate-limit data was modeled as observability returned by the transport, not as an execution gate for the provider's own sequential fan-out.
+- **Violated invariant / wrong assumption:** A successful request is not permission for another request when the provider's authoritative response budget says none remain.
+- **Why prior defenses missed it:** Existing tests covered explicit 429/403 failures and the separate rate-limit status endpoint, but not the boundary where the final permitted request succeeds and exhausts the budget.
+- **Direct fix:** Curated discovery now stops after processing a response whose parsed core hourly remaining count is zero.
+- **Preventive rule/process change:** Any loop that fans out calls under a shared external quota must re-observe authoritative quota/circuit state between calls and stop before knowingly crossing the budget.
+- **Regression coverage added/strengthened:** Added a two-source discovery test whose first successful response reports zero remaining and proves the second source is never queried.
+- **Verification evidence/environment:** GitHub Releases provider PR #322, commits `3016f6936d7473f18bfa03cf37390152b6451df4` and `32565e58c15524ff89cbeaad9ccf26933b50e951`; exact-head gate remains authoritative.
+- **Sibling/adjacent cases checked:** Explicit rate-limit failures remain non-retrying; the status endpoint reads `resources.core`; one-shot detail/acquisition calls do not contain provider-owned fan-out loops.
+
+## 2026-09-29 — GitHub Releases catalog — concrete collection was stored behind a slower interface and failed strict CA1859
+
+- **Symptom:** The frozen GitHub Releases integration candidate failed the strict whole-solution gate because the curated source array was stored as `IReadOnlyList<GitHubReleaseCatalogSource>`, triggering CA1859 under warnings-as-errors.
+- **Root cause:** Construction always materialized `sources` with `ToArray()`, but the field retained the broader interface type even though no alternate implementation was required.
+- **Violated invariant / wrong assumption:** Strict-analyzer repositories require concrete hot-path/internal collection types when the implementation is fixed and abstraction provides no behavioral value.
+- **Direct fix:** Store the already-materialized curated sources as `GitHubReleaseCatalogSource[]` and use `Length` for the empty-source check.
+- **Preventive rule/process change:** Before integration handoff, inspect newly introduced private collection fields for CA1859 candidates: if construction always yields one concrete collection type and substitution is not part of the design, keep the concrete type internally.
+- **Regression/verification:** Rerun the exact Heaven repository verification gate on the amended frozen integration head; do not treat downstream missing-assembly/test-executable errors from the failed Core build as independent defects.
+- **Reference:** PR #323, failing Heaven run 36659334396.
+
+## 2026-09-29 — Catalog integration — cancelled provider gates reached canonical main
+
+- **Symptom:** GitHub Releases #327 and Nexus #330 reached canonical `main` without successful exact-head feature gates; GitHub still contained verifier/analyzer/xUnit compile defects, while GameBanana introduced the same public-getter trace-gap class.
+- **Root cause:** Integration races treated cancelled verification as sufficient evidence and replacement branches did not reconcile known fixes from superseded lineages.
+- **Violated invariant / wrong assumption:** A cancelled, pending, superseded, or older-SHA run is never merge evidence. Canonical integration requires a successful gate for the exact candidate head.
+- **Direct fix:** Apply one atomic repair commit on the newest canonical main, preserve concurrent provider behavior fixes, close the GitHub compile/analyzer gaps, and trace all newly introduced provider/capability getters before running one combined gate.
+- **Preventive rule/process change:** Bind merge decisions to exact SHA + successful required gate immediately before merge. Reconciled branches must carry every known defect fix from branches they supersede.
+- **Regression/verification:** The atomic repair PR must pass the exact Heaven feature gate across the fully integrated provider set before merge.
+- **Sibling/adjacent cases checked:** SQLite/FTS #325 did pass run 36659776837 before merge. GameBanana assisted-page fix #333 is preserved. Nexus provider entrypoints already contain first-statement traces on current main.
+- **Reference:** #327, #330; cancelled runs 36660058628 and 36660257258; successful storage run 36659776837.
