@@ -96,11 +96,8 @@ public sealed partial class GameProfileRegistry
     public IReadOnlyList<GameProfile> DiscoverAndRegisterInstalledGames()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        lock(mutationGate)
-        {
-            var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
-            return RegisterDiscoveredGames(candidates);
-        }
+        var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
+        lock(mutationGate)return RegisterDiscoveredGames(candidates);
     }
 
     internal IReadOnlyList<GameProfile> RegisterDiscoveredGames(IEnumerable<GameDiscoveryCandidate> candidates)
