@@ -1,3 +1,9 @@
+# v8.8.50 — 2026-09-30
+
+- Added a Dashboard **Check for updates** button for manually starting the verified program-update check.
+- Reused the existing updater command/check-stage/handoff path; automatic startup and six-hour background checks remain unchanged.
+- Added regression coverage proving the manual button binds to the existing manual updater route while the automatic route remains present.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
