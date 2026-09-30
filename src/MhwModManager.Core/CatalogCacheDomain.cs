@@ -54,4 +54,3 @@ public sealed record CatalogProvenance(
     string? ETag,
     DateTimeOffset? LastModified,
     string? SourceFingerprint);
-
