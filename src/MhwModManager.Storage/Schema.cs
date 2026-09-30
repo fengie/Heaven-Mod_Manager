@@ -180,7 +180,6 @@ CREATE TABLE IF NOT EXISTS catalog_items(
     rating REAL NULL,
     dependencies_json TEXT NOT NULL,
     source_url TEXT NOT NULL,
-    provider_metadata TEXT NULL,
     fetched_at TEXT NOT NULL,
     expires_at TEXT NULL,
     etag TEXT NULL,
@@ -205,7 +204,6 @@ CREATE TABLE IF NOT EXISTS catalog_files(
     required INTEGER NOT NULL,
     recommended INTEGER NOT NULL,
     dependencies_json TEXT NOT NULL,
-    provider_metadata TEXT NULL,
     PRIMARY KEY(provider_id,provider_mod_id,provider_file_id)
 );
 CREATE INDEX IF NOT EXISTS ix_catalog_files_item ON catalog_files(canonical_id);
