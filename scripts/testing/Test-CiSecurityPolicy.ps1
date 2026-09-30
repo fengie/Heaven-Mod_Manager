@@ -163,6 +163,50 @@ if(Test-Path -LiteralPath $updaterRoot){
 }
 
 
+# Privileged Heaven Bridge invariants: repository write access must never silently
+# become unsigned command execution, and child commands must not inherit the
+# worker's secret-bearing environment wholesale.
+$bridgeWorkerPath=Join-Path $Root 'heaven-bridge\worker.py'
+if(!(Test-Path -LiteralPath $bridgeWorkerPath)){
+    $errors.Add('heaven-bridge/worker.py is missing.')
+}else{
+    $bridgeWorker=Get-Content -LiteralPath $bridgeWorkerPath -Raw
+    foreach($required in @(
+        'AUTH_HMAC_NOT_CONFIGURED',
+        'HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY',
+        'HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL',
+        'def safe_process_env():',
+        'SENSITIVE_HOST_ENV_BLOCKED',
+        'env=env if env is not None else safe_process_env()'
+    )){
+        if(-not $bridgeWorker.Contains($required)){
+            $errors.Add("heaven-bridge/worker.py: required fail-closed bridge invariant missing: $required")
+        }
+    }
+    if($bridgeWorker.Contains('os.environ.copy()')){
+        $errors.Add('heaven-bridge/worker.py: full parent environment inheritance is forbidden for privileged bridge subprocesses.')
+    }
+    if($bridgeWorker.Contains('return {"mode": "private-repo-acl", "verified": True}')){
+        $errors.Add('heaven-bridge/worker.py: implicit repo-ACL authentication fallback is forbidden.')
+    }
+}
+
+$bridgeProviderPath=Join-Path $Root 'tools\agent-control\lib\heaven-bridge-provider.mjs'
+if(!(Test-Path -LiteralPath $bridgeProviderPath)){
+    $errors.Add('tools/agent-control/lib/heaven-bridge-provider.mjs is missing.')
+}else{
+    $bridgeProvider=Get-Content -LiteralPath $bridgeProviderPath -Raw
+    foreach($required in @(
+        'resolveBridgeSigningKey',
+        'AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE',
+        'unsigned privileged relay jobs are disabled by default'
+    )){
+        if(-not $bridgeProvider.Contains($required)){
+            $errors.Add("heaven-bridge-provider.mjs: required fail-closed signing invariant missing: $required")
+        }
+    }
+}
+
 $propsPath=Join-Path $Root 'Directory.Build.props'
 if(!(Test-Path -LiteralPath $propsPath)){
     $errors.Add('Directory.Build.props is missing.')
