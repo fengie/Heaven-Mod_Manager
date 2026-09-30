@@ -1,6 +1,6 @@
-# 2026-09-30 v8.8.23 Agent Manager runtime reliability — HIGHEST PRIORITY
+# 2026-09-30 v8.8.24 Agent Manager P0 activation — HIGHEST PRIORITY
 
-1. Run exact-head Agent Control syntax/tests, including federation-dashboard, server-safety, control-core/liveness/recovery suites, and keep all verification exact-SHA scoped.
+1. Keep `_AGENT_CONTEXT/CURRENT_REVISION.json -> agentManagerPriority.status` **active** until the full completion gate is proven. Run exact-head Agent Control syntax/tests, including the P0 activation regression, federation-dashboard, server-safety, control-core/liveness/recovery suites, and keep all verification exact-SHA scoped.
 2. Exercise the real heaven2 dashboard: pause a perpetual run and prove **START SWARM** resumes/advances; prove an active non-perpetual run returns the explicit conflict without mutation.
 3. During live polling, manually select heaven1/heaven and prove the target survives refreshes; exercise waiting/blocked/stale managed workers and prove the UI exposes the safe Stop path and state/count transitions remain truthful.
 4. Validate the intended 1 Manager + 1 Main + 4 Support launch/fill topology and heaven2→heaven1 execution/recovery, including provider-capacity terminal handling and no visible shell focus theft.
