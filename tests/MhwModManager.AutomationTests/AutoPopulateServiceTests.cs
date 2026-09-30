@@ -128,6 +128,66 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.Contains(result.Decisions, x => x.ModId == "addon-only" && !x.Enabled && x.Reason.Contains("not-installed", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task StagedDependencyDoesNotCountManagedLiveFileThatWillBeRemoved()
+    {
+        var db = await CreateDbAsync("managed-live-dependency.db");
+        var gameRoot = Path.Combine(root, "game-managed-live");
+        var liveDirectory = Path.Combine(gameRoot, "nativePC", "shared");
+        Directory.CreateDirectory(liveDirectory);
+        await File.WriteAllTextAsync(Path.Combine(liveDirectory, "required.bin"), "currently-live", TestContext.Current.CancellationToken);
+
+        await AddModAsync(db, "provider", "Current Provider", 100);
+        var dependent = await AddModAsync(db, "dependent", "Dependent", 200);
+        await db.ReplaceModFilesAsync("provider",
+            [ModFile("provider", @"nativePC\shared\required.bin", "provider-hash", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("dependent",
+            [ModFile("dependent", @"nativePC\dependent\body.mod3", "dependent-hash", FileClass.Structural)],
+            TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(dependent.SourcePath, "mod-manager.requirements.json"),
+            """{"files":["nativePC\\shared\\required.bin"]}""",
+            TestContext.Current.CancellationToken);
+
+        await db.ExecuteAsync(
+            """
+            INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at)
+            VALUES($p,$m,$b,$e,NULL,$t)
+            """,
+            new Dictionary<string,object?>
+            {
+                ["$p"] = @"nativePC\shared\required.bin",
+                ["$m"] = "provider",
+                ["$b"] = "provider-hash",
+                ["$e"] = "provider-hash",
+                ["$t"] = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture)
+            },
+            TestContext.Current.CancellationToken);
+
+        var statuses = await new DependencyDoctorService(db, gameRoot, GameProfile.MonsterHunterWorld(gameRoot))
+            .ScanStageAsync(new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "dependent" }, TestContext.Current.CancellationToken);
+
+        var failed = Assert.Single(statuses.Where(x => !x.Ready));
+        Assert.Equal("dependent", failed.ModId);
+        Assert.Contains(failed.Missing, x => x.Contains("managed provider", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task StagedDependencyRejectsMissingOrSupersededIdentityInsteadOfDroppingIt()
+    {
+        var db = await CreateDbAsync("stale-stage.db");
+        var gameRoot = Path.Combine(root, "game-stale-stage");
+        Directory.CreateDirectory(gameRoot);
+
+        var statuses = await new DependencyDoctorService(db, gameRoot, GameProfile.MonsterHunterWorld(gameRoot))
+            .ScanStageAsync(new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "no-longer-installed" }, TestContext.Current.CancellationToken);
+
+        var failed = Assert.Single(statuses);
+        Assert.False(failed.Ready);
+        Assert.Equal("no-longer-installed", failed.ModId);
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));
