@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./prompt-templates.mjs";
 import { defaultAutopilotState, normalizeAutopilotState } from "./autopilot-core.mjs";
 import { deploymentCapacity, livenessThresholds, managedAgentLiveness } from "./liveness-scheduler.mjs";
 
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 export const ACTIVE_STATUSES = new Set(["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"]);
 export const TERMINAL_STATUSES = new Set(["done", "failed", "finished", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
 
