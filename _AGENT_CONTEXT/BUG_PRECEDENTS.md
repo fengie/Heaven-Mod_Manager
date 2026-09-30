@@ -247,3 +247,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Validate the document root with `RequireObjectValue`; retain `RequireObject` only for actual named child properties such as `download`.
 - **Prevention:** Distinguish root-value validators from named-property accessors in parser APIs and keep representative list-response fixtures in the strict release test gate.
 
+
+
+### 2026-09-30 — conflict/deployment — grouping and priority were treated as overwrite authority
+- **Symptom:** A resolver could select ambiguous same-family textures by priority, exact-path planning could mix unrelated structural siblings in one runtime-coupled MHW asset bundle, and normal launch could rely on stale dependency/conflict assumptions.
+- **Root cause:** Family grouping, precedence proof, dependency proof, and atomic-asset coherence were adjacent concerns rather than independent invariants. The planner also retained an emergency priority fallback if a supposedly non-blocking decision failed to name a real winner.
+- **Violated invariant / wrong assumption:** Family membership and priority are not overwrite authority; a non-blocking collision must identify an actual provider; structural siblings may be coupled even without the same destination filename; launch must re-prove the enabled setup.
+- **Direct fix:** Added malformed-overlay validation, removed the missing-winner priority fallback, required stronger texture evidence, blocked unsafe mixed structural bundles, and added final launch dependency/conflict preflight.
+- **Preventive rule/process change:** Conflict engines must separate identity, precedence, dependencies, and atomic-runtime coherence and fail closed at every proof boundary.
+- **Regression coverage added/strengthened:** Added malformed-overlay, randomized ambiguous-texture, mixed structural-bundle, main+optional bundle, binary provenance, file/directory topology, and staged dependency regressions.
