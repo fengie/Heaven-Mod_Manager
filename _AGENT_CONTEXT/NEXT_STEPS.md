@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.21 visible-progress governance — CURRENT
+
+1. Preserve the new completion rule: every completed meaningful change set updates root `README.md`, increments the patch version, updates `CHANGELOG.md`, and synchronizes canonical version metadata in the same integration.
+2. Treat v8.8.21 as the current patch for this integrated change set. Evidence-only verification/cache/publication persistence for this same change set stays on v8.8.21; an independent repository change must advance to the next patch.
+3. Run/inspect fresh exact-head Windows verification before making any release-ready or shipped claim for v8.8.21; historical exact-SHA evidence does not transfer.
+4. Managers/reviewers must reject completion if the README progress entry, patch bump, changelog entry, or version synchronization is missing.
+5. Preserve and recursively propagate the continuity constitution, plugin preflight, main-first delivery, and this visible-progress rule to successors.
+
+---
+
 # 2026-09-30 live reconciliation — CURRENT CRITICAL PATH
 
 1. **CLOSED:** automatic-updater installed-client E2E is no longer pending. Evidence `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.20.log` records Heaven run **36659154949** on exact source `c8eb6218130ac5e08a5a78ea954b58ad3069c022`: real packaged build 60 → build **222**, restarted health identity confirmed, journal `Confirmed`, and seeded `Mods`, `State`, and unknown-file SHA-256 values unchanged.

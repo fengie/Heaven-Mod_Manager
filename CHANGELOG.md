@@ -1,4 +1,6 @@
-# Unreleased — Override and dependency safety hardening
+# v8.8.21 — Override/dependency hardening and visible progression
+- Make root `README.md` progress reporting and a patch-version increment mandatory for every completed meaningful change set.
+- Enforce version agreement across `VERSION.txt`, `Directory.Build.props`, README, changelog, and continuity metadata; keep evidence-only attestation/publication commits on the same patch unless they introduce an independent change.
 
 - Require valid enabled overlay edges: the winner must be one endpoint, cycles remain blocking, and malformed precedence rules never enter resolution.
 - Remove the planner's emergency priority fallback; every non-blocking multi-provider decision must identify a real candidate winner.

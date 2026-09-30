@@ -46,6 +46,19 @@ if([string]$manifest.learnedRules -ne '_AGENT_CONTEXT/LEARNED_RULES.md'){throw '
 $version=(Get-Content -Raw -Path (Join-Path $Root 'VERSION.txt')).Trim()
 if([string]$manifest.currentVersion -ne [string]$version){throw "Agent handoff manifest version '$($manifest.currentVersion)' does not match VERSION.txt '$version'."}
 
+$escapedVersion=[regex]::Escape($version)
+$buildPropsPath=Join-Path $Root 'Directory.Build.props'
+[xml]$buildProps=Get-Content -Raw -Path $buildPropsPath
+$buildVersion=[string]$buildProps.Project.PropertyGroup.Version
+if($buildVersion -ne [string]$version){throw "Directory.Build.props Version '$buildVersion' does not match VERSION.txt '$version'."}
+$projectReadme=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'README.md'))
+Assert-Match $projectReadme ("(?m)^#\s+v$escapedVersion\b") "README.md title must show current VERSION.txt value '$version'."
+Assert-Match $projectReadme ("(?m)^##\s+v$escapedVersion\b") "README.md must contain a current-patch progress section for '$version'."
+$projectChangelog=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'CHANGELOG.md'))
+Assert-Match $projectChangelog ("(?m)^#\s+v$escapedVersion\b") "CHANGELOG.md must contain a current-patch section for '$version'."
+$gitDirective=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'GLOBAL_GIT_DIRECTIVE.md'))
+Assert-Match $gitDirective '(?is)README\.md.{0,700}patch|patch.{0,700}README\.md' 'GLOBAL_GIT_DIRECTIVE.md must require README progress reporting and patch advancement.'
+
 $required=@()
 $required += [string]$manifest.startHere
 $required += [string]$manifest.continuityProtocol
@@ -92,6 +105,7 @@ Assert-Match $agents '(?i)agent after' 'AGENTS.md must require the successor to 
 Assert-Match $agents '(?i)without previous chat history' 'AGENTS.md must require chat-independent continuation.'
 Assert-Match $agents '(?i)explicit user authorization' 'AGENTS.md must protect Core Rules from unauthorized weakening.'
 Assert-Match $agents '(?i)Do not break the chain' 'AGENTS.md must preserve the continuity invariant.'
+Assert-Match $agents '(?is)README\.md.{0,700}patch|patch.{0,700}README\.md' 'AGENTS.md must require README progress reporting and patch advancement.'
 Assert-NoMatch $agents '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' 'AGENTS.md must not negate successor continuity propagation.'
 Assert-NoMatch $agents '(?i)(?:Core continuity rules|Core Rules?).{0,100}(?:without explicit user authorization|do not require explicit user authorization)' 'AGENTS.md must not weaken Core Rules while retaining authorization keywords.'
 
@@ -115,6 +129,7 @@ Assert-Match $protocol '(?i)exact verification' 'CONTINUITY_PROTOCOL.md must pre
 Assert-Match $protocol '(?i)SQLite transaction' 'CONTINUITY_PROTOCOL.md must preserve SQLite transaction-boundary discipline.'
 Assert-Match $protocol '(?i)append-only' 'CONTINUITY_PROTOCOL.md must define append-only Learned Rules history.'
 Assert-Match $protocol '(?i)Do not break the chain' 'CONTINUITY_PROTOCOL.md must preserve the continuity invariant.'
+Assert-Match $protocol '(?is)README\.md.{0,700}patch|patch.{0,700}README\.md' 'CONTINUITY_PROTOCOL.md must preserve the README + patch progress Core Rule.'
 Assert-NoMatch $protocol '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' 'CONTINUITY_PROTOCOL.md must not negate recursive continuity propagation.'
 Assert-NoMatch $protocol '(?i)Core Rules?\s+may\s+be\s+weakened\s+without explicit user authorization' 'CONTINUITY_PROTOCOL.md must not explicitly permit Core Rule weakening without authorization.'
 

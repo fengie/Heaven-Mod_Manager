@@ -1,5 +1,6 @@
 # Agent Control Federation / Registry v2 — 2026-09-29
 
+> **Mandatory visible-progress versioning (2026-09-30):** Every completed meaningful change set must update root `README.md` with a concise current-patch summary, increment the patch version, update `CHANGELOG.md`, and synchronize canonical version metadata before completion. One integrated change set gets one patch increment; evidence-only verification/publication records for that exact change set stay on the same patch unless they introduce an independent change. The handoff validator enforces this rule.
 
 > **Mandatory completion-handoff rule (2026-09-30):** Whenever an agent finishes a task, it must leave durable, actionable notes for the successor: ordered next steps, concrete ways the work could be improved, unresolved risks/assumptions/debt or verification gaps, and exact branch/revision/evidence needed to continue. A completion claim without this successor handoff is incomplete. Update authoritative handoff state and supersede stale notes rather than leaving contradictory copies. The next agent must be able to continue without private chat history.
 

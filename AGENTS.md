@@ -72,6 +72,15 @@ If the incident reveals a reusable lesson, also update `_AGENT_CONTEXT/LEARNED_R
 - If the preventive rule can be mechanically enforced, prefer enforcement in code/tests/CI/Agent Control over prose alone.
 - Repeated occurrence of an already logged defect class is a severity escalation: inspect why the prior prevention control failed and strengthen that control before closing the new incident.
 
+### Mandatory visible-progress versioning
+Every completed meaningful change set must make project progression visible **before** any `DONE`, `FIXED`, `SHIPPED`, merge-complete, handoff-complete, or release-complete claim.
+
+- Update the root `README.md` in the same change set with a concise, versioned summary of what changed and why it matters. Keep the newest patch summary near the top so the user can gauge progression at a glance.
+- Increment the patch component in `VERSION.txt` for every completed meaningful change set and update every canonical version identity that must match it, including `Directory.Build.props` and continuity/release metadata.
+- Update `CHANGELOG.md` with the detailed change list for that patch. README is the fast progress view; CHANGELOG is the detailed historical record.
+- One integrated meaningful change set gets one patch increment. Verification/evidence-only persistence, generated verification caches, immutable release publication/mirroring, or other attestations that only record proof for that exact change set remain on the same patch. If such a follow-up independently changes source, configuration, tests, documentation, governance, automation, UX, or behavior, it is a new meaningful change set and must advance the patch again.
+- Managers, reviewers, integration agents, and successors must reject or repair completion claims when the README progress entry, patch bump, changelog entry, or required version synchronization is missing.
+
 ### Mandatory completion handoff
 Every agent that finishes a task must leave a durable continuation note **before** claiming `DONE`, `FIXED`, `SHIPPED`, handing off, or terminating the lane.
 

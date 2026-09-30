@@ -352,6 +352,16 @@ Not:
 
 ---
 
+# PROGRESS VISIBILITY / PATCH VERSION COORDINATION
+
+Every completed meaningful repository change set — including source, configuration, automation, tests, documentation, governance, UX, workflow, or behavior changes — MUST update the root `README.md` with a concise current-patch summary and MUST increment the patch version in `VERSION.txt` before completion. Synchronize every canonical version surface required by the repository, including `Directory.Build.props`, `CHANGELOG.md`, and continuity/release metadata.
+
+Use one patch increment per integrated meaningful change set. Verification/evidence-only persistence, generated verification-cache refreshes, and release publication/mirroring that only attest the exact already-versioned change set remain on that same patch so the rule does not recurse forever. Any independent source/config/test/doc/governance/automation/UX/behavior modification is a new meaningful change set and requires the next patch.
+
+Missing README progress text, missing patch advancement, or inconsistent version metadata means the task is not complete. Managers/reviewers must stop or repair integration rather than defer this bookkeeping to another agent.
+
+---
+
 # VERSION / RELEASE COORDINATION
 
 If your completed work requires a version bump, manifest change, changelog entry, generated metadata update, packaging change, or release-state update that falls within your assignment, update it as part of the same integration rather than leaving the repository inconsistent.
