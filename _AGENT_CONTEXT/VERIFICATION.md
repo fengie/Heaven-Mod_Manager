@@ -1,3 +1,15 @@
+# v8.8.27 Agent Control Heaven relay execution repair — verification scope
+
+This candidate changes Heaven Bridge execution-time relay resolution and Agent Control v0.6.6 release identity. Historical v8.8.26 registry-retirement evidence does not verify these changed bytes.
+
+Required source closure: exact-candidate `npm run check` + `npm test`, including the Heaven Bridge provider fallback regression and runtime/plugin identity checks.
+
+Required live closure on heaven2: restart/reload the exact candidate; keep the documented per-user `%USERPROFILE%\HeavenBridgeRepo` checkout present; do **not** inject an explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`; dispatch one heaven1/heaven-targeted worker and prove it gets through bridge job submission/result waiting rather than reproducing `AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.`
+
+Also smoke v8.8.26 retirement after the restart so a retry-exhausted dead worker is cleared from managed/federated live registries while uncertain ownership or dirty/diverged work remains preserved.
+
+---
+
 # v8.8.26 Agent Control exhausted-agent registry retirement — verification scope
 
 This candidate changes terminal recovery cleanup, process/worktree retirement safety, managed/federated registry membership, external observation replay suppression/reactivation, state migration, and Agent Control v0.6.5 release identity. Historical v8.8.25 evidence does not verify these bytes.
