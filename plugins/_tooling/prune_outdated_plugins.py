@@ -309,7 +309,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.log:
         log_path = _resolved(Path(args.log))
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        log_path.write_text(rendered + "\\n", encoding="utf-8")
+        log_path.write_text(rendered + "\n", encoding="utf-8")
     if sys.stdout is not None:
         print(rendered)
     return 0
