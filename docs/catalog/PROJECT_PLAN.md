@@ -208,14 +208,17 @@ Completed on the current-main lineage:
 - deterministic Nexus v3 response fixtures;
 - HTTPS-only Nexus v3 transport boundary for trending, mod details, mod files, and mod-file versions;
 - API-key (`apikey`) and Bearer authentication without secret-bearing diagnostics;
-- bounded response reads, cancellation propagation, conditional cache validators, 304 handling, schema-envelope drift detection, and explicit 429/Retry-After surfacing without automatic retry storms.
+- bounded response reads, cancellation propagation, conditional cache validators, 304 handling, schema-envelope drift detection, and explicit 429/Retry-After surfacing without automatic retry storms;
+- Nexus v3 normalization into provider-neutral `CatalogMod` / `CatalogModFile` records with fail-closed game/mod/file identity validation;
+- global-mod-ID hydration for authenticated file endpoints and exact persistent file/version expansion;
+- provider health state for public-only, authenticated, rate-limited, schema-drift, timeout, network-offline, and caller-cancellation paths;
+- assisted acquisition policy that keeps direct download unclaimed and validates provider/game/mod identity before constructing the provider page;
+- deterministic provider-level regressions for auth, 429, timeout, offline, cancellation, malformed inner schema, lookalike source hosts, unsupported discovery modes, and acquisition identity mismatch.
 
-Still required before Nexus is considered a supported catalog provider:
-- normalize Nexus v3 payloads into `CatalogMod` / `CatalogModFile`;
-- hydrate the global mod id needed by file endpoints;
-- implement provider health/rate state and acquisition policy;
-- add timeout/auth/offline/malformed-inner-schema fixtures around the provider adapter;
-- route acquired archives through the existing safe import boundary.
+Still required before Nexus is considered a fully supported catalog provider:
+- route acquired archives through the existing safe import boundary;
+- land source-aware cache/provenance persistence and stale-while-revalidate behavior so provider outages retain browseable catalog state;
+- expose persisted provenance/freshness through the integrated catalog surface.
 
 ### Phase 1 — useful federated catalog
 - Nexus v3;
