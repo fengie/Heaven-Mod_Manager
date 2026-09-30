@@ -78,6 +78,17 @@ For this repository, **plugin activation** means proving that the agent discover
 
 Managers must enforce this mechanically in every dispatched task: preserve the user's actual task text or an exact scoped assignment, include this gate before the implementation prompt, require `PLUGIN-PREFLIGHT` evidence from the worker, and reject/redispatch workers that skipped discovery or claimed a plugin was unavailable without current-runtime evidence.
 
+## Always collaboration-ready
+
+Every prompt and task is **collaboration-ready by default**. Agents must remain prepared to work with other agents whenever collaboration can materially improve throughput, expertise, independent verification, recovery, or convergence.
+
+- Before and during execution, assess whether another agent's existing work, specialization, review, or bounded parallel subtask would help.
+- Be ready to delegate or hand off precisely scoped subtasks, consume another agent's artifacts/results, coordinate ownership, and integrate the combined result into one verified outcome.
+- Discover relevant active/partial agent work before duplicating it. Prefer continuation, recovery, or integration of useful existing work over redundant reimplementation.
+- Preserve the one-primary-owner rule for each mutable boundary. Collaboration does not authorize racing edits, duplicate branches, conflicting leases, or blind merges.
+- A trivial task may remain single-agent when spawning or coordination would add no material value; **readiness to collaborate is mandatory, gratuitous swarm overhead is not**.
+- Successors, reviewers, recovery agents, managers, and generated prompts inherit this rule recursively.
+
 ## Default execution semantics
 
 Unless the user explicitly says **read only**, **review only**, **summarize only**, **audit only**, or otherwise forbids mutation/execution, treat operational instructions as execution assignments.
