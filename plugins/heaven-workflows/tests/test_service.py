@@ -105,6 +105,19 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             plugin.release_authorize_publish(plan, gates, artifacts, confirmation=f"CONFIRM PUBLISH {plan['plan_id']}")
 
+    def test_release_plan_rejects_non_sequences(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        with self.assertRaises(ValueError):
+            plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=None, artifacts=({"name":"app.zip"},))
+        with self.assertRaises(ValueError):
+            plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=None)
+
+    def test_release_verify_artifacts_rejects_malformed_plan_entries(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = {"plan_id":"plan","version":"1.2.3","channel":"stable","artifacts":["not-an-object"]}
+        with self.assertRaises(ValueError):
+            plugin.release_verify_artifacts(plan, ({"name":"app.zip","sha256":"b"*64,"size":10,"version":"1.2.3","channel":"stable"},))
+
 
 if __name__ == "__main__":
     unittest.main()
