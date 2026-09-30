@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.30.2";
+export const PROMPT_LIBRARY_VERSION = "2026.09.30.3";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
