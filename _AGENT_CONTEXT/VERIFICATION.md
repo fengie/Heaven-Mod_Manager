@@ -1,3 +1,15 @@
+# v8.8.39 strict analyzer repair — verification scope
+
+This candidate is a narrow compilation unblock. Exact-head verification must prove that strict whole-solution compilation clears the three previously deterministic CA1822 diagnostics in `CatalogSyncService.cs` and `MhwModManager.Benchmarks/Program.cs`.
+
+The benchmark method must remain an instance BenchmarkDotNet benchmark; the accepted repair is a narrow explicit suppression with justification, not conversion to static. The two catalog helpers are stateless and should remain static.
+
+Run 36673047725 also exposed five independent core regressions plus downstream missing `--no-build` executables. Those failures must be attributed separately. Missing executables are not actionable until compilation is green.
+
+Historical v8.8.38 evidence does not verify these changed bytes.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — verification scope
 
 This patch closes the remaining managed-registry tombstone leak: `retry-dispatched` must not permanently pin a terminal parent after its task has been superseded. Exact-head Agent Control syntax/tests plus configured Agent Control and Security gates are required.
