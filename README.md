@@ -1,4 +1,10 @@
-# v8.8.33 Universal Mod Manager
+# v8.8.34 Universal Mod Manager
+
+## v8.8.34 — Agent Control durable stop proof
+
+Operator Stop and provider-capacity auto-termination now share one fail-closed termination boundary. Heaven-backed workers require a durable remote job id and an authoritative processed-terminal Bridge state before their local wrapper can release ownership; ambiguous `not_running`/`unknown` state, missing identity, or failed status authority leaves the worker blocked with its lease preserved.
+
+A persisted proof-pending marker is written before termination begins. If the local wrapper exits first, its exit evidence is recorded without final status, completion evidence, task closure, or lease release; finalization happens only after remote terminal proof and local exit proof are both present. Non-Heaven workers keep the same local stop behavior without requiring remote proof. Focused regressions pin provider fallback, missing-id failure, child-exit ordering, lease preservation, and finalization ordering. Agent Control advances to **v0.6.12**.
 
 ## v8.8.33 — Agent Control lightweight health
 
