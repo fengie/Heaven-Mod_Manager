@@ -461,6 +461,36 @@ public sealed class AutoCompatibilityTests
         Assert.Equal("skin", plan.Changes[0].ProviderAfter);
     }
 
+    [Fact]
+    public void Multi_provider_texture_precedence_requires_one_complete_dominator()
+    {
+        var path = @"nativePC\pl\f_equip\mod_cycle\f_skin_NM.tex";
+        var candidates = new[]
+        {
+            new ProviderCandidate("a", "Cycle Texture Updated v1", 10, new("a", path, "aa", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("b", "Cycle Texture v2", 20, new("b", path, "bb", null, 100, Now.AddHours(1), FileClass.Texture)),
+            new ProviderCandidate("c", "Cycle Texture", 30, new("c", path, "cc", null, 100, Now.AddHours(2), FileClass.Texture))
+        };
+        var mods = new Dictionary<string,ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = new("a", "Cycle Texture Updated v1", "Cycle Texture Updated v1", "a", true, 10, FamilyId:"manual:cycle"),
+            ["b"] = new("b", "Cycle Texture v2", "Cycle Texture v2", "b", true, 20, FamilyId:"manual:cycle"),
+            ["c"] = new("c", "Cycle Texture", "Cycle Texture", "c", true, 30, FamilyId:"manual:cycle")
+        };
+        var stats = new Dictionary<string,ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = new(2, 2, 0, 0, Now),
+            ["b"] = new(2, 2, 0, 0, Now.AddHours(1)),
+            ["c"] = new(2, 2, 0, 0, Now.AddHours(2))
+        };
+
+        var result = AutoCompatibility.SelectTextureProvider(path, candidates, mods, stats);
+
+        Assert.Null(result.WinnerModId);
+        Assert.Equal("ambiguous-texture-precedence", result.ReasonCode);
+        Assert.Contains("no single provider", result.Explanation, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static PlannerSnapshot Snapshot(
         IReadOnlyList<ModDescriptor> mods,
         IReadOnlyList<ModFileDescriptor> files,
