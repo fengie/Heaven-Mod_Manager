@@ -36,27 +36,25 @@ test("federation snapshot exposes active, waiting, blocked, idle, stale, and dis
   assert.equal(counts.blocked, 1);
   assert.equal(counts.idle, 1);
   assert.equal(counts.stale, 1);
-  assert.equal(counts.disconnected, 1);
+  assert.equal(counts.disconnected, 0);
 });
 
-test("quota-blocked managed agents are historical failures, not healthy live agents", () => {
+test("quota-blocked managed agents retire from the live registry while durable history remains", () => {
   const federation = defaultFederationState();
-  syncManagedAgents(federation, [{
+  const managed = [{
     id: "quota-agent",
     role: "support",
     status: "capacity-blocked",
     lastMessage: "You've hit your usage limit.",
     heartbeatAt: new Date(T0).toISOString(),
     finishedAt: new Date(T0).toISOString()
-  }], { hostname: "heaven2", now: T0 });
-
-  const snapshot = federationSnapshot(federation, { now: T0 });
-  const quotaAgent = snapshot.agents.find(agent => agent.agent_id === "quota-agent");
-  assert.equal(quotaAgent.effective_state, "failed");
-  assert.equal(quotaAgent.live, false);
-  assert.equal(quotaAgent.historical, true);
-  assert.equal(snapshot.counts.failed, 1);
+  }];
+  syncManagedAgents(federation, managed, { hostname: "heaven2", now: T0 });
+  const snapshot = federationSnapshot(federation, { now: T0, managedAgents: managed });
+  assert.equal(snapshot.agents.find(agent => agent.agent_id === "quota-agent"), undefined);
+  assert.equal(snapshot.counts.failed, 0);
   assert.equal(snapshot.counts.live, 0);
+  assert.equal(federation.agents.length, 1);
 });
 
 test("dashboard has unique DOM ids and required federated operator surfaces", () => {
@@ -86,6 +84,9 @@ test("dashboard has unique DOM ids and required federated operator surfaces", ()
 test("dashboard preserves active lifecycle controls and rejects stale poll overwrites", () => {
   const html = fs.readFileSync(path.join(HERE, "..", "public", "index.html"), "utf8");
   assert.match(html, /stoppableManagedStatuses = new Set\(\["reserved","starting","running","waiting","blocked","stale","stopping"\]\)/);
+  assert.match(html, /retiredManagedStatuses = new Set\(\["failed","finished","stopped","interrupted","orphaned","capacity-blocked"\]\)/);
+  assert.match(html, /retiredRecoveryStatuses = new Set\(\["retry-exhausted","retry-blocked","retry-disabled"\]\)/);
+  assert.match(html, /\.filter\(managedAgentVisible\)/);
   assert.match(html, /stoppableManagedStatuses\.has\(a\.status\)/);
   assert.match(html, /const selectedMachine = \$\("machine"\)\.value \|\| "auto"/);
   assert.match(html, /refreshInFlight/);
