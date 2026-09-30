@@ -1,3 +1,9 @@
+# v0.6.24 — explicit Heaven authentication status
+
+## What v0.6.24 does
+
+A configured Heaven Bridge whose heartbeat cannot be authenticated is reported as `auth-required` instead of ambiguous `presence-unknown`. The dashboard marks that state blocked/error while execution remains fail-closed; stale or otherwise uncertain presence stays `presence-unknown`.
+
 # v0.6.22 - exact federation inspector identity
 
 ## What v0.6.22 does
