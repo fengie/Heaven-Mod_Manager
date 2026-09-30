@@ -7,14 +7,14 @@
   "currentVersion": "8.8.21",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify the exact v8.8.21 override/dependency safety candidate on current main, integrate it, then publish only after fresh exact-head release verification",
+  "nextMilestone": "complete fresh exact-head Windows verification for the combined v8.8.21 override/dependency safety candidate, merge to main, verify remote main, and retire superseded safety branches/PRs",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.20 One-click Auto Populate",
   "status": "v8.8.21-override-dependency-safety-candidate",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "bf649e02849392fb0f00bc9d635526a7d6f77e57",
+  "candidateSourceCommit": "eef1cdeee05446097b3391a6cbf8c4e2e15c847f",
   "verificationScopeNote": "v8.8.21 changes production conflict/dependency preflight semantics. Historical closed verification remains exact-SHA evidence only and does not verify this candidate; fresh exact-head Windows verification is required. The first exact-head attempt exposed verification-trace gaps only; those trace gaps are repaired on this candidate.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.21 strengthened with malformed overlay validation, no priority fallback for missing resolver winners, evidence-only same-family texture precedence, atomic MHW structural bundle coherence, coherent bundle UI choices, and normal launch dependency/conflict revalidation.",
     "2026-09-29 v8.8.21 override/dependency safety candidate: every modded write path validates the exact staged dependency set; manager-owned live files scheduled to disappear cannot satisfy requirements; stale staged identities fail closed; unknown same-family subsets no longer auto-win; code-bearing collisions need explicit or high-trust source provenance; file/directory topology collisions hard-block.",
     "2026-09-29 v8.8.20 Auto Populate candidate: the Mods page can compute and immediately apply a deterministic maximal conflict-free installed setup; explicit dependencies, inferred main/base packages, required file/texture providers, native loader packages, and pinned shared-resource providers are included only when the entire closure remains valid and non-blocking.",
     "2026-09-29 v8.8.19 updater UX candidate: the updater helper now shows a responsive progress window across prepare/install/restart/health-verification, surfaces rollback/failure state, cannot be closed mid-apply, and treats progress reporting as observational so UI callback failures cannot change update outcome.",
