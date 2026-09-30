@@ -1,6 +1,6 @@
-# v8.8.49 compact Agent Manager overview
+# v8.8.50 compact Agent Manager overview
 
-Current owned UI change: v8.8.49 / Agent Control v0.6.23 compacts the Agent Manager into default-collapsed at-a-glance sections with bounded expanded content and automatic Inspector opening. Verify exact head, integrate to fresh main, smoke on heaven2, then leave successor evidence; preserve concurrent governance PR #525 and recursive continuity.
+Current owned UI change: v8.8.50 / Agent Control v0.6.23 compacts the Agent Manager into default-collapsed at-a-glance sections with bounded expanded content and automatic Inspector opening. Verify exact head, integrate to fresh main, smoke on heaven2, then leave successor evidence; preserve PR #526 as v8.8.49 owner, concurrent governance PR #525 and recursive continuity.
 
 ---
 # v8.8.48 current Mods PR integration
