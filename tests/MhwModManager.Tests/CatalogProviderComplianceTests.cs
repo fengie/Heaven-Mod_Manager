@@ -54,6 +54,35 @@ public sealed class CatalogProviderComplianceTests
         Assert.Equal("Terms review is stale.", error);
     }
 
+
+    [Fact]
+    public void Future_terms_review_fails_closed()
+    {
+        var compliance = Create(CatalogSourceKind.OfficialApi) with
+        {
+            TermsReviewedOn = Today.AddDays(1)
+        };
+
+        var error = Assert.Single(CatalogProviderComplianceValidator.Validate(compliance, Today));
+
+        Assert.Equal("Terms review date cannot be in the future.", error);
+    }
+
+    [Fact]
+    public void Future_robots_review_fails_closed()
+    {
+        var compliance = Create(CatalogSourceKind.Html) with
+        {
+            AllowsHtmlParsing = true,
+            RobotsUri = new Uri("https://mods.example.test/robots.txt"),
+            RobotsReviewedOn = Today.AddDays(1)
+        };
+
+        var error = Assert.Single(CatalogProviderComplianceValidator.Validate(compliance, Today));
+
+        Assert.Equal("Robots review date cannot be in the future.", error);
+    }
+
     [Fact]
     public void Html_permission_cannot_leak_onto_api_adapter()
     {
