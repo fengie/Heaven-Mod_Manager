@@ -46,8 +46,7 @@ public static partial class GenericFamilyInference
 
         var profiles = BuildProfiles(candidates, files, includeMhwAssetSemantics);
         var pairs = new List<Evidence>();
-        for (var i=0;i<candidates.Length;i++)
-        for (var j=i+1;j<candidates.Length;j++)
+        foreach (var (i,j) in ConcreteCandidatePairs(candidates,profiles))
         {
             var evidence = ScorePair(candidates[i], candidates[j], profiles[candidates[i].Id], profiles[candidates[j].Id]);
             if (evidence is not null && evidence.Score >= 75 && evidence.Strong) pairs.Add(evidence);
@@ -113,6 +112,50 @@ public static partial class GenericFamilyInference
 
         acceptedEvidence=pairs.Where(p=>result.ContainsKey(p.LeftModId)&&result.ContainsKey(p.RightModId) && StringComparer.OrdinalIgnoreCase.Equals(result[p.LeftModId],result[p.RightModId])).ToArray();
         return result;
+    }
+
+    private static IEnumerable<(int Left,int Right)> ConcreteCandidatePairs(
+        IReadOnlyList<ModDescriptor> candidates,
+        IReadOnlyDictionary<string,CandidateProfile> profiles)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var postings=new Dictionary<string,List<int>>(StringComparer.OrdinalIgnoreCase);
+        for(var i=0;i<candidates.Count;i++)
+        {
+            var profile=profiles[candidates[i].Id];
+            AddPostings("p:",profile.Files.Paths,i);
+            AddPostings("a:",profile.Files.Assets,i);
+            AddPostings("r:",profile.Files.Roots,i);
+        }
+
+        var encodedPairs=new HashSet<long>();
+        foreach(var members in postings.Values)
+        {
+            for(var left=0;left<members.Count;left++)
+            for(var right=left+1;right<members.Count;right++)
+            {
+                var i=members[left];var j=members[right];
+                if(i>j)(i,j)=(j,i);
+                encodedPairs.Add(((long)i<<32)|(uint)j);
+            }
+        }
+
+        foreach(var encoded in encodedPairs)
+            yield return ((int)(encoded>>32),(int)(encoded&uint.MaxValue));
+
+        void AddPostings(string prefix,IEnumerable<string> values,int index)
+        {
+            foreach(var value in values)
+            {
+                var key=prefix+value;
+                if(!postings.TryGetValue(key,out var members))
+                {
+                    members=new List<int>();
+                    postings[key]=members;
+                }
+                members.Add(index);
+            }
+        }
     }
 
     private static Dictionary<string,CandidateProfile> BuildProfiles(IReadOnlyList<ModDescriptor> mods,IReadOnlyList<ModFileDescriptor> files,bool includeMhwAssetSemantics)
