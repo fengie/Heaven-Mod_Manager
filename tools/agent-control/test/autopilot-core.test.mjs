@@ -101,7 +101,24 @@ test("implementation completion advances from authoritative exit evidence only",
   assert.equal(decision.kind, "transition");
   assert.equal(decision.phase, "verify");
   assert.equal(decision.patch.candidateAgentId, "main-1");
-});test("verification pass requires structured task evidence", () => {
+});test("failed implementation owner gates instead of spawning a meaningless repair lane", () => {
+  const current = state({
+    phase: "implement",
+    implementationAgentId: "main-1",
+    repairLoops: 0,
+    maxRepairLoops: 3
+  });
+  current.agents.push({
+    id: "main-1",
+    status: "failed",
+    exitCode: 1,
+    completionEvidence: "authoritative-exit"
+  });
+  const decision = decideAutopilotAction(current, { routingCurrent: true, capacityAvailable: true });
+  assert.deepEqual(decision, { kind: "gate", reason: "implementation-failed" });
+});
+
+test("verification pass requires structured task evidence", () => {
   const current = state({
     phase: "verify",
     candidateAgentId: "main-1",
