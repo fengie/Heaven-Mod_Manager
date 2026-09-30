@@ -1,3 +1,10 @@
+# v8.8.48 - Mods layout integration
+- Reconcile original PR522/head e0b423e7 without discarding newer main or rewriting its externally created branch.
+- Remove explicit ContentPresenter ActualWidth binding from direct Mods root; preserve automatic Stretch.
+- Strengthen existing wide-layout guard with parsed direct-wrapper assertions, independent of attribute formatting or unrelated descendant grids.
+- Persist exact v47 release/controller/browser/rollback closure and semantic branch inventory.
+- Actual styled WPF probes at four widths preserve layout; loaded .NET10/populated-VM reproduction remains unverified. No new features or claim that probes prove the original reported cause.
+
 # v8.8.47 — existing bug integration
 - Recover exact federation inspector fix from branch8f78d21d without stale server/version history. Linked managed identity remains lineage.
 - Add executable notification/direct-inspection regression with arbitrary IDs and retired records; existing card routes share the function.

@@ -75,12 +75,12 @@ public sealed class UxHardeningTests
         Assert.Contains("<StackPanel Orientation=\"Horizontal\" VerticalAlignment=\"Center\">",xaml);
         Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
         Assert.Contains("<StackPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
-        var modsStart=xaml.IndexOf("<TabItem Header=\"Mods\">",StringComparison.Ordinal);
-        var modsEnd=xaml.IndexOf("</TabItem>",modsStart,StringComparison.Ordinal);
-        Assert.True(modsStart>=0&&modsEnd>modsStart);
-        var modsPage=xaml[modsStart..modsEnd];
-        Assert.Contains("<Grid HorizontalAlignment=\"Stretch\">",modsPage);
-        Assert.DoesNotContain("Width=\"{Binding ActualWidth,RelativeSource={RelativeSource AncestorType=ContentPresenter}}\"",modsPage);
+        var modsTab=System.Xml.Linq.XDocument.Parse(xaml).Descendants()
+            .Single(element=>element.Name.LocalName=="TabItem"&&(string?)element.Attribute("Header")=="Mods");
+        var modsWrapper=Assert.Single(modsTab.Elements());
+        Assert.Equal("Grid",modsWrapper.Name.LocalName);
+        Assert.Equal("Stretch",(string?)modsWrapper.Attribute("HorizontalAlignment"));
+        Assert.Null(modsWrapper.Attribute("Width"));
     }
 
     [Fact]

@@ -75,3 +75,7 @@ PLUGIN-PREFLIGHT: live task is consolidation, bug fixing and junior handoff, wit
 ## Consolidation closure
 
 v8.8.45/source bbbe241a/build354 is verified/published with update/rollback proof; see ../EVIDENCE/v8.8.45-maintenance-consolidation.md. User now prioritizes existing issues/PRs/branches before plugin work. No new features. The baseline above remains historical and must not be promoted to proof for a later patch.
+
+
+## Existing branch semantic review at ed02 (read-only independent)
+CA1822 head2f01d255d471a24aaca6183632c4d6a83ec64f7a source intent superseded (CatalogSync identical; benchmark only qualification/style). Dependency blocker1eb114c3e80f5027f8dac9e9d53172bd844daa38 functional MainWindowViewModel byte-identical. Verification0b8cd1ca0ca99278ec8a40935155362749b017c6 fourteen/sixteen files identical; remaining stale branch removes safer tracing/cycle isolation and wider comparison removes AutoCompatibility protections. General retirement35122c5d2f83c73c0fdcca9bba6036f3a5d7066a superseded503->504, weaker task/work protection and different30minute policy not justified. Preserve live37/38/39 projections pending reproduced defect; live38 includes coupled regression tests absent in39 transplant. Do not wholesale replace server (loses BOM/bootstrap) or conflate superseded PR with full-tree equivalence. Main retirement suite13/13. No external branch deleted. Original522 history is reconciled on owned integration branch because external draft must not be rewritten; verify exact head ancestry after merge.
