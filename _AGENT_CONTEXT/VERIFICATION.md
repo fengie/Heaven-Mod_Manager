@@ -1,3 +1,13 @@
+# v8.8.35 Agent Control canonical runtime freshness — verification scope
+
+This candidate is transplanted onto canonical v8.8.34 so the durable stop-proof fix remains intact. Required source closure is exact-head Agent Control syntax/tests and Security Supply Chain. The Windows runtime-sync fixture must prove clean-main fast-forward and preservation/fail-closed behavior for dirty, detached, non-main, ahead, and diverged checkouts; background-process policy must confirm the runtime SHA probe uses the forced-hidden wrapper.
+
+Live acceptance for #475 remains separate: reinstall persistence on heaven2, force a stale/behind startup, verify `/api/status` and `controller-process.json` report the exact canonical SHA/version, verify an unowned listener is preserved, and complete one bounded heaven2→heaven dispatch.
+
+Do not relabel v8.8.34 Stop evidence or historical startup evidence as proving the v8.8.35 live runtime path.
+
+---
+
 # v8.8.34 Agent Control durable stop proof — verification scope
 
 This candidate changes live Agent Control termination ownership semantics. Required source closure is exact-head `npm --prefix tools/agent-control run check`, the complete Agent Control test suite, and configured Agent Control/Security PR gates. The focused source contract must prove that proof-pending state precedes child-exit classification, failure does not release leases, and successful finalization is the only lease-release path.
