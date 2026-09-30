@@ -1,6 +1,6 @@
-# v8.8.50 Universal Mod Manager
+# v8.8.52 Universal Mod Manager
 
-## v8.8.50 — audit hardening for UI, metadata, updater, and diagnostics
+## v8.8.52 — audit hardening for UI, metadata, updater, and diagnostics
 
 Fixes four audit-confirmed failure paths: the Dashboard now stretches inside its ScrollViewer instead of hard-binding to viewport width; demand-loaded metadata can retry after a failed or cancelled first attempt; prepared updater handoffs are invalidated when a newer staged update replaces their candidate; and startup diagnostics strip updater health token/file/attempt arguments before logging. Regression coverage pins each invariant, and continuity metadata is refreshed to the real integration state.
 
