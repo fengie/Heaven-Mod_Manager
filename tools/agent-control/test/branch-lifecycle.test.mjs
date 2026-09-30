@@ -70,9 +70,20 @@ test("integrated clean branch can finish only after verified deletion", () => {
     branchName: "feature/branch-lifecycle",
     branchSha: "abc",
     mainContainsBranchTip: true,
+    canonicalTreeContainsBranchDelta: true,
     worktreeDirty: false,
     deletionSucceeded: true
   }), { status: "done", reason: "integrated-branch-cleaned" });
+});
+
+test("ancestor-only preservation is not canonical integration proof", () => {
+  assert.deepEqual(cleanupDisposition({
+    branchName: "feature/preserved-history-only",
+    branchSha: "abc",
+    mainContainsBranchTip: true,
+    canonicalTreeContainsBranchDelta: false,
+    deletionSucceeded: true
+  }), { status: "preserved", reason: "branch-tip-ancestor-without-canonical-tree-proof" });
 });
 
 test("unique branch is preserved", () => {
