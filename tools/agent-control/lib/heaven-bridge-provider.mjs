@@ -23,6 +23,29 @@ function clean(value) {
   return String(value ?? "").trim();
 }
 
+function envFlag(value) {
+  return ["1", "true", "yes", "on"].includes(clean(value).toLowerCase());
+}
+
+export function resolveBridgeSigningKey({
+  env = process.env,
+  homeDir = os.homedir(),
+  existsSync = fs.existsSync,
+  readFileSync = fs.readFileSync
+} = {}) {
+  const fromEnv = clean(env.AGENT_CONTROL_HEAVEN_HMAC_KEY || env.HEAVEN_BRIDGE_HMAC_KEY);
+  if (fromEnv) return fromEnv;
+
+  const configured = clean(env.AGENT_CONTROL_HEAVEN_HMAC_KEY_FILE || env.HEAVEN_BRIDGE_HMAC_KEY_FILE);
+  const file = configured || path.join(homeDir, "HeavenBridge", "auth", "hmac.key");
+  try {
+    if (!existsSync(file)) return "";
+    return clean(readFileSync(file, "utf8"));
+  } catch {
+    return "";
+  }
+}
+
 function canonicalUtf8(value) {
   return Buffer.from(String(value), "utf8");
 }
@@ -63,7 +86,7 @@ export function canonicalBridgeJob(job) {
 
 export function signBridgeJob(job, key) {
   const secret = clean(key);
-  if (!secret) return job;
+  if (!secret) throw new Error("Heaven Bridge HMAC key is required to sign privileged relay jobs.");
   const signature = createHmac("sha256", Buffer.from(secret, "utf8"))
     .update(Buffer.from(canonicalBridgeJob(job), "utf8"))
     .digest("hex");
@@ -485,8 +508,14 @@ export async function submitHeavenBridgeJob(job, {
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
   if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
-  const signingKey = process.env.AGENT_CONTROL_HEAVEN_HMAC_KEY || process.env.HEAVEN_BRIDGE_HMAC_KEY || "";
-  if (clean(signingKey)) job = signBridgeJob(job, signingKey);
+  const signingKey = resolveBridgeSigningKey();
+  if (clean(signingKey)) {
+    job = signBridgeJob(job, signingKey);
+  } else if (!envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)) {
+    throw new Error(
+      "Heaven Bridge HMAC key is not configured; unsigned privileged relay jobs are disabled by default."
+    );
+  }
   const targetHost = normalizeBridgeHost(job?.target_host || HEAVEN_BRIDGE_HOST);
   return withRelayLock(relayDir, async () => {
     await syncUnlocked(relayDir, { expectedRepository, pull: true });
