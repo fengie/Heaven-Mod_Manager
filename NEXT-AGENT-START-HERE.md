@@ -1,5 +1,7 @@
 # v8.8.48 agent-training refactor — current handoff
 
+Preserve recursive continuity through every successor. Do not break the chain.
+
 This file is a current handoff, not a revision diary. Older handoffs remain available in Git history and evidence files.
 
 ## Current assignment
