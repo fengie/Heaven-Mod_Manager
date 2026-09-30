@@ -1,5 +1,4 @@
 using System.IO;
-using System.Runtime;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
@@ -76,7 +75,6 @@ public sealed partial class App:Application, IDisposable
             Environment.SetEnvironmentVariable("MOD_MANAGER_HOME",paths.ToolRoot);
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
-            EnableJitProfile(paths.NextStateRoot,startup);
 
             var db=startup.Run("services.database.construct",()=>new ManagerDatabase(paths.DatabasePath));
             await startup.RunAsync("database.initialize",ct=>db.InitializeAsync(ct));
@@ -201,22 +199,6 @@ public sealed partial class App:Application, IDisposable
             try{splash.Close();}catch{}
             MessageBox.Show(ex+"\n\nMASTER DEBUG LOG (send this file):\n"+UnifiedDebugLog.FilePath+"\n\nStartup diagnostics:\n"+startup.TextLogPath+"\n"+startup.JsonReportPath,"Universal Mod Manager startup failed",MessageBoxButton.OK,MessageBoxImage.Error);
             Shutdown(-1);
-        }
-    }
-
-    private static void EnableJitProfile(string stateRoot,StartupDiagnosticSession startup)
-    {
-        try
-        {
-            var profileRoot=Path.Combine(stateRoot,"JitProfiles");
-            Directory.CreateDirectory(profileRoot);
-            ProfileOptimization.SetProfileRoot(profileRoot);
-            ProfileOptimization.StartProfile("startup.profile");
-            startup.Info("bootstrap.jit-profile",$"Multicore JIT startup profile enabled at {profileRoot}.");
-        }
-        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-        {
-            MasterDebugLog.Write("APP-BOOTSTRAP","JIT startup profile optimization is unavailable; continuing without it.",ex);
         }
     }
 
