@@ -489,11 +489,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     private async Task<DependencyStatus[]> GetDependencyBlockersAsync(
         Dictionary<string,(bool enabled,int priority)> stage,
+        DeploymentPlan? effectivePlan,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var enabled = stage.Where(x => x.Value.enabled).Select(x => x.Key).ToHashSet(PathRules.Comparer);
-        var statuses = await s.Dependencies.ScanStageAsync(enabled, ct);
+        var statuses = await s.Dependencies.ScanStageAsync(enabled, effectivePlan, ct);
         return statuses.Where(x => !x.Ready)
             .OrderBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(x => x.ModId, StringComparer.OrdinalIgnoreCase)
@@ -780,14 +781,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var current=await s.Database.GetModsAsync(ct);
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
-        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
-        if(dependencyBlockers.Length>0)
-        {
-            PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied requirements • no files would be written";
-            StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
-            SelectedTab=0;
-            return;
-        }
         var analysis=await BuildAnalysisAsync(stage,ct);
         var changes=analysis.plan.Changes;
         var add=changes.Count(x=>x.Kind==ChangeKind.Add);
@@ -802,6 +795,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             PlanPreviewText=$"Blocked • {Math.Max(analysis.rows.Length,blockingCount)} blocking decision(s) • no files would be written";
             StatusText=analysis.rows.Length>0?PlanPreviewText:PlanPreviewText+" Check the rule/dependency diagnostics for the exact reason.";
             SelectedTab=3;
+            return;
+        }
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,analysis.plan,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied effective requirements • no files would be written";
+            StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=1;
             return;
         }
         PlanPreviewText=$"Ready • {changes.Count} file change(s): {add} add • {replace} replace • {remove} remove • {restore} restore";
@@ -831,14 +832,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
-        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
-        if(dependencyBlockers.Length>0)
-        {
-            StatusText="Dependency validation blocked deployment. Nothing was written. "+DescribeDependencyBlockers(dependencyBlockers);
-            SelectedTab=0;
-            return;
-        }
-
         var analysis=await BuildAnalysisAsync(stage,ct);
         var displayRows=analysis.plan.IsBlocked?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
         await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
@@ -849,6 +842,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=analysis.rows.Length>0
                 ?$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written."
                 :$"{blockingCount} resolver/rule safety blocker(s) need attention. Nothing was written.";
+            return;
+        }
+
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,analysis.plan,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            StatusText="Dependency preflight blocked Apply. Nothing was written. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=1;
             return;
         }
 
@@ -1145,7 +1146,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
-            var dependencyBlockers=await GetDependencyBlockersAsync(CaptureStage(),ct);
+            var dependencyBlockers=await GetDependencyBlockersAsync(CaptureStage(),null,ct);
             if(dependencyBlockers.Length>0)
             {
                 StatusText="Launch blocked because enabled mods have unsatisfied requirements. "+DescribeDependencyBlockers(dependencyBlockers);
@@ -1180,13 +1181,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
-        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
-        if(dependencyBlockers.Length>0)
-            throw new InvalidOperationException("The saved setup no longer satisfies all mod requirements, so it was not restored: "+DescribeDependencyBlockers(dependencyBlockers));
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("The saved setup now has a blocking conflict under the current files; nothing was changed.");
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,plan,ct);
+        if(dependencyBlockers.Length>0)
+            throw new InvalidOperationException("The saved setup no longer satisfies its effective requirements, so it was not restored: "+DescribeDependencyBlockers(dependencyBlockers));
         var result=await s.Executor.ApplyAsync(plan,"Restore last known good",stage,ct:ct);
         if(!result.Success)throw result.Exception??new InvalidOperationException(result.Message);
         await ReloadMods(ct);await RefreshAnalysis(ct);await RefreshActivity(ct);
@@ -1276,6 +1277,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var staged=snap.Mods.Select(m=>state.TryGetValue(m.Id,out var v)?m with{Enabled=v.enabled,Priority=v.priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("Automatic diagnosis hit a blocking structural conflict and stopped without guessing.");
+        var dependencyBlockers=await GetDependencyBlockersAsync(state,plan,ct);
+        if(dependencyBlockers.Length>0)
+            throw new InvalidOperationException(description+" blocked by dependency preflight before any game file was changed. "+DescribeDependencyBlockers(dependencyBlockers));
         var result=await s.Executor.ApplyAsync(plan,description,state,ct:ct);
         if(!result.Success)throw result.Exception??new InvalidOperationException(result.Message);
     }
@@ -1297,6 +1301,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await p.WaitForExitAsync(ct);
         var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
+        if(restore.IsBlocked)throw new InvalidOperationException("The previous mod configuration now has a blocking conflict; safe-mode restore stopped without guessing.");
+        var restoreState=restoreSnap.Mods.ToDictionary(m=>m.Id,m=>(m.Enabled,m.Priority),StringComparer.OrdinalIgnoreCase);
+        var restoreDependencyBlockers=await GetDependencyBlockersAsync(restoreState,restore,ct);
+        if(restoreDependencyBlockers.Length>0)
+            throw new InvalidOperationException("Restore after safe mode blocked by dependency preflight. "+DescribeDependencyBlockers(restoreDependencyBlockers));
         var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
         if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
             StatusText="Safe mode ended and the applied mod configuration was restored.";
