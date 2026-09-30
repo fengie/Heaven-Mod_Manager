@@ -11,4 +11,28 @@ public sealed class ConflictEngineTests
     [Fact] public void Shared_resource_namespace_word_recolor_does_not_prove_lineage(){var p=@"nativePC\pl\f_equip\mod_generic\f_skin_NM.tex";var e=new ConflictEngine();var d=e.Decide(p,[C("a","Red Recolor",p,"aa"),C("b","Blue Recolor",p,"bb",2)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.TextureOverride,d.Kind);Assert.True(d.Blocking);Assert.Null(d.WinnerModId);Assert.Equal("independent-texture-replacement",d.ReasonCode);}
     [Fact] public void Proven_family_textures_use_family_priority_without_self_conflict(){var p=@"nativePC\pl\f_equip\mod_generic\f_skin_NM.tex";var e=new ConflictEngine();var candidates=new[]{C("a","Suite Base",p,"aa",1),C("b","Suite Option",p,"bb",5)};var mods=new Dictionary<string,ModDescriptor>(StringComparer.OrdinalIgnoreCase){{"a",new("a","Suite Base","Suite Base","",true,1,FamilyId:"manual:suite")},{"b",new("b","Suite Option","Suite Option","",true,5,FamilyId:"manual:suite")}};var stats=new Dictionary<string,ModContentStats>(StringComparer.OrdinalIgnoreCase){{"a",new(1,1,0,0,DateTimeOffset.UtcNow)},{"b",new(1,1,0,0,DateTimeOffset.UtcNow)}};var d=e.Decide(p,candidates,ConflictRuleIndex.Create([]),new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>(),mods,stats);Assert.Equal(ConflictKind.ModFamilyOption,d.Kind);Assert.False(d.Blocking);Assert.Equal("b",d.WinnerModId);Assert.Equal("family-texture-priority",d.ReasonCode);}
     [Fact] public void Incompatible_rule_beats_old_exact_winner(){var p=@"nativePC\x.mod3";var e=new ConflictEngine();var r=new ConflictRule("r",RuleKind.Incompatible,RuleScope.ModPair,"a","b",null,null,"test",true,DateTimeOffset.UtcNow);var d=e.Decide(p,[C("a","A",p,"aa"),C("b","B",p,"bb",2)],[r],new Dictionary<string,string>{{p,"a"}},new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.Incompatible,d.Kind);Assert.True(d.Blocking);}
+
+    [Fact] public void Protected_loader_bootstrap_collision_fails_closed()
+    {
+        var p=@"root\dinput8.dll";
+        var e=new ConflictEngine();
+        var d=e.Decide(p,[C("loader-a","Loader A",p,"aa",1),C("loader-b","Loader B",p,"bb",99)],[],
+            new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());
+        Assert.True(d.Blocking);
+        Assert.Equal(ConflictKind.HardGameData,d.Kind);
+        Assert.Equal("protected-bootstrap-collision",d.ReasonCode);
+        Assert.Null(d.WinnerModId);
+    }
+
+    [Fact] public void Explicit_exact_winner_can_resolve_protected_loader_collision()
+    {
+        var p=@"root\loader.dll";
+        var e=new ConflictEngine();
+        var d=e.Decide(p,[C("loader-a","Loader A",p,"aa",1),C("loader-b","Loader B",p,"bb",99)],[],
+            new Dictionary<string,string>{{p,"loader-a"}},new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());
+        Assert.False(d.Blocking);
+        Assert.Equal(ConflictKind.UserOverlayRule,d.Kind);
+        Assert.Equal("loader-a",d.WinnerModId);
+    }
+
 }
