@@ -432,6 +432,33 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private Dictionary<string,(bool enabled,int priority)> CaptureStage()=>
         Mods.SelectMany(x=>x.ExpandStage()).ToDictionary(x=>x.Key,x=>x.Value,StringComparer.OrdinalIgnoreCase);
 
+    private async Task<DependencyStatus[]> GetDependencyBlockersAsync(
+        Dictionary<string,(bool enabled,int priority)> stage,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var enabled = stage.Where(x => x.Value.enabled).Select(x => x.Key).ToHashSet(PathRules.Comparer);
+        var statuses = await s.Dependencies.ScanStageAsync(enabled, ct);
+        return statuses.Where(x => !x.Ready)
+            .OrderBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.ModId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string DescribeDependencyBlockers(IReadOnlyList<DependencyStatus> blockers)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var details = blockers.Take(3).Select(x =>
+        {
+            var missing = x.Missing.Take(3).ToArray();
+            var suffix = x.Missing.Count > missing.Length ? $" (+{x.Missing.Count-missing.Length} more)" : string.Empty;
+            return $"{x.ModName}: {string.Join(", ", missing)}{suffix}";
+        });
+        var summary = string.Join(" | ", details);
+        if (blockers.Count > 3) summary += $" | +{blockers.Count-3} more mod(s)";
+        return summary;
+    }
+
     private async Task<(DeploymentPlan plan,ConflictRow[] rows,List<EffectiveModSummary> summaries)> BuildAnalysisAsync(
         Dictionary<string,(bool enabled,int priority)> stage,CancellationToken ct)
     {
@@ -463,7 +490,26 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var choices=new Dictionary<string,ChoiceAccumulator>(StringComparer.OrdinalIgnoreCase);
             foreach(var conflict in plan.Conflicts.Where(x=>x.Blocking&&x.Path!="<rules>"))
             {
-                filesByPath.TryGetValue(conflict.Path,out var providers);
+                List<ModDescriptor>? providers;
+                IReadOnlyList<string> conflictPaths=[conflict.Path];
+                if(conflict.ReasonCode=="bundle-mixed-providers"&&s.Paths.Game.IsMonsterHunterWorld)
+                {
+                    var bundleKey=AssetBundles.KeyForPath(conflict.Path);
+                    var bundleFiles=snap.Files
+                        .Where(file=>enabledById.ContainsKey(file.ModId)&&
+                                     file.FileClass==FileClass.Structural&&
+                                     StringComparer.OrdinalIgnoreCase.Equals(AssetBundles.KeyForPath(file.Path),bundleKey))
+                        .ToArray();
+                    conflictPaths=bundleFiles.Select(file=>file.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+                    providers=bundleFiles.Select(file=>enabledById[file.ModId])
+                        .GroupBy(mod=>mod.Id,PathRules.Comparer)
+                        .Select(group=>group.First())
+                        .ToList();
+                }
+                else
+                {
+                    filesByPath.TryGetValue(conflict.Path,out providers);
+                }
                 if(providers is null||providers.Count<2)continue;
                 var logicalGroups=providers
                     .Select(provider=>logicalByMember.TryGetValue(provider.Id,out var identity)
@@ -502,7 +548,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 // own logical family so an external choice cannot accidentally re-enable all parts.
                 var key=logicalGroups.Length>=2?bundle:$"{bundle}|internal:{logicalGroups[0].LogicalId}";
                 if(!choices.TryGetValue(key,out var acc))choices[key]=acc=new ChoiceAccumulator(bundle);
-                acc.Paths.Add(conflict.Path);
+                acc.Paths.UnionWith(conflictPaths);
                 acc.Conflicts.Add(conflict);
                 foreach(var option in options)acc.Options[option.Token]=option;
             }
@@ -515,10 +561,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 var score=Math.Max(95,acc.Conflicts.Max(x=>x.ResolverScore));
                 var evidence=string.Join(" • ",acc.Conflicts.Select(x=>x.Evidence).Where(x=>!string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase));
                 if(string.IsNullOrWhiteSpace(evidence))evidence=s.Paths.Game.IsMonsterHunterWorld?"Independent logical mods provide different bytes inside the same atomic MHW asset bundle.":"Independent logical mods provide different bytes for the same game path.";
-                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
-                    options.Length==2
+                var explanation=first.ReasonCode=="bundle-mixed-providers"
+                    ?first.Explanation+" Choose one coherent provider/family for the entire bundle; the manager will not mix structural siblings."
+                    :options.Length==2
                         ?"These two logical mods provide different bytes for the same effective game asset/path. Choose one; the other logical mod is staged OFF as a whole."
-                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.",
+                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.";
+                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
+                    explanation,
                     Confidence.High,score,evidence,options);
             }).OrderBy(x=>x.Scope,StringComparer.OrdinalIgnoreCase).ToArray();
 
@@ -673,6 +722,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var current=await s.Database.GetModsAsync(ct);
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied requirements • no files would be written";
+            StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=0;
+            return;
+        }
         var analysis=await BuildAnalysisAsync(stage,ct);
         var changes=analysis.plan.Changes;
         var add=changes.Count(x=>x.Kind==ChangeKind.Add);
@@ -683,8 +740,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             var displayRows=await EnrichConflictPreviewsAsync(analysis.rows,ct);
             await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
-            PlanPreviewText=$"Blocked • {analysis.rows.Length} decision(s) required • no files would be written";
-            StatusText=PlanPreviewText;
+            var blockingCount=analysis.plan.Conflicts.Count(x=>x.Blocking);
+            PlanPreviewText=$"Blocked • {Math.Max(analysis.rows.Length,blockingCount)} blocking decision(s) • no files would be written";
+            StatusText=analysis.rows.Length>0?PlanPreviewText:PlanPreviewText+" Check the rule/dependency diagnostics for the exact reason.";
             SelectedTab=3;
             return;
         }
@@ -715,13 +773,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            StatusText="Dependency validation blocked deployment. Nothing was written. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=0;
+            return;
+        }
+
         var analysis=await BuildAnalysisAsync(stage,ct);
         var displayRows=analysis.plan.IsBlocked?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
         await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
         if(analysis.plan.IsBlocked)
         {
             SelectedTab=3;
-            StatusText=$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written.";
+            var blockingCount=analysis.plan.Conflicts.Count(x=>x.Blocking);
+            StatusText=analysis.rows.Length>0
+                ?$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written."
+                :$"{blockingCount} resolver/rule safety blocker(s) need attention. Nothing was written.";
             return;
         }
 
@@ -1018,6 +1087,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
+            var dependencyBlockers=await GetDependencyBlockersAsync(CaptureStage(),ct);
+            if(dependencyBlockers.Length>0)
+            {
+                StatusText="Launch blocked because enabled mods have unsatisfied requirements. "+DescribeDependencyBlockers(dependencyBlockers);
+                return;
+            }
             var observation=await s.Automation.LaunchAndObserveAsync(LaunchMode.Modded,TimeSpan.FromSeconds(15),ct);
             StatusText=observation.Message;
             await RefreshActivity(ct);
@@ -1047,6 +1122,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+            throw new InvalidOperationException("The saved setup no longer satisfies all mod requirements, so it was not restored: "+DescribeDependencyBlockers(dependencyBlockers));
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
