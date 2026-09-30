@@ -99,7 +99,7 @@ public sealed class CatalogBrowserViewModelTests:IDisposable
             "Fixture Author",
             "1.0",
             "Utility",
-            ["fixture","needle"],
+            ["fixture"],
             null,
             [],
             fetchedAt.AddDays(-10),
