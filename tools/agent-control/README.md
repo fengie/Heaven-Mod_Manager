@@ -14,7 +14,9 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.5.9 does
+## What v0.5.10 does
+
+- Makes dashboard lifecycle controls match the server's authoritative active-state model: reserved, starting, running, waiting, blocked, stale, and stopping managed workers can all be stopped from the UI. Polling is serialized and sequence-checked so slow older snapshots cannot overwrite newer operator state, and periodic refreshes preserve the selected worker target instead of silently resetting it to Auto.
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Makes startup a single normal action: open the dashboard and press **START SWARM**. That explicit operator action switches the controller to `coordinate`, clears pause/read-only/drain/emergency-stop friction, and launches/fills the usual 1 Manager + 1 Primary Programmer + 4 Support topology while preserving capacity, live-ownership, lease, machine, and degraded-state checks. Raw routing/autonomy controls remain available only under Advanced / diagnostics.
