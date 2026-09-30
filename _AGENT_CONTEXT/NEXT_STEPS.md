@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.26 Agent Control exhausted-agent registry retirement — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.26 candidate and repair any syntax/state-migration/retirement regression before integration.
+2. On heaven2, create or identify a terminal no-work lineage that reaches **RETRY EXHAUSTED** and prove the dead agent disappears from both managed and federated live registries after cleanup.
+3. Prove safety fail-closed behavior separately: an uncertain live PID, dirty worktree, or committed branch divergence must remain preserved/blocked rather than being killed or deleted.
+4. Verify repeated terminal federated observations for a retired source stay suppressed, while a later genuine live heartbeat clears the tombstone and re-admits the source.
+5. Confirm successful `done` integration candidates remain visible and unaffected, and continue the active Agent Manager P0 gates from current main.
+6. Successor improvement: add a compact retired-agent/history inspector if operators need direct tombstone browsing without reintroducing retired entries into the live card list.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.25 candidate.
