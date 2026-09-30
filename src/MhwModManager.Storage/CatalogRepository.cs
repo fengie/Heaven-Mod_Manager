@@ -807,8 +807,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
             : uri.AbsoluteUri;
     }
 
-    private static string? Format(DateTimeOffset? value) =>
-        value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+    private static string? Format(DateTimeOffset? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+    }
 
     private static DateTimeOffset? ParseDate(string? value)
     {
