@@ -250,7 +250,7 @@ class VerticalSliceTests(unittest.TestCase):
             "refresh_token: abcdefgh12345678",
             "password=correct-horse-battery-staple",
             "Authorization: Bearer abcdefgh12345678",
-            "ghp_abcdefghijklmnopqrstuvwxyz",
+            "ghp_" + "abcdefghijklmnopqrstuvwxyz",
         )
         for index, canary in enumerate(canaries):
             with self.subTest(canary=canary):

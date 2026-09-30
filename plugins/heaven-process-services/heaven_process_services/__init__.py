@@ -1,4 +1,5 @@
+from .scheduler import WindowsMaintenanceScheduler
 from .service import ProcessServicesPlugin
 
-__all__ = ["ProcessServicesPlugin"]
-__version__ = "0.1.0"
+__all__ = ["ProcessServicesPlugin", "WindowsMaintenanceScheduler"]
+__version__="0.2.0"

@@ -222,7 +222,7 @@ export function decideAutopilotAction(controlState, {
     if (requiresManualReconciliation(agent)) {
       return { kind: "gate", reason: terminalFailureReason(agent, "implementation-reconciliation-required") };
     }
-    return repairDecision(autopilot, terminalFailureReason(agent, "implementation"));
+    return { kind: "gate", reason: terminalFailureReason(agent, "implementation") };
   }
 
   if (autopilot.phase === "verify" || autopilot.phase === "reverify") {

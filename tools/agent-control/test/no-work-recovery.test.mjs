@@ -8,6 +8,7 @@ import {
   noWorkTerminationDecision,
   planSwarmTailRecoveryBatch,
   recoveryBackoffMs,
+  recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
   terminationReconciliationDecision
 } from "../lib/no-work-recovery.mjs";
@@ -100,6 +101,33 @@ test("empty interrupted worker is retryable and backoff is bounded", () => {
   assert.equal(recoveryBackoffMs(4, { baseMs: 1000, maxMs: 4000 }), 4000);
 });
 
+
+
+test("authoritative nonzero exit is a deterministic failure, not no-work", () => {
+  const result = noWorkTerminationDecision({
+    status: "failed",
+    exitCode: 1,
+    completionEvidence: "authoritative-exit",
+    lastMessage: ""
+  });
+  assert.equal(result.noWork, false);
+  assert.equal(result.retry, false);
+  assert.equal(result.reason, "deterministic-runtime-failure");
+});
+
+test("stream loss metadata cannot turn an authoritative nonzero exit into an automatic retry", () => {
+  const result = terminationReconciliationDecision({
+    state: "failed",
+    exitCode: 1,
+    completionEvidence: "authoritative-exit",
+    last_action_summary: "",
+    source_metadata: { stream_lost: true }
+  }, { streamLost: true, durableEvidenceChecked: true });
+  assert.equal(result.recoveryStatus, "work-unverified");
+  assert.equal(result.retry, false);
+  assert.equal(result.action, "inspect");
+  assert.equal(result.reason, "deterministic-runtime-failure");
+});
 
 test("stream loss with durable work is preserved as incomplete", () => {
   const result = terminationReconciliationDecision({
@@ -201,6 +229,69 @@ test("mid-swarm recovery treats orphaned lanes as unfinished", () => {
   assert.equal(batch[0].rootId, "orphaned");
 });
 
+test("mid-swarm recovery treats stale-progress lanes as unfinished", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{ id: "stale-support", status: "stale", taskId: "t-stale", task: "resume me" }],
+    tasks: [{ id: "t-stale", status: "stale", objective: "resume me" }]
+  });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "stale-support");
+});
+
+test("recovery planner can exclude the phase-owned stale worker to prevent duplicate recovery", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [
+      { id: "phase-main", status: "stale", taskId: "t-main", task: "phase owned" },
+      { id: "support-stale", status: "stale", taskId: "t-support", task: "support owned" }
+    ],
+    tasks: [
+      { id: "t-main", status: "stale", objective: "phase owned" },
+      { id: "t-support", status: "stale", objective: "support owned" }
+    ]
+  }, { excludeAgentIds: ["phase-main"] });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "support-stale");
+});
+
+test("recovery planner respects retry cooldown and dispatch-failure budget", () => {
+  const base = {
+    agents: [{
+      id: "stale-root",
+      status: "interrupted",
+      taskId: "t-stale",
+      task: "resume me",
+      swarmTailRecoveryCause: "stale-progress-timeout",
+      stopRequestedAt: "2026-09-29T20:00:00.000Z",
+      swarmTailRecoveryDispatchFailures: 1,
+      swarmTailRecoveryNextAt: "2026-09-29T20:02:00.000Z"
+    }],
+    tasks: [{ id: "t-stale", status: "retry-pending", objective: "resume me" }]
+  };
+  assert.deepEqual(planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:01:00.000Z")
+  }), []);
+  const retry = planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:03:00.000Z")
+  });
+  assert.equal(retry.length, 1);
+  assert.equal(retry[0].attempt, 2);
+
+  base.agents[0].swarmTailRecoveryDispatchFailures = 2;
+  assert.deepEqual(planSwarmTailRecoveryBatch(base, {
+    maxAttemptsPerRoot: 2,
+    now: Date.parse("2026-09-29T20:03:00.000Z")
+  }), []);
+});
+
+test("jittered recovery backoff remains bounded and spreads retries", () => {
+  const low = recoveryBackoffWithJitterMs(3, { baseMs: 1000, maxMs: 8000, jitterUnit: 0 });
+  const high = recoveryBackoffWithJitterMs(3, { baseMs: 1000, maxMs: 8000, jitterUnit: 1 });
+  assert.equal(low, 2000);
+  assert.equal(high, 4000);
+});
+
 test("recovery pool subtracts already-running recovery workers from its worker budget", () => {
   const agents = [
     { id: "active-recovery", status: "running", taskId: "task-active", task: "recover root-a", swarmTailRecovery: true, recoveryRootAgentId: "root-a" },
@@ -249,3 +340,37 @@ test("end-of-swarm recovery does not duplicate successful or exhausted recovery 
   const batch = planSwarmTailRecoveryBatch({ agents, tasks }, { maxWorkers: 4, maxAttemptsPerRoot: 2 });
   assert.deepEqual(batch, []);
 });
+
+
+test("swarm-tail recovery does not resurrect a clean deterministic nonzero failure", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{
+      id: "failed-runtime",
+      status: "failed",
+      exitCode: 1,
+      completionEvidence: "authoritative-exit",
+      taskId: "t-runtime",
+      task: "do work"
+    }],
+    tasks: [{ id: "t-runtime", status: "failed", objective: "do work" }]
+  });
+  assert.deepEqual(batch, []);
+});
+
+test("swarm-tail recovery still preserves deterministic failures that left substantive work", () => {
+  const batch = planSwarmTailRecoveryBatch({
+    agents: [{
+      id: "failed-with-work",
+      status: "failed",
+      exitCode: 1,
+      completionEvidence: "authoritative-exit",
+      worktreeDirty: true,
+      taskId: "t-work",
+      task: "finish preserved work"
+    }],
+    tasks: [{ id: "t-work", status: "failed", objective: "finish preserved work" }]
+  });
+  assert.equal(batch.length, 1);
+  assert.equal(batch[0].rootId, "failed-with-work");
+});
+

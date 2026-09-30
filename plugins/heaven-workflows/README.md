@@ -13,12 +13,16 @@ Reusable high-level workflows built on top of `heaven-control-plane` rather than
 - `workflow.release.authorize_publish` — require an exact plan-bound confirmation phrase and emit a durable receipt without publishing by itself.
 - `workflow.release.reconcile_existing` — recognize an identical existing release as already published and reject conflicting release identity.
 - `workflow.release.plan_cancellations` — identify superseded active workflow runs while leaving cancellation as a separately confirmed mutation.
+- `workflow.change.status` — read the durable optimistic checkpoint for a declared change.
+- `workflow.change.prepare` — pin an exact pre-state plus explicit reversible steps before mutation.
+- `workflow.change.commit` — bind the final post-state ID into a deterministic commit receipt.
+- `workflow.change.rollback` — execute only registered inverse capabilities in reverse order with retry-safe per-step checkpoints.
 
 `parallel_invoke` intentionally refuses raw `execution.run`; it is for parallelizing structured, already-bounded control-plane operations.
 
 ## Security boundary
 
-The plugin never handles credentials directly. It delegates permission enforcement and transport to the supplied control plane, rejects repository traversal segments, and refuses arbitrary raw commands in its scheduler. Release orchestration fails closed on commit, gate, digest, version, channel, or confirmation mismatch; publication and workflow cancellation remain external confirmed mutations.
+The plugin never handles credentials directly. It delegates permission enforcement and transport to the supplied control plane, rejects repository traversal segments, and refuses arbitrary raw commands in its scheduler. Rollback plans reject raw execution capabilities and credential-bearing persisted fields, accept opaque `*_handle` identifiers only, require explicit confirmation before inverse mutations, and checkpoint each completed inverse so retries do not repeat already-successful steps. Release orchestration fails closed on commit, gate, digest, version, channel, or confirmation mismatch; publication and workflow cancellation remain external confirmed mutations.
 
 ## Validate
 

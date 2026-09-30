@@ -10,8 +10,31 @@ export const NO_WORK_TERMINAL_STATUSES = new Set([
 export const SWARM_TAIL_UNFINISHED_STATUSES = new Set([
   "failed",
   "interrupted",
-  "orphaned"
+  "orphaned",
+  "stale"
 ]);
+
+
+function finiteNonZeroNumber(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return false;
+  const number = Number(value);
+  return Number.isFinite(number) && number !== 0;
+}
+
+export function hasDeterministicRuntimeFailure(agent) {
+  const metadata = agent?.source_metadata && typeof agent.source_metadata === "object"
+    ? agent.source_metadata
+    : {};
+  const completionEvidence = String(
+    agent?.completionEvidence
+    || metadata.completion_evidence
+    || ""
+  ).trim().toLowerCase();
+
+  return finiteNonZeroNumber(agent?.exitCode)
+    || finiteNonZeroNumber(metadata.exit_code)
+    || ["spawn-error", "provider-capacity"].includes(completionEvidence);
+}
 
 export function swarmTailRecoveryRootId(agent) {
   return String(agent?.swarmTailRecoveryRootAgentId || agent?.recoveryRootAgentId || agent?.id || "").trim();
@@ -21,9 +44,11 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
   if (!SWARM_TAIL_UNFINISHED_STATUSES.has(status)) return false;
   if (status === "capacity-blocked" || agent?.failureClass === "provider-capacity") return false;
+  if (hasDeterministicRuntimeFailure(agent) && !hasSubstantiveWorkEvidence(agent)) return false;
   if (["retry-pending", "retry-waiting", "retry-dispatched"].includes(String(agent?.recoveryStatus || ""))) return false;
   if (String(agent?.recoveryStatus || "") === "work-verified-complete") return false;
-  if (agent?.stopRequestedAt || agent?.completionEvidence === "verified-operator-stop") return false;
+  const supervisedStaleRecovery = String(agent?.swarmTailRecoveryCause || "") === "stale-progress-timeout";
+  if (!supervisedStaleRecovery && (agent?.stopRequestedAt || agent?.completionEvidence === "verified-operator-stop")) return false;
   const taskStatus = String(task?.status || "").trim().toLowerCase();
   if (["done", "candidate", "finished", "stopped"].includes(taskStatus)) return false;
   return Boolean(String(task?.objective || agent?.task || "").trim());
@@ -32,9 +57,14 @@ export function isSwarmTailUnfinishedCandidate(agent, task = null) {
 export function planSwarmTailRecoveryBatch(state, {
   maxWorkers = 4,
   maxAttemptsPerRoot = 2,
-  since = null
+  since = null,
+  excludeAgentIds = [],
+  now = Date.now()
 } = {}) {
   const agents = Array.isArray(state?.agents) ? state.agents : [];
+  const excluded = new Set((Array.isArray(excludeAgentIds) ? excludeAgentIds : [excludeAgentIds])
+    .map(value => String(value || "").trim())
+    .filter(Boolean));
   const sinceMs = Date.parse(String(since || ""));
   const inScope = agent => {
     if (!Number.isFinite(sinceMs)) return true;
@@ -55,16 +85,21 @@ export function planSwarmTailRecoveryBatch(state, {
   const seenRoots = new Set();
 
   for (const agent of agents) {
-    if (!inScope(agent)) continue;
+    if (!inScope(agent) || excluded.has(String(agent?.id || ""))) continue;
+    const retryAt = Date.parse(String(agent?.swarmTailRecoveryNextAt || ""));
+    if (Number.isFinite(retryAt) && retryAt > Number(now)) continue;
     const task = tasksById.get(agent?.taskId) || null;
     if (!isSwarmTailUnfinishedCandidate(agent, task)) continue;
     const rootId = swarmTailRecoveryRootId(agent);
     if (!rootId || seenRoots.has(rootId)) continue;
 
     const lineage = agents.filter(candidate => swarmTailRecoveryRootId(candidate) === rootId && candidate.id !== rootId);
-    if (lineage.some(candidate => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(candidate?.status || "")))) continue;
+    const otherLineage = lineage.filter(candidate => candidate.id !== agent.id);
+    if (otherLineage.some(candidate => ["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(String(candidate?.status || "")))) continue;
     if (lineage.some(candidate => String(candidate?.status || "") === "done")) continue;
-    const attempts = lineage.filter(candidate => candidate?.swarmTailRecovery === true || candidate?.retryOfAgentId).length;
+    const lineageAttempts = lineage.filter(candidate => candidate?.swarmTailRecovery === true || candidate?.retryOfAgentId).length;
+    const dispatchFailures = Math.max(0, Math.floor(Number(agent?.swarmTailRecoveryDispatchFailures) || 0));
+    const attempts = Math.max(lineageAttempts, dispatchFailures);
     if (attempts >= maxAttempts) continue;
 
     seenRoots.add(rootId);
@@ -235,6 +270,16 @@ export function terminationReconciliationDecision(agent, {
     };
   }
 
+  if (hasDeterministicRuntimeFailure(agent)) {
+    return {
+      reconcile: true,
+      recoveryStatus: "work-unverified",
+      retry: false,
+      action: "inspect",
+      reason: "deterministic-runtime-failure"
+    };
+  }
+
   const noWork = noWorkTerminationDecision(agent, {
     expectsRepositoryWork,
     maxOpeningMessageChars
@@ -267,6 +312,9 @@ export function noWorkTerminationDecision(agent, {
   const status = String(agent?.status || agent?.state || "").trim().toLowerCase();
   if (!expectsRepositoryWork || !NO_WORK_TERMINAL_STATUSES.has(status)) {
     return { noWork: false, retry: false, reason: null, openingOnly: false, emptyOutput: false };
+  }
+  if (hasDeterministicRuntimeFailure(agent)) {
+    return { noWork: false, retry: false, reason: "deterministic-runtime-failure", openingOnly: false, emptyOutput: false };
   }
   if (hasSubstantiveWorkEvidence(agent)) {
     return { noWork: false, retry: false, reason: "substantive-work-evidence", openingOnly: false, emptyOutput: false };
@@ -307,4 +355,17 @@ export function recoveryBackoffMs(dispatchFailures, {
   const base = Math.max(1_000, Number(baseMs) || 15_000);
   const maximum = Math.max(base, Number(maxMs) || 300_000);
   return Math.min(maximum, base * (2 ** Math.min(8, failures - 1)));
+}
+
+export function recoveryBackoffWithJitterMs(dispatchFailures, {
+  baseMs = 15_000,
+  maxMs = 300_000,
+  jitterUnit = 0.5,
+  minFactor = 0.5
+} = {}) {
+  const capped = recoveryBackoffMs(dispatchFailures, { baseMs, maxMs });
+  const unit = Math.max(0, Math.min(1, Number(jitterUnit) || 0));
+  const floorFactor = Math.max(0, Math.min(1, Number(minFactor) || 0.5));
+  const factor = floorFactor + ((1 - floorFactor) * unit);
+  return Math.max(1_000, Math.floor(capped * factor));
 }

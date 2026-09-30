@@ -6,6 +6,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any, Mapping, Protocol, Sequence
 
+from .rollback import RollbackCoordinator
+
 
 class ControlPlaneLike(Protocol):
     def invoke(
@@ -53,8 +55,9 @@ class WorkflowResult:
 class HeavenWorkflowPlugin:
     """Reusable high-level workflows composed from Heaven Control Plane capabilities."""
 
-    def __init__(self, control_plane: ControlPlaneLike):
+    def __init__(self, control_plane: ControlPlaneLike, state_store: Any | None = None, capability_executor: Any | None = None):
         self.control_plane = control_plane
+        self._rollback = RollbackCoordinator(state_store, capability_executor or control_plane) if state_store is not None else None
 
     @staticmethod
     def _require_repo(value: Any) -> str:
@@ -330,4 +333,27 @@ class HeavenWorkflowPlugin:
             if str(run.get("head_sha") or "").lower() != candidate_sha and str(run.get("status") or "").lower() in {"queued","pending","in_progress"} and isinstance(run.get("id"), int) and run["id"] > 0:
                 ids.append(run["id"])
         return {"candidate_sha":candidate_sha,"cancel_run_ids":sorted(set(ids)),"requires_confirmation":bool(ids)}
+
+    def _rollback_engine(self)->RollbackCoordinator:
+        if self._rollback is None:
+            raise RuntimeError("rollback workflows require a configured heaven-state-store")
+        return self._rollback
+
+    def change_status(self,change_id:str)->Mapping[str,Any]|None:
+        return self._rollback_engine().status(change_id)
+
+    def prepare_change(self,change_id:str,*,pre_state_id:str,rollback_steps:Sequence[Mapping[str,Any]],preconditions:Mapping[str,Any]|None=None,expected_post_state_id:str|None=None)->Mapping[str,Any]:
+        return self._rollback_engine().prepare_change(
+            change_id,
+            pre_state_id=pre_state_id,
+            rollback_steps=rollback_steps,
+            preconditions=preconditions,
+            expected_post_state_id=expected_post_state_id,
+        )
+
+    def commit_change(self,change_id:str,*,post_state_id:str)->Mapping[str,Any]:
+        return self._rollback_engine().commit_change(change_id,post_state_id=post_state_id)
+
+    def rollback_change(self,change_id:str,*,reason:str,confirm:bool=False)->Mapping[str,Any]:
+        return self._rollback_engine().rollback_change(change_id,reason=reason,confirm=confirm)
 
