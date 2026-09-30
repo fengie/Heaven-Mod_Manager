@@ -82,3 +82,15 @@ test("dashboard has unique DOM ids and required federated operator surfaces", ()
   assert.match(html, /federatedCount/);
   assert.match(html, /coverage\.authoritative/);
 });
+
+test("dashboard inline JavaScript parses cleanly", () => {
+  const html = fs.readFileSync(path.join(HERE, "..", "public", "index.html"), "utf8");
+  const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(match => match[1]);
+  assert.ok(scripts.length > 0, "dashboard must contain at least one inline script");
+  scripts.forEach((source, index) => {
+    assert.doesNotThrow(
+      () => new Function(source),
+      `inline dashboard script ${index + 1} must parse before integration`
+    );
+  });
+});
