@@ -47,6 +47,16 @@ test("ordinary terminal failures retire only after ownership and durable-work co
     "durable-work-pending-reconciliation"
   );
   assert.equal(
+    managedAgentRegistryDisposition({ status: "orphaned" }).retire,
+    false,
+    "orphaned ownership is uncertain and must fail closed"
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "interrupted" }).retire,
+    false,
+    "interrupted work is uncertain until reconciliation establishes a terminal disposition"
+  );
+  assert.equal(
     managedAgentRegistryDisposition({ status: "done", recoveryStatus: "work-verified-complete" }).retire,
     false
   );
@@ -56,11 +66,11 @@ test("ordinary terminal failures retire only after ownership and durable-work co
   );
 });
 
-test("federated registry retires terminal or expired presence but preserves active recovery and grace", () => {
+test("federated registry retires terminal or retirement-expired presence but preserves disconnect grace", () => {
   const now = Date.parse("2026-09-30T12:00:00.000Z");
-  const threshold = 300_000;
+  const retirementAfterMs = 1_800_000;
   assert.equal(
-    federatedAgentRegistryDisposition({ state: "failed", heartbeat_at: "2026-09-30T11:59:59.000Z" }, { now, disconnectedAfterMs: threshold }).retire,
+    federatedAgentRegistryDisposition({ state: "failed", heartbeat_at: "2026-09-30T11:59:59.000Z" }, { now, retirementAfterMs }).retire,
     true
   );
   assert.equal(
@@ -68,23 +78,23 @@ test("federated registry retires terminal or expired presence but preserves acti
       state: "failed",
       recovery_status: "work-detected-incomplete",
       heartbeat_at: "2026-09-30T11:59:59.000Z"
-    }, { now, disconnectedAfterMs: threshold }).retire,
+    }, { now, retirementAfterMs }).retire,
     false
   );
   assert.equal(
-    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:54:59.999Z" }, { now, disconnectedAfterMs: threshold }).reason,
+    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:29:59.999Z" }, { now, retirementAfterMs }).reason,
     "disconnected:heartbeat-expired"
   );
   assert.equal(
-    federatedAgentRegistryDisposition({ state: "disconnected", heartbeat_at: "2026-09-30T11:59:00.000Z" }, { now, disconnectedAfterMs: threshold }).reason,
+    federatedAgentRegistryDisposition({ state: "disconnected", heartbeat_at: "2026-09-30T11:59:00.000Z" }, { now, retirementAfterMs }).reason,
     "disconnected-grace-period"
   );
   assert.equal(
-    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:59:00.000Z" }, { now, disconnectedAfterMs: threshold }).retire,
+    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:50:00.000Z" }, { now, retirementAfterMs }).retire,
     false
   );
   assert.equal(
-    federatedAgentRegistryDisposition({ state: "working" }, { now, disconnectedAfterMs: threshold }).reason,
+    federatedAgentRegistryDisposition({ state: "working" }, { now, retirementAfterMs }).reason,
     "disconnected:missing-heartbeat"
   );
 });
