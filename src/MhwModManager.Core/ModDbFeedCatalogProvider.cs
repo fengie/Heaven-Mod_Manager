@@ -15,7 +15,7 @@ public sealed class ModDbFeedCatalogProvider : IModCatalogProvider
 {
     private readonly SyndicationFeedTransport transport;
     private readonly ModDbFeedSource[] sources;
-    private readonly IReadOnlyDictionary<string, FeedCacheState> feedStates;
+    private readonly Dictionary<string, FeedCacheState> feedStates;
 
     public ModDbFeedCatalogProvider(
         SyndicationFeedTransport transport,
