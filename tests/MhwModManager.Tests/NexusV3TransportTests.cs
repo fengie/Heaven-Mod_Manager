@@ -157,7 +157,7 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client, maxResponseBytes: 1024);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetTrendingModsAsync("monsterhunterworld"));
+            () => transport.GetTrendingModsAsync("monsterhunterworld", ct: TestContext.Current.CancellationToken));
 
         Assert.Contains("safety limit", exception.Message, StringComparison.Ordinal);
     }
