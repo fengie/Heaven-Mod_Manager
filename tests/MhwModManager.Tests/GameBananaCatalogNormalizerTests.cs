@@ -142,7 +142,7 @@ public sealed class GameBananaCatalogNormalizerTests
         var exception = Assert.Throws<InvalidDataException>(
             () => GameBananaCatalogNormalizer.NormalizeMod(game, "653359", document));
 
-        Assert.Contains("recognized file name", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("must be an object", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
