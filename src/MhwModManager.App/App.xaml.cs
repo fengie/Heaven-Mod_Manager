@@ -86,6 +86,13 @@ public sealed partial class App:Application, IDisposable
             var gameRegistry=startup.Run("services.game-registry",()=>new GameProfileRegistry(paths.StateRoot));
             var scanner=startup.Run("services.mod-scanner",()=>new ModScanner(db,blobs,hash,paths.Game));
             var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot));
+            var remoteCatalog=startup.Run("services.remote-catalog",()=>new CatalogRepository(db));
+            var remoteCatalogSync=startup.Run("services.remote-catalog-sync",()=>new CatalogSyncService(remoteCatalog));
+            var remoteCatalogHttp=startup.Run("services.remote-catalog-http",()=>new HttpClient
+            {
+                Timeout=TimeSpan.FromSeconds(20)
+            });
+            var remoteCatalogProviders=startup.Run("services.remote-catalog-providers",()=>CreateRemoteCatalogProviders(paths.Game,remoteCatalogHttp));
             var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
             var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
@@ -131,7 +138,7 @@ public sealed partial class App:Application, IDisposable
                     new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
             };
 
-            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
+            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,remoteCatalog,remoteCatalogSync,remoteCatalogProviders,remoteCatalogHttp,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
                 timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
@@ -204,6 +211,20 @@ public sealed partial class App:Application, IDisposable
         }
     }
 
+    private static IReadOnlyList<IModCatalogProvider> CreateRemoteCatalogProviders(GameProfile game,HttpClient httpClient)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(httpClient);
+        if(!game.IsMonsterHunterWorld)return [];
+
+        return
+        [
+            new NexusV3CatalogProvider(new NexusV3Transport(httpClient)),
+            new GameBananaCatalogProvider(new GameBananaTransport(httpClient))
+        ];
+    }
+
     private static string ResolveDiagnosticRoot()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -236,6 +257,7 @@ public sealed partial class App:Application, IDisposable
         changeHints?.Dispose();
         changeHints=null;
         Services?.Updater.Dispose();
+        Services?.RemoteCatalogHttp.Dispose();
         if(Services?.Log is IDisposable disposable)disposable.Dispose();
         UnifiedDebugLog.Write("APP", "Dispose complete");
         GC.SuppressFinalize(this);
@@ -253,6 +275,10 @@ public sealed record AppServices(
     BlobStore Blobs,
     ModScanner Scanner,
     CatalogService Catalog,
+    CatalogRepository RemoteCatalog,
+    CatalogSyncService RemoteCatalogSync,
+    IReadOnlyList<IModCatalogProvider> RemoteCatalogProviders,
+    HttpClient RemoteCatalogHttp,
     DeploymentPlanner Planner,
     DeploymentExecutor Executor,
     GameProcessGuard ProcessGuard,
