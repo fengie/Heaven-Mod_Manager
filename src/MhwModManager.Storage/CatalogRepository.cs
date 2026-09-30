@@ -135,7 +135,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         if (!includeStale)
         {
             where.Add("(i.expires_at IS NULL OR i.expires_at>$now)");
-            cmd.Parameters.AddWithValue("$now", (now ?? DateTimeOffset.UtcNow).ToString("O", CultureInfo.InvariantCulture));
+            cmd.Parameters.AddWithValue("$now", Format(now ?? DateTimeOffset.UtcNow)!);
         }
 
         var suffix = where.Count == 0 ? string.Empty : " AND " + string.Join(" AND ", where);
@@ -254,7 +254,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$dependencies", JsonSerializer.Serialize(mod.Dependencies));
         cmd.Parameters.AddWithValue("$sourceUrl", mod.SourceUrl);
         cmd.Parameters.AddWithValue("$metadata", DbValue(mod.ProviderMetadata));
-        cmd.Parameters.AddWithValue("$fetched", cached.Cache.FetchedAt.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("$fetched", Format(cached.Cache.FetchedAt)!);
         cmd.Parameters.AddWithValue("$expires", DbValue(Format(cached.Cache.ExpiresAt)));
         cmd.Parameters.AddWithValue("$etag", DbValue(cached.Cache.ETag));
         cmd.Parameters.AddWithValue("$lastModified", DbValue(Format(cached.Cache.LastModified)));
@@ -349,7 +349,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$canonical", cached.Mod.CanonicalId);
         cmd.Parameters.AddWithValue("$provider", cached.Mod.ProviderId);
         cmd.Parameters.AddWithValue("$source", cached.Mod.SourceUrl);
-        cmd.Parameters.AddWithValue("$fetched", cached.Cache.FetchedAt.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("$fetched", Format(cached.Cache.FetchedAt)!);
         cmd.Parameters.AddWithValue("$etag", DbValue(cached.Cache.ETag));
         cmd.Parameters.AddWithValue("$lastModified", DbValue(Format(cached.Cache.LastModified)));
         cmd.Parameters.AddWithValue("$fingerprint", DbValue(cached.Cache.SourceFingerprint));
@@ -548,7 +548,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
     }
 
     private static string? Format(DateTimeOffset? value) =>
-        value?.ToString("O", CultureInfo.InvariantCulture);
+        value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
     private static DateTimeOffset? ParseDate(string? value) =>
         value is null ? null : DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
