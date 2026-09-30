@@ -22,6 +22,7 @@ Include the affected version/commit, attack prerequisites, a minimal reproductio
 - Persistent self-hosted runner checkouts never persist GitHub credentials, and candidate-code jobs run without write-capable repository token scopes unless isolated into a separately trusted mutation workflow.
 - NuGet direct/transitive vulnerability auditing is enabled and warnings are build failures.
 - Dependabot tracks GitHub Actions and NuGet dependency updates.
+- Tracked credential material is rejected by a repository security gate, and common local credential/signing files are ignored before staging.
 
 ## Release authenticity
 
