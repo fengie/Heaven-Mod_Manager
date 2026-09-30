@@ -3161,6 +3161,9 @@ function readRepositoryContext() {
     return {
       currentVersion: parsed.currentVersion || parsed.version || null,
       nextMilestone: parsed.nextMilestone || parsed.next_milestone || parsed.nextAction || null,
+      agentManagerPriority: parsed.agentManagerPriority && typeof parsed.agentManagerPriority === "object"
+        ? parsed.agentManagerPriority
+        : null,
       verificationCommit:
         parsed.verificationAppliesToCommit ||
         parsed.verifiedCommit ||
@@ -3170,7 +3173,7 @@ function readRepositoryContext() {
       updatedAt: parsed.updatedAt || parsed.generatedAt || null
     };
   } catch {
-    return { currentVersion: null, nextMilestone: null, verificationCommit: null, updatedAt: null };
+    return { currentVersion: null, nextMilestone: null, agentManagerPriority: null, verificationCommit: null, updatedAt: null };
   }
 }
 
@@ -4573,6 +4576,29 @@ function autopilotOverallGoalLine(state) {
   return overallGoal ? `Overall goal: ${overallGoal}` : null;
 }
 
+function activeAgentManagerPriority() {
+  const priority = readRepositoryContext().agentManagerPriority;
+  return priority && String(priority.status || "").trim().toLowerCase() === "active"
+    ? priority
+    : null;
+}
+
+function agentManagerPriorityDirective() {
+  const priority = activeAgentManagerPriority();
+  if (!priority) return null;
+  const goal = String(priority.goal || "Make Agent Manager work as intended end-to-end.").trim();
+  const acceptance = Array.isArray(priority.completionRequires)
+    ? priority.completionRequires.map(value => String(value || "").trim()).filter(Boolean)
+    : [];
+  return [
+    "P0 AGENT MANAGER FUNCTIONALITY LOCK IS ACTIVE.",
+    `Goal: ${goal}`,
+    "Work only on Agent Manager / Agent Control functionality, reliability, orchestration, observability, recovery, routing, or directly required verification until _AGENT_CONTEXT/CURRENT_REVISION.json marks this priority complete.",
+    "Do not spend this cycle on unrelated product features, polish, or speculative expansion.",
+    acceptance.length ? `Completion gate: ${acceptance.join("; ")}` : null
+  ].filter(Boolean).join(" ");
+}
+
 function autopilotSwarmContext(state, phase, mission = "") {
   if (!state.autopilot?.perpetual) return null;
   const phases = ["implement", "verify", "review", "repair", "integrate", "hygiene", "expand"];
@@ -4591,15 +4617,19 @@ function autopilotSwarmContext(state, phase, mission = "") {
 
 function autopilotImplementationObjective(state) {
   const overallGoalLine = autopilotOverallGoalLine(state);
+  const managerPriority = agentManagerPriorityDirective();
   if (!state.autopilot?.perpetual) {
-    return [overallGoalLine, state.autopilot?.objective || ""].filter(Boolean).join("\n");
+    return [managerPriority, overallGoalLine, state.autopilot?.objective || ""].filter(Boolean).join("\n");
   }
   const cycle = Number(state.autopilot?.cycleNumber || 0) + 1;
   return [
     `Perpetual engineering cycle #${cycle}.`,
+    managerPriority,
     overallGoalLine,
     "Stabilize before expanding: inspect current canonical main and active ownership, then fix the highest-impact reproducible bug/regression or reliability weakness first.",
-    "If no actionable bug remains, implement the highest-value bounded planned improvement instead.",
+    managerPriority
+      ? "If no actionable Agent Manager bug remains, close the next unmet Agent Manager completion-gate item; do not switch to unrelated repository work."
+      : "If no actionable bug remains, implement the highest-value bounded planned improvement instead.",
     "Do the work rather than only audit it; add prevention/regression coverage; keep the repository releasable and leave exact evidence for verification/review.",
     `Standing direction: ${state.autopilot?.objective || "Continuously improve the project."}`
   ].filter(Boolean).join(" ");
@@ -4767,24 +4797,32 @@ async function dispatchAutopilotHygiene(state) {
 
 async function dispatchAutopilotExpansion(state) {
   assertAutonomyPermission(state, "dispatch-support", "autopilot next-cycle expansion");
+  const managerPriority = agentManagerPriorityDirective();
   return withDeployLock(() => deployOne({
     role: "research",
     task: [
       `Prepare the next bounded work unit after perpetual engineering cycle #${Number(state.autopilot?.cycleNumber || 0) + 1}.`,
+      managerPriority,
       autopilotOverallGoalLine(state),
-      "Inspect current origin/main, open plans/issues, recent failures, verification gaps, user-facing friction, performance/reliability debt, and relevant external/current technical information when it materially improves the decision.",
-      "Choose the highest-value unblocked next unit using this priority: correctness/data-loss/security risks; integration/release blockers; user-facing bugs; planned capability; toil/performance/polish.",
+      managerPriority
+        ? "Inspect only Agent Manager / Agent Control runtime health, one-click orchestration, federated registry accuracy, machine routing, recovery behavior, provider failure handling, startup persistence, and exact verification evidence."
+        : "Inspect current origin/main, open plans/issues, recent failures, verification gaps, user-facing friction, performance/reliability debt, and relevant external/current technical information when it materially improves the decision.",
+      managerPriority
+        ? "Choose the highest-impact unmet Agent Manager completion-gate item. Unrelated product features are out of scope while the P0 lock is active."
+        : "Choose the highest-value unblocked next unit using this priority: correctness/data-loss/security risks; integration/release blockers; user-facing bugs; planned capability; toil/performance/polish.",
       "Update durable project planning/continuity with a concise next action, acceptance criteria, likely ownership boundary, and required verification. Do not implement product code in this expansion phase.",
       `Keep the standing direction in scope: ${state.autopilot?.objective || "Continuously improve the project."}`
     ].filter(Boolean).join("\n"),
     baseBranch: "main",
     boundary: `autopilot:expand:${state.autopilot.runId}:${state.autopilot.cycleNumber}`,
-    priority: 72,
+    priority: managerPriority ? 100 : 72,
     machine: "auto",
-    lane: "perpetual-next-cycle",
+    lane: managerPriority ? "agent-manager-p0-next-cycle" : "perpetual-next-cycle",
     repositoryWriteAuthorized: true,
-    verification: ["Durable next-step context names one bounded high-value action and its verification contract."],
-    swarmContext: autopilotSwarmContext(state, "expand", state.autopilot?.objective)
+    verification: [managerPriority
+      ? "Durable next-step context names one bounded Agent Manager P0 action and its exact verification contract."
+      : "Durable next-step context names one bounded high-value action and its verification contract."],
+    swarmContext: autopilotSwarmContext(state, "expand", managerPriority || state.autopilot?.objective)
   }));
 }
 
