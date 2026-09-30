@@ -1,4 +1,12 @@
-# v8.8.35 Universal Mod Manager
+# v8.8.36 Universal Mod Manager
+
+## v8.8.36 — Agent Manager notification + stable inspector closure
+
+The Agent Manager dashboard now renders backend notifications instead of silently dropping them. Only the supported `inspect-agent` and `inspect-federation` action types become actionable UI controls; other notification types remain visible and informational.
+
+Managed and federated records now share stable ID-based inspection helpers and a persistent Inspector surface. Selection survives normal snapshot refresh while the record stays live, and retirement/missing races produce an explicit persistent “no longer live / retired” state instead of disappearing or null-dereferencing. Agent cards keep body-click convenience, but keyboard semantics now live on explicit real **Inspect** buttons; dynamic agent IDs are carried through bound `data-*` controls instead of inline JavaScript handlers. Terminal/dead records do not expose invalid Stop actions. Agent Control advances to **v0.6.14**.
+
+
 
 ## v8.8.35 — Agent Control canonical runtime freshness
 
