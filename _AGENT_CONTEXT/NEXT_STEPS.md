@@ -1,10 +1,11 @@
-# 2026-09-30 v8.8.23 Agent Manager one-click recovery — CURRENT
+# 2026-09-30 v8.8.23 Agent Manager runtime reliability — HIGHEST PRIORITY
 
-1. Run exact-head Agent Control syntax/tests and the Windows verification gate for v8.8.23; keep all verification exact-SHA scoped.
-2. Exercise the real heaven2 dashboard: pause a perpetual run, press **START SWARM**, and confirm it resumes/advances rather than remaining paused behind an “already running” message.
-3. Exercise an active non-perpetual autopilot and confirm **START SWARM** returns the explicit conflict without changing the existing run.
-4. Continue prioritizing Agent Manager core functionality over cosmetic work: reliable federation, worker launch/control, recovery, truthful state, and heaven2→heaven1 execution.
-5. Preserve the one-click lifecycle regression tests, bug precedent, visible-progress versioning, and successor handoff requirements.
+1. Run exact-head Agent Control syntax/tests, including federation-dashboard, server-safety, control-core/liveness/recovery suites, and keep all verification exact-SHA scoped.
+2. Exercise the real heaven2 dashboard: pause a perpetual run and prove **START SWARM** resumes/advances; prove an active non-perpetual run returns the explicit conflict without mutation.
+3. During live polling, manually select heaven1/heaven and prove the target survives refreshes; exercise waiting/blocked/stale managed workers and prove the UI exposes the safe Stop path and state/count transitions remain truthful.
+4. Validate the intended 1 Manager + 1 Main + 4 Support launch/fill topology and heaven2→heaven1 execution/recovery, including provider-capacity terminal handling and no visible shell focus theft.
+5. Continue prioritizing Agent Manager core functionality over cosmetic work or unrelated feature expansion: federation, launch/control, recovery, integration queue/task graph, truthful lifecycle state, persistence/self-restore, and bridge routing.
+6. Every newly found Agent Manager bug gets implementation + regression + precedent/reusable lesson review, visible progress/version bookkeeping when it forms a new change set, and durable successor notes with exact revision/evidence and unresolved risks.
 
 ---
 
