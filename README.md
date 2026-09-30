@@ -1,4 +1,10 @@
-# v8.8.24 Universal Mod Manager
+# v8.8.25 Universal Mod Manager
+
+## v8.8.25 — Agent Control operator-markup + plugin identity repair
+
+Agent Control fixes two escaped operator/release-contract bugs. **Copy branch** no longer embeds a JSON-quoted branch name directly inside a double-quoted inline handler; branch values are URI-encoded before interpolation and decoded only at invocation, so normal branch names cannot break the generated action markup.
+
+The private plugin package is also identity-consistent again: the runtime package, root ChatGPT plugin manifest, and nested Codex plugin manifest now all report **v0.6.4**, with a regression that rejects future nested-manifest drift. Focused dashboard regressions pin the safe Copy branch encoding and reject the former raw JSON.stringify(...) handler pattern.
 
 ## v8.8.24 — Agent Manager operator actions
 
