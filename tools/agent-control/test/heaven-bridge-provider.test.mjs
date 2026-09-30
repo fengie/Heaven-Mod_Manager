@@ -16,6 +16,7 @@ import {
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
   resolveHeavenRelayDir,
+  resolveBridgeSigningKey,
   signBridgeJob,
   shouldRefreshHeartbeat,
   validateBridgeResult
@@ -74,7 +75,23 @@ test("bridge HMAC signing matches worker canonicalization rules", () => {
 
   const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "unit-test-only-secret");
   assert.notEqual(changed.auth.signature, signed.auth.signature);
-  assert.equal(signBridgeJob(job, ""), job);
+  assert.throws(() => signBridgeJob(job, ""), /HMAC key is required/i);
+});
+
+test("bridge signing key resolves from machine-local file when env is absent", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-hmac-test-"));
+  try {
+    const authDir = path.join(tmp, "HeavenBridge", "auth");
+    fs.mkdirSync(authDir, { recursive: true });
+    fs.writeFileSync(path.join(authDir, "hmac.key"), "machine-local-test-key\n", "utf8");
+    assert.equal(resolveBridgeSigningKey({ env: {}, homeDir: tmp }), "machine-local-test-key");
+    assert.equal(resolveBridgeSigningKey({
+      env: { AGENT_CONTROL_HEAVEN_HMAC_KEY: "env-key" },
+      homeDir: tmp
+    }), "env-key");
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test("cross-language HMAC fixture is byte-stable", () => {
