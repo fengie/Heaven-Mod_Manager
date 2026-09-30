@@ -17,6 +17,7 @@ import {
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
   resolveHeavenRelayDir,
+  resolveExecutionRelayDir,
   resolveBridgePreviousSigningKey,
   resolveBridgeSigningKey,
   signBridgeJob,
@@ -43,6 +44,30 @@ test("bridge relay auto-discovers the documented per-user checkout", () => {
   }), explicit);
 
   assert.equal(resolveHeavenRelayDir({
+    configuredPath: "",
+    homeDir,
+    existsSync: () => false
+  }), "");
+});
+
+test("bridge execution uses the documented relay fallback when the env-specific path is absent", () => {
+  const homeDir = path.join("home", "operator");
+  const expected = path.join(homeDir, "HeavenBridgeRepo");
+
+  assert.equal(resolveExecutionRelayDir("", {
+    configuredPath: "",
+    homeDir,
+    existsSync: candidate => candidate === expected
+  }), expected);
+
+  const explicit = path.join("dedicated", "relay");
+  assert.equal(resolveExecutionRelayDir(explicit, {
+    configuredPath: "",
+    homeDir,
+    existsSync: () => false
+  }), explicit);
+
+  assert.equal(resolveExecutionRelayDir("", {
     configuredPath: "",
     homeDir,
     existsSync: () => false
