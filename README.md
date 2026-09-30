@@ -1,10 +1,12 @@
 # v8.8.23 Universal Mod Manager
 
-## v8.8.23 — Agent Manager one-click recovery
+## v8.8.23 — Agent Manager runtime reliability
 
-Agent Manager's primary **START SWARM** path now recovers a paused perpetual run instead of falsely saying it is already running while no work advances. The same path now rejects an active non-perpetual autopilot with an explicit conflict, validates the objective before clearing control/safety friction, and reports a distinct resumed state in the dashboard.
+Agent Manager's core operator paths are the immediate priority. **START SWARM** now recovers a paused perpetual run instead of falsely saying it is already running while no work advances; it also rejects an active non-perpetual autopilot with an explicit conflict, validates the objective before clearing control/safety friction, and reports a distinct resumed state in the dashboard.
 
-Agent Control advances to **v0.5.11** with server/UI regression guards for this lifecycle path. Fresh exact-head Agent Control/Windows verification is required before release-ready claims are transferred to the new patch.
+The dashboard now matches the server's authoritative managed lifecycle: reserved, starting, running, waiting, blocked, stale, and stopping workers all expose **Stop**. Its four-second polling is serialized and sequence-checked so an older slow snapshot cannot overwrite a newer sync result or falsely mark the manager offline, and periodic machine-pool renders preserve the operator-selected worker target instead of resetting it to Auto.
+
+Agent Control advances to **v0.5.11** with regression guards for one-click resume, active-state controls, stale-response rejection, selection persistence, and inline JavaScript parseability. LR-045 and the bug-precedent ledger make polling/operator-intent preservation a permanent prevention rule. Fresh exact-head Agent Control/Windows/runtime verification is still required before release-ready claims are transferred to this patch.
 
 
 ## v8.8.22 — Strict analyzer repair
