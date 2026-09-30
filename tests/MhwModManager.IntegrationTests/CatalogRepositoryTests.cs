@@ -46,6 +46,8 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Equal(expectedFile.FileName, actualFile.FileName);
         Assert.Equal(expectedFile.Category, actualFile.Category);
         Assert.Equal(expectedFile.Dependencies!.ToArray(), actualFile.Dependencies!.ToArray());
+        Assert.Null(loaded.Mod.ProviderMetadata);
+        Assert.Null(actualFile.ProviderMetadata);
         Assert.Equal(cached.Cache, loaded.Cache);
 
         var db = new ManagerDatabase(Path.Combine(root, "persist", "manager.db"));
@@ -148,6 +150,162 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Empty(results);
     }
 
+    [Fact]
+    public async Task Fts_search_covers_title_author_summary_tags_category_and_description()
+    {
+        var repository = await CreateRepositoryAsync("fts-fields");
+        var cached = CreateCached(
+            canonicalId: "nexus:fts-fields",
+            name: "Crimson Dragon Blade",
+            summary: "A sharp dragon greatsword.",
+            description: "Detailed silver weapon texture.",
+            expiresAt: null,
+            providerModId: "fts-fields");
+        await repository.UpsertAsync(cached, TestToken);
+
+        foreach (var query in new[] { "Crimson", "Author", "sharp", "greatsword", "Weapons", "silver" })
+        {
+            var result = await repository.SearchAsync(query, ct: TestToken);
+            var hit = Assert.Single(result);
+            Assert.Equal(cached.Mod.CanonicalId, hit.Mod.CanonicalId);
+        }
+    }
+
+    [Fact]
+    public async Task Cache_does_not_persist_raw_provider_payloads_or_expiring_urls()
+    {
+        var repository = await CreateRepositoryAsync("privacy");
+        var baseCached = CreateCached(
+            canonicalId: "nexus:privacy-fixture",
+            name: "Privacy Fixture",
+            summary: "Cache privacy",
+            description: "Signed URLs must not persist.",
+            expiresAt: null,
+            providerModId: "privacy-fixture");
+        var cached = baseCached with
+        {
+            Mod = baseCached.Mod with
+            {
+                Thumbnail = "https://cdn.example.test/thumb.jpg?signature=secret&expires=123",
+                Screenshots =
+                [
+                    new("https://cdn.example.test/public.jpg", "public"),
+                    new("https://cdn.example.test/private.jpg?token=secret", "private")
+                ],
+                Dependencies =
+                [
+                    new("Public dep", Url: "https://example.test/public"),
+                    new("Signed dep", Url: "https://example.test/private?x-amz-signature=secret")
+                ],
+                ProviderMetadata = """{"token":"must-not-persist"}"""
+            }
+        };
+
+        await repository.UpsertAsync(cached, TestToken);
+        var loaded = await repository.GetAsync(cached.Mod.CanonicalId, TestToken);
+        Assert.NotNull(loaded);
+        Assert.Null(loaded.Mod.ProviderMetadata);
+        Assert.Null(loaded.Mod.Thumbnail);
+        var image = Assert.Single(loaded.Mod.Screenshots);
+        Assert.Equal("public", image.Caption);
+        Assert.Equal("https://example.test/public", loaded.Mod.Dependencies[0].Url);
+        Assert.Null(loaded.Mod.Dependencies[1].Url);
+        Assert.Null(Assert.Single(loaded.Mod.Files).ProviderMetadata);
+
+        var signedSource = baseCached with
+        {
+            Mod = baseCached.Mod with
+            {
+                CanonicalId = "nexus:signed-source-fixture",
+                ProviderModId = "signed-source-fixture",
+                SourceUrl = "https://mods.example.test/1?access_token=secret",
+                Files = []
+            }
+        };
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.UpsertAsync(signedSource, TestToken));
+    }
+
+    [Fact]
+    public async Task Sync_rate_link_and_provenance_state_round_trip()
+    {
+        var repository = await CreateRepositoryAsync("state");
+        var first = CreateCached(
+            "nexus:state-a",
+            "State A",
+            "First",
+            "First item",
+            null,
+            providerModId: "state-a");
+        var second = CreateCached(
+            "nexus:state-b",
+            "State B",
+            "Second",
+            "Second item",
+            null,
+            providerModId: "state-b");
+        await repository.UpsertAsync(first, TestToken);
+        await repository.UpsertAsync(second, TestToken);
+
+        var now = new DateTimeOffset(2026, 9, 30, 2, 30, 0, TimeSpan.Zero);
+        var sync = new CatalogSyncState("nexus", "monsterhunterworld:updated", "cursor-2", now, now, null);
+        await repository.UpsertSyncStateAsync(sync, TestToken);
+        Assert.Equal(sync, await repository.GetSyncStateAsync("nexus", sync.ScopeKey, TestToken));
+
+        var rate = new CatalogRateState(
+            "nexus",
+            "api",
+            new CatalogRateLimit(100, 12, 1000, 500, now.AddMinutes(3), now));
+        await repository.UpsertRateStateAsync(rate, TestToken);
+        Assert.Equal(rate, await repository.GetRateStateAsync("nexus", "api", TestToken));
+
+        var link = new CatalogLink(
+            first.Mod.CanonicalId,
+            second.Mod.CanonicalId,
+            CatalogLinkEvidenceKind.ExactArchiveSha256,
+            new string('a', 64),
+            now);
+        await repository.UpsertLinkAsync(link, TestToken);
+        var storedLink = Assert.Single(await repository.GetLinksAsync(first.Mod.CanonicalId, TestToken));
+        Assert.Equal(link.EvidenceKind, storedLink.EvidenceKind);
+        Assert.Equal(link.EvidenceValue, storedLink.EvidenceValue);
+
+        var provenance = await repository.GetProvenanceAsync(first.Mod.CanonicalId, TestToken);
+        Assert.NotNull(provenance);
+        Assert.Equal(first.Mod.SourceUrl, provenance.SourceUrl);
+        Assert.Equal(first.Cache.SourceFingerprint, provenance.SourceFingerprint);
+    }
+
+    [Fact]
+    public async Task Same_named_items_from_different_sources_remain_distinct()
+    {
+        var repository = await CreateRepositoryAsync("source-separation");
+        var secondCompliance = NexusV3CatalogPolicy.Compliance with { ProviderId = "fixture-source-b" };
+        await repository.UpsertSourceAsync("Fixture Source B", secondCompliance, TestToken);
+
+        var first = CreateCached(
+            "nexus:same-name",
+            "Same Name",
+            "First source",
+            "First",
+            null,
+            providerModId: "same-name-a");
+        var second = CreateCached(
+            "fixture-source-b:same-name",
+            "Same Name",
+            "Second source",
+            "Second",
+            null,
+            providerId: "fixture-source-b",
+            providerModId: "same-name-b");
+        await repository.UpsertAsync(first, TestToken);
+        await repository.UpsertAsync(second, TestToken);
+
+        var results = await repository.SearchAsync("Same", gameId: "monsterhunterworld", ct: TestToken);
+        Assert.Equal(2, results.Count);
+        Assert.Contains(results, item => item.Mod.ProviderId == "nexus");
+        Assert.Contains(results, item => item.Mod.ProviderId == "fixture-source-b");
+    }
+
     private async Task<CatalogRepository> CreateRepositoryAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name, "manager.db"));
@@ -162,13 +320,15 @@ public sealed class CatalogRepositoryTests : IDisposable
         string name,
         string summary,
         string description,
-        DateTimeOffset? expiresAt)
+        DateTimeOffset? expiresAt,
+        string providerId = "nexus",
+        string providerModId = "global-fixture")
     {
         var fetched = new DateTimeOffset(2026, 9, 30, 2, 0, 0, TimeSpan.Zero);
         var dependency = new CatalogDependency("Stracker's Loader", Url: "https://example.test/dependency");
         var file = new CatalogModFile(
-            "nexus",
-            "global-fixture",
+            providerId,
+            providerModId,
             "file-1",
             "Main File",
             "fixture.zip",
@@ -184,8 +344,8 @@ public sealed class CatalogRepositoryTests : IDisposable
 
         var mod = new CatalogMod(
             canonicalId,
-            "nexus",
-            "global-fixture",
+            providerId,
+            providerModId,
             "monsterhunterworld",
             name,
             summary,
