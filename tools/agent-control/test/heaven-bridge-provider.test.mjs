@@ -49,6 +49,16 @@ test("bridge relay auto-discovers the documented per-user checkout", () => {
   }), "");
 });
 
+test("bridge dispatch and result wait use the same documented relay resolver as health inspection", () => {
+  const provider = fs.readFileSync(new URL("../lib/heaven-bridge-provider.mjs", import.meta.url), "utf8");
+  assert.match(provider, /submitHeavenBridgeJob\(job, \{[\s\S]*?relayDir = resolveHeavenRelayDir\(\)/);
+  assert.match(provider, /waitForHeavenBridgeResult\(\{[\s\S]*?relayDir = resolveHeavenRelayDir\(\)/);
+  assert.doesNotMatch(
+    provider,
+    /relayDir = process\.env\.AGENT_CONTROL_HEAVEN_RELAY_DIR[\s\S]{0,240}required for bridge execution/i
+  );
+});
+
 test("bridge jobs normalize ids and preserve bounded execution metadata", () => {
   const job = buildBridgeJob({
     id: "Support / Agent #1",
