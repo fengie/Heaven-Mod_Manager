@@ -1,17 +1,18 @@
-# v8.8.49 governance reconciliation — current handoff
+# v8.8.50 governance integration — current handoff
 
-Owner: current chat, branch codex/training-governance-integration, base origin/main5152771d. Preserve PR525 original50a74047 history; do not overwrite its external branch. New product features remain frozen.
+Owner: PR #528 / branch `codex/training-governance-integration`, reconciled onto canonical v8.8.49 main `be4615f`. PR #525 is closed as superseded; its repaired head and later reconciliation ancestry are preserved in this branch. New product features remain frozen.
 
 ## Current verification and integration truth
-PR523/sourceed02 v47/build356 is verified/published; inspector runtime/UI evidence closed issue461. PR522/524/source de38 v48/build357 is merged, immutable private/public parity verified, main controller/security/Windows gates pass and updater36784369277 passes update/rollback. Evidence files retain exact inputs. Operator install latest proven352; reported populated Mods collapse root cause remains unproven.
 
-Candidate49 consolidates PR525 governance while preserving pre-response/global training, full constitution startup reading, recursive successor propagation and actual byte budgets. Verification for49 is pending; historical green does not transfer.
+v8.8.49 UI fixes are merged on main. Their exact candidate `3bc8f6b` passed Security Supply Chain, Agent Control, and Workflow Feature gates before merge. The actual operator visual confirmation for the ComboBox/Mods fixes remains an explicit runtime gap.
+
+Candidate v8.8.50 consolidates agent governance while preserving mandatory pre-response training, full continuity-constitution startup reading, recursive successor propagation, authorized fallback rules, bug-prevention closure, strict raw UTF-8 byte budgets, and adversarial handoff validation. Historical green does not transfer to this changed candidate.
 
 ## Next ordered actions and risks
-1. Repair and run exact-candidate validator/negative fixtures, controller suite, bootstrap/core/prompt budgets and independent review. Indexed constitution still requires full startup reading; report core/prompt size separately from all mandatory reads.
-2. Refresh ownership/main/head; create reviewed PR, merge only after exact-head gates, then verify main/release/update rollback and safe ancestry-based temporary cleanup.
-3. Review newly arrived Mods-empty/ComboBox bug branches; preserve unique registry projections and catalog branches. Issues411/350/354/281 remain unmet; no blind closure or bulk merge.
-4. Resume paused cached-plugin routing consolidation after existing queue reconciliation. Improvement: verify the actual populated Mods window through the authorized operator route before claiming collapse fixed.
 
-Each successor must inherit and preserve the constitution and recursively propagate it to the agent after them. Preserve exact source, evidence, unresolved risks and ordered next actions without private chat history.
-Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and applicable `_AGENT_CONTEXT/LEARNED_RULES.md` entries to preserve that successor contract.
+1. Run exact-head Security, Agent Control, and Workflow Feature gates for PR #528; repair only real failures and do not weaken safeguards.
+2. Refresh main/head immediately before merge; merge only the verified exact head, then confirm remote main contains the intended v8.8.50 tree.
+3. Retire temporary governance branches only after ancestry/semantic preservation proof. Preserve unique registry/catalog work until separately reviewed.
+4. Issues #411, #350, #354, and #281 remain unresolved. Resume paused cached-plugin routing work only after the existing queue is reconciled.
+
+Each successor must inherit and preserve the constitution and recursively propagate it to the agent after them. Do not break the chain. Preserve exact source, evidence, unresolved risks, and ordered next actions without private chat history.
