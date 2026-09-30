@@ -1,4 +1,8 @@
-# v8.8.37 Universal Mod Manager
+# v8.8.38 Universal Mod Manager
+
+## v8.8.38 — dependency blocker compile repair
+
+The deployment dependency summary now uses the array's `Length` when reporting blockers beyond the first three. The prior `.Count` member access resolved to an extension-method group and broke the WPF application compile, which then cascaded into missing downstream test executables in the repository verification gate. This patch restores compilation without changing blocker ordering or display semantics.
 
 ## v8.8.37 — Agent registry lifecycle closure
 
