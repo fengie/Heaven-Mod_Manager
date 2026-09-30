@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
-  "currentVersion": "8.8.41",
+  "workingBranch": "codex/ci-evidence-scaling",
+  "currentVersion": "8.8.42",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.41-scalable-bootstrap-verified-and-published",
-  "nextMilestone": "Bootstrap scaling delivered; keep Agent Manager P0 active until full dispatch/recovery/stop and authenticated Bridge runtime proof closes it.",
-  "nextRequiredAction": "Use EVIDENCE/v8.8.41-scalable-bootstrap.md; prioritize actionable Agent Manager work. Reserve unchanged authorization/install blockers for live intervention.",
+  "status": "v8.8.42-current-ci-evidence-candidate",
+  "nextMilestone": "Verify scoped current CI adapter and fail-closed release gates; integrate, publish and attest exact proof.",
+  "nextRequiredAction": "Run plugin/full gates and actual Actions metadata proof; preserve Agent Manager P0 and separate auth/install limitations.",
   "verificationAppliesToCommit": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
   "lastClosedVerificationCommit": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
   "lastClosedVerificationRun": "heaven-github-actions-36759646889",
-  "verificationScopeNote": "Exact v8.8.41 source passed 26/26 repository verification, Agent Control/security, immutable private/public build 350 parity, disposable updater success/rollback and heaven2 bootstrap/CLI/prompt smoke. Operator installation and Bridge auth readiness remain unverified.",
+  "verificationScopeNote": "Prior v8.8.41 source 7edcd03f passed 26/26, Agent Control/security, immutable build 350, disposable updater success/rollback and controller smoke. v8.8.42 candidate has no inherited proof.",
   "lastClosedVerification": {
     "sourceSha": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
     "windowsGate": "36759646889 success; 26/26",
@@ -27,11 +27,10 @@
     "evidenceCommit": "6a1db2153604c7054fa59623ea232ab3cbdd6d10",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.41-scalable-bootstrap.md"
   },
-  "candidateSourceCommit": "7edcd03f58cffbcdfd6a14f1c627533d20b9fd35",
+  "candidateSourceCommit": null,
   "candidateChanges": [
-    "Bounded live bootstrap packet and SHA-256-checked context pagination.",
-    "Compact entrypoint/current revision; detailed policies and historical state preserved in indexed references.",
-    "One authoritative remote refresh per deployment; exact source/lease evidence remains required."
+    "Reader-injected bounded exact repo/SHA/event/branch CI evidence in existing Heaven Workflows owner.",
+    "Reject historical-success masking, ambiguous/running/partial/expired gate evidence; revalidate snapshot at publish authorization."
   ],
   "agentManagerPriority": {
     "status": "active",

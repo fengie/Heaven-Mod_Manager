@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.41",
+  "currentVersion": "8.8.42",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.40 efficient agent bootstrap, integrated/published build 349",
+  "immediateParentRevision": "v8.8.41 bounded bootstrap, published build 350",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.41 bootstrap is integrated, verified, deployed and published as immutable private/public build 350. Continue actionable Agent Manager P0 work from fresh main, preserve separate installed-client/Bridge auth gaps, defer unchanged recurring blockers to live work, and recursively propagate the continuity constitution.",
+  "nextAgentObligation": "Finish exact-head v8.8.42 scoped CI evidence/fail-closed gate tests and actual API proof, integrate/publish and preserve truthful provider configuration, separate auth/install gaps, Agent Manager P0 and recursive continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
