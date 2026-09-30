@@ -570,3 +570,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+## Conflict/dependency proof separation (2026-09-29)
+
+- Treat mod identity/grouping, overwrite precedence, and dependency satisfaction as separate proofs. A shared family ID, source page, or profile priority is not overwrite authority.
+- For an atomic MHW structural bundle, distinct filenames can still be mutually coupled. Do not compose providers across the bundle unless a complete overlay chain or strong one-main/dependent-family relationship proves the composition.
+- Any non-blocking multi-provider resolver result must name an actual candidate winner. Missing/low-confidence winner evidence is a blocker, never a reason to fall back to priority.
+- Re-run hard dependency/resource/loader validation at the final normal deployment and launch boundary even when an earlier selection workflow already checked it.
