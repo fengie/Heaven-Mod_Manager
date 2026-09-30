@@ -18,6 +18,7 @@ public sealed record InstalledCatalogOriginCheckResult(
 
 public sealed class InstalledCatalogOriginChecker
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This checker is an instance service API; preserving instance semantics avoids needless public API churn while providers remain injected per call.")]
     public async Task<InstalledCatalogOriginCheckResult> CheckAsync(
         IModCatalogProvider provider,
         GameProfile game,
