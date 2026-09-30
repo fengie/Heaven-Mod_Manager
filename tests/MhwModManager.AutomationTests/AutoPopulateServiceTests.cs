@@ -234,7 +234,7 @@ public sealed class AutoPopulateServiceTests : IDisposable
         var statuses = await new DependencyDoctorService(db, gameRoot, GameProfile.MonsterHunterWorld(gameRoot))
             .ScanStageAsync(new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "dependent" }, TestContext.Current.CancellationToken);
 
-        var failed = Assert.Single(statuses.Where(x => !x.Ready));
+        var failed = Assert.Single(statuses, x => !x.Ready);
         Assert.Equal("dependent", failed.ModId);
         Assert.Contains(failed.Missing, x => x.Contains("managed provider", StringComparison.OrdinalIgnoreCase));
     }
@@ -468,7 +468,7 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.False(plan.IsBlocked);
         var status = await dependencies.ScanStageAsync(enabled, plan, TestContext.Current.CancellationToken);
 
-        var plugin = Assert.Single(status.Where(x => x.ModId == "plugin"));
+        var plugin = Assert.Single(status, x => x.ModId == "plugin");
         Assert.False(plugin.Ready);
         Assert.Contains(plugin.Missing, x => x.Contains("mix bootstrap binaries", StringComparison.OrdinalIgnoreCase));
     }
