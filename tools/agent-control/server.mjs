@@ -571,6 +571,38 @@ async function branchTipOnMain(branchSha) {
   }
 }
 
+async function branchDeltaMatchesMainTree(baseSha, branchSha) {
+  if (!baseSha || !branchSha) return false;
+
+  let changedPaths;
+  try {
+    const raw = await git(["diff", "--name-only", "--no-renames", baseSha, branchSha]);
+    changedPaths = raw.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+  } catch {
+    return false;
+  }
+
+  if (!changedPaths.length) return true;
+
+  async function objectAt(revision, relativePath) {
+    try {
+      return await git(["rev-parse", "--verify", `${revision}:${relativePath}`]);
+    } catch {
+      return null;
+    }
+  }
+
+  for (const relativePath of changedPaths) {
+    const [branchObject, mainObject] = await Promise.all([
+      objectAt(branchSha, relativePath),
+      objectAt("origin/main", relativePath)
+    ]);
+    if (branchObject !== mainObject) return false;
+  }
+
+  return true;
+}
+
 async function cleanupIntegratedBranchForTask(agent, task) {
   const branchName = String(task?.branchName || agent?.branchName || "").trim();
   if (!branchName || BRANCH_POLICY_RESERVED.includes(branchName)) {
@@ -609,6 +641,17 @@ async function cleanupIntegratedBranchForTask(agent, task) {
     };
   }
 
+  const baseSha = task?.baseSha || agent?.baseSha || null;
+  const canonicalTreeContainsBranchDelta = await branchDeltaMatchesMainTree(baseSha, branchSha);
+  if (!canonicalTreeContainsBranchDelta) {
+    return {
+      status: "preserved",
+      reason: "branch-tip-ancestor-without-canonical-tree-proof",
+      remotePresent: remotePresentBefore,
+      branchSha
+    };
+  }
+
   if (agent?.worktree && fs.existsSync(agent.worktree)) {
     const dirty = await git(["status", "--porcelain"], agent.worktree);
     if (dirty) {
@@ -641,6 +684,7 @@ async function cleanupIntegratedBranchForTask(agent, task) {
     branchName,
     branchSha,
     mainContainsBranchTip: true,
+    canonicalTreeContainsBranchDelta: true,
     worktreeDirty: false,
     deletionSucceeded: !remotePresent
   });
