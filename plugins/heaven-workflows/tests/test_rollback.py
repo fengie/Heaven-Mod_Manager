@@ -116,6 +116,19 @@ class RollbackTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             coordinator.commit_change("change-1",post_state_id="unexpected")
 
+    def test_partial_rollback_cannot_be_committed_and_can_resume(self):
+        invoker=Invoker({"filesystem.write"})
+        coordinator,store,_,_=self.plan(invoker)
+        first=coordinator.rollback_change("change-1",reason="abort",confirm=True)
+        self.assertFalse(first["ok"])
+        with self.assertRaises(ValueError):
+            coordinator.commit_change("change-1",post_state_id="post-sha")
+        checkpoint=store.values["rollback:change-1"]
+        checkpoint["payload"]["status"]="rolling_back"
+        invoker.fail.clear()
+        resumed=coordinator.rollback_change("change-1",reason="resume after crash",confirm=True)
+        self.assertTrue(resumed["ok"])
+
 
 if __name__=="__main__":
     unittest.main()
