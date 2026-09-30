@@ -1,6 +1,6 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
 
-## v8.8.49 — compact Agent Manager overview
+## v8.8.50 — compact Agent Manager overview
 
 Agent Manager now defaults every high-volume operational surface to a compact collapsed summary card, so notifications, agent registries, leases, queues, branches, events, history, and machine details no longer create a giant vertical wall. The summaries remain visible together in a responsive two-column overview; opening one card expands it full-width with its own bounded internal scroll. Inspecting an agent or notification automatically opens the Inspector, and notification summaries surface critical/warning counts at a glance. Agent Control advances to **v0.6.23**.
 
