@@ -187,6 +187,7 @@ HMAC_KEY_ENV = "HEAVEN_BRIDGE_HMAC_KEY"
 HMAC_KEY_FILE_ENV = "HEAVEN_BRIDGE_HMAC_KEY_FILE"
 ALLOW_REPO_ACL_ONLY_ENV = "HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY"
 ALLOW_LEGACY_HMAC_ENV = "HEAVEN_BRIDGE_ALLOW_LEGACY_HMAC_CANONICAL"
+MIN_HMAC_KEY_BYTES = 32
 SENSITIVE_ENV_RE = re.compile(r"(PASS(?:WORD)?|TOKEN|SECRET|HMAC[_-]?KEY|API[_-]?KEY|PRIVATE[_-]?KEY|COOKIE|AUTH|CREDENTIAL|BEARER|CONNECTION[_-]?STRING)", re.I)
 CONTROLLER_SECRET_KEY_RE = re.compile(r"(?:^|[_-])(pass(?:word)?|token|secret|api[_-]?key|private[_-]?key|cookie)(?:$|[_-])", re.I)
 UIA_MAX_NODES = max(10, min(int(os.environ.get("HEAVEN_BRIDGE_UIA_MAX_NODES", "250")), 1000))
@@ -423,7 +424,8 @@ def git_sync(max_attempts=5):
 def publish_json(relative_path, body, message, max_attempts=6):
     relative_path = str(relative_path).replace("\\", "/")
     target = ROOT / relative_path
-    payload = json.dumps(body, indent=2, ensure_ascii=False)
+    signed_body = sign_relay_document(body)
+    payload = json.dumps(signed_body, indent=2, ensure_ascii=False)
     # Serialize both the working-tree write and all git operations. Writing tracked
     # relay files outside GIT_LOCK lets concurrent publishers create unstaged
     # changes while another thread is rebasing, which can starve result publication.
@@ -581,6 +583,20 @@ def canonical_auth_job_v1(job):
     canonical = ["mhw-bridge-canon-v1", _canonical_json_value(copy)]
     return json.dumps(canonical, separators=(",", ":"), ensure_ascii=True).encode("ascii")
 
+def sign_relay_document(document):
+    body = json.loads(json.dumps(document))
+    key = load_hmac_key()
+    if not key:
+        return body
+    auth = body.get("auth") if isinstance(body.get("auth"), dict) else {}
+    auth.pop("signature", None)
+    auth["canonical"] = "mhw-bridge-canon-v1"
+    body["auth"] = auth
+    signature = hmac.new(key.encode("utf-8"), canonical_auth_job_v1(body), hashlib.sha256).hexdigest()
+    body["auth"]["signature"] = signature
+    return body
+
+
 def canonical_job(job):
     # Legacy canonicalization is retained for replay hashes and pre-v1 HMAC clients.
     copy = json.loads(json.dumps(job))
@@ -623,7 +639,7 @@ def hmac_key_path():
 def load_hmac_key():
     inline = os.environ.get(HMAC_KEY_ENV)
     if inline:
-        return str(inline)
+        return validate_hmac_key_strength(inline, HMAC_KEY_ENV)
     path = hmac_key_path()
     try:
         value = path.read_text(encoding="utf-8").strip()
@@ -633,7 +649,24 @@ def load_hmac_key():
         raise BridgeError("AUTH_KEY_UNREADABLE", "HMAC key file exists but cannot be read", {"path": str(path)}) from exc
     if not value:
         raise BridgeError("AUTH_KEY_EMPTY", "HMAC key file is empty", {"path": str(path)})
+    if len(value.encode("utf-8")) < MIN_HMAC_KEY_BYTES:
+        raise BridgeError(
+            "AUTH_KEY_WEAK",
+            f"HMAC key must be at least {MIN_HMAC_KEY_BYTES} UTF-8 bytes",
+            {"path": str(path), "minimum_bytes": MIN_HMAC_KEY_BYTES},
+        )
     return value
+
+
+def validate_hmac_key_strength(value, source="environment"):
+    key = str(value or "")
+    if key and len(key.encode("utf-8")) < MIN_HMAC_KEY_BYTES:
+        raise BridgeError(
+            "AUTH_KEY_WEAK",
+            f"HMAC key must be at least {MIN_HMAC_KEY_BYTES} UTF-8 bytes",
+            {"source": source, "minimum_bytes": MIN_HMAC_KEY_BYTES},
+        )
+    return key
 
 
 def auth_mode():
@@ -2621,6 +2654,7 @@ def run_job(job_id, job, cancel_event):
             "capabilities": {
                 "concurrency": True, "job_ttl": True, "idempotency": True, "optional_hmac": False,
                 "hmac_required_by_default": True, "legacy_hmac_requires_explicit_opt_in": True,
+                "authenticated_relay_results": True, "minimum_hmac_key_bytes": MIN_HMAC_KEY_BYTES,
                 "child_environment_secret_stripping": True,
                 "binary_files": True, "file_delete": True, "file_copy": True, "output_pagination": True,
                 "process_tree_kill": True, "session_timeouts": True, "session_restart_recovery": True,
