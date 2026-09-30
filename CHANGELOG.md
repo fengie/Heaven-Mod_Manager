@@ -1,3 +1,12 @@
+# v8.8.43 — bounded indexed-context navigation
+- Enforce actual compact CLI output, escaping and newline within the 8 KiB envelope; preserve pagination continuation without dropped lines when serialization expands content.
+- Add hash-checked literal `--search` and Markdown `--heading` modes to the canonical repository-context CLI.
+- Keep navigation inside indexed repository documents and existing symlink/path/source-size protections; exact indexed SHA-256 remains mandatory.
+- Bound queries to one 256-byte line, results to 50, output to 8 KiB, snippets to 512 bytes, and disclose result-set/snippet truncation.
+- Return stable line numbers and heading levels so agents can navigate directly into existing bounded pagination without regex execution or persistent caches.
+- Advertise search/heading commands and result limits in the live bootstrap packet; advance Agent Control/plugin identity to v0.6.20 and prompt-library identity to 2026.09.30.3.
+- Add focused API/CLI regressions for matching, heading selection, stale hashes, malformed queries, conflicting flags and byte/result bounds.
+
 # v8.8.42 — current CI evidence and fail-closed release gates
 - Extend Heaven Workflows to v0.4.0 with exact repo/SHA/event/branch Actions evidence through an injected authorized reader, bounded pages/responses/output and explicit provider/partial errors.
 - Retain the newest provable workflow result, reject ambiguous ordering/identities and changing counts, and expire snapshots after two minutes.

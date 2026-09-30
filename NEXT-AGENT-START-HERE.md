@@ -1,6 +1,6 @@
-# v8.8.42 current continuation
+# v8.8.43 integration continuation
 
-Use the newest `_AGENT_CONTEXT/NEXT_STEPS.md` and `EVIDENCE/v8.8.42-ci-evidence.md` for this change. Historical v8.8.40 proof remains separate. Read the compact core and expand indexed task-relevant policies; preserve the permanent continuity constitution and recursively pass it to each successor and the agent after them. Do not break the chain.
+Use the newest `_AGENT_CONTEXT/NEXT_STEPS.md` and `EVIDENCE/v8.8.43-context-navigation.md` for current integration. Historical v8.8.42 release proof remains separate. Read the compact core and expand indexed task-relevant policies; preserve the permanent continuity constitution and recursively pass it to each successor and the agent after them. Do not break the chain.
 
 > **Efficient startup rule — 2026-09-30:** This file is now **indexed continuity**, not a mandatory end-to-end reread on every agent launch. Read the compact core bootstrap first, prove this file's hash/revision through the generated context manifest, then search/read only the newest and task-relevant sections. Output truncation requires pagination/chunking, and a missing CLI or local checkout requires authorized fallback routing rather than an immediate training blocker.
 

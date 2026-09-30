@@ -8,7 +8,7 @@ import http from "node:http";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { execFileHidden } from "../lib/background-process.mjs";
-import { buildRepositoryBootstrap, verifyRepositoryBootstrap, readRepositoryContext, repositoryManifest, MAX_BOOTSTRAP_BYTES, MAX_CORE_BYTES, BOOTSTRAP_TTL_MS } from "../lib/repository-bootstrap.mjs";
+import { buildRepositoryBootstrap, verifyRepositoryBootstrap, readRepositoryContext, findRepositoryContext, repositoryManifest, MAX_BOOTSTRAP_BYTES, MAX_CORE_BYTES, MAX_CONTEXT_BYTES, MAX_CONTEXT_RESULTS, BOOTSTRAP_TTL_MS } from "../lib/repository-bootstrap.mjs";
 import { REQUIRED_REPOSITORY_TRAINING_PATHS, REPOSITORY_CONTEXT_INDEX_PATHS, renderAgentPrompt } from "../lib/prompt-templates.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -90,6 +90,67 @@ test("context pagination is hash-checked, UTF-8 bounded and recoverable", async 
   assert.throws(() => readRepositoryContext({ root, document, expectedSha256, maxBytes: 2 }), /exceeds/);
 });
 
+test("context navigation is hash-checked, literal, line-addressable and bounded", t => {
+  const root = fixture(t), document = REPOSITORY_CONTEXT_INDEX_PATHS[0];
+  fs.writeFileSync(path.join(root, document), "# Alpha\nNeedle one\n## Beta Target\nneedle two\nplain\n### TARGET child\nneedle " + "x".repeat(900));
+  const expectedSha256 = repositoryManifest(root).context[0].sha256;
+
+  const search = findRepositoryContext({ root, document, expectedSha256, query: "NEEDLE", maxResults: 2 });
+  assert.equal(search.totalMatches, 3);
+  assert.equal(search.matches.length, 2);
+  assert.equal(search.matches[0].line, 2);
+  assert.equal(search.matches[1].line, 4);
+  assert.equal(search.truncated, true);
+
+  const longSearch = findRepositoryContext({ root, document, expectedSha256, query: "needle", maxResults: 3 });
+  assert.equal(longSearch.matches[2].textTruncated, true);
+  assert.ok(Buffer.byteLength(longSearch.matches[2].text) <= 512);
+
+  const headings = findRepositoryContext({ root, document, expectedSha256, query: "target", mode: "heading" });
+  assert.deepEqual(headings.matches.map(match => [match.line, match.level]), [[3, 2], [6, 3]]);
+  assert.equal(headings.totalMatches, 2);
+  assert.equal(headings.truncated, false);
+
+  const byteBounded = findRepositoryContext({ root, document, expectedSha256, query: "needle", maxBytes: 700 });
+  assert.ok(Buffer.byteLength(JSON.stringify(byteBounded)) <= 700);
+  assert.equal(byteBounded.truncated, true);
+
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256: "0".repeat(64), query: "needle" }), /hash changed/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "   " }), /non-empty bounded line/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "a\nb" }), /non-empty bounded line/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "x".repeat(257) }), /non-empty bounded line/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", mode: "regex" }), /search or heading/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", maxResults: MAX_CONTEXT_RESULTS + 1 }), /result bound/);
+  assert.throws(() => findRepositoryContext({ root, document, expectedSha256, query: "needle", maxBytes: 511 }), /byte bound/);
+  const coreDocument = REQUIRED_REPOSITORY_TRAINING_PATHS[0];
+  const coreSha256 = repositoryManifest(root).core[0].sha256;
+  assert.throws(() => readRepositoryContext({ root, document: coreDocument, expectedSha256: coreSha256 }), /not an indexed context document/);
+  assert.throws(() => findRepositoryContext({ root, document: coreDocument, expectedSha256: coreSha256, query: "policy" }), /not an indexed context document/);
+  assert.equal(MAX_CONTEXT_BYTES, 8_192);
+});
+
+test("pagination includes escaped JSON and newline in its emitted byte budget", t => {
+  const root = fixture(t), document = REPOSITORY_CONTEXT_INDEX_PATHS[0];
+  fs.writeFileSync(path.join(root, document), Array.from({ length: 40 }, () => '"'.repeat(180) + "😀").join("\n"));
+  const expectedSha256 = repositoryManifest(root).context[0].sha256;
+  let line = 1, count = 0;
+  do {
+    const page = readRepositoryContext({ root, document, expectedSha256, startLine: line });
+    assert.ok(Buffer.byteLength(JSON.stringify(page) + "\n") <= MAX_CONTEXT_BYTES);
+    count += page.endLine - page.startLine + 1;
+    line = page.nextLine;
+  } while (line !== null);
+  assert.equal(count, 40);
+});
+
+test("actual context CLI output stays bounded at maximum results", async () => {
+  const document = "_AGENT_CONTEXT/LEARNED_RULES.md";
+  const expectedSha256 = repositoryManifest(REPO).context.find(row => row.path === document).sha256;
+  const { stdout } = await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", document, "--sha256", expectedSha256, "--search", "rule", "--results", "50"]);
+  assert.ok(Buffer.byteLength(stdout) <= MAX_CONTEXT_BYTES);
+  assert.ok(JSON.parse(stdout).matches.length > 0);
+});
+
 test("context refuses unindexed paths, empty sources and linked ancestors", async t => {
   const root = fixture(t), document = REPOSITORY_CONTEXT_INDEX_PATHS[0];
   assert.throws(() => readRepositoryContext({ root, document: "../outside", expectedSha256: "a".repeat(64) }), /not an indexed/);
@@ -115,6 +176,15 @@ test("canonical CLI and generated worker prompts retain bounded retrieval and co
   const row = packet.manifests.context.find(row => row.path === "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md");
   const page = JSON.parse((await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--lines", "4"])).stdout);
   assert.equal(page.endLine, 4);
+  const search = JSON.parse((await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--search", "plugin", "--results", "3"])).stdout);
+  assert.equal(search.mode, "search");
+  assert.ok(search.totalMatches >= search.matches.length && search.matches.length > 0);
+  assert.ok(search.matches.every(match => Number.isInteger(match.line)));
+  const heading = JSON.parse((await execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--heading", "plugin", "--results", "3"])).stdout);
+  assert.equal(heading.mode, "heading");
+  assert.ok(heading.matches.length > 0);
+  assert.ok(heading.matches.every(match => Number.isInteger(match.level)));
+  await assert.rejects(execFileHidden(process.execPath, [path.join(HERE, "../repository-context.mjs"), "--document", row.path, "--sha256", row.sha256, "--search", "plugin", "--line", "1"]), /cannot be combined/);
   const prompt = renderAgentPrompt({ role: "manager", task: "Verify startup", machine: "heaven2", assignment: {}, repositoryBootstrap: packet }).rendered;
   assert.ok(prompt.indexOf("LIVE REPOSITORY BOOTSTRAP") < prompt.lastIndexOf("USER / MANAGER TASK"));
   assert.match(prompt, /Local-ref-only evidence does not prove fresh remote main/);

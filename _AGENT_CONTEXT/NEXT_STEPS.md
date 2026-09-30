@@ -1,3 +1,28 @@
+# v8.8.43 integration ownership — 2026-09-30
+
+Current chat owns integration/release on `codex/context-navigation-integration`, preserving externally authored PR #515/head 2031c405 unchanged. Refreshed main a03fa700, clean worktree and controller on heaven2 with zero active leases; registry coverage is partial, not proof every external agent is absent. Isolated integration branch is required because the implementation branch has external provenance; no force push or duplicate implementation. Newer v8.8.42 release/evidence is preserved; candidate history below is superseded for current execution.
+
+PLUGIN-PREFLIGHT: reviewed live continuation and scaling assignment, native GitHub repo/CI/merge tools, local Agent Control status/CLI and existing Heaven Bridge/Workflows instructions, plugins README/backlog. No callable Heaven MCP surface appears in the current tool inventory; use canonical local source/hidden execution on heaven2 and verified self-hosted CI for heavy work. Current controller localhost:7331 is healthy. Authenticated Git REST reader is available and already verified; no new credential store, RDC, Work handoff or auth/quota bypass. Existing Agent Control is the owner; select its CLI/source and canonical guarded restore, not a new plugin.
+
+Next: enforce final CLI bytes and sibling pagination envelope, run regressions/checks and handoff negatives; push integration PR, recheck both branch heads/main/leases, require exact-head checks, merge and immediately verify main release/parity/update/rollback. Restore controller only from clean canonical source, verify actual navigation CLI, and persist closure. Improvement: measure navigation use/latency before caching; keep host registration, Bridge auth and actual operator install separate. Preserve and recursively propagate the constitution to every successor and the agent after them. Do not break the chain.
+
+---
+# 2026-09-30 v8.8.43 bounded context navigation — ACTIVE CANDIDATE
+
+Owner: current chat, branch `feature/bounded-context-navigation-v8.8.43-20260930`, reconciled onto canonical v8.8.42 main `7e8e045cc7c89a8b7ff318c28b98d08b76443522`. PR #515 owns only Agent Control indexed-context navigation. v8.8.42 CI-evidence work is preserved; no earlier verification is inherited by this candidate.
+
+1. Require exact-head Agent Control PR Gate, Workflow Feature PR Gate and Security Supply Chain Gate on the finalized candidate; queued, stale, cancelled or historical success is not acceptance.
+2. Verify literal `--search` and Markdown `--heading` lookup remain SHA-256-bound, indexed-document-only, line-addressable, case-insensitive and bounded, with explicit result-set/snippet truncation.
+3. Refresh canonical main/PRs immediately before integration. If main moved, reconcile without discarding newer canonical work and rerun affected exact-head checks.
+4. Integrate only when required checks are green and the repository-required release/publication path is available. This runtime has GitHub repo/CI write access but no Heaven/Agent Control/local release connector or GitHub release-creation primitive; do not knowingly create an unreleasable canonical version.
+5. After integration, verify remote main and immediately complete immutable publication/runtime evidence through an authorized release-capable path; supersede this candidate note with exact closure evidence and delete the temporary branch when safe.
+
+Improvement opportunities: measure navigation adoption/latency before adding any cache; if navigation grows later, prefer bounded structured selectors instead of fuzzy/unbounded search. Preserve hash/freshness checks and the indexed whitelist. P0 Agent Manager remains active; Bridge auth/operator-installation gaps remain separate live work.
+
+PLUGIN-PREFLIGHT: current task, live repository rules, plugin README/backlog and manager routing were re-read. This ChatGPT runtime exposes the authenticated GitHub connector for repo/PR/CI work but no Heaven Local Bridge, Agent Control, Remote Desktop Commander or local-machine execution connector. Existing `tools/agent-control/` is the natural owner; no duplicate plugin/gap was created. GitHub connector/API + repository CI is the selected authorized fallback. No credential, auth, quota, Work-mode or local-control bypass is used.
+
+---
+
 # 2026-09-30 v8.8.42 closure — authoritative continuation
 
 PR #514 integrated source `7e8e045cc7c89a8b7ff318c28b98d08b76443522`. Exact-head/main checks pass, immutable private/public build 351 is published with matching assets/provenance, and disposable updater success/rollback passes. The scoped adapter proves all four main gates with a 2.1 KB packet and correctly withheld success while release was running. Agent Control 0.6.19 is healthy on heaven2 from this source; startup savings/budgets remain enforced. See `_AGENT_CONTEXT/EVIDENCE/v8.8.42-ci-evidence.md`; candidate entries below are historical and superseded.

@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
-  "currentVersion": "8.8.42",
+  "workingBranch": "codex/context-navigation-integration",
+  "currentVersion": "8.8.43",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.42-current-ci-evidence-verified-and-published",
-  "nextMilestone": "Bootstrap and current CI evidence delivered; continue actionable Agent Manager P0 work with existing owners.",
-  "nextRequiredAction": "Use EVIDENCE/v8.8.42-ci-evidence.md; coordinate existing bounded-context-navigation branch rather than duplicate it. Keep auth/install blockers separate.",
+  "status": "v8.8.43-bounded-context-navigation-candidate",
+  "nextMilestone": "Verify and publish reconciled v8.8.43 context navigation, including actual serialized output budgets.",
+  "nextRequiredAction": "Run fresh exact-head checks, integrate, publish private/public and restore the canonical controller.",
   "verificationAppliesToCommit": "7e8e045cc7c89a8b7ff318c28b98d08b76443522",
   "lastClosedVerificationCommit": "7e8e045cc7c89a8b7ff318c28b98d08b76443522",
   "lastClosedVerificationRun": "heaven-github-actions-36766464958",
-  "verificationScopeNote": "Exact v8.8.42 source passed 26/26 Windows, 214 plugin and 266 Agent Control tests, security, immutable private/public build 351 and disposable updater update/rollback. Actual adapter verified scoped main gates; host-reader registration, real installation and Bridge auth remain separate.",
+  "verificationScopeNote": "v8.8.42 exact source/release proof is preserved below; this v8.8.43 candidate requires its own fresh checks.",
   "lastClosedVerification": {
     "sourceSha": "7e8e045cc7c89a8b7ff318c28b98d08b76443522",
     "windowsGate": "36766464958 success; 26/26",
@@ -28,10 +28,12 @@
     "evidenceCommit": "cccee1901ca959e9d566f15043c244e3e978ec75",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.42-ci-evidence.md"
   },
-  "candidateSourceCommit": "7e8e045cc7c89a8b7ff318c28b98d08b76443522",
+  "candidateSourceCommit": null,
   "candidateChanges": [
-    "Reader-injected bounded exact repo/SHA/event/branch CI evidence in existing Heaven Workflows owner.",
-    "Reject historical-success masking, ambiguous/running/partial/expired gate evidence; revalidate snapshot at publish authorization."
+    "SHA-256-bound literal text and Markdown-heading navigation for indexed repository context, with explicit indexed-subset authorization.",
+    "Bounded query/results/output with line-addressable matches and explicit result/snippet truncation.",
+    "Regression protection against valid-hash core documents crossing the indexed-context reader boundary (LR-057).",
+    "Agent Control/plugin identity v0.6.20 and prompt library 2026.09.30.3."
   ],
   "agentManagerPriority": {
     "status": "active",

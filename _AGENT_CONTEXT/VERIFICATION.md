@@ -1,3 +1,18 @@
+# v8.8.43 integration ownership — 2026-09-30
+
+Current chat owns integration/release on `codex/context-navigation-integration`, preserving externally authored PR #515/head 2031c405 unchanged. Refreshed main a03fa700, clean worktree and controller on heaven2 with zero active leases; registry coverage is partial, not proof every external agent is absent. Isolated integration branch is required because the implementation branch has external provenance; no force push or duplicate implementation. Newer v8.8.42 release/evidence is preserved; candidate history below is superseded for current execution.
+
+PLUGIN-PREFLIGHT: reviewed live continuation and scaling assignment, native GitHub repo/CI/merge tools, local Agent Control status/CLI and existing Heaven Bridge/Workflows instructions, plugins README/backlog. No callable Heaven MCP surface appears in the current tool inventory; use canonical local source/hidden execution on heaven2 and verified self-hosted CI for heavy work. Current controller localhost:7331 is healthy. Authenticated Git REST reader is available and already verified; no new credential store, RDC, Work handoff or auth/quota bypass. Existing Agent Control is the owner; select its CLI/source and canonical guarded restore, not a new plugin.
+
+Next: enforce final CLI bytes and sibling pagination envelope, run regressions/checks and handoff negatives; push integration PR, recheck both branch heads/main/leases, require exact-head checks, merge and immediately verify main release/parity/update/rollback. Restore controller only from clean canonical source, verify actual navigation CLI, and persist closure. Improvement: measure navigation use/latency before caching; keep host registration, Bridge auth and actual operator install separate. Preserve and recursively propagate the constitution to every successor and the agent after them. Do not break the chain.
+
+---
+# v8.8.43 bounded context navigation — verification scope
+
+Historical green evidence does not transfer. Exact-head acceptance requires Agent Control syntax/tests including the new repository-bootstrap/navigation regressions, Workflow Feature/handoff governance, and Security Supply Chain on the same candidate SHA. Required behavior: indexed-path and SHA binding; literal case-insensitive search; Markdown-heading-only lookup; line/level metadata; query/result/output/snippet bounds; explicit truncation; CLI flag-conflict rejection; unchanged symlink/path/source-size protections; no persistent cache.
+
+Integration is not release closure. If canonical v8.8.43 is created, repository release policy requires immediate immutable publication and post-publication/runtime evidence through an authorized release-capable path. This chat does not claim Heaven/local runtime or release creation capability.
+
 # 2026-09-30 v8.8.42 closure — authoritative continuation
 
 PR #514 integrated source `7e8e045cc7c89a8b7ff318c28b98d08b76443522`. Exact-head/main checks pass, immutable private/public build 351 is published with matching assets/provenance, and disposable updater success/rollback passes. The scoped adapter proves all four main gates with a 2.1 KB packet and correctly withheld success while release was running. Agent Control 0.6.19 is healthy on heaven2 from this source; startup savings/budgets remain enforced. See `_AGENT_CONTEXT/EVIDENCE/v8.8.42-ci-evidence.md`; candidate entries below are historical and superseded.
