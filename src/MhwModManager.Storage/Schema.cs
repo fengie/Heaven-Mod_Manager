@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS catalog_sync_state(
     cursor TEXT NULL,
     last_success_at TEXT NULL,
     last_attempt_at TEXT NULL,
-    last_error TEXT NULL,
+    last_failure_kind TEXT NOT NULL DEFAULT 'None',
     updated_at TEXT NOT NULL,
     PRIMARY KEY(provider_id,scope_key)
 );

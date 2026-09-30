@@ -18,13 +18,24 @@ public sealed record CachedCatalogMod(
     }
 }
 
+public enum CatalogSyncFailureKind
+{
+    None,
+    Offline,
+    Timeout,
+    AuthenticationRequired,
+    RateLimited,
+    SchemaDrift,
+    ProviderError
+}
+
 public sealed record CatalogSyncState(
     string ProviderId,
     string ScopeKey,
     string? Cursor,
     DateTimeOffset? LastSuccessAt,
     DateTimeOffset? LastAttemptAt,
-    string? LastError);
+    CatalogSyncFailureKind LastFailureKind = CatalogSyncFailureKind.None);
 
 public sealed record CatalogRateState(
     string ProviderId,

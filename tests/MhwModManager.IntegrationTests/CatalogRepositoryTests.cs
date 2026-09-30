@@ -258,9 +258,30 @@ public sealed class CatalogRepositoryTests : IDisposable
         await repository.UpsertAsync(second, TestToken);
 
         var now = new DateTimeOffset(2026, 9, 29, 22, 30, 0, TimeSpan.FromHours(-4));
-        var sync = new CatalogSyncState("nexus", "monsterhunterworld:updated", "cursor-2", now, now, null);
+        var sync = new CatalogSyncState(
+            "nexus",
+            "monsterhunterworld:updated",
+            "cursor-2",
+            now,
+            now,
+            CatalogSyncFailureKind.RateLimited);
         await repository.UpsertSyncStateAsync(sync, TestToken);
         Assert.Equal(sync, await repository.GetSyncStateAsync("nexus", sync.ScopeKey, TestToken));
+
+        await using (var c = await db.OpenAsync(TestToken))
+        {
+            await using var failure = c.CreateCommand();
+            failure.CommandText = "SELECT last_failure_kind FROM catalog_sync_state WHERE provider_id='nexus' AND scope_key='monsterhunterworld:updated'";
+            Assert.Equal("RateLimited", (string?)await failure.ExecuteScalarAsync(TestToken));
+
+            await using var columns = c.CreateCommand();
+            columns.CommandText = "PRAGMA table_info(catalog_sync_state)";
+            await using var reader = await columns.ExecuteReaderAsync(TestToken);
+            var columnNames = new List<string>();
+            while (await reader.ReadAsync(TestToken))
+                columnNames.Add(reader.GetString(1));
+            Assert.DoesNotContain("last_error", columnNames, StringComparer.OrdinalIgnoreCase);
+        }
 
         var rate = new CatalogRateState(
             "nexus",

@@ -185,13 +185,13 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await using var c = await db.OpenAsync(ct);
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO catalog_sync_state(provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_error,updated_at)
-            VALUES($provider,$scope,$cursor,$success,$attempt,$error,$updated)
+            INSERT INTO catalog_sync_state(provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_failure_kind,updated_at)
+            VALUES($provider,$scope,$cursor,$success,$attempt,$failureKind,$updated)
             ON CONFLICT(provider_id,scope_key) DO UPDATE SET
                 cursor=excluded.cursor,
                 last_success_at=excluded.last_success_at,
                 last_attempt_at=excluded.last_attempt_at,
-                last_error=excluded.last_error,
+                last_failure_kind=excluded.last_failure_kind,
                 updated_at=excluded.updated_at
             """;
         cmd.Parameters.AddWithValue("$provider", state.ProviderId);
@@ -199,7 +199,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$cursor", DbValue(state.Cursor));
         cmd.Parameters.AddWithValue("$success", DbValue(Format(state.LastSuccessAt)));
         cmd.Parameters.AddWithValue("$attempt", DbValue(Format(state.LastAttemptAt)));
-        cmd.Parameters.AddWithValue("$error", DbValue(state.LastError));
+        cmd.Parameters.AddWithValue("$failureKind", state.LastFailureKind.ToString());
         cmd.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -216,7 +216,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await using var c = await db.OpenAsync(ct);
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
-            SELECT provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_error
+            SELECT provider_id,scope_key,cursor,last_success_at,last_attempt_at,last_failure_kind
             FROM catalog_sync_state
             WHERE provider_id=$provider AND scope_key=$scope
             """;
@@ -224,13 +224,20 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$scope", scopeKey);
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct)) return null;
+        var failureValue = reader.GetString(5);
+        if (!Enum.TryParse<CatalogSyncFailureKind>(failureValue, ignoreCase: true, out var failureKind)
+            || !Enum.IsDefined(failureKind))
+        {
+            throw new InvalidDataException($"Catalog sync state contains unsupported failure classification '{failureValue}'.");
+        }
+
         return new(
             reader.GetString(0),
             reader.GetString(1),
             reader.IsDBNull(2) ? null : reader.GetString(2),
             reader.IsDBNull(3) ? null : ParseDate(reader.GetString(3)),
             reader.IsDBNull(4) ? null : ParseDate(reader.GetString(4)),
-            reader.IsDBNull(5) ? null : reader.GetString(5));
+            failureKind);
     }
 
     public async Task UpsertRateStateAsync(CatalogRateState state, CancellationToken ct = default)
