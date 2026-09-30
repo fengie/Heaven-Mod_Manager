@@ -272,8 +272,29 @@ public sealed class GameBananaCatalogProviderTests
         Assert.Equal(CatalogAcquisitionKind.Assisted, resolution.Kind);
         Assert.Null(resolution.DownloadUri);
         Assert.Equal(
-            "https://gamebanana.com/mods/download/653359",
+            "https://gamebanana.com/dl/1625805",
             resolution.AssistedUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Acquisition_rejects_invalid_mod_identity_before_opening_assisted_page()
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(ReadFixture("mod.json"));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var mod = GameBananaCatalogNormalizer.NormalizeMod(game, "653359", document) with
+        {
+            ProviderModId = "not-a-positive-id"
+        };
+        var file = Assert.Single(mod.Files);
+
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Invalid acquisition must not perform an API request.")));
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.ResolveAcquisitionAsync(
+                new CatalogAcquisitionRequest(game, mod, file),
+                TestContext.Current.CancellationToken));
     }
 
     [Fact]
