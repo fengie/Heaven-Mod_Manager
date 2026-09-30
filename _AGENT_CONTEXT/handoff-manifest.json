@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.40",
+  "currentVersion": "8.8.41",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.39 Heaven Local Bridge primary reliability",
+  "immediateParentRevision": "v8.8.40 efficient agent bootstrap, integrated/published build 349",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -92,7 +92,9 @@
     "_AGENT_CONTEXT/HEAVY_STRESS_ARCHIVE_SAFETY_REPORT_2026-09-28.md",
     "_AGENT_CONTEXT/ARCHIVE_STREAMING_FAILURE_CLEANUP_AUDIT_2026-09-28.md",
     "_AGENT_CONTEXT/EVIDENCE/archive-streaming-cleanup-v8.8.3-local-windows-closure.md",
-    "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log"
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.2-hosted-windows-closure.log",
+    "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
+    "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json"
   ],
   "requiredVerificationFiles": [
     ".verification/README.md",
@@ -101,13 +103,16 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish exact-head PR #510 verification and integrate v8.8.40 efficient agent bootstrap plus recovered repository-gate repairs. Require Agent Control, Workflow Feature full repository verification, and Security Supply Chain on one exact head; after merge deploy Agent Control v0.6.18 and verify newly spawned senior/scheduled prompts use compact core + indexed context and fallback-aware blocker criteria. Confirm #507 has no unique work before closing it.",
+  "nextAgentObligation": "Finish v8.8.41 exact-head checks, integrate and publish both updater feeds, deploy Agent Control 0.6.19 and verify actual bootstrap/context commands. Preserve and recursively propagate the continuity constitution. Keep operator-installed-client confirmation and signed Bridge readiness separate from CI proof.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
     "Build Source Handoff.bat",
     "scripts/testing/Test-VerificationCache.ps1",
-    "scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1"
+    "scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1",
+    "tools/agent-control/lib/repository-bootstrap.mjs",
+    "tools/agent-control/repository-context.mjs",
+    "tools/agent-control/test/repository-bootstrap.test.mjs"
   ],
   "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
 }

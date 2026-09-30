@@ -43,6 +43,7 @@ function usage() {
 
 Commands:
   status
+  bootstrap
   snapshot
   list
   tasks
@@ -129,6 +130,8 @@ try {
     usage();
   } else if (command === "status") {
     print(await request("/api/status"));
+  } else if (command === "bootstrap") {
+    print(await request("/api/bootstrap"));
   } else if (command === "snapshot") {
     print(await request("/api/snapshot"));
   } else if (command === "list") {

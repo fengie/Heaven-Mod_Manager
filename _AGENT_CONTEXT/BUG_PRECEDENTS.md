@@ -1,3 +1,23 @@
+### 2026-09-30 — Continuity negative fixtures — policy prose changes could leave mutations ineffective
+- **Symptom:** The comment-hidden learned-rules fixture no longer removed the active requirement after AGENTS compacted its optional backticks; another Core Rule fixture depended on exact old wording.
+- **Root cause / violated invariant:** Adversarial fixture mutations were coupled to formatting and did not assert that input changed. A no-op cannot prove validator resistance.
+- **Why previous checks missed it:** Existing baseline tests used the original prose and lacked a mutation-effect guard.
+- **Fix / prevention:** Accept optional backticks/concept-equivalent Core Rule phrasing and fail any negative fixture that leaves input unchanged; keep semantic rejection assertions intact.
+- **Regression / evidence:** heaven2 handoff baseline and all 11 negative fixtures pass on the v8.8.41 candidate. Existing recursive, comment-hiding, read-order and version defenses remain unchanged.
+- **Sibling cases / propagation:** Reviewed every mutation, strengthened the common harness, retained full policy history and propagated LR-055/byte-budget lesson. PR/head and full exact-gate evidence are recorded in EVIDENCE/v8.8.41-scalable-bootstrap.md.
+
+### 2026-09-30 — Agent startup — indexed bootstrap still carried oversized mandatory history
+- **Symptom:** v8.8.40 progressive startup still required roughly 120 KB of core text per ordinary worker and offered an index without bounded operational retrieval.
+- **Root cause:** Core selection measured filenames rather than bytes; AGENTS/current revision accumulated repeated policies and historical candidate state. Deployment independently fetched the same remote twice.
+- **Violated invariant:** Current truth and startup obligations must remain bounded, with complete historical knowledge accessible selectively; cached refs must never imply refreshed remote truth or inherited verification.
+- **Why defenses missed it:** Previous tests pinned the core/index split and prompt wording, without enforcing aggregate byte budgets or exercising an actual retrieval CLI/API.
+- **Corrective fix:** Compact entrypoint/revision, preserve complete prior documents in indexed policy/history, add expiring bounded bootstrap and hash-checked context pagination, and reuse the successful branch-inventory fetch.
+- **Preventive rule/process:** Enforce 64 KiB aggregate core and 32 KiB packet budgets. Require hash/freshness/source checks, whitelisted local documents, disclosed partial ownership, explicit cached-ref labeling and risk-matched remote/lease refresh before mutation.
+- **Regression coverage:** repository-bootstrap.test.mjs exercises real Git/CLI/HTTP, expiration, wrong head/role, changed/missing/empty/linked documents, pagination/UTF-8 bounds, large ownership and budget overflow. Full Agent Control, handoff negative fixtures and exact-head CI remain required.
+- **Verification evidence/environment:** heaven2 focused bootstrap/training tests 15/15 passed; full-suite and deployment/release results will be appended in EVIDENCE/v8.8.41-scalable-bootstrap.md. No candidate inherits v8.8.40 release proof.
+- **Sibling checks:** Manager-specific core included in budget; read-only endpoint uses existing Host/Origin guard and does not fetch/provider-scan; worker launch rejects mismatched reused-branch source; current state consumers retain version/priority/verification fields; prior policy and revision retained.
+- **References:** branch codex/scalable-agent-bootstrap, base 6f3dd534757697bca7d2464ca7db4e9322ce763c; v8.8.40 archival source unchanged. Generic trainer and LR-055 propagate enforcement.
+
 ### 2026-09-30 — Agent Control retirement — remote execution could outlive local-wrapper retirement proof
 - **Symptom:** A retry-exhausted Heaven Bridge worker could be removed from the live registry while its durable remote job was still queued/unclaimed, running, or otherwise unproven; stale provider observations could also resurrect a retired worker.
 - **Root cause:** Retirement treated local-wrapper lifetime and ambiguous remote statuses such as `not_running` / generic non-`running` as sufficient stop evidence, while tombstone reactivation accepted a live-looking state without requiring monotonic raw heartbeat evidence newer than retirement.

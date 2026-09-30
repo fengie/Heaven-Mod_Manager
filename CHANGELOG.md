@@ -1,3 +1,11 @@
+# v8.8.41 — bounded startup and scalable context retrieval
+- Add read-only Agent Control bootstrap CLI/API with exact HEAD/main identities, two-minute expiry, hash manifests, current verification scope and bounded/truncation-marked ownership.
+- Add whitelisted SHA-256-checked context pagination with UTF-8 byte/line bounds, linked-path refusal, stale-source rejection and clear recovery errors.
+- Compact AGENTS/current revision while retaining the complete prior policy and revision snapshot in canonical indexed/reference history.
+- Enforce a 64 KiB full-read core budget (including manager training) and 32 KiB packet budget; preserve task-relevant expansion, authorization, ownership and exact-source verification.
+- Reuse the already-successful inventory fetch for worker base resolution instead of performing a duplicate remote refresh.
+- Exercise real Git, CLI, HTTP, stale/expired/changed source, path safety, ownership scale, manager training and budget failures; advance Agent Control/plugin to v0.6.19.
+
 # v8.8.40 — efficient agent bootstrap
 - Replace the fixed full-corpus startup reread with a compact full-read core plus hash-verified indexed continuity/training context.
 - Keep task-relevant precedent, learned-rule, source, test, architecture, ownership, and verification expansion mandatory without rereading giant historical ledgers by default.

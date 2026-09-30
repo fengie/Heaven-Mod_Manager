@@ -1,4 +1,8 @@
-# v8.8.40 Universal Mod Manager
+# v8.8.41 Universal Mod Manager
+
+## v8.8.41 — bounded startup and scalable context retrieval
+
+Agent Control v0.6.19 provides a small live repository bootstrap through the CLI/API, expiring exact-source evidence, bounded ownership, and SHA-256-checked context pagination. Mandatory startup text drops from roughly 120 KB to 40 KB; detailed policies and prior revision history remain preserved in indexed references. Core-size budgets prevent silent growth, cached refs disclose their freshness, and worker deployment reuses one successful remote refresh.
 
 ## v8.8.40 — efficient agent bootstrap
 

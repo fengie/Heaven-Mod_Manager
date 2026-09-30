@@ -1,3 +1,11 @@
+# v0.6.19 — bounded live repository bootstrap
+
+## What v0.6.19 does
+
+Use `node agentctl.mjs bootstrap` for the small read-only `/api/bootstrap` packet. It reports local exact Git identities, source hashes, historical verification scope and capped ownership; it does not fetch or imply that cached remote refs are current. Refresh remote/PR/lease truth before mutation. Packets expire after two minutes, and deployments validate manifests/source before launch. Expand truncated ownership through ordinary state commands.
+
+Use `node repository-context.mjs --document PATH --sha256 HASH --line 1 --lines 120` from the canonical checkout to retrieve only relevant indexed sections (8 KiB maximum). Refresh the packet after hash changes. The offline CLI without flags produces local-ref-only evidence. Core training is capped at 64 KiB including manager instructions, packets at 32 KiB. Detailed policies remain binding in the indexed policy reference. Worker deployment now resolves its base from the same successful fetch as its branch inventory.
+
 # v0.6.18 — efficient hash-indexed agent bootstrap
 
 ## What v0.6.18 does
