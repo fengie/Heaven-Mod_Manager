@@ -12,9 +12,9 @@ if([string]::IsNullOrWhiteSpace($Root)){
 
 function Get-RepoRelativePath {
     param([string]$BasePath,[string]$FullPath)
-    $base=(Resolve-Path -LiteralPath $BasePath).Path.TrimEnd('\\')
+    $base=(Resolve-Path -LiteralPath $BasePath).Path.TrimEnd([IO.Path]::DirectorySeparatorChar)
     $full=[IO.Path]::GetFullPath($FullPath)
-    $prefix=$base+'\\'
+    $prefix=$base+[IO.Path]::DirectorySeparatorChar
     if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){
         throw "Path is outside repository root: $FullPath"
     }
@@ -119,7 +119,7 @@ $secretPatterns=@(
 foreach($file in $securityFiles){
     $text=Get-Content -LiteralPath $file.FullName -Raw -ErrorAction SilentlyContinue
     if($null -eq $text){continue}
-    $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $file.FullName).Replace('\\','/')
+    $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $file.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/')
     foreach($rule in $secretPatterns){
         if($text -match $rule.Pattern){
             $errors.Add("${relative}: possible $($rule.Name) committed to the repository. Use an OS/GitHub secret store and rotate any exposed credential.")
@@ -142,7 +142,7 @@ foreach($rule in $unsafePrimitiveRules){
         if($skip -or $file.Length -gt 2MB){continue}
         $text=Get-Content -LiteralPath $full -Raw -ErrorAction SilentlyContinue
         if($null -ne $text -and $text -match $rule.Pattern){
-            $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $full).Replace('\\','/')
+            $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $full).Replace([IO.Path]::DirectorySeparatorChar,[char]'/')
             $errors.Add("${relative}: forbidden security primitive detected ($($rule.Name)). Use the repository's fail-closed security helpers or document a narrowly reviewed exception in this policy.")
         }
     }
@@ -152,7 +152,7 @@ $updaterRoot=Join-Path $Root 'src\MhwModManager.Updater'
 if(Test-Path -LiteralPath $updaterRoot){
     foreach($file in @(Get-ChildItem -LiteralPath $updaterRoot -Recurse -File -Filter '*.cs')){
         $text=Get-Content -LiteralPath $file.FullName -Raw
-        $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $file.FullName).Replace('\\','/')
+        $relative=(Get-RepoRelativePath -BasePath $Root -FullPath $file.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/')
         if($text -match '(?i)http://'){
             $errors.Add("${relative}: updater network code must not contain plaintext HTTP endpoints.")
         }
