@@ -1,3 +1,11 @@
+# v8.8.26 Agent Control exhausted-agent registry retirement — verification scope
+
+This candidate changes terminal recovery cleanup, process/worktree retirement safety, managed/federated registry membership, external observation replay suppression/reactivation, state migration, and Agent Control v0.6.5 release identity. Historical v8.8.25 evidence does not verify these bytes.
+
+Required source closure is exact-candidate `npm run check` + `npm test`. Required live closure on heaven2 is a retry-exhausted retirement smoke proving: the dead card disappears; a provably owned live process is terminated; clean worktree/lease state is released; dirty/diverged/ownership-uncertain state is preserved instead of destroyed; terminal external replay does not resurrect the card; a genuine live heartbeat can reactivate it; normal completed integration candidates remain intact.
+
+---
+
 # v8.8.25 Agent Control operator-markup + plugin identity repair — verification scope
 
 This candidate changes dashboard-generated operator markup, release identity across all private-plugin manifests, and focused regression coverage. Historical v8.8.24 evidence does not verify these bytes.
