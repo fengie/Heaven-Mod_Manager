@@ -37,3 +37,12 @@ Do not trust an arbitrary preinstalled executable or a moving `latest` download 
 ## Policy scanners must be self-safe
 
 When a security scanner is embedded in the configuration it scans, assume its own source text, comments, and diagnostics will be part of the input. Match structured configuration with anchored/parsed rules rather than raw substring presence, and include the scanner file itself in regression coverage so policy text cannot trigger false positives.
+
+## Remote execution bridges need an authority beyond repository write
+
+If a repository-backed relay can execute arbitrary commands on a persistent host, repository write access is too broad to be the only execution authorization boundary. Add per-request cryptographic authentication whose secret/private material remains machine-local, include replay/freshness checks, version the canonical signing format, and keep relay payloads free of raw credentials.
+
+## Update authenticity needs a separate trust root
+
+Artifact hashes published by the same authority as the artifact detect corruption but do not survive compromise of that publication authority. Mature update systems authenticate metadata with an independent verification key and define rotation/revocation, freshness/expiry, and rollback/freeze behavior.
+
