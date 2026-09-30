@@ -1,3 +1,12 @@
+# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.25 candidate.
+2. On heaven2, smoke **Copy branch** with a normal slash-containing branch name and confirm the clipboard receives the exact branch value without handler errors.
+3. Confirm `package.json`, `chatgpt-plugin/plugin.json`, and `chatgpt-plugin/.codex-plugin/plugin.json` all report Agent Control v0.6.4.
+4. Continue the active Agent Manager P0 completion gates from current `main`; do not reopen retired task branches.
+
+---
+
 # 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
 
 1. Run `npm run check` and `npm test` from `tools/agent-control` on the exact v8.8.24 candidate.
