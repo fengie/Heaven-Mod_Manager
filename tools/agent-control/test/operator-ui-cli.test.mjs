@@ -76,6 +76,9 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
     "events",
     "recommendationSummary",
     "recommendations",
+    "retiredAgentsSection",
+    "retiredAgentSummary",
+    "retiredAgents",
     "managedAgentsSection"
   ]) {
     assert.ok(ids.includes(id), `missing operator surface #${id}`);
@@ -160,6 +163,17 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(server, /readOnly: false/);
   assert.match(server, /draining: false/);
   assert.match(server, /clearEmergencyStop: true/);
+});
+
+test("dashboard exposes retired registry history separately from live agent lists", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  assert.match(html, /id="retiredAgentsSection"/);
+  assert.match(html, /id="retiredAgentSummary"/);
+  assert.match(html, /id="retiredAgents"/);
+  assert.match(html, /function renderRetiredAgents\(snapshot\)/);
+  assert.match(html, /snapshot\.retiredAgents \|\| \[\]/);
+  assert.match(html, /renderRetiredAgents\(snapshot\)/);
+  assert.match(html, /Terminal and timed-out registry presence is archived here/);
 });
 
 test("dashboard renders notifications and a stable explicit inspector contract", () => {
