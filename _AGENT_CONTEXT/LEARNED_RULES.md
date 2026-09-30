@@ -740,17 +740,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
-## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+---
 
-- Treat multi-repository updater publication as one logical transaction.
-- Publish and verify the production-client feed before any secondary/canonical human-facing release becomes visible.
-- Re-check the canonical source after upload immediately before publication; upload time is a race window.
-- Do not use blanket in-progress cancellation around a multi-surface publication transaction.
-- Retry must recover automation-owned abandoned drafts and fail closed when drift cannot be completely classified.
-- Protect critical release invariants from stale integration in an independent CI/security policy, not only in the release-specific test being protected.
+## LR-043 — resource-owning open/create operations must be transactional
 
-## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
-
-- A branch may contain commits authored before a safeguard but be integrated after it. Commit timestamps therefore do not prove integration order.
-- Before integrating a branch that touches shared governance, CI, release, security, or updater files, sync/rebase it onto current `main`, resolve against current content, rerun exact-head checks, and refuse stale whole-file replacement.
-- Required checks must validate the exact candidate that is merged; queued/failed/cancelled checks or checks from a pre-rebase SHA are not merge authorization.
+- **Rule ID:** LR-043
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Browser/session/tab creation, host resources, multi-index registries, connection/session factories
+- **Rule:** When an operation acquires host resources or registers identity before a later fallible step, success must be all-or-nothing. On failure, undo every newly acquired resource and every registry/index/active-pointer mutation. Use one authoritative removal helper for objects represented in multiple indexes.
+- **Trigger / evidence:** Deep-browser initial navigation could fail after browser/context/session creation and leak the owned session; failed new-tab navigation and externally closed tabs could leave stale tab identity/active selection behind.
+- **Rationale:** Partial construction turns a single recoverable failure into durable leaked resources and poisoned future state. Duplicated cleanup paths drift and repair only part of the state graph.
+- **Enforcement:** Failure-path tests must inject an exception after registration and assert resource closure plus complete registry restoration. Public enumeration/pruning paths must use the same cleanup primitive as explicit close. Structured URL/status renderers must preserve authority syntax while redacting sensitive components.
+- **Regression/evidence:** `04e706ba2a8b7e0de5ab0461af3702b9db854a33`, `339b4caf7fdd00eb0aa6d7b29c3149a9537d9f71`, `db27ed786337529fa5674ff735c5d06038a9270f`, merged via PR #438 as `b9b3cd9ec0c76c44556bf3f1e3014f2d5a122620`.
+- **Related rules:** LR-021 defect-class closure; LR-037 canonical-tree proof; LR-041 boundary-wide URL/secret validation.
+- **Supersedes:** none
+- **Superseded by:** none
