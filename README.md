@@ -1,5 +1,10 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
 
+
+
+## v8.8.50 — compact agent governance and context routing
+
+Consolidates the repository's agent training instead of adding another instruction layer: a small mandatory core, full continuity constitution at startup, indexed task-relevant context, tighter role deltas, explicit fallback/blocker rules, recursive successor continuity, strict raw UTF-8 byte budgets, and adversarial handoff validation. The integration preserves the complete superseded PR #525 history while keeping v8.8.49 UI fixes and evidence from current `main` intact.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 
