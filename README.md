@@ -21,7 +21,7 @@ Agent Control advances to **v0.5.11** with regression guards for one-click resum
 
 Agent Manager / Agent Control is also the repository's explicit P0 engineering priority. While the continuity marker remains active, autonomous implementation and next-cycle planning stay on Agent Manager functionality, reliability, orchestration, observability, routing, recovery, startup persistence, and exact verification instead of drifting into unrelated product work.
 
-The Agent Control runtime package and private ChatGPT plugin now share version **0.6.2**, and stable ChatGPT session registration/heartbeats are the default first observability step when a real stable identity is available. The P0 lock remains active until exact-head checks plus heaven2 controller and heaven1 worker-bridge smoke are proven together.
+The Agent Control runtime package and private ChatGPT plugin now share version **0.6.3**, and stable ChatGPT session registration/heartbeats are the default first observability step when a real stable identity is available. The P0 lock remains active until exact-head checks plus heaven2 controller and heaven1 worker-bridge smoke are proven together.
 
 ## v8.8.22 — Strict analyzer repair
 
