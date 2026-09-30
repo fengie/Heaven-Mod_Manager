@@ -1,4 +1,12 @@
-# v8.8.20 Universal Mod Manager
+# v8.8.21 Universal Mod Manager
+
+## v8.8.21 — Fail-closed override and dependency safety
+
+Normal Apply, preview readiness, recovery restores, diagnosis probes, and safe-mode restoration now validate the exact staged dependency set before writing modded game state. A dependency cannot be considered satisfied by a manager-owned live file whose provider is being disabled in the same plan.
+
+Conflict inference is also stricter where a wrong winner can be catastrophic: file/directory topology collisions always block, DLL/EXE collisions need explicit intent or high-trust same-source update/optional lineage, and package-size/subset shape alone no longer proves that one same-family package is an add-on. Clear main/optional relationships and verified source lineage still compose automatically, with deterministic explanations for the chosen provider.
+
+See `docs/OVERRIDE-DEPENDENCY-SAFETY-RESEARCH.md` for the research basis and failure cases that motivated these rules.
 
 ## v8.8.20 — One-click Auto Populate
 
