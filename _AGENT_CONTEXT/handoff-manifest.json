@@ -103,7 +103,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.41 exact-head checks, integrate and publish both updater feeds, deploy Agent Control 0.6.19 and verify actual bootstrap/context commands. Preserve and recursively propagate the continuity constitution. Keep operator-installed-client confirmation and signed Bridge readiness separate from CI proof.",
+  "nextAgentObligation": "v8.8.41 bootstrap is integrated, verified, deployed and published as immutable private/public build 350. Continue actionable Agent Manager P0 work from fresh main, preserve separate installed-client/Bridge auth gaps, defer unchanged recurring blockers to live work, and recursively propagate the continuity constitution.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

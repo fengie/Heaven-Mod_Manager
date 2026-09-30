@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.41 closure — authoritative current continuation
+
+PR #512 integrated source `7edcd03f58cffbcdfd6a14f1c627533d20b9fd35`; exact PR/main gates pass, immutable private/public updater build 350 is published with identical assets/digests, and disposable installed updater success/rollback passes. Agent Control 0.6.19 is healthy on heaven2; live bootstrap/context CLI and main/manager/verification prompts pass. Evidence and exact checks are in `_AGENT_CONTEXT/EVIDENCE/v8.8.41-scalable-bootstrap.md`. The candidate notes below are historical and superseded.
+
+1. Continue from fresh canonical main and compact CURRENT_REVISION; inspect PRs/branches/leases and exact source before new work. Agent Manager P0 remains active: this bootstrap slice does not claim complete swarm dispatch/recovery/stop readiness.
+2. Profile context retrieval latency and adoption under real workload before adding persistent caches. Next useful improvement is bounded heading/search navigation while retaining exact hashes, freshness and byte budgets; avoid growing the core or duplicating existing plugin ownership.
+3. Preserve actual operator installation confirmation and authenticated/current Bridge worker/watchdog/SYSTEM-sentinel recovery as separate live tasks. Disposable CI proof does not prove the real installation. Scheduled lanes must defer unchanged blockers to live work and choose another actionable unowned task.
+4. Reconcile old inactive branches only with ownership/unique-work proof. This change's implementation branch is integrated and removed; closure attestation is same-version evidence, not a second feature/release.
+
+Ownership: current chat owns closure evidence only; product/bootstrap source is integrated. CI evidence commits `9c815e1d` (Windows) and `6a1db215` (updater E2E) are canonical. No worker was launched merely to render prompts. Improve retrieval based on measured workload, not speculative cache layers. Keep all unresolved auth/installed-client/coverage limitations explicit. Preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` to the successor and the agent after them. Do not break the chain.
+
+---
 # 2026-09-30 v8.8.41 scalable bootstrap — active owner and continuation
 
 Current owner: this chat, branch `codex/scalable-agent-bootstrap`, base `6f3dd534757697bca7d2464ca7db4e9322ce763c`, Agent Control bootstrap/training boundary; no other active implementation owner or open PR was found at preflight. Product source behavior is unchanged; v8.8.40 build 349 evidence remains historical, not candidate proof.
