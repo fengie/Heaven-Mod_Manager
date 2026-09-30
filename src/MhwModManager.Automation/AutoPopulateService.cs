@@ -554,19 +554,22 @@ public sealed class AutoPopulateService(
                 continue;
             }
 
-            var displacedProtected = plan.Conflicts.FirstOrDefault(d =>
-                protectedEffectiveProviders.TryGetValue(d.Path, out var expectedProvider) &&
+            var newlyAdded = closureResult.ModIds.Where(id => !selected.Contains(id)).ToHashSet(PathRules.Comparer);
+            var protectedOverlap = plan.Conflicts.FirstOrDefault(d =>
+                protectedEffectiveProviders.ContainsKey(d.Path) &&
                 d.Kind != ConflictKind.Identical &&
                 d.Confidence != Confidence.Explicit &&
-                (d.WinnerModId is null || !PathRules.Comparer.Equals(d.WinnerModId, expectedProvider)));
-            if (displacedProtected is not null)
+                newlyAdded.Any(id =>
+                    filesByMod.TryGetValue(id, out var addedFiles) &&
+                    addedFiles.Any(file => PathRules.Comparer.Equals(file.Path, d.Path))));
+            if (protectedOverlap is not null)
             {
                 conflictSkips++;
                 skipped[candidate.Id] = new(
                     candidate.Id,
                     candidate.DisplayName,
                     false,
-                    $"Skipped because it would silently replace the effective bytes of a protected selected mod at '{displacedProtected.Path}'. Select this alternative explicitly if that replacement is intended.");
+                    $"Skipped because it would introduce a non-identical overlap with the protected current selection at '{protectedOverlap.Path}'. Select the alternative explicitly if that overlap is intended.");
                 continue;
             }
 
