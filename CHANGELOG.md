@@ -1,8 +1,11 @@
-# v8.8.23 — Agent Manager one-click recovery
+# v8.8.23 — Agent Manager runtime reliability
 - Fix START SWARM so a paused perpetual run resumes and advances immediately instead of being reported as already running.
 - Reject active non-perpetual autopilot runs with HTTP 409 rather than falsely labeling them as an existing perpetual swarm.
 - Reject an empty perpetual objective before changing autonomy, pause, read-only, drain, or emergency-stop state.
-- Advance Agent Control to v0.5.11 and add server/UI regression guards for one-click lifecycle truthfulness.
+- Make dashboard Stop eligibility match every server-active managed state: reserved, starting, running, waiting, blocked, stale, and stopping.
+- Serialize normal dashboard polling and sequence concurrent refresh/sync responses so stale snapshots cannot overwrite newer operator-visible state or falsely mark Agent Manager offline.
+- Preserve the selected worker-machine target across periodic worker-pool renders instead of resetting it to Auto.
+- Advance Agent Control to v0.5.11; add lifecycle, polling, selection-persistence, resume/conflict, and JavaScript-parse regressions; record LR-045 plus the matching defect precedent/generic trainer rule.
 
 # v8.8.22 — Strict analyzer repair
 - Repair six warnings-as-errors in Core/catalog code: preserve the installed-origin checker instance API with a narrow CA1822 justification, use direct indexing for indexable Thunderstore categories, and keep concrete collection types where the implementation is concrete.
