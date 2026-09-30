@@ -190,15 +190,15 @@ internal static class ModRequirementReader
             string.IsNullOrWhiteSpace(requirement.MaxVersion))
             return true;
 
-        var actual = NormalizeVersionText(mod.NexusVersion);
-        if (actual is null)
+        var actualExact = NormalizeExactVersionText(mod.NexusVersion);
+        if (actualExact is null)
         {
             reason = $"Installed provider '{mod.DisplayName}' has no trustworthy version metadata for requirement {DescribeRequirement(requirement)}.";
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(requirement.ExactVersion) &&
-            !StringComparer.OrdinalIgnoreCase.Equals(actual, NormalizeVersionText(requirement.ExactVersion)))
+            !StringComparer.OrdinalIgnoreCase.Equals(actualExact, NormalizeExactVersionText(requirement.ExactVersion)))
         {
             reason = $"Installed provider '{mod.DisplayName}' is version '{mod.NexusVersion}', but {DescribeRequirement(requirement)} is required.";
             return false;
@@ -206,7 +206,12 @@ internal static class ModRequirementReader
 
         if (!string.IsNullOrWhiteSpace(requirement.MinVersion))
         {
-            if (!TryParseComparableVersion(actual, out var actualVersion) ||
+            if (HasPrerelease(actualExact) || HasPrerelease(requirement.MinVersion!))
+            {
+                reason = $"Cannot safely evaluate prerelease version '{mod.NexusVersion}' against minimum version '{requirement.MinVersion}' for '{requirement.Token}'. Use an exact version requirement for prerelease builds.";
+                return false;
+            }
+            if (!TryParseComparableVersion(actualExact, out var actualVersion) ||
                 !TryParseComparableVersion(requirement.MinVersion!, out var minimum))
             {
                 reason = $"Cannot safely compare installed version '{mod.NexusVersion}' with minimum version '{requirement.MinVersion}' for '{requirement.Token}'.";
@@ -221,7 +226,12 @@ internal static class ModRequirementReader
 
         if (!string.IsNullOrWhiteSpace(requirement.MaxVersion))
         {
-            if (!TryParseComparableVersion(actual, out var actualVersion) ||
+            if (HasPrerelease(actualExact) || HasPrerelease(requirement.MaxVersion!))
+            {
+                reason = $"Cannot safely evaluate prerelease version '{mod.NexusVersion}' against maximum version '{requirement.MaxVersion}' for '{requirement.Token}'. Use an exact version requirement for prerelease builds.";
+                return false;
+            }
+            if (!TryParseComparableVersion(actualExact, out var actualVersion) ||
                 !TryParseComparableVersion(requirement.MaxVersion!, out var maximum))
             {
                 reason = $"Cannot safely compare installed version '{mod.NexusVersion}' with maximum version '{requirement.MaxVersion}' for '{requirement.Token}'.";
@@ -335,12 +345,27 @@ internal static class ModRequirementReader
             MergeConstraint(incoming.Token, "maximum-version", existing.MaxVersion, incoming.MaxVersion, errors));
     }
 
-    private static string? NormalizeVersionText(string? value)
+    private static string? NormalizeExactVersionText(string? value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(value)) return null;
         var normalized = value.Trim();
         if (normalized.StartsWith('v') || normalized.StartsWith('V')) normalized = normalized[1..];
+        return normalized.Trim();
+    }
+
+    private static bool HasPrerelease(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = NormalizeExactVersionText(value);
+        return normalized is not null && normalized.Contains('-', StringComparison.Ordinal);
+    }
+
+    private static string? NormalizeVersionText(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = NormalizeExactVersionText(value);
+        if (normalized is null) return null;
         var separator = normalized.IndexOfAny(['-', '+']);
         if (separator >= 0) normalized = normalized[..separator];
         return normalized.Trim();
