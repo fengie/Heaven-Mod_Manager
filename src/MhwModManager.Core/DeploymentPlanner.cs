@@ -229,7 +229,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     private static bool IsSafeAtomicBundleComposition(
         IReadOnlySet<string> memberIds,
         ConflictRuleIndex ruleIndex,
-        IReadOnlyDictionary<string,ModDescriptor> enabled)
+        Dictionary<string,ModDescriptor> enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (ruleIndex.FindFullyOrderedOverlayWinner(memberIds) is not null)
