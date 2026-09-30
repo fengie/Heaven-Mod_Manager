@@ -910,3 +910,11 @@ Exact code commit: `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2` on `agent/auto-upd
 - Strict solution/App builds **PASS, 0 warnings / 0 errors**; ReadyToRun app and self-contained updater-helper publish **PASS**.
 - `Build-Release.ps1`: **PASS**; local updater build **230**; ZIP SHA-256 `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`.
 - This is local exact-input evidence only. Hosted exact-main publication and disposable installed-client old-to-new/rollback closure remain pending.
+
+
+## Conflict/Dependency Safety Verification — 2026-09-30
+
+- Candidate purpose: exact-current-main verification of the integrated override/dependency safety hardening, including PR #394's complete-dominance texture resolver regression and the restored effective-plan dependency gates.
+- Required evidence: Workflow Feature PR Gate + Security Supply Chain Gate on this candidate. Do not infer green status from the prematurely merged/cancelled PR #394 runs.
+- Product invariants under verification: no priority fallback for unresolved winners; atomic structural bundle safety; protected bootstrap/code collisions; plan-aware Preview/Apply/Auto Populate/launch/restore dependency checks; N-way texture resolution requires one complete dominator.
+- Status at creation: PENDING.
