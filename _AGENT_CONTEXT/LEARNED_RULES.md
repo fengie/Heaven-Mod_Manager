@@ -462,3 +462,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Follow-up proof:** once strict recompilation was enforced, Windows Release Gate run `36658135531` correctly exposed the previously masked UnitTests warnings: one CS8629 nullable-value access and the complete eight-call xUnit1051 cancellation-token cluster in `NexusV3TransportTests`. Those sibling defects are repaired together instead of suppressing the analyzers.
 - **Reusable lesson:** promoted to `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md` under “Strict analyzer rerun semantics.”
 
+
+
+## LR-027 — shared-runner CI concurrency must match the resource boundary
+- **Rule ID:** LR-027
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** GitHub Actions, self-hosted runners, PR validation, release/update verification
+- **Rule:** When multiple supersedable workflows contend for the same small self-hosted runner pool, use a concurrency group scoped to the shared resource/priority class rather than to each branch or PR. Keep release-critical verification in separate groups so feature churn cannot indefinitely delay publication or rollback proof.
+- **Trigger / evidence:** Updater Installed Client E2E run `36659154949` was repeatedly leapfrogged by newer feature PR gates because `workflow-feature-pr-gate-${{ github.ref }}` only cancelled stale work inside each PR.
+- **Rationale:** `cancel-in-progress` is only effective across runs that share a key. A per-ref key can look efficient while still flooding a shared two-runner pool across many refs.
+- **Enforcement:** CI regression coverage must assert the intended concurrency key and cancellation behavior for any workflow using the shared Heaven runner labels. Any change from global to per-ref concurrency requires explicit capacity/priority justification.
+- **Relevant implementation:** `.github/workflows/workflow-feature-pr-gate.yml` and `tools/agent-control/test/workflow-feature-pr-gate-concurrency.test.mjs`.
+- **Related rules:** LR-021 defect-class closure; LR-026 shared-provider fan-out health gating.
+- **Supersedes:** none
+- **Superseded by:** none
