@@ -1,5 +1,11 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.52 Universal Mod Manager
 
+
+## v8.8.52 — truthful Heaven authentication state
+
+Agent Control v0.6.24 distinguishes a configured Heaven Bridge whose heartbeat fails authentication from a host whose presence is genuinely unknown. `heartbeat-auth-invalid` now renders as `auth-required` with blocked/error styling instead of `presence-unknown`; stale or otherwise uncertain transport evidence remains unknown. Execution stays fail-closed and never silently falls back to heaven2.
+
+Live recovery in this repair upgraded `heaven` to worker v8 with the explicit machine-local private-repo compatibility marker. `heaven2` remains correctly fail-closed in `hmac-required` until its existing local `Set-PrimaryControlMode.ps1` or HMAC provisioning path is executed; no credential or authorization secret was sent through GitHub relay state.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 
