@@ -1,3 +1,13 @@
+# v8.8.37 Agent Manager live-registry truthfulness — verification scope
+
+This candidate changes registry projection/UI truthfulness, not the durable termination authority boundary. Exact-head source verification must include Agent Control syntax/tests, the federated projection regressions, dashboard inline-JavaScript parsing, Security Supply Chain, and the configured repository PR gate. `federation.counts.total` must equal fresh live presence only; stale/disconnected/terminal observations must remain available through attention/history without being counted or rendered as live registry members.
+
+Managed records are conservative: unresolved process ownership, retry/recovery, dirty/durable work, orphaned/interrupted state, or termination-proof gaps remain visible in Needs Attention. The existing retry-exhausted retirement function remains the only destructive cleanup path and must continue to require durable remote-stop/worktree/branch proof. Retired-source stale replay and strictly-newer-heartbeat reactivation semantics from v8.8.31+ are preserved.
+
+Live heaven2 closure is separate from source CI: after integration, verify the four dashboard surfaces against one runtime snapshot and exercise one stale/disconnected history transition plus one Needs Attention case. Do not relabel hosted/self-hosted source gates as that live UI evidence.
+
+---
+
 # v8.8.36 Agent Manager notification + stable inspector — verification scope
 
 This candidate is a UI/test-only functional closure layered on canonical v8.8.35. Required source evidence is exact-head Agent Control syntax/tests plus configured Agent Control/Security gates. Focused regressions must pin notification rendering/action filtering, shared managed/federated ID routing, explicit Inspect controls, nested-control isolation, refresh-persistent selection, arbitrary stable IDs, and deterministic missing/retired behavior including the async managed-log race.
