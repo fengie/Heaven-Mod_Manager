@@ -211,11 +211,12 @@ Completed on the current-main lineage:
 - bounded response reads, cancellation propagation, conditional cache validators, 304 handling, schema-envelope drift detection, and explicit 429/Retry-After surfacing without automatic retry storms.
 
 Still required before Nexus is considered a supported catalog provider:
-- normalize Nexus v3 payloads into `CatalogMod` / `CatalogModFile`;
-- hydrate the global mod id needed by file endpoints;
-- implement provider health/rate state and acquisition policy;
-- add timeout/auth/offline/malformed-inner-schema fixtures around the provider adapter;
-- route acquired archives through the existing safe import boundary.
+- [implemented] normalize Nexus v3 payloads into `CatalogMod` / `CatalogModFile` with fail-closed inner-schema validation;
+- [implemented] hydrate the global mod id needed by file endpoints and expand exact file versions;
+- [implemented] provider health/rate/auth state plus compliant assisted acquisition policy;
+- [implemented] timeout/auth/offline/rate-limit/malformed-inner-schema provider fixtures;
+- route acquired archives through the existing safe import boundary;
+- persist source-aware cache/provenance and expose the provider through the integrated catalog UI.
 
 ### Phase 1 — useful federated catalog
 - Nexus v3;
