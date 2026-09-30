@@ -912,3 +912,26 @@ test("perpetual one-click prompts evolve across every controller phase", () => {
   assert.match(replacement, /const replacementSwarmContext = autopilotSwarmContext/);
   assert.match(replacement, /source:\s*"perpetual-stale-replacement"/);
 });
+
+
+test("federated Go-to-Work notifications route to federated inspection", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function recoverGoToWorkAgent");
+  const end = source.indexOf("async function reconcileGoToWorkRecoveries", start);
+  assert.ok(start >= 0 && end > start, "Go-to-Work recovery implementation must be present");
+  const recovery = source.slice(start, end);
+
+  assert.match(recovery, /federation\.work-handoff-ui-drift/);
+  assert.match(recovery, /dedupeKey: `work-handoff-ui-drift:\$\{agentId\}/);
+  assert.match(recovery, /dedupeKey: `go-to-work-recovery-error:\$\{agentId\}`/);
+  assert.equal(
+    (recovery.match(/action: \{ type: "inspect-federation", agentId \}/g) || []).length,
+    2,
+    "both federated recovery notifications must inspect the federated logical agent"
+  );
+  assert.doesNotMatch(
+    recovery,
+    /action: \{ type: "inspect-agent", agentId \}/,
+    "federated logical ids must never be routed to the managed-agent log inspector"
+  );
+});
