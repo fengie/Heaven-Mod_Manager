@@ -198,7 +198,7 @@ test("dashboard keeps high-volume operational surfaces collapsed and glanceable 
   }
 
   assert.match(html, /\.overview-grid \{ display:grid; grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(html, /details\.compact-section\[open\] \{ grid-column:1 \/ -1; \}/);
+  assert.match(html, /details\.compact-section\[open\]\s*\{[^}]*grid-column:1 \/ -1;/s);
   assert.match(html, /\.compact-section-body \{[^}]*max-height:min\(68vh,760px\);[^}]*overflow:auto;/s);
   assert.match(html, /function openCompactSection\(id\)/);
   assert.match(html, /function selectInspector\(kind, id\) \{[\s\S]*openCompactSection\("inspectorSection"\)/);
