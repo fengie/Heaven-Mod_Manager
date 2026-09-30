@@ -50,7 +50,7 @@ test("bridge relay auto-discovers the documented per-user checkout", () => {
 });
 
 test("bridge execution reuses automatic relay checkout discovery", () => {
-  const source = fs.readFileSync(path.resolve(here, "..", "lib", "heaven-bridge-provider.mjs"), "utf8");
+  const source = fs.readFileSync(new URL("../lib/heaven-bridge-provider.mjs", import.meta.url), "utf8");
   assert.match(source, /submitHeavenBridgeJob[\s\S]*relayDir = resolveHeavenRelayDir\(\)/);
   assert.match(source, /waitForHeavenBridgeResult[\s\S]*relayDir = resolveHeavenRelayDir\(\)/);
   assert.doesNotMatch(source, /submitHeavenBridgeJob[\s\S]{0,240}relayDir = process\.env\.AGENT_CONTROL_HEAVEN_RELAY_DIR/);
