@@ -1,3 +1,9 @@
+# v0.6.18 — efficient hash-indexed agent bootstrap
+
+## What v0.6.18 does
+
+Agent Control no longer forces every worker to reread the full historical continuity corpus before task reasoning. Generated prompts now separate a small full-read core from a hash-verified indexed context set, require task-relevant expansion of the indexed material, and explicitly treat truncation, missing `gh`/CLI, a failed network route, or an unavailable local checkout as recoverable routing conditions. A worker may report TRAINING-BLOCKED/EXECUTION-BLOCKED only after reasonable authorized fallbacks are exhausted with evidence. Premium/senior roles are told to offload mechanical evidence gathering and preserve scarce context for diagnosis, architecture, review, and integration.
+
 # v0.6.17 — Heaven Bridge primary reliability
 
 ## What v0.6.17 does
