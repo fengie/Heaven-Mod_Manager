@@ -1,3 +1,9 @@
+# v8.8.24 — Agent Manager P0 activation
+- Activate the repository-driven Agent Manager P0 lock in canonical continuity so the already-integrated runtime priority code is no longer dormant.
+- Keep implementation and perpetual next-cycle planning constrained to Agent Control work until exact-head manager checks and heaven2→heaven1 runtime smoke pass.
+- Add a regression that fails if Agent Control's P0 runtime support exists without the active continuity marker.
+- Align Agent Control runtime/plugin/documentation identity on v0.6.2 and keep coverage partial rather than fabricating undiscoverable ChatGPT sessions.
+
 # v8.8.23 — Agent Manager runtime reliability
 - Fix START SWARM so a paused perpetual run resumes and advances immediately instead of being reported as already running.
 - Reject active non-perpetual autopilot runs with HTTP 409 rather than falsely labeling them as an existing perpetual swarm.
