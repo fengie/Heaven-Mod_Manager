@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.33 Agent Control lightweight status health ? CURRENT
+
+GET /api/status is now a lightweight observational path: persisted state + pure federation counts + local-only worker health. It no longer executes repository snapshot/integration work or Heaven Bridge inspection. Full /api/snapshot and /api/sync remain unchanged.
+
+Agent Control/runtime/plugin identity is v0.6.11. v8.8.32 fail-closed retirement identity remains intact.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? CURRENT
 
 Canonical v8.8.31 remote-stop proof is retained. This patch closes the remaining identity gap: the canonical provider fallback applies before retirement and any Heaven-backed retry-exhausted row without a durable remote job id is preserved as retry-blocked. Migration keeps retired-source tombstones/retiredAt boundaries intact.

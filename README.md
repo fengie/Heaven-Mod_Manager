@@ -1,4 +1,11 @@
-# v8.8.32 Universal Mod Manager
+# v8.8.33 Universal Mod Manager
+
+## v8.8.33 ? Agent Control lightweight status health
+
+The GET /api/status health path no longer builds the full controller snapshot. It reads persisted control state, derives federation counts locally, and requests a local-only worker snapshot, so a health probe cannot trigger repository inspection, integration-queue work, remote branch discovery, or Heaven Bridge inspection.
+
+The endpoint keeps its existing controller/telemetry/federation/workers/roles response shape while remaining observational and lightweight. The full /api/snapshot and /api/sync paths retain their richer repository and remote-provider behavior. Agent Control advances to **v0.6.11** with a contract regression that forbids heavyweight calls from /api/status.
+
 
 ## v8.8.32 — Agent Control retirement identity fail-closed closure
 

@@ -1136,14 +1136,14 @@ function refreshState() {
   return state;
 }
 
-async function workerSnapshot(state = refreshState()) {
+async function workerSnapshot(state = refreshState(), { inspectRemote = true } = {}) {
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   const hostname = os.hostname();
   const currentId = hostname.toLowerCase();
   const policies = state.settings?.machinePolicies || {};
   const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
   configured.add(currentId);
-  const heavenBridge = currentId === "heaven2" && configured.has("heaven")
+  const heavenBridge = inspectRemote && currentId === "heaven2" && configured.has("heaven")
     ? await inspectHeavenBridge({ sync: false })
     : null;
 
@@ -5338,18 +5338,31 @@ const server = http.createServer(async (req, res) => {
     if (!allowedOrigin(req)) return sendJson(res, 403, { error: "Origin not allowed." });
 
     if (req.method === "GET" && pathname === "/api/status") {
-      const snapshot = await buildSnapshot();
+      const state = loadState();
+      const federation = federationSnapshot(state.federation, { now: Date.now() });
+      federation.coverage = federationCountCoverage(federation);
+      const workers = await workerSnapshot(state, { inspectRemote: false });
       return sendJson(res, 200, {
         ok: true,
-        generatedAt: snapshot.generatedAt,
-        controller: snapshot.controller,
-        telemetry: snapshot.telemetry,
-        federation: {
-          counts: snapshot.federation.counts,
-          providers: snapshot.federation.providers
+        generatedAt: isoNow(),
+        controller: {
+          host: os.hostname(),
+          bindHost: HOST,
+          port: PORT,
+          repo: REPO,
+          worktreeRoot: WORKTREE_ROOT,
+          codex: codexStatus(),
+          stateVersion: STATE_VERSION,
+          sessionId: SESSION_ID,
+          health: state.health
         },
-        workers: snapshot.workers,
-        roles: snapshot.roles
+        telemetry: telemetry(state, [], federation),
+        federation: {
+          counts: federation.counts,
+          providers: federation.providers
+        },
+        workers,
+        roles: rolePresets
       });
     }
 

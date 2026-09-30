@@ -1,3 +1,10 @@
+# v8.8.33 ? Agent Control lightweight status health
+- Remove full buildSnapshot execution from GET /api/status.
+- Build status health from persisted state, pure federation normalization, and a local-only worker snapshot.
+- Prevent status health from repositorySnapshot, refreshState mutation/reconciliation, and Heaven Bridge inspection.
+- Preserve the existing status response shape while leaving full /api/snapshot and /api/sync behavior unchanged.
+- Add a source-level health contract regression and advance Agent Control runtime/root/nested plugin identity to v0.6.11.
+
 # v8.8.32 — Agent Control retirement identity fail-closed closure
 - Resolve persisted worker ownership through the canonical executionProvider/runtimeProvider/provider fallback before remote retirement.
 - Block and preserve Heaven-backed retry-exhausted rows whose durable remoteJobId is missing or blank instead of treating proof as unnecessary.

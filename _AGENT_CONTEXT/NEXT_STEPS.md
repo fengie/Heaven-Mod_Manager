@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.33 Agent Control lightweight status health ? NEXT
+
+1. Require exact-head Agent Control check/test, Security Supply Chain, and handoff preflight/negative fixtures.
+2. Keep the /api/status contract regression: no buildSnapshot, refreshState, repositorySnapshot, or inspectHeavenBridge in the health route.
+3. Obtain live heaven2?heaven1 retirement/replay smoke for the v8.8.31-v8.8.32 lifecycle boundary.
+4. Continue remaining Agent Manager P0 runtime lanes only after re-reading canonical main.
+5. Clean merged/superseded task branches and leave durable successor notes.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? NEXT
 
 1. Require exact-head Agent Control check/test, Security Supply Chain, and handoff preflight/negative fixtures.

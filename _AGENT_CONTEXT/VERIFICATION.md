@@ -1,3 +1,9 @@
+# v8.8.33 Agent Control lightweight status health ? verification scope
+
+Exact-head source evidence must include the health contract regression, complete Agent Control suite, Security Supply Chain, and handoff governance validators. The broad .NET Workflow Feature gate currently carries unrelated baseline analyzer/core failures and must not be relabeled as evidence for this Agent Control-only patch.
+
+---
+
 # v8.8.32 Agent Control retirement identity fail-closed closure ? verification scope
 
 Exact-head source evidence must include the real-server missing-ID/provider-fallback regression, migration tombstone preservation, complete Agent Control suite, Security Supply Chain, and handoff governance validators. Live heaven2?heaven1 cancellation/status/replay remains separate runtime evidence.
