@@ -94,8 +94,7 @@ foreach($workflow in $workflows){
     if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
         $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
     }
-    if($usesSelfHosted -and $writeAllowlist -notcontains $workflow.Name
-        -and $content -match '(?mi)^\s{2}[A-Za-z][A-Za-z0-9-]*:\s*write\s*$'){
+    if($usesSelfHosted -and $writeAllowlist -notcontains $workflow.Name -and $content -match '(?mi)^\s{2}[A-Za-z][A-Za-z0-9-]*:\s*write\s*$'){
         $errors.Add("$($workflow.Name): persistent self-hosted code execution must not carry write-capable GITHUB_TOKEN scopes. Split privileged mutation into an explicitly reviewed trusted workflow.")
     }
 
