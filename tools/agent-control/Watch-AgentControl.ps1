@@ -87,81 +87,40 @@ function Write-WatchdogState {
 function Test-AgentControlHealth {
     try {
         $status = Invoke-RestMethod -Uri $healthUri -Method Get -TimeoutSec 3
-        return [bool]$status.ok
+        return (
+            [bool]$status.ok -and
+            [bool]$status.controller.sourceVerified -and
+            [string]$status.controller.sourceBranch -eq 'main' -and
+            [string]$status.controller.sourceSha -match '^[0-9a-fA-F]{40}$'
+        )
     } catch {
-        return $false
-    }
-}
-
-function Get-AgentControlListenerPid {
-    try {
-        if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
-            $listener = Get-NetTCPConnection -LocalAddress '127.0.0.1' -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-                Select-Object -First 1
-            if ($listener -and $listener.OwningProcess) {
-                return [int]$listener.OwningProcess
-            }
-        }
-    } catch {}
-    return $null
-}
-
-function Test-IsOwnedAgentControlProcess {
-    param([int]$ProcessId)
-    if (-not $ProcessId) { return $false }
-
-    try {
-        if (-not (Test-Path -LiteralPath $controllerPidPath)) { return $false }
-        $identity = Get-Content -LiteralPath $controllerPidPath -Raw -Encoding UTF8 | ConvertFrom-Json
-        if ([int]$identity.pid -ne $ProcessId) { return $false }
-        if ($identity.port -and [int]$identity.port -ne $port) { return $false }
-
-        $process = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction Stop
-        $command = [string]$process.CommandLine
-        if ([string]::IsNullOrWhiteSpace($command)) { return $false }
-
-        $serverIdentity = [string]$identity.serverPath
-        if (-not [string]::IsNullOrWhiteSpace($serverIdentity)) {
-            $expectedName = [System.IO.Path]::GetFileName($serverIdentity)
-            if ($command -notmatch [Regex]::Escape($expectedName)) { return $false }
-        }
-
-        return $command -match '(?i)node(?:\.exe)?' -and $command -match '(?i)server\.mjs'
-    } catch {
-        return $false
-    }
-}
-
-function Stop-HungOwnedAgentControl {
-    $listenerPid = Get-AgentControlListenerPid
-    if (-not $listenerPid) { return $true }
-
-    if (-not (Test-IsOwnedAgentControlProcess -ProcessId $listenerPid)) {
-        Write-WatchdogLog ("Port {0} is occupied by PID {1} but ownership is not proven; refusing to kill it." -f $port, $listenerPid)
-        return $false
-    }
-
-    try {
-        Stop-Process -Id $listenerPid -Force -ErrorAction Stop
-        Write-WatchdogLog ("Stopped unhealthy proven-owned Agent Control PID {0}." -f $listenerPid)
-        Start-Sleep -Seconds 1
-        return $true
-    } catch {
-        Write-WatchdogLog ("Failed to stop unhealthy Agent Control PID {0}: {1}" -f $listenerPid, $_.Exception.Message)
         return $false
     }
 }
 
 function Start-AgentControlServer {
-    if (-not (Test-Path -LiteralPath $serverPath)) {
-        throw "Agent Control server missing: $serverPath"
+    $verifiedLauncher = Join-Path $agentDir 'Start-AgentControlVerified.ps1'
+    if (-not (Test-Path -LiteralPath $verifiedLauncher)) {
+        throw "Verified Agent Control launcher missing: $verifiedLauncher"
     }
 
-    $node = (Get-Command node.exe -ErrorAction Stop).Source
-    $env:AGENT_CONTROL_REPO = $RepoRoot
-    $env:AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP = '1'
-    Start-Process -FilePath $node -ArgumentList @('server.mjs') -WorkingDirectory $agentDir -WindowStyle Hidden
-    Write-WatchdogLog ("Started Agent Control server from {0}." -f $agentDir)
+    $launchParameters = @{
+        RepoRoot = $RepoRoot
+        ForceReplaceOwned = $true
+    }
+    if ($AllowNonControllerHost) { $launchParameters.AllowNonControllerHost = $true }
+
+    $result = & $verifiedLauncher @launchParameters
+    if (-not [bool]$result.ok) {
+        throw 'Verified Agent Control launcher did not return a successful result.'
+    }
+
+    Write-WatchdogLog ("Verified Agent Control restart: disposition={0}; sha={1}; version={2}; replaced={3}" -f
+        $result.source.disposition,
+        $result.source.after_sha,
+        $result.identity.agentControlVersion,
+        $result.replaced)
+    return $result
 }
 
 try {
@@ -220,13 +179,8 @@ try {
             continue
         }
 
-        if (-not (Stop-HungOwnedAgentControl)) {
-            Start-Sleep -Seconds $CheckIntervalSeconds
-            continue
-        }
-
         try {
-            Start-AgentControlServer
+            $launchResult = Start-AgentControlServer
             $startedAt = (Get-Date).ToUniversalTime().ToString('o')
             $recent += $startedAt
             $state.restart_timestamps_utc = @($recent)
