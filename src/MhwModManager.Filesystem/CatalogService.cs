@@ -18,7 +18,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         foreach(var dir in directories)
         {
             ct.ThrowIfCancellationRequested();
-            if(current.ContainsKey(dir)) continue;
+            if(current.Contains(dir)) continue;
             var name=Path.GetFileName(dir);
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var nexusMatch=NexusArchiveSuffixRegex().Match(name);
