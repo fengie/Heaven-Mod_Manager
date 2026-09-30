@@ -212,7 +212,7 @@ class RollbackCoordinator:
                 "receipt_id": payload.get("commit_receipt_id"),
                 "idempotent": True,
             }
-        if status not in {"prepared", "rollback_failed"}:
+        if status != "prepared":
             raise ValueError(f"change is not committable from status {status!r}")
         expected = payload.get("expected_post_state_id")
         if expected is not None and expected != post_state_id:
@@ -267,7 +267,7 @@ class RollbackCoordinator:
                 "idempotent": True,
                 "results": [],
             }
-        if payload.get("status") not in {"prepared", "committed", "rollback_failed"}:
+        if payload.get("status") not in {"prepared", "committed", "rollback_failed", "rolling_back"}:
             raise ValueError("change is not rollback-eligible")
         steps = self._steps(payload.get("rollback_steps"))
         completed = list(payload.get("rollback_completed") or [])
