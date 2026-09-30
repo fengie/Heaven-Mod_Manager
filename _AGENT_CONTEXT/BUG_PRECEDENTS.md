@@ -129,3 +129,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** GitHub Releases provider branch `agent/github-releases-catalog-20260929b`; fix commit `1dc71a9279162dff35e5eab2d3bc77ae73ecc430`; final merge evidence belongs to the integrating PR.
 - **Sibling/adjacent cases checked:** Review the rest of generated/edited C# in the provider lane for escaped control-token artifacts and require the branch gate before integration.
 
+## 2026-09-29 — GitHub Releases catalog — credentials and acquisition were not fully bound to canonical identity
+- **Symptom:** The provider transport accepted an arbitrary HTTPS API base URI even when a GitHub bearer credential was configured, and direct acquisition validated provider/mod identity without also proving that the catalog mod belonged to the selected game.
+- **Root cause:** Testability hooks and provider-neutral request objects were treated as harmless configuration after basic HTTPS/provider checks, but neither boundary carried the complete trust identity needed by the sensitive action.
+- **Violated invariant / wrong assumption:** Secrets must be bound to their canonical egress origin, and download/acquisition authorization must validate provider + game + mod + file identity before resolving a direct artifact.
+- **Why prior defenses missed it:** Existing coverage rejected non-HTTPS bases and mismatched provider/file IDs, but did not combine a credential with a custom HTTPS origin or mutate only the game identity while keeping the repository/file identity otherwise valid.
+- **Direct fix:** Credential-bearing GitHub transports now reject non-`api.github.com` base origins before any request is created; direct acquisition now requires `request.Mod.GameId == request.Game.Id`.
+- **Preventive rule/process change:** Treat injectable network origins and provider-neutral artifact references as trust boundaries. Any secret-bearing transport must pin secret egress to the intended origin, and any acquisition/install resolution must validate the full identity tuple before producing a usable download.
+- **Regression coverage added/strengthened:** Added tests proving custom HTTPS origins cannot receive GitHub credentials and cross-game catalog mods cannot resolve direct release assets.
+- **Verification evidence/environment:** GitHub Releases provider PR #322, commits `1a9f364edc5dd898c897576e49d416f96edecc50`, `00c292ca75cf63116ab1919acbf1582df1aa9710`, and `10eb572bfbb8cbbc3c85b48c725caf8712da809e`; exact-head PR gate remains authoritative.
+- **Sibling/adjacent cases checked:** Nexus assisted acquisition already enforces provider/game/mod identity; GitHub asset URLs remain restricted to HTTPS `github.com`; credentials are not persisted in provider metadata.
+
