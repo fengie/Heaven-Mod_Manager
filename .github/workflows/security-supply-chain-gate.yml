@@ -11,6 +11,8 @@ on:
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
+      - 'scripts/Verify-Release.ps1'
+      - 'scripts/Test-CiSecurityPolicy.ps1'
   pull_request:
     paths:
       - '.github/workflows/**'
@@ -43,70 +45,4 @@ jobs:
 
       - name: Audit workflow security policy
         shell: powershell
-        run: |
-          $code = @'
-          import pathlib
-          import re
-          import sys
-
-          failures = []
-          workflow_dir = pathlib.Path(".github/workflows")
-          immutable = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
-          uses_re = re.compile(r"^\s*uses:\s*([^\s#]+)", re.MULTILINE)
-          pr_re = re.compile(r"^\s*pull_request\s*:", re.MULTILINE)
-          permissions_re = re.compile(r"^permissions:\s*$", re.MULTILINE)
-          checkout_re = re.compile(r"^\s*uses:\s*actions/checkout@[0-9a-f]{40}", re.MULTILINE)
-          safe_checkout_re = re.compile(r"^\s*persist-credentials:\s*false\s*$", re.MULTILINE)
-          guard = "github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository"
-
-          for path in sorted(workflow_dir.glob("*.y*ml")):
-              text = path.read_text(encoding="utf-8")
-              for match in uses_re.finditer(text):
-                  value = match.group(1)
-                  if value.startswith("./"):
-                      continue
-                  if not immutable.fullmatch(value):
-                      failures.append(f"{path}: action is not pinned to a full commit SHA: {value}")
-              if not permissions_re.search(text):
-                  failures.append(f"{path}: workflow must declare explicit top-level permissions")
-              if pr_re.search(text) and "self-hosted" in text:
-                  if guard not in text:
-                      failures.append(f"{path}: persistent self-hosted PR workflow must reject fork PR code")
-                  if len(safe_checkout_re.findall(text)) < len(checkout_re.findall(text)):
-                      failures.append(f"{path}: self-hosted PR checkout must set persist-credentials: false")
-              if re.search(r"^\s*pull_request_target\s*:", text, re.MULTILINE) and "actions/checkout@" in text:
-                  failures.append(f"{path}: pull_request_target plus checkout requires explicit security design review")
-
-          release_path = workflow_dir / "windows-release-gate.yml"
-          release_text = release_path.read_text(encoding="utf-8")
-          if "repos/cli/cli/releases/latest" in release_text or "Get-Command gh" in release_text:
-              failures.append(f"{release_path}: privileged release tooling must not trust moving latest or arbitrary preinstalled gh.exe")
-          if "$version = '2.101.0'" not in release_text:
-              failures.append(f"{release_path}: GitHub CLI bootstrap version is not pinned to the reviewed release")
-          if "bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794" not in release_text:
-              failures.append(f"{release_path}: reviewed GitHub CLI SHA-256 is missing")
-          if "Get-FileHash" not in release_text:
-              failures.append(f"{release_path}: GitHub CLI archive must be digest-verified before execution")
-          if "https://github.com/cli/cli/releases/download/v${version}/${assetName}" not in release_text:
-              failures.append(f"{release_path}: GitHub CLI bootstrap must use the pinned release-asset URL")
-
-          updater_path = workflow_dir / "updater-installed-client-e2e.yml"
-          updater_text = updater_path.read_text(encoding="utf-8")
-          for privileged_path, privileged_text in ((release_path, release_text), (updater_path, updater_text)):
-              if "persist-credentials: false" not in privileged_text:
-                  failures.append(f"{privileged_path}: privileged updater/release checkouts must not persist repository credentials")
-          if re.search(r"^      MHW_MOD_MANAGER_GITHUB_TOKEN:\s*\$\{\{ github\.token \}\}\s*$", updater_text, re.MULTILINE):
-              failures.append(f"{updater_path}: repository token must be scoped to only the steps that require it")
-
-          if failures:
-              print("\n".join(f"ERROR: {item}" for item in failures))
-              sys.exit(1)
-          print("Security workflow policy: PASS")
-          '@
-          $scriptPath = Join-Path $env:RUNNER_TEMP 'mhw-security-policy.py'
-          [System.IO.File]::WriteAllText(
-            $scriptPath,
-            $code,
-            [System.Text.UTF8Encoding]::new($false)
-          )
-          python $scriptPath
+        run: .\scripts\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE
