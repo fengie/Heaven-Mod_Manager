@@ -589,7 +589,10 @@ test("perpetual recovery preserves takeover before proven stop and persists repl
   assert.ok(redispatchAt > pendingAt);
   assert.match(block, /replacement-dispatch-failed/);
   assert.match(block, /autopilot\.stale-replacement-pending/);
-  assert.match(block, /executionMode: "direct"/);
+  const dispatchStart = source.indexOf("async function dispatchPerpetualReplacement");
+  const dispatchEnd = source.indexOf("async function reconcilePerpetualReplacement", dispatchStart);
+  assert.ok(dispatchStart >= 0 && dispatchEnd > dispatchStart);
+  assert.match(source.slice(dispatchStart, dispatchEnd), /executionMode: "direct"/);
 });
 
 test("perpetual runtime errors and recoverable gates schedule retries instead of disabling the run", () => {
