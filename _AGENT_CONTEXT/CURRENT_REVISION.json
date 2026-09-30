@@ -9,11 +9,11 @@
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.52-heaven-auth-status-candidate",
   "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head Agent Control/Security/Workflow gates; reconcile any concurrent v8.8.50/v8.8.51 integration; merge only if green; then execute the existing machine-local Heaven primary-mode/HMAC setup on heaven2 and restart/sync Agent Control for live acceptance.",
+  "nextRequiredAction": "Pass exact-head gates, reconcile fresh main, merge if green, then complete the existing local heaven2 setup and smoke one Heaven dispatch.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "Historical evidence does not verify this candidate. v8.8.52 changes Agent Control provider-status semantics; exact-head gates and a post-integration heaven2 runtime smoke are required.",
+  "verificationScopeNote": "v8.8.52 needs exact-head gates and a post-merge heaven2 runtime smoke; older green evidence is historical.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,10 +38,10 @@
     ]
   },
   "unresolvedRisks": [
-    "heaven is live on worker v8 with explicit machine-local private-repo compatibility authorization; HMAC remains preferred.",
-    "heaven2 worker v8 is live but hmac-required; its machine-local primary-mode marker or HMAC provisioning is still required.",
-    "Concurrent v8.8.50/v8.8.51 PRs must be reconciled before integration; preserve external ownership and unique work.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open."
+    "heaven: worker v8 and explicit local compatibility mode; HMAC remains preferred.",
+    "heaven2: worker v8 still needs its existing local setup before Agent Control accepts the Bridge.",
+    "Reconcile concurrent branches before merge; preserve external work.",
+    "Issues 411/350/354 remain open."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
