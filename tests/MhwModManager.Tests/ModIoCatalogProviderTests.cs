@@ -216,7 +216,7 @@ public sealed class ModIoCatalogProviderTests
         using var modDocument = JsonDocument.Parse(ReadFixture("mod.json"));
         using var filesDocument = JsonDocument.Parse(ReadFixture("files.json"));
         var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "123:42", modDocument);
-        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("42", filesDocument));
+        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("123:42", filesDocument));
 
         var fileFetches = 0;
         using var client = new HttpClient(new RoutingHandler((request, _) =>
@@ -244,7 +244,7 @@ public sealed class ModIoCatalogProviderTests
         using var modDocument = JsonDocument.Parse(ReadFixture("mod.json"));
         using var filesDocument = JsonDocument.Parse(ReadFixture("files.json"));
         var mod = ModIoCatalogNormalizer.NormalizeMod(game, 123, "123:42", modDocument);
-        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("42", filesDocument));
+        var file = Assert.Single(ModIoCatalogNormalizer.NormalizeModFiles("123:42", filesDocument));
 
         using var client = new HttpClient(new RoutingHandler((_, _) =>
             Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("file-threat.json")))));
