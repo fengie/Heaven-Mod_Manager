@@ -1,3 +1,7 @@
+# v8.8.50 runtime hardening verification candidate
+
+Pending exact-head verification covers four regressions: Dashboard child-width topology, retryable initial metadata refresh state, staged-update/prepared-handoff identity consistency, and startup diagnostic redaction of updater-health values. The implementation includes focused integration/source guards. No pass claim applies until the exact PR head has completed the required gates; after merge, record canonical-main evidence here and retire this candidate wording.
+
 # v8.8.49 UI regression integration candidate
 
 Combined candidate: native ComboBox selected text uses matched system brushes; Mods empty-state visibility now receives InstalledCount notifications when the mod collection changes. Security and Workflow Feature gates must pass on this exact PR head before merge. Runtime visual confirmation remains required after integration.
