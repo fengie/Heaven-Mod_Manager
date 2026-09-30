@@ -1,3 +1,8 @@
+# v8.8.49 compact Agent Manager overview
+
+Current owned UI change: v8.8.49 / Agent Control v0.6.23 compacts the Agent Manager into default-collapsed at-a-glance sections with bounded expanded content and automatic Inspector opening. Verify exact head, integrate to fresh main, smoke on heaven2, then leave successor evidence; preserve concurrent governance PR #525 and recursive continuity.
+
+---
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
