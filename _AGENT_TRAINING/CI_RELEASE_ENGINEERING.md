@@ -66,3 +66,8 @@ When project policy defines publication/deployment as part of version completion
 - Software-update integrity should ultimately authenticate publisher identity independently of the repository/release account. Hashes stored beside an artifact detect corruption but do not alone survive compromise of the publication authority.
 - Encode these invariants in executable CI policy tests so later workflow edits fail closed.
 
+## Consumer-feed-first multi-repository releases
+
+When one logical release spans multiple repositories or distribution surfaces, order visibility by consumer dependency. The surface production clients actually poll must become ready and verified before a secondary human-facing/canonical listing becomes visible. Re-check the canonical source after asset upload and immediately before publication, because upload is a race window. Do not use blanket `cancel-in-progress: true` around the transaction. Make retry idempotent by recovering automation-owned drafts, fail closed when drift cannot be completely classified, and finish with cross-surface immutable-asset parity verification.
+
+Protect release-order invariants from stale branch integration in at least one independent CI policy outside the release-specific test itself. Before merging branches that touch release/CI policy, require reconciliation with current main and rerun checks on the exact reconciled SHA; an older authored commit integrated later can otherwise restore stale whole-file state without an explicit revert.
