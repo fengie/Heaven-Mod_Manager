@@ -1,4 +1,10 @@
-# v8.8.36 Universal Mod Manager
+# v8.8.37 Universal Mod Manager
+
+## v8.8.37 — Agent Control current-presence registry retirement
+
+Agent Control now treats the live registry as current presence instead of a permanent terminal history list. Ordinary failed/stopped/interrupted/orphaned/capacity-blocked managed workers become retirement candidates only after active recovery is over and durable work is clear. Heaven-backed rows still require authoritative remote terminal proof, live local PIDs still require controller ownership, and dirty/diverged work is preserved as **Needs Attention** instead of being hidden.
+
+Federated terminal records and identities whose heartbeat has crossed the configured disconnect threshold are retired from current presence into durable tombstones. Tombstones are kept per provider/source identity so stale alternate-provider observations cannot resurrect the same logical agent; only genuinely newer live heartbeats can clear an existing tombstone. Managed terminal rows that still own recovery remain visible, while finished managed history is no longer mirrored into the federated live surface. Agent Control advances to **v0.6.15**.
 
 ## v8.8.36 — Agent Manager notification + stable inspector closure
 
