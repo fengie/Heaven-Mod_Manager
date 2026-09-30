@@ -544,7 +544,7 @@ test("federated bridge observations drive normalized live counts without duplica
   assert.equal(persisted.federation.agents.length, 1);
 });
 
-test("stale external heartbeat is visible but excluded from active-agent count", async t => {
+test("external heartbeat beyond disconnect timeout is archived from current presence", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-federation-stale-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const port = await freePort();
@@ -563,8 +563,16 @@ test("stale external heartbeat is visible but excluded from active-agent count",
 
   const federation = await getJson(port, "/api/federation");
   assert.equal(federation.body.counts.live, 0);
-  assert.equal(federation.body.counts.disconnected, 1);
-  assert.equal(federation.body.agents[0].effective_state, "disconnected");
+  assert.equal(federation.body.counts.disconnected, 0);
+  assert.equal(federation.body.counts.total, 0);
+  assert.equal(federation.body.agents.length, 0);
+
+  const snapshot = await getJson(port, "/api/snapshot");
+  assert.ok(snapshot.body.retiredAgents.some(item =>
+    item.provider === "chatgpt" &&
+    item.sourceId === "conversation-stale" &&
+    item.reason === "disconnected-timeout"
+  ));
 });
 
 test("overall swarm goal is persisted by autopilot and propagated through every perpetual phase", () => {
@@ -1034,8 +1042,8 @@ test("federated Go-to-Work notifications route to federated inspection", () => {
 test("retry-exhausted Heaven Bridge retirement proves remote termination before registry deletion", () => {
   const source = fs.readFileSync(SERVER, "utf8");
 
-  const proofStart = source.indexOf("async function proveRetryExhaustedRemoteJobStopped");
-  const proofEnd = source.indexOf("async function retireRetryExhaustedManagedAgent", proofStart);
+  const proofStart = source.indexOf("async function proveManagedRetirementRemoteJobStopped");
+  const proofEnd = source.indexOf("async function retireManagedTerminalAgent", proofStart);
   assert.ok(proofStart >= 0 && proofEnd > proofStart);
   const proof = source.slice(proofStart, proofEnd);
   assert.match(proof, /return proveRemoteJobStopped\(\{/);
@@ -1045,11 +1053,11 @@ test("retry-exhausted Heaven Bridge retirement proves remote termination before 
   assert.match(proof, /action: "job_status"/);
   assert.match(proof, /params: \{ job_id: jobId \}/);
 
-  const retireStart = source.indexOf("async function retireRetryExhaustedManagedAgent");
-  const retireEnd = source.indexOf("function retireFederatedRetryExhaustedAgent", retireStart);
+  const retireStart = source.indexOf("async function retireManagedTerminalAgent");
+  const retireEnd = source.indexOf("function archiveFederatedAgent", retireStart);
   assert.ok(retireStart >= 0 && retireEnd > retireStart);
   const retire = source.slice(retireStart, retireEnd);
-  const proofCall = retire.indexOf("await proveRetryExhaustedRemoteJobStopped(source)");
+  const proofCall = retire.indexOf("await proveManagedRetirementRemoteJobStopped(source)");
   const registryDelete = retire.indexOf("state.agents = state.agents.filter");
   assert.ok(proofCall >= 0, "retirement must prove remote execution stopped");
   assert.ok(registryDelete > proofCall, "registry deletion must happen only after remote stop proof");
