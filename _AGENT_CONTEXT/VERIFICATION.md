@@ -910,3 +910,13 @@ Exact code commit: `9234c61c47f9ebc82b3a6ce546799ccaa6f395a2` on `agent/auto-upd
 - Strict solution/App builds **PASS, 0 warnings / 0 errors**; ReadyToRun app and self-contained updater-helper publish **PASS**.
 - `Build-Release.ps1`: **PASS**; local updater build **230**; ZIP SHA-256 `E613A43E69B75B5CCFF87852F918D8BD270888B3F8D4A493E88A3A8DFD5E67D8`.
 - This is local exact-input evidence only. Hosted exact-main publication and disposable installed-client old-to-new/rollback closure remain pending.
+
+
+## 2026-09-30 — conflict/dependency safety hardening
+
+- **Canonical product state:** override/dependency safety is integrated on `main`, including fail-closed resolver winner invariants, high-confidence-only same-family texture composition, atomic MHW structural bundles, protected bootstrap/code collisions, versioned/optional dependency handling, effective-plan native-loader consistency, and plan-aware Preview/Apply/Auto Populate/launch/last-known-good validation.
+- **N-way resolver repair:** PR #394 / merge `b90e79acc487366f475edf31916337d57bbea59d` replaces the order-dependent 3+ provider texture tournament with complete all-pairs dominance: one provider must beat every other eligible provider or the path blocks.
+- **Canonical regressions:** `AutoCompatibilityTests.Multi_provider_texture_precedence_requires_one_complete_dominator` blocks a non-transitive three-provider cycle; `Multi_provider_texture_precedence_accepts_unique_complete_dominator` preserves the safe v1→v2→v3 case; `PlanAwareDependencyRejectsMixedEffectiveLoaderProviders` proves source-complete loader packages still fail when the final plan mixes effective bootstrap generations. The latter two are canonical commits `97e7fb86dfe3050ddbe7238e935fd017220a5b7f` and `2bec1f6c22316099e36a77663e4e179aa2adf56c`.
+- **Research basis:** dependency planning is treated as a constraint problem rather than a priority sort; mod tooling precedent likewise treats missing requirements/incompatibilities and overwrite order as explicit safety metadata. LR-036 generalizes the N-way complete-winner proof.
+- **Hosted verification limitation:** PR #410 Workflow Feature PR Gate run `36667797291` was cancelled by the repository-wide shared-runner concurrency policy before executing the exact candidate; Security Supply Chain Gate run `36667797309` remained queued. This is **not** recorded as a green hosted gate. Product/test source remains canonical on main and must be exercised by the next non-superseded Windows release/feature gate.
+- **Process incident:** PR #394 was prematurely integrated before its required gates completed. LR-035 and `BUG_PRECEDENTS.md` now record the recurrence; queued/cancelled/failed gates are explicitly not merge authorization.
