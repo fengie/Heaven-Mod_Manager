@@ -9,6 +9,7 @@ const RETIRABLE_MANAGED_STATUSES = new Set([
 ]);
 
 const LIVE_FEDERATED_STATES = new Set(["working", "tool_wait", "blocked", "idle"]);
+const PROVEN_REMOTE_TERMINAL_STATES = new Set(["completed", "done", "failed", "error", "timeout", "cancelled"]);
 
 function text(value) {
   return String(value ?? "").trim();
@@ -110,11 +111,82 @@ export function retiredObservationDecision(retiredAgents, observation = {}) {
   if (!key) return { suppress: false, reactivate: false, key: null, retirement: null };
   const retirement = normalizeRetiredAgents(retiredAgents).find(item => item.key === key) || null;
   if (!retirement) return { suppress: false, reactivate: false, key, retirement: null };
+
   const state = text(observation.state).toLowerCase();
-  if (LIVE_FEDERATED_STATES.has(state)) {
-    return { suppress: false, reactivate: true, key, retirement };
+  if (!LIVE_FEDERATED_STATES.has(state)) {
+    return { suppress: true, reactivate: false, key, retirement };
   }
-  return { suppress: true, reactivate: false, key, retirement };
+
+  // Evaluate the raw provider heartbeat before federation normalization can
+  // synthesize a current timestamp. Retirement only clears for genuinely
+  // newer live evidence.
+  const heartbeatRaw = observation.heartbeat_at ?? observation.heartbeatAt;
+  const heartbeatMs = Date.parse(text(heartbeatRaw));
+  const retiredAtMs = Date.parse(text(retirement.retiredAt));
+  if (!Number.isFinite(heartbeatMs) || !Number.isFinite(retiredAtMs) || heartbeatMs <= retiredAtMs) {
+    return { suppress: true, reactivate: false, key, retirement };
+  }
+
+  return { suppress: false, reactivate: true, key, retirement };
+}
+
+
+export function isProvenRemoteTerminalJobState(value) {
+  return PROVEN_REMOTE_TERMINAL_STATES.has(text(value).toLowerCase());
+}
+
+export async function proveRemoteJobStopped({
+  remoteJobId,
+  cancelJob,
+  getStatus,
+  timeoutMs = 15_000,
+  pollIntervalMs = 250,
+  delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+} = {}) {
+  const id = text(remoteJobId);
+  if (!id) throw new Error("Remote job id is required for retirement proof.");
+  if (typeof cancelJob !== "function") throw new Error("Remote cancellation callback is required.");
+  if (typeof getStatus !== "function") throw new Error("Remote status callback is required.");
+
+  const checkCancellation = async () => {
+    const cancellation = await cancelJob(id);
+    if (!cancellation?.succeeded) {
+      throw new Error(`Remote job ${id} cancellation was not authoritative.`);
+    }
+    const reason = text(cancellation.reason).toLowerCase();
+    if (cancellation.cancelRequested !== true && reason !== "not_running") {
+      throw new Error(`Remote job ${id} cancellation ownership was not confirmed.`);
+    }
+    return cancellation;
+  };
+
+  await checkCancellation();
+
+  const interval = Math.max(1, Math.floor(Number(pollIntervalMs) || 250));
+  const timeout = Math.max(interval, Math.floor(Number(timeoutMs) || 15_000));
+  let lastState = "unknown";
+
+  for (let elapsed = 0; elapsed < timeout; elapsed += interval) {
+    const status = await getStatus(id);
+    if (!status?.succeeded) {
+      throw new Error(`Remote job ${id} status lookup was not authoritative.`);
+    }
+
+    lastState = text(status.state).toLowerCase() || "unknown";
+    if (isProvenRemoteTerminalJobState(lastState)) {
+      return { required: true, stopped: true, state: lastState };
+    }
+
+    // A queued job can report not-running/unknown and start later. If it races
+    // into running, reassert cancellation and keep waiting for terminal proof.
+    if (lastState === "running") {
+      await checkCancellation();
+    }
+
+    if (elapsed + interval < timeout) await delay(interval);
+  }
+
+  throw new Error(`Remote job ${id} termination was not proven; last state was ${lastState}.`);
 }
 
 export function clearObservationRetirement(state, observation = {}) {
