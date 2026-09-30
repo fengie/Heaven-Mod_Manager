@@ -570,3 +570,13 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+
+
+## 2026-09-29 — Override/dependency safety precedent
+
+- A clean per-file conflict plan is not sufficient proof of a safe deployment. Validate the exact staged enabled set's complete dependency requirements immediately before any write.
+- Never count a manager-owned live file as satisfying a staged dependency when its current provider is not part of the staged enabled set; that file is scheduled to disappear.
+- Never infer overwrite intent from package size/subset shape alone. Same-family membership narrows the problem but does not prove base -> optional direction.
+- Executable/plugin collisions require explicit human intent or strong verified source lineage; names, timestamps, priority, and overlap ratios do not authorize binary-code replacement.
+- Detect file-vs-directory destination collisions as hard topology errors. Priority cannot make a path safely be both a file and a directory.
+- Preserve deterministic explanations for every automatic winner and keep ambiguity blocking rather than silently guessing.
