@@ -216,7 +216,7 @@ public sealed partial class MainWindowViewModel
                 await programUpdateGate.WaitAsync(ct);
                 try
                 {
-                    if (!IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                    if (!IsPreparedHandoffCurrent(prepared, preparedFor, stagedProgramUpdate))
                     {
                         prepared = null;
                         preparedFor = null;
@@ -243,7 +243,7 @@ public sealed partial class MainWindowViewModel
                         if (CriticalOperation
                             || BusyVisibility == Visibility.Visible
                             || HasActiveGameProcess()
-                            || !IsPreparedHandoffCurrent(preparedFor, stagedProgramUpdate))
+                            || !IsPreparedHandoffCurrent(prepared, preparedFor, stagedProgramUpdate))
                             continue;
 
                         using var helper = s.Updater.LaunchHelper(prepared);
