@@ -1,3 +1,11 @@
+# v8.8.28 — Agent Control Heaven relay execution discovery
+- Make Heaven Bridge job submission and result waiting call `resolveHeavenRelayDir()`, matching the existing health/inspection path.
+- Allow the documented per-user `%USERPROFILE%\\HeavenBridgeRepo` checkout to work without separately exporting `AGENT_CONTROL_HEAVEN_RELAY_DIR`.
+- Remove the misleading state where provider inspection can look configured/healthy while actual dispatch fails before the job is published.
+- Add a regression that requires submit/wait to reuse automatic relay discovery and rejects the old direct environment-variable default.
+- Preserve v8.8.26 retry-exhausted registry retirement/tombstones and v8.8.27 card inspection unchanged.
+- Advance Agent Control runtime/root plugin/nested Codex plugin identity to v0.6.7.
+
 # v8.8.27 — Agent Manager card inspection
 - Make managed Agent Manager cards inspectable by clicking the card body or using Enter/Space; the interaction opens the worker log without requiring the small **View log** button.
 - Make federated cards inspectable: linked controller workers focus/open their managed card, while external-only sessions expose their current provider/state/heartbeat/recovery/action details.
