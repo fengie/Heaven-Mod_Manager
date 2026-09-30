@@ -1,3 +1,12 @@
+### 2026-09-30 — Agent Control health endpoint performed heavyweight orchestration work
+- **Symptom:** The dedicated health-contract regression failed because `GET /api/status` invoked `buildSnapshot()`, cascading into repository inspection, worker enumeration, federation work, and Heaven Bridge health probing.
+- **Root cause:** The status route reused the full operator snapshot instead of defining a narrow liveness/health contract.
+- **Violated invariant / wrong assumption:** A health/status probe must be cheap, local, and minimally dependent on the systems it observes.
+- **Direct fix:** Load durable control state with `loadState()` and return only lightweight controller/health identity from `/api/status`; keep full orchestration data behind `/api/snapshot`.
+- **Preventive rule/process change:** Pin health endpoints with regressions that reject heavyweight repository, remote-provider, or worker-discovery calls.
+- **Regression coverage added/strengthened:** `tools/agent-control/test/health-contract.test.mjs`.
+- **Verification evidence/environment:** Exact-head Agent Control and Security gates required for v8.8.33.
+
 ### 2026-09-30 — Agent Control retirement — remote execution could outlive local-wrapper retirement proof
 - **Symptom:** A retry-exhausted Heaven Bridge worker could be removed from the live registry while its durable remote job was still queued/unclaimed, running, or otherwise unproven; stale provider observations could also resurrect a retired worker.
 - **Root cause:** Retirement treated local-wrapper lifetime and ambiguous remote statuses such as `not_running` / generic non-`running` as sufficient stop evidence, while tombstone reactivation accepted a live-looking state without requiring monotonic raw heartbeat evidence newer than retirement.

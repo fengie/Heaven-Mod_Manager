@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.33 Agent Control lightweight health contract — CURRENT
+
+The remaining health-contract regression exposed a real control-plane defect after the retirement-safety fixes merged: `GET /api/status` still called `buildSnapshot()`, so a health probe depended on repository, worker, federation, and Heaven Bridge work.
+
+v8.8.33 narrows that route to `loadState()` plus lightweight controller/health identity and adds a regression that rejects the heavyweight dependencies. Full operator state remains on `/api/snapshot`. v8.8.32 retirement hardening is preserved. Agent Control/runtime/plugin identity is v0.6.11.
+
+Exact-head Agent Control and Security gates are required. The separate live heaven2→heaven1 retirement/replay smoke remains pending and unclaimed.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? CURRENT
 
 Canonical v8.8.31 remote-stop proof is retained. This patch closes the remaining identity gap: the canonical provider fallback applies before retirement and any Heaven-backed retry-exhausted row without a durable remote job id is preserved as retry-blocked. Migration keeps retired-source tombstones/retiredAt boundaries intact.

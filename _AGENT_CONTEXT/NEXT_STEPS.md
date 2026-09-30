@@ -1,3 +1,12 @@
+# v8.8.33 successor handoff
+
+1. Require exact-head `cd tools/agent-control && npm run check && npm test`, Agent Control PR Gate success, and Security Supply Chain Gate success.
+2. Verify `/api/status` uses `loadState()` and contains no `buildSnapshot`, `refreshState`, repository snapshot, worker/federation refresh, or Heaven Bridge inspection path.
+3. After merge, verify canonical `main` reports v8.8.33 / Agent Control v0.6.11; close superseded PRs and delete merged temporary branches where supported.
+4. Then complete the already-recorded live heaven2→heaven1 retirement/replay smoke and remaining Agent Manager P0 runtime closure; do not conflate that runtime evidence with this source health patch.
+
+---
+
 # 2026-09-30 v8.8.32 Agent Control retirement identity fail-closed closure ? NEXT
 
 1. Require exact-head Agent Control check/test, Security Supply Chain, and handoff preflight/negative fixtures.

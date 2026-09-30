@@ -1,3 +1,13 @@
+# v8.8.33 Agent Control lightweight health contract — verification scope
+
+This patch changes `GET /api/status`, adds `health-contract.test.mjs`, and advances Agent Control/plugin identity to v0.6.11. Historical retirement verification does not verify these changed health-route bytes.
+
+Required exact-head source closure: `cd tools/agent-control && npm run check`, `cd tools/agent-control && npm test`, Agent Control PR Gate success, and Security Supply Chain Gate success. The health regression must prove the status route uses `loadState()` while rejecting `buildSnapshot`, `refreshState`, repository snapshotting, and Heaven Bridge inspection.
+
+This patch does not claim the separately pending live heaven2→heaven1 retirement/replay smoke.
+
+---
+
 # v8.8.32 Agent Control retirement identity fail-closed closure ? verification scope
 
 Exact-head source evidence must include the real-server missing-ID/provider-fallback regression, migration tombstone preservation, complete Agent Control suite, Security Supply Chain, and handoff governance validators. Live heaven2?heaven1 cancellation/status/replay remains separate runtime evidence.

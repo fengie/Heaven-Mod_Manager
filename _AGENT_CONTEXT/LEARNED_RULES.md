@@ -913,3 +913,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-017 independent recovery ownership; LR-039 deterministic failure classification; LR-051 provider resolution parity.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-053 — health probes must not depend on heavyweight orchestration
+
+- **Rule ID:** LR-053
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Health/status endpoints, watchdog probes, supervisors, control planes
+- **Rule:** A health probe must use the narrowest local authoritative state needed to answer liveness/health and must not invoke repository scans, worker enumeration, remote-provider inspection, synchronization, or other heavyweight orchestration unless that dependency is explicitly part of the health contract.
+- **Trigger / evidence:** Agent Control `/api/status` reused `buildSnapshot()`, causing a nominal health call to perform repository, worker, federation, and Heaven Bridge work.
+- **Rationale:** Supervisors and watchdogs call health paths precisely when dependencies may be slow or broken; making the probe depend on those systems creates false failures, feedback loops, and unnecessary load.
+- **Enforcement:** Keep rich operational snapshots on separate endpoints and add regressions that reject heavyweight calls from the health route.
+- **Regression/evidence:** v8.8.33 `health-contract.test.mjs`.
+- **Supersedes:** none
+- **Superseded by:** none

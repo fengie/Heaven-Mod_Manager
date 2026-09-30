@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.32",
+  "currentVersion": "8.8.33",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.31 Agent Control durable retirement safety",
+  "immediateParentRevision": "v8.8.32 Agent Control remote-retirement identity hardening",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Preserve the v8.8.32 fail-closed retirement identity boundary; verify exact-head source gates and obtain live heaven2?heaven1 runtime smoke when available. Then finish the lightweight /api/status health contract as the next meaningful patch and leave durable successor notes.",
+  "nextAgentObligation": "Verify exact v8.8.33 Agent Control health source/gates, then complete the still-pending live heaven2→heaven1 retirement/replay smoke and remaining Agent Manager P0 runtime closure. Keep /api/status lightweight, preserve SHA-scoped evidence, and leave durable successor notes.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
