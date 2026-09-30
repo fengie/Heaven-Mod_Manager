@@ -45,6 +45,14 @@
 - Keep read-only presence checks distinct from mutation/write-readiness checks; local dirtiness, lock state, or replica divergence may block writes without invalidating remote presence.
 - Add regression tests for both evidence refresh and state mapping whenever a false offline/online classification escapes.
 
+## Long-running autonomy and supervision
+- Distinguish **process liveness** from **progress liveness**. A fresh heartbeat or live PID is not evidence that useful work is advancing.
+- A stuck-worker replacement is a takeover protocol: preserve branch/worktree/task evidence first, prove termination/ownership second, persist replacement intent third, and only then dispatch a replacement.
+- Check provider/worker capacity before destructive takeover. Never stop useful work first and discover afterward that no replacement path exists.
+- Persist recovery intent, retry time, and restart history outside transient workers so manager restarts resume the exact unfinished recovery.
+- Bound restart intensity with cooldown/backoff; an outage must not become an infinite respawn storm.
+- The controller needs an independent supervisor in another failure domain. In-process retry handles children; an OS/service/task watchdog handles controller death. Neither layer may bypass operator stop, read-only, emergency, authentication, or ownership boundaries.
+
 ## Git and persistence
 - Make coherent commits that can be reviewed and reverted independently.
 - Push recoverable progress before expensive work can be lost.
