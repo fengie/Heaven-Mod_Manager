@@ -86,13 +86,17 @@ public sealed class DebugTraceCoverageTests
     {
         var root = FindRepositoryRoot();
         var text = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Core", "MasterDebugLog.cs"));
-        Assert.Contains("AsyncLocal<ScopeFrame?>", text, StringComparison.Ordinal);
+        Assert.Contains("AsyncLocal<OperationScope?>", text, StringComparison.Ordinal);
         Assert.Contains("MarkExceptionObserved(ex)", text, StringComparison.Ordinal);
-        Assert.Contains("frame.Scope.ObserveException(exception)", text, StringComparison.Ordinal);
+        Assert.Contains("scope.ObserveException(exception)", text, StringComparison.Ordinal);
         Assert.Contains("PASS-CHECK", text, StringComparison.Ordinal);
         Assert.Contains("PASS-WITH-ERROR-CHECK", text, StringComparison.Ordinal);
         Assert.Contains("ERROR-CHECK", text, StringComparison.Ordinal);
         Assert.Contains("exception-may-have-been-handled", text, StringComparison.Ordinal);
+        Assert.Contains("Stopwatch.GetTimestamp()", text, StringComparison.Ordinal);
+        Assert.Contains("Stopwatch.GetElapsedTime(startedTimestamp)", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("Stopwatch stopwatch = Stopwatch.StartNew()", text, StringComparison.Ordinal);
+        Assert.Contains("if (verbose) CurrentOperation.Value = previousOperation;", text, StringComparison.Ordinal);
     }
 
 
