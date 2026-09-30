@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text.Json;
 
 namespace MhwModManager.Core;
 
@@ -89,11 +90,15 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
         {
             ct.ThrowIfCancellationRequested();
             var result = await transport.GetLatestReleaseAsync(source.Owner, source.Repository, ct).ConfigureAwait(false);
-            if (result.Release is null) continue;
+            if (result.Release is not null)
+            {
+                var mod = ToCatalogMod(source, result.Release);
+                if (MatchesQuery(mod, source, request.Query))
+                    results.Add(mod);
+            }
 
-            var mod = ToCatalogMod(source, result.Release);
-            if (!MatchesQuery(mod, source, request.Query)) continue;
-            results.Add(mod);
+            if (result.RateLimit?.HourlyRemaining == 0)
+                break;
         }
 
         return results
@@ -263,7 +268,9 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
                 false,
                 false,
                 Array.Empty<CatalogDependency>(),
-                null))
+                string.IsNullOrWhiteSpace(asset.Digest)
+                    ? null
+                    : JsonSerializer.Serialize(new { digest = asset.Digest })))
             .ToArray();
 
         return new CatalogMod(
