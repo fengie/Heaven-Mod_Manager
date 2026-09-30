@@ -74,12 +74,33 @@ jobs:
 
             // Fetch shared state once. The previous implementation re-fetched branch,
             // PR, and main-ref state per branch and could exhaust the installation quota.
-            const [branches, openPulls, closedPulls, mainRef] = await Promise.all([
-              github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 }),
-              github.paginate(github.rest.pulls.list, { owner, repo, state: "open", per_page: 100 }),
-              github.paginate(github.rest.pulls.list, { owner, repo, state: "closed", base: "main", per_page: 100 }),
-              github.rest.git.getRef({ owner, repo, ref: "heads/main" })
-            ]);
+            let branches;
+            let openPulls;
+            let closedPulls;
+            let mainRef;
+            try {
+              const batch = await Promise.all([
+                github.rest.repos.listBranches({ owner, repo, per_page: 100 }),
+                github.rest.pulls.list({ owner, repo, state: "open", per_page: 100 }),
+                github.rest.pulls.list({ owner, repo, state: "closed", base: "main", per_page: 100 }),
+                github.rest.git.getRef({ owner, repo, ref: "heads/main" })
+              ]);
+              branches = batch[0].data;
+              openPulls = batch[1].data;
+              closedPulls = batch[2].data;
+              mainRef = batch[3];
+            } catch (error) {
+              if (isRateLimit(error)) {
+                deferred = { reason: "github-core-rate-limit-exhausted-during-state-fetch" };
+                core.warning("Deferring branch cleanup because the shared GitHub core API quota was exhausted while reading branch/PR state.");
+                await core.summary
+                  .addHeading("Branch lifecycle enforcement")
+                  .addCodeBlock(JSON.stringify({ deferred, deleted, preserved, failures }, null, 2), "json")
+                  .write();
+                return;
+              }
+              throw error;
+            }
 
             const mainSha = mainRef.data.object.sha;
             const openByHead = new Map();

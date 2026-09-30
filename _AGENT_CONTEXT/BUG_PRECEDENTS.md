@@ -239,3 +239,11 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Reusable CI policy scans every workflow for `NuGetAudit=false` in addition to asserting `NuGetAudit=true`, `NuGetAuditMode=all`, and `NuGetAuditLevel=low` in `Directory.Build.props`.
 - **Verification evidence/environment:** Branch `security/hardening-20260929-r4`; security workflow plus release verifier must pass before merge.
 - **Sibling/adjacent cases checked:** startup-performance, installed-client updater E2E, workflow-feature PR verification, and authoritative release restore.
+
+## 2026-09-29 — mod.io modfile normalizer — root object was treated as a named property
+
+- **Symptom:** Three authoritative core tests failed with `InvalidDataException: mod.io field 'mod.io modfile list response' must be an object` even though the fixture root was a valid JSON object containing a `data` array.
+- **Root cause:** `NormalizeModFiles` called `RequireObject(root, context)`, a helper that interprets its second argument as a property name, instead of `RequireObjectValue(root, context)`, which validates the root element itself.
+- **Direct fix:** Validate the document root with `RequireObjectValue`; retain `RequireObject` only for actual named child properties such as `download`.
+- **Prevention:** Distinguish root-value validators from named-property accessors in parser APIs and keep representative list-response fixtures in the strict release test gate.
+

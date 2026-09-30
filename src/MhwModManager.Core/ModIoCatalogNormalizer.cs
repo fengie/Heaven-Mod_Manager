@@ -68,7 +68,7 @@ public static class ModIoCatalogNormalizer
         if (!TryParseProviderModId(expectedProviderModId, out var providerGameId, out var rawModId))
             throw new ArgumentException("mod.io provider mod id must include game and mod ids.", nameof(expectedProviderModId));
         var providerModId = BuildProviderModId(providerGameId, rawModId);
-        var root = RequireObject(document.RootElement, "mod.io modfile list response");
+        var root = RequireObjectValue(document.RootElement, "mod.io modfile list response");
         var data = RequireArray(root, "data");
 
         var result = new List<CatalogModFile>(data.GetArrayLength());
