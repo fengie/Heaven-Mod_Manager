@@ -762,3 +762,51 @@ test("operator routes derive scoped Heaven repository authorization server-side"
   );
   assert.match(workflowRoute, /repositoryWriteAuthorized:\s*true/);
 });
+
+
+test("multi-step workflows gate fan-out on startup viability after every launched worker", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const start = source.indexOf("async function executeWorkflow");
+  const end = source.indexOf("function buildTakeoverForAgent", start);
+  assert.ok(start >= 0 && end > start);
+  const block = source.slice(start, end);
+  const deployAt = block.indexOf("const agent = await deployOne");
+  const createdAt = block.indexOf("created.push(agent)", deployAt);
+  const guardAt = block.indexOf("await waitForWorkflowStartupViability(agent.id)", createdAt);
+  const stopAt = block.indexOf("if (!startup.allowed)", guardAt);
+  assert.ok(deployAt >= 0);
+  assert.ok(createdAt > deployAt);
+  assert.ok(guardAt > createdAt);
+  assert.ok(stopAt > guardAt);
+  assert.match(block.slice(stopAt), /blocked\.push\(\{ work, error \}\)[\s\S]*?break;/);
+
+  const guardStart = source.indexOf("async function waitForWorkflowStartupViability");
+  assert.ok(guardStart >= 0 && guardStart < start);
+  const guard = source.slice(guardStart, start);
+  assert.match(guard, /const state = refreshState\(\)/);
+  assert.match(guard, /providerCapacityCircuit\(state\)/);
+  assert.match(guard, /reason: "provider-capacity"/);
+  assert.match(guard, /\["failed", "capacity-blocked", "stopped", "interrupted", "orphaned", "retry-pending"\]/);
+});
+
+test("agent failures persist to a redacted durable ledger and are exposed in snapshots", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /FAILURE_LOG_FILE = path\.join\(DATA_DIR, "failures\.jsonl"\)/);
+  assert.match(source, /function sanitizeFailureText/);
+  assert.match(source, /\[REDACTED\]/);
+  assert.match(source, /function appendFailureLog/);
+  assert.match(source, /schema: "agent-control\/failure\/v1"/);
+  assert.match(source, /function recordAgentFailure/);
+  assert.match(source, /category: "deployment"[\s\S]*?phase: "pre-launch"/);
+  assert.match(source, /category: "provider-capacity"[\s\S]*?phase: "runtime-capacity-detection"/);
+  assert.match(source, /phase: "process-exit"/);
+  assert.match(source, /phase: "process-error"/);
+  assert.match(source, /recentFailures: readFailureLog\(80\)/);
+  assert.match(source, /pathname === "\/api\/failures"/);
+
+  const helperStart = source.indexOf("function appendFailureLog");
+  const helperEnd = source.indexOf("async function git", helperStart);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  const helper = source.slice(helperStart, helperEnd);
+  assert.doesNotMatch(helper, /promptPath|workerCapabilityHash|AGENT_CONTROL_TASK_TOKEN:/);
+});
