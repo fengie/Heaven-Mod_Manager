@@ -912,3 +912,32 @@ test("perpetual one-click prompts evolve across every controller phase", () => {
   assert.match(replacement, /const replacementSwarmContext = autopilotSwarmContext/);
   assert.match(replacement, /source:\s*"perpetual-stale-replacement"/);
 });
+
+
+test("retry-exhausted Heaven Bridge retirement proves remote termination before registry deletion", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+
+  const proofStart = source.indexOf("async function proveRetryExhaustedRemoteJobStopped");
+  const proofEnd = source.indexOf("async function retireRetryExhaustedManagedAgent", proofStart);
+  assert.ok(proofStart >= 0 && proofEnd > proofStart);
+  const proof = source.slice(proofStart, proofEnd);
+  assert.match(proof, /cancelHeavenBridgeJob\(remoteJobId/);
+  assert.match(proof, /action: "job_status"/);
+  assert.match(proof, /params: \{ job_id: remoteJobId \}/);
+  assert.match(proof, /lastState !== "running"/);
+  assert.match(proof, /remained running after cancellation request/);
+
+  const retireStart = source.indexOf("async function retireRetryExhaustedManagedAgent");
+  const retireEnd = source.indexOf("function retireFederatedRetryExhaustedAgent", retireStart);
+  assert.ok(retireStart >= 0 && retireEnd > retireStart);
+  const retire = source.slice(retireStart, retireEnd);
+  const proofCall = retire.indexOf("await proveRetryExhaustedRemoteJobStopped(source)");
+  const registryDelete = retire.indexOf("state.agents = state.agents.filter");
+  assert.ok(proofCall >= 0, "retirement must prove remote execution stopped");
+  assert.ok(registryDelete > proofCall, "registry deletion must happen only after remote stop proof");
+  assert.doesNotMatch(
+    retire.slice(retire.indexOf("if (alive) {"), registryDelete),
+    /cancelHeavenBridgeJob\(source\.remoteJobId/,
+    "remote termination proof must not depend on the local wrapper PID still being alive"
+  );
+});
