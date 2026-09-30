@@ -96,6 +96,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual([1], result["cancel_run_ids"])
         self.assertTrue(result["requires_confirmation"])
 
+    def test_release_authorization_rejects_spoofed_verification_plan(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip","sha256":"b"*64,"size":10},))
+        gates = plugin.release_verify_gates(plan, ({"name":"gate","sha":"a"*40,"conclusion":"success"},))
+        artifacts = plugin.release_verify_artifacts(plan, ({"name":"app.zip","sha256":"b"*64,"size":10,"version":"1.2.3","channel":"stable"},))
+        gates["plan_id"] = "other-plan"
+        with self.assertRaises(ValueError):
+            plugin.release_authorize_publish(plan, gates, artifacts, confirmation=f"CONFIRM PUBLISH {plan['plan_id']}")
+
 
 if __name__ == "__main__":
     unittest.main()
