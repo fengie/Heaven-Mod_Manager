@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.27 Agent Control registry-card inspection — CURRENT
+
+The separate “click does nothing” defect is repaired on top of v8.8.26 registry retirement. Agent cards were visually hoverable but display-only: only nested action buttons had handlers. Managed and federated cards are now explicit inspectable controls with mouse + Enter/Space behavior. Nested buttons/links/inputs are excluded from the card handler so Stop, Review, Copy branch, and View log do not double-fire.
+
+Managed cards open their worker log. Federated cards resolve to the linked managed worker when available; otherwise they toggle an inline summary from the current federated snapshot.
+
+Exact-head Agent Control checks and heaven2 live mouse/keyboard smoke remain required before closure.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
