@@ -241,7 +241,9 @@ public sealed class SyndicationFeedTests
         var transport = new SyndicationFeedTransport(client);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            transport.GetAsync(new Uri("http://rss.moddb.com/downloads/feed/rss.xml")));
+            transport.GetAsync(
+                new Uri("http://rss.moddb.com/downloads/feed/rss.xml"),
+                TestContext.Current.CancellationToken));
     }
 
     private static string ReadFixture(string directory, string name)
