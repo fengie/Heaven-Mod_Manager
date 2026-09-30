@@ -219,8 +219,11 @@ public sealed class AutoPopulateService(
     string gameRoot,
     GameProfile game)
 {
-    public Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default) =>
-        BuildAsync(null, ct);
+    public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await BuildAsync(null, ct);
+    }
 
     public async Task<AutoPopulateResult> BuildAsync(
         IReadOnlyCollection<string>? preferredModIds,
