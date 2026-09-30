@@ -355,3 +355,9 @@ Successor requirement: carry this verification gap and the transactional-cleanup
 - PR #441 reconciled the updater transaction fix onto current `main` while preserving newer concurrent work.
 - The original updater branch was reset to the integrated `main` revision before this handoff commit so no stale release/CI tree can be reintroduced.
 - After this handoff merges, delete/auto-delete this temporary branch and keep only `main` plus the reserved `heaven-bridge` infrastructure relay.
+
+## 2026-09-30 agent-manager P0 branch retirement
+
+- This task branch was already fully contained in `main` with zero unique commits/files at cleanup time.
+- The branch was realigned to current `main`; this handoff commit exists only to close the branch lifecycle cleanly.
+- After merge, auto-delete this temporary branch and continue from `main`.
