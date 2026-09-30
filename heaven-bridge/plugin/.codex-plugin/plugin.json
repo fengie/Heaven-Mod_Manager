@@ -16,7 +16,7 @@
   },
   "apps": "./.app.json",
   "name": "heaven-local-bridge",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Multi-host local-control and development bridge for the user's heaven2 operator machine and heaven worker, with three-layer worker/watchdog/SYSTEM-sentinel persistence: explicit host-targeted filesystem, code build/test execution, persistent processes, screenshots, desktop/UI control, local agents, worker-fabric offloading, and control-plane operations.",
   "author": {
     "name": "Plugin owner"
