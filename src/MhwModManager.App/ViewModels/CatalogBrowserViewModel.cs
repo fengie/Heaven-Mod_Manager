@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -185,7 +186,15 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(SelectedMod is null||!TryGetSafeSourceUri(SelectedMod.SourceUrl,out var source))return;
-        Process.Start(new ProcessStartInfo(source.AbsoluteUri){UseShellExecute=true});
+        try
+        {
+            Process.Start(new ProcessStartInfo(source.AbsoluteUri){UseShellExecute=true});
+        }
+        catch(Exception ex) when(ex is Win32Exception or InvalidOperationException)
+        {
+            StatusText="Windows could not open the selected provider page.";
+            MasterDebugLog.Write("CATALOG-BROWSE","Opening the provider source page failed.",ex);
+        }
     }
 
     private async Task RefreshCatalogCoreAsync(CancellationToken ct)
@@ -345,7 +354,6 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
         disposed=true;
         lifetimeCts.Cancel();
         lifetimeCts.Dispose();
-        refreshGate.Dispose();
         GC.SuppressFinalize(this);
     }
 }
