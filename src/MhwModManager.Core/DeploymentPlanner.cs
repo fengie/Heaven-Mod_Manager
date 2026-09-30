@@ -131,8 +131,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         if (GameAdapters.Resolve(game).SupportsMhwConflictSemantics)
         {
             var atomicBundles = snapshot.Files
-                .Where(f => enabled.ContainsKey(f.ModId) &&
-                            f.FileClass is FileClass.Structural or FileClass.GameData or FileClass.Plugin or FileClass.Executable)
+                .Where(f => enabled.ContainsKey(f.ModId) && f.FileClass == FileClass.Structural)
                 .GroupBy(f => AssetBundles.KeyForPath(f.Path), StringComparer.OrdinalIgnoreCase);
 
             foreach (var bundle in atomicBundles.OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
@@ -148,7 +147,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
                 decisions.Add(new(
                     representative,
-                    bundle.Any(f => f.FileClass != FileClass.Structural) ? ConflictKind.HardGameData : ConflictKind.HardStructural,
+                    ConflictKind.HardStructural,
                     true,
                     null,
                     "bundle-mixed-providers",
