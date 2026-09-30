@@ -579,7 +579,7 @@ test("perpetual recovery preserves takeover before proven stop and persists repl
   const capacityAt = block.indexOf("providerCapacityCircuit(state)");
   const takeoverAt = block.indexOf("buildTakeoverForAgent(agent.id, { persist: true, safetyControl: true })");
   const stopAt = block.indexOf("await stopAgent(agent.id)");
-  const pendingAt = block.indexOf("pendingReplacement: {", stopAt);
+  const pendingAt = block.indexOf("pendingReplacement:", stopAt);
   const redispatchAt = block.indexOf("return reconcilePerpetualReplacement(refreshState())");
 
   assert.ok(capacityAt >= 0);
