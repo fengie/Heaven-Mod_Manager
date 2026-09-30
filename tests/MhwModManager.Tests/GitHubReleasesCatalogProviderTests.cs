@@ -18,7 +18,7 @@ public sealed class GitHubReleasesCatalogProviderTests
             Assert.Equal(
                 "https://api.github.com/repos/example/mhw-mod/releases/latest",
                 request.RequestUri?.AbsoluteUri);
-            Assert.Contains("application/vnd.github+json", request.Headers.Accept.Select(x => x.MediaType));
+            Assert.Contains(request.Headers.Accept, value => string.Equals(value.MediaType, "application/vnd.github+json", StringComparison.Ordinal));
             Assert.Equal("2026-03-10", Assert.Single(request.Headers.GetValues("X-GitHub-Api-Version")));
             Assert.Contains("MHW-Manual-Mod-Manager", request.Headers.GetValues("User-Agent"));
             return Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("latest.json")));
@@ -36,7 +36,7 @@ public sealed class GitHubReleasesCatalogProviderTests
         Assert.Equal("github-releases:example/mhw-mod", mod.CanonicalId);
         Assert.Equal("Fixture MHW Mod", mod.Name);
         Assert.Equal("v1.2.3", mod.Version);
-        Assert.Equal(51, mod.Downloads);
+        Assert.NotNull(mod.Downloads);\n        Assert.Equal(51L, mod.Downloads.Value);
         Assert.Equal("https://github.com/example/mhw-mod/releases/tag/v1.2.3", mod.SourceUrl);
         Assert.Equal(2, mod.Files.Count);
         Assert.Equal("501", mod.Files[0].ProviderFileId);
