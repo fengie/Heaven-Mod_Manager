@@ -3,7 +3,7 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
+  "workingBranch": "fix/agent-control-registry-retirement-20260930",
   "currentVersion": "8.8.26",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
@@ -11,11 +11,11 @@
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.24 Agent Manager operator actions",
   "status": "v8.8.26-agent-control-registry-retirement",
-  "verificationAppliesToCommit": "32633ccf",
+  "verificationAppliesToCommit": "ba14430b3cb8c8704ef1a5fdd068ee19113603fb",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "32633ccf",
-  "verificationScopeNote": "Candidate implementation checkpoint 32633ccf passed the 225-test Agent Control Node suite locally, including a real isolated server startup persistence regression. Release and continuity metadata were subsequently updated; rerun exact-head checks against the final pushed SHA. Hosted verification and heaven2/heaven1 runtime P0 gates remain open.",
+  "candidateSourceCommit": "ba14430b3cb8c8704ef1a5fdd068ee19113603fb",
+  "verificationScopeNote": "Final candidate ba14430b3cb8c8704ef1a5fdd068ee19113603fb passed direct Node syntax checks and the 225-test Agent Control suite locally. GitHub lookup returned no workflow runs/statuses for this commit. Heaven2/heaven1 runtime P0 gates remain open.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -151,7 +151,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test and hosted verification for the final v8.8.26 candidate; smoke registry retirement/plugin identity and controller/dashboard on heaven2, prove heaven1 worker behavior and START SWARM/perpetual recovery/stop, then continue the active Agent Manager P0 gates without marking P0 complete prematurely.",
+  "nextRequiredAction": "Obtain hosted checks for final v8.8.26 PR #471 candidate ba14430b3cb8c8704ef1a5fdd068ee19113603fb; smoke registry retirement/plugin identity and controller/dashboard on heaven2, prove heaven1 worker behavior and START SWARM/perpetual recovery/stop, then continue the active Agent Manager P0 gates without marking P0 complete prematurely.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

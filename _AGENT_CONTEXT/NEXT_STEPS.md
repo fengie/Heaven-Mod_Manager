@@ -1,7 +1,7 @@
 # 2026-09-30 v8.8.26 Agent Control registry retirement — CURRENT
 
-1. Run exact-head Agent Control `npm run check && npm test` for the v8.8.26 / v0.6.5 candidate; if npm is unavailable, run the direct Node checks/tests and record that environment limitation.
-2. Obtain hosted verification on the final pushed candidate SHA.
+1. Obtain hosted verification on exact candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb` (draft PR #471); current GitHub lookup reports no status checks/workflow runs.
+2. Run exact-head Agent Control `npm run check && npm test` where npm is available; local equivalent direct Node syntax checks and tests passed 225/225 because this environment's global npm CLI path is missing.
 3. On heaven2, smoke controller startup, server/CLI/dashboard, registry cleanup visibility, and plugin v0.6.5 identity.
 4. Continue all active Agent Manager P0 runtime gates below: heaven1 worker path or explicit fail-closed health, START SWARM/perpetual dispatch/recovery/stop/unique ownership, and real stable ChatGPT session heartbeat if exposed.
 5. Keep P0 active until exact-head evidence closes every gate; use `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md` for implementation and regression detail.

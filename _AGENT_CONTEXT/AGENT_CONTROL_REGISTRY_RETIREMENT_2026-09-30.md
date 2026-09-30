@@ -9,8 +9,9 @@ Remove dead failed work from Agent Control's active managed/federated registries
 - Canonical repository: `fengie/mhw-mods`
 - Canonical branch/base: `main` at `7c5a03abeafe05b0afe51bdcec7b3dcfa8fbc26e`
 - Candidate branch: `fix/agent-control-registry-retirement-20260930`
-- Candidate source after implementation hardening: `32633ccf` (`fix(agent-control): preserve retry lineage during registry cleanup`)
-- Branch pushed to origin for durable recovery; subsequent release/continuity edits may advance the branch beyond the implementation checkpoint above.
+- Final tested/pushed candidate: `ba14430b3cb8c8704ef1a5fdd068ee19113603fb`
+- Implementation hardening checkpoint: `32633ccf` (`fix(agent-control): preserve retry lineage during registry cleanup`)
+- Draft PR: https://github.com/fengie/mhw-mods/pull/471
 - Root patch release target: v8.8.26; Agent Control package and both private plugin manifests: v0.6.5.
 
 ## Diagnosis and implementation
@@ -21,10 +22,11 @@ The candidate integrates retry-exhausted lineage cleanup and deterministic dead-
 
 ## Verification completed
 
-- `node --test tools/agent-control/test/*.test.mjs` — 225/225 passing locally after the implementation hardening checkpoint `32633ccf`.
+- Direct `node --check` over all modules listed by the package check script — passed on final candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb`.
+- `node --test tools/agent-control/test/*.test.mjs` — 225/225 passing locally on final candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb`.
 - `node --test tools/agent-control/test/server-safety.test.mjs` — 34/34 passing, including a real isolated server startup against seeded persisted control state.
-- `git diff --check` — passed before implementation commit.
-- Runtime syntax coverage is included in the package's `check` script. Running the npm launcher in this environment failed because its configured global npm CLI path is missing; direct Node test execution works.
+- `git diff --check` — passed; working tree clean after push.
+- The npm launcher failed because its configured global npm CLI path is missing; equivalent direct Node syntax checks and tests passed. GitHub's combined status and workflow-run lookup currently returned no checks for the final commit.
 
 ## Durable regression and rule
 
@@ -36,8 +38,8 @@ The candidate integrates retry-exhausted lineage cleanup and deterministic dead-
 
 ## Still required — do not mark Agent Manager P0 complete
 
-1. Run the package's exact-head `npm run check && npm test` (or equivalent direct Node commands if the npm installation remains unavailable) after all release/continuity edits and record the final full SHA.
-2. Obtain hosted exact-head checks for the pushed final candidate.
+1. Obtain hosted exact-head checks for final candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb`; GitHub currently reports none.
+2. Run `npm run check && npm test` on a host with a working npm installation; direct Node equivalents already passed on the exact candidate SHA.
 3. On heaven2, smoke controller startup, server/CLI/dashboard, registry visibility, plugin v0.6.5 identity, and safe operator controls.
 4. Prove the delegated heaven1 worker route through runtime host `heaven`, or show a specific fail-closed provider-health reason.
 5. Exercise START SWARM/perpetual orchestration for dispatch, federated visibility, recovery, explicit stop, and unique mutable-boundary ownership.

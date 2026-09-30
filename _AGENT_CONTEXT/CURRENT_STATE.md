@@ -1,6 +1,6 @@
 # 2026-09-30 v8.8.26 Agent Control registry retirement — CURRENT
 
-The candidate retires dead failed records once retries are exhausted/disabled, while preserving retry lineage as bounded attempt-count state. Generic managed cleanup proves the current controller no longer owns a live child before retirement/lease release. Tasks, events, and substantive failure evidence remain durable. Root version target is v8.8.26; Agent Control runtime and both private plugin manifests are v0.6.5. The local Node suite passed 225/225 at implementation checkpoint `32633ccf`; exact-head hosted and heaven2/heaven1 Agent Manager P0 gates remain open. See `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md`.
+The candidate retires dead failed records once retries are exhausted/disabled, while preserving retry lineage as bounded attempt-count state. Generic managed cleanup proves the current controller no longer owns a live child before retirement/lease release. Tasks, events, and substantive failure evidence remain durable. Root version is v8.8.26; Agent Control runtime and both private plugin manifests are v0.6.5. Final candidate `ba14430b3cb8c8704ef1a5fdd068ee19113603fb` passed direct Node syntax checks and all 225 tests locally. GitHub currently shows no status/workflow runs; heaven2/heaven1 Agent Manager P0 gates remain open. Draft PR #471 is available for review. See `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md`.
 
 ---
 
