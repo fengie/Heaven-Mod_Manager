@@ -31,3 +31,36 @@
   "Url().sDownloadUrl()": "https://gamebanana.com/mods/download/653359",
   "Url().sProfileUrl()": "https://gamebanana.com/mods/653359"
 }
+{
+  "name": "Effecient Seliana Suite",
+  "description": "",
+  "downloads": 12,
+  "likes": 0,
+  "date": 1771120642,
+  "mdate": 1771120642,
+  "Owner().name": "Valoe",
+  "Category().name": "Other/Misc",
+  "RootCategory().name": "Mods",
+  "Game().name": "Monster Hunter: World",
+  "Files().aFiles()": {
+    "1625805": {
+      "_idRow": "1625805",
+      "_sFile": "effecient_seliana_20-6020-2-0-1643281679.zip",
+      "_nFilesize": 11695,
+      "_tsDateAdded": 1771120532,
+      "_nDownloadCount": 12,
+      "_sDownloadUrl": "https://gamebanana.com/dl/1625805",
+      "_sMd5Checksum": "73615289bc39ff507637f7ba6e584106",
+      "_sAnalysisState": "done",
+      "_sAnalysisResult": "ok",
+      "_sAnalysisResultVerbose": "File passed preliminary analysis",
+      "_sAvState": "done",
+      "_sAvResult": "clean",
+      "_bIsArchived": false,
+      "_bHasContents": true
+    }
+  },
+  "Preview().sStructuredDataFullsizeUrl()": "https://gamebanana.com/mods/embeddables/653359?variant=sd_image",
+  "Url().sDownloadUrl()": "https://gamebanana.com/mods/download/653359",
+  "Url().sProfileUrl()": "https://gamebanana.com/mods/653359"
+}
