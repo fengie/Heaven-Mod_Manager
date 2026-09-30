@@ -130,3 +130,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** The change touches only the feature workflow plus governance/test files, which are release-irrelevant under `UpdaterReleasePolicy.ps1`; it does not trigger Windows Release Gate and does not invalidate exact-source updater E2E evidence.
 - **Sibling/adjacent cases checked:** Windows Release Gate and Updater Installed Client E2E retain their own concurrency groups; their source/evidence pinning is unchanged.
 - **References:** updater E2E run `36659154949`; competing feature-gate runs included `36659334396`, `36659186555`, `36659543467`, and `36659596149`.
+
+
+## 2026-09-29 — Catalog integration — provider fixes merged without exact-head verification twice
+- **Symptom:** GitHub Releases catalog PR #327 and GameBanana assisted-download PR #333 both reached canonical `main` without a successful exact-head feature gate. #327 carried verifier/analyzer/test defects; #333 had no workflow run at merge time and no regression for the new fail-closed mod-ID validation.
+- **Root cause:** The integration path treated mergeability/reviewed code as sufficient when required exact-head verification evidence was absent. The existing prose rule did not mechanically block merge.
+- **Violated invariant / wrong assumption:** A provider change is not integration-ready until the exact commit being merged has successful required verification. Missing, cancelled, queued-with-zero-jobs, superseded, or different-SHA runs are not green evidence.
+- **Why prior defenses missed it:** Governance already required exact-head verification, but the merge path had no fail-closed check binding the PR head SHA to a successful gate result.
+- **Direct fix:** Add the missing GameBanana malformed-mod-identity regression on current main and keep repair/provider lanes unmerged until their exact-head gate succeeds.
+- **Preventive rule/process change:** Automated and agent-driven merge paths must fail closed unless they prove the required workflow completed successfully for the current head SHA immediately before merge. Missing/cancelled/zero-job/superseded/different-SHA results must block integration.
+- **Regression coverage added/strengthened:** `GameBananaCatalogProviderTests.Acquisition_rejects_invalid_mod_identity_before_opening_assisted_page` locks the identity validation. This recurrence also requires mechanical exact-head merge gating; prose-only enforcement is insufficient.
+- **Verification evidence/environment:** Canonical `main` was observed at `9a5e553addc1348634ff2353c9d485cc1e01a465` immediately after PR #333 merged; no workflow run was returned for head `309590fdd943a8ae454b6b36ebabcb18dc987a66` before merge. PR #331 was still pending at that point with run `36660409745` and zero allocated jobs.
+- **Sibling/adjacent cases checked:** The current mod.io lane (#334/#335) remains separately owned and must obey the same exact-head rule. No duplicate mod.io work was started.
+- **References:** PRs #327, #331, #333; main `9a5e553addc1348634ff2353c9d485cc1e01a465`; repair branch `repair/gamebanana-assisted-regression-currentmain-20260930`.
