@@ -1,3 +1,11 @@
+# v8.8.31 — Agent Control durable retirement safety
+- Require explicit processed-terminal Heaven Bridge job proof before retry-exhausted live-registry deletion.
+- Fail closed for queued/unclaimed, `not_running`, `unknown`, cancellation/status authority failure, and unrecognized remote job states.
+- Reassert cancellation when a remote job races into `running`, and accept only `completed`, `done`, `failed`, `error`, `timeout`, or `cancelled` as terminal proof.
+- Require a retired federated source to present a raw explicit live heartbeat strictly newer than `retiredAt` before tombstone reactivation.
+- Add focused regressions for remote-stop authority, race handling, terminal-state whitelisting, raw-heartbeat monotonicity, and pre-normalization ordering.
+- Preserve v8.8.30 card accessibility and advance Agent Control/root/nested plugin identity to v0.6.9.
+
 # v8.8.30 — Agent Control card accessibility closure
 - Preserve mouse and Enter/Space card inspection while removing whole-card button semantics from managed/federated status articles.
 - Keep nested action controls independent so their clicks/keys do not double-trigger card inspection.

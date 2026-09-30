@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.31 Agent Control durable retirement safety — CURRENT
+
+Canonical main already contains the v8.8.30 card-accessibility closure. This patch closes the remaining retry-exhausted backend retirement-safety boundary without replacing those UI semantics.
+
+A Heaven-backed retry-exhausted worker may leave the live registry only after its durable remote job reaches an explicit processed terminal state. `not_running`, `unknown`, queued/unclaimed or unrecognized state, cancellation/status authority failures, and remote ambiguity fail closed. A job that races into `running` is cancelled again and polled until terminal proof. Retired federated sources require a raw explicit live heartbeat strictly newer than `retiredAt` before tombstone reactivation.
+
+Agent Control/runtime/plugin identity is v0.6.9. Exact-head source gates are required; live heaven2→heaven1 retirement/replay smoke remains a separate runtime closure gate.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 PR #484 integrated the remaining clean card-accessibility behavior: managed/federated cards stay mouse/keyboard inspectable while status/task articles no longer masquerade as whole-card buttons for assistive technology. Nested controls remain independent and executable interaction coverage protects the boundary.

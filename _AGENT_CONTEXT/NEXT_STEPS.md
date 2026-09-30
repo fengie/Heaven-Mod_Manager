@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.31 Agent Control durable retirement safety — CURRENT
+
+1. Require exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test` before merge.
+2. Confirm a queued/unclaimed retry-exhausted job with cancellation `not_running` plus status `unknown` remains preserved/blocked and cannot be retired as proven stopped.
+3. Confirm an explicit processed terminal state permits retirement, while a job racing into `running` is re-cancelled until terminal proof.
+4. Confirm stale/equal/missing/invalid retired-source heartbeat evidence cannot clear tombstones, while a strictly newer raw live heartbeat can reactivate.
+5. Preserve v8.8.30 card accessibility and keep #477 lightweight-health implementation separate; its standalone red test seed must not be merged without the implementation.
+6. After integration, verify remote main and retire obsolete task branches when branch-deletion tooling is available.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`.

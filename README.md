@@ -1,4 +1,11 @@
-# v8.8.30 Universal Mod Manager
+# v8.8.31 Universal Mod Manager
+
+## v8.8.31 — Agent Control durable retirement safety
+
+Retry-exhausted Heaven workers now remain visible until their durable remote job is authoritatively proven terminal. Cancellation alone, `not_running`, `unknown`, queued/unclaimed state, status lookup failure, or any other ambiguous state is not enough; Agent Control retires the live-registry entry only after an explicit processed terminal state. If a job races into `running`, cancellation is reasserted and status polling continues until terminal proof exists.
+
+Retired federated identities also require a raw live heartbeat strictly newer than `retiredAt` before reactivation. Older, equal, missing, invalid, or terminal replay remains suppressed before federation normalization can synthesize freshness. This preserves the v8.8.30 card-accessibility closure and advances Agent Control/runtime/plugin identity to **v0.6.9**.
+
 
 ## v8.8.30 — Agent Control card accessibility closure
 

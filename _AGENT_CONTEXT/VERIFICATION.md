@@ -1,3 +1,19 @@
+# v8.8.31 Agent Control durable retirement safety — verification scope
+
+This patch changes Agent Control retry-exhausted remote-job proof and federation tombstone reactivation. Historical v8.8.30 accessibility evidence does not verify these changed bytes.
+
+Required exact-head source evidence:
+- `npm --prefix tools/agent-control run check`
+- `npm --prefix tools/agent-control test`
+- Security Supply Chain Gate
+- broader product-gate failures must be attributed separately when they arise in files untouched by this patch
+
+Required live closure, tracked separately from source integration: heaven2→heaven1 proof that queued/unknown work fails closed, explicit processed-terminal state permits retirement, running races are re-cancelled until terminal, and only a raw heartbeat strictly newer than `retiredAt` clears the retired-source tombstone.
+
+Do not promote or relabel historical verification caches for this changed candidate.
+
+---
+
 # v8.8.30 Agent Control card accessibility closure — verification scope
 
 PR #484 source head `b46e6bf49aa9369436fbc841c443636f08b5c6b8` carried the accessibility implementation and executable interaction tests; its prior Agent Control and Security runs were green. This follow-up commit adds only the required visible version/continuity identity for that same change set.
