@@ -75,6 +75,9 @@ export function managedAgentRetirementDecision(agent, task = null) {
   }
 
   const recovery = text(agent.recoveryStatus || agent.recovery_status).toLowerCase();
+  if (["done", "finished"].includes(status) && recovery !== "retry-exhausted") {
+    return { retire: false, reason: "completed-history" };
+  }
   if (PRESERVED_MANAGED_RECOVERY_STATES.has(recovery)) {
     return { retire: false, reason: `recovery-${recovery}` };
   }
