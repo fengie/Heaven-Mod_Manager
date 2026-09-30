@@ -11,7 +11,9 @@ if([string]::IsNullOrWhiteSpace($Root)){
 }
 
 $workflowRoot=Join-Path $Root '.github\workflows'
-if(!(Test-Path -LiteralPath $workflowRoot)){throw "Workflow directory is missing: $workflowRoot"}
+if(!(Test-Path -LiteralPath $workflowRoot)){
+    throw "Workflow directory is missing: $workflowRoot"
+}
 
 $writeAllowlist=@(
     'branch-lifecycle-enforcer.yml',
@@ -19,7 +21,11 @@ $writeAllowlist=@(
     'windows-release-gate.yml'
 )
 $errors=New-Object System.Collections.Generic.List[string]
-$workflows=@(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Object {$_.Extension -in @('.yml','.yaml')} | Sort-Object Name)
+$workflows=@(
+    Get-ChildItem -LiteralPath $workflowRoot -File |
+        Where-Object { $_.Extension -in @('.yml','.yaml') } |
+        Sort-Object Name
+)
 
 foreach($workflow in $workflows){
     $content=Get-Content -LiteralPath $workflow.FullName -Raw
@@ -32,7 +38,7 @@ foreach($workflow in $workflows){
         $errors.Add("$($workflow.Name): permissions: write-all is forbidden.")
     }
     if($content -match '(?mi)^\s*pull_request_target:\s*$'){
-        $errors.Add("$($workflow.Name): pull_request_target is forbidden because it combines trusted credentials/context with attacker-controlled PR metadata or code.")
+        $errors.Add("$($workflow.Name): pull_request_target is forbidden.")
     }
     if($content -match '(?i)NuGetAudit\s*=\s*false'){
         $errors.Add("$($workflow.Name): NuGet vulnerability auditing must not be disabled in CI.")
@@ -42,27 +48,34 @@ foreach($workflow in $workflows){
     $usesSelfHosted=$content -match '(?i)runs-on:\s*\[\s*self-hosted\b'
     $hasSameRepoGuard=$content -match "github\.event_name\s*!=\s*'pull_request'\s*\|\|\s*github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository"
     if($hasPullRequest -and $usesSelfHosted -and -not $hasSameRepoGuard){
-        $errors.Add("$($workflow.Name): self-hosted pull_request execution requires an explicit same-repository head guard; fork PR code must never run on a persistent runner.")
+        $errors.Add("$($workflow.Name): self-hosted pull_request execution requires an explicit same-repository head guard.")
     }
-
     if($hasPullRequest -and $usesSelfHosted){
         $checkoutCount=[regex]::Matches($content,'(?mi)^\s+uses:\s*actions/checkout@[0-9a-f]{40}\b').Count
-        $safeCheckoutCount=[regex]::Matches($content,'(?mi)^\s+persist-credentials:\s*false\s*
+        $safeCheckoutCount=[regex]::Matches($content,'(?mi)^\s+persist-credentials:\s*false\s*$').Count
+        if($safeCheckoutCount -lt $checkoutCount){
+            $errors.Add("$($workflow.Name): every self-hosted pull_request checkout must set persist-credentials: false.")
+        }
+    }
+
     if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
-        $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
+        $errors.Add("$($workflow.Name): contents: write is not approved for this workflow.")
     }
 
     for($i=0;$i -lt $lines.Count;$i++){
         $trim=$lines[$i].Trim()
-        if($trim -notmatch '^uses:\s*([^\s#]+)'){continue}
+        if($trim -notmatch '^uses:\s*([^\s#]+)'){
+            continue
+        }
         $target=$Matches[1]
-        if($target.StartsWith('./')){continue}
+        if($target.StartsWith('./')){
+            continue
+        }
         if($target -notmatch '^([^@]+)@([0-9a-fA-F]{40})$'){
             $errors.Add("$($workflow.Name):$($i+1): external action '$target' must be pinned to a full 40-character commit SHA.")
         }
     }
 }
-
 
 $propsPath=Join-Path $Root 'Directory.Build.props'
 if(!(Test-Path -LiteralPath $propsPath)){
@@ -95,6 +108,7 @@ if(!(Test-Path -LiteralPath $releasePath)){
         "$" + "version = '2.101.0'",
         'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794',
         'Get-FileHash',
+        '$actualSha256 -ne $expectedSha256',
         'https://github.com/cli/cli/releases/download/v${version}/${assetName}'
     )){
         if(-not $release.Contains($required)){
@@ -105,36 +119,10 @@ if(!(Test-Path -LiteralPath $releasePath)){
 
 if($errors.Count -gt 0){
     Write-Host "CI security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
-    foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
-    throw "CI security policy rejected the workflow set."
-}
-
-Write-Host "PASS: CI security policy ($($workflows.Count) workflows checked)." -ForegroundColor Green
-).Count
-        if($safeCheckoutCount -lt $checkoutCount){
-            $errors.Add("$($workflow.Name): every self-hosted pull_request checkout must set persist-credentials: false.")
-        }
+    foreach($item in $errors){
+        Write-Host " - $item" -ForegroundColor Red
     }
-
-    if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
-        $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
-    }
-
-    for($i=0;$i -lt $lines.Count;$i++){
-        $trim=$lines[$i].Trim()
-        if($trim -notmatch '^uses:\s*([^\s#]+)'){continue}
-        $target=$Matches[1]
-        if($target.StartsWith('./')){continue}
-        if($target -notmatch '^([^@]+)@([0-9a-fA-F]{40})$'){
-            $errors.Add("$($workflow.Name):$($i+1): external action '$target' must be pinned to a full 40-character commit SHA.")
-        }
-    }
-}
-
-if($errors.Count -gt 0){
-    Write-Host "CI security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
-    foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
-    throw "CI security policy rejected the workflow set."
+    throw 'CI security policy rejected the workflow set.'
 }
 
 Write-Host "PASS: CI security policy ($($workflows.Count) workflows checked)." -ForegroundColor Green
