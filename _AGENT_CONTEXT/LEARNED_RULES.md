@@ -670,3 +670,17 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+
+- Treat multi-repository updater publication as one logical transaction.
+- Publish and verify the production-client feed before any secondary/canonical human-facing release becomes visible.
+- Re-check the canonical source after upload immediately before publication; upload time is a race window.
+- Do not use blanket in-progress cancellation around a multi-surface publication transaction.
+- Retry must recover automation-owned abandoned drafts and fail closed when drift cannot be completely classified.
+- Protect critical release invariants from stale integration in an independent CI/security policy, not only in the release-specific test being protected.
+
+## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
+
+- A branch may contain commits authored before a safeguard but be integrated after it. Commit timestamps therefore do not prove integration order.
+- Before integrating a branch that touches shared governance, CI, release, security, or updater files, sync/rebase it onto current `main`, resolve against current content, rerun exact-head checks, and refuse stale whole-file replacement.
+- Required checks must validate the exact candidate that is merged; queued/failed/cancelled checks or checks from a pre-rebase SHA are not merge authorization.

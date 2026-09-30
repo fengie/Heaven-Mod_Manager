@@ -106,3 +106,6 @@ After harvesting or merging another lane:
 - classify `ancestor + missing intended tree delta` as unfinished recovery work;
 - attach exact-candidate test/gate evidence separately from tree-survival evidence.
 
+## Stale branches must not replace protected integration files
+
+In high-concurrency repositories, authored/commit timestamps are not integration order. A branch created before a critical fix may be merged afterward and silently restore old full-file content. For shared governance, CI, release, security, updater, packaging, and integration-control files: fetch current main immediately before merge, reconcile the candidate onto it, preserve all newer main-side changes, rerun required checks on the reconciled SHA, and merge only that exact SHA. Treat a candidate that is behind main as non-ready when it touches these protected integration surfaces.

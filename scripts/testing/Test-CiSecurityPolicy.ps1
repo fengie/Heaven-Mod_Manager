@@ -280,6 +280,72 @@ if(!(Test-Path -LiteralPath $releasePath)){
     }
 }
 
+# Updater release transaction invariants are also security/supply-chain invariants.
+# Keep this independent of Test-UpdaterReleasePolicy.ps1 so stale whole-file
+# integrations cannot silently restore a split-brain publication sequence.
+$updaterPrivatePublisherPath=Join-Path $Root 'scripts\release\Publish-UpdaterRelease.ps1'
+if(!(Test-Path -LiteralPath $updaterPrivatePublisherPath)){
+    $errors.Add('Publish-UpdaterRelease.ps1 is missing.')
+}else{
+    $updaterPrivatePublisher=Get-Content -LiteralPath $updaterPrivatePublisherPath -Raw
+    foreach($required in @(
+        "publicRepository='fengie/mhw-mod-manager-release'",
+        'Public updater client feed $tag must be published before canonical updater release publication.',
+        'Assert-UpdaterReleaseAssets -Release $publicRelease'
+    )){
+        if(-not $updaterPrivatePublisher.Contains($required)){
+            $errors.Add("Publish-UpdaterRelease.ps1: canonical publisher public-feed precondition missing: $required")
+        }
+    }
+}
+
+$updaterPublicPublisherPath=Join-Path $Root 'scripts\release\Publish-PublicUpdaterRelease.ps1'
+if(!(Test-Path -LiteralPath $updaterPublicPublisherPath)){
+    $errors.Add('Publish-PublicUpdaterRelease.ps1 is missing.')
+}else{
+    $updaterPublicPublisher=Get-Content -LiteralPath $updaterPublicPublisherPath -Raw
+    foreach($required in @(
+        'ExpectedSourceSha=$env:GITHUB_SHA',
+        'Recovering abandoned public updater draft',
+        'Invoke-UpdaterDraftPublication',
+        '-RefreshMain',
+        '-EvaluateRefreshedMain',
+        'stale-main-unclassified-large-diff'
+    )){
+        if(-not $updaterPublicPublisher.Contains($required)){
+            $errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")
+        }
+    }
+    if($updaterPublicPublisher.Contains('Canonical private updater release')){
+        $errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')
+    }
+}
+
+$updaterReleaseWorkflowPath=Join-Path $workflowRoot 'windows-release-gate.yml'
+if(Test-Path -LiteralPath $updaterReleaseWorkflowPath){
+    $updaterReleaseWorkflow=Get-Content -LiteralPath $updaterReleaseWorkflowPath -Raw
+    $publicPublishIndex=$updaterReleaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
+    $privatePublishIndex=$updaterReleaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
+    $parityIndex=$updaterReleaseWorkflow.IndexOf('Verify public and canonical updater release parity')
+    if($publicPublishIndex -lt 0 -or $privatePublishIndex -lt 0 -or $publicPublishIndex -ge $privatePublishIndex){
+        $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
+    }
+    if($parityIndex -le $privatePublishIndex){
+        $errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')
+    }
+    if(-not [regex]::IsMatch($updaterReleaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')){
+        $errors.Add('windows-release-gate.yml: cross-repository updater publication must not be cancelled in progress.')
+    }
+}
+
+$updaterPrGatePath=Join-Path $workflowRoot 'updater-publication-pr-gate.yml'
+if(Test-Path -LiteralPath $updaterPrGatePath){
+    $updaterPrGate=Get-Content -LiteralPath $updaterPrGatePath -Raw
+    if(-not $updaterPrGate.Contains("      - '.github/workflows/windows-release-gate.yml'")){
+        $errors.Add('updater-publication-pr-gate.yml: release workflow ordering changes must trigger the updater publication PR gate.')
+    }
+}
+
 $secretLeakPolicy=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
 if(!(Test-Path -LiteralPath $secretLeakPolicy)){
     $errors.Add('Tracked-secret leak policy is missing.')
