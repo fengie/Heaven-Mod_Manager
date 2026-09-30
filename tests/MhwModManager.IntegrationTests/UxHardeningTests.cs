@@ -42,6 +42,28 @@ public sealed class UxHardeningTests
         Assert.DoesNotContain("Text=\"Start here\"",xaml);
     }
 
+
+    [Fact]
+    public void Shared_ui_motion_is_lightweight_and_respects_windows_animation_settings()
+    {
+        var root=FindRepositoryRoot();
+        var app=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","App.xaml"));
+        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
+        var code=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml.cs"));
+        var motion=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","UiMotion.cs"));
+
+        Assert.Contains("local:UiMotion.EnableHoverFeedback",app);
+        Assert.Contains("x:Name=\"MainTabs\"",xaml);
+        Assert.Contains("SelectionChanged=\"OnMainTabSelectionChanged\"",xaml);
+        Assert.Contains("IsVisibleChanged=\"OnBusyOverlayIsVisibleChanged\"",xaml);
+        Assert.Contains("SystemParameters.ClientAreaAnimation",motion);
+        Assert.Contains("SystemParameters.ClientAreaAnimation",code);
+        Assert.Contains("TranslateTransform",code);
+        Assert.DoesNotContain("ThicknessAnimation",code);
+        Assert.DoesNotContain("HeightProperty",code);
+        Assert.DoesNotContain("WidthProperty",code);
+    }
+
     [Fact]
     public void Mods_page_prioritizes_library_height_on_wide_layouts()
     {
