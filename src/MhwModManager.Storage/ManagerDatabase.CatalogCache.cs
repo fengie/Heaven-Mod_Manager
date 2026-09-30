@@ -539,42 +539,46 @@ public sealed partial class ManagerDatabase
         WHERE canonical_id=$id
         """;
         command.Parameters.AddWithValue("$id", canonicalId);
-        await using var reader = await command.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct)) return null;
 
-        var providerId = reader.GetString(1);
-        var providerModId = reader.GetString(2);
+        CatalogMod modWithoutFiles;
+        CatalogCacheMetadata cache;
+        await using (var reader = await command.ExecuteReaderAsync(ct))
+        {
+            if (!await reader.ReadAsync(ct)) return null;
+
+            modWithoutFiles = new CatalogMod(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                reader.IsDBNull(9) ? null : reader.GetString(9),
+                JsonSerializer.Deserialize<string[]>(reader.GetString(10)) ?? [],
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                JsonSerializer.Deserialize<CatalogImage[]>(reader.GetString(12)) ?? [],
+                ReadDate(reader, 13),
+                ReadDate(reader, 14),
+                reader.IsDBNull(15) ? null : reader.GetInt64(15),
+                reader.IsDBNull(16) ? null : reader.GetInt64(16),
+                reader.IsDBNull(17) ? null : reader.GetDouble(17),
+                JsonSerializer.Deserialize<CatalogDependency[]>(reader.GetString(18)) ?? [],
+                reader.GetString(19),
+                [],
+                ProviderMetadata: null);
+            cache = new CatalogCacheMetadata(
+                DateTimeOffset.Parse(reader.GetString(20), CultureInfo.InvariantCulture),
+                ReadDate(reader, 21),
+                reader.IsDBNull(22) ? null : reader.GetString(22),
+                ReadDate(reader, 23),
+                reader.IsDBNull(24) ? null : reader.GetString(24));
+        }
+
         var files = await ReadCatalogFilesAsync(connection, canonicalId, ct);
-        var mod = new CatalogMod(
-            reader.GetString(0),
-            providerId,
-            providerModId,
-            reader.GetString(3),
-            reader.GetString(4),
-            reader.GetString(5),
-            reader.GetString(6),
-            reader.GetString(7),
-            reader.IsDBNull(8) ? null : reader.GetString(8),
-            reader.IsDBNull(9) ? null : reader.GetString(9),
-            JsonSerializer.Deserialize<string[]>(reader.GetString(10)) ?? [],
-            reader.IsDBNull(11) ? null : reader.GetString(11),
-            JsonSerializer.Deserialize<CatalogImage[]>(reader.GetString(12)) ?? [],
-            ReadDate(reader, 13),
-            ReadDate(reader, 14),
-            reader.IsDBNull(15) ? null : reader.GetInt64(15),
-            reader.IsDBNull(16) ? null : reader.GetInt64(16),
-            reader.IsDBNull(17) ? null : reader.GetDouble(17),
-            JsonSerializer.Deserialize<CatalogDependency[]>(reader.GetString(18)) ?? [],
-            reader.GetString(19),
-            files,
-            ProviderMetadata: null);
-        var cache = new CatalogCacheMetadata(
-            DateTimeOffset.Parse(reader.GetString(20), CultureInfo.InvariantCulture),
-            ReadDate(reader, 21),
-            reader.IsDBNull(22) ? null : reader.GetString(22),
-            ReadDate(reader, 23),
-            reader.IsDBNull(24) ? null : reader.GetString(24));
-        return new(mod, cache);
+        return new(modWithoutFiles with { Files = files }, cache);
     }
 
     private static async Task<IReadOnlyList<CatalogModFile>> ReadCatalogFilesAsync(
@@ -673,6 +677,6 @@ public sealed partial class ManagerDatabase
             "token=", "access_token=", "apikey=", "api_key=", "key=", "signature=", "sig=", "expires=",
             "x-amz-", "x-goog-", "authorization=", "auth=", "jwt="
         ];
-        return forbidden.Any(lower.Contains) ? null : uri.AbsoluteUri;
+        return forbidden.Any(token => lower.Contains(token, StringComparison.Ordinal)) ? null : uri.AbsoluteUri;
     }
 }
