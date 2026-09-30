@@ -867,6 +867,183 @@
                 </Grid>
             </TabItem>
 
+
+            <TabItem Header="Browse">
+                <Grid DataContext="{Binding BrowsePage}" Margin="24,22,28,26">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Browse Mods" Style="{StaticResource PageTitle}"/>
+                                <Border Margin="10,2,0,0" Style="{StaticResource StatusBadge}" VerticalAlignment="Center">
+                                    <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold" Text="{Binding ResultCountLabel}"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Discover mods from supported sources without leaving the manager. Search stays local and fast after refresh." Style="{StaticResource PageSubtitle}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Refresh Sources" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}" Padding="16,9" VerticalAlignment="Bottom"/>
+                    </Grid>
+
+                    <Border Grid.Row="1" Margin="0,18,0,14" Style="{StaticResource Card}" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2.2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,10,0">
+                                <TextBlock Text="SEARCH" Style="{StaticResource Eyebrow}"/>
+                                <TextBox Margin="0,5,0,0" MinHeight="34" Padding="10,6"
+                                         Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Search cached names, authors, summaries, descriptions, tags, and categories.">
+                                    <TextBox.InputBindings><KeyBinding Key="Enter" Command="{Binding SearchCommand}"/></TextBox.InputBindings>
+                                </TextBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="SOURCE" Style="{StaticResource Eyebrow}"/>
+                                <ComboBox Margin="0,5,0,0" MinHeight="34" ItemsSource="{Binding ProviderFilters}" SelectedItem="{Binding SelectedProvider,Mode=TwoWay}" DisplayMemberPath="DisplayName"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="SORT" Style="{StaticResource Eyebrow}"/>
+                                <ComboBox Margin="0,5,0,0" MinHeight="34" ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSortMode,Mode=TwoWay}"/>
+                            </StackPanel>
+                            <Button Grid.Column="3" Margin="0,19,0,0" MinWidth="86" MinHeight="34" Content="Search" Command="{Binding SearchCommand}"/>
+
+                            <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="0,11,0,0">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding StatusText}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Margin="18,0,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding ProviderStatusText}" TextTrimming="CharacterEllipsis" MaxWidth="520"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource Card}" Padding="0" ClipToBounds="True">
+                            <Grid>
+                                <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}"
+                                         Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="14" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
+                                                <Grid>
+                                                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                        <TextBlock FontSize="15" FontWeight="SemiBold" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                                        <Border Grid.Column="1" Margin="10,0,0,0" Padding="7,2" CornerRadius="9" Background="#102A29" BorderBrush="#24564F" BorderThickness="1">
+                                                            <TextBlock Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="SemiBold" Text="{Binding ProviderName}"/>
+                                                        </Border>
+                                                    </Grid>
+                                                    <TextBlock Grid.Row="1" Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding AuthorVersionLine}" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Grid.Row="2" Margin="0,7,0,0" Foreground="{StaticResource Text}" Text="{Binding Summary}" TextWrapping="Wrap" MaxHeight="42"/>
+                                                    <Grid Grid.Row="3" Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="{Binding StatsLine}"/>
+                                                        <TextBlock Grid.Column="1" Foreground="{StaticResource Muted}" FontSize="10" Text="{Binding FreshnessLabel}"/>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <Border Background="#E610151C" Padding="28">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers><DataTrigger Binding="{Binding Results.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="No mods to show yet" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Margin="0,7,0,0" MaxWidth="360" Foreground="{StaticResource Muted}" TextWrapping="Wrap" TextAlignment="Center"
+                                                   Text="Refresh sources to build the local catalog, or clear the search and source filters."/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="20">
+                            <Grid>
+                                <StackPanel>
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers><DataTrigger Binding="{Binding SelectedMod}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SelectedMod.Name}" FontSize="23" FontWeight="Bold" TextWrapping="Wrap"/>
+                                            <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="{Binding SelectedMod.AuthorVersionLine}"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Margin="14,0,0,0" Content="Open Source Page" Command="{Binding OpenSelectedSourceCommand}" Style="{StaticResource PrimaryButton}" Padding="13,8" VerticalAlignment="Top"/>
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                        <Border Style="{StaticResource StatusBadge}"><TextBlock Foreground="{StaticResource AccentBright}" FontSize="10" FontWeight="Bold" Text="{Binding SelectedMod.ProviderName}"/></Border>
+                                        <Border Margin="7,0,0,0" Style="{StaticResource StatusBadge}"><TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="{Binding SelectedMod.CategoryLabel}"/></Border>
+                                        <Border Margin="7,0,0,0" Style="{StaticResource StatusBadge}"><TextBlock Foreground="{StaticResource Muted}" FontSize="10" Text="{Binding SelectedMod.FreshnessLabel}"/></Border>
+                                    </StackPanel>
+
+                                    <TextBlock Margin="0,18,0,0" Text="ABOUT" Style="{StaticResource Eyebrow}"/>
+                                    <TextBlock Margin="0,7,0,0" Text="{Binding SelectedMod.Description}" TextWrapping="Wrap" LineHeight="19"/>
+
+                                    <Border Margin="0,18,0,0" Padding="14" Background="#0B141E" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="9">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="ACTIVITY" Style="{StaticResource Eyebrow}"/>
+                                                <TextBlock Margin="0,5,0,0" Text="{Binding SelectedMod.UpdatedLine}" FontWeight="SemiBold"/>
+                                                <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding SelectedMod.StatsLine}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="PACKAGE INFO" Style="{StaticResource Eyebrow}"/>
+                                                <TextBlock Margin="0,5,0,0" Text="{Binding SelectedMod.FilesLine}" FontWeight="SemiBold"/>
+                                                <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding SelectedMod.SourceHint}" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <TextBlock Margin="0,18,0,0" Text="TAGS" Style="{StaticResource Eyebrow}"/>
+                                    <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" Text="{Binding SelectedMod.TagsLine}" TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers><DataTrigger Binding="{Binding SelectedMod}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <TextBlock Text="Select a mod" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Margin="0,7,0,0" MaxWidth="320" Foreground="{StaticResource Muted}" TextWrapping="Wrap" TextAlignment="Center"
+                                               Text="Choose a result to see its description, source, activity, tags, and package information."/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
         </TabControl>
 
         <!-- Footer -->
