@@ -46,14 +46,18 @@ public static partial class GenericFamilyInference
 
         var profiles = BuildProfiles(candidates, files, includeMhwAssetSemantics);
         var pairs = new List<Evidence>();
-        for (var i=0;i<candidates.Length;i++)
-        for (var j=i+1;j<candidates.Length;j++)
+        foreach (var (i,j) in ConcreteCandidatePairs(candidates,profiles))
         {
             var evidence = ScorePair(candidates[i], candidates[j], profiles[candidates[i].Id], profiles[candidates[j].Id]);
             if (evidence is not null && evidence.Score >= 75 && evidence.Strong) pairs.Add(evidence);
         }
 
         var parent = candidates.ToDictionary(m=>m.Id,m=>m.Id,StringComparer.OrdinalIgnoreCase);
+        var candidateById = candidates.ToDictionary(m=>m.Id,StringComparer.OrdinalIgnoreCase);
+        var clusterMembers = candidates.ToDictionary(
+            m=>m.Id,
+            m=>new HashSet<string>(StringComparer.OrdinalIgnoreCase){m.Id},
+            StringComparer.OrdinalIgnoreCase);
         string Find(string id)
         {
             while (!StringComparer.OrdinalIgnoreCase.Equals(parent[id], id))
@@ -69,6 +73,8 @@ public static partial class GenericFamilyInference
             var keep=StringComparer.OrdinalIgnoreCase.Compare(ra,rb)<=0?ra:rb;
             var drop=StringComparer.OrdinalIgnoreCase.Equals(keep,ra)?rb:ra;
             parent[drop]=keep;
+            clusterMembers[keep].UnionWith(clusterMembers[drop]);
+            clusterMembers.Remove(drop);
         }
 
         foreach (var pair in pairs.OrderByDescending(x=>x.Score).ThenBy(x=>x.LeftModId,StringComparer.OrdinalIgnoreCase).ThenBy(x=>x.RightModId,StringComparer.OrdinalIgnoreCase))
@@ -77,9 +83,19 @@ public static partial class GenericFamilyInference
             // have strong negative evidence. This is a lightweight complete-link safety check.
             var leftRoot=Find(pair.LeftModId);var rightRoot=Find(pair.RightModId);
             if(StringComparer.OrdinalIgnoreCase.Equals(leftRoot,rightRoot))continue;
-            var leftMembers=candidates.Where(m=>StringComparer.OrdinalIgnoreCase.Equals(Find(m.Id),leftRoot)).ToArray();
-            var rightMembers=candidates.Where(m=>StringComparer.OrdinalIgnoreCase.Equals(Find(m.Id),rightRoot)).ToArray();
-            var blocked=leftMembers.Any(l=>rightMembers.Any(r=>HardBlock(l,r,profiles[l.Id],profiles[r.Id])));
+            var leftMembers=clusterMembers[leftRoot];
+            var rightMembers=clusterMembers[rightRoot];
+            var blocked=false;
+            foreach(var leftId in leftMembers)
+            {
+                foreach(var rightId in rightMembers)
+                {
+                    if(!HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId]))continue;
+                    blocked=true;
+                    break;
+                }
+                if(blocked)break;
+            }
             if(!blocked)Union(pair.LeftModId,pair.RightModId);
         }
 
@@ -98,16 +114,68 @@ public static partial class GenericFamilyInference
         return result;
     }
 
-    private static Dictionary<string,FileProfile> BuildProfiles(IReadOnlyList<ModDescriptor> mods,IReadOnlyList<ModFileDescriptor> files,bool includeMhwAssetSemantics)
+    private static IEnumerable<(int Left,int Right)> ConcreteCandidatePairs(
+        IReadOnlyList<ModDescriptor> candidates,
+        IReadOnlyDictionary<string,CandidateProfile> profiles)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var postings=new Dictionary<string,List<int>>(StringComparer.OrdinalIgnoreCase);
+        for(var i=0;i<candidates.Count;i++)
+        {
+            var profile=profiles[candidates[i].Id];
+            AddPostings("p:",profile.Files.Paths,i);
+            AddPostings("a:",profile.Files.Assets,i);
+            AddPostings("r:",profile.Files.Roots,i);
+        }
+
+        var encodedPairs=new HashSet<long>();
+        foreach(var members in postings.Values)
+        {
+            for(var left=0;left<members.Count;left++)
+            for(var right=left+1;right<members.Count;right++)
+            {
+                var i=members[left];var j=members[right];
+                if(i>j)(i,j)=(j,i);
+                encodedPairs.Add(((long)i<<32)|(uint)j);
+            }
+        }
+
+        foreach(var encoded in encodedPairs.Order())
+            yield return ((int)(encoded>>32),(int)(encoded&uint.MaxValue));
+
+        void AddPostings(string prefix,IEnumerable<string> values,int index)
+        {
+            foreach(var value in values)
+            {
+                var key=prefix+value;
+                if(!postings.TryGetValue(key,out var members))
+                {
+                    members=new List<int>();
+                    postings[key]=members;
+                }
+                members.Add(index);
+            }
+        }
+    }
+
+    private static Dictionary<string,CandidateProfile> BuildProfiles(IReadOnlyList<ModDescriptor> mods,IReadOnlyList<ModFileDescriptor> files,bool includeMhwAssetSemantics)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var valid=mods.Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var grouped=files.Where(f=>valid.Contains(f.ModId)).GroupBy(f=>f.ModId,StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g=>g.Key,g=>g.ToArray(),StringComparer.OrdinalIgnoreCase);
-        return mods.ToDictionary(m=>m.Id,m=>BuildProfile(grouped.GetValueOrDefault(m.Id)??Array.Empty<ModFileDescriptor>(),includeMhwAssetSemantics),StringComparer.OrdinalIgnoreCase);
+        return mods.ToDictionary(
+            m=>m.Id,
+            m=>new CandidateProfile(
+                BuildFileProfile(grouped.GetValueOrDefault(m.Id)??Array.Empty<ModFileDescriptor>(),includeMhwAssetSemantics),
+                IdentityStem(m.DisplayName),
+                IdentityTokens(m.DisplayName),
+                HasRoleSignal(m.DisplayName),
+                HasChoiceSignal(m.DisplayName)),
+            StringComparer.OrdinalIgnoreCase);
     }
 
-    private static FileProfile BuildProfile(IReadOnlyList<ModFileDescriptor> files,bool includeMhwAssetSemantics)
+    private static FileProfile BuildFileProfile(IReadOnlyList<ModFileDescriptor> files,bool includeMhwAssetSemantics)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths=files.Select(f=>f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -131,24 +199,32 @@ public static partial class GenericFamilyInference
         return new(paths,assets,roots);
     }
 
-    private static Evidence? ScorePair(ModDescriptor a,ModDescriptor b,FileProfile ap,FileProfile bp)
+    private static Evidence? ScorePair(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!string.IsNullOrWhiteSpace(a.NexusModId)&&!string.IsNullOrWhiteSpace(b.NexusModId)&&!StringComparer.OrdinalIgnoreCase.Equals(a.NexusModId,b.NexusModId))return null;
 
-        var aStem=IdentityStem(a.DisplayName);var bStem=IdentityStem(b.DisplayName);
-        var at=IdentityTokens(a.DisplayName);var bt=IdentityTokens(b.DisplayName);
-        var nameSimilarity=TokenSimilarity(at,bt);
-        var exactStem=aStem.Length>0&&StringComparer.OrdinalIgnoreCase.Equals(aStem,bStem);
-        var prefix=IsMeaningfulPrefix(aStem,bStem)||IsMeaningfulPrefix(bStem,aStem);
-        var roleDifference=HasRoleSignal(a.DisplayName)||HasRoleSignal(b.DisplayName);
-        var choiceOnly=HasChoiceSignal(a.DisplayName)||HasChoiceSignal(b.DisplayName);
+        var nameSimilarity=TokenSimilarity(ap.IdentityTokens,bp.IdentityTokens);
+        var exactStem=ap.IdentityStem.Length>0&&StringComparer.OrdinalIgnoreCase.Equals(ap.IdentityStem,bp.IdentityStem);
+        var prefix=IsMeaningfulPrefix(ap.IdentityStem,bp.IdentityStem)||IsMeaningfulPrefix(bp.IdentityStem,ap.IdentityStem);
+        var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
+        var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
 
-        var sharedPaths=ap.Paths.Count==0||bp.Paths.Count==0?0:ap.Paths.Count(bp.Paths.Contains);
-        var smaller=Math.Min(ap.Paths.Count,bp.Paths.Count);
+        var sharedPaths=IntersectionCount(ap.Files.Paths,bp.Files.Paths);
+        var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
         var overlap=smaller==0?0:sharedPaths/(double)smaller;
-        var sharedAssets=ap.Assets.Intersect(bp.Assets,StringComparer.OrdinalIgnoreCase).Count();
-        var sharedRoots=ap.Roots.Intersect(bp.Roots,StringComparer.OrdinalIgnoreCase).Count();
+        var sharedAssets=IntersectionCount(ap.Files.Assets,bp.Files.Assets);
+        var sharedRoots=IntersectionCount(ap.Files.Roots,bp.Files.Roots);
+
+        static int IntersectionCount(HashSet<string> left,HashSet<string> right)
+        {
+            if(left.Count==0||right.Count==0)return 0;
+            var scan=left.Count<=right.Count?left:right;
+            var lookup=ReferenceEquals(scan,left)?right:left;
+            var count=0;
+            foreach(var value in scan)if(lookup.Contains(value))count++;
+            return count;
+        }
 
         // Identical labels alone are not evidence. Likewise, a local "Alt/Variant" name is not safely
         // composable without source lineage; keep it separate unless concrete file topology proves kinship.
@@ -173,14 +249,18 @@ public static partial class GenericFamilyInference
         return new(a.Id,b.Id,score,strong,string.Join("; ",reasons));
     }
 
-    private static bool HardBlock(ModDescriptor a,ModDescriptor b,FileProfile ap,FileProfile bp)
+    private static bool HardBlock(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!string.IsNullOrWhiteSpace(a.NexusModId)&&!string.IsNullOrWhiteSpace(b.NexusModId)&&!StringComparer.OrdinalIgnoreCase.Equals(a.NexusModId,b.NexusModId))return true;
-        var sim=TokenSimilarity(IdentityTokens(a.DisplayName),IdentityTokens(b.DisplayName));
-        var sharedAssets=ap.Assets.Overlaps(bp.Assets);
-        var sharedPaths=ap.Paths.Count==0||bp.Paths.Count==0?0:ap.Paths.Count(bp.Paths.Contains);
-        var overlap=Math.Min(ap.Paths.Count,bp.Paths.Count)==0?0:sharedPaths/(double)Math.Min(ap.Paths.Count,bp.Paths.Count);
+        var sim=TokenSimilarity(ap.IdentityTokens,bp.IdentityTokens);
+        var sharedAssets=ap.Files.Assets.Overlaps(bp.Files.Assets);
+        var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
+        var pathScan=ap.Files.Paths.Count<=bp.Files.Paths.Count?ap.Files.Paths:bp.Files.Paths;
+        var pathLookup=ReferenceEquals(pathScan,ap.Files.Paths)?bp.Files.Paths:ap.Files.Paths;
+        var sharedPaths=0;
+        foreach(var path in pathScan)if(pathLookup.Contains(path))sharedPaths++;
+        var overlap=smaller==0?0:sharedPaths/(double)smaller;
         return sim<.25&&!sharedAssets&&overlap<.20;
     }
 
@@ -192,10 +272,12 @@ public static partial class GenericFamilyInference
         return string.Join(' ',tokens.Where(t=>!StopWords.Contains(t)));
     }
 
-    private static string[] IdentityTokens(string value)
+    private static HashSet<string> IdentityTokens(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return Tokenize(CleanName(value)).Where(t=>!StopWords.Contains(t)&&!RoleWords.Contains(t)&&!ChoiceWords.Contains(t)&&!VersionTokenRegex().IsMatch(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return Tokenize(CleanName(value))
+            .Where(t=>!StopWords.Contains(t)&&!RoleWords.Contains(t)&&!ChoiceWords.Contains(t)&&!VersionTokenRegex().IsMatch(t))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
     private static bool HasRoleSignal(string value)
     {
@@ -212,11 +294,18 @@ public static partial class GenericFamilyInference
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return shorter.Length>=5&&longer.Length>shorter.Length&&longer.StartsWith(shorter+" ",StringComparison.OrdinalIgnoreCase);
     }
-    private static double TokenSimilarity(string[] a,string[] b)
+    private static double TokenSimilarity(HashSet<string> a,HashSet<string> b)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(a.Length==0||b.Length==0)return 0;var x=a.ToHashSet(StringComparer.OrdinalIgnoreCase);var y=b.ToHashSet(StringComparer.OrdinalIgnoreCase);var hit=x.Count(y.Contains);var union=x.Count+y.Count-hit;return union==0?0:hit/(double)union;
+        if(a.Count==0||b.Count==0)return 0;
+        var smaller=a.Count<=b.Count?a:b;
+        var larger=ReferenceEquals(smaller,a)?b:a;
+        var hit=0;
+        foreach(var token in smaller)if(larger.Contains(token))hit++;
+        var union=a.Count+b.Count-hit;
+        return union==0?0:hit/(double)union;
     }
+
     private static List<string> Tokenize(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -234,6 +323,12 @@ public static partial class GenericFamilyInference
     }
 
     private sealed record FileProfile(HashSet<string> Paths,HashSet<string> Assets,HashSet<string> Roots);
+    private sealed record CandidateProfile(
+        FileProfile Files,
+        string IdentityStem,
+        HashSet<string> IdentityTokens,
+        bool HasRoleSignal,
+        bool HasChoiceSignal);
 
     [GeneratedRegex(@"-\d{2,7}-\d+(?:-\d+){0,7}(?:\s*\(\d+\))?$",RegexOptions.IgnoreCase|RegexOptions.CultureInvariant)]private static partial Regex NexusSuffixRegex();
     [GeneratedRegex(@"(?:\s+|[-_])v?\d+(?:\.\d+){0,3}$",RegexOptions.IgnoreCase|RegexOptions.CultureInvariant)]private static partial Regex VersionSuffixRegex();

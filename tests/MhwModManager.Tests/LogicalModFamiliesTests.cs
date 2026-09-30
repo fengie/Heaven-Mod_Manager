@@ -153,6 +153,31 @@ public sealed class LogicalModFamiliesTests
     }
 
     [Fact]
+    public void Transitive_evidence_does_not_bypass_complete_link_hard_block()
+    {
+        var mods = new[]
+        {
+            Mod("alpha","Alpha Armor"),
+            Mod("bridge","Alpha Armor - Waist"),
+            Mod("beta","Beta Dress")
+        };
+        var files = new[]
+        {
+            File("alpha", @"nativePC\pl\f_equip\pl001_0000\wst\shared-a.mod3"),
+            File("bridge", @"nativePC\pl\f_equip\pl001_0000\wst\shared-a.mod3"),
+            File("bridge", @"nativePC\pl\f_equip\pl099_0000\body\shared-b.mod3"),
+            File("beta", @"nativePC\pl\f_equip\pl099_0000\body\shared-b.mod3")
+        };
+
+        var families = LogicalModFamilies.Build(mods, files);
+
+        Assert.Equal(2, families.Count);
+        Assert.Contains(families, family => family.Members.Select(x => x.Id).ToHashSet(StringComparer.OrdinalIgnoreCase)
+            .SetEquals(new[] { "alpha", "bridge" }));
+        Assert.Contains(families, family => family.Members.Count == 1 && family.Members[0].Id == "beta");
+    }
+
+    [Fact]
     public void Pick_one_alternative_stays_a_separate_logical_mod()
     {
         var mods = new[]
