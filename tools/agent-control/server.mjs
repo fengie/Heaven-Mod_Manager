@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
-import { execFileSync } from "node:child_process";
 import { spawnHidden as spawn, execFileHidden as execFileAsync } from "./lib/background-process.mjs";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS } from "./lib/prompt-templates.mjs";
@@ -84,19 +83,18 @@ const AGENT_CONTROL_VERSION = String(AGENT_CONTROL_PACKAGE.version || "").trim()
 const EXPECTED_RUNTIME_SOURCE_SHA = String(process.env.AGENT_CONTROL_SOURCE_SHA || "").trim();
 const EXPECTED_AGENT_CONTROL_VERSION = String(process.env.AGENT_CONTROL_VERSION || "").trim();
 
-function detectRuntimeSourceSha() {
+async function detectRuntimeSourceSha() {
   try {
-    return String(execFileSync("git", ["-C", RUNTIME_REPO_ROOT, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "ignore"]
-    }) || "").trim() || null;
+    const { stdout } = await execFileAsync("git", ["-C", RUNTIME_REPO_ROOT, "rev-parse", "HEAD"], {
+      encoding: "utf8"
+    });
+    return String(stdout || "").trim() || null;
   } catch {
     return null;
   }
 }
 
-const DETECTED_RUNTIME_SOURCE_SHA = detectRuntimeSourceSha();
+const DETECTED_RUNTIME_SOURCE_SHA = await detectRuntimeSourceSha();
 if (EXPECTED_RUNTIME_SOURCE_SHA && !DETECTED_RUNTIME_SOURCE_SHA) {
   throw new Error(`Agent Control could not resolve runtime Git HEAD while exact source ${EXPECTED_RUNTIME_SOURCE_SHA} was required.`);
 }
