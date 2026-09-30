@@ -349,3 +349,9 @@ Ordered next steps:
 4. Preserve LR-043 and generic lesson 40; successors must continue logging new defect classes and prevention mechanisms.
 
 Successor requirement: carry this verification gap and the transactional-cleanup rule into the next audit; do not rely on private chat history.
+
+## 2026-09-30 updater branch retirement
+
+- PR #441 reconciled the updater transaction fix onto current `main` while preserving newer concurrent work.
+- The original updater branch was reset to the integrated `main` revision before this handoff commit so no stale release/CI tree can be reintroduced.
+- After this handoff merges, delete/auto-delete this temporary branch and keep only `main` plus the reserved `heaven-bridge` infrastructure relay.
