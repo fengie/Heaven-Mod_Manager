@@ -994,3 +994,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - Rule: Normalize only explicitly supported encoding markers before strict parsing; test actual producer bytes throughout reads, backup validation and migration. Valid newer ownership must never be replaced by stale backup due only to encoding. Malformed data remains fail-closed.
 - Trigger/evidence: repeated BOM defect after the plugin-pruner precedent; controller primary/legacy/backup-validation consumers still used plain JSON.parse.
 - Enforcement: shared state decoder, real isolated server precedence/save/recovery/legacy/malformed regressions, generic trainer. Preserve incident history and uncertainty.
+
+## LR-060 — specialized bootstrap must compose with general discovery
+- **Rule ID:** LR-060
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Multi-target applications, launcher/provider discovery, compatibility bootstrap, first-run UX
+- **Rule:** A specialized fast path that discovers or configures one known target must not suppress the application's general discovery lifecycle. General discovery should be automatic and idempotent, isolate provider failures, and remain bounded to authoritative provider/install roots rather than crawling unrelated storage.
+- **Trigger / evidence:** Universal Mod Manager bootstrapped MHW successfully, then populated the Games UI only from that registry; Steam/Epic/GOG discovery remained hidden behind a manual rescan, making a multi-game manager appear MHW-only.
+- **Rationale:** A correct special case can still create a system-level omission when it becomes the only path exercised by ordinary startup. Universal behavior must be proven from the user's default path, not only from an optional command.
+- **Enforcement:** For specialized bootstrap changes, regression-test a mixed population containing the special target plus at least one generic target, prove automatic first-path discovery and idempotence, retain an explicit rescan/manual fallback, and forbid unbounded whole-drive executable crawling.
+- **Regression/evidence:** `MultiGameTests.Games_page_first_refresh_discovers_MHW_and_other_installed_games_once`, Steam multi-library and Xbox helper-filter regressions; candidate evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.50-installed-game-discovery.md`.
+- **Related rules:** exact-input verification doctrine; task-specific runtime/user-path verification.
+- **Supersedes:** none
+- **Superseded by:** none
+
