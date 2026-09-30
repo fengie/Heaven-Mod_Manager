@@ -28,6 +28,12 @@ public sealed record SyndicationFeedTransportResult(
     string? ETag,
     DateTimeOffset? LastModified);
 
+public sealed record SyndicationFeedConditionalResult(
+    SyndicationFeedSnapshot? Feed,
+    string? ETag,
+    DateTimeOffset? LastModified,
+    bool NotModified);
+
 public sealed class SyndicationFeedTransportException : HttpRequestException
 {
     public SyndicationFeedTransportException(HttpStatusCode statusCode, DateTimeOffset? retryAfter, string message)
@@ -289,36 +295,105 @@ public sealed class SyndicationFeedTransport
         this.userAgent = userAgent.Trim();
     }
 
-    public async Task<SyndicationFeedTransportResult> GetAsync(Uri feedUri, CancellationToken ct = default)
+    public async Task<SyndicationFeedTransportResult> GetAsync(
+        Uri feedUri,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var response = await GetConditionalAsync(
+            feedUri,
+            etag: null,
+            ifModifiedSince: null,
+            ct).ConfigureAwait(false);
+
+        if (response.NotModified || response.Feed is null)
+            throw new InvalidDataException(
+                "Syndication feed returned HTTP 304 without a conditional request.");
+
+        return new SyndicationFeedTransportResult(
+            response.Feed,
+            response.ETag,
+            response.LastModified);
+    }
+
+    public async Task<SyndicationFeedConditionalResult> GetConditionalAsync(
+        Uri feedUri,
+        string? etag,
+        DateTimeOffset? ifModifiedSince,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ValidateFeedUri(feedUri);
+
+        EntityTagHeaderValue? parsedETag = null;
+        if (!string.IsNullOrWhiteSpace(etag))
+        {
+            var trimmed = etag.Trim();
+            if (trimmed == "*" || !EntityTagHeaderValue.TryParse(trimmed, out parsedETag))
+                throw new ArgumentException(
+                    "Syndication feed ETag validator is malformed.",
+                    nameof(etag));
+        }
 
         using var request = new HttpRequestMessage(HttpMethod.Get, feedUri);
         request.Headers.UserAgent.ParseAdd(userAgent);
         foreach (var mediaType in AllowedMediaTypes)
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
 
+        if (parsedETag is not null)
+            request.Headers.IfNoneMatch.Add(parsedETag);
+        if (ifModifiedSince is not null)
+            request.Headers.IfModifiedSince = ifModifiedSince.Value.ToUniversalTime();
+
         using var response = await client.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
             ct).ConfigureAwait(false);
 
+        var responseETag = response.Headers.ETag?.ToString()
+            ?? parsedETag?.ToString();
+        var responseLastModified = response.Content.Headers.LastModified
+            ?? ifModifiedSince;
+
+        if (response.StatusCode == HttpStatusCode.NotModified)
+        {
+            if (parsedETag is null && ifModifiedSince is null)
+                throw new InvalidDataException(
+                    "Syndication feed returned HTTP 304 without a cache validator.");
+
+            return new SyndicationFeedConditionalResult(
+                Feed: null,
+                responseETag,
+                responseLastModified,
+                NotModified: true);
+        }
+
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            throw new SyndicationFeedTransportException(response.StatusCode, ResolveRetryAfter(response), "Syndication feed provider rate limited the request.");
+            throw new SyndicationFeedTransportException(
+                response.StatusCode,
+                ResolveRetryAfter(response),
+                "Syndication feed provider rate limited the request.");
 
         if (!response.IsSuccessStatusCode)
-            throw new SyndicationFeedTransportException(response.StatusCode, ResolveRetryAfter(response), $"Syndication feed request failed with HTTP {(int)response.StatusCode}.");
+            throw new SyndicationFeedTransportException(
+                response.StatusCode,
+                ResolveRetryAfter(response),
+                $"Syndication feed request failed with HTTP {(int)response.StatusCode}.");
 
         ValidateContentType(response.Content.Headers.ContentType?.MediaType);
 
         if (response.Content.Headers.ContentLength is > 0 &&
             response.Content.Headers.ContentLength > maxResponseBytes)
-            throw new InvalidDataException("Syndication feed response exceeds the configured size limit.");
+            throw new InvalidDataException(
+                "Syndication feed response exceeds the configured size limit.");
 
         var payload = await ReadBoundedAsync(response.Content, ct).ConfigureAwait(false);
         var feed = SyndicationFeedParser.Parse(payload, feedUri);
-        return new SyndicationFeedTransportResult(feed, response.Headers.ETag?.Tag, response.Content.Headers.LastModified);
+        return new SyndicationFeedConditionalResult(
+            feed,
+            responseETag,
+            responseLastModified,
+            NotModified: false);
     }
 
     private async Task<byte[]> ReadBoundedAsync(HttpContent content, CancellationToken ct)
