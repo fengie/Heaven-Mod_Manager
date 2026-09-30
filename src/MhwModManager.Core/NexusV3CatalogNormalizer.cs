@@ -309,7 +309,7 @@ public static class NexusV3CatalogNormalizer
     }
 
     private static void AddIfPresent(
-        IDictionary<string, object?> target,
+        Dictionary<string, object?> target,
         string key,
         object? value)
     {
