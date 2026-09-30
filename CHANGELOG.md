@@ -1,3 +1,12 @@
+# v8.8.50 — 2026-09-30
+
+- Automatically discover installed games on the first Games-page refresh instead of showing only the MHW bootstrap result until a manual scan.
+- Keep Steam, Epic, GOG, and Xbox discovery bounded to launcher-proven install roots; Steam now checks user/machine install roots and every configured library.
+- Resolve legitimate nested game executables with depth/directory caps while filtering common redistributable, crash, anti-cheat, and installer helpers.
+- Isolate per-launcher discovery failures so one inaccessible source cannot suppress the others.
+- Preserve manual **Find Installed Games** and **Add Game** fallbacks; no whole-drive executable crawling.
+- Add mixed MHW/generic, Steam multi-library, nested-executable, Xbox Content-root, and helper-filter integration regressions.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
