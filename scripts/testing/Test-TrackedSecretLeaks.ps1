@@ -65,13 +65,13 @@ foreach ($relative in $tracked) {
     $extension = [IO.Path]::GetExtension($relative)
 
     if ($forbiddenExtensions.Contains($extension)) {
-        $errors.Add("$relative: tracked credential-container extension '$extension' is forbidden.")
+        $errors.Add("$($relative): tracked credential-container extension '$extension' is forbidden.")
         continue
     }
 
     if ($leaf -eq '.env' -or ($leaf.StartsWith('.env.', [StringComparison]::OrdinalIgnoreCase)
         -and $leaf -notmatch '(?i)\.(example|sample|template)$')) {
-        $errors.Add("$relative: tracked environment file is forbidden; commit a redacted example/template instead.")
+        $errors.Add("$($relative): tracked environment file is forbidden; commit a redacted example/template instead.")
         continue
     }
 
@@ -86,7 +86,7 @@ foreach ($relative in $tracked) {
 
     foreach ($pattern in $patterns) {
         if ($pattern.Regex.IsMatch($content)) {
-            $errors.Add("$relative: possible $($pattern.Name) detected.")
+            $errors.Add("$($relative): possible $($pattern.Name) detected.")
         }
     }
 }
