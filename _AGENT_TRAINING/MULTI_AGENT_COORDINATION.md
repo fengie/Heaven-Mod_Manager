@@ -106,3 +106,19 @@ After harvesting or merging another lane:
 - classify `ancestor + missing intended tree delta` as unfinished recovery work;
 - attach exact-candidate test/gate evidence separately from tree-survival evidence.
 
+## Perpetual supervisor doctrine
+Long-running multi-agent systems must distinguish **process liveness** from **useful progress**. A worker can still have a live PID/session while deadlocked, stuck in a tool loop, or otherwise making no progress.
+
+For perpetual operation:
+1. Track a progress timestamp independently from the ordinary heartbeat.
+2. Treat a bounded progress timeout as a liveness failure only after startup/grace conditions are satisfied.
+3. Before replacement, persist takeover/checkpoint evidence and prove that the old mutable owner stopped. Never create two writers for the same boundary merely to look self-healing.
+4. Use one-for-one replacement for a stale/failed lane while healthy sibling lanes continue.
+5. Make replacement claims idempotent and lineage-aware so only one active recovery owner exists per boundary.
+6. Persist pending replacement intent and retry metadata so a controller crash/restart resumes the exact recovery instead of forgetting or duplicating it.
+7. Retry transient failures with capped exponential backoff **and jitter**. Count restart intensity inside a rolling window and escalate cooldown/circuit state when failures cluster.
+8. Do not retry deterministic non-retryable failures (authorization, invalid configuration, explicit operator stop) as if they were transient.
+9. Provider-capacity limits open a circuit for that unavailable execution path; do not immediately respawn the same lane through the same blocked provider.
+10. Preserve operator controls: pause, drain, emergency stop, and degraded/read-only safety holds remain authoritative even in perpetual mode.
+
+Research basis: Kubernetes liveness probes cover running-but-deadlocked processes and warn that incorrect probes can cascade failures; AWS reliability guidance requires bounded exponential backoff with jitter and idempotent retry behavior; Erlang/OTP supervisors bound restart intensity over a period to prevent infinite crash/restart loops. These are generic supervisor principles and should be reused in future projects, not only Agent Control.
