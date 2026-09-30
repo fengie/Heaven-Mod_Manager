@@ -45,9 +45,9 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         CatalogBrowseRequest request,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"game={request.Game.Id}; query={request.Query ?? "<empty>"}");
-        ArgumentNullException.ThrowIfNull(request);
 
         if (!string.IsNullOrWhiteSpace(request.Query))
             throw new NotSupportedException("Nexus API v3 full-catalog search is not implemented yet.");
@@ -154,10 +154,26 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         CatalogAcquisitionRequest request,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"game={request.Game.Id}; mod={request.Mod.ProviderModId}; file={request.File.ProviderFileId}");
-        ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
+
+        if (!request.Mod.ProviderId.Equals(ProviderId, StringComparison.OrdinalIgnoreCase) ||
+            !request.File.ProviderId.Equals(ProviderId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Nexus acquisition requires Nexus mod and file identities.",
+                nameof(request));
+        }
+
+        if (!request.Mod.GameId.Equals(request.Game.Id, StringComparison.Ordinal) ||
+            !request.File.ProviderModId.Equals(request.Mod.ProviderModId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Nexus acquisition identities do not belong to the selected game/mod.",
+                nameof(request));
+        }
 
         var domain = RequireGameDomain(request.Game);
         var encodedDomain = Uri.EscapeDataString(domain);
