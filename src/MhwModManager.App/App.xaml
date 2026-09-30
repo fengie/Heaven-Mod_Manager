@@ -135,6 +135,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="ToolTipService.InitialShowDelay" Value="350"/>
+            <Setter Property="local:UiMotion.EnableHoverFeedback" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -293,6 +294,7 @@
             <Setter Property="Margin" Value="0,2"/>
             <Setter Property="Padding" Value="15,12"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="local:UiMotion.EnableHoverFeedback" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
