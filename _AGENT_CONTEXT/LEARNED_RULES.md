@@ -653,3 +653,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-038 — replay integration must prove replacement semantics
+
+- **Rule ID:** LR-038
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Branch replay, cherry-pick reconstruction, file-level integration, generated/recovered source restoration
+- **Rule:** When replaying or reconstructing changes onto paths that already exist, prove that the operation has replacement/patch semantics. Never concatenate a complete historical file payload with the current file merely because both represent the same path. Verify the fully assembled candidate artifact before canonical integration.
+- **Trigger / evidence:** GameBanana integration PR #387 appended the older nine-file PR #379 payload in front of the already-correct current-main files. The resulting canonical tree contained duplicate C# declarations and concatenated JSON fixtures. Exact-SHA Heaven verification at `9676bd18a37873b1a7fd1128fec4549d24b0ea20` failed immediately with CS1529. Repair commit `36f5f6c136cb5927a49ae9976b50ad74e1cfd26c` restored all nine paths byte-for-byte to PR #387's pre-replay base.
+- **Rationale:** File identity is not an append stream. A replay tool that treats full-file snapshots as additive text can produce syntactically invalid source, structurally invalid fixtures, or—more dangerously—valid-looking duplicated logic whose later copy silently wins. Commit ancestry cannot prove assembled-file correctness.
+- **Enforcement:** Before merge, compare candidate blobs/diffs against the base and flag all-additions rewrites of already-tracked full-file paths as suspicious. Parse/build the final assembled source, parse structured fixtures, and run required tests on the exact candidate. After merge, verify canonical blob/tree content, not just ancestry. If recovery is needed, restore from a known-good exact base/replay tree rather than hand-splicing when that tree exists.
+- **Regression / evidence:** `_AGENT_CONTEXT/GAMEBANANA_REPLAY_REPAIR_2026-09-30.md`; Heaven job `job-20260930T042300Z-gamebanana-repair-full-gate`.
+- **Related rules:** LR-035 explicit integration readiness; LR-037 canonical tree proof.
+- **Supersedes:** none
+- **Superseded by:** none
+
