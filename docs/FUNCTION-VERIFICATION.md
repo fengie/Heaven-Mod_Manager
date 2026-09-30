@@ -126,7 +126,7 @@ Scope-level exception observation remains always on after global hooks are insta
 The repair also fingerprints common build targets/editor/NuGet configuration when
 present. Integration stages include source/UI files, verification tooling, scripts,
 and the handoff documents their tests read, even without project-reference edges.
-`scripts/Test-VerificationCache.ps1` verifies these invalidations and runs in both
+`scripts/testing/Test-VerificationCache.ps1` verifies these invalidations and runs in both
 release entrypoints. Generated `bin`/`obj` files remain excluded.
 
 The user explicitly requested that checks which already passed remain checked. `stage-status.json` implements this without weakening release correctness. Each entry is keyed by stage ID and a SHA-256 fingerprint covering the project tree, transitive `ProjectReference` inputs, common build props/package props/global.json, exact dotnet SDK, OS, and process architecture. A cache hit is valid only for an exact fingerprint match.

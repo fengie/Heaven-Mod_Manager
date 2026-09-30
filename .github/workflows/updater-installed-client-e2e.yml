@@ -236,7 +236,7 @@ jobs:
             if ($LASTEXITCODE -ne 0) {
               throw 'Failed to classify main drift before persisting updater E2E evidence.'
             }
-            . (Join-Path $PWD 'scripts\UpdaterReleasePolicy.ps1')
+            . (Join-Path $PWD 'scripts\release\UpdaterReleasePolicy.ps1')
             $drift = Get-UpdaterMainDriftDecision -CurrentSourceSha $env:MHW_E2E_SOURCE_SHA -RemoteMainSha $remoteMain -ChangedPaths $driftPaths
             if (-not $drift.Publish) {
               Write-Host "::notice::Skipping updater E2E evidence persistence because main advanced through release-relevant paths ($($drift.Reason))."
