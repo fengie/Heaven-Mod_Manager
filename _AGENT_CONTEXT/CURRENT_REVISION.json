@@ -9,11 +9,11 @@
   "companyTrainingStatus": "active-living-system",
   "status": "v8.8.50-governance-integration-candidate",
   "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Finish exact-head PR #528 verification on the current v8.8.50 head, merge only if green, verify canonical main, then retire only fully preserved temporary branches.",
+  "nextRequiredAction": "Run fresh exact-head PR #528 verification with PR #530 serialized/paused, merge only if green, verify canonical main including newer evidence-only commits, then reopen/reconcile #530 on the next patch.",
   "verificationAppliesToCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "v8.8.48 source de38/build357 remains the last full release/update rollback closure. v8.8.49 UI exact candidate 3bc8f6b passed Security, Agent Control, and Workflow Feature gates and merged as be4615f; operator visual/runtime closure remains separate. v8.8.50 governance candidate requires fresh exact-head verification.",
+  "verificationScopeNote": "v8.8.48 source de38/build357 remains the last full release/update rollback closure. v8.8.49 UI exact candidate 3bc8f6b passed Security, Agent Control, and Workflow Feature gates and merged as be4615f; canonical main later advanced through evidence-only commits to eedbe9f. v8.8.50 governance candidate requires fresh exact-head verification; evidence-only main movement does not silently transfer candidate verification.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
