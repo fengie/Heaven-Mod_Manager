@@ -61,6 +61,41 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             plugin.repo_snapshot("../secret")
 
+    def test_release_rejects_gate_from_wrong_commit(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip","sha256":"b"*64,"size":10},))
+        result = plugin.release_verify_gates(plan, ({"name":"gate","sha":"c"*40,"conclusion":"success"},))
+        self.assertFalse(result["ok"])
+        self.assertEqual("wrong_commit", result["failures"][0]["reason"])
+
+    def test_release_digest_mismatch_blocks_publish(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip","sha256":"b"*64,"size":10},))
+        gates = plugin.release_verify_gates(plan, ({"name":"gate","sha":"a"*40,"conclusion":"success"},))
+        artifacts = plugin.release_verify_artifacts(plan, ({"name":"app.zip","sha256":"d"*64,"size":10,"version":"1.2.3","channel":"stable"},))
+        self.assertFalse(artifacts["ok"])
+        with self.assertRaises(ValueError):
+            plugin.release_authorize_publish(plan, gates, artifacts, confirmation=f"CONFIRM PUBLISH {plan['plan_id']}")
+
+    def test_release_authorization_and_idempotent_reconcile(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        plan = plugin.release_plan("repo", candidate_sha="a"*40, version="1.2.3", channel="stable", required_gates=("gate",), artifacts=({"name":"app.zip","sha256":"b"*64,"size":10},))
+        gates = plugin.release_verify_gates(plan, ({"name":"gate","sha":"a"*40,"conclusion":"success"},))
+        artifacts = plugin.release_verify_artifacts(plan, ({"name":"app.zip","sha256":"b"*64,"size":10,"version":"1.2.3","channel":"stable"},))
+        with self.assertRaises(ValueError):
+            plugin.release_authorize_publish(plan, gates, artifacts, confirmation="CONFIRM PUBLISH wrong")
+        receipt = plugin.release_authorize_publish(plan, gates, artifacts, confirmation=f"CONFIRM PUBLISH {plan['plan_id']}")["receipt"]
+        existing = {"source_sha":receipt["source_sha"],"version":receipt["version"],"channel":receipt["channel"],"artifacts":receipt["artifacts"]}
+        self.assertEqual("already_published", plugin.release_reconcile_existing(receipt, existing)["action"])
+        existing["source_sha"] = "c"*40
+        self.assertEqual("conflict", plugin.release_reconcile_existing(receipt, existing)["action"])
+
+    def test_release_cancellation_plan_only_targets_superseded_active_runs(self):
+        plugin = HeavenWorkflowPlugin(FakeControlPlane())
+        result = plugin.release_plan_cancellations("a"*40, ({"id":1,"head_sha":"b"*40,"status":"queued"},{"id":2,"head_sha":"a"*40,"status":"queued"},{"id":3,"head_sha":"c"*40,"status":"completed"}))
+        self.assertEqual([1], result["cancel_run_ids"])
+        self.assertTrue(result["requires_confirmation"])
+
 
 if __name__ == "__main__":
     unittest.main()
