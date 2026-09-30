@@ -11,7 +11,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
     private const string ItemColumns = """
         i.canonical_id,i.provider_id,i.provider_mod_id,i.game_id,i.name,i.summary,i.description,i.author,
         i.version,i.category,i.tags_json,i.screenshots_json,i.thumbnail,i.created_at,i.updated_at,
-        i.downloads,i.endorsements,i.rating,i.dependencies_json,i.source_url,i.provider_metadata,
+        i.downloads,i.endorsements,i.rating,i.dependencies_json,i.source_url,
         i.fetched_at,i.expires_at,i.etag,i.last_modified,i.source_fingerprint
         """;
 
@@ -24,6 +24,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         ArgumentNullException.ThrowIfNull(compliance);
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         ArgumentException.ThrowIfNullOrWhiteSpace(compliance.ProviderId);
+        CatalogProviderComplianceValidator.EnsureUsable(compliance, DateOnly.FromDateTime(DateTime.UtcNow));
 
         await using var c = await db.OpenAsync(ct);
         await using var cmd = c.CreateCommand();
@@ -180,6 +181,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         string providerId,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var cmd = c.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = "SELECT 1 FROM catalog_sources WHERE provider_id=$provider LIMIT 1";
@@ -194,6 +196,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         CachedCatalogMod cached,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mod = cached.Mod;
         await using var cmd = c.CreateCommand();
         cmd.Transaction = tx;
@@ -201,11 +204,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
             INSERT INTO catalog_items(
                 canonical_id,provider_id,provider_mod_id,game_id,name,summary,description,author,version,category,
                 tags_json,screenshots_json,thumbnail,created_at,updated_at,downloads,endorsements,rating,dependencies_json,
-                source_url,provider_metadata,fetched_at,expires_at,etag,last_modified,source_fingerprint)
+                source_url,fetched_at,expires_at,etag,last_modified,source_fingerprint)
             VALUES(
                 $canonical,$provider,$providerMod,$game,$name,$summary,$description,$author,$version,$category,
                 $tags,$screenshots,$thumbnail,$created,$updated,$downloads,$endorsements,$rating,$dependencies,
-                $sourceUrl,$metadata,$fetched,$expires,$etag,$lastModified,$fingerprint)
+                $sourceUrl,$fetched,$expires,$etag,$lastModified,$fingerprint)
             ON CONFLICT(canonical_id) DO UPDATE SET
                 provider_id=excluded.provider_id,
                 provider_mod_id=excluded.provider_mod_id,
@@ -226,7 +229,6 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 rating=excluded.rating,
                 dependencies_json=excluded.dependencies_json,
                 source_url=excluded.source_url,
-                provider_metadata=excluded.provider_metadata,
                 fetched_at=excluded.fetched_at,
                 expires_at=excluded.expires_at,
                 etag=excluded.etag,
@@ -244,16 +246,15 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$version", DbValue(mod.Version));
         cmd.Parameters.AddWithValue("$category", DbValue(mod.Category));
         cmd.Parameters.AddWithValue("$tags", JsonSerializer.Serialize(mod.Tags));
-        cmd.Parameters.AddWithValue("$screenshots", JsonSerializer.Serialize(mod.Screenshots));
-        cmd.Parameters.AddWithValue("$thumbnail", DbValue(mod.Thumbnail));
+        cmd.Parameters.AddWithValue("$screenshots", JsonSerializer.Serialize(SanitizeImages(mod.Screenshots)));
+        cmd.Parameters.AddWithValue("$thumbnail", DbValue(TryGetDurableUrl(mod.Thumbnail)));
         cmd.Parameters.AddWithValue("$created", DbValue(Format(mod.CreatedAt)));
         cmd.Parameters.AddWithValue("$updated", DbValue(Format(mod.UpdatedAt)));
         cmd.Parameters.AddWithValue("$downloads", DbValue(mod.Downloads));
         cmd.Parameters.AddWithValue("$endorsements", DbValue(mod.Endorsements));
         cmd.Parameters.AddWithValue("$rating", DbValue(mod.Rating));
-        cmd.Parameters.AddWithValue("$dependencies", JsonSerializer.Serialize(mod.Dependencies));
-        cmd.Parameters.AddWithValue("$sourceUrl", mod.SourceUrl);
-        cmd.Parameters.AddWithValue("$metadata", DbValue(mod.ProviderMetadata));
+        cmd.Parameters.AddWithValue("$dependencies", JsonSerializer.Serialize(SanitizeDependencies(mod.Dependencies)));
+        cmd.Parameters.AddWithValue("$sourceUrl", EnsureDurableUrl(mod.SourceUrl, nameof(mod.SourceUrl)));
         cmd.Parameters.AddWithValue("$fetched", Format(cached.Cache.FetchedAt)!);
         cmd.Parameters.AddWithValue("$expires", DbValue(Format(cached.Cache.ExpiresAt)));
         cmd.Parameters.AddWithValue("$etag", DbValue(cached.Cache.ETag));
@@ -268,6 +269,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         CatalogMod mod,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using (var delete = c.CreateCommand())
         {
             delete.Transaction = tx;
@@ -283,10 +285,10 @@ public sealed class CatalogRepository(ManagerDatabase db)
         insert.CommandText = """
             INSERT INTO catalog_files(
                 provider_id,provider_mod_id,provider_file_id,canonical_id,name,file_name,category,version,size_bytes,
-                description,uploaded_at,required,recommended,dependencies_json,provider_metadata)
+                description,uploaded_at,required,recommended,dependencies_json)
             VALUES(
                 $provider,$providerMod,$providerFile,$canonical,$name,$fileName,$category,$version,$size,
-                $description,$uploaded,$required,$recommended,$dependencies,$metadata)
+                $description,$uploaded,$required,$recommended,$dependencies)
             """;
         var pProvider = insert.Parameters.Add("$provider", SqliteType.Text);
         var pProviderMod = insert.Parameters.Add("$providerMod", SqliteType.Text);
@@ -302,7 +304,6 @@ public sealed class CatalogRepository(ManagerDatabase db)
         var pRequired = insert.Parameters.Add("$required", SqliteType.Integer);
         var pRecommended = insert.Parameters.Add("$recommended", SqliteType.Integer);
         var pDependencies = insert.Parameters.Add("$dependencies", SqliteType.Text);
-        var pMetadata = insert.Parameters.Add("$metadata", SqliteType.Text);
         insert.Prepare();
 
         foreach (var file in mod.Files)
@@ -321,8 +322,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
             pUploaded.Value = DbValue(Format(file.UploadedAt));
             pRequired.Value = file.Required ? 1 : 0;
             pRecommended.Value = file.Recommended ? 1 : 0;
-            pDependencies.Value = JsonSerializer.Serialize(file.Dependencies ?? Array.Empty<CatalogDependency>());
-            pMetadata.Value = DbValue(file.ProviderMetadata);
+            pDependencies.Value = JsonSerializer.Serialize(SanitizeDependencies(file.Dependencies ?? Array.Empty<CatalogDependency>()));
             await insert.ExecuteNonQueryAsync(ct);
         }
     }
@@ -333,6 +333,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         CachedCatalogMod cached,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var cmd = c.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = """
@@ -348,7 +349,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
             """;
         cmd.Parameters.AddWithValue("$canonical", cached.Mod.CanonicalId);
         cmd.Parameters.AddWithValue("$provider", cached.Mod.ProviderId);
-        cmd.Parameters.AddWithValue("$source", cached.Mod.SourceUrl);
+        cmd.Parameters.AddWithValue("$source", EnsureDurableUrl(cached.Mod.SourceUrl, nameof(cached.Mod.SourceUrl)));
         cmd.Parameters.AddWithValue("$fetched", Format(cached.Cache.FetchedAt)!);
         cmd.Parameters.AddWithValue("$etag", DbValue(cached.Cache.ETag));
         cmd.Parameters.AddWithValue("$lastModified", DbValue(Format(cached.Cache.LastModified)));
@@ -362,6 +363,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         CatalogMod mod,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using (var delete = c.CreateCommand())
         {
             delete.Transaction = tx;
@@ -388,6 +390,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
 
     private static async Task<List<StoredItem>> ReadRowsAsync(SqliteCommand cmd, CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var rows = new List<StoredItem>();
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -413,12 +416,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 reader.IsDBNull(17) ? null : reader.GetDouble(17),
                 reader.GetString(18),
                 reader.GetString(19),
-                reader.IsDBNull(20) ? null : reader.GetString(20),
-                reader.GetString(21),
+                reader.GetString(20),
+                reader.IsDBNull(21) ? null : reader.GetString(21),
                 reader.IsDBNull(22) ? null : reader.GetString(22),
                 reader.IsDBNull(23) ? null : reader.GetString(23),
-                reader.IsDBNull(24) ? null : reader.GetString(24),
-                reader.IsDBNull(25) ? null : reader.GetString(25)));
+                reader.IsDBNull(24) ? null : reader.GetString(24)));
         }
         return rows;
     }
@@ -428,6 +430,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         StoredItem row,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = await LoadFilesAsync(c, row.CanonicalId, ct);
         var mod = new CatalogMod(
             row.CanonicalId,
@@ -451,7 +454,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
             Deserialize<IReadOnlyList<CatalogDependency>>(row.DependenciesJson),
             row.SourceUrl,
             files,
-            row.ProviderMetadata);
+            ProviderMetadata: null);
 
         var cache = new CatalogCacheMetadata(
             ParseRequiredDate(row.FetchedAt),
@@ -467,11 +470,12 @@ public sealed class CatalogRepository(ManagerDatabase db)
         string canonicalId,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = new List<CatalogModFile>();
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
             SELECT provider_id,provider_mod_id,provider_file_id,name,file_name,category,version,size_bytes,
-                   description,uploaded_at,required,recommended,dependencies_json,provider_metadata
+                   description,uploaded_at,required,recommended,dependencies_json
             FROM catalog_files
             WHERE canonical_id=$canonical
             ORDER BY rowid
@@ -498,13 +502,14 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 reader.GetInt64(10) != 0,
                 reader.GetInt64(11) != 0,
                 Deserialize<IReadOnlyList<CatalogDependency>>(reader.GetString(12)),
-                reader.IsDBNull(13) ? null : reader.GetString(13)));
+                ProviderMetadata: null));
         }
         return files;
     }
 
     private static string? BuildFtsQuery(string? query)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(query)) return null;
         var tokens = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tokens.Length == 0) return null;
@@ -513,6 +518,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
 
     private static T Deserialize<T>(string json)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             return JsonSerializer.Deserialize<T>(json)
@@ -526,6 +532,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
 
     private static void ValidateCachedMod(CachedCatalogMod cached)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mod = cached.Mod;
         ArgumentException.ThrowIfNullOrWhiteSpace(mod.CanonicalId);
         ArgumentException.ThrowIfNullOrWhiteSpace(mod.ProviderId);
@@ -533,6 +540,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         ArgumentException.ThrowIfNullOrWhiteSpace(mod.GameId);
         ArgumentException.ThrowIfNullOrWhiteSpace(mod.Name);
         ArgumentException.ThrowIfNullOrWhiteSpace(mod.SourceUrl);
+        _ = EnsureDurableUrl(mod.SourceUrl, nameof(mod.SourceUrl));
 
         var fileIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var file in mod.Files)
@@ -547,16 +555,71 @@ public sealed class CatalogRepository(ManagerDatabase db)
         }
     }
 
+    private static IReadOnlyList<CatalogImage> SanitizeImages(IReadOnlyList<CatalogImage> images)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return images
+            .Select(image => (image, url: TryGetDurableUrl(image.Url)))
+            .Where(pair => pair.url is not null)
+            .Select(pair => pair.image with { Url = pair.url! })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<CatalogDependency> SanitizeDependencies(IReadOnlyList<CatalogDependency> dependencies)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return dependencies
+            .Select(dependency => dependency with { Url = TryGetDurableUrl(dependency.Url) })
+            .ToArray();
+    }
+
+    private static string EnsureDurableUrl(string value, string parameterName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return TryGetDurableUrl(value)
+            ?? throw new InvalidDataException($"{parameterName} must be a durable non-secret HTTP(S) URL.");
+    }
+
+    private static string? TryGetDurableUrl(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp)
+            || !string.IsNullOrEmpty(uri.UserInfo))
+            return null;
+
+        var lower = uri.Query.ToLowerInvariant();
+        string[] forbidden =
+        [
+            "token=", "access_token=", "apikey=", "api_key=", "signature=", "sig=", "expires=",
+            "x-amz-", "x-goog-", "authorization=", "auth=", "jwt="
+        ];
+        return forbidden.Any(token => lower.Contains(token, StringComparison.Ordinal))
+            ? null
+            : uri.AbsoluteUri;
+    }
+
     private static string? Format(DateTimeOffset? value) =>
         value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
-    private static DateTimeOffset? ParseDate(string? value) =>
-        value is null ? null : DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+    private static DateTimeOffset? ParseDate(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value is null ? null : DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+    }
 
-    private static DateTimeOffset ParseRequiredDate(string value) =>
-        DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+    private static DateTimeOffset ParseRequiredDate(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+    }
 
-    private static object DbValue(object? value) => value ?? DBNull.Value;
+    private static object DbValue(object? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value ?? DBNull.Value;
+    }
 
     private sealed record StoredItem(
         string CanonicalId,
@@ -579,7 +642,6 @@ public sealed class CatalogRepository(ManagerDatabase db)
         double? Rating,
         string DependenciesJson,
         string SourceUrl,
-        string? ProviderMetadata,
         string FetchedAt,
         string? ExpiresAt,
         string? ETag,
