@@ -760,3 +760,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 ## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
 
 ## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
+
+---
+
+## LR-044 — copied regression logic must be reconciled to the destination test module
+
+- **Rule ID:** LR-044
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Test refactors, copied regression snippets, cross-file test reuse, security regression additions
+- **Rule:** Treat copied test code like copied production code: reconcile imports, aliases, fixtures, helpers, and execution conventions to the destination file, then execute that exact test file before integration. Never assume a snippet is valid because equivalent logic passed in a sibling test module.
+- **Trigger / evidence:** HMAC-rotation regressions copied the `hb.*` module alias into `heaven-bridge/tests/test_worker.py`, whose canonical alias is `worker`; exact verification failed with `NameError` before behavioral assertions ran.
+- **Rationale:** A regression test that cannot execute provides zero defect-prevention value and can falsely make a change appear covered during source review.
+- **Enforcement:** For copied/moved test logic, inspect the destination imports and helpers, run the exact affected test file, and treat test-runtime/name-resolution failures as completion blockers. Record the failure as a precedent when it reaches an integration candidate.
+- **Regression/evidence:** failing job `chatgpt-20260930-045100-hmac-rotation-exact-verify`; fixed commit `b0b4bf2300efe347aada7e4b5e699cb4b89188c6`; passing rerun `chatgpt-20260930-045500-hmac-rotation-main-rerun` (19 Python + 17 Node tests).
+- **Related rules:** LR-002 compile-backed caller closure; LR-021 defect-class closure; exact-SHA verification doctrine.
+- **Supersedes:** none
+- **Superseded by:** none
