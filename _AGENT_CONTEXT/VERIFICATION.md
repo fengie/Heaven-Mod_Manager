@@ -4,6 +4,8 @@ This patch repairs deterministic failures in the repository verification path. E
 
 Behavioral scope is intentionally unchanged for conflict resolution, catalog synchronization, dependency scanning/order, and Agent Control retirement. Security Supply Chain must also pass on the same exact head.
 
+The first v8.8.39 exact-head product run exposed a second layer of pre-existing verifier/analyzer debt; those findings are now included in this same patch. A subsequent run was cancelled by the repository concurrency policy when duplicate subset PR #508 started, so cancellation is not acceptance evidence. The next exact-head run on #507 must complete successfully.
+
 ---
 
 # v8.8.38 Agent Control retry-parent retirement — verification scope
