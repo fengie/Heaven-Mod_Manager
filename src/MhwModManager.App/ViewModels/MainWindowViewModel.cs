@@ -497,7 +497,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     var bundleKey=AssetBundles.KeyForPath(conflict.Path);
                     var bundleFiles=snap.Files
                         .Where(file=>enabledById.ContainsKey(file.ModId)&&
-                                     file.FileClass is FileClass.Structural or FileClass.GameData or FileClass.Plugin or FileClass.Executable&&
+                                     file.FileClass==FileClass.Structural&&
                                      StringComparer.OrdinalIgnoreCase.Equals(AssetBundles.KeyForPath(file.Path),bundleKey))
                         .ToArray();
                     conflictPaths=bundleFiles.Select(file=>file.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
