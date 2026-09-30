@@ -9,7 +9,7 @@
   "companyTrainingStatus": "active-living-system",
   "nextMilestone": "verify and integrate v8.8.33 lightweight controller health after current-main reconciliation, then continue Agent Manager P0 startup freshness, sibling stop safety, and notification/inspector closure",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.32 missing retirement identity fail-closed repair",
+  "immediateParentRevision": "v8.8.32 Agent Control retirement identity fail-closed closure",
   "status": "v8.8.33-agent-control-lightweight-health",
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
