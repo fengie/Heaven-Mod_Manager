@@ -539,3 +539,19 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-029 CI supply-chain trust; LR-030 privileged release tooling.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-032 — execution authentication must be end-to-end
+
+- **Rule ID:** LR-032
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Remote execution bridges, control planes, message authentication
+- **Rule:** A worker-side authentication verifier is not a complete security control unless every authorized sender can generate the matching authenticated message without exposing key material through the transport. Hardened mode must be end-to-end and fail closed.
+- **Trigger / evidence:** Heaven Bridge already enforced `HEAVEN_BRIDGE_HMAC_KEY` on the worker, but Agent Control did not sign outgoing jobs. Enabling HMAC would reject legitimate control traffic and encourage operators to leave the stronger mode disabled.
+- **Prevention:** Agent Control now signs canonical bridge jobs with HMAC-SHA256 when a machine-local key is configured; sender and worker canonicalization are regression-tested, tampering changes the signature, and the key never enters Git relay payload/state.
+- **Related rules:** LR-021 defect-class closure; LR-029 CI trust boundaries.
+- **Supersedes:** none
+- **Superseded by:** none
+
