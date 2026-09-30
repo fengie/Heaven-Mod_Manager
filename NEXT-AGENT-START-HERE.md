@@ -1,3 +1,11 @@
+# v8.8.50 integrated catalog browser — candidate
+
+The existing federated catalog backend is now composed into the desktop app instead of remaining backend-only. The new Browse tab reads the source-aware SQLite/FTS cache, refreshes public Nexus v3 trending plus GameBanana recent updates for MHW, isolates provider failures, keeps stale cache visible, and exposes search/source/sort/detail UI with HTTPS source-page handoff. Browse refresh uses HydrateFiles=false so public Nexus discovery is not blocked by detail/file credentials. It does not claim direct archive acquisition; provider-authorized download and the existing safe import boundary remain intact.
+
+Owner: `feat/catalog-browser-v8.8.50-20260930`, based on `be4615f6` (v8.8.49 main at assignment start). Next: run exact-head Workflow Feature/Security/UI-build checks, reconcile any new-main race without dropping concurrent work, merge to main only when green, verify remote main, and remove the temporary branch when safe. Improvement follow-up: route supported direct/assisted acquisition into the existing archive importer without bypassing provider policy, then add live operator acceptance for refresh/search/detail interactions. Preserve and recursively propagate the continuity constitution.
+
+---
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
