@@ -2,7 +2,7 @@
 
 This patch changes `GET /api/status`, adds `health-contract.test.mjs`, and advances Agent Control/plugin identity to v0.6.11. Historical retirement verification does not verify these changed health-route bytes.
 
-Required exact-head source closure: `cd tools/agent-control && npm run check`, `cd tools/agent-control && npm test`, Agent Control PR Gate success, and Security Supply Chain Gate success. The health regression must prove the status route uses `loadState()` while rejecting `buildSnapshot`, `refreshState`, repository snapshotting, and Heaven Bridge inspection.
+Required exact-head source closure: `cd tools/agent-control && npm run check`, `cd tools/agent-control && npm test`, Agent Control PR Gate success, and Security Supply Chain Gate success. The health regressions must prove the status route uses `loadState()` while rejecting `buildSnapshot`, `refreshState`, repository snapshotting, and Heaven Bridge inspection; they must also prove a full dashboard snapshot reuses one Heaven Bridge assessment across worker/federation views and that startup/watchdog continue probing `/api/status`.
 
 This patch does not claim the separately pending live heaven2→heaven1 retirement/replay smoke.
 
