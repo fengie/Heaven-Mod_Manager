@@ -140,7 +140,7 @@ public sealed class SyndicationFeedTests
     }
 
     [Fact]
-    public void Parser_and_transport_require_https_sources()
+    public async Task Parser_and_transport_require_https_sources()
     {
         Assert.Throws<ArgumentException>(() =>
             SyndicationFeedParser.Parse("<rss/>", new Uri("http://rss.moddb.com/downloads/feed/rss.xml")));
@@ -149,7 +149,7 @@ public sealed class SyndicationFeedTests
             throw new Xunit.Sdk.XunitException("HTTP request should not be sent.")));
         var transport = new SyndicationFeedTransport(client);
 
-        Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<ArgumentException>(() =>
             transport.GetAsync(new Uri("http://rss.moddb.com/downloads/feed/rss.xml")));
     }
 
