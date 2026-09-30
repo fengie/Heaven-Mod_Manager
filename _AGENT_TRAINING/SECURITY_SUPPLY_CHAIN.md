@@ -37,3 +37,8 @@ Do not trust an arbitrary preinstalled executable or a moving `latest` download 
 ## Policy scanners must be self-safe
 
 When a security scanner is embedded in the configuration it scans, assume its own source text, comments, and diagnostics will be part of the input. Match structured configuration with anchored/parsed rules rather than raw substring presence, and include the scanner file itself in regression coverage so policy text cannot trigger false positives.
+
+## Cross-language policy generation must be literal-safe
+
+Security and release policy is executable source. When JavaScript, Python, shell, or another host language emits source for a different language, do not use replacement APIs whose replacement text has its own interpolation/metacharacter rules unless those rules are explicitly neutralized. Prefer callback/literal-safe replacement or structured generation, and make target-language parsing/execution part of the acceptance gate.
+
