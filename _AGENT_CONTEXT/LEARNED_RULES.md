@@ -963,3 +963,15 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Rule:** Bind repository, source, event, branch and workflow identity; choose only a provable newest result, reject conflicting/partial/running/expired observations, and recheck snapshot validity before publication authorization. Provider/query failures are explicit unavailable evidence, never an empty success.
 - **Enforcement:** github_evidence.py scoped/bounded collection and validation; release_verify_gates unique-result/lifecycle checks; snapshot freshness revalidated at authorize_publish; behavioral regression fixtures and exact-head plugin gates.
 - **Related rules:** LR-054 weakest-evidence aggregation; LR-055 bounded evidence; permanent exact-input verification.
+
+
+## LR-057 — a broad manifest whitelist must not silently widen a narrower reader contract
+- **Rule ID:** LR-057
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Repository context/index readers, capability whitelists, manifest subsets, least-authority retrieval
+- **Rule:** When one manifest contains several authority classes (for example mandatory core training plus selectively retrievable indexed context), a reader advertised for the narrower class must enforce that narrower subset explicitly. Reusing the union whitelist is not equivalent to proving the reader's stated boundary.
+- **Trigger / evidence:** During pre-merge v8.8.43 review, the shared `DOCUMENTS` set included core and indexed files. The new search/heading reader—and the pre-existing pagination helper beneath it—therefore could accept a core training path when supplied its valid hash even though the bootstrap contract advertises indexed-context retrieval.
+- **Rationale:** Hash correctness proves source identity, not authorization class. A union whitelist can preserve path safety while still violating least-authority or cost/usage contracts.
+- **Enforcement:** Keep manifest unions for manifest construction only; gate retrieval against `REPOSITORY_CONTEXT_INDEX_PATHS` specifically. Regression-test valid-hash attempts against a core document for both pagination and navigation.
+- **Related rules:** LR-053 progressive canonical bootstrap; LR-055 startup byte budgets and operational retrieval.
