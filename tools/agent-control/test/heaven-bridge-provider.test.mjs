@@ -19,7 +19,8 @@ import {
   resolveBridgeSigningKey,
   signBridgeJob,
   shouldRefreshHeartbeat,
-  validateBridgeResult
+  validateBridgeResult,
+  verifyBridgeDocument
 } from "../lib/heaven-bridge-provider.mjs";
 
 test("bridge relay auto-discovers the documented per-user checkout", () => {
@@ -69,13 +70,13 @@ test("bridge HMAC signing matches worker canonicalization rules", () => {
     targetHost: HEAVEN2_BRIDGE_HOST,
     createdAt: "2026-09-29T09:00:00.000Z"
   });
-  const signed = signBridgeJob(job, "unit-test-only-secret");
+  const signed = signBridgeJob(job, "0123456789abcdef0123456789abcdef");
   assert.match(signed.auth.signature, /^[0-9a-f]{64}$/);
   assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
 
-  const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "unit-test-only-secret");
+  const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "0123456789abcdef0123456789abcdef");
   assert.notEqual(changed.auth.signature, signed.auth.signature);
-  assert.throws(() => signBridgeJob(job, ""), /HMAC key is required/i);
+  assert.throws(() => signBridgeJob(job, ""), /HMAC key is required/i);\n  assert.throws(() => signBridgeJob(job, "too-short"), /at least 32 UTF-8 bytes/i);
 });
 
 test("bridge signing key resolves from machine-local file when env is absent", () => {
@@ -107,11 +108,11 @@ test("cross-language HMAC fixture is byte-stable", () => {
     targetHost: HEAVEN2_BRIDGE_HOST,
     createdAt: "2026-09-29T09:00:00.000Z"
   });
-  const signed = signBridgeJob(job, "unit-test-only-secret");
+  const signed = signBridgeJob(job, "0123456789abcdef0123456789abcdef");
   assert.equal(signed.auth.canonical, "mhw-bridge-canon-v1");
   assert.equal(
     signed.auth.signature,
-    "30678ccd2b625f08422cd3da337913ac1e6240bec048a76ff1b72138067e851a"
+    "8fddef1c6127fb6d98149e16f9823379408b4a8e563fe60c0524f2231bd59252"
   );
   assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
 });
@@ -183,6 +184,27 @@ test("transport failure never becomes a false host-offline status", () => {
     reason: "Dedicated Heaven relay checkout is dirty"
   }), "presence-unknown");
   assert.equal(bridgeMachineStatus({ configured: false, healthy: false }), "not-configured");
+});
+
+test("authenticated bridge documents reject tampering", () => {
+  const key = "0123456789abcdef0123456789abcdef";
+  const document = signBridgeJob({
+    id: "signed-result",
+    source: HEAVEN_BRIDGE_PROTOCOL,
+    host: HEAVEN_BRIDGE_HOST,
+    action: "proc_run",
+    status: "done",
+    exit_code: 0
+  }, key);
+  assert.equal(verifyBridgeDocument(document, key), document);
+  assert.throws(
+    () => verifyBridgeDocument({ ...document, exit_code: 7 }, key),
+    /signature verification failed/i
+  );
+  assert.throws(
+    () => verifyBridgeDocument({ ...document, auth: undefined }, key),
+    /canonical format/i
+  );
 });
 
 test("bridge results require exact job, action, protocol, host and terminal state", () => {
