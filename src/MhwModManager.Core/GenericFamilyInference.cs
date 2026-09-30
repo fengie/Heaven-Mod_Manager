@@ -69,6 +69,7 @@ public static partial class GenericFamilyInference
         }
         void Union(string a,string b)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             var ra=Find(a);var rb=Find(b);if(StringComparer.OrdinalIgnoreCase.Equals(ra,rb))return;
             var keep=StringComparer.OrdinalIgnoreCase.Compare(ra,rb)<=0?ra:rb;
             var drop=StringComparer.OrdinalIgnoreCase.Equals(keep,ra)?rb:ra;
@@ -145,6 +146,7 @@ public static partial class GenericFamilyInference
 
         void AddPostings(string prefix,IEnumerable<string> values,int index)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             foreach(var value in values)
             {
                 var key=prefix+value;
@@ -218,6 +220,7 @@ public static partial class GenericFamilyInference
 
         static int IntersectionCount(HashSet<string> left,HashSet<string> right)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             if(left.Count==0||right.Count==0)return 0;
             var scan=left.Count<=right.Count?left:right;
             var lookup=ReferenceEquals(scan,left)?right:left;

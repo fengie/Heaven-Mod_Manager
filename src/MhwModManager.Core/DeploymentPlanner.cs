@@ -316,14 +316,24 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         return null;
     }
 
-    private static bool IsMainRole(ModDescriptor mod) =>
-        mod.NexusCategory == NexusFileCategory.Main ||
-        ContainsFamilyRole(mod.FamilyRole, "main", "base", "core", "root");
+    private static bool IsMainRole(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mod.NexusCategory == NexusFileCategory.Main ||
+               ContainsFamilyRole(mod.FamilyRole, "main", "base", "core", "root");
+    }
 
-    private static bool IsDependentRole(ModDescriptor mod) =>
-        mod.NexusCategory is NexusFileCategory.Optional or NexusFileCategory.Update ||
-        ContainsFamilyRole(mod.FamilyRole, "optional", "update", "patch", "addon", "add-on", "child");
+    private static bool IsDependentRole(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mod.NexusCategory is NexusFileCategory.Optional or NexusFileCategory.Update ||
+               ContainsFamilyRole(mod.FamilyRole, "optional", "update", "patch", "addon", "add-on", "child");
+    }
 
-    private static bool ContainsFamilyRole(string? value, params string[] roles) =>
-        !string.IsNullOrWhiteSpace(value) && roles.Any(role => value.Contains(role, StringComparison.OrdinalIgnoreCase));
+    private static bool ContainsFamilyRole(string? value, params string[] roles)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return !string.IsNullOrWhiteSpace(value) &&
+               roles.Any(role => value.Contains(role, StringComparison.OrdinalIgnoreCase));
+    }
 }

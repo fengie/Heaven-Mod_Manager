@@ -24,7 +24,14 @@ public sealed class ThunderstoreTransportResponse : IDisposable
     public JsonDocument? Document { get; }
     public string? ETag { get; }
     public DateTimeOffset? LastModified { get; }
-    public bool NotModified => StatusCode == HttpStatusCode.NotModified;
+    public bool NotModified
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return StatusCode == HttpStatusCode.NotModified;
+        }
+    }
 
     public void Dispose()
     {
