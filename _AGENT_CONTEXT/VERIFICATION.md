@@ -1,3 +1,13 @@
+# v8.8.26 Agent Control terminal-registry GC — verification scope
+
+Required source verification: exact-head Agent Control `npm run check` and `npm test`, including `registry-retention.test.mjs`.
+
+Required live verification on heaven2: restart/reload the exact candidate, launch via the normal START SWARM control, observe one live dispatch, then prove a failed/retry-exhausted worker is removed from both managed and federated live registries after no process/recovery owns it. Also prove retry-pending/waiting and durable incomplete-work records are not prematurely retired.
+
+Task state, failure/event evidence, branches, and worktrees must remain inspectable after registry retirement. Historical v8.8.25 verification does not cover these lifecycle-retention semantics.
+
+---
+
 # v8.8.25 Agent Control operator-markup + plugin identity repair — verification scope
 
 This candidate changes dashboard-generated operator markup, release identity across all private-plugin manifests, and focused regression coverage. Historical v8.8.24 evidence does not verify these bytes.
