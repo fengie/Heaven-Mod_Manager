@@ -268,10 +268,22 @@ function readJson(file) {
 function heartbeatAssessment(heartbeat, {
   now = Date.now(),
   maxAgeMs = DEFAULT_HEARTBEAT_MAX_AGE_MS,
-  expectedHost = HEAVEN_BRIDGE_HOST
+  expectedHost = HEAVEN_BRIDGE_HOST,
+  signingKey = resolveBridgeSigningKey(),
+  allowUnsigned = envFlag(process.env.AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE)
 } = {}) {
   if (!heartbeat || typeof heartbeat !== "object") {
     return { healthy: false, reason: "heartbeat-malformed", heartbeat: null };
+  }
+  try {
+    verifyBridgeDocument(heartbeat, signingKey, { allowUnsigned });
+  } catch (error) {
+    return {
+      healthy: false,
+      reason: "heartbeat-auth-invalid",
+      heartbeat: null,
+      authError: error?.message || String(error)
+    };
   }
   if (clean(heartbeat.host).toLowerCase() !== normalizeBridgeHost(expectedHost)) {
     return { healthy: false, reason: "heartbeat-host-mismatch", heartbeat: null };
