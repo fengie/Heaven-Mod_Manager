@@ -11,6 +11,15 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.resolve(HERE, "..", "server.mjs");
+const PANEL = path.resolve(HERE, "..", "public", "index.html");
+
+test("panel agent actions keep persisted identifiers out of inline JavaScript", () => {
+  const html = fs.readFileSync(PANEL, "utf8");
+  assert.match(html, /data-agent-id="\$\{escapeHtml\(encodeURIComponent\(a\.id\)\)\}"/);
+  assert.match(html, /data-log-agent-id="\$\{escapeHtml\(encodeURIComponent\(a\.id\)\)\}"/);
+  assert.match(html, /\$\("agents"\)\.addEventListener\("click"/);
+  assert.doesNotMatch(html, /onclick="(?:showLog|stopAgent|reviewAgent)\(/);
+});
 
 async function freePort() {
   const server = net.createServer();

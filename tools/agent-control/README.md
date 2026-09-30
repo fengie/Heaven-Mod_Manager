@@ -70,6 +70,12 @@ node .\agentctl.mjs log <agent-id>
 node .\agentctl.mjs stop <agent-id>
 ```
 
+The CLI also exposes workflow preview/execute, natural-language command resolution,
+recommendations, release/search inspection, preserved stop/takeover, controller
+safety controls, evidence recording, and integration review verdicts. Use
+`--authorize-heaven-repo` only when that specific dispatch is authorized to write
+the repository from Heaven.
+
 `--task-file` is the preferred interface for ChatGPT/plugin-driven deployment because the task never has to be shell-escaped.
 
 ## Environment variables

@@ -287,11 +287,11 @@
           <div class="meta"><span class="tag">${escapeHtml(a.baseBranch)} → ${escapeHtml(a.branchName)}</span></div>
           ${a.lastMessage ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last output:</strong> ${escapeHtml(a.lastMessage.slice(0,420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
           <div class="actions">
-            <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>`}
-            <button onclick="copyText(${JSON.stringify(a.branchName)})">Copy branch</button>
+            <button data-action="log" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}">View log</button>
+            ${["running","starting","stopping"].includes(a.status) ? `<button class="danger" data-action="stop" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}">Stop</button>` : `<button class="good" data-action="review" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}">Deploy reviewer</button>`}
+            <button data-action="copy-branch" data-branch="${escapeHtml(a.branchName)}">Copy branch</button>
           </div>
-          <div class="log" id="log-${escapeHtml(a.id)}"></div>
+          <div class="log" data-log-agent-id="${escapeHtml(encodeURIComponent(a.id))}"></div>
         </article>
       `).join("");
     }
@@ -427,7 +427,7 @@
 
     async function stopAgent(id) {
       try {
-        await api(`/api/agents/${id}/stop`, {method:"POST",body:"{}"});
+        await api(`/api/agents/${encodeURIComponent(id)}/stop`, {method:"POST",body:"{}"});
         toast("Stop signal sent.");
         await refresh();
       } catch (error) { toast(error.message); }
@@ -435,7 +435,7 @@
 
     async function reviewAgent(id) {
       try {
-        await api(`/api/agents/${id}/review`, {method:"POST",body:"{}"});
+        await api(`/api/agents/${encodeURIComponent(id)}/review`, {method:"POST",body:"{}"});
         toast("Reviewer deployed.");
         await refresh();
       } catch (error) { toast(error.message); }
@@ -443,9 +443,10 @@
 
     async function showLog(id, button) {
       try {
-        const data = await api(`/api/agents/${id}/log`);
-        const rawId = decodeURIComponent(id);
-        const box = document.getElementById(`log-${rawId}`);
+        const data = await api(`/api/agents/${encodeURIComponent(id)}/log`);
+        const box = [...document.querySelectorAll("[data-log-agent-id]")]
+          .find(element => element.dataset.logAgentId === encodeURIComponent(id));
+        if (!box) throw new Error("Agent log panel is no longer available.");
         box.textContent = data.lastMessage ? `FINAL / LAST MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
         box.style.display = box.style.display === "block" ? "none" : "block";
         button.textContent = box.style.display === "block" ? "Hide log" : "View log";
@@ -458,6 +459,15 @@
     }
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
+    $("agents").addEventListener("click", event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const id = decodeURIComponent(button.dataset.agentId || "");
+      if (button.dataset.action === "log") showLog(id, button);
+      else if (button.dataset.action === "stop") stopAgent(id);
+      else if (button.dataset.action === "review") reviewAgent(id);
+      else if (button.dataset.action === "copy-branch") copyText(button.dataset.branch || "");
+    });
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
 
