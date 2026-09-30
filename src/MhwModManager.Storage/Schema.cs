@@ -139,5 +139,84 @@ CREATE TABLE IF NOT EXISTS mod_issue_suspects(
     PRIMARY KEY(mod_id,issue_kind)
 );
 CREATE INDEX IF NOT EXISTS ix_mod_issue_active ON mod_issue_suspects(active,confirmed DESC,score DESC,last_seen DESC);
+CREATE TABLE IF NOT EXISTS catalog_sources(
+    provider_id TEXT PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    source_kind TEXT NOT NULL,
+    health_state TEXT NOT NULL DEFAULT 'Offline',
+    last_sync_at TEXT NULL,
+    last_error TEXT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS catalog_items(
+    canonical_id TEXT PRIMARY KEY,
+    provider_id TEXT NOT NULL,
+    provider_mod_id TEXT NOT NULL,
+    game_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    author TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NULL,
+    tags_text TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    updated_at TEXT NULL,
+    mod_json TEXT NOT NULL,
+    UNIQUE(provider_id,provider_mod_id)
+);
+CREATE INDEX IF NOT EXISTS ix_catalog_items_provider_game ON catalog_items(provider_id,game_id);
+CREATE INDEX IF NOT EXISTS ix_catalog_items_updated ON catalog_items(updated_at DESC);
+CREATE TABLE IF NOT EXISTS catalog_files(
+    provider_id TEXT NOT NULL,
+    provider_mod_id TEXT NOT NULL,
+    provider_file_id TEXT NOT NULL,
+    canonical_id TEXT NOT NULL REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    category TEXT NOT NULL,
+    version TEXT NULL,
+    file_name TEXT NOT NULL,
+    uploaded_at TEXT NULL,
+    file_json TEXT NOT NULL,
+    PRIMARY KEY(provider_id,provider_mod_id,provider_file_id)
+);
+CREATE INDEX IF NOT EXISTS ix_catalog_files_item ON catalog_files(canonical_id);
+CREATE TABLE IF NOT EXISTS catalog_provenance(
+    canonical_id TEXT PRIMARY KEY REFERENCES catalog_items(canonical_id) ON DELETE CASCADE,
+    fetched_at TEXT NOT NULL,
+    expires_at TEXT NULL,
+    etag TEXT NULL,
+    last_modified TEXT NULL,
+    source_fingerprint TEXT NULL
+);
+CREATE TABLE IF NOT EXISTS catalog_sync_state(
+    provider_id TEXT NOT NULL,
+    game_id TEXT NOT NULL,
+    cursor TEXT NULL,
+    last_success_at TEXT NULL,
+    last_attempt_at TEXT NULL,
+    last_error TEXT NULL,
+    PRIMARY KEY(provider_id,game_id)
+);
+CREATE VIRTUAL TABLE IF NOT EXISTS catalog_items_fts USING fts5(
+    canonical_id UNINDEXED,
+    name,
+    author,
+    summary,
+    description,
+    tags,
+    category,
+    tokenize='unicode61'
+);
+CREATE TRIGGER IF NOT EXISTS catalog_items_ai AFTER INSERT ON catalog_items BEGIN
+    INSERT INTO catalog_items_fts(canonical_id,name,author,summary,description,tags,category)
+    VALUES(new.canonical_id,new.name,new.author,new.summary,new.description,new.tags_text,COALESCE(new.category,''));
+END;
+CREATE TRIGGER IF NOT EXISTS catalog_items_ad AFTER DELETE ON catalog_items BEGIN
+    DELETE FROM catalog_items_fts WHERE canonical_id=old.canonical_id;
+END;
+CREATE TRIGGER IF NOT EXISTS catalog_items_au AFTER UPDATE ON catalog_items BEGIN
+    DELETE FROM catalog_items_fts WHERE canonical_id=old.canonical_id;
+    INSERT INTO catalog_items_fts(canonical_id,name,author,summary,description,tags,category)
+    VALUES(new.canonical_id,new.name,new.author,new.summary,new.description,new.tags_text,COALESCE(new.category,''));
+END;
 """;
 }
