@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.40 efficient bootstrap + verification recovery — CURRENT CANDIDATE
+
+1. Let PR #510 finish exact-head Agent Control, Workflow Feature, and Security Supply Chain gates; do not infer success from earlier heads.
+2. If Workflow Feature remains red, repair only the independently reproduced failing group; do not weaken verification or revert to full-corpus agent startup.
+3. Refresh canonical `main` immediately before integration. Reconcile if it moved, rerun affected exact-head checks, then merge #510 and confirm remote main.
+4. Confirm #507 has no unique unmerged source/test repair after #510; close/supersede it rather than maintaining two overlapping verification branches.
+5. Deploy/restart Agent Control v0.6.18 on heaven2 and verify a newly generated senior/scheduled prompt contains the CORE TRAINING MANIFEST, INDEXED CONTEXT MANIFEST, truncation pagination, missing-tool/no-checkout fallbacks, and evidence-backed blocker criteria.
+6. Improvement path: generate an even smaller machine-readable live bootstrap evidence packet (current main, active ownership/PRs/checks, source hashes) if runtime measurements show further premium-context savings are material; do not weaken task-relevant expansion or exact-source verification.
+
+---
+
 # 2026-09-30 v8.8.39 bridge reliability — CURRENT CANDIDATE
 
 1. Run `heaven-bridge/manage.ps1 TEST` plus Agent Control `npm run check` / `npm test` on the exact candidate.

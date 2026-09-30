@@ -7,7 +7,7 @@
   "currentVersion": "8.8.40",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "verify the efficient-bootstrap governance and Agent Control candidate on exact head, integrate to current main, then deploy the updated prompt runtime so scheduled and premium agents stop false-blocking on truncation or missing preferred tools",
+  "nextMilestone": "require exact-head PR #510 Agent Control, Workflow Feature full repository verification, and Security Supply Chain green; then merge to current main, retire superseded #507 if no unique work remains, deploy Agent Control v0.6.18, and confirm new senior/scheduled prompts use the compact core plus indexed context and fallback-aware blocker rules",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.39 Heaven Local Bridge primary reliability",
   "status": "v8.8.40-efficient-agent-bootstrap",
@@ -15,7 +15,7 @@
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.40 changes agent governance and Agent Control prompt generation only: compact core plus hash-indexed context, targeted expansion, truncation pagination, fallback routing, and evidence-backed blocker criteria. Exact-head Agent Control and security/governance verification are required; prior product verification is not promoted.",
+  "verificationScopeNote": "v8.8.40 combines the efficient agent bootstrap with the already-isolated #507 repository-gate repair, transplanted onto current-main lineage without stale #507 release metadata. Exact-head Agent Control, Workflow Feature full repository verification, and Security Supply Chain gates are required; prior product verification is not promoted.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,7 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
-    "2026-09-30 v8.8.40 efficient agent bootstrap: replace full-corpus startup rereads with compact core plus hash-indexed context, require targeted expansion/pagination/fallback routing, prevent missing-CLI/no-checkout false blockers, and advance Agent Control/plugin identity to v0.6.18.",
+    "2026-09-30 v8.8.40 efficient agent bootstrap + verification recovery: compact core plus hash-indexed context, targeted expansion/pagination/fallback routing, evidence-backed blocker criteria, Agent Control v0.6.18, and #507's isolated repository-gate repairs transplanted onto fresh main lineage without stale release metadata.",
     "2026-09-30 v8.8.39 Heaven Local Bridge primary reliability: persistent machine-local repo-ACL marker, RDC on-demand fallback, Python cache ignore, worker v8, bridge plugin v0.8.3, Agent Control v0.6.17.",
     "2026-09-30 v8.8.38 Agent Control retry-parent retirement: terminal failed retry-dispatched parents with superseded tasks are no longer permanently retained; unresolved recovery/work remains fail-closed; Agent Control/plugin identity advances to v0.6.16.",
     "2026-09-30 v8.8.37 Agent Control registry lifecycle: safely retire ordinary terminal managed workers only after ownership/work preservation, archive terminal/disconnected-timeout federated presence with per-source tombstones, exclude historical rows from live-registry totals, expose forensic Registry history, and advance Agent Control/plugin identity to v0.6.15.",

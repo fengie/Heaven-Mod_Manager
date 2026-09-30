@@ -2,7 +2,7 @@
 
 ## v8.8.40 — efficient agent bootstrap
 
-Agent startup is now progressive instead of repeatedly ingesting the full historical repository corpus. Agent Control v0.6.18 gives every worker a small full-read core plus a hash-verified indexed context manifest, requires targeted expansion of task-relevant history and precedents, paginates truncated reads, and routes around missing preferred CLIs, unavailable local checkouts, or single-path network failures through authorized GitHub, Heaven, or CI alternatives before allowing a blocker claim. Senior/premium agents are explicitly optimized for high-value diagnosis, review, integration, and verification decisions rather than mechanical context gathering.
+Agent startup is now progressive instead of repeatedly ingesting the full historical repository corpus. Agent Control v0.6.18 gives every worker a small full-read core plus a hash-verified indexed context manifest, requires targeted expansion of task-relevant history and precedents, paginates truncated reads, and routes around missing preferred CLIs, unavailable local checkouts, or single-path network failures through authorized GitHub, Heaven, or CI alternatives before allowing a blocker claim. Senior/premium agents are explicitly optimized for high-value diagnosis, review, integration, and verification decisions rather than mechanical context gathering. This same patch also recovers the already-isolated #507 repository-gate repairs onto fresh main lineage—strict analyzer cleanup, verification tracing, ambiguity/update behavior regressions, feed/GitLab normalization, and matching tests—without importing #507's stale version/continuity metadata.
 
 
 

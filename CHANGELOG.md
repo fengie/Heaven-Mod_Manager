@@ -5,6 +5,7 @@
 - Treat a missing preferred CLI, one failed network route, or no local checkout as recoverable routing conditions and require authorized GitHub connector/API, canonical worktree, Heaven Bridge/Agent Control, or CI fallbacks before BLOCKED.
 - Optimize senior/premium agents for architecture, root cause, review, integration, and verification decisions; offload mechanical evidence collection when practical.
 - Add Agent Control regressions pinning the core/index split, indexed large ledgers, fallback language, and blocker criteria; advance Agent Control/plugin identity to v0.6.18.
+- Recover the product verification repairs already isolated on #507 onto current-main lineage without its stale release metadata: CA1822 closure, WPF/trace instrumentation, planner/conflict ambiguity and update semantics, Atom/GitLab normalization, and matching regression fixtures.
 
 # v8.8.39 — Heaven Local Bridge primary reliability
 - Make Heaven Local Bridge the explicit primary control path for heaven2/heaven and keep Remote Desktop Commander as an on-demand fallback.

@@ -1,3 +1,16 @@
+# v8.8.40 efficient agent bootstrap + repository-gate recovery — CURRENT CANDIDATE
+
+- PR #510 is the current integration lane, based on the v8.8.39 Heaven Local Bridge primary-reliability main lineage.
+- Agent startup is progressive: a small full-read core is paired with a hash-verified indexed context manifest; large continuity/training ledgers are expanded only where task-relevant.
+- Truncation is a pagination/chunking condition. Missing preferred CLI, one failed network route, or no local checkout must route through authorized GitHub connector/API, canonical worktrees, Heaven Local Bridge/Agent Control, or CI before BLOCKED is valid.
+- Senior/premium roles are explicitly reserved for architecture, root-cause synthesis, review, integration, and verification decisions; mechanical evidence gathering should be delegated/offloaded when practical.
+- Agent Control/root/nested plugin identity is v0.6.18 / product v8.8.40.
+- The first #510 Workflow Feature run proved the bootstrap patch itself was not the product-gate regression: it exposed the same pre-existing strict analyzer/core-test failures tracked by #507. Those #507 source/test repairs were transplanted onto #510 without importing its stale v8.8.39 release/continuity metadata.
+- Required integration evidence: exact-head Agent Control PR Gate, Workflow Feature PR Gate including the full repository verifier, and Security Supply Chain Gate all green on the same PR #510 head.
+- After integration, deploy/restart Agent Control v0.6.18 so newly spawned scheduled/senior workers receive the optimized prompt contract. Then retire #507 only after confirming it contains no unique unintegrated work.
+
+---
+
 # v8.8.39 Heaven Local Bridge primary reliability — CURRENT CANDIDATE
 
 - Heaven Local Bridge is the intended always-on primary control path on heaven2 and heaven.
