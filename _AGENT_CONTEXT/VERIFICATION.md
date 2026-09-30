@@ -1,3 +1,13 @@
+# v8.8.24 Agent Manager operator actions — verification scope
+
+Implementation source: `d5f9059d2294dc07442367bd295f51bf197a11ca` on `fix/agent-manager-operator-actions-20260930`.
+
+Source-integrated regression coverage was added in `tools/agent-control/test/operator-ui-cli.test.mjs` for the new recommendation surface, recommendation action routing, done-only reviewer affordance, emergency-stop-aware Resume label/confirmation semantics, and removal of the old unconditional `clearEmergencyStop = false` behavior.
+
+No local Node/runtime test execution is claimed from this Chat session because the live Heaven Agent Control / Heaven Local Bridge connector was unavailable and repository policy forbids substituting Remote Desktop Commander for heaven without explicit per-request authorization. Required closure is exact-candidate `npm run check` + `npm test`, followed by heaven2 dashboard/controller smoke. Historical Agent Control and Windows evidence does not verify this changed candidate.
+
+---
+
 # v8.8.7 canonical-main reconciliation — verification scope
 
 Canonical source audited before this continuity-only checkpoint: `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`.

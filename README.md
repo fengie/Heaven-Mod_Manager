@@ -1,4 +1,12 @@
-# v8.8.23 Universal Mod Manager
+# v8.8.24 Universal Mod Manager
+
+## v8.8.24 — Agent Manager operator actions
+
+Agent Manager now exposes the decisions its backend was already computing instead of hiding them from the operator. The dashboard renders prioritized recovery/review/capacity/dispatch recommendations and turns supported recommendations into explicit actions, including review workflow launch, one-click swarm continuation, and worker inspection.
+
+Operator actions now match authoritative server state more closely: only completed managed agents offer **Deploy reviewer**, so failed, stopped, interrupted, orphaned, retry-pending, and capacity-blocked agents no longer advertise an action the server cannot safely perform. **Resume** also becomes **Clear emergency stop + resume** while the emergency-stop latch is active and requires explicit confirmation before clearing it.
+
+Agent Control advances to **v0.6.3**. Regression guards pin recommendation visibility/action routing, state-valid reviewer affordances, and emergency-stop recovery semantics. Fresh exact-head Agent Control tests plus a heaven2 dashboard smoke remain required before release-ready claims.
 
 ## v8.8.23 — Agent Manager runtime reliability
 

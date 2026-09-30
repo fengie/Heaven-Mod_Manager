@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
+
+The broader Agent Manager P0/autopilot priority lock is now canonical on main. This follow-up closes the operator-surface contract: backend `suggestedActions` are visible/actionable in the dashboard; reviewer deployment is offered only for `done` managed agents; and Resume explicitly clears an active emergency stop only after operator confirmation.
+
+Agent Control/runtime private-plugin identity is v0.6.3 for this change set. Verification is **not yet claimed** for the completed versioned candidate: run the exact-head Agent Control check/test suite and a real heaven2 dashboard smoke, including recommendation rendering, review launch, and emergency-stop recovery. Do not inherit historical green evidence.
+
+Plugin preflight for this Chat session found no live Heaven Agent Control / Heaven Local Bridge connector, so repository execution used the GitHub connector. Remote Desktop Commander was not used.
+
+---
+
 # 2026-09-30 v8.8.23 Agent Manager runtime reliability — CURRENT
 
 Agent Manager is the highest-priority functional lane. **START SWARM** now resumes a paused perpetual controller and immediately advances it, leaves a genuinely running perpetual swarm idempotently alone, rejects an active non-perpetual autopilot with a 409 conflict, and rejects empty objectives before changing control/safety settings.

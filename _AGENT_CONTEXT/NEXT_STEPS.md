@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
+
+1. Run `npm run check` and `npm test` from `tools/agent-control` on the exact v8.8.24 candidate; the operator UI regression must prove recommendation rendering/actions, done-only reviewer affordance, and emergency-stop-aware Resume behavior.
+2. On heaven2, smoke the real dashboard against the controller: verify recommendations reflect current state, supported buttons call the intended server routes, emergency stop requires explicit confirmation to clear, and failed/capacity-blocked agents do not offer Deploy reviewer.
+3. Keep the now-canonical Agent Manager P0/autopilot priority lock active until its documented completion gates are proven; continue only with the next highest-impact Agent Manager gap.
+4. Re-query current branches/PRs after this integration and avoid replaying stale v8.8.23 continuity/version state from retired task branches.
+5. Successor handoff: preserve LR-045 through LR-047, the plugin-preflight limitation, exact-SHA verification discipline, and the operator/server action-contract closure.
+
+---
+
 # 2026-09-30 v8.8.23 Agent Manager P0 — CURRENT CRITICAL PATH
 
 1. Treat Agent Manager / Agent Control functionality as **P0** while `agentManagerPriority.status` is `active`.

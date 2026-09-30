@@ -1,3 +1,11 @@
+# v8.8.24 — Agent Manager operator actions
+- Surface backend-ranked Agent Manager recommendations in the dashboard instead of leaving `suggestedActions` invisible.
+- Add explicit dashboard actions for resume/clear-stop, review workflow launch, usual-swarm continuation, and worker inspection.
+- Offer **Deploy reviewer** only for completed managed agents; terminal failure/capacity/recovery states no longer expose an invalid review action.
+- Make Resume explicitly clear an active emergency stop only after operator confirmation, with state-aware button text.
+- Advance Agent Control runtime/private-plugin identity to v0.6.3.
+- Add regression assertions plus LR-047, the matching bug precedent, and generic operator-control contract guidance.
+
 # v8.8.23 — Agent Manager runtime reliability
 - Fix START SWARM so a paused perpetual run resumes and advances immediately instead of being reported as already running.
 - Reject active non-perpetual autopilot runs with HTTP 409 rather than falsely labeling them as an existing perpetual swarm.

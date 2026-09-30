@@ -809,3 +809,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commits/evidence:** runner hardening `118ca31d9a272232506930589c6e317208e9cc0a`; regression `1b2cfe7ba110d54f6c4531ac5c458272405c7daf`; live bridge verification job `chatgpt-20260930-0458-finalize-hidden-supervisors`.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-047 — operator controls must close over authoritative server actions
+
+- **Rule ID:** LR-047
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent/control dashboards, recommendation engines, safety latches, state-dependent operator actions
+- **Rule:** If the server computes an operator recommendation or rejects an action for specific lifecycle states, the UI must reflect that same contract. Do not hide actionable authoritative recommendations, advertise mutations that are invalid for the current state, or label a recovery control as successful when a safety latch remains set.
+- **Trigger / evidence:** Agent Control exposed `suggestedActions` in snapshots but did not render them; terminal/quota-blocked agents inherited a Deploy reviewer button despite server refusal; and Resume always sent `clearEmergencyStop:false`.
+- **Rationale:** A backend-correct control plane is still functionally broken when the operator cannot reach valid recovery/review actions or is offered known-invalid actions. Safety recovery must be explicit rather than silently partial.
+- **Enforcement:** Regression-pin the mapping from server action/state to UI affordance; state-dependent safety-latch clearing requires explicit operator intent/confirmation; unsupported recommendation types stay informational rather than being guessed into mutations.
+- **Regression/evidence:** implementation `d5f9059d2294dc07442367bd295f51bf197a11ca`; `tools/agent-control/test/operator-ui-cli.test.mjs`; exact-head Node/runtime verification pending.
+- **Related rules:** LR-017 independent recovery owner; LR-039 deterministic failure classification; LR-045 operator-intent-preserving polling.
+- **Supersedes:** none
+- **Superseded by:** none

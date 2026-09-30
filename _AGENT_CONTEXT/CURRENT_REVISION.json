@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.23",
+  "currentVersion": "8.8.24",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "P0 Agent Manager functionality: keep all autonomous engineering cycles on Agent Control until exact-head checks, heaven2 controller smoke, and heaven1 worker-bridge smoke pass together",
+  "nextMilestone": "run exact-head Agent Control tests and a heaven2 dashboard/operator smoke for v8.8.24, then continue only with the next highest-impact Agent Manager P0 completion gate",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.22 strict analyzer repair",
-  "status": "v8.8.23-agent-manager-runtime-reliability",
+  "immediateParentRevision": "v8.8.23 Agent Manager P0/runtime reliability",
+  "status": "v8.8.24-agent-manager-operator-actions",
   "verificationAppliesToCommit": null,
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.23 changes Agent Control orchestration/priority behavior and runtime reliability. Historical verification does not transfer; exact-head Agent Control checks plus live heaven2 controller and heaven1 worker-bridge smoke are required before the P0 lock can be marked complete.",
+  "candidateSourceCommit": "d5f9059d2294dc07442367bd295f51bf197a11ca",
+  "verificationScopeNote": "v8.8.24 adds operator-contract closure: backend suggestedActions are rendered/actionable, reviewer affordances are restricted to completed agents, and emergency-stop recovery is explicit/confirmed. The implementation was rebased onto current main; fresh exact-head Agent Control tests and heaven2 runtime/dashboard smoke are required before release-ready claims.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.24 Agent Manager operator actions: surface/action backend recommendations, gate reviewer actions to completed agents, make emergency-stop recovery explicit and confirmed, advance Agent Control/plugin identity to v0.6.3, and add LR-047 prevention coverage.",
     "2026-09-30 v8.8.23 Agent Manager P0: canonical continuity now locks autonomous implementation/expansion onto Agent Control until exact-head control-plane checks and heaven2→heaven1 runtime smoke pass; runtime/plugin identity is aligned at Agent Control 0.6.2 and stable ChatGPT sessions heartbeat by default when a real stable identity exists.",
     "2026-09-30 v8.8.23 Agent Manager priority: Agent Control v0.5.11 combines truthful one-click perpetual resume/conflict handling with full active-state Stop controls, stale-response-safe polling, preserved operator worker targeting, and LR-045 defect prevention.",
     "2026-09-30 v8.8.23 Agent Manager one-click recovery: START SWARM resumes paused perpetual work, rejects non-perpetual mode conflicts, preserves safety settings on invalid empty starts, reports resumed state truthfully, and adds regression guards; Agent Control v0.5.11.",
@@ -149,7 +150,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact v8.8.20 repository verification on the current candidate, reconcile with latest main, merge only if green, then publish immediately through the canonical private updater release and required public mirror and verify exact source/tag/assets/digests. Preserve and recursively propagate continuity and active Learned Rules.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test plus heaven2 dashboard smoke for the v8.8.24 candidate, then continue the canonical Agent Manager P0 completion gates. Preserve the operator-contract regression rules for successors.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",
