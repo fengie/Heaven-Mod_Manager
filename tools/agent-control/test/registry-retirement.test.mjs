@@ -80,6 +80,20 @@ test("federated retirement is terminal immediately and timeout-based for abandon
   ), { retire: false, reason: "heartbeat-unproven" });
 });
 
+test("fresh correlated provider presence prevents whole logical-agent retirement", () => {
+  const now = Date.parse("2026-09-30T12:00:00.000Z");
+  const decision = federatedAgentRetirementDecision({
+    state: "failed",
+    heartbeat_at: "2026-09-30T11:59:59.000Z",
+    observations: [
+      { provider: "github", source_id: "run-1", state: "failed", heartbeat_at: "2026-09-30T11:59:59.000Z" },
+      { provider: "chatgpt", source_id: "conversation-1", state: "working", heartbeat_at: "2026-09-30T11:59:58.000Z" }
+    ]
+  }, { now, disconnectedAfterMs: 300_000 });
+
+  assert.deepEqual(decision, { retire: false, reason: "correlated-live-presence" });
+});
+
 test("all correlated provider sources receive independent retirement tombstones", () => {
   const agent = {
     agent_id: "logical-1",
