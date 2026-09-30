@@ -635,3 +635,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-023 collision-safe rule IDs; LR-035 integration-ready ownership.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-037 — perpetual agents require progress supervision, ownership-safe replacement, and bounded jittered recovery
+
+- **Rule ID:** LR-037
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Multi-agent orchestration, perpetual workers, watchdogs, self-healing control planes
+- **Rule:** “Process is alive” is not sufficient health evidence for an autonomous worker. Track useful progress separately; after a bounded stale threshold, preserve takeover state, prove the old mutable owner stopped, and replace only that lane. Persist replacement intent across controller restarts. Retry transient recovery failures with capped exponential backoff plus jitter and a rolling restart-intensity budget; deterministic/non-retryable failures and provider-capacity circuits must not be hot-looped.
+- **Trigger / evidence:** Perpetual Agent Control already recovered the worker referenced by the current autopilot phase, but the generic multi-worker recovery pool selected only failed/interrupted/orphaned lanes. A Manager or Support worker could therefore remain live-but-stale while the wave stayed armed indefinitely. Perpetual retries also used capped exponential delay without jitter.
+- **Prevention:** Generic swarm recovery now recognizes stale-progress lanes, excludes the phase-owned lane to avoid racing the dedicated autopilot recovery owner, persists takeover evidence, requires controller-owned stop proof before replacement, records lineage/attempt/cooldown state, and applies deterministic jitter to bounded retry backoff. Regression tests cover stale selection, duplicate-owner exclusion, cooldown, retry budget, and jitter bounds.
+- **Research basis:** Kubernetes liveness/startup probe guidance; AWS Well-Architected REL05-BP03 retry control; Erlang/OTP supervisor restart intensity/period.
+- **Related rules:** LR-021 defect-class closure; LR-035 active task ownership; continuous recovery invariant in _AGENT_TRAINING/MULTI_AGENT_COORDINATION.md.
+- **Supersedes:** none
+- **Superseded by:** none
+
