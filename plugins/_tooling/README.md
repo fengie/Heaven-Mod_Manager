@@ -13,6 +13,15 @@ tooling.py generates a machine-readable index directly from every plugin manifes
 
 Resolver output includes match reasons, package precedence, explicit runtime-availability evidence, README location, validation command, and entrypoint. Missing runtime evidence is reported as unknown rather than guessed.
 
+## Installed plugin version pruning
+
+`prune_outdated_plugins.py` removes stale local/custom plugin install directories only when a newer strict-SemVer copy with the same manifest `name` is present. It protects canonical repo source, skips symlinked/non-SemVer/ambiguous copies, and can run dry before deletion.
+
+    python .\plugins\_tooling\prune_outdated_plugins.py
+    python .\plugins\_tooling\prune_outdated_plugins.py --apply --repo-root .
+
+`Install-PluginVersionPruner.ps1` copies the pruner into local application data, installs a hidden logon + daily Task Scheduler safety net, writes the last JSON result under `%LOCALAPPDATA%\MHW-Plugin-Maintenance\last-prune.json`, and adds a hidden Startup-folder fallback. Upgrade/install workflows must still invoke pruning immediately after the replacement version is verified.
+
 ## Plugin-gap planner
 
 The same CLI validates PLUGIN_GAP_BACKLOG.md and drafts complete schema-conforming entries while checking likely duplicates first.
