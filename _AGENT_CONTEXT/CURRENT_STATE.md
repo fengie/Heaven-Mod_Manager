@@ -1,3 +1,19 @@
+# 2026-09-30 v8.8.43 bounded context navigation — ACTIVE CANDIDATE
+
+Owner: current chat, branch `feature/bounded-context-navigation-v8.8.43-20260930`, reconciled onto canonical v8.8.42 main `7e8e045cc7c89a8b7ff318c28b98d08b76443522`. PR #515 owns only Agent Control indexed-context navigation. v8.8.42 CI-evidence work is preserved; no earlier verification is inherited by this candidate.
+
+1. Require exact-head Agent Control PR Gate, Workflow Feature PR Gate and Security Supply Chain Gate on the finalized candidate; queued, stale, cancelled or historical success is not acceptance.
+2. Verify literal `--search` and Markdown `--heading` lookup remain SHA-256-bound, indexed-document-only, line-addressable, case-insensitive and bounded, with explicit result-set/snippet truncation.
+3. Refresh canonical main/PRs immediately before integration. If main moved, reconcile without discarding newer canonical work and rerun affected exact-head checks.
+4. Integrate only when required checks are green and the repository-required release/publication path is available. This runtime has GitHub repo/CI write access but no Heaven/Agent Control/local release connector or GitHub release-creation primitive; do not knowingly create an unreleasable canonical version.
+5. After integration, verify remote main and immediately complete immutable publication/runtime evidence through an authorized release-capable path; supersede this candidate note with exact closure evidence and delete the temporary branch when safe.
+
+Improvement opportunities: measure navigation adoption/latency before adding any cache; if navigation grows later, prefer bounded structured selectors instead of fuzzy/unbounded search. Preserve hash/freshness checks and the indexed whitelist. P0 Agent Manager remains active; Bridge auth/operator-installation gaps remain separate live work.
+
+PLUGIN-PREFLIGHT: current task, live repository rules, plugin README/backlog and manager routing were re-read. This ChatGPT runtime exposes the authenticated GitHub connector for repo/PR/CI work but no Heaven Local Bridge, Agent Control, Remote Desktop Commander or local-machine execution connector. Existing `tools/agent-control/` is the natural owner; no duplicate plugin/gap was created. GitHub connector/API + repository CI is the selected authorized fallback. No credential, auth, quota, Work-mode or local-control bypass is used.
+
+---
+
 # 2026-09-30 v8.8.42 current CI evidence — active continuation
 
 Owner: current chat, branch `codex/ci-evidence-scaling`, base `c0637afae80adad95f0f3f291534d5f0da46890b`. Boundary: existing Heaven Workflows release-evidence adapter/verification and required version/training/continuity. v8.8.41 closure is integrated; its proof does not verify this candidate.
