@@ -1,12 +1,18 @@
 {
   "schema": "heaven-plugin/manifest/v1",
   "name": "heaven-workflows",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "entrypoint": "heaven_workflows.service:HeavenWorkflowPlugin",
   "capabilities": [
     "workflow.repo_snapshot",
     "workflow.verify_repo",
-    "workflow.parallel_invoke"
+    "workflow.parallel_invoke",
+    "workflow.release.plan",
+    "workflow.release.verify_gates",
+    "workflow.release.verify_artifacts",
+    "workflow.release.authorize_publish",
+    "workflow.release.reconcile_existing",
+    "workflow.release.plan_cancellations"
   ],
   "depends_on": {
     "heaven-control-plane": ">=0.4.0"
@@ -14,6 +20,10 @@
   "security": {
     "raw_execution_from_parallel_scheduler": false,
     "max_parallel_tasks": 16,
-    "max_workers": 8
+    "max_workers": 8,
+    "release_exact_commit_binding": true,
+    "publish_requires_explicit_plan_confirmation": true,
+    "artifact_digest_and_identity_verification": true,
+    "superseded_run_cancellation_is_plan_only": true
   }
 }
