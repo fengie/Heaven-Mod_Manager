@@ -1,5 +1,3 @@
-> **Planning authority notice:** current feature status, priority, ownership, and progress are centralized in [`_AGENT_CONTEXT/PROJECT_PLAN.md`](../../_AGENT_CONTEXT/PROJECT_PLAN.md). This plugin plan is design/history detail only for current-status purposes.
-
 # Local RDC Replacement Plan
 
 ## Trigger
