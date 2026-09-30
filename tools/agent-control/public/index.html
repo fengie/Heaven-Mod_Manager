@@ -110,7 +110,22 @@
       transition:opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
     }
     .stat span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
-    .agent-list,.queue-list,.lease-list,.branch-list { display:grid; gap:9px; }
+    .agent-list,.queue-list,.lease-list,.branch-list,.notification-list { display:grid; gap:9px; }
+    .notification {
+      border:1px solid var(--line); border-radius:13px; padding:12px 13px; background:rgba(10,13,18,.55);
+    }
+    .notification.warning { border-color:#66572a; }
+    .notification.error,.notification.critical { border-color:#6a3430; }
+    .notification-title { display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:800; }
+    .notification-message { margin-top:7px; white-space:pre-wrap; color:#d5dde7; }
+    .inspector {
+      border:1px solid var(--line); border-radius:13px; padding:14px; background:rgba(10,13,18,.62);
+    }
+    .inspector-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 14px; }
+    .inspector-field { min-width:0; }
+    .inspector-field strong { display:block; color:var(--muted); font-size:10px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:3px; }
+    .inspector-field span { overflow-wrap:anywhere; }
+    .inspector-message { margin-top:12px; white-space:pre-wrap; overflow-wrap:anywhere; }
     .agent,.queue-item,.lease,.worker,.branch-item {
       border:1px solid var(--line); border-radius:13px; padding:13px; background:rgba(10,13,18,.55);
       transition:border-color var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
@@ -381,6 +396,24 @@
           <div id="workers"></div>
         </section>
 
+        <section class="card section" id="notificationSection">
+          <div class="section-title">
+            <h2>Notifications</h2>
+            <span class="pill" id="notificationSummary">0 active</span>
+          </div>
+          <div class="notification-list" id="notifications"></div>
+        </section>
+
+        <section class="card section" id="inspectorSection">
+          <div class="section-title">
+            <h2>Agent inspector</h2>
+            <span class="pill" id="inspectorSummary">none selected</span>
+          </div>
+          <div class="inspector" id="inspector">
+            <div class="empty">Select a managed or federated agent, or use an actionable notification.</div>
+          </div>
+        </section>
+
         <section class="card section" id="managedAgentsSection">
           <div class="section-title">
             <h2>Managed agents</h2>
@@ -430,7 +463,7 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0 };
+    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0, inspectorSelection:null };
     const stoppableManagedStatuses = new Set(["reserved","starting","running","waiting","blocked","stale","stopping"]);
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
@@ -495,6 +528,128 @@
         "work-unverified": "WORK STATE UNVERIFIED"
       };
       return labels[status] || status || "";
+    }
+
+    function inspectorSelectionFromHash() {
+      const match = /^#inspect=(managed|federated):(.+)$/.exec(String(window.location.hash || ""));
+      if (!match) return null;
+      try { return { kind:match[1], id:decodeURIComponent(match[2]) }; }
+      catch { return null; }
+    }
+
+    function persistInspectorSelection(selection) {
+      const suffix = selection ? `#inspect=${selection.kind}:${encodeURIComponent(selection.id)}` : "";
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${suffix}`);
+    }
+
+    function setInspectorSelection(kind, rawId, { scroll=true } = {}) {
+      const id = String(rawId || "");
+      if (!["managed","federated"].includes(kind) || !id) return;
+      state.inspectorSelection = { kind, id };
+      persistInspectorSelection(state.inspectorSelection);
+      if (state.snapshot) renderInspector(state.snapshot);
+      if (scroll) $("inspectorSection")?.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function inspectorActionButtons(selection, agent, snapshot) {
+      if (selection.kind === "managed") {
+        const id = encodeURIComponent(agent.id);
+        const buttons = [`<button onclick="showLog('${id}')">View log</button>`];
+        if (stoppableManagedStatuses.has(agent.status)) buttons.push(`<button class="danger" onclick="stopAgent('${id}')">Stop</button>`);
+        if (agent.status === "done") buttons.push(`<button class="good" onclick="reviewAgent('${id}')">Deploy reviewer</button>`);
+        if (agent.branchName) buttons.push(`<button onclick="copyText(decodeURIComponent('${encodeURIComponent(String(agent.branchName))}'))">Copy branch</button>`);
+        return buttons.join("");
+      }
+      const managedId = String(agent.source_metadata?.managed_agent_id || "");
+      if (managedId && (snapshot.agents || []).some(item => item.id === managedId)) {
+        return `<button onclick="setInspectorSelection('managed', decodeURIComponent('${encodeURIComponent(managedId)}'))">Open linked managed worker</button>`;
+      }
+      return "";
+    }
+
+    function renderInspector(snapshot) {
+      const selection = state.inspectorSelection;
+      if (!selection) {
+        $("inspectorSummary").textContent = "none selected";
+        $("inspector").innerHTML = '<div class="empty">Select a managed or federated agent, or use an actionable notification.</div>';
+        return;
+      }
+
+      const agent = selection.kind === "managed"
+        ? (snapshot.agents || []).find(item => item.id === selection.id)
+        : (snapshot.federation?.agents || []).find(item => item.agent_id === selection.id);
+
+      if (!agent) {
+        $("inspectorSummary").textContent = `${selection.kind} · retired`;
+        $("inspector").innerHTML = `<div class="empty"><strong>${escapeHtml(selection.id)}</strong> is no longer present in the live registry. It may have completed or been retired since selection.</div>`;
+        return;
+      }
+
+      const managed = selection.kind === "managed";
+      const provider = managed ? (agent.executionProvider || agent.runtimeProvider || agent.provider || "controller") : (agent.provider || (agent.providers || []).join(", ") || "—");
+      const status = managed ? agent.status : (agent.effective_state || agent.state || "unknown");
+      const freshness = managed ? (agent.recoveryStatus || "current") : (agent.freshness || "unknown");
+      const task = agent.task || "—";
+      const boundary = managed ? agent.boundary : (agent.source_metadata?.boundary || "—");
+      const lease = managed ? (agent.leaseId || agent.lease_id || "—") : (agent.source_metadata?.lease_id || "—");
+      const branch = managed ? agent.branchName : (agent.branch || "—");
+      const pr = managed ? (agent.prNumber || agent.pr_number || "—") : (agent.pr_number || "—");
+      const heartbeat = managed ? (agent.lastHeartbeatAt || agent.heartbeatAt || agent.startedAt || "—") : (agent.heartbeat_at || "—");
+      const lastAction = managed ? (agent.lastActionSummary || agent.lastMessage || "—") : (agent.last_action_summary || "—");
+      const lastError = managed ? (agent.lastError || agent.recoveryLastError || "—") : (agent.last_error || agent.recovery_last_error || "—");
+      const replacement = managed ? (agent.replacementAgentId || "—") : (agent.replacement_agent_id || "—");
+      const retryOf = managed ? (agent.retryOfAgentId || agent.retryOfFederatedAgentId || "—") : (agent.retry_of_agent_id || agent.source_metadata?.retry_of_agent_id || "—");
+      const actions = inspectorActionButtons(selection, agent, snapshot);
+
+      $("inspectorSummary").textContent = `${selection.kind} · ${status}`;
+      $("inspector").innerHTML = `
+        <div class="inspector-grid">
+          <div class="inspector-field"><strong>Agent</strong><span>${escapeHtml(managed ? agent.id : agent.agent_id)}</span></div>
+          <div class="inspector-field"><strong>Provider / machine</strong><span>${escapeHtml(provider)} · ${escapeHtml(machineLabel(agent.machine))}</span></div>
+          <div class="inspector-field"><strong>State / freshness</strong><span>${escapeHtml(status)} · ${escapeHtml(freshness)}</span></div>
+          <div class="inspector-field"><strong>Heartbeat / start</strong><span>${escapeHtml(heartbeat)}</span></div>
+          <div class="inspector-field"><strong>Boundary / lease</strong><span>${escapeHtml(boundary)} · ${escapeHtml(lease)}</span></div>
+          <div class="inspector-field"><strong>Branch / PR</strong><span>${escapeHtml(branch)} · PR ${escapeHtml(pr)}</span></div>
+          <div class="inspector-field"><strong>Replacement</strong><span>${escapeHtml(replacement)}</span></div>
+          <div class="inspector-field"><strong>Retry lineage</strong><span>${escapeHtml(retryOf)}</span></div>
+        </div>
+        <div class="inspector-message"><strong>Task</strong>\n${escapeHtml(task)}</div>
+        <div class="inspector-message"><strong>Last action / message</strong>\n${escapeHtml(lastAction)}</div>
+        <div class="inspector-message"><strong>Last error</strong>\n${escapeHtml(lastError)}</div>
+        <div class="actions">${actions || '<span class="meta">No direct controller action is valid for this record.</span>'}</div>
+      `;
+    }
+
+    function notificationActionButton(item, index) {
+      const type = item?.action?.type;
+      if (type === "inspect-agent" || type === "inspect-federation") {
+        return `<button class="notification-action" onclick="runNotificationAction(${index})">Inspect</button>`;
+      }
+      return "";
+    }
+
+    function renderNotifications(snapshot) {
+      const items = (snapshot.notifications || []).filter(item => !item.dismissedAt);
+      $("notificationSummary").textContent = `${items.length} active`;
+      $("notifications").innerHTML = items.length ? items.slice(0,20).map((item, index) => `
+        <div class="notification ${escapeHtml(item.severity || "info")}">
+          <div class="notification-title">
+            <span>${escapeHtml(item.title || "Agent Control notification")}</span>
+            <span class="meta">${fmt(item.createdAt)}</span>
+          </div>
+          <div class="notification-message">${escapeHtml(item.message || "")}</div>
+          <div class="actions">${notificationActionButton(item, index)}</div>
+        </div>
+      `).join("") : '<div class="empty">No active Agent Control notifications.</div>';
+    }
+
+    function runNotificationAction(index) {
+      const items = (state.snapshot?.notifications || []).filter(item => !item.dismissedAt);
+      const action = items[index]?.action;
+      if (!action?.agentId) return;
+      if (action.type === "inspect-agent") return setInspectorSelection("managed", action.agentId);
+      if (action.type === "inspect-federation") return setInspectorSelection("federated", action.agentId);
+      toast("This notification action is not supported by the dashboard.");
     }
 
     function recommendationActionButton(item, index) {
@@ -573,45 +728,22 @@
       return Boolean(event?.target?.closest?.("button,a,input,select,textarea,summary"));
     }
 
-    async function inspectManagedAgentCard(event) {
+    function inspectManagedAgentCard(event) {
       if (eventTargetsControl(event)) return;
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
       if (event.type === "keydown") event.preventDefault();
-      const id = event.currentTarget?.dataset?.agentId || "";
-      if (!id) return;
-      await showLog(id);
+      const encodedId = event.currentTarget?.dataset?.agentId || "";
+      if (!encodedId) return;
+      setInspectorSelection("managed", decodeURIComponent(encodedId));
     }
 
     function inspectFederatedAgentCard(event) {
       if (eventTargetsControl(event)) return;
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
       if (event.type === "keydown") event.preventDefault();
-
       const encodedId = event.currentTarget?.dataset?.federatedId || "";
-      const rawId = decodeURIComponent(encodedId);
-      const agent = (state.snapshot?.federation?.agents || []).find(item => item.agent_id === rawId);
-      if (!agent) return toast("Federated agent is no longer in the live registry.");
-
-      const managedId = String(agent.source_metadata?.managed_agent_id || "");
-      if (managedId && (state.snapshot?.agents || []).some(item => item.id === managedId)) {
-        const encodedManagedId = encodeURIComponent(managedId);
-        const card = document.querySelector(`.managed-agent-card[data-agent-id="${CSS.escape(encodedManagedId)}"]`);
-        card?.scrollIntoView({ behavior:"smooth", block:"center" });
-        if (card) void showLog(encodedManagedId);
-        return;
-      }
-
-      const box = document.getElementById(`federated-log-${encodedId}`);
-      if (!box) return;
-      box.textContent = [
-        `Agent: ${agent.agent_id || "—"}`,
-        `Provider: ${agent.provider || (agent.providers || []).join(", ") || "—"}`,
-        `State: ${agent.effective_state || agent.state || "—"} · ${agent.freshness || "unknown"}`,
-        `Heartbeat: ${agent.heartbeat_at || "—"}`,
-        `Recovery: ${recoveryLabel(agent.recovery_status) || "none"}`,
-        `Last action: ${agent.last_action_summary || "—"}`
-      ].join("\n");
-      box.classList.toggle("show");
+      if (!encodedId) return;
+      setInspectorSelection("federated", decodeURIComponent(encodedId));
     }
 
     function bindManagedAgentCardInteractions() {
@@ -838,9 +970,11 @@
 
       renderControl(snapshot);
       renderRecommendations(snapshot);
+      renderNotifications(snapshot);
       renderWorkers(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
+      renderInspector(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);
@@ -1119,6 +1253,12 @@
     $("controlEmergency").addEventListener("click", () => controlAction("emergency-stop"));
     $("routingApply").addEventListener("click", applyRouting);
     $("routingClear").addEventListener("click", clearRouting);
+
+    state.inspectorSelection = inspectorSelectionFromHash();
+    window.addEventListener("hashchange", () => {
+      state.inspectorSelection = inspectorSelectionFromHash();
+      if (state.snapshot) renderInspector(state.snapshot);
+    });
 
     refresh();
     setInterval(() => refresh(false), 4000);
