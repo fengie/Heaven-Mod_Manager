@@ -169,6 +169,50 @@ test("corrupt primary and backup state fail closed into read-only degraded mode"
   assert.equal(response.body.settings.dispatchPaused, true);
 });
 
+test("startup retires exhausted registry debris while preserving retry lineage and task evidence", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-retirement-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const dataDir = path.join(root, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const state = {
+    version: 4,
+    controller: { sessionId: "prior-session", hostname: "test" },
+    settings: { noWorkRecovery: { enabled: true, maxRetries: 2 }, swarmTailRecovery: { enabled: true, maxAttemptsPerRoot: 4 } },
+    agents: [
+      { id: "retry-root", role: "support", taskId: "task-root", task: "Investigate", status: "failed", failureClass: "no-work", recoveryStatus: "retry-dispatched", retryCount: 1, rootAgentId: "retry-lineage", pid: 99999999, startedAt: new Date().toISOString() },
+      { id: "retry-worker", role: "support", taskId: "task-root", task: "Investigate retry", status: "failed", failureClass: "no-work", recoveryStatus: "retry-dispatched", retryCount: 1, rootAgentId: "retry-lineage", pid: 99999996, startedAt: new Date().toISOString() },
+      { id: "exhausted-root", role: "support", taskId: "task-exhausted", task: "Investigate", status: "failed", failureClass: "no-work", recoveryStatus: "retry-exhausted", retryCount: 2, pid: 99999998, leaseId: "lease-exhausted", startedAt: new Date().toISOString() },
+      { id: "evidence-root", role: "support", taskId: "task-evidence", task: "Investigate", status: "failed", failureClass: "provider-capacity", result: "partial output preserved", pid: 99999997, leaseId: "lease-evidence", startedAt: new Date().toISOString() }
+    ],
+    tasks: [
+      { id: "task-root", objective: "Investigate", status: "failed", agentId: "retry-root" },
+      { id: "task-exhausted", objective: "Investigate", status: "failed", agentId: "exhausted-root" },
+      { id: "task-evidence", objective: "Investigate", status: "failed", agentId: "evidence-root", result: "partial output preserved" }
+    ],
+    leases: [
+      { id: "lease-exhausted", ownerAgentId: "exhausted-root", taskId: "task-exhausted", status: "active" },
+      { id: "lease-evidence", ownerAgentId: "evidence-root", taskId: "task-evidence", status: "active" }
+    ],
+    events: [{ id: "event-evidence", type: "agent.failed", agentId: "evidence-root", message: "partial output preserved" }],
+    notifications: [], improvements: [], promptHistory: [], autopilot: {}, federation: {}
+  };
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), JSON.stringify(state), "utf8");
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  const response = await waitForSnapshot(port);
+  assert.equal(response.status, 200);
+  const agents = response.body.agents;
+  assert.ok(agents.some(agent => agent.id === "retry-root"), "retry-dispatched lineage must remain available to enforce the retry ceiling");
+  assert.ok(agents.some(agent => agent.id === "retry-worker"), "retry-dispatched workers must remain until their root exhausts the retry budget");
+  assert.ok(!agents.some(agent => agent.id === "exhausted-root"), "exhausted dead record should leave the live registry");
+  assert.ok(agents.some(agent => agent.id === "evidence-root"), "meaningful failed work should remain inspectable");
+  assert.ok(response.body.tasks.some(task => task.id === "task-exhausted"), "retirement must retain task history");
+  assert.ok(response.body.tasks.some(task => task.id === "task-evidence" && task.result === "partial output preserved"));
+  assert.ok(response.body.recentEvents.some(event => event.id === "event-evidence"));
+  assert.ok(!response.body.leases.some(lease => lease.ownerAgentId === "exhausted-root" && lease.status === "active"), "retirement must release dead owner's active lease");
+});
+
 test("backup recovery preserves uncertain work and refuses to call it complete", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-backup-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

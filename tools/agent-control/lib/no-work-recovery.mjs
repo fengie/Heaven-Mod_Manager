@@ -212,7 +212,11 @@ export function shouldRetireFromLiveRegistry(agent) {
   if (["reserved", "starting", "running", "waiting", "blocked", "stale", "stopping"].includes(status)) return false;
   if (hasSubstantiveWorkEvidence(agent)) return false;
 
-  if (["retry-dispatched", "retry-exhausted", "retry-disabled"].includes(recoveryStatus)) return true;
+  // Retry lineage is also attempt-count state. Retiring dispatched retries can
+  // make later recovery batches undercount attempts and reset the retry ceiling;
+  // retain every retry record until the root is exhausted or retries are disabled.
+  if (["retry-dispatched", "retry-pending", "retrying"].includes(recoveryStatus)) return false;
+  if (["retry-exhausted", "retry-disabled"].includes(recoveryStatus)) return true;
   if (status === "capacity-blocked" || recoveryStatus === "provider-capacity") return true;
   if (status === "failed" && hasDeterministicRuntimeFailure(agent)) return true;
 

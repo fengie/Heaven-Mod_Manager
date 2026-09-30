@@ -511,6 +511,16 @@ function readFailureLog(limit = 80) {
 function retireManagedRegistryEntry(state, agent, reason = "terminal-registry-retirement") {
   if (!agent?.id || coreIsActiveStatus(agent.status)) return false;
   const id = String(agent.id);
+  const child = agent.ownerSessionId === SESSION_ID ? children.get(id) : null;
+  const ownsLiveChild = Boolean(
+    child
+    && child.pid === agent.pid
+    && child.exitCode === null
+    && child.signalCode === null
+    && isPidAlive(agent.pid)
+  );
+  if (ownsLiveChild) return false;
+
   const task = state.tasks.find(item => item.id === agent.taskId) || null;
   releaseLeaseForAgent(state, agent, reason);
 

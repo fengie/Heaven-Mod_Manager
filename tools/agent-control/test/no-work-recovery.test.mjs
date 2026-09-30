@@ -154,6 +154,12 @@ test("terminal clean failures retire from the live registry while recoverable wo
   assert.equal(shouldRetireFromLiveRegistry({
     status: "failed",
     failureClass: "no-work",
+    recoveryStatus: "retry-dispatched"
+  }), false);
+
+  assert.equal(shouldRetireFromLiveRegistry({
+    status: "failed",
+    failureClass: "no-work",
     recoveryStatus: "retry-pending"
   }), false);
 
@@ -457,4 +463,12 @@ test("retry-exhausted no-work retirement selects the whole dead retry lineage on
     retryExhaustedRetirementCandidateIds(agents),
     ["root", "retry-1", "retry-2"]
   );
+});
+
+test("live registry pruning retains retry lineage until exhausted or disabled", () => {
+  for (const recoveryStatus of ["retry-dispatched", "retry-pending", "retrying"]) {
+    assert.equal(shouldRetireFromLiveRegistry({ status: "failed", recoveryStatus }), false, recoveryStatus);
+  }
+  assert.equal(shouldRetireFromLiveRegistry({ status: "failed", recoveryStatus: "retry-exhausted" }), true);
+  assert.equal(shouldRetireFromLiveRegistry({ status: "failed", recoveryStatus: "retry-disabled" }), true);
 });

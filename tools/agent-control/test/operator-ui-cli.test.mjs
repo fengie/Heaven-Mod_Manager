@@ -42,6 +42,13 @@ test("federation snapshot separates live lifecycle and freshness counts", () => 
 
 test("server retires dead retry-exhausted records instead of leaving stale clickable registry cards", () => {
   const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
+  const retirementStart = server.indexOf("function retireManagedRegistryEntry");
+  const retirementEnd = server.indexOf("function retireFederatedRegistryEntry", retirementStart);
+  assert.ok(retirementStart >= 0 && retirementEnd > retirementStart);
+  const retirement = server.slice(retirementStart, retirementEnd);
+  assert.match(retirement, /child\.pid === agent\.pid/);
+  assert.match(retirement, /isPidAlive\(agent\.pid\)/);
+  assert.match(retirement, /if \(ownsLiveChild\) return false/);
   assert.match(server, /function pruneTerminalRegistryEntries\(state\)/);
   assert.match(server, /if \(pruneTerminalRegistryEntries\(state\)\) changed = true;/);
   assert.match(server, /retireManagedRegistryEntry\(state, source, "no-work-retry-exhausted"\)/);
