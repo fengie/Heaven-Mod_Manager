@@ -47,7 +47,10 @@ public sealed class GameBananaCatalogNormalizerTests
         Assert.Equal(
             "effecient_seliana_20-6020-2-0-1643281679.zip",
             file.FileName);
-        Assert.Equal(CatalogFileCategory.Main, file.Category);\n        Assert.Equal(11695, file.SizeBytes);\n        Assert.Equal("File passed preliminary analysis", file.Description);\n        Assert.Null(file.ProviderMetadata);
+        Assert.Equal(CatalogFileCategory.Main, file.Category);
+        Assert.Equal(11695, file.SizeBytes);
+        Assert.Equal("File passed preliminary analysis", file.Description);
+        Assert.Null(file.ProviderMetadata);
     }
 
     [Fact]
