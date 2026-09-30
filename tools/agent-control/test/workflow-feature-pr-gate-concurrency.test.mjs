@@ -8,12 +8,15 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '../../..');
 const workflowPath = path.join(repoRoot, '.github', 'workflows', 'workflow-feature-pr-gate.yml');
 
-test('workflow feature PR gate collapses superseded work across PRs', () => {
+test('workflow feature PR gate cancels superseded work only within the same PR or ref', () => {
   const workflow = fs.readFileSync(workflowPath, 'utf8');
 
   assert.match(
     workflow,
-    /concurrency:\s*\r?\n(?:\s*#.*\r?\n)*\s*group:\s*workflow-feature-pr-gate\s*\r?\n\s*cancel-in-progress:\s*true/
+    /concurrency:\s*\r?\n(?:\s*#.*\r?\n)*\s*group:\s*workflow-feature-pr-gate-\$\{\{\s*github\.event\.pull_request\.number\s*\|\|\s*github\.ref\s*\}\}\s*\r?\n\s*cancel-in-progress:\s*true/
   );
-  assert.doesNotMatch(workflow, /workflow-feature-pr-gate-\$\{\{\s*github\.ref\s*\}\}/);
+  assert.doesNotMatch(
+    workflow,
+    /group:\s*workflow-feature-pr-gate\s*(?:\r?\n|$)/
+  );
 });
