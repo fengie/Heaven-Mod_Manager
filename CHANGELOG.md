@@ -1,3 +1,12 @@
+# v8.8.36 — Agent Manager notification + stable inspector closure
+- Render backend Agent Control notifications with severity, message, timestamp, and supported inspection actions.
+- Route only `inspect-agent` and `inspect-federation` through shared stable-ID inspector helpers; unsupported backend action types remain informational.
+- Add a persistent managed/federated Inspector surface with provider/machine, lifecycle/recovery, task/boundary/lease, branch/PR, heartbeat/action, error/message, lineage, and valid managed actions.
+- Preserve the selected inspector across normal refresh; missing/retired targets degrade to an explicit persistent state, including async managed-log retirement races.
+- Replace fake keyboard semantics on generic agent articles with explicit Inspect buttons while keeping body-click convenience and nested-control isolation.
+- Remove dynamic agent-ID inline handlers from managed/federated action controls and add focused executable UI regressions.
+- Preserve v8.8.35 runtime freshness and v8.8.34 durable stop proof; advance Agent Control/root/nested plugin identity to v0.6.14 and product version to v8.8.36.
+
 # v8.8.35 — Agent Control canonical runtime freshness
 - Add a checkout-independent runtime sync guard used before startup restore, watchdog restart, and manual launch.
 - Fast-forward only clean local `main` to canonical `origin/main`; dirty, detached, non-main, ahead, and diverged checkouts fail closed without reset/clean.
