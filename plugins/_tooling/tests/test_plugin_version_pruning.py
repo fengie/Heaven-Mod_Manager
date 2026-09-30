@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from prune_outdated_plugins import SemVer, apply_prune, plan_prune
+from prune_outdated_plugins import SemVer, apply_prune, main, plan_prune
 
 
 def write_plugin(directory: Path, name: str, version: str, *, manifest: str = "plugin.json") -> None:
@@ -71,6 +71,23 @@ class PluginVersionPruningTests(unittest.TestCase):
 
             plan = plan_prune([root])
             self.assertEqual(["1.0.0"], [item["version"] for item in plan["remove"]])
+
+    def test_cli_log_is_valid_json_not_literal_escape_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "plugins"
+            log = Path(td) / "last-prune.json"
+            write_plugin(root / "tool", "tool", "1.0.0")
+
+            self.assertEqual(0, main(["--root", str(root), "--log", str(log)]))
+            parsed = json.loads(log.read_text(encoding="utf-8"))
+            self.assertEqual(False, parsed["apply"])
+            self.assertTrue(log.read_text(encoding="utf-8").endswith("\n"))
+            self.assertFalse(log.read_text(encoding="utf-8").endswith("\\n"))
+
+    def test_startup_installer_emits_valid_wscript_createobject(self) -> None:
+        installer = (ROOT / "Install-PluginVersionPruner.ps1").read_text(encoding="utf-8")
+        self.assertIn('CreateObject("WScript.Shell")', installer)
+        self.assertNotIn('CreateObject(""WScript.Shell"")', installer)
 
     def test_non_semver_versions_are_never_deleted(self) -> None:
         with tempfile.TemporaryDirectory() as td:
