@@ -20,7 +20,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: startup-performance-${{ github.ref }}
@@ -37,6 +36,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
           path: candidate
 
       - name: Check out current main baseline
@@ -44,6 +44,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+          persist-credentials: false
           path: baseline
 
       - name: Verify pinned .NET SDK
@@ -144,32 +145,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git -C .\\candidate diff --check origin/main...HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Comment comparison on the open performance PR
-        if: success()
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        with:
-          script: |
-            const fs = require('fs');
-            const branch = context.ref.replace('refs/heads/', '');
-            const { data: prs } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: `${context.repo.owner}:${branch}`,
-              state: 'open'
-            });
-            if (!prs.length) {
-              core.notice(`No open PR found for branch ${branch}; skipping comment.`);
-              return;
-            }
-            const comparison = fs.readFileSync('startup-performance-comparison.md', 'utf8');
-            const body = comparison + `\n\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prs[0].number,
-              body
-            });
 
       - name: Preserve startup benchmark evidence
         if: always()
