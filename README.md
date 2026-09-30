@@ -1,4 +1,11 @@
-# v8.8.27 Universal Mod Manager
+# v8.8.28 Universal Mod Manager
+
+## v8.8.28 — Agent Control Heaven relay execution repair
+
+Agent Control now uses the same documented Heaven relay checkout resolver for **real job submission/result waiting** that it already uses for provider health. With `~/HeavenBridgeRepo` installed, heaven2 no longer needs a separately injected `AGENT_CONTROL_HEAVEN_RELAY_DIR` just to dispatch a worker to heaven1.
+
+This closes the confirmed “click creates a worker, then it immediately dies” chain: observed main and manager workers both exited code 1 because execution bypassed relay discovery and threw on the absent environment variable. The v8.8.26 retry-exhausted retirement remains intact, so terminal failed workers are terminated/cleaned where ownership is provable and removed from managed/federated live registries instead of accumulating as **failed · RETRY EXHAUSTED** cards. The v8.8.27 agent-card inspection work is preserved unchanged. Agent Control advances to **v0.6.7** with positive/override/fail-closed relay-resolution regression coverage.
+
 
 ## v8.8.27 — Agent Manager card inspection
 

@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
+
+1. Run exact-head `cd tools/agent-control && npm run check && npm test`; repair any source/test/version failure before integration.
+2. Restart/reload Agent Control on **heaven2** from the exact candidate.
+3. With `%USERPROFILE%\HeavenBridgeRepo` present and no explicit `AGENT_CONTROL_HEAVEN_RELAY_DIR`, dispatch one heaven-targeted worker and prove bridge submit/result waiting passes the former exit-code-1 crash point.
+4. Re-smoke v8.8.26 **failed · RETRY EXHAUSTED** retirement: provably owned dead work is terminated/cleaned and managed/federated live entries disappear, while uncertain PID ownership or dirty/diverged work stays preserved.
+5. Confirm v8.8.27 card inspection still works after reconciliation.
+6. Merge only after current-main sync and exact-head checks; confirm remote main, then delete the temporary branch.
+
+---
+
 # 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.27 candidate; the emitted dashboard script must parse and all Agent Control tests must pass.

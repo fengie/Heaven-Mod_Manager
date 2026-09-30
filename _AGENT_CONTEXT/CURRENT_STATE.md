@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.28 Agent Control Heaven relay execution repair — CURRENT
+
+The remaining worker-click failure is confirmed inside Heaven Bridge execution, not dashboard dispatch. Health already discovered `~/HeavenBridgeRepo`, while submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR`, causing observed main and manager workers to exit code 1.
+
+v8.8.28 unifies execution resolution while preserving explicit relay overrides, bridge trust validation, v8.8.26 retry-exhausted retirement, and v8.8.27 agent-card inspection. Exact-head checks plus a restarted heaven2→heaven1 live dispatch smoke remain required.
+
+---
+
 # 2026-09-30 v8.8.27 Agent Manager card inspection — CURRENT
 
 Canonical v8.8.26 already contains the retry-exhausted retirement lifecycle: safe ownership-proven process cleanup, managed/federated live-registry removal, durable retirement tombstones, terminal replay suppression, and live-heartbeat reactivation. The remaining operator defect was independent: the dashboard rendered agent cards as visual containers with no card-level click or keyboard inspection path, so clicking a bot/card body appeared broken unless the operator happened to use a nested button.

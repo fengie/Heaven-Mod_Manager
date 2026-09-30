@@ -163,6 +163,12 @@ export function resolveHeavenRelayDir({
   return existsSync(documentedDefault) ? documentedDefault : "";
 }
 
+export function resolveExecutionRelayDir(relayDir = null, options = {}) {
+  const explicit = clean(relayDir);
+  if (explicit) return explicit;
+  return resolveHeavenRelayDir(options);
+}
+
 function sanitizeId(value, max = 96) {
   const normalized = clean(value)
     .toLowerCase()
@@ -615,10 +621,11 @@ export function bridgeResultSucceeded(result) {
 }
 
 export async function submitHeavenBridgeJob(job, {
-  relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  relayDir = null,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  relayDir = resolveExecutionRelayDir(relayDir);
+  if (!relayDir) throw new Error("Heaven Bridge relay checkout could not be resolved; configure AGENT_CONTROL_HEAVEN_RELAY_DIR or install ~/HeavenBridgeRepo.");
   const signingKey = resolveBridgeSigningKey();
   if (clean(signingKey)) {
     job = signBridgeJob(job, signingKey);
@@ -670,12 +677,13 @@ export async function waitForHeavenBridgeResult({
   id,
   action,
   targetHost = HEAVEN_BRIDGE_HOST,
-  relayDir = process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR,
+  relayDir = null,
   timeoutMs = DEFAULT_RESULT_TIMEOUT_MS,
   pollMs = 1_500,
   expectedRepository = process.env.AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY || DEFAULT_RELAY_REPOSITORY
 } = {}) {
-  if (!relayDir) throw new Error("AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.");
+  relayDir = resolveExecutionRelayDir(relayDir);
+  if (!relayDir) throw new Error("Heaven Bridge relay checkout could not be resolved; configure AGENT_CONTROL_HEAVEN_RELAY_DIR or install ~/HeavenBridgeRepo.");
   const deadline = Date.now() + Math.max(1_000, Number(timeoutMs) || DEFAULT_RESULT_TIMEOUT_MS);
   while (Date.now() < deadline) {
     const result = await withRelayLock(relayDir, async () => {

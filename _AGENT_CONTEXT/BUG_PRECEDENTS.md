@@ -529,3 +529,14 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Added CLI log round-trip JSON coverage plus installer-source assertions for valid WScript quoting; live reinstall will run the Startup fallback with `cscript.exe` and reparse the generated audit JSON.
 - **Sibling/adjacent cases checked:** Task action uses `pythonw.exe` with a dedicated `--log`; scheduled-task registration and Startup fallback point at the same runtime/pruner arguments.
 - **Verification/evidence:** Failing install jobs `chatgpt-20260930-install-plugin-pruner-heaven2-a1` and `chatgpt-20260930-install-plugin-pruner-heaven-a1`; fixes `9d2a78266ddb89d0489d9eada2108546ccdbeedb` and `d0716ff3c2b477d766a3685dcad597c9670d6491`; exact heaven2 verification `chatgpt-20260930-verify-plugin-pruner-runtime-fix-a1` passed the full plugin gate, JSON consumer round-trip, and deletion smoke.
+
+
+## 2026-09-30 — Agent Control health found Heaven relay but execution bypassed the resolver
+- **Symptom:** Clicking/dispatching created managed main/manager workers, but they exited almost immediately with authoritative exit code 1 and then entered recovery.
+- **Root cause:** `resolveHeavenRelayDir()` already supported the documented per-user `~/HeavenBridgeRepo` fallback and health inspection used it. `submitHeavenBridgeJob()` and `waitForHeavenBridgeResult()` instead defaulted directly to `process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR` and threw when that environment variable was absent.
+- **Authoritative evidence:** `main-20260930042701-ldewu` and `manager-20260930042717-kmbi6` both recorded `Error: AGENT_CONTROL_HEAVEN_RELAY_DIR is required for bridge execution.` before authoritative exit code 1.
+- **Violated invariant / wrong assumption:** Provider health/preflight and real execution must share one configuration resolver; green discovery is meaningless if submit/wait reimplement it differently.
+- **Why prior defenses missed it:** Existing tests covered discovery in isolation but did not pin actual execution resolution to the documented fallback.
+- **Direct fix:** Add `resolveExecutionRelayDir()`; explicit caller paths remain authoritative, otherwise submit/result-wait reuse `resolveHeavenRelayDir()`.
+- **Preventive rule/process change:** LR-051 requires provider preflight and execution to share one authoritative resolution path.
+- **Regression coverage added/strengthened:** `heaven-bridge-provider.test.mjs` now covers documented fallback, explicit override, and absent-fallback fail-closed behavior; live restarted heaven2→heaven1 proof remains required.

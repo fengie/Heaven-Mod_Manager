@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.27",
+  "currentVersion": "8.8.28",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "run exact-head Agent Control checks for v8.8.27, then prove on heaven2 that live agent cards inspect correctly while failed · RETRY EXHAUSTED retirement remains clean",
+  "nextMilestone": "run exact-head Agent Control checks for v8.8.28, then restart heaven2 Agent Control and prove heaven2→heaven1 worker dispatch succeeds through the documented relay checkout without an explicit AGENT_CONTROL_HEAVEN_RELAY_DIR",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.26 Agent Control exhausted-agent registry retirement",
-  "status": "v8.8.27-agent-control-card-inspection",
-  "verificationAppliesToCommit": null,
+  "immediateParentRevision": "v8.8.27 Agent Control agent-card inspection",
+  "status": "v8.8.28-agent-control-relay-execution",
+  "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
   "candidateSourceCommit": null,
-  "verificationScopeNote": "v8.8.27 changes Agent Control dashboard interaction/markup and runtime/plugin identity only. Historical v8.8.26 evidence does not verify these bytes; exact-head Agent Control check/test plus heaven2 managed/federated card interaction smoke are required, while the v8.8.26 retry-exhausted retirement semantics must remain intact.",
+  "verificationScopeNote": "v8.8.28 changes Heaven Bridge relay execution discovery so health, submit, and result-wait use the same documented checkout resolver. Current closed verification applies only to historical commit 5abe40304dfcb48f96e750bd7da3d0075315625b; it does not verify v8.8.28. Exact-head Agent Control check/test plus heaven2→heaven1 live dispatch smoke are required before closure.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.28 Agent Control repair: make Heaven Bridge submit/result-wait use the same documented relay resolver as health/preflight, preventing deterministic exit-code-1 dispatch failure when AGENT_CONTROL_HEAVEN_RELAY_DIR is absent; preserve v8.8.26 retirement and v8.8.27 card inspection; Agent Control v0.6.7.",
     "2026-09-30 v8.8.27 Agent Manager card inspection: managed/federated registry cards are mouse/keyboard inspectable without hijacking nested actions; managed cards open logs, federated cards focus linked managed workers or show session details; Agent Control/plugin identity v0.6.6.",
     "2026-09-30 v8.8.26 Agent Control registry retirement: failed terminal workers that reach RETRY EXHAUSTED are safely terminated/cleaned when provable, removed from managed/federated live registries, preserved as durable tombstones/history, and protected against terminal-observation resurrection; Agent Control/plugin identity v0.6.5.",
     "2026-09-30 v8.8.25 Agent Control repair: URI-encode Copy branch values before generated inline-handler interpolation, align runtime/root/nested plugin identity at v0.6.4, and regression-pin both invariants.",
@@ -153,7 +154,7 @@
     "Journal, CAS, rollback/recovery, stale-plan detection, TOCTOU protections, ReplaceFileW behavior, path safety, planner determinism, human-rule precedence, fail-closed uncertainty behavior, SQLite deployment atomicity, planner-backed Explain Why and verification fingerprint integrity remain unchanged.",
     "No verification cache was manually promoted."
   ],
-  "nextRequiredAction": "Run exact-head Agent Control check/test for the v8.8.25 candidate, smoke Copy branch and plugin identity on heaven2, then continue the active Agent Manager P0 completion gates from current main.",
+  "nextRequiredAction": "Run exact-head Agent Control check/test for v8.8.28; restart/reload the exact candidate on heaven2; with %USERPROFILE%\\HeavenBridgeRepo present and no explicit AGENT_CONTROL_HEAVEN_RELAY_DIR, dispatch one heaven-targeted worker and prove it passes bridge submit/result waiting; then re-smoke retry-exhausted live-registry cleanup.",
   "canonicalEvidence": [
     "_AGENT_CONTEXT/AUTO_UPDATER_C11_PACKAGING_2026-09-28.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C10_HARDENING_2026-09-28.md",

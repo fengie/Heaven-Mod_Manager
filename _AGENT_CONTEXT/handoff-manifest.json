@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.23",
+  "currentVersion": "8.8.28",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.22 strict analyzer repair",
+  "immediateParentRevision": "v8.8.27 Agent Control agent-card inspection",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and aggressively prioritize Agent Manager functionality before cosmetic or unrelated feature work. Preserve v8.8.23 / Agent Control v0.5.11 runtime reliability: START SWARM must truthfully resume paused perpetual runs and reject conflicting non-perpetual runs; all server-active managed states must remain stoppable; background polling must reject stale responses and preserve operator-edited worker targeting. Run exact-SHA tests plus real heaven2→heaven1 validation, re-query ownership/branches before integration, preserve visible-progress governance, and leave durable successor notes with risks/evidence.",
+  "nextAgentObligation": "Start from live canonical main and keep Agent Manager functionality P0. Preserve the v8.8.28 Heaven relay execution resolver invariant: health/preflight, submit, and result-wait must share documented relay discovery while explicit caller paths remain authoritative. Run exact-head Agent Control checks plus real heaven2→heaven1 no-env dispatch smoke, then continue the manager-sequenced #472 + #469 backend retirement-safety closure without weakening local ownership/worktree fail-closed guards. Re-query current main before integration, merge only verified work, clean temporary branches, and leave durable successor notes.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
