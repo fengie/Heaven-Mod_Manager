@@ -31,7 +31,7 @@ Relay paths:
 
 Do not use Remote Desktop Commander for `heaven` work unless the user explicitly authorizes it in the current request. If the Heaven Local Bridge is unhealthy, repair or queue recovery through the bridge/GitHub relay; do not silently switch remote-control providers.
 
-## Worker v7
+## Worker v8
 
 Canonical bridge source is versioned on `main`. The `heaven-bridge` branch is the private queue/status/results transport and compatibility mirror; do not merge its operational job history wholesale into `main`.
 
@@ -41,9 +41,9 @@ Bootstrap keeps two separate local checkouts: `%USERPROFILE%\HeavenBridgeRepo` t
 
 `%USERPROFILE%\.mhw-local-tools\heaven-desktop-worker.py`
 
-The worker preserves v2 protocol compatibility and reports `worker_version: 7`.
+The worker preserves v2 protocol compatibility and reports `worker_version: 8`.
 
-Worker v7 scales the heavy-worker pool automatically instead of using the old fixed 4-worker default. The default ceiling is derived from logical CPU count (75% of logical CPUs, minimum 8, maximum 24), while `HEAVEN_BRIDGE_MAX_WORKERS` can raise the configured ceiling up to 32. Before launching another ordinary job, the worker preserves the larger of a 4 GiB RAM reserve or 12% of physical memory and budgets 1.25 GiB of free memory per newly admitted worker. Starts are also ramped per queue tick instead of spawning the entire backlog at once. Control-plane actions remain responsive even when ordinary worker capacity is saturated.
+Worker v8 scales the heavy-worker pool automatically instead of using the old fixed 4-worker default. The default ceiling is derived from logical CPU count (75% of logical CPUs, minimum 8, maximum 24), while `HEAVEN_BRIDGE_MAX_WORKERS` can raise the configured ceiling up to 32. Before launching another ordinary job, the worker preserves the larger of a 4 GiB RAM reserve or 12% of physical memory and budgets 1.25 GiB of free memory per newly admitted worker. Starts are also ramped per queue tick instead of spawning the entire backlog at once. Control-plane actions remain responsive even when ordinary worker capacity is saturated.
 
 Tuning knobs:
 
@@ -85,6 +85,18 @@ Core capabilities:
 
 Clipboard reads require an explicit per-job `allow_relay: true` opt-in because clipboard contents are returned through the private GitHub relay. Never use clipboard or GUI text actions to transmit secrets through this relay.
 
+## Primary control mode
+
+Use Heaven Local Bridge as the always-on primary control path. Remote Desktop Commander may remain paired as an emergency/manual fallback, but it should not own an automatic logon trigger while the bridge is healthy.
+
+Run the committed operator policy on each host:
+
+```powershell
+.\heaven-bridge\Set-PrimaryControlMode.ps1
+```
+
+This creates the machine-local `%USERPROFILE%\HeavenBridge\auth\allow-repo-acl-only` marker and, when the RDC fallback task exists, re-registers it without triggers so it remains startable on demand but does not compete with the bridge. The marker is not a credential; it is an explicit local authorization to use the private-repository ACL compatibility trust boundary when HMAC signing material is intentionally absent. HMAC remains preferred for deployments where every caller can sign jobs.
+
 ## Self-healing persistence
 
 The bridge must not depend on the bridge itself for recovery.
@@ -117,13 +129,13 @@ Run these from the repository root on each machine where bridge control is requi
 .\heaven-bridge\manage.ps1 RECOVER
 ```
 
-- `START` uses the hardened bootstrap when the canonical v6 worker is not already running, then performs the same health checks as `STATUS`.
-- `STATUS` verifies there is exactly one canonical v6 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current, the canonical task is configured at `Highest`, and the live heartbeat reports `elevated: true`. It exits nonzero when any of those invariants are false.
+- `START` uses the hardened bootstrap when the canonical v8 worker is not already running, then performs the same health checks as `STATUS`.
+- `STATUS` verifies there is exactly one canonical v8 worker, no legacy `agent-bridge` worker, the checkout is on `heaven-bridge`, the installed runtime matches repository `worker.py`, and the heartbeat is current, the canonical task is configured at `Highest`, and the live heartbeat reports `elevated: true`. It exits nonzero when any of those invariants are false.
 - `TEST` compiles the worker and both committed test suites, runs both suites, and parses the PowerShell bootstrap/operator scripts.
-- `STOP` stops only the canonical v6 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
+- `STOP` stops only the canonical v8 worker (and its canonical scheduled task if present); it does not kill unrelated Python or PowerShell processes.
 - `RECOVER` runs the hardened bootstrap and then requires `STATUS` to become healthy. Bootstrap preserves a dirty/diverged relay HEAD and tracked diff under `%USERPROFILE%\HeavenBridge\bootstrap-recovery` before realigning the disposable relay checkout.
 
-If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v6 heartbeat is healthy.
+If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a split-brain startup problem to retire explicitly; do not ignore it merely because the v8 heartbeat is healthy.
 
 ## Job schema
 
@@ -144,7 +156,7 @@ If `STATUS` reports legacy workers or a legacy scheduled task, treat that as a s
 
 ## Authentication and integrity
 
-The private GitHub repository and branch ACL are the compatibility trust boundary. Because this bridge can execute commands and control the desktop, repository write access alone should not be treated as sufficient production authentication.
+The private GitHub repository and branch ACL are the compatibility trust boundary. Repo-ACL-only execution remains fail-closed unless explicitly enabled by either `HEAVEN_BRIDGE_ALLOW_INSECURE_REPO_ACL_ONLY=1` or the machine-local `HeavenBridge/auth/allow-repo-acl-only` marker; Agent Control honors the same marker. Because this bridge can execute commands and control the desktop, repository write access alone should not be treated as sufficient production authentication.
 
 For execution-capable deployments, configure per-job HMAC authentication. Set `HEAVEN_BRIDGE_HMAC_KEY` in each worker environment and set the same value as `AGENT_CONTROL_HEAVEN_HMAC_KEY` on the heaven2 Agent Control host. Agent Control signs the canonical job payload before it reaches the relay; the worker rejects missing, invalid, expired, replayed, or payload-mismatched jobs. The key itself must stay machine-local and must never be committed or sent through queue/result files.
 
