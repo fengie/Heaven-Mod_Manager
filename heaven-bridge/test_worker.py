@@ -540,6 +540,22 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"], expected)
         create.assert_called_once()
 
+    def test_app_launch_hides_console_by_default_and_requires_explicit_opt_in(self):
+        if os.name != "nt":
+            self.skipTest("Windows creation flags are only available on Windows")
+        fake_proc = type("FakeProcess", (), {"pid": 4242})()
+        with patch.object(hb.shutil, "which", return_value=r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"), \
+             patch.object(hb.subprocess, "Popen", return_value=fake_proc) as popen:
+            hb.desktop_launch_app({"path": "powershell.exe"})
+            hidden_flags = popen.call_args.kwargs["creationflags"]
+            self.assertTrue(hidden_flags & hb.subprocess.CREATE_NO_WINDOW)
+            self.assertFalse(hidden_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+
+            hb.desktop_launch_app({"path": "powershell.exe", "visible_console": True})
+            visible_flags = popen.call_args.kwargs["creationflags"]
+            self.assertTrue(visible_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+            self.assertFalse(visible_flags & hb.subprocess.CREATE_NO_WINDOW)
+
     def test_uia_request_validation_and_structured_route(self):
         with self.assertRaises(hb.BridgeError) as missing:
             hb._validate_uia_request({}, "uia_invoke")

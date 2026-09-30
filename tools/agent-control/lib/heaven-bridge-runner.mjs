@@ -1,15 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { execFileHidden as execFileAsync } from "./background-process.mjs";
 import {
   bridgeResultSucceeded,
   buildRemoteCodexCommand,
   readHeavenBinaryFile,
   runHeavenBridgeAction
 } from "./heaven-bridge-provider.mjs";
-
-const execFileAsync = promisify(execFile);
 
 function fail(message, code = 1) {
   process.stderr.write(`${message}\n`);

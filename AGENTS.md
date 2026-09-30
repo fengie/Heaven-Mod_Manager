@@ -141,6 +141,7 @@ For computer work on the device named `heaven`, use the repository-backed **Heav
 - Never put credentials, tokens, passwords, cookies, private keys, or recovery codes into bridge queue/result/status payloads.
 - The `heaven-bridge` Git branch is transport state, not the canonical development branch. Completed source changes still integrate to `main` under the rule below. Bridge bootstrap/runtime deployment must source worker/watchdog code from a clean canonical-`main` source mirror, never from relay-branch drift; the relay checkout is only queue/status/results transport plus compatibility history.
 - For build/test/code execution details, the canonical plugin source is `heaven-bridge/plugin/`, including the `heaven-code-execution` skill.
+- **Non-interrupting console invariant:** on both `heaven2` and `heaven`, every agent-owned command shell, PowerShell host, terminal helper, build/test child, local-agent process, and recovery child must default to hidden/background/no-console execution and must not steal focus. Node launchers must route through the forced `windowsHide: true` wrapper; Python/Win32 process creation must use `CREATE_NO_WINDOW` for console children; PowerShell `Start-Process` paths for console hosts must use `-WindowStyle Hidden`; scheduled/shortcut PowerShell arguments must carry `-WindowStyle Hidden`. A visible console is allowed only when the user or task explicitly requires an interactive visible terminal; GUI applications intentionally requested by the user may remain visible.
 
 ### Capacity and runner circuit breakers
 

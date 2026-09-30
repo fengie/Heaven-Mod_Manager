@@ -25,9 +25,9 @@ function Ensure-Elevated {
     }
 
     $hostExe = (Get-Process -Id $PID -ErrorAction Stop).Path
-    $args = '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
+    $args = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
     Write-Output 'HEAVEN_RUNNER_ELEVATION_REQUESTED'
-    $child = Start-Process -FilePath $hostExe -Verb RunAs -ArgumentList $args -Wait -PassThru
+    $child = Start-Process -WindowStyle Hidden -FilePath $hostExe -Verb RunAs -ArgumentList $args -Wait -PassThru
     exit $child.ExitCode
 }
 
