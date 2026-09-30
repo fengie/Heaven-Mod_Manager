@@ -1,4 +1,9 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
+
+## v8.8.50 — consolidate training without weakening safeguards
+
+Compact indexed training and current handoffs replace duplicated prose. Pre-response training, full constitution startup reading, recursive propagation, raw-byte budgets and exact-source evidence remain enforced. Superseded PR #525 is preserved inside PR #528 and reconciled with v8.8.49 main without overwriting the merged UI fixes. Workflow Feature CI now cancels only superseded runs for the same PR/ref, preventing unrelated feature branches or stale reruns from destroying exact-head integration evidence.
+
 
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh

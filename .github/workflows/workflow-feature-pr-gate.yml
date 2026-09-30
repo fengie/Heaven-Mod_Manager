@@ -45,9 +45,10 @@ permissions:
   contents: read
 
 concurrency:
-  # All feature PRs share the same self-hosted Heaven runner pool. Collapse superseded
-  # validation across PRs so release-critical jobs are not starved by branch churn.
-  group: workflow-feature-pr-gate
+  # Cancel only superseded validation for the same PR/ref. Different PRs share the
+  # self-hosted Heaven runner by queueing; they must never cancel each other's
+  # exact-head evidence.
+  group: workflow-feature-pr-gate-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:

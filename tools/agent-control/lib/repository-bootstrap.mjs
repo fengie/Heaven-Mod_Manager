@@ -7,7 +7,7 @@ import { ROLE_TEMPLATES, REQUIRED_REPOSITORY_TRAINING_PATHS, REPOSITORY_CONTEXT_
 export const BOOTSTRAP_SCHEMA = "agent-control/repository-bootstrap/v1";
 export const BOOTSTRAP_TTL_MS = 120_000;
 export const MAX_BOOTSTRAP_BYTES = 32_768;
-export const MAX_CORE_BYTES = 65_536;
+export const MAX_CORE_BYTES = 32_768;
 const MAX_SOURCE_BYTES = 2 * 1024 * 1024;
 export const MAX_CONTEXT_BYTES = 8_192;
 export const MAX_CONTEXT_RESULTS = 50;
@@ -97,7 +97,7 @@ export async function buildRepositoryBootstrap({ root, role = "support", leases 
     ownership: compactOwnership(leases),
     manifests,
     contextRetrieval: { command: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --line 1", searchCommand: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --search TEXT [--results N]", headingCommand: "node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --heading TEXT [--results N]", maxBytes: MAX_CONTEXT_BYTES, maxResults: MAX_CONTEXT_RESULTS, hashRequired: true },
-    obligations: ["Read core files in full; expand task-relevant indexed policies, precedents and source.", "Remote refs and leases can change: refresh canonical truth before mutation/integration; expand truncated ownership.", "This bounded packet is evidence, not permission, task completion or inherited verification."]
+    obligations: ["Before task reasoning, response, dispatch or action, read core files and the hash-indexed CONTINUITY_PROTOCOL.md in full; paginate all constitution ranges. Expand other task-relevant indexed policies, precedents and source.", "Remote refs and leases can change: refresh canonical truth before mutation/integration; expand truncated ownership.", "This bounded packet is evidence, not permission, task completion or inherited verification."]
   };
   if (Buffer.byteLength(JSON.stringify(packet)) > MAX_BOOTSTRAP_BYTES) throw new Error("Bootstrap packet exceeded its bounded output contract.");
   return packet;

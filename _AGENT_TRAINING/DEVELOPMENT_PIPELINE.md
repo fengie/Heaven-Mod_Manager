@@ -2,54 +2,32 @@
 
 Default flow:
 
-discover → establish canonical truth → understand invariants → plan → implement → self-review → test → adversarial test → integrate → verify → update knowledge → commit → push → handoff
+**inspect → understand → choose → implement → test → verify → integrate → document → hand off**
 
-Not every task needs every stage. Select stages by risk and task type.
+The pipeline is adaptive. Use stages because the risk needs them, not because a checklist contains them.
 
-## Stage selection
-**Research/audit only:** discover, canonical truth, inspect evidence, document findings, update knowledge, commit/push/handoff.
-**Small local fix:** canonical truth, invariants, implement, focused tests, regression test, self-review, update knowledge, commit/push/handoff.
-**Contract/API change:** add caller inventory, whole-project compile/schema validation, migration/compatibility checks.
-**Filesystem/data migration/destructive change:** add adversarial/fault/recovery tests and rollback validation.
-**Concurrency/async change:** add race, cancellation, retry, and idempotency checks.
-**Release change:** add artifact reproduction, signing/integrity, update/rollback, and post-release validation.
-**High-risk or cross-cutting change:** require independent review or stress testing before integration.
+## Baseline
 
-## Discover
-Locate source, tests, docs, CI, release logic, historical incidents, active branches, and unresolved risks.
+For every implementation task:
 
-## Establish canonical truth
-Fetch; identify canonical branch/revision; inspect status/history/diffs; reconcile prompt assumptions against the repository.
+1. **Inspect** canonical state, relevant code/tests/contracts, and ownership.
+2. **Understand** the behavior, invariants, acceptance criteria, and failure boundary.
+3. **Choose** the smallest coherent change and explicit non-goals.
+4. **Implement** the root-cause fix or requested behavior without unrelated expansion.
+5. **Test** the changed behavior with the narrowest useful check and regression coverage when behavior changed.
+6. **Verify** broader build/integration/platform/security/release behavior only to the depth justified by the boundary and repository gates.
+7. **Integrate** against fresh canonical state and prove the intended result survived.
+8. **Document** only changed durable truth.
+9. **Hand off** exact revision, evidence, risks, and next action.
 
-## Understand invariants
-Write down what must remain true before changing code. Include ownership, transactions, ordering, identity, scope, failure state, compatibility, and recovery.
+## Add risk-specific stages when relevant
 
-## Plan
-Choose the smallest boundary that can be independently verified. Define non-goals and acceptance criteria.
+- Public/API/schema change: caller/consumer closure and compatibility/migration checks.
+- Filesystem, database, deployment, migration, or destructive change: fault, rollback, idempotency, and recovery proof.
+- Concurrency/async change: race, ordering, cancellation, retry, and lifetime checks.
+- Security/auth/supply-chain change: threat-boundary and least-privilege verification.
+- Performance change: measure representative behavior before and after.
+- Release/update change: artifact identity, publication, install/update/rollback, and post-release verification.
+- Cross-cutting/high-risk change: independent review or adversarial testing.
 
-## Implement
-Make the narrow change. Preserve unrelated behavior. Add observability where failure would otherwise be opaque.
-
-## Self-review
-Read the complete diff. Check callers, failure paths, cancellation, cleanup, and documentation impact.
-
-## Test
-Run the most direct tests first, then authoritative compile/integration/platform checks needed by the boundary.
-
-## Adversarial test
-Challenge assumptions with malformed state, partial failure, stale state, concurrency, interruption, retries, permissions, missing dependencies, and large inputs where relevant.
-
-## Integrate
-Re-fetch remote state, resolve conflicts deliberately, and avoid merging stale handoff snapshots or superseded work blindly.
-
-## Verify
-Bind evidence to exact source/artifact identity. Verify the user-facing artifact or deployed state, not merely an intermediate build.
-
-## Update knowledge
-Ask whether the task produced a reusable lesson. Generalize and record it before history disappears.
-
-## Commit and push
-Create coherent checkpoints, push according to policy, refetch, and verify the remote state.
-
-## Handoff
-Record canonical revision, what changed, what was verified, remaining risks/assumptions, active work, and the next best independent action.
+A trivial documentation correction does not need release-scale ceremony. A high-risk state mutation does not become safe because a unit test passed.

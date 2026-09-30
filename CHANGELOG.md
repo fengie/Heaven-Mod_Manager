@@ -1,3 +1,9 @@
+# v8.8.50 — governance integration and enforcement repair
+- Reconcile superseded PR #525 compact operating standard, role deltas and current-state consolidation onto v8.8.49 main while preserving its repaired ancestry.
+- Preserve pre-response/global training and full constitution startup obligations; repair recursive successor validation and raw UTF-8 budget enforcement.
+- v8.8.49 UI exact-head gates remain historical source proof; v8.8.50 requires fresh exact-head verification. v8.8.48 source/build357 release closure is retained separately.
+- Scope Workflow Feature CI concurrency by PR/ref so superseded runs cancel only their own lane; unrelated PRs queue on Heaven instead of canceling exact-head verification for the integration candidate.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.

@@ -1,274 +1,45 @@
-# AGENT MANAGER SWARM V3 — MAIN-FIRST SHARED RULES
+# SWARM RULES — SHARED DELTA
 
-Use this as the common operating contract for every agent in the team.
+This file contains only multi-agent rules. All agents already inherit AGENTS.md and _AGENT_TRAINING/AGENT_OPERATING_STANDARD.md; do not repeat those contracts here.
 
-# COMMON OPERATING CONTRACT
+## WHEN TO PARALLELIZE
 
-## GLOBAL CROSS-REPOSITORY BOOTSTRAP
-Before any target-repository reasoning, planning, dispatch, review, or mutation, refresh current `main` of `fengie/mhw-mods` and complete its live agent-training bootstrap (`AGENTS.md`, `_AGENT_TRAINING/README.md`, and the applicable shared/role training rules plus any live indexed context they require). This applies even when the assigned target is a different repository. Only after the MHW baseline is loaded may you load the target repository's own rules/state and begin target-specific work. Managers and successors must propagate this gate recursively. Do not substitute stale copied training for current MHW truth; exhaust authorized fallbacks and report `TRAINING-BLOCKED` if the canonical training source cannot be established.
+Delegate when work can be split into independent, bounded outputs whose synthesis cost is lower than doing the work inline. Good lanes include separate investigations, distinct components, independent review, focused tests, and mechanical evidence gathering.
 
-You are one agent in a coordinated engineering swarm. `fengie/mhw-mods` is the canonical cross-repository training source; the current target repository may be MHW or another repository. When the target is MHW, the Agent Manager / Agent Control Plane remains primarily under `tools/agent-control/`.
+Keep short tasks, tightly ordered dependency chains, single mutable state transitions, and same-file editing with one owner.
 
-This is an EXECUTION assignment. Do not stop at reading, planning, summarizing, auditing, opening a PR, pushing only a side branch, or handing work back when your available tools allow concrete progress.
+## OWNERSHIP
 
-Unless the user explicitly says read-only, review-only, summarize-only, audit-only, or otherwise forbids mutation/execution, execution is the default. Reading and planning are preparatory steps, not the deliverable. If one authorized execution path fails, try another supported path before declaring a blocker.
+- One primary owner per mutable boundary.
+- Check live branches/PRs/leases before assigning overlapping work.
+- A reviewer/tester may inspect the same boundary without becoming a competing implementation owner.
+- A replacement inherits the exact durable checkpoint; it does not restart completed work.
+- Agent disappearance or stale prose is not completion evidence.
 
-## Mandatory pre-response training gate
-Before answering the task, planning task work, dispatching sub-agents, or taking task-specific action, complete the compact repository bootstrap. Read the small core startup set in full, validate the hash-indexed continuity/training corpus for the assigned revision, then search/read only task-relevant sections of large historical files. Truncated output must be paginated/chunked; a missing `gh`/CLI, failed network route, or unavailable local checkout must trigger an authorized GitHub/connector/Heaven/CI fallback rather than immediate failure. Report TRAINING-BLOCKED only after reasonable authorized fallbacks are exhausted with exact evidence. Senior/premium roles should delegate mechanical retrieval and consume compact evidence packets. No agent may answer first and train afterward; every successor and sub-agent inherits this gate.
+## ASSIGNMENT CONTRACT
 
-## ALWAYS COLLABORATION-READY
-Every prompt/task is collaboration-ready by default. Stay prepared to use other agents when doing so materially improves speed, expertise, independent verification, recovery, or convergence.
+Each worker gets only what it needs:
 
-- Inspect relevant active/partial agent work before duplicating it.
-- Delegate only bounded, clearly owned subtasks with explicit artifacts and acceptance criteria.
-- Consume, reconcile, and verify peer outputs as part of the owning task; do not treat a handoff summary as integration.
-- Keep one primary owner per mutable boundary. Do not race branches, files, leases, or state merely because multiple agents are available.
-- Trivial work may remain single-agent when coordination adds no real value; readiness is mandatory, unnecessary swarm overhead is not.
-- Propagate this rule into every successor/sub-agent prompt.
+- objective and acceptance criterion;
+- mutable boundary and likely source/tests;
+- relevant repository/context references;
+- dependencies and non-goals;
+- expected artifact/evidence;
+- required verification;
+- branch/integration expectations when mutation is authorized.
 
-## Mandatory defect-prevention closure
-Bugs are prevention failures. Before working in a subsystem, read materially relevant entries in `_AGENT_CONTEXT/BUG_PRECEDENTS.md`.
+Do not paste the full repository history or shared operating contract into every assignment.
 
-When any bug, regression, false completion claim, broken integration, or process escape is discovered, do not stop at the direct fix. Completion requires:
-1. reproduce/characterize the failure when feasible;
-2. identify root cause and violated invariant;
-3. log/update the canonical precedent in `_AGENT_CONTEXT/BUG_PRECEDENTS.md`;
-4. strengthen the applicable agent/process/product guideline;
-5. add or strengthen regression coverage or the strongest durable deterministic verifier;
-6. test the real risk surface, including integration/UI/runtime/update/restart/concurrency paths when relevant;
-7. inspect sibling/adjacent instances of the same defect class;
-8. record exact verification evidence;
-9. propagate the lesson to future workers.
+## RETURN CONTRACT
 
-Managers/reviewers must reject work that fixes an escaped defect but omits applicable precedent, prevention, regression, or verification evidence. If the same defect class recurs, treat that as failure of the prior prevention control and strengthen the control itself.
+A worker returns concise, verifiable state: status, exact revision/branch, artifact or finding, checks/results, unresolved risk/blocker, and next action. Research-only workers distinguish facts from hypotheses. Implementers return working changes, not just recommendations, unless explicitly assigned review/research.
 
-## Mandatory task review + plugin activation preflight
-Training alone does not authorize task execution. Before planning, answering, dispatching, or taking task-specific action:
+The owning/manager agent must inspect and synthesize returned work. Subagent confidence is not integration evidence.
 
-1. Re-read the complete assigned task and identify required actions, targets, machines, artifacts, constraints, explicitly requested plugins/tools, and verification obligations.
-2. Discover the actual plugin/tool surface in the current runtime. Enumerate/search installed plugins, connectors, skills, and repository toolbox capabilities before claiming anything is unavailable.
-3. Map the task to relevant purpose-built capabilities and load/read their current skill/manifest/README instructions first. If an already-authorized plugin supports explicit activation/selection, activate/select it before generic shell/browser/desktop/API fallback. Never bypass consent or permissions.
-4. Honor user-named plugins as routing requirements unless current-runtime discovery proves they are unavailable, unsafe, or incapable of the requested operation.
-5. Persist a concise `PLUGIN-PREFLIGHT` record: task reviewed; capabilities considered; plugins/skills loaded or activated; chosen route; unavailable/inapplicable capabilities with evidence; fallback reason if any.
-6. A remembered limitation, stale tool list, or one failed lookup is not proof that a plugin is unavailable. Missing/incomplete reusable capability must flow into the canonical plugin-gap process after duplicate checks.
+## RECOVERY
 
-Every successor and sub-agent repeats this preflight for its own assigned task. Reviewers treat missing/false preflight evidence as a process defect when it could affect routing, safety, machine choice, or verification.
+Use bounded retries. Preserve useful partial artifacts before replacement. If an unchanged external blocker survives the current iteration, mark a durable deferred state and move future scheduled cycles to different actionable work until evidence shows the blocker changed.
 
-## Canonical truth
-Before meaningful changes:
-1. Fetch/refresh remote state when possible.
-2. Identify exact current `origin/main` SHA.
-3. Inspect branch, worktree status, recent history, relevant PRs/branches, and continuity files.
-4. Read the compact core startup set in full; use the hash-indexed continuity/training manifest to search/read only task-relevant sections of `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/README_FIRST.md`, `_AGENT_CONTEXT/CURRENT_STATE.md`, `_AGENT_CONTEXT/NEXT_STEPS.md`, `_AGENT_CONTEXT/VERIFICATION.md`, `_AGENT_CONTEXT/BUG_PRECEDENTS.md`, `_AGENT_CONTEXT/LEARNED_RULES.md`, and other large historical guidance. Materially relevant precedent/rule entries remain mandatory before risky or bug-fix work.
-5. Treat repository state as authoritative over stale chat text, old SHAs, or this prompt.
-6. Re-check canonical state before every merge/rebase/cherry-pick and immediately before pushing `main`.
+## CONVERGENCE
 
-## Execution environment
-- `heaven2` = operator/control machine / credential authority. The user-facing dashboard, Agent Control service/CLI, control panels, browser/UI automation, and routine desktop interaction belong on heaven2.
-- Agent-spawned `cmd.exe`, `powershell.exe`, and `pwsh.exe` processes on both `heaven2` and `heaven` must run hidden/background and must not steal desktop focus. Use the shared hidden/background process helpers or Heaven Bridge structured execution. Do not request a visible console for these shell hosts unless the user explicitly asks for a foreground shell in the current task.
-- `heaven` = preferred worker/resource machine for builds, tests, scans, local agents, worktrees, indexing, batch jobs, and other heavy execution. Treat it as delegated compute, not the default human-facing desktop.
-- New Heaven Bridge jobs must declare top-level `target_host`: use `heaven2` for operator/control/interactive work and `heaven` for heavy delegated work. Omitted target is legacy-only and defaults to heaven.
-- Do not relocate dashboards/control panels or routine interaction to heaven unless the user explicitly requests heaven's desktop or the task needs a worker-specific GUI validation.
-- Keep secrets on `heaven2` unless runtime access elsewhere is genuinely required.
-- Never print, commit, or unnecessarily copy credentials.
-- ChatGPT Work is deny-by-default. Never invoke, suggest, request, or hand off to Work unless the user explicitly asks for Work mode for this current task; that permission never carries forward.
-- Keep execution in the current chat when possible. If normal-Chat spawning is unavailable, continue through an authorized non-Work route (direct local worker/Codex, Heaven Local Bridge, or repository tooling) instead of failing closed or asking the user to switch modes.
-- If one non-Work path fails, try another supported non-Work path before declaring a blocker.
-- A real blocker must name the exact unavailable primitive or permission and show evidence.
-
-
-## Plugin-first toolbox rule
-- Before using generic shell/browser/desktop/API fallbacks, inspect the available plugin/toolbox capabilities for the task and read `plugins/README.md` plus `plugins/PLUGIN_GAP_BACKLOG.md`.
-- Route work through the narrowest purpose-built implemented plugin/capability. Prefer structured high-level workflows over raw primitives when they preserve the required safety and evidence.
-- For `heaven`, prefer the most specific Heaven toolbox capability, then structured Heaven Local Bridge actions. Do not use Remote Desktop Commander unless the user explicitly authorizes it in the current request.
-- If a reusable capability is missing or materially incomplete, search existing packages, branches, PRs, and backlog entries for duplicates, then immediately create/update a durable implementation plan in `plugins/PLUGIN_GAP_BACKLOG.md`.
-- If the task-relevant plugin/connector/tool is proven unavailable in the current runtime, apply `plugins/LOCAL_REPLACEMENT_PROTOCOL.md` immediately: record outage evidence, claim/start the local replacement project in the same execution cycle, and make the first concrete repository implementation move. Do not leave an outage-triggered item merely planned when repository mutation is available.
-- Prefer a compatibility/adapter layer over duplicating existing Heaven/bridge primitives. A local replacement must never be used to bypass third-party quotas, authentication, OAuth, account permissions, or service-side authorization.
-- A gap/replacement plan must state the triggering use case, owner/new-plugin decision, upstream capability surface, local capability/API contract, security boundary, dependencies/reuse, acceptance tests, priority, status, and project path.
-- Continue the user's current task with the safest authorized fallback when possible; plugin-gap capture/replacement startup is mandatory but must not become an excuse to stop execution.
-- Never leave reusable plugin ideas or outage plans only in chat or transient agent state.
-
-
-## RECURRING / SCHEDULED BLOCKED-TASK ROTATION
-
-For any recurring or scheduled agent lane:
-- use the current iteration for the normal bounded recovery/fallback attempt;
-- if the task is still blocked at iteration end, persist an exact durable checkpoint and mark it `DEFERRED-TO-LIVE` (or equivalent) for the user's live/manual agents;
-- on the next scheduled iteration, do **not** select or retry that same blocked task as primary work unless the user explicitly reassigns it or durable evidence shows the blocker materially cleared;
-- choose a different actionable unowned task and make concrete progress instead;
-- do not repeatedly consume scheduled cycles rediscovering or restating the same blocker;
-- preserve deferred work, revision/error/evidence/next action, and never treat deferral as completion, deletion, merge authorization, release authorization, or permission to weaken verification.
-
-Managers must enforce rotation and prevent repeated scheduled ownership of an unchanged deferred blocker.
-
-## Ownership and collision safety
-- Every mutable boundary has one primary owner.
-- BEFORE creating any new branch, fetch/prune and inventory local/remote branches, open PRs, and live Agent Control tasks/leases.
-- Reuse a safe compatible unowned branch when one already covers the task/mutable boundary. Continue/take over abandoned compatible work after safety checks instead of spawning a duplicate branch.
-- Do not create retry/successor/numbered replacement branches for the same scope unless the existing branch is actively owned, incompatible, protected/reserved, unsafe to reuse, or contains unrelated unique work; record that reason.
-- One mutable scope has one active implementation branch/lease at a time.
-- Inspect active branches/PRs/routing before editing shared files.
-- Do not silently overwrite concurrent work.
-- If another active owner controls the same boundary, coordinate through repository/PR/continuity artifacts or hand off a precise patch recommendation instead of racing them.
-- Never force-push `main`, shared history, or another agent's branch.
-- Use isolated branches/worktrees when useful for active work, but treat them as temporary implementation surfaces rather than final destinations.
-
-## MAIN-FIRST DELIVERY CONTRACT
-`main` is the canonical integration target. Finished work belongs on remote `main`, not parked on a completed task branch.
-
-The agent that creates or materially completes a change owns that change through delivery unless an explicit repository protection or a documented ownership collision makes that impossible. Ownership includes:
-1. finish the assigned implementation/artifact;
-2. inspect the final diff and run relevant focused verification;
-3. fetch current `origin/main`;
-4. reconcile the completed change with current `main` using the safest repository-appropriate mechanism;
-5. resolve conflicts inside the agent's owned boundary without discarding newer canonical or unique concurrent work;
-6. rerun affected checks on the reconciled candidate;
-7. integrate/fast-forward/cherry-pick/merge the completed change into `main` according to repository policy;
-8. push `main`;
-9. fetch/inspect remote `main` and verify the intended change is present at the expected SHA;
-10. update continuity/version/release metadata required by that change and retire temporary branch/PR state when safe.
-
-A task is NOT complete merely because:
-- code was written;
-- tests passed on a side branch;
-- a commit exists;
-- a task branch was pushed;
-- a PR was opened or marked ready;
-- another agent was told to merge it later.
-
-If branch protection requires a PR, the implementing agent still owns the PR through required review/checks, merge, and remote-`main` verification unless the repository explicitly requires a different merger.
-
-Before pushing `main`, fetch again. If `origin/main` moved, reconcile again and rerun affected verification. Never overwrite newer canonical work for convenience.
-
-Do not blindly merge unrelated or unverified branches just to empty the queue. Immediate integration applies to completed, owned, verified work. Cross-branch reconciliation, ambiguous semantic conflicts, and release-wide assembly should be escalated to the Reconciliation and/or Integration & Release roles while the originating agent remains responsible for providing exact evidence and resolving its owned code.
-
-If direct `main` delivery is genuinely impossible, do not silently stop at a side branch. Record the exact failed operation, error/evidence, paths attempted, current branch/head, and exact external action required.
-
-## Release publication completion rule
-- **Release-ready means release now.** As soon as a user-facing version is integrated into canonical `main` and every required release gate for that version passes, the release-owning agent must publish it immediately in the same execution cycle.
-- Do not wait for a separate user prompt, reminder, batching window, scheduled release window, or successor unless the user explicitly orders a hold/delay for that specific release.
-- A green-but-unpublished version is active unfinished work and must be surfaced as highest-priority release closure by workers, managers, Integration & Release, and successor agents. `DONE`, `SHIPPED`, or `release-complete` is forbidden until publication and post-publication verification finish.
-- Private updater publication is not the end of a release. The same immutable `updater-main-<build>` release must also exist in public `fengie/mhw-mod-manager-release`.
-- Use the repository's canonical private publisher first and public mirror second; never bypass their source/digest/immutability checks with ad-hoc release uploads.
-- Before reporting SHIPPED/DONE, verify private/public tags match, both expected assets exist, and their server SHA-256 digests match. If the public mirror is missing/stale/failed, report PARTIAL/BLOCKED and repair it before closing the release.
-- Never expose the public-release token; use the configured workflow secret only.
-
-## Evidence standard
-Never claim work occurred unless you observed it:
-- no “tests pass” without executed tests;
-- no “pushed” without remote confirmation;
-- no “merged” without inspecting the resulting history/state;
-- no “fixed” without implementation and verification;
-- no “active agent” solely from stale prose;
-- no fake ChatGPT/provider telemetry;
-- no security conclusion based only on filenames.
-
-Distinguish: implemented, tested, independently reviewed, integrated into local `main`, pushed to remote `main`, and shipped.
-
-## Checkpoints
-At each stable engineering unit:
-1. inspect status/diff;
-2. run focused verification;
-3. commit coherently;
-4. if the assigned change is complete, immediately execute the MAIN-FIRST DELIVERY CONTRACT;
-5. record exact task branch/head if one existed, resulting `main` SHA, remote `origin/main` SHA, and verification evidence.
-Do not leave valuable completed work only in chat or stranded on a finished side branch.
-
-## Continuity
-Persist durable discoveries and handoff state in the repository when the project protocol expects it. Keep current revision, state, next steps, verification evidence, ownership, remote-main status, and unresolved risks truthful. Do not rewrite historical claims without evidence.
-
-## Completion evidence
-A subtask is DONE only when its required artifact exists, relevant checks were run, the completed change is verified on remote canonical `main`, and any temporary task branch/worktree has been safely cleaned up. If branch cleanup is pending or failed, report CLEANUP-REQUIRED/BLOCKED rather than DONE.
-
-Exception: if a documented external gate makes direct integration impossible (for example required approval, branch protection, unavailable credentials/transport, or an active ownership conflict), status must be BLOCKED/PARTIAL rather than DONE and must include the exact integration blocker and current branch/head.
-
-If blocked, report:
-- exact attempted operation;
-- exact error/evidence;
-- execution paths tried;
-- current branch/head and current `origin/main`;
-- what remains possible;
-- exact external action required.
-
-Keep user-facing status concise and evidence-based.
-
-
-# PRODUCT TARGET
-
-The Agent Manager is a federated engineering control plane, not merely a local-process dashboard.
-
-It should converge toward:
-- normalized logical agent registry;
-- provider/source adapters;
-- stable identity reconciliation;
-- heartbeat freshness and stale/disconnected semantics;
-- accurate live-agent counts;
-- task/lease/routing ownership;
-- explicit `heaven` / `heaven2` topology;
-- operator dashboard + CLI;
-- autonomy authorization enforced server-side;
-- safe process ownership/stop semantics;
-- engineering autopilot driven by structured evidence;
-- GitHub/CI/PR integration where actually supported;
-- durable continuity;
-- verification and review gates.
-
-Current historical references such as PR #59, branch `feature/agent-control-plane-v2-20260928`, and issue #83 are starting clues only. Verify whether they are still relevant before acting.
-
-# ONE-OWNER RULE
-
-Default ownership:
-- Manager: task graph and swarm convergence.
-- Core Implementation: cross-cutting backend/control-plane integration and unowned critical implementation.
-- Reconciliation: Git truth, branch comparison, continuity/version consistency.
-- Federation/Registry: providers, normalization, logical identity, reconciliation.
-- Liveness/Scheduler: heartbeat, stale state, live counts, capacity, placement, machine policy.
-- UI/CLI: operator-facing dashboard, CLI, display/control contracts.
-- Security/Authorization: authz, process ownership, stop safety, lease safety, trust boundaries.
-- Verification/Reliability: tests, fault injection, stress, exact-SHA evidence.
-- Integration/Release: cross-branch reconciliation, release-wide assembly, version/update orchestration, difficult merge sequencing, and remote-main confirmation; it is not the routine merger for work another owner has already completed.
-- Support Investigator: bounded investigations and isolated support artifacts.
-
-If actual repository ownership differs, the Manager must update the assignment map before conflicting edits begin.
-
-# MAIN-FIRST TEAM RULE
-
-Every implementation owner is also the default delivery owner for that completed work. The Manager must not allow a backlog of finished task branches to accumulate merely because an Integration Lead exists.
-
-The Integration & Release Lead handles repository-wide reconciliation, dependency chains, stranded/legacy branches, difficult semantic conflicts, release versioning, updater/release execution, and final release audits. It does not replace the implementing agent's obligation to put ordinary completed work onto verified remote `main`.
-
-When several completed branches already exist, converge them deliberately into `main`: inspect unique work, preserve newer canonical behavior, integrate dependency-safe changes, verify after each meaningful integration, and retire superseded branches. “Merge everything” never means blindly replaying obsolete or harmful commits.
-
-
-# STANDARD HANDOFF
-
-Every role should finish with:
-- ROLE
-- STATUS: DONE / BLOCKED / PARTIAL
-- BASE `origin/main` SHA
-- BRANCH
-- FINAL HEAD SHA
-- FILES / SUBSYSTEMS TOUCHED
-- ARTIFACTS PRODUCED
-- VERIFICATION COMMANDS + RESULTS
-- REVIEW REQUIRED / COMPLETED
-- INTEGRATION DEPENDENCIES
-- REMAINING RISKS
-- NEXT EXACT ACTION
-
-# GENERIC TRAINER PROMOTION GATE
-Before reporting DONE after any meaningful bug, regression, failed integration, false completion, process/agent failure, user correction, release failure, or durable workflow improvement:
-- state root cause and violated invariant;
-- update project-local precedent when warranted;
-- check whether the lesson is reusable beyond this project;
-- if reusable and absent/weak in company doctrine, update `_AGENT_TRAINING/` and provenance now;
-- strengthen regression/analyzer/verifier/prompt/gate enforcement where practical;
-- if an existing rule already covered the failure, strengthen the failed prevention mechanism rather than adding duplicate prose.
-
-Do not defer reusable learning.
-
-# FINAL ORPHAN SWEEP
-Before the swarm is complete, the Manager must inventory stale/disconnected/failed workers, leases, branches, worktrees, commits, partial artifacts, and unfinished verification. Recover useful partial work and dispatch replacements until every unresolved boundary is complete, superseded, rejected, or externally blocked with evidence.
-
-# DURABLE LEDGER IDENTITY RULE
-When multiple agents can append learned rules, incidents, migrations, or other sequentially identified durable records, do not allocate IDs from stale snapshots. Use the designated allocation owner/reservation mechanism or collision-resistant IDs. The Manager/Integration owner must scan for duplicate IDs before completion and reconcile collisions without discarding either entry’s provenance.
+Parallelism ends in one coherent canonical result. Reconcile dependencies, preserve unique work, run affected exact-candidate checks, verify the canonical tree, and retire temporary branches/leases only after their useful content and evidence are accounted for.
