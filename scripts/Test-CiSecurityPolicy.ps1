@@ -47,7 +47,12 @@ foreach($workflow in $workflows){
 
     if($hasPullRequest -and $usesSelfHosted){
         $checkoutCount=[regex]::Matches($content,'(?mi)^\s+uses:\s*actions/checkout@[0-9a-f]{40}\b').Count
-        $safeCheckoutCount=[regex]::Matches($content,'(?mi)^\s+persist-credentials:\s*false\s*
+        $safeCheckoutCount=[regex]::Matches($content,'(?mi)^\s+persist-credentials:\s*false\s*$').Count
+        if($safeCheckoutCount -lt $checkoutCount){
+            $errors.Add("$($workflow.Name): every self-hosted pull_request checkout must set persist-credentials: false.")
+        }
+    }
+
     if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
         $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
     }
@@ -99,34 +104,6 @@ if(!(Test-Path -LiteralPath $releasePath)){
     )){
         if(-not $release.Contains($required)){
             $errors.Add("windows-release-gate.yml: verified GitHub CLI bootstrap invariant missing: $required")
-        }
-    }
-}
-
-if($errors.Count -gt 0){
-    Write-Host "CI security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
-    foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
-    throw "CI security policy rejected the workflow set."
-}
-
-Write-Host "PASS: CI security policy ($($workflows.Count) workflows checked)." -ForegroundColor Green
-).Count
-        if($safeCheckoutCount -lt $checkoutCount){
-            $errors.Add("$($workflow.Name): every self-hosted pull_request checkout must set persist-credentials: false.")
-        }
-    }
-
-    if($content -match '(?mi)^\s*contents:\s*write\s*$' -and $writeAllowlist -notcontains $workflow.Name){
-        $errors.Add("$($workflow.Name): contents: write is not approved for this workflow. Keep GITHUB_TOKEN read-only unless a documented mutation requires it.")
-    }
-
-    for($i=0;$i -lt $lines.Count;$i++){
-        $trim=$lines[$i].Trim()
-        if($trim -notmatch '^uses:\s*([^\s#]+)'){continue}
-        $target=$Matches[1]
-        if($target.StartsWith('./')){continue}
-        if($target -notmatch '^([^@]+)@([0-9a-fA-F]{40})$'){
-            $errors.Add("$($workflow.Name):$($i+1): external action '$target' must be pinned to a full 40-character commit SHA.")
         }
     }
 }
