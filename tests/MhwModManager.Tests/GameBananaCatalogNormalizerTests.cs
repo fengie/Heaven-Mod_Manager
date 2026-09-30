@@ -37,17 +37,20 @@ public sealed class GameBananaCatalogNormalizerTests
         Assert.Equal(12, mod.Downloads);
         Assert.Equal("https://gamebanana.com/mods/653359", mod.SourceUrl);
         Assert.Equal(
-            "https://images.gamebanana.com/img/ss/mods/fixture.jpg",
+            "https://gamebanana.com/mods/embeddables/653359?variant=sd_image",
             mod.Thumbnail);
-        Assert.NotNull(mod.ProviderMetadata);
-        Assert.Contains("\"likes\":3", mod.ProviderMetadata!, StringComparison.Ordinal);
+        Assert.Equal(0, mod.Endorsements);
+        Assert.Null(mod.ProviderMetadata);
 
         var file = Assert.Single(mod.Files);
         Assert.Equal("1625805", file.ProviderFileId);
         Assert.Equal(
             "effecient_seliana_20-6020-2-0-1643281679.zip",
             file.FileName);
-        Assert.Equal(CatalogFileCategory.Main, file.Category);\n        Assert.Equal(11695, file.SizeBytes);\n        Assert.Equal("File passed preliminary analysis", file.Description);\n        Assert.Null(file.ProviderMetadata);
+        Assert.Equal(CatalogFileCategory.Main, file.Category);
+        Assert.Equal(11695, file.SizeBytes);
+        Assert.Equal("File passed preliminary analysis", file.Description);
+        Assert.Null(file.ProviderMetadata);
     }
 
     [Fact]
