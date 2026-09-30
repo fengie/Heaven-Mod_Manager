@@ -1,3 +1,11 @@
+# v8.8.52 compact Agent Manager overview — candidate
+
+Reconciled from current v8.8.51 main without importing stale branch metadata. The candidate preserves the shortcut-icon fix and adds only the Agent Manager compact overview, Inspector auto-open behavior, severity summaries, bounded transform/opacity motion, and opt-in UI sound contract from recovered PR #539. Agent Control/plugin identity is 0.6.24.
+
+Exact-head CI and live heaven2 dashboard acceptance remain pending. Other unique branches stay preserved for later semantic recovery.
+
+---
+
 # v8.8.51 shortcut icon integrity — candidate
 
 Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48×48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.

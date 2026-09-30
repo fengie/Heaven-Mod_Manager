@@ -1,3 +1,10 @@
+# v8.8.52 — 2026-09-30
+
+- Compact Agent Manager's high-volume operational surfaces into collapsed summary cards with a responsive at-a-glance overview and bounded per-card scrolling.
+- Preserve explicit Inspector behavior while auto-opening it for agent/notification inspection and surface critical/warning notification counts in collapsed summaries.
+- Add restrained transform/opacity motion, reduced-motion/hidden-page safeguards, and opt-in generated Web Audio UI feedback without continuous animation or polling sounds.
+- Advance Agent Control/plugin identity to 0.6.24 and retain regression coverage for the compact overview and motion/audio contract.
+
 # v8.8.51 — 2026-09-30
 
 - Fixed the corrupted Windows desktop shortcut icon by removing the malformed 48×48 PNG frame while preserving the valid 16×16, 24×24, and 32×32 application artwork.

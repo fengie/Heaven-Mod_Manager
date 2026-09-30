@@ -1,3 +1,11 @@
+# v8.8.52 compact Agent Manager overview — candidate
+
+Canonical parent is v8.8.51 main `485a830a` with the shortcut-icon integrity fix preserved. This candidate carries only the recovered compact Agent Manager UI/motion/audio slice on top: collapsed two-column operational cards, bounded expansion, automatic Inspector opening, severity summaries, reduced-motion/hidden-page safeguards, and opt-in generated UI sounds. Agent Control is v0.6.24.
+
+Next: require exact-head Agent Control, Security Supply Chain, and Workflow Feature gates on the current branch head; then perform live heaven2 dashboard smoke before closure. Merge only the verified head. Preserve #540 and every [RECOVER] branch until its unique semantics are separately integrated; never overwrite v8.8.51 continuity or delete divergent work. Recursively propagate the continuity constitution.
+
+---
+
 # v8.8.51 Windows shortcut icon integrity — candidate
 
 User-reported desktop corruption is reproduced from canonical source: the 48×48 PNG frame embedded in `src/MhwModManager.App/Assets/MHWModManager.ico` has a bad IDAT CRC and malformed termination, while the 16/24/32 frames validate. This candidate removes only the corrupt 48px frame, preserving the existing artwork and allowing Windows to scale the intact 32px image. Integration coverage parses the real committed ICO so malformed frame bytes cannot silently pass verification again. Existing independently owned branches remain separate and must reconcile against this lane if it reaches main first.

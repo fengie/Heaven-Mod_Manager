@@ -1,4 +1,9 @@
-# v8.8.51 Universal Mod Manager
+# v8.8.52 Universal Mod Manager
+
+## v8.8.52 — compact Agent Manager overview and motion polish
+
+Agent Manager now keeps high-volume operational surfaces collapsed by default in a responsive two-column overview, expands one selected surface full-width with bounded internal scrolling, opens Inspector automatically for inspected agents, and summarizes notification severity at a glance. The same patch adds bounded transform/opacity micro-interactions plus opt-in generated UI sounds that respect reduced-motion and hidden-page safeguards. Agent Control advances to **v0.6.24**.
+
 
 ## v8.8.51 — repaired Windows shortcut icon
 

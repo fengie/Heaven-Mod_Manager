@@ -176,6 +176,56 @@ test("dashboard exposes retired registry history separately from live agent list
   assert.match(html, /Terminal and timed-out registry presence is archived here/);
 });
 
+test("dashboard keeps high-volume operational surfaces collapsed and glanceable by default", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+
+  assert.match(html, /id="overviewGrid"/);
+  for (const id of [
+    "machinePoolSection",
+    "notificationSection",
+    "inspectorSection",
+    "retiredAgentsSection",
+    "managedAgentsSection",
+    "federationSection",
+    "leaseSection",
+    "queueSection",
+    "branchSection",
+    "eventSection"
+  ]) {
+    const details = html.match(new RegExp(`<details class="card section compact-section" id="${id}"([^>]*)>`));
+    assert.ok(details, `missing compact overview section #${id}`);
+    assert.doesNotMatch(details[1], /\bopen\b/, `#${id} must start collapsed`);
+  }
+
+  assert.match(html, /\.overview-grid \{ display:grid; grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(html, /details\.compact-section\[open\]\s*\{[^}]*grid-column:1 \/ -1;/s);
+  assert.match(html, /\.compact-section-body \{[^}]*max-height:min\(68vh,760px\);[^}]*overflow:auto;/s);
+  assert.match(html, /function openCompactSection\(id\)/);
+  assert.match(html, /function selectInspector\(kind, id\) \{[\s\S]*openCompactSection\("inspectorSection"\)/);
+  assert.match(html, /function inspectorMissing\(kind, id\) \{[\s\S]*openCompactSection\("inspectorSection"\)/);
+  assert.match(html, /const severities = items\.reduce/);
+  assert.match(html, /Showing the newest \$\{visible\.length\} of \$\{items\.length\} notifications/);
+});
+
+test("dashboard motion polish stays opt-in, bounded, and reduced-motion aware", () => {
+  const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/i)?.[1] || "";
+
+  assert.match(html, /id="soundToggle"[^>]*aria-pressed="false"/);
+  assert.match(script, /localStorage\.getItem\("agent-control-ui-sound"\) === "on"/);
+  assert.match(script, /window\.AudioContext \|\| window\.webkitAudioContext/);
+  assert.match(script, /function playUiSound\(kind="tap"\)/);
+  assert.match(script, /function bindCompactSectionMotion\(\)/);
+  assert.match(script, /function setMetricText\(id, value\)/);
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(script, /document\.visibilityState !== "visible"/);
+
+  const motion = extractInlineDeclaration(script, "function animateCompactSection(section)");
+  assert.match(motion, /section\.animate\(/);
+  assert.doesNotMatch(motion, /(?:scrollHeight|offsetHeight|clientHeight|style\.height|style\.width)/);
+  assert.match(script, /element\.textContent === next/);
+});
+
 test("dashboard renders notifications and a stable explicit inspector contract", () => {
   const html = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);

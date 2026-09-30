@@ -1,3 +1,9 @@
+# v8.8.52 compact Agent Manager — verification scope
+
+No v8.8.51 or pre-reconciliation green transfers to this candidate. Exact-head acceptance requires Agent Control, Security Supply Chain, and Workflow Feature success on the reconciled source plus live heaven2 confirmation that the operational surfaces start collapsed, expansion stays bounded, Inspector opens correctly, reduced-motion suppresses nonessential motion, and UI sound remains opt-in with background refresh silent. The v8.8.51 icon fix is inherited from canonical main and must remain present.
+
+---
+
 # v8.8.51 shortcut icon integrity — verification scope
 
 Source proof: canonical v8.8.50 ICO contained four PNG frames; 16×16, 24×24, and 32×32 passed bounds/dimension/chunk-CRC/IEND validation, while 48×48 failed IDAT CRC and termination validation. Candidate must pass `ApplicationIconIntegrityTests`, full exact-head repository gates, packaged EXE/resource verification, and a fresh real Windows shortcut render before the icon is considered runtime-verified. Compilation alone is not sufficient evidence for shell-visible binary resources.

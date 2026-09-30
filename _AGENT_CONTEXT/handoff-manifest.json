@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.51",
+  "currentVersion": "8.8.52",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.50 governance integration merged at 3e4ae104 after exact-head PR gates",
+  "immediateParentRevision": "v8.8.51 shortcut icon integrity merged at 485a830a7cd98b44dd1721c613d4b802bb99820e",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -105,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.51 shortcut-icon integrity closure: require exact-head gates, verify the packaged EXE/resource and a freshly recreated Windows desktop shortcut, merge/push/verify canonical main, publish/update installed client, preserve independently owned UI branches for reconciliation, and recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.52 compact Agent Manager overview: require exact-head Agent Control, Security Supply Chain and Workflow Feature gates, preserve v8.8.51 icon integrity, perform live heaven2 collapsed-overview/Inspector/motion smoke, merge only the verified head, then continue the preserved unique PR recovery queue and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
