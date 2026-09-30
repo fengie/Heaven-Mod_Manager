@@ -4,18 +4,18 @@
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.22",
+  "currentVersion": "8.8.23",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "nextMilestone": "obtain exact-SHA Windows verification for present v8.8.22 main after strict analyzer repair, then keep release claims scoped to that exact verified head",
+  "nextMilestone": "P0 Agent Manager functionality: keep all autonomous engineering cycles on Agent Control until exact-head checks, heaven2 controller smoke, and heaven1 worker-bridge smoke pass together",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.21 visible-progress governance",
-  "status": "v8.8.22-strict-analyzer-repair",
-  "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
+  "immediateParentRevision": "v8.8.22 strict analyzer repair",
+  "status": "v8.8.23-agent-manager-p0",
+  "verificationAppliesToCommit": null,
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "84df39153b94240017a95320d5ab09d358a8ca59",
-  "verificationScopeNote": "v8.8.22 closes strict analyzer failures across Core/catalog production code and the Core test project on top of 84df39153b94240017a95320d5ab09d358a8ca59. Production fixes were exact-Heaven-checked through cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2 (Core 0 warnings/errors); the completed versioned tree requires fresh exact-head Windows verification before release claims.",
+  "candidateSourceCommit": null,
+  "verificationScopeNote": "v8.8.23 changes Agent Control orchestration/priority behavior and release identity. Historical v8.8.22 verification does not transfer; exact-head Agent Control checks and live heaven2/heaven1 control-path smoke are required before the P0 lock can be marked complete.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
@@ -34,6 +34,7 @@
     "evidenceCommit": "4f0e2402d3a61e9ba3db005f026b02ccb4aba7de"
   },
   "candidateChanges": [
+    "2026-09-30 v8.8.23 Agent Manager P0: canonical continuity now locks autonomous implementation/expansion onto Agent Control until exact-head control-plane checks and heaven2→heaven1 runtime smoke pass; runtime/plugin identity is aligned at Agent Control 0.6.2 and stable ChatGPT sessions heartbeat by default when a real stable identity exists.",
     "2026-09-30 v8.8.22 strict analyzer repair: close six Core/catalog warnings-as-errors plus four Core-test analyzer failures; record LR-042 and the analyzer-cascade bug precedent; require production-and-test analyzer closure before integration readiness.",
     "2026-09-30 v8.8.21 governance: every completed meaningful change set must update root README.md with a current-patch progress summary, increment the patch version, update CHANGELOG.md, synchronize canonical version metadata, and pass strengthened handoff validation; evidence-only attestation/publication for the same change set does not recursively bump again.",
     "2026-09-29 v8.8.20 Auto Populate candidate: the Mods page can compute and immediately apply a deterministic maximal conflict-free installed setup; explicit dependencies, inferred main/base packages, required file/texture providers, native loader packages, and pinned shared-resource providers are included only when the entire closure remains valid and non-blocking.",
@@ -320,5 +321,21 @@
     "releaseArtifact": "MHW-Manual-Mod-Manager-v8.8.4-win-x64.zip",
     "releaseArtifactSha256": "0F9B9577190037F29B500D2A709356A5F11E1CABA9770343FAA89F160AE6B154",
     "hostedExactMain": "pending"
+  },
+  "agentManagerPriority": {
+    "status": "active",
+    "priority": "P0",
+    "mode": "functionality-lock",
+    "goal": "Make Agent Manager / Agent Control work as intended end-to-end before unrelated engineering expansion.",
+    "completionRequires": [
+      "Agent Control runtime package and ChatGPT plugin versions agree.",
+      "npm run check passes on the exact candidate.",
+      "npm test passes on the exact candidate, including Agent Manager P0 regression coverage.",
+      "Server, CLI, and dashboard smoke pass on heaven2 with the controller remaining on heaven2.",
+      "Heaven Local Bridge reports the heaven1 runtime host (heaven) healthy enough for delegated worker execution, or Agent Control fails closed with a clear provider-health reason.",
+      "START SWARM / perpetual orchestration can dispatch, observe, recover, and stop managed work without stale/duplicate ownership.",
+      "Federated counts expose provider, machine, heartbeat freshness, and partial-coverage status honestly."
+    ],
+    "releasePolicy": "Until status is changed to complete after exact-head runtime proof, implementation and expansion prompts must prioritize Agent Manager work and must not spend autonomous cycles on unrelated product features."
   }
 }
