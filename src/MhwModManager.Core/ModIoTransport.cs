@@ -78,8 +78,7 @@ public sealed class ModIoTransport
 
         this.client = client;
         this.apiKey = NormalizeApiKey(apiKey);
-        baseUri = NormalizeBaseUri(apiBaseUri);
-        this.baseUri = baseUri;
+        this.baseUri = NormalizeBaseUri(apiBaseUri);
         this.maxResponseBytes = maxResponseBytes;
         this.userAgent = NormalizeUserAgent(userAgent);
     }
@@ -110,7 +109,7 @@ public sealed class ModIoTransport
 
         return SendJsonAsync(
             $"games/{gameId.ToString(CultureInfo.InvariantCulture)}/mods",
-            parameters,
+            parameters.ToArray(),
             ct);
     }
 
