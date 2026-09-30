@@ -17,7 +17,19 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 }
 
-$policyPath = Join-Path $RepoRoot 'tools\agent-control\Startup-Policy.ps1'
+$startMutex = New-Object System.Threading.Mutex($false, 'Local\MHW-Agent-Control-VerifiedStart')
+$startMutexHeld = $false
+try {
+    try {
+        $startMutexHeld = $startMutex.WaitOne([TimeSpan]::FromSeconds(30))
+    } catch [System.Threading.AbandonedMutexException] {
+        $startMutexHeld = $true
+    }
+    if (-not $startMutexHeld) {
+        throw 'Timed out waiting for the Agent Control verified-start ownership lock.'
+    }
+
+    $policyPath = Join-Path $RepoRoot 'tools\agent-control\Startup-Policy.ps1'
 if (-not (Test-Path -LiteralPath $policyPath)) {
     throw "Agent Control startup policy missing: $policyPath"
 }
@@ -200,12 +212,18 @@ if (-not $verifiedIdentity) {
     throw 'Agent Control started but exact process-start source identity could not be verified.'
 }
 
-[pscustomobject]@{
-    ok = $true
-    started = $true
-    replaced = $replaced
-    already_running = $alreadyRunning
-    source = $source
-    identity = $verifiedIdentity
-    status = $status
+    [pscustomobject]@{
+        ok = $true
+        started = $true
+        replaced = $replaced
+        already_running = $alreadyRunning
+        source = $source
+        identity = $verifiedIdentity
+        status = $status
+    }
+} finally {
+    if ($startMutexHeld) {
+        try { $startMutex.ReleaseMutex() } catch {}
+    }
+    $startMutex.Dispose()
 }
