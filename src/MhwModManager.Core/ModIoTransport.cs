@@ -109,7 +109,7 @@ public sealed class ModIoTransport
 
         return SendJsonAsync(
             $"games/{gameId.ToString(CultureInfo.InvariantCulture)}/mods",
-            parameters.ToArray(),
+            parameters,
             ct);
     }
 
