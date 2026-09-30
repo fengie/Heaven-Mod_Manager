@@ -51,12 +51,13 @@ public static class ModIoCatalogNormalizer
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(document);
-        var modId = NormalizePositiveId(providerModId, nameof(providerModId));
+        if (!TryParseProviderModId(providerModId, out _, out var modId))
+            throw new ArgumentException("mod.io provider mod id must include game and mod ids.", nameof(providerModId));
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
             throw new InvalidDataException("mod.io file-list response must be an object.");
         var data = RequireArray(root, "data");
-        return data.EnumerateArray().Select(item => NormalizeFile(modId, item)).ToArray();
+        return data.EnumerateArray().Select(item => NormalizeFile(providerModId, modId, item)).ToArray();
     }
 
     public static ModIoResolvedDownload NormalizeDownload(
@@ -181,7 +182,7 @@ public static class ModIoCatalogNormalizer
             ProviderMetadata: null);
     }
 
-    private static CatalogModFile NormalizeFile(string expectedModId, JsonElement item)
+    private static CatalogModFile NormalizeFile(string providerModId, string expectedModId, JsonElement item)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         RequireObject(item, "modfile");
@@ -197,7 +198,7 @@ public static class ModIoCatalogNormalizer
         var filename = ReadRequiredString(item, "filename");
         return new CatalogModFile(
             ProviderId,
-            expectedModId,
+            providerModId,
             fileId,
             string.IsNullOrWhiteSpace(ReadOptionalString(item, "version")) ? filename : ReadOptionalString(item, "version")!,
             filename,
