@@ -37,6 +37,8 @@ Run the server as a long-lived process, then retry `status`.
 
 ## Read swarm state
 
+For repository startup, prefer `node <agentctl-path> bootstrap` over the full dashboard snapshot. The read-only packet expires after two minutes, provides exact core/index hashes and bounded ownership, and labels cached remote refs `local-ref-only`. Refresh Git/PR/lease truth before mutation; expand a truncated ownership list with the normal state commands. Retrieve relevant indexed sections from the assigned checkout with `node tools/agent-control/repository-context.mjs --document PATH --sha256 HASH --line N --lines 120`. Hash changes require a new packet. Read core policies in full; the packet does not inherit verification or grant permission.
+
 Use:
 
 ```powershell

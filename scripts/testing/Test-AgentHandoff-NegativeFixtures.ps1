@@ -34,6 +34,7 @@ function Expect-Rejected {
     $original=Get-Content -Raw -LiteralPath $path
     try{
         $changed=& $Mutate $original
+        if($changed -ceq $original){throw "Negative fixture '$Name' did not mutate its input; update the fixture for current policy prose."}
         Set-Content -LiteralPath $path -Value $changed -Encoding UTF8
         $rejected=$false
         try{
@@ -118,7 +119,8 @@ try{
         param($text)
         $line=[regex]::Match($text,'(?m)^2\. Read .*$').Value
         if([string]::IsNullOrWhiteSpace($line)){throw 'Fixture could not locate mandatory training read step 2.'}
-        $changed=$line -replace '`_AGENT_CONTEXT/LEARNED_RULES\.md`','the continuity ledger'
+        $changed=$line -replace '`?_AGENT_CONTEXT/LEARNED_RULES\.md`?','the continuity ledger'
+        if($changed -ceq $line){throw 'Fixture failed to remove the active learned-rules requirement.'}
         return $text.Replace($line,$changed+' <!-- _AGENT_CONTEXT/LEARNED_RULES.md -->')
     }
 
@@ -129,7 +131,7 @@ try{
 
     Expect-Rejected 'AGENTS weakens Core Rules while retaining authorization keyword' 'AGENTS.md' {
         param($text)
-        $text -replace 'Core continuity rules may be weakened only with explicit user authorization\.','Core continuity rules may be weakened without explicit user authorization.'
+        $text -replace '(?i)Core (?:continuity rules|Rules) (?:may|can) be weakened only with explicit user authorization\.','Core Rules may be weakened without explicit user authorization.'
     }
 
     Expect-Rejected 'README read-order deception' '_AGENT_CONTEXT/README_FIRST.md' {

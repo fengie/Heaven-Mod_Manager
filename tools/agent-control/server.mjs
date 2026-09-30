@@ -5,7 +5,8 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnHidden as spawn, execFileHidden as execFileAsync } from "./lib/background-process.mjs";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
-import { renderAgentPrompt, REQUIRED_REPOSITORY_TRAINING_PATHS, REPOSITORY_CONTEXT_INDEX_PATHS } from "./lib/prompt-templates.mjs";
+import { renderAgentPrompt } from "./lib/prompt-templates.mjs";
+import { buildRepositoryBootstrap, verifyRepositoryBootstrap, manifestLines } from "./lib/repository-bootstrap.mjs";
 import { decideAutopilotAction, normalizeAutopilotState, transitionAutopilot } from "./lib/autopilot-core.mjs";
 import {
   STATE_VERSION,
@@ -186,35 +187,6 @@ function taskCapabilityMatches(expectedHash, token) {
 
 function requestTaskCapability(req) {
   return String(req?.headers?.["x-agent-control-task-token"] || "").trim();
-}
-
-function repositoryTrainingPathsFor(role) {
-  const paths = [...REQUIRED_REPOSITORY_TRAINING_PATHS];
-  if (role === "manager") paths.push("_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt");
-  return paths;
-}
-
-function hashRepositoryManifest(worktree, paths, label) {
-  const manifest = [];
-  for (const relativePath of paths) {
-    const absolutePath = path.join(worktree, relativePath);
-    if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
-      throw new Error(`Repository training gate failed: ${label} source is missing: ${relativePath}`);
-    }
-    const content = fs.readFileSync(absolutePath);
-    if (!content.length) {
-      throw new Error(`Repository training gate failed: ${label} source is empty: ${relativePath}`);
-    }
-    manifest.push(`${relativePath} — sha256:${createHash("sha256").update(content).digest("hex")} — ${content.length} bytes`);
-  }
-  return manifest;
-}
-
-function buildRepositoryTrainingManifest(worktree, role) {
-  return {
-    core: hashRepositoryManifest(worktree, repositoryTrainingPathsFor(role), "core training"),
-    context: hashRepositoryManifest(worktree, REPOSITORY_CONTEXT_INDEX_PATHS, "indexed context")
-  };
 }
 
 function authorizationError(message) {
@@ -594,8 +566,8 @@ async function listCheckedOutBranches() {
     .filter(Boolean);
 }
 
-async function resolveBaseRef(baseBranch) {
-  await git(["fetch", "origin", "--prune"]);
+async function resolveBaseRef(baseBranch, { remoteAlreadyRefreshed = false } = {}) {
+  if (!remoteAlreadyRefreshed) await git(["fetch", "origin", "--prune"]);
   const remoteRef = `refs/remotes/origin/${baseBranch}`;
   try {
     await git(["rev-parse", "--verify", remoteRef]);
@@ -1390,6 +1362,7 @@ function buildPrompt({
   additionalConstraints = [],
   repositoryTrainingManifest = [],
   repositoryContextManifest = [],
+  repositoryBootstrap = null,
   swarmEvolutionContext = []
 }) {
   return renderAgentPrompt({
@@ -1404,6 +1377,7 @@ function buildPrompt({
     additionalConstraints,
     repositoryTrainingManifest,
     repositoryContextManifest,
+    repositoryBootstrap,
     swarmEvolutionContext,
     assignment: { taskId, priority, boundary, baseBranch, baseSha, branchName }
   });
@@ -1456,6 +1430,7 @@ async function deployOne({
   const assignedMachine = placement.machine;
   const requestedBase = (baseBranch || "main").trim();
   const branchInventory = await listBranchInventory();
+  const repositoryRefreshedAt = isoNow();
   const checkedOutBranches = await listCheckedOutBranches();
   const branchPlan = chooseBranchPlan({
     task: task.trim(),
@@ -1478,7 +1453,7 @@ async function deployOne({
     ? branchPlan.branchName
     : generatedBranchName;
   const effectiveBase = branchPlan.mode === "reused" ? branchName : requestedBase;
-  const baseRef = await resolveBaseRef(effectiveBase);
+  const baseRef = await resolveBaseRef(effectiveBase, { remoteAlreadyRefreshed: true });
   const baseSha = await git(["rev-parse", baseRef]);
   const mutableBoundary = (boundary || "").trim() || `isolated:${branchName}`;
   const normalizedPriority = normalizePriority(priority);
@@ -1582,7 +1557,16 @@ async function deployOne({
   let logFd = null;
   const remoteExecution = placement.provider === "heaven-bridge";
   try {
-    const repositoryManifests = buildRepositoryTrainingManifest(worktree, role);
+    const repositoryBootstrap = await buildRepositoryBootstrap({
+      root: worktree,
+      role,
+      leases: refreshState().leases,
+      refreshedAt: repositoryRefreshedAt,
+      git: args => git(args, worktree)
+    });
+    const launchHead = await git(["rev-parse", "HEAD"], worktree);
+    if (launchHead !== baseSha) throw new Error("Repository training source moved from its assigned base before launch.");
+    verifyRepositoryBootstrap(repositoryBootstrap, { root: worktree, head: launchHead });
     if (!remoteExecution) codex = findCodex();
     const swarmEvolution = swarmContext
       ? buildSwarmPromptEvolutionContext(refreshState(), {
@@ -1605,8 +1589,9 @@ async function deployOne({
       repositoryWriteAuthorized,
       acceptanceCriteria: taskRecord.acceptanceCriteria,
       verification: taskRecord.verification,
-      repositoryTrainingManifest: repositoryManifests.core,
-      repositoryContextManifest: repositoryManifests.context,
+      repositoryTrainingManifest: manifestLines(repositoryBootstrap.manifests.core),
+      repositoryContextManifest: manifestLines(repositoryBootstrap.manifests.context),
+      repositoryBootstrap,
       swarmEvolutionContext: swarmEvolution?.lines || [],
       additionalConstraints: [
         ...additionalConstraints,
@@ -5776,6 +5761,16 @@ function allowedOrigin(req) {
   return allowed.has(origin);
 }
 
+let repositoryBootstrapInFlight = null;
+function readRepositoryBootstrap() {
+  if (!repositoryBootstrapInFlight) {
+    const state = loadState();
+    repositoryBootstrapInFlight = buildRepositoryBootstrap({ root: REPO, leases: state.leases })
+      .finally(() => { repositoryBootstrapInFlight = null; });
+  }
+  return repositoryBootstrapInFlight;
+}
+
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${HOST}:${PORT}`);
@@ -5787,6 +5782,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && pathname === "/api/status") {
       const state = loadState();
       return sendJson(res, 200, buildHealthSnapshot(state));
+    }
+
+    if (req.method === "GET" && pathname === "/api/bootstrap") {
+      // Read-only and bounded. This route deliberately does not fetch, discover
+      // providers, scan worktrees or run the full dashboard snapshot.
+      return sendJson(res, 200, await readRepositoryBootstrap());
     }
 
     if (req.method === "GET" && pathname === "/api/snapshot") {

@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - "tools/agent-control/**"
+      - "AGENTS.md"
+      - "_AGENT_TRAINING/**"
+      - "_AGENT_CONTEXT/**"
+      - "NEXT-AGENT-START-HERE.md"
       - ".github/workflows/agent-control-pr-gate.yml"
   push:
     branches:
@@ -11,6 +15,10 @@ on:
       - "feature/agent-control-plane-v2-20260928"
     paths:
       - "tools/agent-control/**"
+      - "AGENTS.md"
+      - "_AGENT_TRAINING/**"
+      - "_AGENT_CONTEXT/**"
+      - "NEXT-AGENT-START-HERE.md"
       - ".github/workflows/agent-control-pr-gate.yml"
 
 permissions:

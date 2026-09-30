@@ -77,5 +77,5 @@ test("manager prompt requires manager-specific core training", () => {
 });
 
 test("prompt library version records the efficient-bootstrap revision", () => {
-  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.1");
+  assert.equal(PROMPT_LIBRARY_VERSION, "2026.09.30.2");
 });

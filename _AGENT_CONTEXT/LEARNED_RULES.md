@@ -947,3 +947,11 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** conflict/dependency proof separation; exact-head verification doctrine.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## LR-055 — startup cost needs byte budgets and operational retrieval
+- **Rule ID:** LR-055
+- **Status:** Active
+- **Trigger / evidence:** v8.8.40 selected a small number of mandatory files while those files still contained about 120 KB of policy/history.
+- **Rule:** Bound aggregate core bytes, preserve historical knowledge in explicit indexed archives, and provide hash-checked bounded retrieval. Expiring packets label cached refs and incomplete ownership honestly; neither a summary nor a fresh timestamp grants permission or inherited verification.
+- **Enforcement:** repository-bootstrap.mjs core/packet budgets, exact hash/source checks and repository-bootstrap.test.mjs real Git/CLI/HTTP plus negative fixtures. Generic trainer README startup doctrine carries the lesson forward.
+- **Related rules:** LR-053 progressive canonical bootstrap; permanent continuity constitution and exact-input verification.

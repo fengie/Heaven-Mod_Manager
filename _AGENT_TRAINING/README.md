@@ -33,6 +33,8 @@ Before the first task-facing answer, plan, dispatch, or task-specific action:
 
 Senior/premium agents should consume compact evidence packets and spend scarce context on architecture, diagnosis, review, integration, and verification decisions; mechanical retrieval and repetitive evidence gathering should be offloaded when practical.
 
+Bound startup by measured bytes, not file count. Keep current-state truth concise and archive historical snapshots without deleting knowledge. A context index needs an operational retrieval path: whitelist documents, require the advertised source hash, paginate by lines and UTF-8 bytes, reject linked/outside paths, and regenerate expired or changed evidence. A locally cached remote ref is not a fresh remote observation; partial ownership lists must disclose truncation and require expansion before mutation. Enforce core-size budgets and test actual CLI/API paths as well as pure helpers.
+
 No agent should answer first and “catch up” on repository context afterward. Progressive startup changes **how much is reread**, not the requirement to prove canonical truth and inspect task-relevant evidence. Propagate the same gate to successors and sub-agents.
 
 ## Required completion behavior

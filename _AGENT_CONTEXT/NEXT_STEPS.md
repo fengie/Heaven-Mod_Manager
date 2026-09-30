@@ -1,3 +1,20 @@
+# 2026-09-30 v8.8.41 scalable bootstrap — active owner and continuation
+
+Current owner: this chat, branch `codex/scalable-agent-bootstrap`, base `6f3dd534757697bca7d2464ca7db4e9322ce763c`, Agent Control bootstrap/training boundary; no other active implementation owner or open PR was found at preflight. Product source behavior is unchanged; v8.8.40 build 349 evidence remains historical, not candidate proof.
+
+1. Run full Agent Control syntax/tests and handoff/negative fixtures on this exact candidate. Inspect diff and packet/core measurements; resolve failures without weakening policy or source/ownership checks.
+2. Refresh main/PRs/leases, commit/push, create/attach one PR, require exact-head Agent Control, Security and Workflow Feature gates, then integrate through the authorized PR path.
+3. Verify canonical-main Windows release/security gates, immediately publish/verify private and public immutable updater tag/assets/digests/provenance, and persist exact evidence.
+4. Restore Agent Control 0.6.19 from clean canonical main through the guarded hidden elevated recovery path; verify actual `/api/bootstrap`, CLI/context pagination and generated main/manager/verification prompts. No bridge authentication bypass, RDC or Work handoff.
+5. Update current revision and supersede this candidate note with exact closure/ownership/results before claiming completion. Preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` to the successor and the agent after them.
+
+Improvement opportunities: profile lookup latency and adoption under many workers before adding caching; targeted heading/search retrieval can improve navigation while keeping hash checks and budgets. Retained detail policies/history should be maintained in their indexed domain instead of re-expanding core files. Safely reconcile old inactive task branches only after unique-work/owner proof.
+
+Unresolved separate gaps: actual operator-installed-client staged build 349 confirmation; heaven2 Bridge v7 and missing signing/local ACL opt-in. CI disposable updater proof does not close the real installation. Keep authentication fail-closed.
+
+PLUGIN-PREFLIGHT: Task is efficient high-reasoning process scaling with remaining account allowance (observed primary 20% used, weekly 19%; percentages are usage windows, not token credits). Discovered live GitHub, Codex usage, Heaven Bridge/control/code-execution and canonical Agent Control capabilities; loaded Heaven Bridge and canonical Agent Control/code-execution instructions plus plugins README/backlog. Selected existing Agent Control ownership for bootstrap/context API/CLI, hidden local deterministic testing, GitHub connector PR integration and verified Heaven CI. Installed legacy Agent Control instructions had stale RDC/heaven routing; canonical instructions prevail. Bridge auth remains positively unhealthy as recorded in v8.8.40 closure; existing owner/backlog recovery is reused, no duplicate replacement or bypass. Broad shell is used only for owned source edits/tests/Git and guarded native elevation where the structured bridge cannot authenticate.
+
+---
 # 2026-09-30 v8.8.40 closure evidence — current continuation
 
 PR #510 is integrated; exact-main release/security/controller gates passed, build 349 is immutable in both updater feeds, and Agent Control 0.6.18 is running on heaven2 at source `f7bbeb8d`. #507 is closed as superseded. The candidate checklist below is historical and superseded by `_AGENT_CONTEXT/EVIDENCE/v8.8.40-bootstrap-runtime-closure.md`, which records exact commands/results, ownership, ordered next actions and improvement opportunities. Continue the actual operator-installed-client staged-update verification and separately authorized bridge runtime recovery; do not claim the operator client updated from disposable CI proof. Preserve and recursively propagate the continuity constitution to your successor.

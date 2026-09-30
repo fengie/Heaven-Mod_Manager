@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const PROMPT_LIBRARY_VERSION = "2026.09.30.1";
+export const PROMPT_LIBRARY_VERSION = "2026.09.30.2";
 
 export const ROLE_TEMPLATES = Object.freeze({
   manager: {
@@ -61,6 +61,8 @@ export const REQUIRED_REPOSITORY_TRAINING_PATHS = Object.freeze([
 ]);
 
 export const REPOSITORY_CONTEXT_INDEX_PATHS = Object.freeze([
+  "_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md",
+  "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "NEXT-AGENT-START-HERE.md",
   "_AGENT_TRAINING/REPOSITORY_STRUCTURE.md",
   "_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt",
@@ -181,6 +183,7 @@ export function renderAgentPrompt({
   additionalConstraints = [],
   repositoryTrainingManifest = [],
   repositoryContextManifest = [],
+  repositoryBootstrap = null,
   swarmEvolutionContext = []
 }) {
   const template = ROLE_TEMPLATES[role] || ROLE_TEMPLATES.support;
@@ -215,6 +218,22 @@ export function renderAgentPrompt({
     "INDEXED CONTEXT MANIFEST — HASH-VERIFIED; READ TASK-RELEVANT SECTIONS ONLY",
     bullets(repositoryContextManifest),
     "",
+    ...(repositoryBootstrap ? [
+      "LIVE REPOSITORY BOOTSTRAP — EXACT SOURCE, BOUNDED EVIDENCE",
+      JSON.stringify({
+        schema: repositoryBootstrap.schema,
+        role: repositoryBootstrap.role,
+        generatedAt: repositoryBootstrap.generatedAt,
+        expiresAt: repositoryBootstrap.expiresAt,
+        repository: repositoryBootstrap.repository,
+        current: repositoryBootstrap.current,
+        ownership: repositoryBootstrap.ownership,
+        contextRetrieval: repositoryBootstrap.contextRetrieval,
+        obligations: repositoryBootstrap.obligations
+      }),
+      "Refresh an expired packet or changed source hash; retrieve indexed sections with the provided local context command. Local-ref-only evidence does not prove fresh remote main. Re-check leases before mutation.",
+      ""
+    ] : []),
     "ROLE CONTRACT",
     template.mission,
     "",
