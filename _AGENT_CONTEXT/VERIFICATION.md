@@ -1,3 +1,11 @@
+# v8.8.27 Agent Control registry-card inspection — verification scope
+
+Required source closure: exact-head `cd tools/agent-control && npm run check && npm test`. The operator UI test must parse the emitted inline dashboard JavaScript and pin the managed/federated card interaction contract.
+
+Required heaven2 live closure: mouse-click and Enter/Space inspection on managed + federated cards; nested action controls must not double-fire; v8.8.26 retirement behavior must remain intact. A source-only pass is not installed-runtime proof.
+
+---
+
 # v8.8.26 Agent Control exhausted-agent registry retirement — verification scope
 
 This candidate changes terminal recovery cleanup, process/worktree retirement safety, managed/federated registry membership, external observation replay suppression/reactivation, state migration, and Agent Control v0.6.5 release identity. Historical v8.8.25 evidence does not verify these bytes.
