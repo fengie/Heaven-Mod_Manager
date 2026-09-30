@@ -1,3 +1,16 @@
+# v8.8.52 Heaven authentication-state repair
+
+This branch is limited to Agent Control Heaven-provider status truthfulness plus required version/continuity metadata. The live investigation proved the old 27-agent collapse came from an obsolete remote-runner configuration; current main already checks Heaven transport before launch and excludes deterministic nonzero launcher failures from no-work/swarm-tail retries.
+
+1. Require exact-head Agent Control, Security Supply Chain and Workflow Feature gates.
+2. Preserve `heartbeat-auth-invalid` as fail-closed but render it `auth-required`, not `presence-unknown`. Stale/missing/transport-uncertain evidence stays `presence-unknown`.
+3. Reconcile any concurrent v8.8.50/v8.8.51 integration without editing externally owned heads or discarding their work.
+4. After integration, sync/restart Agent Control on heaven2. Run the existing machine-local `heaven-bridge\Set-PrimaryControlMode.ps1` or provision HMAC locally; never place credential/key material in Git or relay state.
+5. Prove a fresh Heaven heartbeat is admitted, one bounded Heaven-backed dispatch completes, and auth/transport failure does not create a replacement storm.
+6. Improvement: keep auth/configuration failures as explicit provider-blocked states and recovery bounded rather than generic no-work retries.
+
+Live evidence: heaven worker v8, explicit machine-local private-repo compatibility mode, six free slots and no running jobs. heaven2 worker v8 remains `hmac-required` with six free slots. SMB, remote Task Scheduler and WinRM did not provide a credential-free authorized route from heaven to heaven2; no auth bypass was used. Preserve and recursively propagate continuity.
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
