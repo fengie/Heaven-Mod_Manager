@@ -19,7 +19,6 @@ public sealed class ManagerDatabase(string databasePath)
         Mode = SqliteOpenMode.ReadWriteCreate,
         Cache = SqliteCacheMode.Default,
         Pooling = true,
-        ForeignKeys = true,
         DefaultTimeout = BusyTimeoutSeconds
     }.ToString();
 
@@ -45,7 +44,17 @@ public sealed class ManagerDatabase(string databasePath)
     public async Task<SqliteConnection> OpenAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return await OpenRawAsync(ct);
+        var c = await OpenRawAsync(ct);
+        try
+        {
+            await ExecAsync(c, "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=10000;", ct);
+            return c;
+        }
+        catch
+        {
+            await c.DisposeAsync();
+            throw;
+        }
     }
 
     private async Task<SqliteConnection> OpenRawAsync(CancellationToken ct)
