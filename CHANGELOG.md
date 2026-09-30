@@ -1,3 +1,9 @@
+# v8.8.53 — 2026-09-30
+
+- Replaced the Windows-system-surface ComboBox workaround with an app-owned dark template for the selected value, arrow, popup, and items.
+- Strengthened the UI regression so Windows light-control brushes cannot silently return.
+- Recorded the escaped visual-regression precedent and kept installed-client visual confirmation as a completion gate.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
