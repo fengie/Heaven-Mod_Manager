@@ -14,8 +14,8 @@
   "verificationAppliesToCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationCommit": "5abe40304dfcb48f96e750bd7da3d0075315625b",
   "lastClosedVerificationRun": "hosted-github-actions-36541891969",
-  "candidateSourceCommit": "4340edb2ee9c7096393ad952ebcf31e1a1d91fae",
-  "verificationScopeNote": "v8.8.21 changes production conflict/dependency preflight semantics. Historical closed verification remains exact-SHA evidence only and does not verify this candidate; fresh exact-head Windows verification is required before release.",
+  "candidateSourceCommit": "bf649e02849392fb0f00bc9d635526a7d6f77e57",
+  "verificationScopeNote": "v8.8.21 changes production conflict/dependency preflight semantics. Historical closed verification remains exact-SHA evidence only and does not verify this candidate; fresh exact-head Windows verification is required. The first exact-head attempt exposed verification-trace gaps only; those trace gaps are repaired on this candidate.",
   "lastClosedVerification": {
     "functionInventoryTotal": 748,
     "functionsVerified": 748,
