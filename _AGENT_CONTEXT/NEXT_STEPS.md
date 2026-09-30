@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.34 durable stop proof — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`; require Agent Control and Security PR gates on the exact candidate.
+2. Verify the stop-safety regressions cover canonical provider fallback, missing durable remote id, ambiguous not_running/unknown proof, running-race re-cancellation through the shared proof primitive, local-wrapper-exits-first, lease-release ordering, and non-Heaven behavior.
+3. Merge only after exact-head gates pass; then close #482 through the integration PR.
+4. On heaven2→heaven, smoke one operator Stop and one provider-capacity termination against real Bridge jobs and record explicit processed-terminal state before ownership release; do not relabel source CI as live-runtime evidence.
+5. Preserve the already-integrated v8.8.33 lightweight-health behavior; its p50/p95/no-false-restart live evidence remains separate.
+6. Continue #475 startup freshness and #461 notification/inspector closure from the then-current main, with durable successor notes.
+
+---
+
 # 2026-09-30 v8.8.33 lightweight health — INTEGRATED / RUNTIME NEXT
 
 1. Source integration is complete: PR #495 merged exact candidate `6483661d87d452715f85d06088a53f8b8ebeafe2` to canonical `main`; Agent Control run 504 and Security run 363 passed on that candidate.

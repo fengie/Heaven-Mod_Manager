@@ -1,3 +1,13 @@
+# v8.8.34 Agent Control durable stop proof — verification scope
+
+This candidate changes live Agent Control termination ownership semantics. Required source closure is exact-head `npm --prefix tools/agent-control run check`, the complete Agent Control test suite, and configured Agent Control/Security PR gates. The focused source contract must prove that proof-pending state precedes child-exit classification, failure does not release leases, and successful finalization is the only lease-release path.
+
+The canonical `proveRemoteJobStopped` regressions already pin explicit processed-terminal whitelisting, fail-closed `not_running` + `unknown`, authoritative status/cancel failures, and running-race re-cancellation. v8.8.34 wires operator Stop and provider-capacity termination to that same primitive through the canonical managed-provider resolver.
+
+Live heaven2→heaven operator/capacity termination remains separate runtime evidence. Historical v8.8.33 health evidence and earlier retirement evidence must not be relabeled as proving this changed stop path.
+
+---
+
 # v8.8.33 Agent Control lightweight health — source closure / runtime evidence pending
 
 Source integration is closed. Exact candidate `6483661d87d452715f85d06088a53f8b8ebeafe2` passed Agent Control PR Gate run **504** and Security Supply Chain Gate run **363**, then merged through PR #495 as canonical squash commit `4ffff561a05e7f4d9f2a47b2af49927ca086cee2`.
