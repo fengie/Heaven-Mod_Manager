@@ -165,7 +165,8 @@ export function resolveHeavenRelayDir({
 
 export function resolveExecutionRelayDir(relayDir = null, options = {}) {
   const explicit = clean(relayDir);
-  return explicit || resolveHeavenRelayDir(options);
+  if (explicit) return explicit;
+  return resolveHeavenRelayDir(options);
 }
 
 function sanitizeId(value, max = 96) {
