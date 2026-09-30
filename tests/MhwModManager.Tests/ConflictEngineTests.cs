@@ -35,4 +35,31 @@ public sealed class ConflictEngineTests
         Assert.Equal("loader-a",d.WinnerModId);
     }
 
+    [Fact] public void Same_family_structural_subset_without_lineage_requires_explicit_choice()
+    {
+        var p=@"nativePC\pl\f_equip\pl999_0000\body\mod\f_body999_0000.mod3";
+        var e=new ConflictEngine();
+        var candidates=new[]{C("a","Suite Alpha",p,"aa",1),C("b","Suite Beta",p,"bb",5)};
+        var mods=new Dictionary<string,ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"]=new("a","Suite Alpha","Suite Alpha","",true,1,FamilyId:"manual:suite"),
+            ["b"]=new("b","Suite Beta","Suite Beta","",true,5,FamilyId:"manual:suite")
+        };
+        var stats=new Dictionary<string,ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"]=new(10,0,10,0,DateTimeOffset.UtcNow),
+            ["b"]=new(8,0,8,0,DateTimeOffset.UtcNow)
+        };
+        var pairStats=new Dictionary<(string,string),PairStats>
+        {
+            [ConflictEngine.PairKey("a","b")]=new(10,8,8)
+        };
+        var d=e.Decide(p,candidates,ConflictRuleIndex.Create([]),new Dictionary<string,string>(),new Dictionary<string,string>(),pairStats,mods,stats);
+        Assert.True(d.Blocking);
+        Assert.Equal(ConflictKind.ModFamilyOption,d.Kind);
+        Assert.Equal("family-internal-choice",d.ReasonCode);
+        Assert.Null(d.WinnerModId);
+    }
+
+
 }
