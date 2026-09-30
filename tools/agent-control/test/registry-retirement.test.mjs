@@ -3,12 +3,15 @@ import assert from "node:assert/strict";
 
 import {
   clearObservationRetirement,
+  federatedAgentRegistryDisposition,
   forgetFederatedAgent,
   isProvenRemoteTerminalJobState,
   isRetryExhaustedManagedAgent,
+  managedAgentRegistryDisposition,
   proveRemoteJobStopped,
   recordAgentRetirement,
-  retiredObservationDecision
+  retiredObservationDecision,
+  retirementSourcesForFederatedAgent
 } from "../lib/registry-retirement.mjs";
 
 test("only terminal retry-exhausted managed agents qualify for retirement", () => {
@@ -24,6 +27,96 @@ test("only terminal retry-exhausted managed agents qualify for retirement", () =
     status: "done",
     recoveryStatus: "work-verified-complete"
   }), false);
+});
+
+test("ordinary terminal failures retire only after ownership and durable-work concerns are clear", () => {
+  assert.deepEqual(
+    managedAgentRegistryDisposition({ status: "failed" }),
+    { retire: true, reason: "failed" }
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "orphaned", recoveryStatus: "work-detected-incomplete" }).retire,
+    false
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "failed" }, { processAlive: true }).reason,
+    "process-still-alive"
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "interrupted" }, { durableWork: true }).reason,
+    "durable-work-pending-reconciliation"
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "done", recoveryStatus: "work-verified-complete" }).retire,
+    false
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({ status: "failed", recoveryStatus: "registry-retirement-blocked" }).retire,
+    false
+  );
+});
+
+test("federated registry retires terminal or expired presence but preserves active recovery and grace", () => {
+  const now = Date.parse("2026-09-30T12:00:00.000Z");
+  const threshold = 300_000;
+  assert.equal(
+    federatedAgentRegistryDisposition({ state: "failed", heartbeat_at: "2026-09-30T11:59:59.000Z" }, { now, disconnectedAfterMs: threshold }).retire,
+    true
+  );
+  assert.equal(
+    federatedAgentRegistryDisposition({
+      state: "failed",
+      recovery_status: "work-detected-incomplete",
+      heartbeat_at: "2026-09-30T11:59:59.000Z"
+    }, { now, disconnectedAfterMs: threshold }).retire,
+    false
+  );
+  assert.equal(
+    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:54:59.999Z" }, { now, disconnectedAfterMs: threshold }).reason,
+    "disconnected:heartbeat-expired"
+  );
+  assert.equal(
+    federatedAgentRegistryDisposition({ state: "disconnected", heartbeat_at: "2026-09-30T11:59:00.000Z" }, { now, disconnectedAfterMs: threshold }).reason,
+    "disconnected-grace-period"
+  );
+  assert.equal(
+    federatedAgentRegistryDisposition({ state: "working", heartbeat_at: "2026-09-30T11:59:00.000Z" }, { now, disconnectedAfterMs: threshold }).retire,
+    false
+  );
+  assert.equal(
+    federatedAgentRegistryDisposition({ state: "working" }, { now, disconnectedAfterMs: threshold }).reason,
+    "disconnected:missing-heartbeat"
+  );
+});
+
+test("retirement ledger preserves every correlated provider source tombstone", () => {
+  const state = { retiredAgents: [] };
+  for (const [provider, sourceId] of [["chatgpt", "conversation-1"], ["github", "run-1"]]) {
+    recordAgentRetirement(state, {
+      agentId: "logical-agent",
+      provider,
+      sourceId,
+      status: "failed",
+      retiredAt: "2026-09-30T12:00:00.000Z"
+    });
+  }
+  assert.deepEqual(
+    state.retiredAgents.map(item => item.key).sort(),
+    ["chatgpt:conversation-1", "github:run-1"]
+  );
+
+  const identities = retirementSourcesForFederatedAgent({
+    provider: "chatgpt",
+    source_id: "conversation-1",
+    observations: [
+      { provider: "chatgpt", source_id: "conversation-1" },
+      { provider: "github", source_id: "run-1" }
+    ]
+  });
+  assert.deepEqual(
+    identities.map(item => item.key).sort(),
+    ["chatgpt:conversation-1", "github:run-1"]
+  );
 });
 
 test("retirement ledger deduplicates the same provider source while preserving durable summary", () => {
