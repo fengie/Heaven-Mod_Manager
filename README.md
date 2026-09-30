@@ -1,4 +1,11 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
+
+
+## v8.8.50 — automatic installed-game discovery
+
+The Games list now performs one automatic, idempotent installed-game discovery pass instead of relying on the MHW-specific bootstrap plus a hidden manual rescan. Steam, Epic Games Store, GOG, and Xbox Games installs are discovered from bounded launcher/install metadata; Steam searches all configured libraries and uses a depth/directory-capped executable fallback inside each proven game root. One inaccessible launcher no longer prevents the others from being scanned, and manual **Find Installed Games** / **Add Game** remain available as explicit fallbacks.
+
+This deliberately does **not** crawl whole drives for arbitrary executables. Unknown portable/custom-launcher games still use **Add Game** so the manager never guesses unrelated software is a game.
 
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
