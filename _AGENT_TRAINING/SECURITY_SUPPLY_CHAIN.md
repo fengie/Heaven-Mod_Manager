@@ -25,3 +25,11 @@ Hashes verify content integrity relative to trusted metadata; they do not identi
 ## Security defects create regression rules
 
 When a security weakness is found, fix the immediate defect, add a machine-enforced regression for the defect class, document the trust boundary/root cause, and promote the general lesson into reusable project/agent guidance.
+
+## Runner and shell are one execution contract
+
+A workflow runner migration is also a shell/runtime migration. When changing runner OS, labels, or default shell, inspect every inline script and tool invocation for platform assumptions and execute the policy on the target runner before calling the migration complete. Bash heredocs, path syntax, quoting, executable discovery, environment-variable syntax, and line endings are part of the security control when the workflow enforces security policy. A security gate that cannot execute on its declared runner is equivalent to no gate.
+
+## Privileged release tools must be pinned and verified
+
+Do not trust an arbitrary preinstalled executable or a moving `latest` download inside a privileged publication job. Pin the tool version and immutable asset URL, verify its cryptographic digest against independently reviewed release metadata before execution, and machine-enforce those invariants in the security gate.

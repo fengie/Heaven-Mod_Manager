@@ -509,3 +509,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-027 shared-runner concurrency.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-030 — privileged release tooling must be immutable and verified
+
+- **Rule ID:** LR-030
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** Release engineering, CI supply chain, publication credentials
+- **Rule:** A privileged release job must not execute an arbitrary preinstalled tool or dynamically select a moving latest binary. Bootstrap release tooling from a pinned immutable version/asset and verify its cryptographic digest before execution.
+- **Trigger / evidence:** The Windows release gate previously trusted any `gh.exe` already on PATH, otherwise queried GitHub's moving `releases/latest` endpoint and executed the returned ZIP without an independent digest check.
+- **Prevention:** GitHub CLI v2.101.0 Windows x64 is pinned to the immutable asset URL and SHA-256 `bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794`; the Security Supply Chain Gate rejects moving-latest/preinstalled-tool regressions and missing digest verification.
+- **Related rules:** LR-021 defect-class closure; LR-029 CI executable dependency trust.
+- **Supersedes:** none
+- **Superseded by:** none
