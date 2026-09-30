@@ -19,6 +19,7 @@ Include the affected version/commit, attack prerequisites, a minimal reproductio
 - GitHub Actions workflows declare explicit least-privilege permissions.
 - Third-party GitHub Actions are pinned to full immutable commit SHAs.
 - Persistent self-hosted runners reject fork pull-request code.
+- Persistent self-hosted runner checkouts never persist GitHub credentials, and candidate-code jobs run without write-capable repository token scopes unless isolated into a separately trusted mutation workflow.
 - NuGet direct/transitive vulnerability auditing is enabled and warnings are build failures.
 - Dependabot tracks GitHub Actions and NuGet dependency updates.
 
