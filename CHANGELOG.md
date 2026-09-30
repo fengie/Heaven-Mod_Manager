@@ -1,3 +1,9 @@
+# v8.8.39 — Strict analyzer repair
+- Make `CatalogSyncService.PrepareBatchAsync` and `TryGetHealthAsync` static because they are stateless private helpers, eliminating their CA1822 warnings-as-errors.
+- Preserve `MasterTraceBenchmarks.BeginDisposeMethodScope` as an instance BenchmarkDotNet benchmark and add an explicit CA1822 suppression with justification rather than changing benchmark discovery semantics.
+- Treat this as the deterministic compilation unblock only; rerun the exact-head Workflow Feature gate before addressing the five independent core regressions observed in run 36673047725, and ignore downstream missing `--no-build` executables until compilation is green.
+- Advance canonical product identity to v8.8.39 and refresh continuity/handoff metadata for the analyzer-repair lane.
+
 # v8.8.38 — Retire superseded retry parents
 - Stop treating `retry-dispatched` as an unconditional managed-agent retention state after a replacement has taken ownership.
 - Allow terminal superseded retry parents to flow through the existing fail-closed retirement proof, branch/worktree safety checks, durable retirement archive, and registry removal.
