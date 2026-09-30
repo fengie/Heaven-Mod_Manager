@@ -516,7 +516,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return $"{x.ModName}: {string.Join(", ", missing)}{suffix}";
         });
         var summary = string.Join(" | ", details);
-        if (blockers.Count > 3) summary += $" | +{blockers.Count-3} more mod(s)";
+        if (blockers.Length > 3) summary += $" | +{blockers.Length-3} more mod(s)";
         return summary;
     }
 
