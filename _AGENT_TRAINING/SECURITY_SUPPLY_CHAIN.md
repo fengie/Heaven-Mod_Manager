@@ -74,3 +74,7 @@ General-purpose child processes must start from a scrubbed environment rather th
 
 Binding an operator/control service to loopback is necessary but not sufficient for browser-adjacent local services. Validate the HTTP Host header against the expected loopback names/port and reject foreign browser Origin values before routing requests. Keep mutation APIs on loopback unless a separately authenticated remote boundary is intentionally designed, and add regression tests for hostile Host/Origin requests.
 
+## Security gates must make forward progress
+
+A security gate that is continuously cancelled by normal repository activity is not an effective control. For high-churn branches, allow superseded pending runs to collapse, but do not cancel the in-progress canonical-branch security verification merely because a newer push arrived. At least one canonical security run must be able to finish, followed by verification of the newest pending state.
+
