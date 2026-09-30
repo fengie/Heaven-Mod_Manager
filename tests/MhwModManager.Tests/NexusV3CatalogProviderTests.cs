@@ -140,14 +140,11 @@ public sealed class NexusV3CatalogProviderTests
 
         var files = await provider.GetModFilesAsync(game, "101", TestContext.Current.CancellationToken);
 
-        Assert.Equal(
-            new[]
-            {
-                "/v3/games/monsterhunterworld/mods/101",
-                "/v3/mods/fixture-mod-global-id/files",
-                "/v3/mod-files/fixture-file-id/versions"
-            },
-            requests);
+        Assert.Collection(
+            requests,
+            item => Assert.Equal("/v3/games/monsterhunterworld/mods/101", item),
+            item => Assert.Equal("/v3/mods/fixture-mod-global-id/files", item),
+            item => Assert.Equal("/v3/mod-files/fixture-file-id/versions", item));
 
         Assert.Equal(2, files.Count);
 
