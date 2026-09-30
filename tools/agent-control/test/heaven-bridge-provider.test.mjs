@@ -412,6 +412,6 @@ test("bridge submit and wait entry points stay routed through execution relay re
   const resolverStart = source.indexOf("export function resolveExecutionRelayDir");
   const resolverEnd = source.indexOf("\nexport ", resolverStart + 1);
   const resolver = source.slice(resolverStart, resolverEnd > resolverStart ? resolverEnd : source.length);
-  assert.match(resolver, /if \(explicit\) return explicit/);
-  assert.match(resolver, /return resolveHeavenRelayDir\(options\)/);
+  assert.match(resolver, /const explicit = clean\(relayDir\)/);
+  assert.match(resolver, /return explicit \|\| resolveHeavenRelayDir\(options\)/);
 });
