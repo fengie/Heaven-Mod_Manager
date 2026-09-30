@@ -53,6 +53,7 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
     "stale",
     "disconnected",
     "startSwarm",
+    "overallGoal",
     "startSwarmStatus",
     "autopilotPerpetual",
     "controlSummary",
@@ -71,6 +72,10 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   assert.ok(composerStart >= 0 && composerEnd > composerStart && advancedAt > 0);
   const primaryLaunch = composer.slice(0, advancedAt);
   assert.match(primaryLaunch, /START PERPETUAL SWARM/);
+  const startSwarmAt = primaryLaunch.indexOf('id="startSwarm"');
+  const overallGoalAt = primaryLaunch.indexOf('id="overallGoal"');
+  assert.ok(overallGoalAt > startSwarmAt, "Overall Goal must sit directly below the primary swarm button");
+  assert.match(primaryLaunch, /Overall goal[\s\S]*optional/i);
   assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
   assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role/i);
 
@@ -84,6 +89,7 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   assert.match(html, /const defaultSwarmObjective = /);
   assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
   assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
+  assert.match(html, /overallGoal:\$\("overallGoal"\)\.value\.trim\(\)/);
   assert.match(html, /perpetual:true/);
   assert.match(html, /maxCycles:0/);
   assert.match(html, /perpetualOverride/);
