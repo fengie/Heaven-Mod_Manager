@@ -1,0 +1,18 @@
+{
+  "id": 420,
+  "mod_id": 42,
+  "date_added": 1701000000,
+  "date_updated": 1701000100,
+  "date_scanned": 1701000200,
+  "virus_status": 1,
+  "virus_positive": 2,
+  "filesize": 2048,
+  "filehash": { "md5": "0123456789abcdef0123456789abcdef" },
+  "filename": "fixture-mod-2.zip",
+  "version": "2.0",
+  "changelog": "Fixture release",
+  "download": {
+    "binary_url": "https://g-123.modapi.io/v1/games/123/mods/42/files/420/download/unsafe-token",
+    "date_expires": 4102444800
+  }
+}
