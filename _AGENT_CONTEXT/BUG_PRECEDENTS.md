@@ -341,3 +341,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Process-launcher review must verify the effective child environment, not merely the API shape used to add variables.
 - **Regression coverage added/strengthened:** Tests assert token/HMAC variables do not propagate and CI rejects reintroduction of full `os.environ.copy()`.
 - **Sibling/adjacent cases checked:** raw shell fallback, persistent sessions, Git helpers, taskkill, UIA, screenshot/display helpers, shortcut creation, process listing, and app launch.
+
+
+## 2026-09-30 — CI security policy — PowerShell 5.1 compatibility repair used C-style backslash assumptions
+- **Symptom:** The security policy first failed on Windows PowerShell 5.1 because `[IO.Path]::GetRelativePath` is unavailable there. The replacement helper then used single-quoted `'\\\\'` literals as if backslash were an escape, constructing a doubled separator and risking rejection of valid in-repository paths.
+- **Root cause:** The repair was judged from parser/static compatibility rather than executing the policy under the exact CI shell. PowerShell string escaping semantics were mentally imported from C#/JSON.
+- **Violated invariant / wrong assumption:** A script is not compatible with its production shell merely because it parses or because equivalent code works under newer .NET/PowerShell. Runtime API availability and language-specific literal semantics are part of the contract.
+- **Direct fix:** Use `[IO.Path]::DirectorySeparatorChar` for trimming, repository-prefix construction, and relative-path normalization instead of hand-escaped separator strings.
+- **Preventive rule/process change:** LR-037 requires verification scripts to execute under the exact shell/runtime declared by CI before integration; parser-only checks remain necessary but are never sufficient for runtime compatibility repairs.
+- **Regression coverage added/strengthened:** PR #421 is verified by invoking both `Test-PowerShellSyntax.ps1` and `Test-CiSecurityPolicy.ps1` with `powershell.exe` on Heaven. The Security Supply Chain Gate already declares `shell: powershell`, so future regressions are release-blocking when the runner executes normally.
+- **Evidence:** Heaven job `chatgpt-20260930-0406-security-policy-recovery-verify` reached runtime and failed on missing `Path.GetRelativePath`; follow-up commit `68dbb0a591742af488fd70c81f0a6e9e793b1f6a` introduced the separator helper repaired by PR #421.
