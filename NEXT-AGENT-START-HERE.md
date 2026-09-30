@@ -1,3 +1,7 @@
+# v8.8.50 manual updater check candidate
+
+Adds the user-requested **Check for updates** control to the Dashboard app-health card and routes it through the existing verified updater command rather than duplicating update logic. Automatic startup/background checks remain unchanged. Exact-head CI, merge-to-main confirmation, updater publication, and an installed-client click smoke remain required before runtime closure. Successors must preserve and recursively propagate the continuity constitution.
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
