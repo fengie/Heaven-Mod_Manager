@@ -330,6 +330,7 @@ internal static class ModRequirementReader
 
         static string? MergeConstraint(string token, string label, string? left, string? right, List<string> targetErrors)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             if (string.IsNullOrWhiteSpace(left)) return right;
             if (string.IsNullOrWhiteSpace(right)) return left;
             if (StringComparer.OrdinalIgnoreCase.Equals(left, right)) return left;
