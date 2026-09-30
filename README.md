@@ -1,5 +1,11 @@
-# v8.8.38 Universal Mod Manager
+# v8.8.39 Universal Mod Manager
 
+
+## v8.8.39 — Repository verification gate repair
+
+The product verification path is greenable again after several independent gate regressions accumulated on `main`. Dependency-blocker summary formatting now uses the array `Length`; newly introduced Core helper functions participate in method tracing so explicit call-site coverage is visible; two state-free catalog helpers are explicitly static so strict analyzers accept them; and the durable handoff manifest advances with the product version.
+
+This patch is intentionally narrow: it restores build/verification correctness without changing conflict resolution, catalog behavior, dependency ordering, or Agent Control v0.6.16 retirement semantics.
 
 ## v8.8.38 — Superseded retry-parent retirement
 
