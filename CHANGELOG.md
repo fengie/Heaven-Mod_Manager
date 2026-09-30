@@ -1,3 +1,13 @@
+# v8.8.26 — Agent Control retry-exhausted registry retirement
+- Retire an exhausted no-work retry lineage from the managed agent registry once its bounded retry budget is consumed.
+- Remove matching managed observations from the federated registry so dead historical retry cards no longer inflate Registry total.
+- Sweep previously persisted exhausted lineages during normal controller refresh/startup, not only at the moment a new exhaustion occurs.
+- Release any leftover mutable-boundary lease for retired records and remove stale notifications that point at agents which no longer exist.
+- Keep task records, the durable failure ledger, and lifecycle events as diagnostic history instead of using live registry rows as permanent audit storage.
+- Fail safe on process ownership: do not retire/hide a record while the current controller still proves ownership of a live matching child, and never kill a stale persisted PID merely to make the registry look clean.
+- Add focused selector and server-safety regressions covering lineage scope, unrelated failures, blocked-review records, startup sweeping, lease release, federation cleanup, and stale action removal.
+- Advance Agent Control runtime/private-plugin identity to v0.6.5 and the application patch to v8.8.26.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.
