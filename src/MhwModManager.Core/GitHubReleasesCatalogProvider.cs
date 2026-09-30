@@ -25,7 +25,7 @@ public sealed record GitHubReleaseCatalogSource(
 public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
 {
     private readonly GitHubReleasesTransport transport;
-    private readonly IReadOnlyList<GitHubReleaseCatalogSource> sources;
+    private readonly GitHubReleaseCatalogSource[] sources;
 
     public GitHubReleasesCatalogProvider(
         GitHubReleasesTransport transport,
@@ -37,7 +37,7 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
 
         this.transport = transport;
         this.sources = sources.Select(ValidateSource).ToArray();
-        if (this.sources.Count == 0)
+        if (this.sources.Length == 0)
             throw new ArgumentException("At least one curated GitHub release source is required.", nameof(sources));
 
         var duplicates = this.sources
