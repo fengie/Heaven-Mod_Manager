@@ -1,4 +1,8 @@
-# v8.8.41 Universal Mod Manager
+# v8.8.42 Universal Mod Manager
+
+## v8.8.42 — current CI evidence and fail-closed release gates
+
+Heaven Workflows v0.4.0 adds a bounded, reader-injected GitHub Actions evidence adapter for exact repository/source/event/branch checks. Release decisions now reject ambiguous histories and running states instead of letting an older success mask a failed result. Snapshots disclose partial queries, expire after two minutes and are revalidated at publication authorization. Authentication stays with the existing authorized host reader; no new token store or publication path is introduced.
 
 ## v8.8.41 — bounded startup and scalable context retrieval
 
