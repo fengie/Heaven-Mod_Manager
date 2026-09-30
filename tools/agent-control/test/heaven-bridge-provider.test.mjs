@@ -12,9 +12,11 @@ import {
   bridgeMachineStatus,
   bridgeResultSucceeded,
   buildBridgeJob,
+  canonicalBridgeJob,
   buildLocalCodexArgs,
   buildRemoteCodexCommand,
   resolveHeavenRelayDir,
+  signBridgeJob,
   shouldRefreshHeartbeat,
   validateBridgeResult
 } from "../lib/heaven-bridge-provider.mjs";
@@ -56,6 +58,23 @@ test("bridge jobs normalize ids and preserve bounded execution metadata", () => 
   assert.equal(job.action, "proc_run");
   assert.equal(job.ttl_seconds, 60);
   assert.equal(job.params.command, "echo ok");
+});
+
+test("bridge HMAC signing matches worker canonicalization rules", () => {
+  const job = buildBridgeJob({
+    id: "signed-job",
+    action: "proc_run",
+    params: { z: 2, a: { y: true, x: "value" } },
+    targetHost: HEAVEN2_BRIDGE_HOST,
+    createdAt: "2026-09-29T09:00:00.000Z"
+  });
+  const signed = signBridgeJob(job, "unit-test-only-secret");
+  assert.match(signed.auth.signature, /^[0-9a-f]{64}$/);
+  assert.equal(canonicalBridgeJob(signed), canonicalBridgeJob(job));
+
+  const changed = signBridgeJob({ ...job, params: { ...job.params, z: 3 } }, "unit-test-only-secret");
+  assert.notEqual(changed.auth.signature, signed.auth.signature);
+  assert.equal(signBridgeJob(job, ""), job);
 });
 
 test("bridge jobs can explicitly target heaven2 while preserving heaven legacy default", () => {
