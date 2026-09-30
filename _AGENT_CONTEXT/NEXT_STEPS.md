@@ -2,7 +2,7 @@
 
 1. Verify the stacked candidate against PR #528 latest exact governance head with Agent Control syntax/tests plus required security gates available on the stacked base.
 2. After PR #528 is canonical, reconcile this v8.8.51 candidate onto fresh main and require exact-head Agent Control, Security Supply Chain, and Workflow Feature gates before merge.
-3. Smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without traversing content, notification severity summary correct, one opened card full-width with internal scrolling, and managed/federated/notification Inspect automatically opens Inspector.
+3. Smoke the live heaven2 dashboard: all overview cards initially closed, counts visible without traversing content, notification severity summary correct, one opened card full-width with internal scrolling, managed/federated/notification Inspect automatically opens Inspector, interaction motion remains smooth under normal refresh, reduced-motion disables visible animation, and UI sound is silent until opt-in then persists without sounding on polling.
 4. Preserve existing P0/auth/signing risks; do not infer control-plane lifecycle completion from this presentation-only patch.
 
 ---
