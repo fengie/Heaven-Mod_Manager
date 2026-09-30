@@ -383,12 +383,6 @@
       return count > 0 ? `${count}+` : "—";
     };
 
-    const federatedCount = (value, coverage) => {
-      const count = Number.isFinite(Number(value)) ? Number(value) : 0;
-      if (coverage?.authoritative === true) return String(count);
-      return count > 0 ? `${count}+` : "—";
-    };
-
     async function api(path, options={}) {
       const response = await fetch(path, {
         ...options,
