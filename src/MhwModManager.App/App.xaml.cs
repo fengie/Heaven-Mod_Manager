@@ -62,7 +62,16 @@ public sealed partial class App:Application, IDisposable
             args.SetObserved();
         };
         var startup=StartupDiagnosticSession.Start(bootstrapRoot);
-        startup.Info("startup.begin", $"Arguments: {string.Join(" ",e.Args)}; MasterLog={UnifiedDebugLog.FilePath}");
+        var diagnosticArguments="<redacted>";
+        try
+        {
+            diagnosticArguments=string.Join(" ",UpdateArgumentSanitizer.RemoveHealthArguments(e.Args));
+        }
+        catch(InvalidDataException ex)
+        {
+            UnifiedDebugLog.Write("APP-BOOTSTRAP","Malformed updater health arguments were redacted from startup diagnostics.",ex);
+        }
+        startup.Info("startup.begin", $"Arguments: {diagnosticArguments}; MasterLog={UnifiedDebugLog.FilePath}");
 
         var splash=new StartupWindow();
         splash.Show();
