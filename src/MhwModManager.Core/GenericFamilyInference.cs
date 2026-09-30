@@ -115,12 +115,12 @@ public static partial class GenericFamilyInference
     }
 
     private static IEnumerable<(int Left,int Right)> ConcreteCandidatePairs(
-        IReadOnlyList<ModDescriptor> candidates,
+        ModDescriptor[] candidates,
         IReadOnlyDictionary<string,CandidateProfile> profiles)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var postings=new Dictionary<string,List<int>>(StringComparer.OrdinalIgnoreCase);
-        for(var i=0;i<candidates.Count;i++)
+        for(var i=0;i<candidates.Length;i++)
         {
             var profile=profiles[candidates[i].Id];
             AddPostings("p:",profile.Files.Paths,i);
