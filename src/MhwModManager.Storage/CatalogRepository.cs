@@ -323,7 +323,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$right", ordered.right);
         cmd.Parameters.AddWithValue("$kind", link.EvidenceKind.ToString());
         cmd.Parameters.AddWithValue("$value", link.EvidenceValue);
-        cmd.Parameters.AddWithValue("$created", link.ObservedAt.ToString("O", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("$created", Format(link.ObservedAt)!);
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
