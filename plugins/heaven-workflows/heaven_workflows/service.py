@@ -172,7 +172,7 @@ class HeavenWorkflowPlugin:
             raise ValueError(f"{label} must be a string")
         value = value.strip().lower()
         if len(value) != length or any(ch not in "0123456789abcdef" for ch in value):
-            raise ValueError(f"{label} must be exactly {length} lowercase hex characters")
+            raise ValueError(f"{label} must be exactly {length} hexadecimal characters")
         return value
 
     @staticmethod
@@ -189,12 +189,12 @@ class HeavenWorkflowPlugin:
         candidate_sha = self._require_hex(candidate_sha, 40, "candidate_sha")
         version = self._require_release_text(version, "version", max_length=64)
         channel = self._require_release_text(channel, "channel", max_length=32)
-        if isinstance(required_gates, (str, bytes)) or not 1 <= len(required_gates) <= 32:
+        if isinstance(required_gates, (str, bytes)) or not isinstance(required_gates, Sequence) or not 1 <= len(required_gates) <= 32:
             raise ValueError("required_gates must contain between 1 and 32 entries")
         gates = [self._require_release_text(x, "gate", max_length=128) for x in required_gates]
         if len(gates) != len(set(gates)):
             raise ValueError("required_gates must be unique")
-        if isinstance(artifacts, (str, bytes)) or not 1 <= len(artifacts) <= 64:
+        if isinstance(artifacts, (str, bytes)) or not isinstance(artifacts, Sequence) or not 1 <= len(artifacts) <= 64:
             raise ValueError("artifacts must contain between 1 and 64 entries")
         normalized = []
         names = set()
@@ -261,6 +261,8 @@ class HeavenWorkflowPlugin:
             actual[name] = item
         failures, verified = [], []
         for spec in expected:
+            if not isinstance(spec, Mapping):
+                raise ValueError("plan artifact entries must be objects")
             name = self._require_release_text(spec.get("name"), "artifact name", max_length=256)
             item = actual.get(name)
             if item is None:
