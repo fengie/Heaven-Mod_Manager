@@ -76,6 +76,16 @@ public sealed class ConflictEngine
         if (candidates.All(c => StringComparer.OrdinalIgnoreCase.Equals(c.File.BlobSha256,firstHash)))
             return new(path, ConflictKind.Identical, false, candidates.MaxBy(c => c.Priority)!.ModId, "identical-bytes", "Every provider contains byte-identical content, so only one physical copy is needed.", Confidence.High, Inferred:true, ResolverScore:100, Evidence:"All SHA-256 hashes are identical.");
 
+        // Root bootstrap/loader files execute before ordinary nativePC content and a mismatched
+        // pair can prevent the game from starting at all. Never infer a winner for different bytes
+        // here from family, overlay, resource, or package priority. Byte-identical duplicates and an
+        // explicit exact-path human rule were already handled above.
+        if (IsProtectedBootstrapPath(path))
+            return new(path, ConflictKind.HardGameData, true, null, "protected-bootstrap-collision",
+                "Different enabled packages provide the same protected loader/bootstrap path. Automatic overwrite is disabled because mixing loader generations can prevent the game from starting. Keep one provider or set an explicit exact-file winner after verifying compatibility.",
+                Confidence.High, Inferred:false, ResolverScore:100,
+                Evidence:"Protected MHW game-root loader/bootstrap path with different SHA-256 content.");
+
         var resourceNamespace = richMhwSemantics ? PathRules.ResourceNamespace(path) : null;
         if (resourceNamespace is not null && resourceProviders.TryGetValue(resourceNamespace, out var resourceWinner) && candidateIds.Contains(resourceWinner))
             return new(path, ConflictKind.SharedProvider, false, resourceWinner, "resource-provider", $"The shared resource namespace '{resourceNamespace}' has a pinned provider. All dependent mods remain enabled.", Confidence.Explicit);
@@ -245,25 +255,10 @@ public sealed class ConflictEngine
                 return true;
             }
 
-            // A smaller package that is mostly contained by a larger sibling is the generic shape of
-            // an optional component, even when its author uses an unfamiliar future naming scheme.
-            var ac = contentStats.GetValueOrDefault(a.Id)?.TotalFiles ?? stats.LeftFiles;
-            var bc = contentStats.GetValueOrDefault(b.Id)?.TotalFiles ?? stats.RightFiles;
-            var smaller = ac <= bc ? a : b;
-            var larger = ReferenceEquals(smaller,a) ? b : a;
-            var smallerCount = Math.Min(ac,bc);
-            if (smallerCount > 0 && stats.SmallerOverlapRatio >= .75 && ac != bc)
-            {
-                MasterDebugLog.Write("FAMILY-CONFLICT", $"COMPOSE family={familyId}; path={path}; winner={smaller.Id}; reason=subset-component; overlap={stats.SmallerOverlapRatio:F3}");
-                decision = new(path, ConflictKind.ModFamilyOption, false, smaller.Id,
-                    "family-subset-component",
-                    $"'{smaller.DisplayName}' is a mostly-overlapping smaller member of the same logical family as '{larger.DisplayName}'. It is treated as a family component and wins only the paths it supplies.",
-                    Confidence.High,
-                    Inferred:true,
-                    ResolverScore:94,
-                    Evidence:$"Shared logical family '{familyId}'; smaller-package overlap ratio {stats.SmallerOverlapRatio:P0}.");
-                return true;
-            }
+            // Overlap ratio alone is not proof of a safe optional/component relationship for
+            // structural, game-data, plugin, or unknown binary content. Those files can crash the
+            // game when generations are mixed. Only semantic/provenance overlay evidence above may
+            // auto-compose non-texture family members; otherwise fall through to an explicit choice.
         }
 
         // Remaining same-family collisions are ambiguous sibling variants/components. They must never
@@ -278,6 +273,23 @@ public sealed class ConflictEngine
             ResolverScore:90,
             Evidence:"All colliding providers share one persisted logical family, but their overwrite direction is ambiguous.");
         return true;
+    }
+
+    private static bool IsProtectedBootstrapPath(string path)
+    {
+        string normalized;
+        try { normalized = PathRules.Normalize(path); }
+        catch (ArgumentException) { return false; }
+
+        if (normalized.Equals(@"root\loader-config.json", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!normalized.StartsWith("root\\", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var extension = Path.GetExtension(normalized);
+        return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+               extension.Equals(".asi", StringComparison.OrdinalIgnoreCase);
     }
 
     public static (string,string) PairKey(string a, string b)
