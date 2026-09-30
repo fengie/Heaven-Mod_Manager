@@ -1,4 +1,12 @@
-# v8.8.22 Universal Mod Manager
+# v8.8.23 Universal Mod Manager
+
+## v8.8.23 — Agent Manager P0 functionality
+
+Agent Manager / Agent Control is now the repository's explicit P0 engineering priority. While the priority marker remains active, perpetual implementation and next-cycle planning are forced back onto Agent Manager functionality, reliability, orchestration, observability, routing, recovery, startup persistence, and exact verification instead of drifting into unrelated product work.
+
+This tranche also closes a real control-plane release-identity inconsistency: the Agent Control runtime package and private ChatGPT plugin now share version **0.6.2**. The ChatGPT control skill now treats stable-session registration/heartbeats as the default first observability step when a real stable session identity is available, while continuing to label coverage partial when the platform does not expose one.
+
+The P0 lock is intentionally not declared complete by source changes alone. It stays active until exact-head Agent Control checks, server/CLI/dashboard smoke, heaven2 control-plane startup, and the heaven1 worker-bridge path are proven together.
 
 ## v8.8.22 — Strict analyzer repair
 
