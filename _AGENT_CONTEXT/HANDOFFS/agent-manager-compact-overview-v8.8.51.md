@@ -15,6 +15,13 @@
 - Parent baseline: PR #528 v8.8.50 governance head `31307b621f3d58855389644c8c92c98022c47639`.
 - This is intentionally stacked so the UI does not overwrite the governance refactor. Once #528 lands, reconcile onto fresh canonical main and rerun every required exact-head gate before merge.
 
+## Current exact checkpoint
+- UI motion/audio implementation commit: `df4f1f3815cd2f6cd9fa30e6597535134395ee90`.
+- Latest governance evidence was reconciled, then the current v8.8.50 governance head `5511155ec067f48f0744b20c24ea250554367243` was recorded as a second parent by merge commit `9950ced358b3cde55be5bd2ba82dac678f2674e4`; branch comparison is now behind 0.
+- PR #531 is intentionally **closed without merge** for queue serialization. Its closure comment records that open stacked PRs were canceling PR #528's global Workflow Feature gate. Do not reopen until #528 reaches canonical main; the branch/work are preserved.
+- Source-level verification on the reconciled tree: inline dashboard JavaScript parses; 10 compact sections are default-closed; reduced-motion and hidden-page guards are present; no persistent `translateZ(0)`, requestAnimationFrame loop, or refresh-triggered UI sound exists; metric motion short-circuits when values do not change.
+- Full Node/CI and live heaven2 browser acceptance still belong to the post-#528 exact candidate and are not claimed by this checkpoint.
+
 ## Required verification
 1. `npm --prefix tools/agent-control run check`.
 2. `npm --prefix tools/agent-control test`.
