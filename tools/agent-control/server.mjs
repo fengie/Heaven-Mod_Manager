@@ -1136,14 +1136,14 @@ function refreshState() {
   return state;
 }
 
-async function workerSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
+async function workerSnapshot(state = refreshState(), { inspectRemote = true, heavenBridgeAssessment = undefined } = {}) {
   const running = state.agents.filter(agent => coreIsActiveStatus(agent.status)).length;
   const hostname = os.hostname();
   const currentId = hostname.toLowerCase();
   const policies = state.settings?.machinePolicies || {};
   const configured = new Set(Object.keys(policies).map(value => value.toLowerCase()));
   configured.add(currentId);
-  const heavenBridge = currentId === "heaven2" && configured.has("heaven")
+  const heavenBridge = inspectRemote && currentId === "heaven2" && configured.has("heaven")
     ? (heavenBridgeAssessment === undefined ? await inspectHeavenBridge({ sync: false }) : heavenBridgeAssessment)
     : null;
 
@@ -1213,7 +1213,7 @@ function federationCountCoverage(snapshot) {
   };
 }
 
-async function runtimeFederationSnapshot(state = refreshState(), heavenBridgeAssessment = undefined) {
+async function runtimeFederationSnapshot(state = refreshState(), { heavenBridgeAssessment = undefined } = {}) {
   const snapshot = federationSnapshot(state.federation, { now: Date.now() });
   snapshot.coverage = federationCountCoverage(snapshot);
   if (os.hostname().toLowerCase() !== "heaven2") return snapshot;
@@ -3670,8 +3670,8 @@ async function buildSnapshot({ fetchRemote = false, repositoryWriteAuthorized = 
   const heavenBridgeAssessment = os.hostname().toLowerCase() === "heaven2"
     ? await inspectHeavenBridge({ sync: false })
     : null;
-  const workers = await workerSnapshot(state, heavenBridgeAssessment);
-  const federation = await runtimeFederationSnapshot(state, heavenBridgeAssessment);
+  const workers = await workerSnapshot(state, { heavenBridgeAssessment });
+  const federation = await runtimeFederationSnapshot(state, { heavenBridgeAssessment });
   const currentMission = deriveMission(state, repositoryContext);
   const suggestedActions = recommendNextActions({ state, integrationQueue: queue, repositoryContext });
 
@@ -5344,6 +5344,9 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && pathname === "/api/status") {
       const state = loadState();
+      const federation = federationSnapshot(state.federation, { now: Date.now() });
+      federation.coverage = federationCountCoverage(federation);
+      const workers = await workerSnapshot(state, { inspectRemote: false });
       return sendJson(res, 200, {
         ok: true,
         generatedAt: isoNow(),
@@ -5351,10 +5354,20 @@ const server = http.createServer(async (req, res) => {
           host: os.hostname(),
           bindHost: HOST,
           port: PORT,
+          repo: REPO,
+          worktreeRoot: WORKTREE_ROOT,
+          codex: codexStatus(),
           stateVersion: STATE_VERSION,
           sessionId: SESSION_ID,
           health: state.health
-        }
+        },
+        telemetry: telemetry(state, [], federation),
+        federation: {
+          counts: federation.counts,
+          providers: federation.providers
+        },
+        workers,
+        roles: rolePresets
       });
     }
 
