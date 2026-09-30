@@ -13,9 +13,9 @@ public sealed class ManagerDatabase(string databasePath)
     private const int BusyTimeoutSeconds = 10;
     public string DatabasePath { get; } = databasePath;
 
-    private string ConnectionString => new SqliteConnectionStringBuilder
+    private readonly string connectionString = new SqliteConnectionStringBuilder
     {
-        DataSource = DatabasePath,
+        DataSource = databasePath,
         Mode = SqliteOpenMode.ReadWriteCreate,
         Cache = SqliteCacheMode.Default,
         Pooling = true,
@@ -60,7 +60,7 @@ public sealed class ManagerDatabase(string databasePath)
     private async Task<SqliteConnection> OpenRawAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var c = new SqliteConnection(ConnectionString);
+        var c = new SqliteConnection(connectionString);
         await c.OpenAsync(ct);
         return c;
     }
