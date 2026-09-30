@@ -42,7 +42,7 @@ public sealed class GameBananaCatalogProvider : IModCatalogProvider
         return Task.FromResult<IReadOnlyList<CatalogGame>>(
         [
             new(
-                "monster-hunter-world",
+                GameProfile.MonsterHunterWorld(Path.GetTempPath()).Id,
                 "Monster Hunter: World",
                 "9081")
         ]);
@@ -175,8 +175,17 @@ public sealed class GameBananaCatalogProvider : IModCatalogProvider
             throw new ArgumentException("GameBanana file id must be a positive integer.", nameof(request));
         }
 
+        if (!long.TryParse(
+            request.Mod.ProviderModId,
+            System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var modId) || modId <= 0)
+        {
+            throw new ArgumentException("GameBanana mod id must be a positive integer.", nameof(request));
+        }
+
         var assisted = new Uri(
-            $"https://gamebanana.com/dl/{fileId.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            $"https://gamebanana.com/mods/download/{modId.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
 
         return Task.FromResult(new CatalogAcquisitionResolution(
             CatalogAcquisitionKind.Assisted,
