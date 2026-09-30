@@ -207,9 +207,10 @@ internal static class ModRequirementReader
 }
 
 /// <summary>
-/// Builds a deterministic maximal conflict-free installed setup. A candidate is accepted only when
-/// its complete dependency/required-resource closure produces a non-blocking deployment plan.
-/// Existing enabled choices get first priority; unresolved alternatives are skipped rather than guessed.
+/// Builds a deterministic maximal conflict-free installed setup around the user's current selection.
+/// Preferred/currently selected mods are protected anchors: Auto Populate may add their required
+/// dependency/resource closure and compatible mods, but it never silently replaces or disables an anchor.
+/// Unresolved alternatives are skipped rather than guessed.
 /// </summary>
 public sealed class AutoPopulateService(
     PlannerSnapshotRepository plannerSnapshots,
@@ -218,7 +219,12 @@ public sealed class AutoPopulateService(
     string gameRoot,
     GameProfile game)
 {
-    public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
+    public Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default) =>
+        BuildAsync(null, ct);
+
+    public async Task<AutoPopulateResult> BuildAsync(
+        IReadOnlyCollection<string>? preferredModIds,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = await plannerSnapshots.LoadAsync(ct);
@@ -233,6 +239,22 @@ public sealed class AutoPopulateService(
             .ToDictionary(g => g.Key, g => g.ToArray(), PathRules.Comparer);
         var contentStats = BuildContentStats(filesByMod);
 
+        var requestedPreferredIds = preferredModIds is null
+            ? mods.Where(m => m.Enabled).Select(m => m.Id).ToArray()
+            : preferredModIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(PathRules.Comparer)
+                .ToArray();
+        var unavailablePreferred = requestedPreferredIds
+            .Where(id => !modsById.ContainsKey(id))
+            .OrderBy(id => id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (unavailablePreferred.Length > 0)
+            throw new InvalidOperationException(
+                $"Auto Populate cannot preserve the current selection because these selected packages are no longer available: {string.Join(", ", unavailablePreferred)}. Nothing was changed.");
+
+        var preferred = requestedPreferredIds.ToHashSet(PathRules.Comparer);
+
         var requirements = new Dictionary<string,ModRequirementSpec>(PathRules.Comparer);
         foreach (var mod in mods)
         {
@@ -244,14 +266,67 @@ public sealed class AutoPopulateService(
                 ct);
         }
 
-        var selected = new HashSet<string>(PathRules.Comparer);
+        var selected = new HashSet<string>(preferred, PathRules.Comparer);
         var skipped = new Dictionary<string,AutoPopulateDecision>(PathRules.Comparer);
         var conflictSkips = 0;
         var requirementSkips = 0;
 
+        // First make the user's current staged selection immutable and complete its requirement closure.
+        // If that baseline itself cannot be made safe, abort instead of "fixing" it by disabling a choice.
+        var preferredInOrder = mods
+            .Where(m => preferred.Contains(m.Id))
+            .OrderBy(RoleRank)
+            .ThenByDescending(m => m.ProvenanceScore)
+            .ThenByDescending(m => m.Priority)
+            .ThenBy(m => m.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        foreach (var anchor in preferredInOrder)
+        {
+            ct.ThrowIfCancellationRequested();
+            var alreadySelected = new HashSet<string>(selected, PathRules.Comparer);
+            alreadySelected.Remove(anchor.Id);
+
+            var closureResult = ResolveClosure(
+                anchor.Id,
+                alreadySelected,
+                mods,
+                modsById,
+                filesByMod,
+                providersByPath,
+                snapshot.ResourceProviders,
+                contentStats,
+                requirements);
+
+            if (!closureResult.Success)
+                throw new InvalidOperationException(
+                    $"Auto Populate cannot safely fill around selected mod '{anchor.DisplayName}': {closureResult.Reason} The current selection was left unchanged.");
+
+            selected.UnionWith(closureResult.ModIds);
+        }
+
+        var protectedPlan = BuildPlan(snapshot, selected);
+        if (protectedPlan.IsBlocked)
+        {
+            var blocker = protectedPlan.Conflicts.First(x => x.Blocking);
+            throw new InvalidOperationException(
+                $"Auto Populate cannot safely fill around the current selection because the selected baseline conflicts: {blocker.Explanation} The current selection was left unchanged.");
+        }
+
+        var protectedDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
+        var protectedFailure = protectedDependencyStatus.FirstOrDefault(x => !x.Ready);
+        if (protectedFailure is not null)
+            throw new InvalidOperationException(
+                $"Auto Populate cannot safely fill around the current selection because '{protectedFailure.ModId}' has unsatisfied requirements: {string.Join("; ", protectedFailure.Missing)} The current selection was left unchanged.");
+
+        // Everything in this set is required to preserve the user's selected anchors. Never remove it
+        // during later fixed-point cleanup even if the environment changes while Auto Populate is running.
+        var protectedSelection = new HashSet<string>(selected, PathRules.Comparer);
+
         var ordered = mods
-            .OrderByDescending(m => m.Enabled)
-            .ThenBy(RoleRank)
+            .Where(m => !selected.Contains(m.Id))
+            .OrderBy(RoleRank)
             .ThenByDescending(m => m.ProvenanceScore)
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.DisplayName, StringComparer.OrdinalIgnoreCase)
@@ -293,7 +368,7 @@ public sealed class AutoPopulateService(
                     candidate.Id,
                     candidate.DisplayName,
                     false,
-                    $"Skipped because enabling its complete requirement chain would conflict: {blocker.Explanation}");
+                    $"Skipped because enabling its complete requirement chain would conflict with the protected/current safe set: {blocker.Explanation}");
                 continue;
             }
 
@@ -301,14 +376,20 @@ public sealed class AutoPopulateService(
         }
 
         // This should normally be prevented by ResolveClosure. Keep the final invariant strict if
-        // a live-file requirement changes during the calculation. Removing one failed dependency can
-        // invalidate another dependent, so converge to a fixed point instead of doing a single pass.
+        // a live-file requirement changes during the calculation. Removing one failed auto-filled
+        // dependency can invalidate another dependent, so converge to a fixed point. The protected
+        // baseline is never silently removed.
         while (true)
         {
             var finalDependencyStatus = await dependencies.ScanStageAsync(selected, ct);
             var failed = finalDependencyStatus.Where(x => !x.Ready).ToArray();
             if (failed.Length == 0)
                 break;
+
+            var protectedFailed = failed.FirstOrDefault(x => protectedSelection.Contains(x.ModId));
+            if (protectedFailed is not null)
+                throw new InvalidOperationException(
+                    $"Auto Populate stopped because protected selected mod/dependency '{protectedFailed.ModId}' became invalid during validation: {string.Join("; ", protectedFailed.Missing)} The current selection was left unchanged.");
 
             var removedAny = false;
             foreach (var status in failed)
@@ -340,17 +421,23 @@ public sealed class AutoPopulateService(
 
         var decisions = mods.Select(m =>
             selected.Contains(m.Id)
-                ? new AutoPopulateDecision(m.Id, m.DisplayName, true, m.Enabled
-                    ? "Kept enabled; its complete requirement chain is conflict-free."
-                    : "Enabled; its complete requirement chain is conflict-free.")
+                ? new AutoPopulateDecision(
+                    m.Id,
+                    m.DisplayName,
+                    true,
+                    preferred.Contains(m.Id)
+                        ? "Kept selected as a protected preference; Auto Populate filled around it."
+                        : protectedSelection.Contains(m.Id)
+                            ? "Enabled because it is required by the protected current selection."
+                            : "Enabled; its complete requirement chain is conflict-free with the protected current selection.")
                 : skipped.GetValueOrDefault(m.Id) ??
-                  new AutoPopulateDecision(m.Id, m.DisplayName, false, "Not selected because it was superseded by the completed safe set."))
+                  new AutoPopulateDecision(m.Id, m.DisplayName, false, "Not selected because it was unnecessary or superseded by the completed safe set."))
             .OrderByDescending(x => x.Enabled)
             .ThenBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
         var summary =
-            $"Auto Populate selected {selected.Count} of {mods.Length} installed package(s); " +
+            $"Auto Populate preserved {preferred.Count} selected package(s) and filled the safe set to {selected.Count} of {mods.Length} installed package(s); " +
             $"skipped {conflictSkips} for conflicts and {requirementSkips} for unsatisfied requirements.";
 
         return new(state, decisions, selected.Count, conflictSkips, requirementSkips, summary);
@@ -386,13 +473,19 @@ public sealed class AutoPopulateService(
 
             foreach (var token in spec.RequiredModTokens)
             {
+                var alreadySatisfied = alreadySelected.Concat(closure)
+                    .Select(selectedId => modsById.GetValueOrDefault(selectedId))
+                    .Any(selectedMod => selectedMod is not null && ModRequirementReader.MatchesToken(selectedMod, token));
+                if (alreadySatisfied)
+                    continue;
+
                 var dependency = ChooseModTokenProvider(token, mods);
                 if (dependency is null)
                     return ClosureResult.Fail($"'{mod.DisplayName}' requires installed mod '{token}', but no matching package is installed.");
                 queue.Enqueue(dependency.Id);
             }
 
-            var inferredMain = FindRequiredMain(mod, mods);
+            var inferredMain = FindRequiredMain(mod, mods, alreadySelected, closure);
             if (inferredMain is not null)
                 queue.Enqueue(inferredMain.Id);
 
@@ -508,7 +601,11 @@ public sealed class AutoPopulateService(
             .FirstOrDefault();
     }
 
-    private static ModDescriptor? FindRequiredMain(ModDescriptor mod, ModDescriptor[] mods)
+    private static ModDescriptor? FindRequiredMain(
+        ModDescriptor mod,
+        ModDescriptor[] mods,
+        HashSet<string> alreadySelected,
+        HashSet<string> closure)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!IsDependentRole(mod))
@@ -524,7 +621,8 @@ public sealed class AutoPopulateService(
                  (!string.IsNullOrWhiteSpace(mod.NexusModId) &&
                   StringComparer.OrdinalIgnoreCase.Equals(candidate.NexusModId, mod.NexusModId))))
             .Where(IsMainRole)
-            .OrderByDescending(m => m.Enabled)
+            .OrderByDescending(m => alreadySelected.Contains(m.Id) || closure.Contains(m.Id))
+            .ThenByDescending(m => m.Enabled)
             .ThenByDescending(m => m.ProvenanceScore)
             .ThenByDescending(m => m.Priority)
             .ThenBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
