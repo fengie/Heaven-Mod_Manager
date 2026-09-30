@@ -200,13 +200,58 @@ test("backup recovery preserves uncertain work and refuses to call it complete",
   const response = await waitForSnapshot(port);
   assert.equal(response.status, 200);
   assert.equal(response.body.controller.health.mode, "recovered");
-  const agent = response.body.agents.find(item => item.id === "support-old");
+  assert.equal(response.body.agents.some(item => item.id === "support-old"), false);
+  const agent = response.body.attentionAgents.find(item => item.id === "support-old");
   assert.equal(agent.status, "orphaned");
   assert.notEqual(agent.completionEvidence, "authoritative-exit");
   const lease = response.body.leases.find(item => item.id === "lease-old");
   assert.equal(lease.status, "active");
 });
 
+
+test("completed managed evidence stays durable but leaves the live managed projection", async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-managed-history-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const port = await freePort();
+  const dataDir = path.join(root, "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+  const now = new Date().toISOString();
+  fs.writeFileSync(path.join(dataDir, "control-plane.json"), JSON.stringify({
+    version: 10,
+    settings: { autonomyLevel: "engineering-autopilot" },
+    agents: [{
+      id: "completed-1",
+      role: "support",
+      roleLabel: "Support Agent",
+      taskId: "task-completed",
+      task: "Finished work",
+      status: "done",
+      exitCode: 0,
+      completionEvidence: "authoritative-exit",
+      startedAt: now,
+      finishedAt: now
+    }],
+    tasks: [{ id: "task-completed", objective: "Finished work", status: "done", agentId: "completed-1" }],
+    leases: [],
+    events: [],
+    notifications: [],
+    improvements: [],
+    promptHistory: []
+  }, null, 2), "utf8");
+
+  const { child } = launch({ root, port });
+  t.after(() => closeChild(child));
+  const response = await waitForSnapshot(port);
+
+  assert.equal(response.body.agents.some(item => item.id === "completed-1"), false);
+  assert.equal(response.body.attentionAgents.some(item => item.id === "completed-1"), false);
+  assert.equal(response.body.managedHistory.some(item => item.id === "completed-1"), true);
+  assert.equal(response.body.telemetry.running, 0);
+  assert.equal(response.body.telemetry.total, 0);
+
+  const persisted = JSON.parse(fs.readFileSync(path.join(dataDir, "control-plane.json"), "utf8"));
+  assert.equal(persisted.agents.some(item => item.id === "completed-1"), true, "workflow evidence must remain durable even when projected out of live presence");
+});
 
 test("authoritative exit gathers async evidence before fresh state mutation", () => {
   const source = fs.readFileSync(SERVER, "utf8");
