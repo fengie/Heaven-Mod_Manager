@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "id": 42,
+      "game_id": 123,
+      "status": 1,
+      "visible": 1,
+      "submitted_by": { "username": "Fixture Author" },
+      "date_added": 1700000000,
+      "date_updated": 1701000000,
+      "logo": {
+        "thumb_320x180": "https://assets.modcdn.io/images/fixture/logo_320x180.png",
+        "original": "https://assets.modcdn.io/images/fixture/logo.png"
+      },
+      "name": "Fixture Mod",
+      "name_id": "fixture-mod",
+      "summary": "Fixture summary",
+      "description_plaintext": "Fixture description",
+      "profile_url": "https://mod.io/g/fixture-game/m/fixture-mod",
+      "media": {
+        "images": [
+          { "original": "https://assets.modcdn.io/images/fixture/gallery.png" }
+        ]
+      },
+      "modfile": {
+        "id": 420,
+        "mod_id": 42,
+        "date_added": 1701000000,
+        "virus_status": 1,
+        "virus_positive": 0,
+        "filesize": 2048,
+        "filehash": { "md5": "0123456789abcdef0123456789abcdef" },
+        "filename": "fixture-mod-2.zip",
+        "version": "2.0",
+        "changelog": "Fixture release",
+        "download": {
+          "binary_url": "https://g-123.modapi.io/v1/games/123/mods/42/files/420/download/expiring-secret-token",
+          "date_expires": 4102444800
+        }
+      },
+      "dependencies": false,
+      "tags": [
+        { "name": "Weapons" },
+        { "name": "Quality of Life" }
+      ],
+      "stats": {
+        "downloads_total": 1000,
+        "ratings_weighted_aggregate": 91.2
+      }
+    }
+  ],
+  "result_count": 1,
+  "result_offset": 0,
+  "result_limit": 100,
+  "result_total": 1
+}
